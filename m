@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZAJQNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZAJQQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbZAJQNW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZAJQNH
+	id S1753482AbZAJQQw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZAJQQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:13:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:62167 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbZAJQNE (ORCPT
+	Sat, 10 Jan 2009 11:16:43 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:37298 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751900AbZAJQQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:13:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rZAe6r3uKyRlOwoqVfbhzQEC4Lx6YbfkWwp9heHqP3FzgMZnnXIqcsjZm13ChPomR3
-         0RCjqwvSwsetQZ2LEhCk8UI4f33uG6w36wqOGLfjrPb2a/pw1UKYvXZOPxnSCk2MMW3t
-         sCKjhEPhUPWsc9ZzBk1UMbFsysWrtkVor72S0=
-Date: Sat, 10 Jan 2009 19:12:57 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: James Chapman <jchapman@katalix.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, devel@openvz.org,
-       xemul@openvz.org
-Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
-Message-ID: <20090110161257.GD29349@localhost>
-References: <20090109195154.320495476@gmail.com>> <4967accc.0c58560a.2ee6.3de4@mx.google.com> <49688120.9000507@katalix.com> <20090110111359.GA29349@localhost> <20090110125444.GB29349@localhost> <4968B929.10801@katalix.com> <20090110151958.GC29349@localhost>
-MIME-Version: 1.0
+	Sat, 10 Jan 2009 11:16:41 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap8EAO1TaElMQWt2/2dsb2JhbACBbM5/hW8
+Date: Sat, 10 Jan 2009 11:11:38 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
+Message-ID: <20090110161137.GA20526@Krystal>
+References: <20090109235449.GA21999@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090110151958.GC29349@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090109235449.GA21999@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:03:15 up 9 days, 16:01,  1 user,  load average: 0.56, 0.27,
+	0.17
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sat, Jan 10, 2009 at 06:19:58PM +0300]
-| [James Chapman - Sat, Jan 10, 2009 at 03:05:13PM +0000]
-| | Cyrill Gorcunov wrote:
-| | > [Cyrill Gorcunov - Sat, Jan 10, 2009 at 02:13:59PM +0300]
-| | > | [James Chapman - Sat, Jan 10, 2009 at 11:06:08AM +0000]
-| | > | | Cyrill Gorcunov wrote:
-| | > | | > - Each tunnel and appropriate lock are inside own namespace now.
-| | > | | > - pppox code allows to create per-namespace sockets for
-| | > | | >   both PX_PROTO_OE and PX_PROTO_OL2TP protocols. Actually since
-| | > | | >   now pppox_create support net-namespaces new PPPo... protocols
-| | > | | >   (if they ever will be) should support net-namespace too otherwise
-| | > | | >   explicit check for &init_net would be needed.
-| | 
-| | Ok, I tested this in my L2TP setup. The first ppp session setup fails
-| | because the PPPIOCNEWUNIT ioctl returns -EEXIST. I think the problem is
-| |  the logic in ppp_create_interface(), which does the following to create
-| | a new ppp interface:
-| | 
-| |         /* Initialize the new ppp unit */
-| |         ppp->file.index = unit;
-| |         sprintf(dev->name, "ppp%d", unit);
-| | 
-| |         ret = register_netdev(dev);
-| | 
-| | Looks like there is more work to do in the ppp changes.
-| | 
-| | -- 
-| | James Chapman
-| | Katalix Systems Ltd
-| | http://www.katalix.com
-| | Catalysts for your Embedded Linux software development
-| |
-...
+Hi,
 
-Btw James did connection work without these patches? On
-pure net-next-2.6 tree? I've some bad feeling that this
-fail is related to different patch. Just to be sure.
- 
-		- Cyrill -
+LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
+It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+
+A new version including ext4 probe module should be available shortly.
+
+Installation QUICKSTART :
+http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
+
+git url :
+
+http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28-lttng-0.74
+
+tarball : 
+
+http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.74.tar.gz
+
+jbd2/ext4 patches within the tarball :
+
+ext4-instrumentation-add-tracepoints.patch
+jbd2-instrumentation-move-to-tracepoints.patch
+lttng-instrumentation-jbd2-probes.patch
+
+Mathieu
+
+* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> Hi everyone,
+> 
+> I just ported LTTng to 2.6.28. Enjoy !
+> 
+> You may also want to upgrade to lttv 0.12.5 which puts back the syscall
+> and softirq names in the event list.
+> 
+> For newcomers, instructions to install LTTng can be found at :
+> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
+> 
+> (I just updated the QUICKSTART guide. Please feel free to try it and
+> report inconsistencies.)
+> 
+> Mathieu
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
