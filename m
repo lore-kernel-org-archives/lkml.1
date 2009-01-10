@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZAJMbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZAJMcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZAJMbU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 07:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZAJMbK
+	id S1754754AbZAJMcv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 07:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZAJMcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 07:31:10 -0500
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:35459 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbZAJMbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 07:31:09 -0500
-Date: Sat, 10 Jan 2009 04:31:06 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <lg@denx.de>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [GIT PULL] LED updates for 2.6.29
-In-Reply-To: <1231543199.5317.63.camel@dax.rpnet.com>
-Message-ID: <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
-References: <1231500186.5317.9.camel@dax.rpnet.com> 
- <Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp>
- <1231543199.5317.63.camel@dax.rpnet.com>
+	Sat, 10 Jan 2009 07:32:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60926 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbZAJMcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 07:32:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Philip Langdale <philipl@overt.org>
+Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (v2) (resend)
+Date: Sat, 10 Jan 2009 13:32:03 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
+       sfr@canb.auug.org.au, Pierre Ossman <drzeus@drzeus.cx>
+References: <40499.98.210.152.237.1231345314.squirrel@overt.org> <200901082314.52840.rjw@sisk.pl> <94b68f283abf372eab895fd76b0feb34@localhost>
+In-Reply-To: <94b68f283abf372eab895fd76b0feb34@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901101332.03851.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Jan 2009, Richard Purdie wrote:
-> On Fri, 2009-01-09 at 12:37 -0800, Trent Piepho wrote:
-> > On Fri, 9 Jan 2009, Richard Purdie wrote:
-> > > for the LED tree updates for 2.6.29. This includes some new drivers,
-> > > bugfixes and a core improvement resulting in nicer code.
-> > >
-> >
-> > Any chance of these patches getting accepted?  They've been going back and
-> > forth for months now.
-> >
-> > [v2,1/4] leds: Support OpenFirmware led bindings
-> > http://patchwork.ozlabs.org/patch/13581/
-> >
-> > [v2,2/4] leds: Add option to have GPIO LEDs start on
-> > http://patchwork.ozlabs.org/patch/13580/
-> >
-> > [v2,3/4] leds: Let GPIO LEDs keep their current state
-> > http://patchwork.ozlabs.org/patch/13583/
-> >
-> > [v2,4/4] leds: Use tristate property in platform data
-> > http://patchwork.ozlabs.org/patch/13584/
->
-> I think there was some confusion as to who was going to take them. Are
-> the PPC people happy with them? If so I'll merge through the LED tree.
-> There are these and a couple of other patches around which have got lost
-> in the system. If there is time which I'm hoping there might be, I'll
-> try and get a second LED tree merge in.
+On Saturday 10 January 2009, Philip Langdale wrote:
+> 
+> On Thu, 8 Jan 2009 23:14:52 +0100, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > On Wednesday 07 January 2009, philipl@overt.org wrote:
+[...]
+> > dependencies between the devices are, so can you please explain that
+> > to me?
+> 
+> I hope my write up answers this question.
 
-The LED tree makes more sense for what's left I think.  There was a
-openfirmware gpio patch, but that's already gone in.  What's left only
-touches led files and the device tree binding docs.
+I think they are, though I have to read them more thoroughly yet.
 
-AFAIK, there were no objections to the patches left.
+> > That said, if you want to suspend-resume ricoh_mmc with interrupts
+> > disabled,
+> > please use the legacy PCI .suspend_late() and .resume_early() callbacks
+> for
+> > that, since in the new framework the core will carry out some standard PM
+> > operations in addition to your .suspend_noirq() and .resume_noirq().  It
+> > may
+> > not be what you want in this case, though.
+> 
+> I'd need to know what those other operations are. I originally wrote this
+> patch with suspend_late and resume_early but the first pm_ops patch I saw
+> removed those. Are you now saying that both suspend_late/resume_early and
+> noirq callbacks are supported now.
+
+Yes, they are.  You implement either the "old" ones (->suspen(), ->resume(),
+->suspend_late(), ->resume_early() in struct pci_driver) and even if only one of
+them is defined, the "legacy" handling will be used for the other operations
+too, so the existing drivers' code is not affected, or the "new" ones (the pm
+object).
+
+> It's all a bit confusing :-)
+
+Yes, it is, unfortunately.  There are a couple of reasons, one of them being
+that the code has only been finished recently and another that the whole
+concept changed slightly just before 2.6.28, when we discovered a mode of
+failure that had not been known before and it had to be taken into account.
+
+I'm now going to finally write some documentation. :-)
+
+Thanks,
+Rafael
