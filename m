@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751952AbZAJFH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZAJFKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751952AbZAJFH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 00:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbZAJFHH
+	id S1752188AbZAJFKX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 00:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZAJFKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 00:07:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51174 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbZAJFHF (ORCPT
+	Sat, 10 Jan 2009 00:10:10 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:31985 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZAJFKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 00:07:05 -0500
-Message-ID: <49682C05.7030407@zytor.com>
-Date: Fri, 09 Jan 2009 21:03:01 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 10 Jan 2009 00:10:09 -0500
+Message-ID: <49682D9E.5020804@oracle.com>
+Date: Fri, 09 Jan 2009 21:09:50 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-References: <4966AB74.2090104@zytor.com> <20090109133710.GB31845@elte.hu>  <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain>  <20090109204103.GA17212@elte.hu>  <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain>  <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick>  <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain>  <20090109231227.GA25070@elte.hu>  <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain>  <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       a.beregalov@gmail.com
+Subject: Re: + irda-fix-incomplete-conversation-to-internal-stats.patch added
+ to -mm tree
+References: <200901100023.n0A0N9st031030@imap1.linux-foundation.org>	<20090109.171201.80737529.davem@davemloft.net> <20090109174341.25d5527a.akpm@linux-foundation.org>
+In-Reply-To: <20090109174341.25d5527a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.49682DA1.00F1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Andrew Morton wrote:
+> On Fri, 09 Jan 2009 17:12:01 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 > 
-> There's none. In fact, it's wrong, unless you _also_ have an extern 
-> definition (according to the "new" gcc rules as of back in the days).
+>> From: akpm@linux-foundation.org
+>> Date: Fri, 09 Jan 2009 16:23:09 -0800
+>>
+>>> Subject: irda: fix incomplete conversation to internal stats
+>>> From: Alexander Beregalov <a.beregalov@gmail.com>
+>>>
+>>> Fix for commit af0490810c (irda: convert to internal stats)
+>>>
+>>> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>> Andrew, this is already in the net-2.6 GIT tree, so you can safely
+>> toss this.
 > 
-> Of course, as long as "inline" really means _always_ inline, it won't 
-> matter. So in that sense Ingo is right - we _could_. Which has no bearing 
-> on whether we _should_, of course.
-> 
+> I added it so I could compile my stuff.
 
-I was thinking about experimenting with this, to see what level of
-upside it might add.  Ingo showed me numbers which indicate that a
-fairly significant fraction of the cases where removing inline helps is
-in .h files, which would require code movement to fix.  Hence to see if
-it can be automated.
+to be clear, it's broken in mainline, linux-next, and -mm
+until some patch is merged.
 
-	-hpa
+>> commit 35a2f9993e1bef0d09c3d737aef784caaa888b48
+>> Author: Alexander Beregalov <a.beregalov@gmail.com>
+>> Date:   Thu Jan 8 16:42:08 2009 -0800
+>>
+>>     irda: fix incomplete conversation to internal stats
+>>     
+>>     Fix for commit af0490810c (irda: convert to internal stats)
+>>     
+>>     Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+>>     Signed-off-by: David S. Miller <davem@davemloft.net>
+
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+~Randy
