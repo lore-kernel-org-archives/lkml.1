@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbZAJCsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZAJDWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbZAJCsX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 21:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZAJCsH
+	id S1753834AbZAJDWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 22:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZAJDWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 21:48:07 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44379 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbZAJCsG (ORCPT
+	Fri, 9 Jan 2009 22:22:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45937 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbZAJDWm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 21:48:06 -0500
-Date: Sat, 10 Jan 2009 04:02:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090110030216.GW26290@one.firstfloor.org>
-References: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu> <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain> <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <20090109174158.096dee70.akpm@linux-foundation.org>
+	Fri, 9 Jan 2009 22:22:42 -0500
+Subject: 2.6.24.7-rt26 and 2.6.26.8-rt13
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 22:22:39 -0500
+Message-Id: <1231557759.922.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090109174158.096dee70.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> A side-effect of the inline fetish is that a lot of it goes into header
-> files, thus requiring that those header files #include lots of other
-> headers, thus leading to, well, the current mess.
+We are pleased to announce the 2.6.24.7-rt26 and 2.6.26.8-rt13 trees,
+which can be downloaded from the location:
 
-I personally also always found it annoying while grepping that
-part of the code is in a completely different directory.
-e.g. try to go through TCP code without jumping to .hs all the time.
+  http://rt.et.redhat.com/download/
 
-Long term that problem will hopefully disappear, as gcc learns to do cross
-source file inlining (like a lot of other compilers already do)
+Information on the RT patch can be found at:
 
--Andi
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
--- 
-ak@linux.intel.com
+Changes since 2.6.26.6-rt12
+
+  - Removed sched-prioritize-non-migrating-rt-tasks.patch that
+    caused a bug in the scheduler.
+   (Thanks to Arnaldo Carvalho de Melo for reporting the bug,
+    and Gregory Haskins for finding the patch that caused it
+    after I explained to him the problem)
+
+Changes in both 2.6.24.7-rt26 and 2.6.26.8-rt13  (all by Thomas Gleixner)
+
+  - trace-histogram: handle clock going backwards
+
+  - interrupt enabled in irq fix
+
+to build a 2.6.24.7-rt26 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.24.7.bz2
+  http://rt.et.redhat.com/download/patch-2.6.24.7-rt26.bz2
+
+
+to build a 2.6.26.8-rt13 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.8.bz2
+  http://rt.et.redhat.com/download/patch-2.6.26.8-rt13.bz2
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+The git tree can now be compiled, we are now working on getting it to
+boot ;-)  It is based off of the v2.6.28 tag.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git
+
+-- Steve
+
+
+
