@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZAJP7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZAJQBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbZAJP7q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZAJP7h
+	id S1754113AbZAJQBb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZAJQBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:59:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47746 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbZAJP7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:59:36 -0500
-Date: Sat, 10 Jan 2009 16:57:20 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Scott James Remnant <scott@canonical.com>
-Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Casey Dahlin <cdahlin@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-Message-ID: <20090110155720.GA10954@redhat.com>
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <1231598714.11642.53.camel@quest>
+	Sat, 10 Jan 2009 11:01:23 -0500
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:35252 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZAJQBX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 11:01:23 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4968C652.2050300@gmail.com>
+Date: Sat, 10 Jan 2009 16:01:22 +0000
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231598714.11642.53.camel@quest>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
+Subject: Regulator consumer and i2c device interaction.
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10, Scott James Remnant wrote:
->
-> On Wed, 2009-01-07 at 12:53 -0800, Roland McGrath wrote:
->
-> > New syscall should have gone to linux-api, I think.
-> >
-> > Do we really need another one for this?  How about using signalfd plus
-> > setting the child's exit_signal to a queuing (SIGRTMIN+n) signal instead of
-> > SIGCHLD?  It's slightly more magical for the userland process to know to do
-> > that (fork -> clone SIGRTMIN).  But compared to adding a syscall we don't
-> > really have to add, maybe better.
-> >
-> This wouldn't help the init daemon case:
->
-> - the exit_signal is set on the child, not on the parent.
->
->   While the init daemon could clone() every new process and set
->   exit_signal, this would not be set for processes reparented to init.
->
->   Even if we had a new syscall to change the exit_signal of a given
->   process, *and* had the init reparent notification patch, this still
->   wouldn't be sufficient; you'd have a race condition between the time
->   you were notified of the reparent, and the time you set exit_signal,
->   in which the child could die.
->
->   Since exit_signal is always reset to SIGCHLD before reparenting, this
->   could be done by resetting it to a different signal; but at this point
->   we're getting into a rather twisty method full of traps.
->
-> - exit_signal is reset to SIGCHLD on exec().
->
->   Pretty much a plan-killer ;)
+Dear All,
 
-I can't understand why should we change ->exit_signal if we want to
-use signalfd. Yes, SIGCHLD is not rt. So what?
+Currently regulator consumers are registered and identified via a pointer to the relevant
+device:
 
-We do not need multiple signals in queue if we want to reap multiple
-zombies. Once we have a single SIGCHLD (reported by signalfd or
-whatever) we can do do_wait(WNOHANG) in a loop.
+e.g. via a regulator consumer supply structure:
+static struct regulator_consumer_supply imote2_sensor_3_con[] = {
+	{
+		.dev = &sht15.dev,
+		.supply = "vcc",
+	},
+};
 
-Confused.
+static struct regulator_init_data imote2_ldo_init_data[] = {{
+	{
+	 	.constraints = {
+		.name = "vcc_sensor_3",
+		.min_uV = 2800000,
+		.max_uV = 3000000,
+		.valid_ops_mask = REGULATOR_CHANGE_VOLTAGE,
+	},
+	.num_consumer_supplies = ARRAY_SIZE(imote2_sensor_3_con),
+	.consumer_supplies = imote2_sensor_3_con,
+},
+};
 
-Oleg.
+and relevant association with a regulator driver.
 
+Now in the case of i2c devices, the struct device  pointer is created
+somewhat later and isn't readily available.
+
+I think the struct device pointer is only used as device instance specific
+token in the regulator framework.  If so is there any reason it can't be
+relaxed to a void * thus allowing something else to be used in i2c drivers?
+
+If so what could actually be used?  Unfortunately all the data elements
+of i2c_board_info are coppied out (rather than a pointer to the original
+structure being used) so that's not currently available.  I guess it could
+be made so at the cost of a single pointer in each i2c_client structure.
+
+So the question is how would people prefer to do this?
+
+Thanks,
+
+--
+Jonathan Cameron
