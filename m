@@ -1,135 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZAJGh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZAJGpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZAJGh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 01:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZAJGhO
+	id S1754743AbZAJGpO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 01:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZAJGo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 01:37:14 -0500
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:56660 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbZAJGhN (ORCPT
+	Sat, 10 Jan 2009 01:44:56 -0500
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:56231 "EHLO
+	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751892AbZAJGoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 01:37:13 -0500
-Message-ID: <49684215.40307@freemail.hu>
-Date: Sat, 10 Jan 2009 07:37:09 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Jens Axboe <axboe@kernel.dk>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] block: validate parameters of exported functions
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32721; Body=2 Fuz1=2
-	Fuz2=2
+	Sat, 10 Jan 2009 01:44:55 -0500
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+From: Nicholas Miell <nmiell@comcast.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+In-Reply-To: <alpine.LFD.2.00.0901092000130.6528@localhost.localdomain>
+References: <20090108141808.GC11629@elte.hu>
+	 <1231426014.11687.456.camel@twins>
+	 <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>
+	 <1231434515.14304.27.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain>
+	 <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com>
+	 <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>
+	 <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com>
+	 <20090109153508.GA4671@elte.hu>
+	 <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
+	 <1231532276.2081.12.camel@entropy>
+	 <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain>
+	 <1231543701.2081.185.camel@entropy>
+	 <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain>
+	 <1231553564.2081.287.camel@entropy>
+	 <alpine.LFD.2.00.0901092000130.6528@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 09 Jan 2009 22:44:49 -0800
+Message-Id: <1231569889.4377.38.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Fri, 2009-01-09 at 20:05 -0800, Linus Torvalds wrote: 
+> 
+> On Fri, 9 Jan 2009, Nicholas Miell wrote:
+> > 
+> > It's only too big if you always keep it in memory, and I wasn't
+> > suggesting that.
+> 
+> Umm. We're talking kernel panics here. If it's not in memory, it doesn't 
+> exist as far as the kernel is concerned.
+> 
+> If it doesn't exist, it cannot be reported.
 
-Check the parameters of the exported functions in genhd.c agains NULL.
-The checks are done with BUG_ON() so they will only act if CONFIG_BUG=y.
+The idea was that the kernel would generate a crash dump and then after
+the reboot, a post-processing tool would do something with it. (e.g. run
+the dump through crash to get a stack trace using separate debug info or
+ship the entire dump off to a collection server or something).
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.28/block/genhd.c.orig	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28/block/genhd.c	2009-01-10 07:12:45.000000000 +0100
-@@ -58,6 +58,7 @@ struct hd_struct *disk_get_part(struct g
+> > And this is where we disagree. I believe that crash dumps should be the
+> > norm and all the reasons you have against crash dumps in general are in
+> > fact reasons against Linux's sub-par implementation of crash dumps in
+> > specific.
+> 
+> Good luck with that. Go ahead and try it.  You'll find it wasn't so easy 
+> after all.
+> 
+> > So, here I am, a non-enterprise end user with a non-stale kernel who'd
+> > love to be able to give you a crash dump (or, more likely, a stack trace
+> > created from that crash dump), but I can't because Linux crash dumps are
+> > stuck in the enterprise ghetto.
+> 
+> No, you're stuck because you apparently have your mind stuck on a 
+> crash-dump, and aren't willing to look at alternatives.
+> 
+> You could use a network console. Trust me - if you can't set up a network 
+> console, you have no business mucking around with crash dumps.
 
- 	if (unlikely(partno < 0))
- 		return NULL;
-+	BUG_ON(!disk);
+netconsole requires a second computer. Feel free to mail me one. :)
 
- 	rcu_read_lock();
+> And if the crash is hard enough that you can't any output from that, 
+> again, a crash dump wouldn't exactly help, would it?
+> 
+> > Hell, I'd be happy if I could get the the normal panic text written to
+> > disk, but since the hard part is the actual writing to disk, there's no
+> > reason not to do the full crash dump if you can.
+> 
+> Umm. And why do you think the two have anything to do with each other?
+> 
+> Only insane people want the kernel to write to disk when it has problems. 
+> Sane people try to write to something that doesn't potentially overwrite 
+> their data. Like the network.
+> 
+> Which is there. Try it. Trust me, it's a _hell_ of a lot more likely to 
+> wotk than a crash dump.
 
-@@ -90,6 +91,9 @@ void disk_part_iter_init(struct disk_par
- {
- 	struct disk_part_tbl *ptbl;
+Well, yes, but that has everything to do with how terrible kdump is and
+nothing to do with the idea of crash dumps in general.
 
-+	BUG_ON(!piter);
-+	BUG_ON(!disk);
-+
- 	rcu_read_lock();
- 	ptbl = rcu_dereference(disk->part_tbl);
+Anyway, we've strayed off topic long enough, I'm sure everyone in the Cc
+list would be happy to stop getting an earful about the merits of crash
+dumps.
 
-@@ -123,6 +127,8 @@ struct hd_struct *disk_part_iter_next(st
- 	struct disk_part_tbl *ptbl;
- 	int inc, end;
-
-+	BUG_ON(!piter);
-+
- 	/* put the last partition */
- 	disk_put_part(piter->part);
- 	piter->part = NULL;
-@@ -176,6 +182,7 @@ EXPORT_SYMBOL_GPL(disk_part_iter_next);
-  */
- void disk_part_iter_exit(struct disk_part_iter *piter)
- {
-+	BUG_ON(!piter);
- 	disk_put_part(piter->part);
- 	piter->part = NULL;
- }
-@@ -201,6 +208,8 @@ struct hd_struct *disk_map_sector_rcu(st
- 	struct disk_part_tbl *ptbl;
- 	int i;
-
-+	BUG_ON(!disk);
-+
- 	ptbl = rcu_dereference(disk->part_tbl);
-
- 	for (i = 1; i < ptbl->len; i++) {
-@@ -375,6 +384,9 @@ int blk_alloc_devt(struct hd_struct *par
- 	struct gendisk *disk = part_to_disk(part);
- 	int idx, rc;
-
-+	BUG_ON(!part);
-+	BUG_ON(!devt);
-+
- 	/* in consecutive minor range? */
- 	if (part->partno < disk->minors) {
- 		*devt = MKDEV(disk->major, disk->first_minor + part->partno);
-@@ -487,6 +499,8 @@ void add_disk(struct gendisk *disk)
- 	dev_t devt;
- 	int retval;
-
-+	BUG_ON(!disk);
-+
- 	/* minors == 0 indicates to use ext devt from part0 and should
- 	 * be accompanied with EXT_DEVT flag.  Make sure all
- 	 * parameters make sense.
-@@ -526,6 +540,8 @@ EXPORT_SYMBOL(del_gendisk);	/* in partit
-
- void unlink_gendisk(struct gendisk *disk)
- {
-+	BUG_ON(!disk);
-+	BUG_ON(!disk->queue);
- 	sysfs_remove_link(&disk_to_dev(disk)->kobj, "bdi");
- 	bdi_unregister(&disk->queue->backing_dev_info);
- 	blk_unregister_queue(disk);
-@@ -544,6 +560,8 @@ struct gendisk *get_gendisk(dev_t devt,
- {
- 	struct gendisk *disk = NULL;
-
-+	BUG_ON(!partno);
-+
- 	if (MAJOR(devt) != BLOCK_EXT_MAJOR) {
- 		struct kobject *kobj;
-
-@@ -1127,6 +1145,8 @@ struct kobject *get_disk(struct gendisk
- 	struct module *owner;
- 	struct kobject *kobj;
-
-+	BUG_ON(!disk);
-+
- 	if (!disk->fops)
- 		return NULL;
- 	owner = disk->fops->owner;
-@@ -1153,6 +1173,7 @@ EXPORT_SYMBOL(put_disk);
-
- void set_device_ro(struct block_device *bdev, int flag)
- {
-+	BUG_ON(!bdev);
- 	bdev->bd_part->policy = flag;
- }
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
