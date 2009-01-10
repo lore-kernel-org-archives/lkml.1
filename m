@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZAJXd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbZAJXoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZAJXd3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 18:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZAJXdS
+	id S1755041AbZAJXoo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 18:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbZAJXoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 18:33:18 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45367 "EHLO gate.crashing.org"
+	Sat, 10 Jan 2009 18:44:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58765 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbZAJXdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 18:33:17 -0500
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, shemminger@vyatta.com, arnd@arndb.de,
-       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <20090108215127.GA28935@ovro.caltech.edu>
-References: <20090107195052.GA24981@ovro.caltech.edu>
-	 <20090108.111610.132149837.davem@davemloft.net>
-	 <20090108192716.GA19863@ovro.caltech.edu>
-	 <20090108215127.GA28935@ovro.caltech.edu>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 10:32:35 +1100
-Message-Id: <1231630355.2142.92.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	id S1750763AbZAJXob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 18:44:31 -0500
+Date: Sun, 11 Jan 2009 00:43:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 04/16] dma-debug: add allocator code
+Message-ID: <20090110234352.GA20843@elte.hu>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-5-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231517970-20288-5-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 13:51 -0800, Ira Snyder wrote:
-> The guests (PowerPC computers running Linux) are PCI cards in the host
-> system (an Intel Pentium3-M system). The guest computers can access all
-> of the host's memory. The guests provide a 1MB (movable) window into
-> their memory.
-> 
-> The PowerPC computers also have a DMA controller, which I've used to get
-> better throughput from my driver. I have a way to create interrupts to
-> both the host and guest systems.
 
-That looks -very- similar to the PCI driver for CAB and Cell triblades
-that was, I think, submitted a while ago. Arnd what's the status with
-that driver ?
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Cheers,
-Ben.
+> +		printk(KERN_ERR "DMA-API: debugging out of memory "
+> +				"- disabling\n");
 
+btw., i'd suggest to not break kernel messages mid-string, but do 
+something like this instead:
 
+> +		printk(KERN_ERR
+		 "DMA-API: debugging out of memory - disabling\n");
+
+Also, i'd use WARN() - it might be useful to see what callsite depleted 
+the pool.
+
+> +	entry = list_entry(free_entries.next, struct dma_debug_entry, list);
+> +	list_del(&entry->list);
+> +	memset(entry, 0, sizeof(*entry));
+> +
+> +	num_free_entries -= 1;
+> +	if (num_free_entries < min_free_entries)
+> +		min_free_entries = num_free_entries;
+
+unlikely() i guess.
+
+Regarding the entry pool locking:
+
+> +static void dma_entry_free(struct dma_debug_entry *entry)
+> +{
+> +	unsigned long flags;
+> +
+> +	/*
+> +	 * add to beginning of the list - this way the entries are
+> +	 * more likely cache hot when they are reallocated.
+> +	 */
+> +	spin_lock_irqsave(&free_entries_lock, flags);
+> +	list_add(&entry->list, &free_entries);
+> +	num_free_entries += 1;
+> +	spin_unlock_irqrestore(&free_entries_lock, flags);
+
+it might make sense to cache entries in the buckets - hence reuse the 
+bucket spinlock. This means a somewhat higher effective pool size, but it 
+also avoids a global lock.
+
+	Ingo
