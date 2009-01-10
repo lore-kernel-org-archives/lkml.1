@@ -1,103 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZAJSFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZAJSH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbZAJSFf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZAJSF0
+	id S1754395AbZAJSH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZAJSHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:05:26 -0500
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:40084 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235AbZAJSFZ (ORCPT
+	Sat, 10 Jan 2009 13:07:09 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50806 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbZAJSHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:05:25 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4968E365.5040409@gmail.com>
-Date: Sat, 10 Jan 2009 18:05:25 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-CC: LKML <linux-kernel@vger.kernel.org>, Liam Girdwood <lrg@kernel.org>
-Subject: Re: Regulator: Use case query (many devices need to reg their voltage
- requirements?)
-References: <4968BE74.1070903@gmail.com> <20090110174602.GA31525@sirena.org.uk>
-In-Reply-To: <20090110174602.GA31525@sirena.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 10 Jan 2009 13:07:08 -0500
+Subject: [PATCH -tip] x86: microcode_intel.c fix style problems
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, tigran@aivazian.fsnet.co.uk,
+       shaohua.li@intel.com, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 23:34:48 +0530
+Message-Id: <1231610688.3994.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
->   
->> A number of different embedded system now use main boards (core etc) in
->> conjunction with daughter boards.  In these cases different modules may
->> be inserted to support different daughter board options from a single kernel
->> (and combinations if possible).  Thus we have a situation in which the
->> appropriate voltage level can only be established if the various drivers
->> specify what they need. The board config may specify numerous devices
->> only some of which may actually be present.
->>     
->
-> The wide range of plug in and subfit options isn't that unusual.
-> There's quite a few modular reference designs out there, including
-> designs where the power module is replacable.
->
-> When I've considered this in the context of designs I've worked on in
-> the past I've always thought it would be easiest to represent the plug
-> in modules in the device tree with the main board regulators being set
-> up to know only about the supplies they provide to the board.  The plug
-> in boards could then map how those supplies are distributed within the
-> boards, using virtual regulators to pass through the supplies from the
-> main board and being able to supply board-wide requirements for the
-> design.
->   
-That's sounds like a sensible approach, though not entirely sure how it
-will work out in
-practice.  Guess there is only one way to find out!
-> I've not actually tried doing this so I've not had a chance to run into
-> any practical problems with it yet, and I'm not sure how well it maps
-> onto your system.
->   
-It maps fine, particularly as quite a few daughter boards have local (be
-it static)
-regulators to ensure clean supplies etc.
->> This leads to additional complexity in numerous drivers as they have to act
->> as dynamic drivers (terminology from regulator docs) even though they don't
->> actually vary the voltage, merely specify what ranges they can work with.
->>     
->
-> For simple cases it's only one function call, though power requirements
-> often depend on other system considerations such as clock rates and
-> analogue design.
-Sure, I guess in cases where the requirements are board specific rather
-than driven by the chip, some
-means of overriding the defaults may be necessary.  Not something that
-we will want to add to drivers
-unless actually needed.
->   There will also be issues if the drivers are for chips
-> which have multiple software compatible variants with differing power
-> requirements.
->   
-Yup, though in many cases they have different part numbers etc and can
-be handled via multiple
-driver registrations or alias provisions such as in i2c.  This is how
-things like adc's with differing
-numbers of inputs depending on precise model are handled anyway.
->   
->> Is this the best way to handle this situation, or do people have other
->> suggestions?
->>     
->
-> Does the above idea work for you?
->   
+Impact: cleanup
 
-I think so. Guess it's going to be a case of trying out an example and
-seeing how it goes.
+Fix:
 
-Thanks,
+WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+ERROR: trailing whitespace
+ERROR: "(foo*)" should be "(foo *)"
 
-Jonathan
+ total: 3 errors, 1 warnings
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/microcode_intel.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index b7f4c92..5e9f4fc 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -87,9 +87,9 @@
+ #include <linux/cpu.h>
+ #include <linux/firmware.h>
+ #include <linux/platform_device.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/msr.h>
+-#include <asm/uaccess.h>
+ #include <asm/processor.h>
+ #include <asm/microcode.h>
+ 
+@@ -196,7 +196,7 @@ static inline int update_match_cpu(struct cpu_signature *csig, int sig, int pf)
+ 	return (!sigmatch(sig, csig->sig, pf, csig->pf)) ? 0 : 1;
+ }
+ 
+-static inline int 
++static inline int
+ update_match_revision(struct microcode_header_intel *mc_header,	int rev)
+ {
+ 	return (mc_header->rev <= rev) ? 0 : 1;
+@@ -442,8 +442,8 @@ static int request_microcode_fw(int cpu, struct device *device)
+ 		return ret;
+ 	}
+ 
+-	ret = generic_load_microcode(cpu, (void*)firmware->data, firmware->size,
+-			&get_ucode_fw);
++	ret = generic_load_microcode(cpu, (void *)firmware->data,
++				     firmware->size, &get_ucode_fw);
+ 
+ 	release_firmware(firmware);
+ 
+@@ -460,7 +460,7 @@ static int request_microcode_user(int cpu, const void __user *buf, size_t size)
+ 	/* We should bind the task to the CPU */
+ 	BUG_ON(cpu != raw_smp_processor_id());
+ 
+-	return generic_load_microcode(cpu, (void*)buf, size, &get_ucode_user);
++	return generic_load_microcode(cpu, (void *)buf, size, &get_ucode_user);
+ }
+ 
+ static void microcode_fini_cpu(int cpu)
+-- 
+1.5.6.6
+
+
 
