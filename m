@@ -1,102 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbZAJANG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZAJAO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759617AbZAJANG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 19:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZAJAMx
+	id S1759915AbZAJAO4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 19:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZAJAOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 19:12:53 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35570 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbZAJAMw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 19:12:52 -0500
-Date: Fri, 9 Jan 2009 16:14:55 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-ide@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       jgarzik@pobox.net
-Subject: libata: make parallel port scan a per-host opt-in feature
-Message-ID: <20090109161455.08d5a54c@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Fri, 9 Jan 2009 19:14:48 -0500
+Received: from xenotime.net ([72.52.64.118]:34955 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751400AbZAJAOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 19:14:47 -0500
+Date: Fri, 9 Jan 2009 16:14:44 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: async: make async a command line option for now
+Message-Id: <20090109161444.27139f19.rdunlap@xenotime.net>
+In-Reply-To: <200901100002.n0A02qKl010433@hera.kernel.org>
+References: <200901100002.n0A02qKl010433@hera.kernel.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 17f458c7d9d7a25a04d448aef22b134135857018 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Fri, 9 Jan 2009 15:54:07 -0800
-Subject: [PATCH] libata: Add a per-host flag to opt-in into parallel port probes
+On Sat, 10 Jan 2009 00:02:52 GMT Linux Kernel Mailing List wrote:
 
-This patch adds a per host flag that allows drivers to opt in into
-having its busses scanned in parallel.
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cdb80f630be5cbc23d82331f24dc4704f75b64f4
+> Commit:     cdb80f630be5cbc23d82331f24dc4704f75b64f4
+> Parent:     b32714ba29358a688ef337d5297bf4bdc9f596dc
+> Author:     Arjan van de Ven <arjan@linux.intel.com>
+> AuthorDate: Fri Jan 9 13:23:45 2009 -0800
+> Committer:  Arjan van de Ven <arjan@linux.intel.com>
+> CommitDate: Fri Jan 9 13:23:45 2009 -0800
+> 
+>     async: make async a command line option for now
+>     
+>     ... and have it default off.
+>     This does allow people to work with it for testing.
 
-Drivers that do not set this flag get their ports scanned in
-the "original" sequence.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Is this boot option documented anywhere or did you mean to
+keep it hidden to all but inquiring minds?
+
+
+>     Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  kernel/async.c |   16 ++++++++++++++--
+>  1 files changed, 14 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/async.c b/kernel/async.c
+> index 64cc916..f286e9f 100644
+> --- a/kernel/async.c
+> +++ b/kernel/async.c
+> @@ -65,6 +65,8 @@ static LIST_HEAD(async_pending);
+>  static LIST_HEAD(async_running);
+>  static DEFINE_SPINLOCK(async_lock);
+>  
+> +static int async_enabled = 0;
+> +
+>  struct async_entry {
+>  	struct list_head list;
+>  	async_cookie_t   cookie;
+> @@ -169,7 +171,7 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct l
+>  	 * If we're out of memory or if there's too much work
+>  	 * pending already, we execute synchronously.
+>  	 */
+> -	if (!entry || atomic_read(&entry_count) > MAX_WORK) {
+> +	if (!async_enabled || !entry || atomic_read(&entry_count) > MAX_WORK) {
+>  		kfree(entry);
+>  		spin_lock_irqsave(&async_lock, flags);
+>  		newcookie = next_cookie++;
+> @@ -316,8 +318,18 @@ static int async_manager_thread(void *unused)
+>  
+>  static int __init async_init(void)
+>  {
+> -	kthread_run(async_manager_thread, NULL, "async/mgr");
+> +	if (async_enabled)
+> +		kthread_run(async_manager_thread, NULL, "async/mgr");
+>  	return 0;
+>  }
+>  
+> +static int __init setup_async(char *str)
+> +{
+> +	async_enabled = 1;
+> +	return 1;
+> +}
+> +
+> +__setup("fastboot", setup_async);
+> +
+> +
+>  core_initcall(async_init);
+
 ---
- drivers/ata/ahci.c        |    3 +++
- drivers/ata/libata-core.c |    9 +++++++++
- include/linux/libata.h    |    1 +
- 3 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 7f701cb..1fc2d4b 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -2660,6 +2660,9 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	host->iomap = pcim_iomap_table(pdev);
- 	host->private_data = hpriv;
- 
-+	if (!hpriv->cap & HOST_CAP_SSS)
-+		host->flags |= ATA_HOST_PARALLEL_SCAN;
-+
- 	if (pi.flags & ATA_FLAG_EM)
- 		ahci_reset_em(host);
- 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index c507a9a..31c0f22 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -5920,6 +5920,15 @@ static void async_port_probe(void *data, async_cookie_t cookie)
- {
- 	int rc;
- 	struct ata_port *ap = data;
-+
-+	/*
-+	 * If we're not allowed to scan this host in parallel,
-+	 * we need to wait until all previous scans have completed
-+	 * before going further.
-+	 */
-+	if (!(ap->host->flags & ATA_HOST_PARALLEL_SCAN))
-+		async_synchronize_cookie(cookie);
-+	
- 	/* probe */
- 	if (ap->ops->error_handler) {
- 		struct ata_eh_info *ehi = &ap->link.eh_info;
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 4f7c8fb..b6b8a7f 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -239,6 +239,7 @@ enum {
- 	/* host set flags */
- 	ATA_HOST_SIMPLEX	= (1 << 0),	/* Host is simplex, one DMA channel per host only */
- 	ATA_HOST_STARTED	= (1 << 1),	/* Host started */
-+	ATA_HOST_PARALLEL_SCAN	= (1 << 2),	/* Ports on this host can be scanned in parallel */
- 
- 	/* bits 24:31 of host->flags are reserved for LLD specific flags */
- 
--- 
-1.6.0.6
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+~Randy
