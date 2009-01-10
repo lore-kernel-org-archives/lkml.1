@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZAJPaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZAJPby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbZAJPaa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 10:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZAJP3u
+	id S1754623AbZAJPby (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 10:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZAJPbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 10:29:50 -0500
-Received: from ns.konzeptpark.de ([195.226.66.162]:40767 "EHLO
-	mail.konzeptpark.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbZAJP3t (ORCPT
+	Sat, 10 Jan 2009 10:31:45 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48266 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751975AbZAJPbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 10:29:49 -0500
-Subject: [PATCH][ATA] Add new CFcard pcmcia device to pata_pcmcia device
- table
-From: Carsten Schlote <c.schlote@konzeptpark.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: konzeptpark.de
-Date: Sat, 10 Jan 2009 16:06:26 +0100
-Message-Id: <1231599986.10065.2.camel@kplaws107lx>
+	Sat, 10 Jan 2009 10:31:44 -0500
+Date: Sat, 10 Jan 2009 15:29:42 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017
+ ata_sff_hsm_move+0x45e/0x750()
+Message-ID: <20090110152942.11375c6c@lxorguk.ukuu.org.uk>
+In-Reply-To: <1231600972.3642.22.camel@localhost.localdomain>
+References: <200901091334.55823.borntraeger@de.ibm.com>
+	<200901101009.13699.borntraeger@de.ibm.com>
+	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>
+	<200901101242.05203.borntraeger@de.ibm.com>
+	<49688B63.5030105@ru.mvista.com>
+	<20090110122130.318cf168@lxorguk.ukuu.org.uk>
+	<1231598170.3642.12.camel@localhost.localdomain>
+	<20090110151248.063199d2@lxorguk.ukuu.org.uk>
+	<1231600972.3642.22.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-X-AVK-Virus-Check: AVF 19.212;06.01.2009
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a 4GB CF card label 'adata compactflash 4GB speed'. 
+> > Nope.. you can't do that with ATA block transfers - it isn't the same as
+> > SCSI
+> 
+> Well, in that case you'll have to do byte PIO for all ATAPI devices,
+> because this is an expected device to host transfer length.
 
-The card wasn't recognized by the pata_pcmcia driver, I checked the
-systool output for the pcmcia device - the reported values didn't match
-any entry in pata_pcmcia driver.
+Not possible there is no such thing as byte PIO in ATAPI.
 
-This patch adds the device 0x004f and card ID 0x0000 to the pata_pcmcia
-driver.
-
-Signed-off-by: Carsten Schlote <c.schlote@konzeptpark.de>
----
- drivers/ata/pata_pcmcia.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: .kernel/drivers/ata/pata_pcmcia.c
-===================================================================
---- .kernel.orig/drivers/ata/pata_pcmcia.c	2009-01-10 13:12:30.000000000
-+0100
-+++ .kernel/drivers/ata/pata_pcmcia.c	2009-01-10 14:55:12.000000000
-+0100
-@@ -384,6 +384,7 @@
- 	PCMCIA_DEVICE_MANF_CARD(0x0032, 0x0704),
- 	PCMCIA_DEVICE_MANF_CARD(0x0032, 0x2904),
- 	PCMCIA_DEVICE_MANF_CARD(0x0045, 0x0401),	/* SanDisk CFA */
-+	PCMCIA_DEVICE_MANF_CARD(0x004f, 0x0000),	/* adata CFA */
- 	PCMCIA_DEVICE_MANF_CARD(0x0097, 0x1620), 	/* TI emulated */
- 	PCMCIA_DEVICE_MANF_CARD(0x0098, 0x0000),	/* Toshiba */
- 	PCMCIA_DEVICE_MANF_CARD(0x00a4, 0x002d),
+See my other mail - it appears to be a long standing bug in
+__atapi_pio_sector rather than a corrupt sg list as I first thought.
