@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbZAJMo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbZAJMzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbZAJMo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 07:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZAJMoB
+	id S1754658AbZAJMzC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 07:55:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZAJMyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 07:44:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53326 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754621AbZAJMn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 07:43:59 -0500
-Date: Sat, 10 Jan 2009 13:43:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090110124335.GB30744@elte.hu>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org> <20090109211937.GA14342@logfs.org>
+	Sat, 10 Jan 2009 07:54:50 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:60902 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZAJMyt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 07:54:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ITFNggsove62oY2xqlI3Fy3PCtVKqNh33kojVtqftdfATwYScj0s1lariXb8AzLK7x
+         YpPqDnNNyKs6oLP4kBC/YjKXQ411niXHi1b//B9KKKmc6AT7MUEj/kJw0v4GkRYArvEI
+         gOQ1mEW9N3bm1SvW7CT7MOWzWiLN1ua6yzaJ4=
+Date: Sat, 10 Jan 2009 15:54:44 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: James Chapman <jchapman@katalix.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, devel@openvz.org,
+       xemul@openvz.org
+Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
+Message-ID: <20090110125444.GB29349@localhost>
+References: <20090109195154.320495476@gmail.com>> <4967accc.0c58560a.2ee6.3de4@mx.google.com> <49688120.9000507@katalix.com> <20090110111359.GA29349@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090109211937.GA14342@logfs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090110111359.GA29349@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Cyrill Gorcunov - Sat, Jan 10, 2009 at 02:13:59PM +0300]
+| [James Chapman - Sat, Jan 10, 2009 at 11:06:08AM +0000]
+| | Cyrill Gorcunov wrote:
+| | > - Each tunnel and appropriate lock are inside own namespace now.
+| | > - pppox code allows to create per-namespace sockets for
+| | >   both PX_PROTO_OE and PX_PROTO_OL2TP protocols. Actually since
+| | >   now pppox_create support net-namespaces new PPPo... protocols
+| | >   (if they ever will be) should support net-namespace too otherwise
+| | >   explicit check for &init_net would be needed.
+| | > 
+| | > CC: James Chapman <jchapman@katalix.com>
+| | > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+| | > ---
+| | >  drivers/net/pppol2tp.c |  164 ++++++++++++++++++++++++++++++++++++-------------
+| | >  drivers/net/pppox.c    |    4 -
+| | >  2 files changed, 121 insertions(+), 47 deletions(-)
+| | 
+| | Looks ok from a pppol2tp point of view, though I'm not an expert on the
+| | netns stuff.
+| | 
+| | The patches don't apply against latest net-next-2.6. If you respin the
+| | patches, I'll test them for pppol2tp.
+| | 
+| | -- 
+| | James Chapman
+| | Katalix Systems Ltd
+| | http://www.katalix.com
+| | Catalysts for your Embedded Linux software development
+| | 
+| 
+| Thanks James for taken look on. I'll check the latest net-next-2.6
+| tree and update the patches soon. Thanks!
+| 
+| 		- Cyrill -
 
-* Jörn Engel <joern@logfs.org> wrote:
+James I just fetched latest net-next-2.6 with
+commit
 
-> On Fri, 9 January 2009 11:37:39 -0800, David Brown wrote:
-> > On Fri, Jan 09, 2009 at 05:54:22PM +0100, Jörn Engel wrote:
-> > >
-> > > In general, filesystems and ABI changes are special because stupid 
-> > > mistakes are eternal.  If some device driver has a bug, you can fix 
-> > > it, reboot and be done with it.  Not so with filesystems.
-> > 
-> > Squashfs is readonly from the kernel.  The images are created with 
-> > userspace tools.
-> 
-> While true, it doesn't make a difference.  If, for example, your 
-> structures members are not naturally aligned, you take a performance hit 
-> for no good reason.  Simply moving fields around would make the code go 
-> faster.  But the format is fixed and prevents you from making this 
-> change.
-> 
-> You have to get those things right from the beginning or pay for your 
-> mistakes everafter.  In general (and I stress "In general") filesystems 
-> want more review than ordinary device drivers.  And just to stress that 
-> again, this is not an argument against merging squashfs now.
+---
+commit 3c92ec8ae91ecf59d88c798301833d7cf83f2179
+Merge: c4c9f01... ca9153a...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun Dec 28 16:54:33 2008 -0800
 
-What does a performance hit have to do with an ABI? Absolutely nothing - 
-if such a bug is noticed it is fixed, that's it. Your argument does not 
-parse and makes absolutely zero technical sense.
+    Merge branch 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc
+---
 
-Your "ABI is forever" objection against a _read only_ filesystem is a 
-newbie mistake worthy of cookie file inclusion - i had a real good laugh 
-when i read it ;-)
+and patches are being applied on top without problems.
+Maybe you have some other commits which are not propogated
+to net-next-2.6 yet?
 
-	Ingo
+		- Cyrill -
