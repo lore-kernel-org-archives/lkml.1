@@ -1,94 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZAJQQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZAJQRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbZAJQQw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:16:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZAJQQn
+	id S1754209AbZAJQRo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZAJQRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:16:43 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:37298 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751900AbZAJQQl (ORCPT
+	Sat, 10 Jan 2009 11:17:35 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54790 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752399AbZAJQRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:16:41 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap8EAO1TaElMQWt2/2dsb2JhbACBbM5/hW8
-Date: Sat, 10 Jan 2009 11:11:38 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
-Message-ID: <20090110161137.GA20526@Krystal>
-References: <20090109235449.GA21999@Krystal>
+	Sat, 10 Jan 2009 11:17:34 -0500
+Subject: ACPI hotplug panic with current git head
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 10:17:30 -0600
+Message-Id: <1231604250.3642.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090109235449.GA21999@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:03:15 up 9 days, 16:01,  1 user,  load average: 0.56, 0.27,
-	0.17
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is on an IBM Maia system with the calgary IOMMU enabled. It's a
+fatal boot up panic.
 
-LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
-It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+James
 
-A new version including ext4 probe module should be available shortly.
+---
 
-Installation QUICKSTART :
-http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
 
-git url :
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+IP: [<ffffffff8039646f>] acpi_ns_get_next_node+0xb/0x3c
+PGD 0 
+Oops: 0000 [#1] SMP 
+last sysfs file: 
+CPU 0 
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.28 #1
+RIP: 0010:[<ffffffff8039646f>]  [<ffffffff8039646f>] acpi_ns_get_next_node+0xb/0x3c
+RSP: 0018:ffff88007f87fd30  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000000 R08: ffffffff8037d260 R09: ffff88007f87fdfc
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000001
+R13: 0000000000000000 R14: 0000000000000001 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffffffff80742040(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000010 CR3: 0000000000201000 CR4: 00000000000006a0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 1, threadinfo ffff88007f87e000, task ffff88007f875040)
+Stack:
+ 0000000000000000 ffffffff803964f5 ffff88007f81b728 0000000000001001
+ ffff88007f87fdfc ffffffff8037d260 0000000600000001 0000000000000000
+ ffffffff8037d260 0000000000000000 0000000000000001 ffff88007f87fdfc
+Call Trace:
+ [<ffffffff803964f5>] acpi_ns_walk_namespace+0x55/0x138
+ [<ffffffff8037d260>] is_pci_dock_device+0x0/0x20
+ [<ffffffff8037d260>] is_pci_dock_device+0x0/0x20
+ [<ffffffff80394a9e>] acpi_walk_namespace+0x5f/0x83
+ [<ffffffff8037dd33>] detect_ejectable_slots+0x53/0x70
+ [<ffffffff8037de38>] add_bridge+0xe8/0x200
+ [<ffffffff80394aaa>] acpi_walk_namespace+0x6b/0x83
+ [<ffffffff803a4ad1>] acpi_pci_register_driver+0x48/0x61
+ [<ffffffff806fc5df>] acpiphp_init+0x0/0x58
+ [<ffffffff806fc732>] acpiphp_glue_init+0x4c/0x5a
+ [<ffffffff806fc616>] acpiphp_init+0x37/0x58
+ [<ffffffff8020903b>] _stext+0x3b/0x180
+ [<ffffffff80312598>] create_proc_entry+0x58/0xa0
+ [<ffffffff802815d1>] register_irq_proc+0xc1/0xe0
+ [<ffffffff806db64b>] kernel_init+0x152/0x1ac
+ [<ffffffff8023d970>] finish_task_switch+0x0/0x110
+ [<ffffffff8020ca7a>] child_rip+0xa/0x20
+ [<ffffffff8020c47c>] restore_args+0x0/0x30
+ [<ffffffff806db4f9>] kernel_init+0x0/0x1ac
+ [<ffffffff8020ca70>] child_rip+0x0/0x20
+Code: 89 c2 48 8b 00 48 85 c0 75 f5 48 8b 45 00 48 89 02 44 88 65 09 48 89 5d 00 31 c0 5b 5d 41 5c c3 53 48 85 d2 89 fb 48 89 d7 75 06 <48> 8b 56 10 eb 08 e8 73 f1 ff ff 48 89 c2 85 db 74 1a eb 13 0f 
+RIP  [<ffffffff8039646f>] acpi_ns_get_next_node+0xb/0x3c
+ RSP <ffff88007f87fd30>
+CR2: 0000000000000010
+---[ end trace a7919e7f17c0a725 ]---
 
-http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28-lttng-0.74
+James
 
-tarball : 
 
-http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.74.tar.gz
-
-jbd2/ext4 patches within the tarball :
-
-ext4-instrumentation-add-tracepoints.patch
-jbd2-instrumentation-move-to-tracepoints.patch
-lttng-instrumentation-jbd2-probes.patch
-
-Mathieu
-
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> Hi everyone,
-> 
-> I just ported LTTng to 2.6.28. Enjoy !
-> 
-> You may also want to upgrade to lttv 0.12.5 which puts back the syscall
-> and softirq names in the event list.
-> 
-> For newcomers, instructions to install LTTng can be found at :
-> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
-> 
-> (I just updated the QUICKSTART guide. Please feel free to try it and
-> report inconsistencies.)
-> 
-> Mathieu
-> 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
