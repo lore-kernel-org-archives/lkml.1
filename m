@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZAJD4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZAJEGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbZAJD4q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 22:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZAJD4i
+	id S1753937AbZAJEGg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 23:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZAJEGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 22:56:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36492 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbZAJD4h (ORCPT
+	Fri, 9 Jan 2009 23:06:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44983 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751599AbZAJEGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 22:56:37 -0500
-Date: Sat, 10 Jan 2009 04:56:13 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] KBUILD: Create the source symlink earlier in the objdir
-Message-ID: <20090110035613.GA7225@basil.nowhere.org>
+	Fri, 9 Jan 2009 23:06:23 -0500
+Date: Fri, 9 Jan 2009 20:05:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nicholas Miell <nmiell@comcast.net>
+cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+In-Reply-To: <1231553564.2081.287.camel@entropy>
+Message-ID: <alpine.LFD.2.00.0901092000130.6528@localhost.localdomain>
+References: <20090108141808.GC11629@elte.hu>  <1231426014.11687.456.camel@twins>  <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain>  <1231434515.14304.27.camel@think.oraclecorp.com>  <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> 
+ <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com>  <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain>  <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com>  <20090109153508.GA4671@elte.hu>  <alpine.LFD.2.00.0901090817470.6528@localhost.localdomain>
+  <1231532276.2081.12.camel@entropy>  <alpine.LFD.2.00.0901091227040.6528@localhost.localdomain>  <1231543701.2081.185.camel@entropy>  <alpine.LFD.2.00.0901091535330.6528@localhost.localdomain> <1231553564.2081.287.camel@entropy>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KBUILD: Create the source symlink earlier in the objdir
-
-It's useful to already have the source symlink in a 
-objdir when one just runs make *config. Then one
-can do 
-
-mkdir obj-allyes
-cd obj-allyes
-make -C ../sourcedir O=$(pwd) allyesconfig
-./source/scripts/config --disable debug_info
-make CC=icecc -j18
-
-without having to interrupt the make first just to
-get the source symlink.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- Makefile |    1 +
- 1 file changed, 1 insertion(+)
 
 
-Index: linux-2.6.28-kbuild/Makefile
-===================================================================
---- linux-2.6.28-kbuild.orig/Makefile	2009-01-07 22:16:49.000000000 +0100
-+++ linux-2.6.28-kbuild/Makefile	2009-01-10 04:50:53.000000000 +0100
-@@ -383,6 +383,7 @@
- # output directory.
- outputmakefile:
- ifneq ($(KBUILD_SRC),)
-+	@ln -fsn $(srctree) $(objtree)/source
- 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
- 	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
- endif
+On Fri, 9 Jan 2009, Nicholas Miell wrote:
+> 
+> It's only too big if you always keep it in memory, and I wasn't
+> suggesting that.
+
+Umm. We're talking kernel panics here. If it's not in memory, it doesn't 
+exist as far as the kernel is concerned.
+
+If it doesn't exist, it cannot be reported.
+
+> My point was that you can get completely accurate stack traces in the
+> face of gcc's inlining, and that blaming gcc because you can't get good
+> stack traces because the kernel's debugging infrastructure isn't up to
+> snuff isn't exactly fair.
+
+No. I'm blaming inlining for making debugging harder.
+
+And that's ok - IF IT IS WORTH IT.
+
+It's not. Gcc inlining decisions suck. gcc inlines stuff that doesn't 
+really help from being inlined, and doesn't inline stuff that _does_.
+
+What's so hard to accept in that?
+
+> And this is where we disagree. I believe that crash dumps should be the
+> norm and all the reasons you have against crash dumps in general are in
+> fact reasons against Linux's sub-par implementation of crash dumps in
+> specific.
+
+Good luck with that. Go ahead and try it.  You'll find it wasn't so easy 
+after all.
+
+> So, here I am, a non-enterprise end user with a non-stale kernel who'd
+> love to be able to give you a crash dump (or, more likely, a stack trace
+> created from that crash dump), but I can't because Linux crash dumps are
+> stuck in the enterprise ghetto.
+
+No, you're stuck because you apparently have your mind stuck on a 
+crash-dump, and aren't willing to look at alternatives.
+
+You could use a network console. Trust me - if you can't set up a network 
+console, you have no business mucking around with crash dumps.
+
+And if the crash is hard enough that you can't any output from that, 
+again, a crash dump wouldn't exactly help, would it?
+
+> Hell, I'd be happy if I could get the the normal panic text written to
+> disk, but since the hard part is the actual writing to disk, there's no
+> reason not to do the full crash dump if you can.
+
+Umm. And why do you think the two have anything to do with each other?
+
+Only insane people want the kernel to write to disk when it has problems. 
+Sane people try to write to something that doesn't potentially overwrite 
+their data. Like the network.
+
+Which is there. Try it. Trust me, it's a _hell_ of a lot more likely to 
+wotk than a crash dump.
+
+			Linus
