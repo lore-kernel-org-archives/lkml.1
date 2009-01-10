@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZAJN6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZAJOJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbZAJN6o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 08:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbZAJN6F
+	id S1755412AbZAJOJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 09:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZAJOJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 08:58:05 -0500
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:41964 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755698AbZAJN6D (ORCPT
+	Sat, 10 Jan 2009 09:09:20 -0500
+Received: from zelda.netsplit.com ([87.194.19.211]:60879 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbZAJOJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 08:58:03 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [bisected] Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-Date: Sat, 10 Jan 2009 14:57:58 +0100
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-References: <200901091334.55823.borntraeger@de.ibm.com> <20090110132412.GB14049@elte.hu> <20090110133617.GA22304@elte.hu>
-In-Reply-To: <20090110133617.GA22304@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901101457.58602.borntraeger@de.ibm.com>
+	Sat, 10 Jan 2009 09:09:20 -0500
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+From: Scott James Remnant <scott@canonical.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Oleg Nesterov <oleg@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com>
+	 <20090107123457.GB16268@elte.hu>
+	 <20090107205322.5F8C7FC3E0@magilla.sf.frob.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-i7n8mx6ekvPdzxOy31Dq"
+Date: Sat, 10 Jan 2009 14:09:25 +0000
+Message-Id: <1231596565.11642.24.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 10 Januar 2009 schrieb Ingo Molnar:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > build its random kernel and reboot into it (800 MHz P3), so i started a 
-> > full automated bisection instead driven from a faster box.
-> 
-> and the winner is:
-> 
-> | 871af1210f13966ab911ed2166e4ab2ce775b99d is first bad commit
-> | commit 871af1210f13966ab911ed2166e4ab2ce775b99d
-> | Author: Alan Cox <alan@redhat.com>
-> | Date:   Mon Jan 5 14:16:39 2009 +0000
-> |
-> |     libata: Add 32bit PIO support
 
-Yes, thats what I send Alan yesterday. We currently try to understand why it 
-fails.
+--=-i7n8mx6ekvPdzxOy31Dq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-01-07 at 12:53 -0800, Roland McGrath wrote:
+
+> New syscall should have gone to linux-api, I think.
+>=20
+> Do we really need another one for this?  How about using signalfd plus
+> setting the child's exit_signal to a queuing (SIGRTMIN+n) signal instead =
+of
+> SIGCHLD?  It's slightly more magical for the userland process to know to =
+do
+> that (fork -> clone SIGRTMIN).  But compared to adding a syscall we don't
+> really have to add, maybe better.
+>=20
+Doesn't that also change the wait() options you need as well?
+
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
+
+--=-i7n8mx6ekvPdzxOy31Dq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklorBUACgkQSnQiFMl4yK7t5ACfWiDhhgZZSFALlQL3f0/MfTa7
+Us0AnjpUb4Um86frtgoPeZW4X510VX4Y
+=L3v+
+-----END PGP SIGNATURE-----
+
+--=-i7n8mx6ekvPdzxOy31Dq--
 
