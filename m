@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZAJFRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbZAJF27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZAJFRU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 00:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbZAJFRM
+	id S1753066AbZAJF27 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 00:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZAJF2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 00:17:12 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:53019 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZAJFRM (ORCPT
+	Sat, 10 Jan 2009 00:28:43 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39915 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZAJF2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 00:17:12 -0500
-Message-ID: <49682F42.8070304@oracle.com>
-Date: Fri, 09 Jan 2009 21:16:50 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: akorolev@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: mtd/lpddr/qinfo_probe.c needs lpddr_cmds to be compiled
-References: <20090110021641.GA26951@orion>
-In-Reply-To: <20090110021641.GA26951@orion>
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Jan 2009 00:28:42 -0500
+Date: Fri, 9 Jan 2009 21:29:43 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       jim owens <jowens@hp.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y
+ impact
+Message-ID: <20090109212943.4625abdb@infradead.org>
+In-Reply-To: <20090109195232.GE23869@mit.edu>
+References: <20090109153508.GA4671@elte.hu>
+	<49677CB1.3030701@zytor.com>
+	<20090109084620.3c711aad@infradead.org>
+	<20090109172011.GD26290@one.firstfloor.org>
+	<20090109172801.GC6936@parisc-linux.org>
+	<20090109174719.GG26290@one.firstfloor.org>
+	<20090109094142.367012b6@infradead.org>
+	<20090109180213.GH26290@one.firstfloor.org>
+	<alpine.LFD.2.00.0901090954410.6528@localhost.localdomain>
+	<20090109185509.GJ26290@one.firstfloor.org>
+	<20090109195232.GE23869@mit.edu>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49682F45.0007:SCFSTAT928724,ss=1,fgs=0
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> drivers/built-in.o: In function `lpddr_probe':
-> drivers/mtd/lpddr/qinfo_probe.c:215:
-> undefined reference to `lpddr_cmdset'
+On Fri, 9 Jan 2009 14:52:33 -0500
+Theodore Tso <tytso@mit.edu> wrote:
+
+> Kerneloops.org does this, so the code is mostly written; but it does
+> this in a blinded fashion, so it only makes sense for oops which are
+> very common and for which we don't need to ask the user, "so what were
+> you doing at the time".  In cases where the user has already stepped
+> up and reported the oops on a mailing list, it would be nice if
+> kerneloops.org had a way of decoding the oops via some web page.
 > 
-> # CONFIG_MTD_LPDDR is not set
-> CONFIG_MTD_QINFO_PROBE=y
-> --
+> Arjan, would something like this be doable, hopefully without too much
+> effort?
 
-This patch has been posted, just needs to be merged (hint):
----
+thinking about this.. making a "pastebin" like thing for oopses is
+relatively trivial for me; all the building blocks I have already.
 
-
-Signed-off-by: Alexey Korolev <akorolev@infradead.org>
----
-diff --git a/drivers/mtd/lpddr/Kconfig b/drivers/mtd/lpddr/Kconfig
-index acd4ea9..5a401d8 100644
---- a/drivers/mtd/lpddr/Kconfig
-+++ b/drivers/mtd/lpddr/Kconfig
-@@ -12,6 +12,7 @@ config MTD_LPDDR
- 	  DDR memories, intended for battery-operated systems.
- 
- config MTD_QINFO_PROBE
-+	depends on MTD_LPDDR
- 	tristate "Detect flash chips by QINFO probe"
- 	help
- 	    Device Information for LPDDR chips is offered through the Overlay
+The hard part is getting the vmlinux files in place. Right now I do
+this manually for popular released kernels.. if the fedora/suse guys
+would help to at least have the vmlinux for their released updates
+easily available that would be a huge help.... without that it's going
+to suck.
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
