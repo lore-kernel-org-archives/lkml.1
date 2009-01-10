@@ -1,139 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZAJU2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZAJU2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZAJU2V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 15:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZAJU2J
+	id S1752543AbZAJU2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 15:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZAJU20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 15:28:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:47638 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZAJU2G (ORCPT
+	Sat, 10 Jan 2009 15:28:26 -0500
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:37265 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754231AbZAJU2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 15:28:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=q5epTpIOj8BYkhz7VeYfLQXbhp9QGpKz5Vx0AKnvA9T44Nc+hiCMYLNFUGm2HlTSn4
-         EzWyOg0JATQCWfQy6eAAJjvgisCzNLCo17waWfscOcU3d6zO/IWuenHHYusuMTEMF5PU
-         N8ZWidx/84rV5ZUDWIIra+u0Gch5obSMhkMnA=
-Date: Sat, 10 Jan 2009 23:28:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Chapman <jchapman@katalix.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, NKML <netdev@vger.kernel.org>
-Subject: [PATCH] net: ppp_generic - fix broken userspace
-Message-ID: <20090110202802.GF29349@localhost>
+	Sat, 10 Jan 2009 15:28:24 -0500
+Message-ID: <496904E4.2000701@arcor.de>
+Date: Sat, 10 Jan 2009 21:28:20 +0100
+From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Vadim Lobanov <vlobanov@speakeasy.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: amd5536udc interrupts bug
+References: <49661E83.2070703@arcor.de> <200901081802.43625.vlobanov@speakeasy.net> <496737E1.1090607@arcor.de> <200901091440.15888.vlobanov@speakeasy.net>
+In-Reply-To: <200901091440.15888.vlobanov@speakeasy.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commits:
+Vadim Lobanov schrieb:
+> On Friday 09 January 2009 03:41:21 Thomas Dahlmann wrote:
+>   
+>> Vadim Lobanov schrieb:
+>>     
+>>> Alas, the hardware doesn't work. When I try plugging in the other end of
+>>> the USB cable, absolutely nothing happens. Not even an interrupt:
+>>> /proc/interrupts for the amd5536udc line stays at zero. Any thoughts on
+>>> possible ways to tackle this / what could be going wrong / etc?
+>>>       
+>
+> Just realized that I forgot to mention that I do also have g_zero sitting on 
+> top of amd5536udc, so there should at least be a dummy USB device to 
+> enumerate.
+>
+>   
+Right, g_zero should enumerate. It also provides data sink/source and 
+loopback functionality.
+If you want to test data traffic then g_file_storage would be a good 
+choice as it behaves as a mass storage
+device.
 
-	7a95d267fb62cd6b80ef73be0592bbbe1dbd5df7
-	ab5024ab23b78c86a0a1425defcdde48710fe449
+Example:
+dd bs=1M count=64 if=/dev/zero of=/tmp/image_file
+modrobe g_file_storage file=/tmp/image_file
+(create partition and file system from host side)
 
-introduced usage of IDR functionality but broke
-userspace side.
+>> Is there any output in the kernel messages on the host side complaining
+>> about that device is
+>> not answering? If not than USB device port is probably not connected to
+>> UDC PHY. Please
+>> check in BIOS setup that port 4 is assigned to UDC.
+>>     
+>
+> Nope, nothing at all shows up in the logs or the interrupt counts when the 
+> cable is plugged, neither for the host drivers nor the device drivers. (The 
+> quickest test I have is to hook the device up to itself - one A port and one B 
+> port.)
+>
+> The BIOS is configured "correctly" if the manuals are to be trusted. Here are 
+> the relevant settings
+> 	OHCI: Enabled
+> 	EHCI: Enabled
+> 	UDC: Enabled
+> 	UOC: Disabled
+> 	Overcurrent reporting: Disabled
+> 	Port 4 assignment: Device
+>   
+UOC has to be enabled. This controller switches the UDC PHY to port 4 
+and owns the mentioned
+PAD_EN and APU bits. These bits live in the memory mapped register space 
+of UOC. I use a
+company intern tools to look at memory spaces of PCI devices. Lets 
+forget these bits so far as I am
+pretty sure that enabling UOC fixes the problem.
 
-Before this commits it was possible to allocate new ppp
-interface with specified number. Now it fails with EINVAL.
-Fix it by trying to allocate interface with specified unit
-number and return EEXIST if fail which allow pppd to ask
-us to allocate new unit number.
-
-And fix messages on memory allocation fails - add details
-that it's PPP module who is complaining.
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
-
-If this is not a right way to fix this issue maybe better
-would be to just revert the commits mentioned. Please
-review carefully. Thanks!
-
-The patch is on top of current net-next-2.6 tree.
-
- drivers/net/ppp_generic.c |   43 +++++++++++++++++++++++++++++++++++++------
- 1 file changed, 37 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.git/drivers/net/ppp_generic.c
-===================================================================
---- linux-2.6.git.orig/drivers/net/ppp_generic.c
-+++ linux-2.6.git/drivers/net/ppp_generic.c
-@@ -250,6 +250,7 @@ static int ppp_connect_channel(struct ch
- static int ppp_disconnect_channel(struct channel *pch);
- static void ppp_destroy_channel(struct channel *pch);
- static int unit_get(struct idr *p, void *ptr);
-+static int unit_set(struct idr *p, void *ptr, int n);
- static void unit_put(struct idr *p, int n);
- static void *unit_find(struct idr *p, int n);
- 
-@@ -2432,11 +2433,18 @@ ppp_create_interface(int unit, int *retp
- 	} else {
- 		if (unit_find(&ppp_units_idr, unit))
- 			goto out2; /* unit already exists */
--		else {
--			/* darn, someone is cheating us? */
--			*retp = -EINVAL;
-+		/*
-+		 * if caller need a specified unit number
-+		 * lets try to satisfy him, otherwise --
-+		 * he should better ask us for new unit number
-+		 *
-+		 * NOTE: yes I know that returning EEXIST it's not
-+		 * fair but at least pppd will ask us to allocate
-+		 * new unit in this case so user is happy :)
-+		 */
-+		unit = unit_set(&ppp_units_idr, ppp, unit);
-+		if (unit < 0)
- 			goto out2;
--		}
- 	}
- 
- 	/* Initialize the new ppp unit */
-@@ -2677,14 +2685,37 @@ static void __exit ppp_cleanup(void)
-  * by holding all_ppp_mutex
-  */
- 
-+/* associate pointer with specified number */
-+static int unit_set(struct idr *p, void *ptr, int n)
-+{
-+	int unit, err;
-+
-+again:
-+	if (!idr_pre_get(p, GFP_KERNEL)) {
-+		printk(KERN_ERR "PPP: No free memory for idr\n");
-+		return -ENOMEM;
-+	}
-+
-+	err = idr_get_new_above(p, ptr, n, &unit);
-+	if (err == -EAGAIN)
-+		goto again;
-+
-+	if (unit != n) {
-+		idr_remove(p, unit);
-+		return -EINVAL;
-+	}
-+
-+	return unit;
-+}
-+
- /* get new free unit number and associate pointer with it */
- static int unit_get(struct idr *p, void *ptr)
- {
- 	int unit, err;
- 
- again:
--	if (idr_pre_get(p, GFP_KERNEL) == 0) {
--		printk(KERN_ERR "Out of memory expanding drawable idr\n");
-+	if (!idr_pre_get(p, GFP_KERNEL)) {
-+		printk(KERN_ERR "PPP: No free memory for idr\n");
- 		return -ENOMEM;
- 	}
- 
+Thomas
