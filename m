@@ -1,53 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZAJQVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZAJQX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZAJQVi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 11:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZAJQVa
+	id S1754112AbZAJQX3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 11:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZAJQXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 11:21:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47151 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbZAJQVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 11:21:30 -0500
-Date: Sat, 10 Jan 2009 17:19:11 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Scott James Remnant <scott@canonical.com>
-Cc: Casey Dahlin <cdahlin@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-Message-ID: <20090110161911.GB10954@redhat.com>
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <a36005b50901071302q70160bady41abc5ed2b105474@mail.gmail.com> <20090108143220.GA8717@redhat.com> <20090108193530.99D74FC3DD@magilla.sf.frob.com> <496663B6.3090709@redhat.com> <20090108213901.GA26729@redhat.com> <1231599141.11642.58.camel@quest>
+	Sat, 10 Jan 2009 11:23:21 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:50292 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbZAJQXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 11:23:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=jHxEFcs/LhMNFYUY06fG1sElslxn3b5ghvE9nlWI0Y77KsPTa7KdTW7Nv8Npsd73Dd
+         AR1eCOfzHmkjLD82xY5X7mnUlKP8XxOuXQUad+rjkmxwkTTCychN67zUP2DVs5rKJ5Jh
+         OgamFI/3qeWcFOhA1uwQdyntkEOJY24hhXuhI=
+Message-ID: <4968CB72.6080100@gmail.com>
+Date: Sat, 10 Jan 2009 08:23:14 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231599141.11642.58.camel@quest>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN
+ (4)
+References: <49683957.9070700@gmail.com> <49685B70.8080908@shaw.ca>
+In-Reply-To: <49685B70.8080908@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10, Scott James Remnant wrote:
+Robert Hancock wrote:
+> Justin P. Mattock wrote:
+>> I am seeing this in dmesg:
+>> FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+>> not sure what this is.
+>> (the only changes to .config was add kexec,
+>> coredump, and relocatable kernel options.)
+>>
+>> I take it that I'm unable to try this relocatable
+>> kernel stuff out.(x86_32)?
+>>
+>> regards;
+>>
+>> Justin P. Mattock
 >
-> On Thu, 2009-01-08 at 22:39 +0100, Oleg Nesterov wrote:
+> I believe that indicates your BIOS's FADT table contains inconsistent 
+> data. You're sure that only happens with those options set?
 >
-> > Btw. It is not that I am trying to argue against sys_waitfd(), but do
-> > you have the "real life" example when it can be useful? Yes, poll().
-> > But we have signalfd. SIGCHLD is not rt signal, but afaics this is not
-> > the problem actually. Just curious.
-> >
-> signalfd() can't currently be made to work in the way you describe.
+Well, the positive side is kexec
+does work on  macbook pro
+(doesn't play so well with the xserver,
+garbled screen.).
 
-Hmm. Could you clarify?
+As for the FADT table, I reverted to an old
+.config that has no new options in it, and sure enough
+that message appeared. Looking back in my logs,
+the last kernel commit I have is:
+ 2.6.28-07485-g9e42d0c
+that doesn't show such messages.
 
-I am not sure we are talking about the same thing, but afaics poll() +
-signalfd can work to (say) reap the childs. Actually, ppoll() alone is
-enough.
+When examining this message
+(not too familiar with FADT)
+I see PM leading me to believe this maybe has to
+do with the PM stuff.
+(making me wonder, if this is the reason
+suspend isn't working.just a black screen
+upon wakeup); but like I said I'm not
+familiar with that area.
+heres what I see:
 
-No?
+[    0.000000] ACPI: RSDP 000FE020, 0024 (r2 APPLE )
+[    0.000000] ACPI: XSDT 3FEFD1C0, 0074 (r1 APPLE   Apple00       
+A5       1000013)
+[    0.000000] ACPI: FACP 3FEFB000, 00F4 (r3 APPLE   Apple00       A5 
+Loki       5F)
+[    0.000000] FADT: X_PM1a_EVT_BLK.bit_width (16) does not match 
+PM1_EVT_LEN (4)
+[    0.000000] ACPI: DSDT 3FEF0000, 48D1 (r1 APPLE  MacBookP    20002 
+INTL 20050309)
+[    0.000000] ACPI: FACS 3FEC0000, 0040
+[    0.000000] ACPI: HPET 3FEFA000, 0038 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: APIC 3FEF9000, 0068 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: MCFG 3FEF8000, 003C (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: ASF! 3FEF7000, 00A0 (r32 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: SBST 3FEF6000, 0030 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: ECDT 3FEF5000, 0053 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: SSDT 3FEEF000, 04DC (r1 APPLE     CpuPm     3000 
+INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBD000, 064F (r1 SataRe  SataPri     1000 
+INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBC000, 069C (r1 SataRe  SataSec     1000 
+INTL 20050309)
+[    0.000000] ACPI: Local APIC address 0xfee00000
 
-Oleg.
+and looking at
+ 2.6.28-07485-g9e42d0c
 
+[    0.000000] ACPI: RSDP 000FE020, 0024 (r2 APPLE )
+[    0.000000] ACPI: XSDT 3FEFD1C0, 0074 (r1 APPLE   Apple00       
+A5       1000013)
+[    0.000000] ACPI: FACP 3FEFB000, 00F4 (r3 APPLE   Apple00       A5 
+Loki       5F)
+[    0.000000] ACPI: DSDT 3FEF0000, 48D1 (r1 APPLE  MacBookP    20002 
+INTL 20050309)
+[    0.000000] ACPI: FACS 3FEC0000, 0040
+[    0.000000] ACPI: HPET 3FEFA000, 0038 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: APIC 3FEF9000, 0068 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: MCFG 3FEF8000, 003C (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: ASF! 3FEF7000, 00A0 (r32 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: SBST 3FEF6000, 0030 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: ECDT 3FEF5000, 0053 (r1 APPLE   Apple00        1 
+Loki       5F)
+[    0.000000] ACPI: SSDT 3FEEF000, 04DC (r1 APPLE     CpuPm     3000 
+INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBD000, 064F (r1 SataRe  SataPri     1000 
+INTL 20050309)
+[    0.000000] ACPI: SSDT 3FEBC000, 069C (r1 SataRe  SataSec     1000 
+INTL 20050309)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+
+
+My main concern is making sure
+the machine is going to be O.K.
+when in this state, or should I revert
+to a stable kernel(2.6.28) until things get
+worked out?
+
+regards;
+
+Justin P. Mattock
