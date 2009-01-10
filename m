@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZAJXOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZAJXQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbZAJXOd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 18:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbZAJXOI
+	id S1756530AbZAJXQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 18:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZAJXP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 18:14:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37743 "EHLO mx3.mail.elte.hu"
+	Sat, 10 Jan 2009 18:15:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38201 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754159AbZAJXOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 18:14:06 -0500
-Date: Sun, 11 Jan 2009 00:13:41 +0100
+	id S1751778AbZAJXP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 18:15:57 -0500
+Date: Sun, 11 Jan 2009 00:15:31 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Joerg Roedel <joerg.roedel@amd.com>
 Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
        fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
        iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
-Message-ID: <20090110231341.GM17917@elte.hu>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-9-git-send-email-joerg.roedel@amd.com>
+Subject: Re: [PATCH 07/16] dma-debug: add debugfs interface
+Message-ID: <20090110231531.GN17917@elte.hu>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-8-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231517970-20288-9-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1231517970-20288-8-git-send-email-joerg.roedel@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,11 +38,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> +static char *type2name[3] = { "single", "scather-gather", "coherent" };
-> +
-> +static char *dir2name[4] = { "DMA_BIDIRECTIONAL", "DMA_TO_DEVICE",
-> +			     "DMA_FROM_DEVICE", "DMA_NONE" };
+> +/* debugfs dentry's for the stuff above */
+> +static struct dentry *dma_debug_dent;
+> +static struct dentry *global_disable_dent;
+> +static struct dentry *error_count_dent;
+> +static struct dentry *show_all_errors_dent;
+> +static struct dentry *show_num_errors_dent;
+> +static struct dentry *num_free_entries_dent;
+> +static struct dentry *min_free_entries_dent;
 
-Should be const i guess.
+should all be __read_mostly.
 
 	Ingo
