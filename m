@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbZAJBFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZAJBGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbZAJBFo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 20:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZAJBFc
+	id S1760731AbZAJBGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 20:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZAJBG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 20:05:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34213 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755688AbZAJBFb (ORCPT
+	Fri, 9 Jan 2009 20:06:27 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:43569 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbZAJBG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 20:05:31 -0500
-Date: Fri, 9 Jan 2009 17:04:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jamie Lokier <jamie@shareable.org>
-cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-In-Reply-To: <20090110005342.GC1972@shareable.org>
-Message-ID: <alpine.LFD.2.00.0901091701010.6528@localhost.localdomain>
-References: <20090109133710.GB31845@elte.hu> <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu> <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain> <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick>
- <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <1231538387.5825.2.camel@brick> <alpine.LFD.2.00.0901091404150.6528@localhost.localdomain> <1231539918.5825.7.camel@brick> <20090110005342.GC1972@shareable.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Jan 2009 20:06:26 -0500
+Date: Fri, 9 Jan 2009 17:01:49 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] resources: fix parameter name and kernel-doc
+Message-Id: <20090109170149.797d6382.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4967F486.01B4:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Fix __request_region() parameter kernel-doc notation and
+parameter name:
 
-On Sat, 10 Jan 2009, Jamie Lokier wrote:
-> 
-> Does "always_inline" complain if the function isn't inlinable, while
-> "inline" allows it?  That would explain the alpha comment.
+Warning(linux-2.6.28-git10//kernel/resource.c:627): No description found for parameter 'flags'
 
-I suspect it dates back to gcc-3.1 days. It's from 2004. And the author of 
-that comment is a part-time gcc hacker who was probably offended by the 
-fact that we thought (correctly) that a lot of gcc inlining was totally 
-broken.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/ioport.h |    3 ++-
+ kernel/resource.c      |    1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Since he was the main alpha maintainer, he got to do things his way 
-there..
-
-			Linus
+--- linux-next-20090109.orig/include/linux/ioport.h
++++ linux-next-20090109/include/linux/ioport.h
+@@ -143,7 +143,8 @@ static inline unsigned long resource_typ
+ 
+ extern struct resource * __request_region(struct resource *,
+ 					resource_size_t start,
+-					resource_size_t n, const char *name, int relaxed);
++					resource_size_t n,
++					const char *name, int flags);
+ 
+ /* Compatibility cruft */
+ #define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
+--- linux-next-20090109.orig/kernel/resource.c
++++ linux-next-20090109/kernel/resource.c
+@@ -620,6 +620,7 @@ resource_size_t resource_alignment(struc
+  * @start: resource start address
+  * @n: resource region size
+  * @name: reserving caller's ID string
++ * @flags: IO resource flags
+  */
+ struct resource * __request_region(struct resource *parent,
+ 				   resource_size_t start, resource_size_t n,
