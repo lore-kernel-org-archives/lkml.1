@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbZAJDod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZAJD4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966AbZAJDod (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 22:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZAJDoX
+	id S1753664AbZAJD4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 22:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZAJD4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 22:44:23 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:18093 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZAJDoW (ORCPT
+	Fri, 9 Jan 2009 22:56:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36492 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbZAJD4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 22:44:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ge6RId1A6B+1AZc5XaA6ql5d5zVLPootMjLHopVF2YWsztdLbEor2+D1GAf2+AymNu
-         gC/dEtEl7MiOX/R5vdoF5k0KBumUeJNccB7Sj1sPDx6wxghEhbDW04vVtACX4DiEs4KN
-         r7vm8BNwmNJfFj621eGt7w2yeR0A5NCPc6gGs=
+	Fri, 9 Jan 2009 22:56:37 -0500
+Date: Sat, 10 Jan 2009 04:56:13 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] KBUILD: Create the source symlink earlier in the objdir
+Message-ID: <20090110035613.GA7225@basil.nowhere.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LRH.1.10.0901100859000.27446@tundra.namei.org>
-References: <45a44e480901091228s59259c81tee1f7d4d4b19f49a@mail.gmail.com>
-	 <alpine.LRH.1.10.0901100859000.27446@tundra.namei.org>
-Date: Sat, 10 Jan 2009 11:44:21 +0800
-Message-ID: <45a44e480901091944q7b2fd71eu40745ed49a695620@mail.gmail.com>
-Subject: Re: Oops in bluetooth on gumstix
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-To: James Morris <jmorris@namei.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 10, 2009 at 5:59 AM, James Morris <jmorris@namei.org> wrote:
-> On Sat, 10 Jan 2009, Jaya Kumar wrote:
->
->> Hi folks,
->>
->> I pulled mainline to play with on my gumstix and encountered the
->> following oops associated with bluetooth which was previously okay on
->> 2.6.27. Here's the oops message:
->
-> This patch should fix it:
->
-> http://marc.info/?l=linux-kernel&m=123141356005033&w=2
->
-> and should be in Linus' tree very soon.
->
+KBUILD: Create the source symlink earlier in the objdir
 
-Thanks James. That patch fixes the issue and things work fine now.
+It's useful to already have the source symlink in a 
+objdir when one just runs make *config. Then one
+can do 
+
+mkdir obj-allyes
+cd obj-allyes
+make -C ../sourcedir O=$(pwd) allyesconfig
+./source/scripts/config --disable debug_info
+make CC=icecc -j18
+
+without having to interrupt the make first just to
+get the source symlink.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+ Makefile |    1 +
+ 1 file changed, 1 insertion(+)
+
+
+Index: linux-2.6.28-kbuild/Makefile
+===================================================================
+--- linux-2.6.28-kbuild.orig/Makefile	2009-01-07 22:16:49.000000000 +0100
++++ linux-2.6.28-kbuild/Makefile	2009-01-10 04:50:53.000000000 +0100
+@@ -383,6 +383,7 @@
+ # output directory.
+ outputmakefile:
+ ifneq ($(KBUILD_SRC),)
++	@ln -fsn $(srctree) $(objtree)/source
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+ 	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
+ endif
