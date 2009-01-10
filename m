@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZAJMcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbZAJMo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbZAJMcv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 07:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZAJMcn
+	id S1755871AbZAJMo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 07:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZAJMoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 07:32:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60926 "EHLO ogre.sisk.pl"
+	Sat, 10 Jan 2009 07:44:01 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53326 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbZAJMcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 07:32:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Philip Langdale <philipl@overt.org>
-Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (v2) (resend)
-Date: Sat, 10 Jan 2009 13:32:03 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       sfr@canb.auug.org.au, Pierre Ossman <drzeus@drzeus.cx>
-References: <40499.98.210.152.237.1231345314.squirrel@overt.org> <200901082314.52840.rjw@sisk.pl> <94b68f283abf372eab895fd76b0feb34@localhost>
-In-Reply-To: <94b68f283abf372eab895fd76b0feb34@localhost>
+	id S1754621AbZAJMn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 07:43:59 -0500
+Date: Sat, 10 Jan 2009 13:43:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090110124335.GB30744@elte.hu>
+References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org> <20090109211937.GA14342@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200901101332.03851.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090109211937.GA14342@logfs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 January 2009, Philip Langdale wrote:
+
+* Jörn Engel <joern@logfs.org> wrote:
+
+> On Fri, 9 January 2009 11:37:39 -0800, David Brown wrote:
+> > On Fri, Jan 09, 2009 at 05:54:22PM +0100, Jörn Engel wrote:
+> > >
+> > > In general, filesystems and ABI changes are special because stupid 
+> > > mistakes are eternal.  If some device driver has a bug, you can fix 
+> > > it, reboot and be done with it.  Not so with filesystems.
+> > 
+> > Squashfs is readonly from the kernel.  The images are created with 
+> > userspace tools.
 > 
-> On Thu, 8 Jan 2009 23:14:52 +0100, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > On Wednesday 07 January 2009, philipl@overt.org wrote:
-[...]
-> > dependencies between the devices are, so can you please explain that
-> > to me?
+> While true, it doesn't make a difference.  If, for example, your 
+> structures members are not naturally aligned, you take a performance hit 
+> for no good reason.  Simply moving fields around would make the code go 
+> faster.  But the format is fixed and prevents you from making this 
+> change.
 > 
-> I hope my write up answers this question.
+> You have to get those things right from the beginning or pay for your 
+> mistakes everafter.  In general (and I stress "In general") filesystems 
+> want more review than ordinary device drivers.  And just to stress that 
+> again, this is not an argument against merging squashfs now.
 
-I think they are, though I have to read them more thoroughly yet.
+What does a performance hit have to do with an ABI? Absolutely nothing - 
+if such a bug is noticed it is fixed, that's it. Your argument does not 
+parse and makes absolutely zero technical sense.
 
-> > That said, if you want to suspend-resume ricoh_mmc with interrupts
-> > disabled,
-> > please use the legacy PCI .suspend_late() and .resume_early() callbacks
-> for
-> > that, since in the new framework the core will carry out some standard PM
-> > operations in addition to your .suspend_noirq() and .resume_noirq().  It
-> > may
-> > not be what you want in this case, though.
-> 
-> I'd need to know what those other operations are. I originally wrote this
-> patch with suspend_late and resume_early but the first pm_ops patch I saw
-> removed those. Are you now saying that both suspend_late/resume_early and
-> noirq callbacks are supported now.
+Your "ABI is forever" objection against a _read only_ filesystem is a 
+newbie mistake worthy of cookie file inclusion - i had a real good laugh 
+when i read it ;-)
 
-Yes, they are.  You implement either the "old" ones (->suspen(), ->resume(),
-->suspend_late(), ->resume_early() in struct pci_driver) and even if only one of
-them is defined, the "legacy" handling will be used for the other operations
-too, so the existing drivers' code is not affected, or the "new" ones (the pm
-object).
-
-> It's all a bit confusing :-)
-
-Yes, it is, unfortunately.  There are a couple of reasons, one of them being
-that the code has only been finished recently and another that the whole
-concept changed slightly just before 2.6.28, when we discovered a mode of
-failure that had not been known before and it had to be taken into account.
-
-I'm now going to finally write some documentation. :-)
-
-Thanks,
-Rafael
+	Ingo
