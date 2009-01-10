@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbZAJSbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZAJSjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbZAJSbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZAJSbO
+	id S1754059AbZAJSjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbZAJSjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:31:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40097 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752538AbZAJSbN (ORCPT
+	Sat, 10 Jan 2009 13:39:45 -0500
+Received: from lazybastard.de ([212.112.238.170]:44034 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbZAJSjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:31:13 -0500
-Date: Sat, 10 Jan 2009 10:30:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>, David Brown <lkml@davidb.org>,
-       Phil Oester <kernel@linuxace.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-In-Reply-To: <20090110101235.7ca24c44.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0901101015290.6528@localhost.localdomain>
-References: <E1LKy3v-0003KO-Nx@dylan.lougher.demon.co.uk> <20090108165029.GA10951@infradead.org> <20090108175338.2abbee16.akpm@linux-foundation.org> <4966B24E.1050700@lougher.demon.co.uk> <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com>
- <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org> <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org>
- <20090110101235.7ca24c44.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 10 Jan 2009 13:39:44 -0500
+Date: Sat, 10 Jan 2009 19:39:21 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090110183921.GD20611@logfs.org>
+References: <1231584446.3685.21.camel@johannes> <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com> <1231587428.3803.0.camel@johannes> <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Jan 2009, Andrew Morton wrote:
+On Sat, 10 January 2009 21:29:04 +0900, KOSAKI Motohiro wrote:
+> >
+> > Joern is going to use it for logfs, that's the point. Not sure about
+> > other filesystems.
 > 
-> More importantly, the filesystem driver has to be able to read older
-> filesystem instances.  This is a userspace-visible binary interface!
-> A really complex one.
+> Why can't you investigate other filesystem?
+> if this library is used by only one fs, why does this library routine
+> need to linux/lib/ directory?
 
-Well, the good news is that read-only filesystems are _sooo_ much simpler 
-than any real filesystem that quite frankly, on a "complexity" scale it's 
-still way way down there.
+Because it is not used for on-disk data structures.  It is an
+alternative to radix trees, rbtrees, hash tables or linked lists.
 
-Also, if it's not used for backup (and I don't think anybody would), 
-there's actually less reason to be back-wards compatible. I know I changed 
-cramfs a few times incompatibly, simply becaus "you might as well just 
-re-run the user tools to generate the image". It was for a similar need, 
-and the image really always goes along with the kernel.
+Jörn
 
-I think squashfs usage would be similar - you'd not have squashfs as a 
-standalone media, it would be a "installation medium" thing.
-
-			Linus
+-- 
+When in doubt, punt.  When somebody actually complains, go back and fix it...
+The 90% solution is a good thing.
+-- Rob Landley
