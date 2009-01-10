@@ -1,175 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZAJW1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZAJWcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbZAJW1x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZAJW1o
+	id S1755417AbZAJWcB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZAJWbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:27:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34543 "EHLO mx2.redhat.com"
+	Sat, 10 Jan 2009 17:31:53 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:59524 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751705AbZAJW1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:27:43 -0500
-Date: Sat, 10 Jan 2009 23:24:34 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Scott James Remnant <scott@canonical.com>
-Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Casey Dahlin <cdahlin@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RESEND][RFC PATCH v2] waitfd
-Message-ID: <20090110222434.GA24414@redhat.com>
-References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107205322.5F8C7FC3E0@magilla.sf.frob.com> <1231598714.11642.53.camel@quest> <20090110155720.GA10954@redhat.com> <1231607252.11642.103.camel@quest> <20090110181340.GA14978@redhat.com> <1231618407.11642.196.camel@quest>
+	id S1752556AbZAJWbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:31:52 -0500
+Date: Sat, 10 Jan 2009 14:31:52 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
+Message-ID: <20090110223151.GD7061@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <496852DE.7080802@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231618407.11642.196.camel@quest>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <496852DE.7080802@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10, Scott James Remnant wrote:
->
-> On Sat, 2009-01-10 at 19:13 +0100, Oleg Nesterov wrote:
->
-> > I never argued with this. And, let me repeat. I am not arguing against
-> > waitfd! Actually, I always try to avoid the "do we need this feature"
-> > discussions.
-> >
-> Unless I'm misinterpreting you, you're saying that you don't understand
-> why we should change any current behaviour?  My post is attempting to
-> illustrate why we should.
+On Sat, Jan 10, 2009 at 03:48:46PM +0800, Li Zefan wrote:
+> Impact: also fix a bug in show_rcustats()
+> 
+> Use seq file for simplification, and the global buffer and mutex can be
+> removed.
 
-Scott. How many times should I repeat: I am _not_ arguing against
-waitfd.
+Looks very good, and passes my tests.
 
-But to clarify, neither I vote for it. I don't really care. Except
-I do care about the code if it will be merged, that is why I entered
-this thread.
+> While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
+> due to a bug in show_rcustats().
 
-> > What I disagree with is that waitfd adds the functionality which does
-> > not exists currently.
-> >
-> I'm not saying that it doesn't at all; in fact I gave an example of how
-> you implement the exact same functionality today.
+Good eyes!
 
-This means I was confused. Because I thought you point is we can't poll
-for childs without signalfd. And all I asked was: why do you think so.
-I do understand that waitfd can be handy.
+The only change I ask is that you pull the contents of
+rcupreempt_debugfs_init() into the now-one-line rcupreempt_trace_init().
 
-> In fact, because main loops use select()/poll(), for the SIGCHLD case
-> you'd never use signalfd() at all!
->
-> Unless I'm missing something, the following two examples are identical
-> in behaviour:
->
-> using signalfd:
-> ...
-> using pselect:
+With that change:
 
-Yes, and that is why I mentioned that ppoll() alone is enough.
+Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-> But the pselect() version is neater.  Which is why I started the
-> previous reply off with "why have signalfd() at all?"
-
-Unlike waitfd, there are things which we just can not do without signalfd,
-even if we have ppol/pselect. For example: wait for the signal, but not
-dequeue it.
-
-> One of them was attempting to explain what you don't understand here,
-> I'll try and be more verbose...
-> ...
-> ~~Calling waitpid() does not clear the pending signal.~~
->
-> This is the important bit.
->
-> If a further process dies while we're inside the waitpid() loop, we will
-> most likely reap that straight away.  But this does not clear the
-> pending signal.  The main loop will be woken up again, even though it
-> does not need to be.
->
-> Thus:
->
->  - child process #1 dies
->  - main loop woken up by SIGCHLD
->  - pending status of signal cleared
->  - enter wait loop
->  - child process #2 dies
->  - SIGCHLD pending again
->  - waitpid() called first time, child process #1 reaped
->  - waitpid() called second time, child process #2 reaped
->    (SIGCHLD still pending)
->  - waitpid() called third time, no child processes remain
->  - exit wait loop
->  - back to top of main loop, immediately woken up by pending SIGCHLD
->  - pending status of signal cleared
->  - enter wait loop
->  - waitpid() called first time, but no child processes remain
->    (we reaped it last time round)
->  - exit wait loop
->  - back to top of main loop, sleep
-
-Scott, I don't really understand why are you trying to explain this
-all to me. I do understand this. At least I hope ;)
-
-Yes this is possible, and I see no problems here.
-
->  - SIGCHLD not pending, but waitpid() will not block
->
->    This is true in all example usage; after you've called the read() on
->    the signalfd - or the pselect() has woken, SIGCHLD is probably no
->    longer pending but waitpid() will not block
->
->    Compare with select() behaviour; if you fail to read() from the fd,
->    select() wakes up yet again
->
->  - SIGCHLD pending, but waitpid() will block
->
->    This is true if you exhaust the wait queue in a loop,
-
-... and this too.
-
-> All SIGCHLD is useful for is to get your main loop out of
-> select()/poll(); you must always exhaust the wait queue every time you
-> have woken up.
-
-Yes, and yes, and yes. Scott, I am sorry, I failed to read to the end
-so perhaps I missed something ;)
-
-> --- kernel/signal.c~	2009-01-10 20:04:50.000000000 +0000
-> +++ kernel/signal.c	2009-01-10 20:05:24.000000000 +0000
-> @@ -816,8 +816,10 @@
->  	 * exactly one non-rt signal, so that we can get more
->  	 * detailed information about the cause of the signal.
->  	 */
-> -	if (legacy_queue(pending, sig))
-> +	if (legacy_queue(pending, sig)) {
-> +		signalfd_notify(t, sig);
->  		return 0;
-> +	}
-
-I'd prefer to not discuss this here, but I am not sure I understand.
-There should not be no threads which need the wakeup from here, and
-I can't see how this change can help.
-
-> A more orthogonal example would be pselect().  That implemented, in the
-> kernel, a syscall that it actually wasn't possible to implement in
-> userspace
-
-Yes, exactly,
-
-> The argument for waitfd() or similar in the kernel is because there are
-> races in userspace that we can't solve.
-
-And now I don't understand you again. Please show me which races we
-_can not_ solve in userspace without waitfd?
-
-Yes we can race with the exiting childs while doing waitpid() in a loop,
-so we can make the unnecessary syscall. But please do not tell me _this_
-is the race we can't solve. This is _harmless_. Unlike the problems
-with the poor user-space implementations of pselect/ppol.
-
-Oleg.
-
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
+>  1 files changed, 69 insertions(+), 86 deletions(-)
+> 
+> diff --git a/kernel/rcupreempt_trace.c b/kernel/rcupreempt_trace.c
+> index 7c2665c..a0c8297 100644
+> --- a/kernel/rcupreempt_trace.c
+> +++ b/kernel/rcupreempt_trace.c
+> @@ -39,13 +39,9 @@
+>  #include <linux/percpu.h>
+>  #include <linux/notifier.h>
+>  #include <linux/cpu.h>
+> -#include <linux/mutex.h>
+>  #include <linux/rcupreempt_trace.h>
+>  #include <linux/debugfs.h>
+> -
+> -static struct mutex rcupreempt_trace_mutex;
+> -static char *rcupreempt_trace_buf;
+> -#define RCUPREEMPT_TRACE_BUF_SIZE 4096
+> +#include <linux/seq_file.h>
+> 
+>  void rcupreempt_trace_move2done(struct rcupreempt_trace *trace)
+>  {
+> @@ -170,110 +166,107 @@ static void rcupreempt_trace_sum(struct rcupreempt_trace *sp)
+>  	}
+>  }
+> 
+> -static ssize_t rcustats_read(struct file *filp, char __user *buffer,
+> -				size_t count, loff_t *ppos)
+> +static ssize_t show_rcustats(struct seq_file *m, void *unused)
+>  {
+>  	struct rcupreempt_trace trace;
+> -	ssize_t bcount;
+> -	int cnt = 0;
+> 
+>  	rcupreempt_trace_sum(&trace);
+> -	mutex_lock(&rcupreempt_trace_mutex);
+> -	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+> -		 "ggp=%ld rcc=%ld\n",
+> -		 rcu_batches_completed(),
+> -		 trace.rcu_check_callbacks);
+> -	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+> -		 "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
+> -		 "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
+> -		 "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
+> 
+> -		 trace.next_add, trace.next_length,
+> -		 trace.wait_add, trace.wait_length,
+> -		 trace.done_add, trace.done_length,
+> -		 trace.done_remove, atomic_read(&trace.done_invoked),
+> -		 atomic_read(&trace.rcu_try_flip_1),
+> -		 atomic_read(&trace.rcu_try_flip_e1),
+> -		 trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
+> -		 trace.rcu_try_flip_g1,
+> -		 trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
+> +	seq_printf(m, "ggp=%ld rcc=%ld\n",
+> +		   rcu_batches_completed(),
+> +		   trace.rcu_check_callbacks);
+> +
+> +	seq_printf(m, "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
+> +		      "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
+> +		      "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
+> +		   trace.next_add, trace.next_length,
+> +		   trace.wait_add, trace.wait_length,
+> +		   trace.done_add, trace.done_length,
+> +		   trace.done_remove, atomic_read(&trace.done_invoked),
+> +		   atomic_read(&trace.rcu_try_flip_1),
+> +		   atomic_read(&trace.rcu_try_flip_e1),
+> +		   trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
+> +		   trace.rcu_try_flip_g1,
+> +		   trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
+>  			 trace.rcu_try_flip_a2,
+> -		 trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
+> +		   trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
+>  			 trace.rcu_try_flip_z2,
+> -		 trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
+> -			trace.rcu_try_flip_m2);
+> -	bcount = simple_read_from_buffer(buffer, count, ppos,
+> -			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+> -	mutex_unlock(&rcupreempt_trace_mutex);
+> -	return bcount;
+> +		   trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
+> +			 trace.rcu_try_flip_m2);
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcustats_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, show_rcustats, NULL);
+>  }
+> 
+> -static ssize_t rcugp_read(struct file *filp, char __user *buffer,
+> -				size_t count, loff_t *ppos)
+> +static ssize_t show_rcugp(struct seq_file *m, void *unused)
+>  {
+>  	long oldgp = rcu_batches_completed();
+> -	ssize_t bcount;
+> 
+> -	mutex_lock(&rcupreempt_trace_mutex);
+>  	synchronize_rcu();
+> -	snprintf(rcupreempt_trace_buf, RCUPREEMPT_TRACE_BUF_SIZE,
+> -		"oldggp=%ld  newggp=%ld\n", oldgp, rcu_batches_completed());
+> -	bcount = simple_read_from_buffer(buffer, count, ppos,
+> -			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+> -	mutex_unlock(&rcupreempt_trace_mutex);
+> -	return bcount;
+> +	seq_printf(m, "oldggp=%ld  newggp=%ld\n",
+> +		   oldgp, rcu_batches_completed());
+> +
+> +	return 0;
+>  }
+> 
+> -static ssize_t rcuctrs_read(struct file *filp, char __user *buffer,
+> -				size_t count, loff_t *ppos)
+> +static int rcugp_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, show_rcugp, NULL);
+> +}
+> +
+> +static ssize_t show_rcuctrs(struct seq_file *m, void *unused)
+>  {
+> -	int cnt = 0;
+>  	int cpu;
+>  	int f = rcu_batches_completed() & 0x1;
+> -	ssize_t bcount;
+> -
+> -	mutex_lock(&rcupreempt_trace_mutex);
+> 
+> -	cnt += snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE,
+> -				"CPU last cur F M\n");
+> +	seq_puts(m, "CPU last cur F M\n");
+>  	for_each_online_cpu(cpu) {
+>  		long *flipctr = rcupreempt_flipctr(cpu);
+> -		cnt += snprintf(&rcupreempt_trace_buf[cnt],
+> -				RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+> -					"%3d %4ld %3ld %d %d\n",
+> -			       cpu,
+> -			       flipctr[!f],
+> -			       flipctr[f],
+> -			       rcupreempt_flip_flag(cpu),
+> -			       rcupreempt_mb_flag(cpu));
+> +		seq_printf(m, "%3d %4ld %3ld %d %d\n",
+> +			   cpu,
+> +			   flipctr[!f],
+> +			   flipctr[f],
+> +			   rcupreempt_flip_flag(cpu),
+> +			   rcupreempt_mb_flag(cpu));
+>  	}
+> -	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+> -			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+> -			"ggp = %ld, state = %s\n",
+> -			rcu_batches_completed(),
+> -			rcupreempt_try_flip_state_name());
+> -	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+> -			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+> -			"\n");
+> -	bcount = simple_read_from_buffer(buffer, count, ppos,
+> -			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+> -	mutex_unlock(&rcupreempt_trace_mutex);
+> -	return bcount;
+> +	seq_printf(m, "ggp = %ld, state = %s\n",
+> +		   rcu_batches_completed(),
+> +		   rcupreempt_try_flip_state_name());
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcuctrs_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, show_rcuctrs, NULL);
+>  }
+> 
+>  static struct file_operations rcustats_fops = {
+>  	.owner = THIS_MODULE,
+> -	.read = rcustats_read,
+> +	.open = rcustats_open,
+> +	.read = seq_read,
+> +	.llseek = seq_lseek,
+> +	.release = single_release,
+>  };
+> 
+>  static struct file_operations rcugp_fops = {
+>  	.owner = THIS_MODULE,
+> -	.read = rcugp_read,
+> +	.open = rcugp_open,
+> +	.read = seq_read,
+> +	.llseek = seq_lseek,
+> +	.release = single_release,
+>  };
+> 
+>  static struct file_operations rcuctrs_fops = {
+>  	.owner = THIS_MODULE,
+> -	.read = rcuctrs_read,
+> +	.open = rcuctrs_open,
+> +	.read = seq_read,
+> +	.llseek = seq_lseek,
+> +	.release = single_release,
+>  };
+> 
+>  static struct dentry *rcudir, *statdir, *ctrsdir, *gpdir;
+> @@ -308,16 +301,7 @@ out:
+> 
+>  static int __init rcupreempt_trace_init(void)
+>  {
+> -	int ret;
+> -
+> -	mutex_init(&rcupreempt_trace_mutex);
+> -	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
+> -	if (!rcupreempt_trace_buf)
+> -		return 1;
+> -	ret = rcupreempt_debugfs_init();
+> -	if (ret)
+> -		kfree(rcupreempt_trace_buf);
+> -	return ret;
+> +	return rcupreempt_debugfs_init();
+>  }
+> 
+>  static void __exit rcupreempt_trace_cleanup(void)
+> @@ -326,7 +310,6 @@ static void __exit rcupreempt_trace_cleanup(void)
+>  	debugfs_remove(gpdir);
+>  	debugfs_remove(ctrsdir);
+>  	debugfs_remove(rcudir);
+> -	kfree(rcupreempt_trace_buf);
+>  }
+> 
+> 
+> -- 
+> 1.5.4.rc3
+> 
