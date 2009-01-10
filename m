@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZAJWs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbZAJWsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbZAJWs1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 17:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZAJWsT
+	id S1754147AbZAJWsp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 17:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZAJWse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 17:48:19 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34975 "EHLO mx2.mail.elte.hu"
+	Sat, 10 Jan 2009 17:48:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46231 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752053AbZAJWsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 17:48:19 -0500
-Date: Sat, 10 Jan 2009 23:47:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] irq: allocate irq_desc_ptrs array based on nr_irqs
-Message-ID: <20090110224755.GC17917@elte.hu>
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223818.767801000@polaris-admin.engr.sgi.com>
+	id S1752169AbZAJWse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 17:48:34 -0500
+Date: Sat, 10 Jan 2009 23:46:16 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Casey Dahlin <cdahlin@redhat.com>
+Cc: Scott James Remnant <scott@canonical.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland McGrath <roland@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RESEND][RFC PATCH v2] waitfd
+Message-ID: <20090110224616.GA29046@redhat.com>
+References: <49639EB8.40204@redhat.com> <4963ABF0.6070400@redhat.com> <20090107123457.GB16268@elte.hu> <20090107171922.GA18000@redhat.com> <1231598863.11642.55.camel@quest> <49690FC9.4010403@redhat.com> <20090110223130.GA28581@redhat.com> <4969230F.4080609@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090110223818.767801000@polaris-admin.engr.sgi.com>
+In-Reply-To: <4969230F.4080609@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4998]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/10, Casey Dahlin wrote:
+>
+> Oleg Nesterov wrote:
+>>> From the perspective of waitfd, the only difference between WNOHANG and
+>>> O_NONBLOCK is which argument you put the flags in.
+>>
+>> No. Please see the note about ioctl/fcntl above.
+>>
+>> Oleg.
+>>
+> Yes but the actual waitfd call could simply set O_NONBLOCK on the
+> descriptor when it receive WNOHANG in the flags, and read the descriptor
+> flags going forward.
 
-* Mike Travis <travis@sgi.com> wrote:
+Ah, I misunderstood your message as if we shouldn't check f_flags at all.
 
-> +++ linux-2.6-for-ingo/kernel/irq/internals.h
-> @@ -16,7 +16,11 @@ extern int __irq_set_trigger(struct irq_
->  extern struct lock_class_key irq_desc_lock_class;
->  extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
->  extern spinlock_t sparse_irq_lock;
-> +#ifdef CONFIG_SPARSE_IRQ
-> +extern struct irq_desc **irq_desc_ptrs;
-> +#else
->  extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
-> +#endif
+Yes sure.
 
-why the #ifdef? irq_desc_ptrs is only defined and used by sparseirq.
+Oleg.
 
-	Ingo
