@@ -1,119 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZAJXz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbZAJXzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbZAJXz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 18:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZAJXzM
+	id S1754457AbZAJXzu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 18:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZAJXzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 18:55:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44504 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbZAJXzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 18:55:10 -0500
-Date: Sun, 11 Jan 2009 00:54:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
-       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
-Message-ID: <20090110235435.GD20843@elte.hu>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
+	Sat, 10 Jan 2009 18:55:38 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:28698 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbZAJXzh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 18:55:37 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=pg9HUYMpGyUeBZk-p9MA:9 a=_wb7nFAKa9rtbsIaisVOsD3A144A:4 a=kNAwe-3CODUA:10 a=XK7UU1QYhjMA:10
+Message-ID: <49693575.2030007@shaw.ca>
+Date: Sat, 10 Jan 2009 17:55:33 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Newsgroups: gmane.linux.kernel
+To: RHubbell@iHubbell.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: USB memory card reader and 64MB SD card - 2.6.28-git14
+References: <1231621530.4495.36.camel@127>
+In-Reply-To: <1231621530.4495.36.camel@127>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> Hi,
+rhubbell wrote:
+> (Please CC me in replie,s if it's not too much trouble.)
 > 
-> this is version 2 of the patchset which introduces code to debug drivers 
-> usage of the DMA-API. Many thanks to all the reviewers and the useful 
-> comments on the fist version of this patchset. Tests with hardware 
-> IOMMUs have shown several bugs in drivers regarding the usage of that 
-> API.  Problems were found especially in network card drivers.
+> I had this issue with previous kernels, but I don't know when the
+> problem
+> started. I once was able to read this card.
 > 
-> These bugs often don't show up or have any negative impact if there is 
-> no hardware IOMMU in use in the system. But with an hardware IOMMU these 
-> bugs turn the hardware unusable or, in the worst case, cause data 
-> corruption on devices which are managed by other (good) drivers.
+> Not sure what filesystems are on either card, not sure if it matters.
+> The cards are not mounted automatically so I am guessing that the
+> file system doesn't become an issue until mount time.
 > 
-> With the code these patches introduce driver developers can find several 
-> bugs of misusing the DMA-API in their drivers. But be aware, it can not 
-> find all possible bugs. If it finds a problem it prints out messages 
-> like
+> The device is a Phison 6-in-1 and has no problems with
+> other cards.
 > 
-> ------------[ cut here ]------------
-> WARNING: at /data2/repos/linux.trees.git/lib/dma-debug.c:231 check_unmap+0xab/0x3d9()
-> Hardware name: Toonie
-> bnx2 0000:01:00.0: DMA-API: device driver tries to free DMA memory it has not allocated [device address=0x00000000011]
-> Modules linked in:
-> Pid: 0, comm: swapper Not tainted 2.6.28 #174
-> Call Trace:
->  <IRQ>  [<ffffffff8105af3a>] warn_slowpath+0xd3/0xf2
->  [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
->  [<ffffffff8107c36f>] ? find_usage_backwards+0xe2/0x116
->  [<ffffffff812efd16>] ? usb_hcd_link_urb_to_ep+0x94/0xa0
->  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
->  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
->  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
->  [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
->  [<ffffffff814b25a5>] ? _spin_lock_irqsave+0x69/0x75
->  [<ffffffff811e2b4b>] ? get_hash_bucket+0x28/0x33
->  [<ffffffff811e2ff2>] check_unmap+0xab/0x3d9
->  [<ffffffff8107c9ed>] ? trace_hardirqs_on_caller+0x108/0x14a
->  [<ffffffff8107ca3c>] ? trace_hardirqs_on+0xd/0xf
->  [<ffffffff811e3433>] debug_unmap_single+0x3e/0x40
->  [<ffffffff8128d2d8>] dma_unmap_single+0x3d/0x60
->  [<ffffffff8128d335>] pci_unmap_page+0x1c/0x1e
->  [<ffffffff81290759>] bnx2_poll_work+0x626/0x8cb
->  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
->  [<ffffffff81070100>] ? run_posix_cpu_timers+0x49c/0x603
->  [<ffffffff81070000>] ? run_posix_cpu_timers+0x39c/0x603
->  [<ffffffff8107c52b>] ? mark_lock+0x1c/0x364
->  [<ffffffff8107d8f7>] ? __lock_acquire+0xaec/0xb55
->  [<ffffffff81292804>] bnx2_poll_msix+0x33/0x81
->  [<ffffffff813b6478>] net_rx_action+0x8a/0x139
->  [<ffffffff8105ff39>] __do_softirq+0x8b/0x147
->  [<ffffffff8102933c>] call_softirq+0x1c/0x34
->  [<ffffffff8102a611>] do_softirq+0x39/0x90
->  [<ffffffff8105fde8>] irq_exit+0x4e/0x98
->  [<ffffffff8102a5c2>] do_IRQ+0x11f/0x135
->  [<ffffffff81028b93>] ret_from_intr+0x0/0xf
->  <EOI> <4>---[ end trace 4339d58302097423 ]---
+> When inserted this card causes no problems:
 > 
-> This way driver developers get an idea where the problem is in their
-> code.
+> This is a 128MB card:
 > 
-> I hope I addressed most of the review comments and objections from the
-> first version. Please give this version also a good review and send me
-> your comments.
+> Jan 10 10:47:06  kernel:  uba: uba1
 
-Looks pretty good in general - modulo the few observations i just made in 
-reply to the patches. (Note, the comments apply to all the patches - 
-there's similar small issues in other places as well.)
+Looks like your kernel is configured to use the ub "low performance USB 
+storage" driver, you could try the normal USB storage driver instead..
 
-Did you have a chance to look at debugobjects and see whether it could be 
-reused as the dma-debug-entry object management code?
+> 
+> 
+> When the next card is inserted the keyboard partially locks up, the
+> special laptop keys work still.
+> e.g. the fn-contrast up/dn works still but not other keys work
+> 
+> Removing the card returns things to as before insertion.
+> 
+> This is a 64MB card from a phone:
+> 
+> Jan 10 10:54:44  kernel:  ubc: ubc1
+> Jan 10 10:54:44  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:54:51  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:54:52  kernel: __ratelimit: 22 callbacks suppressed
+> Jan 10 10:55:00  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:55:16  kernel:  ubc: ubc1
+> Jan 10 10:55:16  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:55:23  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:55:24  kernel: __ratelimit: 9 callbacks suppressed
+> Jan 10 10:55:32  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:55:56  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:56:44  kernel:  ubc: ubc1
+> Jan 10 10:56:44  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:56:51  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> Jan 10 10:56:52  kernel: __ratelimit: 22 callbacks suppressed
+> Jan 10 10:57:00  kernel: usb 3-1: reset full speed USB device using
+> ohci_hcd and address 4
+> 
+> lspci:
+> 
+> 00:02.0 USB Controller: nVidia Corporation nForce3 USB 1.1 (rev a5)
+> 00:02.1 USB Controller: nVidia Corporation nForce3 USB 1.1 (rev a5)
+> 00:02.2 USB Controller: nVidia Corporation nForce3 USB 2.0 (rev a2)
+> 
+> 
 
-One request: could you please git-base it on the changes in tip/core/iommu 
-(i only have looked at the patches in email - i presume the current ones 
-are based on -git)?
-
-That way we'll have it on top of Fujita's very nice DMA-mapping 
-consolidation code.
-
-	Ingo
