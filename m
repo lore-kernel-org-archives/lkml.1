@@ -1,265 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZAJHtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZAJIW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbZAJHtv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 02:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZAJHtn
+	id S1753937AbZAJIW4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 03:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZAJIWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 02:49:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60317 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbZAJHtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 02:49:42 -0500
-Message-ID: <496852DE.7080802@cn.fujitsu.com>
-Date: Sat, 10 Jan 2009 15:48:46 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Sat, 10 Jan 2009 03:22:46 -0500
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:26736 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751120AbZAJIWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 03:22:45 -0500
+X-YMail-OSG: h_9tjy4VM1nonLtUGQyj_QnUvnn6ic20zdOyvW5zOkdWrr0nz2CwFdsVA3NkxKmOIjPicoYJZAsmc.EJHwdD5.B6CAlIE4zhGckhXC8Oo9OtNXjJzLtzOyWBYoDYHDlr2kSvbdkq8y2vkg5Fp3yXleAaYmTc6O_12mNGNkHuehvhuBfvJEvtLt5MhfKIBi1IIYqUh1SFigEiIC7_duy3gsOuDEq0JA0AbOXjFDfOwNRDuNq.rtk-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [LIO-Target]: Remove extra sock_create_lite() call from
+	kernel_accept() codepath
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: Linux-netdev <linux-netdev@vger.kernel.org>,
+       Linux-SCTP <linux-sctp@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] rcu: convert rcupreempt trace to seq file
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 00:22:19 -0800
+Message-Id: <1231575739.4560.1096.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: also fix a bug in show_rcustats()
+>From 760514837c1951258a021bf03e1111c53e4c83d7 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Fri, 9 Jan 2009 23:54:22 -0800
+Subject: [PATCH] [LIO-Target]: Remove extra sock_create_lite() call from kernel_accept() codepath
 
-Use seq file for simplification, and the global buffer and mutex can be
-removed.
+Recently, all v3.0 LIO-Target code using kernel socket operations was converted from
+direct struct sock->ops->() function calls to use kernel_* prefixed net/socket.c wrappers.
+The conversion to kernel_accept() in iscsi_target_login.c:iscsi_target_login_thread()
+meant that the sock_create_lite() for *new_sock should have been removed (it was not),
+and hence the *new_sock before kernel_accept() was being leaked in sock_inode_cache slab
+after the kernel_* socket wrapper conversion in v3.0 code.
 
-While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
-due to a bug in show_rcustats().
+This patch removes the now unnecessary call to sock_create_lite() in
+iscsi_target_login_thread().  Also, this patch moves the allocation of
+*new_sock->file for Linux/SCTP (Stream Control Transmission Protocol) until
+after kernel_accept() has succeeded.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Tested with LIO-Target/TCP and LIO-Target/SCTP on v2.6.28
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
- 1 files changed, 69 insertions(+), 86 deletions(-)
+ drivers/lio-core/iscsi_target_login.c |   64 +++++++++++----------------------
+ 1 files changed, 21 insertions(+), 43 deletions(-)
 
-diff --git a/kernel/rcupreempt_trace.c b/kernel/rcupreempt_trace.c
-index 7c2665c..a0c8297 100644
---- a/kernel/rcupreempt_trace.c
-+++ b/kernel/rcupreempt_trace.c
-@@ -39,13 +39,9 @@
- #include <linux/percpu.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
--#include <linux/mutex.h>
- #include <linux/rcupreempt_trace.h>
- #include <linux/debugfs.h>
--
--static struct mutex rcupreempt_trace_mutex;
--static char *rcupreempt_trace_buf;
--#define RCUPREEMPT_TRACE_BUF_SIZE 4096
-+#include <linux/seq_file.h>
- 
- void rcupreempt_trace_move2done(struct rcupreempt_trace *trace)
- {
-@@ -170,110 +166,107 @@ static void rcupreempt_trace_sum(struct rcupreempt_trace *sp)
+diff --git a/drivers/lio-core/iscsi_target_login.c b/drivers/lio-core/iscsi_target_login.c
+index fe1f3b9..3c429f0 100644
+--- a/drivers/lio-core/iscsi_target_login.c
++++ b/drivers/lio-core/iscsi_target_login.c
+@@ -933,37 +933,7 @@ get_new_sock:
+ 			up(&np->np_start_sem);
+ 		return(-1);
  	}
- }
+-	
+-	if (sock_create_lite((np->np_flags & NPF_NET_IPV6) ? AF_INET6 : AF_INET,
+-			sock_type, ip_proto, &new_sock) < 0) {
+-		TRACE_ERROR("sock_create_lite() failed for new_sock\n");
+-		if (start) {
+-			up(&np->np_start_sem);
+-			return(0);
+-		}
+-		goto get_new_sock;
+-	}
+-	new_sock->ops = sock->ops;
  
--static ssize_t rcustats_read(struct file *filp, char __user *buffer,
--				size_t count, loff_t *ppos)
-+static ssize_t show_rcustats(struct seq_file *m, void *unused)
- {
- 	struct rcupreempt_trace trace;
--	ssize_t bcount;
--	int cnt = 0;
- 
- 	rcupreempt_trace_sum(&trace);
--	mutex_lock(&rcupreempt_trace_mutex);
--	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
--		 "ggp=%ld rcc=%ld\n",
--		 rcu_batches_completed(),
--		 trace.rcu_check_callbacks);
--	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
--		 "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
--		 "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
--		 "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
- 
--		 trace.next_add, trace.next_length,
--		 trace.wait_add, trace.wait_length,
--		 trace.done_add, trace.done_length,
--		 trace.done_remove, atomic_read(&trace.done_invoked),
--		 atomic_read(&trace.rcu_try_flip_1),
--		 atomic_read(&trace.rcu_try_flip_e1),
--		 trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
--		 trace.rcu_try_flip_g1,
--		 trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
-+	seq_printf(m, "ggp=%ld rcc=%ld\n",
-+		   rcu_batches_completed(),
-+		   trace.rcu_check_callbacks);
-+
-+	seq_printf(m, "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
-+		      "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
-+		      "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
-+		   trace.next_add, trace.next_length,
-+		   trace.wait_add, trace.wait_length,
-+		   trace.done_add, trace.done_length,
-+		   trace.done_remove, atomic_read(&trace.done_invoked),
-+		   atomic_read(&trace.rcu_try_flip_1),
-+		   atomic_read(&trace.rcu_try_flip_e1),
-+		   trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
-+		   trace.rcu_try_flip_g1,
-+		   trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
- 			 trace.rcu_try_flip_a2,
--		 trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
-+		   trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
- 			 trace.rcu_try_flip_z2,
--		 trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
--			trace.rcu_try_flip_m2);
--	bcount = simple_read_from_buffer(buffer, count, ppos,
--			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
--	mutex_unlock(&rcupreempt_trace_mutex);
--	return bcount;
-+		   trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
-+			 trace.rcu_try_flip_m2);
-+
-+	return 0;
-+}
-+
-+static int rcustats_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, show_rcustats, NULL);
- }
- 
--static ssize_t rcugp_read(struct file *filp, char __user *buffer,
--				size_t count, loff_t *ppos)
-+static ssize_t show_rcugp(struct seq_file *m, void *unused)
- {
- 	long oldgp = rcu_batches_completed();
--	ssize_t bcount;
- 
--	mutex_lock(&rcupreempt_trace_mutex);
- 	synchronize_rcu();
--	snprintf(rcupreempt_trace_buf, RCUPREEMPT_TRACE_BUF_SIZE,
--		"oldggp=%ld  newggp=%ld\n", oldgp, rcu_batches_completed());
--	bcount = simple_read_from_buffer(buffer, count, ppos,
--			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
--	mutex_unlock(&rcupreempt_trace_mutex);
--	return bcount;
-+	seq_printf(m, "oldggp=%ld  newggp=%ld\n",
-+		   oldgp, rcu_batches_completed());
-+
-+	return 0;
- }
- 
--static ssize_t rcuctrs_read(struct file *filp, char __user *buffer,
--				size_t count, loff_t *ppos)
-+static int rcugp_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, show_rcugp, NULL);
-+}
-+
-+static ssize_t show_rcuctrs(struct seq_file *m, void *unused)
- {
--	int cnt = 0;
- 	int cpu;
- 	int f = rcu_batches_completed() & 0x1;
--	ssize_t bcount;
--
--	mutex_lock(&rcupreempt_trace_mutex);
- 
--	cnt += snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE,
--				"CPU last cur F M\n");
-+	seq_puts(m, "CPU last cur F M\n");
- 	for_each_online_cpu(cpu) {
- 		long *flipctr = rcupreempt_flipctr(cpu);
--		cnt += snprintf(&rcupreempt_trace_buf[cnt],
--				RCUPREEMPT_TRACE_BUF_SIZE - cnt,
--					"%3d %4ld %3ld %d %d\n",
--			       cpu,
--			       flipctr[!f],
--			       flipctr[f],
--			       rcupreempt_flip_flag(cpu),
--			       rcupreempt_mb_flag(cpu));
-+		seq_printf(m, "%3d %4ld %3ld %d %d\n",
-+			   cpu,
-+			   flipctr[!f],
-+			   flipctr[f],
-+			   rcupreempt_flip_flag(cpu),
-+			   rcupreempt_mb_flag(cpu));
+-	/*
+-	 * The SCTP stack needs struct socket->file.
+-	 */
+-	if ((np->np_network_transport == ISCSI_SCTP_TCP) ||
+-	    (np->np_network_transport == ISCSI_SCTP_UDP)) {
+-		if (!new_sock->file) {
+-			if (!(new_sock->file = kzalloc(
+-					sizeof(struct file), GFP_KERNEL))) {
+-				TRACE_ERROR("Unable to allocate struct file for SCTP\n");
+-				if (start) {
+-					up(&np->np_start_sem);
+-					return(0);
+-				}
+-				goto get_new_sock;
+-			}
+-			set_sctp_conn_flag = 1;
+-		}
+-	}
+-	
+ 	spin_lock_bh(&np->np_thread_lock);
+ 	if (np->np_thread_state == ISCSI_NP_THREAD_SHUTDOWN)
+ 		goto out;
+@@ -987,13 +957,6 @@ get_new_sock:
+ 	spin_unlock_bh(&np->np_thread_lock);
+ 	
+ 	if (kernel_accept(sock, &new_sock, 0) < 0) {
+-		if (new_sock) {
+-			if (set_sctp_conn_flag) {
+-				kfree(new_sock->file);
+-				new_sock->file = NULL;
+-			}
+-			sock_release(new_sock);
+-		}
+ 		if (signal_pending(current)) {
+ 			spin_lock_bh(&np->np_thread_lock);
+ 			if (np->np_thread_state == ISCSI_NP_THREAD_RESET) {
+@@ -1011,6 +974,22 @@ get_new_sock:
+ 		}
+ 		goto get_new_sock;
  	}
--	cnt += snprintf(&rcupreempt_trace_buf[cnt],
--			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
--			"ggp = %ld, state = %s\n",
--			rcu_batches_completed(),
--			rcupreempt_try_flip_state_name());
--	cnt += snprintf(&rcupreempt_trace_buf[cnt],
--			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
--			"\n");
--	bcount = simple_read_from_buffer(buffer, count, ppos,
--			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
--	mutex_unlock(&rcupreempt_trace_mutex);
--	return bcount;
-+	seq_printf(m, "ggp = %ld, state = %s\n",
-+		   rcu_batches_completed(),
-+		   rcupreempt_try_flip_state_name());
++	/*
++	 * The SCTP stack needs struct socket->file.
++	 */
++	if ((np->np_network_transport == ISCSI_SCTP_TCP) ||
++	    (np->np_network_transport == ISCSI_SCTP_UDP)) {
++		if (!new_sock->file) {
++			printk("Allocating new_sock->file for SCTP\n");
++			if (!(new_sock->file = kzalloc(
++					sizeof(struct file), GFP_KERNEL))) {
++				TRACE_ERROR("Unable to allocate struct file for SCTP\n");
++				sock_release(new_sock);
++				goto get_new_sock;
++			}
++			set_sctp_conn_flag = 1;
++		}
++        }
+ 
+ 	iscsi_start_login_thread_timer(np);
+ 	
+@@ -1018,13 +997,12 @@ get_new_sock:
+ 			sizeof(iscsi_conn_t), GFP_KERNEL))) {
+ 		TRACE_ERROR("Could not allocate memory for"
+ 			" new connection\n");
+-		if (new_sock) {
+-			if (set_sctp_conn_flag) {
+-				kfree(new_sock->file);
+-				new_sock->file = NULL;
+-			}
+-			sock_release(new_sock);
++		if (set_sctp_conn_flag) {
++			kfree(new_sock->file);
++			new_sock->file = NULL;
+ 		}
++		sock_release(new_sock);
 +
-+	return 0;
-+}
-+
-+static int rcuctrs_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, show_rcuctrs, NULL);
- }
- 
- static struct file_operations rcustats_fops = {
- 	.owner = THIS_MODULE,
--	.read = rcustats_read,
-+	.open = rcustats_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
- };
- 
- static struct file_operations rcugp_fops = {
- 	.owner = THIS_MODULE,
--	.read = rcugp_read,
-+	.open = rcugp_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
- };
- 
- static struct file_operations rcuctrs_fops = {
- 	.owner = THIS_MODULE,
--	.read = rcuctrs_read,
-+	.open = rcuctrs_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
- };
- 
- static struct dentry *rcudir, *statdir, *ctrsdir, *gpdir;
-@@ -308,16 +301,7 @@ out:
- 
- static int __init rcupreempt_trace_init(void)
- {
--	int ret;
--
--	mutex_init(&rcupreempt_trace_mutex);
--	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
--	if (!rcupreempt_trace_buf)
--		return 1;
--	ret = rcupreempt_debugfs_init();
--	if (ret)
--		kfree(rcupreempt_trace_buf);
--	return ret;
-+	return rcupreempt_debugfs_init();
- }
- 
- static void __exit rcupreempt_trace_cleanup(void)
-@@ -326,7 +310,6 @@ static void __exit rcupreempt_trace_cleanup(void)
- 	debugfs_remove(gpdir);
- 	debugfs_remove(ctrsdir);
- 	debugfs_remove(rcudir);
--	kfree(rcupreempt_trace_buf);
- }
- 
- 
+ 		goto get_new_sock;
+ 	}
+ 	
 -- 
-1.5.4.rc3
+1.5.4.1
+
+
 
