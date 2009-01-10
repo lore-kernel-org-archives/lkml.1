@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZAJSIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbZAJSKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbZAJSIU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 13:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAJSIL
+	id S1754319AbZAJSKj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 13:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAJSKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 13:08:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50809 "EHLO
+	Sat, 10 Jan 2009 13:10:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47260 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZAJSIK (ORCPT
+	with ESMTP id S1752127AbZAJSKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 13:08:10 -0500
-Subject: [PATCH -tip] x86: msr.c fix style problems
+	Sat, 10 Jan 2009 13:10:31 -0500
+Subject: [PATCH -tip] x86: module_32.c fix style problems
 From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+To: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au,
        x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sat, 10 Jan 2009 23:35:58 +0530
-Message-Id: <1231610758.3994.3.camel@jaswinder.satnam>
+Date: Sat, 10 Jan 2009 23:38:13 +0530
+Message-Id: <1231610893.3994.7.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -28,31 +28,46 @@ Impact: cleanup
 
 Fix:
 
- WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+ ERROR: code indent should use tabs where possible
+ ERROR: trailing whitespace
+ ERROR: spaces required around that '=' (ctx:VxW)
 
- total: 0 errors, 1 warnings
+ total: 3 errors, 0 warnings
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/kernel/msr.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/module_32.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 7262666..3cf3413 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -35,10 +35,10 @@
- #include <linux/device.h>
- #include <linux/cpu.h>
- #include <linux/notifier.h>
-+#include <linux/uaccess.h>
+diff --git a/arch/x86/kernel/module_32.c b/arch/x86/kernel/module_32.c
+index 3db0a54..0edd819 100644
+--- a/arch/x86/kernel/module_32.c
++++ b/arch/x86/kernel/module_32.c
+@@ -42,7 +42,7 @@ void module_free(struct module *mod, void *module_region)
+ {
+ 	vfree(module_region);
+ 	/* FIXME: If module_region == mod->init_region, trim exception
+-           table entries. */
++	   table entries. */
+ }
  
- #include <asm/processor.h>
- #include <asm/msr.h>
--#include <asm/uaccess.h>
- #include <asm/system.h>
+ /* We don't need anything special. */
+@@ -113,13 +113,13 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		*para = NULL;
+ 	char *secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
  
- static struct class *msr_class;
+-	for (s = sechdrs; s < sechdrs + hdr->e_shnum; s++) { 
++	for (s = sechdrs; s < sechdrs + hdr->e_shnum; s++) {
+ 		if (!strcmp(".text", secstrings + s->sh_name))
+ 			text = s;
+ 		if (!strcmp(".altinstructions", secstrings + s->sh_name))
+ 			alt = s;
+ 		if (!strcmp(".smp_locks", secstrings + s->sh_name))
+-			locks= s;
++			locks = s;
+ 		if (!strcmp(".parainstructions", secstrings + s->sh_name))
+ 			para = s;
+ 	}
 -- 
 1.5.6.6
 
