@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbZAJBVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZAJB3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932875AbZAJBVX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Jan 2009 20:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZAJBVK
+	id S1755355AbZAJB3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Jan 2009 20:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZAJB27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Jan 2009 20:21:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37982 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbZAJBVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Jan 2009 20:21:08 -0500
-Date: Sat, 10 Jan 2009 02:20:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090110012050.GA1083@elte.hu>
-References: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090109204103.GA17212@elte.hu> <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain> <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <alpine.LFD.2.00.0901091705410.6528@localhost.localdomain>
+	Fri, 9 Jan 2009 20:28:59 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:42496 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754532AbZAJB26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Jan 2009 20:28:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lV7OkwioYCSKSsFpuFeBzWVDL9Ojdd4sIDdjNLtaUvtpLItY99OQRU3JgKjJu5hID+
+         nDrdriLvR5VQ0aBnb4bolSz7iyj0m44CBXjD7yA9j5bayFfu6jCH2we55ZogH8svYskz
+         p/t/thLNgjBVQVMWeZgG/WJvDgMseplBHuLQ0=
+Message-ID: <f19298770901091728ve5011c3m58e68d71b8550a67@mail.gmail.com>
+Date: Sat, 10 Jan 2009 04:28:56 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: [PATCH 0/5] [trivial] Fix dubious bitwise and/or usage.
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Trivial Kernel Patches" <trivial@kernel.org>
+In-Reply-To: <alpine.LNX.1.10.0901100059010.5377@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901091705410.6528@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20090109234113.11800.55672.stgit@zaytsev.su>
+	 <alpine.LNX.1.10.0901100059010.5377@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 10, 2009 at 03:00, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Sat, 10 Jan 2009, Alexey Zaytsev wrote:
+>
+>> Sorry to bother the lkml with such trivial stuff, but I could not get
+>> any response from either Jiri Kosina ot trivial@ when I sent the patches
+>> directly to them. Maybe a linux-trivial@ mailing list would be a good
+>> idea..
+>
+> Sorry, I have just been busy with too many other things during the merge
+> window.
+Sorry for the disturbance then. I was not sure if you received the patches.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>> ---
+>>
+>> Alexey Zaytsev (5):
+>>       Fix dubious bitwise 'and' usage spotted by sparse.
+>>       Fix dubious bitwise 'and' usage spotted by sparse.
+>>       Fix dubious bitwise 'and' usage spotted by sparse.
+>>       Fix dubious bitwise 'or' usage spotted by sparse.
+>>       Fix dubious bitwise 'or' usage spotted by sparse.
+>
+> I have applied all the patches with exception for the one patching
+> drivers/media/video/gspca/m5602/m5602_s5k4aa.c, as it doesn't apply any
+> more.
 
-> On Sat, 10 Jan 2009, Ingo Molnar wrote:
-> > 
-> > Well, it's not totally meaningless. To begin with, defining 'inline' to 
-> > mean 'always inline' is a Linux kernel definition. So we already changed 
-> > the behavior - in the hope of getting it right most of the time and in the 
-> > hope of thus improving the kernel.
-> 
-> Umm. No we didn't. We've never changed it. It was "always inline" back in 
-
-s/changed the behavior/overrode the behavior
-
-> the old days, and then we had to keep it "always inline", which is why 
-> we override the default gcc meaning with the preprocessor.
-> 
-> Now, OPTIMIZE_INLINING _tries_ to change the semantics, and people are 
-> complaining..
-
-But i'd definitely argue that the Linux kernel definition of 'inline' was 
-always more consistent than GCC's. That was rather easy as well: it doesnt 
-get any more clear-cut than 'always inline'.
-
-Nevertheless the question remains: is 3% on allyesconfig and 1% on 
-defconfig (7.5% in kernel/built-in.o) worth changing the kernel definition 
-for?
-
-I think it is axiomatic that improving the kernel means changing it - 
-sometimes that means changing deep details. (And if you see us ignoring 
-complaints, let us know, it must not happen.)
-
-So the question isnt whether to change, the question is: does the kernel 
-get 'better' after that change - and could the same be achieved 
-realistically via other means?
-
-If you accept us turning all 30,000 inlines in the kernel upside down, we 
-might be able to get the same end result differently. You can definitely 
-be sure if people complained about this ~5 lines feature they will 
-complain about a tens of thousand of lines patch (and the followup changed 
-regime) ten or hundred times more fiercely.
-
-And just in case it was not clear, i'm not a GCC apologist - to the 
-contrary. I dont really care which tool makes the kernel better, and i 
-wont stop looking at a quantified possibility to improve the kernel just 
-because it happens to be GCC that offers a solution.
-
-	Ingo
+Thank you. The bugs seem to be leaving by themselves. ;)
