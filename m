@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZAJVTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZAJVUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZAJVTt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 16:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZAJVTk
+	id S1755191AbZAJVUO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 16:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZAJVT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 16:19:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39487 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbZAJVTj (ORCPT
+	Sat, 10 Jan 2009 16:19:56 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46603 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbZAJVTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 16:19:39 -0500
-Date: Sat, 10 Jan 2009 16:21:37 -0500
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@redhat.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017
- ata_sff_hsm_move+0x45e/0x750()
-Message-ID: <20090110162137.378e55fc@infradead.org>
-In-Reply-To: <20090110135104.3f402b5d@lxorguk.ukuu.org.uk>
-References: <200901091334.55823.borntraeger@de.ibm.com>
-	<49688B63.5030105@ru.mvista.com>
-	<20090110122130.318cf168@lxorguk.ukuu.org.uk>
-	<200901101404.39139.borntraeger@de.ibm.com>
-	<49689F19.7030203@garzik.org>
-	<20090110135104.3f402b5d@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 10 Jan 2009 16:19:55 -0500
+Date: Sat, 10 Jan 2009 22:21:55 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Paul Clements <paul.clements@steeleye.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, akpm@osdl.org
+Subject: Re: nbd: trivial cleanups
+Message-ID: <20090110212154.GA14631@elf.ucw.cz>
+References: <20090109100622.GA3585@elf.ucw.cz> <496747A4.7090909@steeleye.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496747A4.7090909@steeleye.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Jan 2009 13:51:04 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Fri 2009-01-09 07:48:36, Paul Clements wrote:
+> Pavel Machek wrote:
+>> Trivial cleanups for nbd: only the return -EIO one really changes
+>> code, and I've verified all the callers (plus 0 == success, 1 == error
+>> convention is really ugly).
+>>
+>> Signed-off-by: Pavel Machek <pavel@suse.cz>
+>
+> Looks good
 
-> > 2.6.28 is OK
-> > 2.6.28 + PIO32 is broken
-> 
-> As far as I can tell
-> 
-> 2.6.28 is broken but it doesn't show due to other factors
-> 2.6.28 using 32bit PIO shows up the fact someone seems to be passing
-> broken sg lists
-
-are you sure; I have lots of these in kerneloops.org... so it does show
-somewhat in 2.6.28... (assuming it's the exact same underlying bug
-obviously)
-
+Does it mean I can add your acked-by and merge it through Andrew?
+									Pavel
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
