@@ -1,103 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZAKGau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752362AbZAKGba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbZAKGau (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 01:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZAKGaj
+	id S1752362AbZAKGba (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 01:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZAKGbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 01:30:39 -0500
-Received: from sh.osrg.net ([192.16.179.4]:54564 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZAKGaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 01:30:39 -0500
-Date: Sun, 11 Jan 2009 15:30:14 +0900
-To: fujita.tomonori@lab.ntt.co.jp
-Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org, mingo@redhat.com,
-       dwmw2@infradead.org, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 11/16] dma-debug: add checking for [alloc|free]_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090111150026Y.fujita.tomonori@lab.ntt.co.jp>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-	<1231517970-20288-12-git-send-email-joerg.roedel@amd.com>
-	<20090111150026Y.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 11 Jan 2009 01:31:22 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:56437 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750893AbZAKGbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 01:31:21 -0500
+Message-ID: <4969922B.5050807@sgi.com>
+Date: Sat, 10 Jan 2009 22:31:07 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PULL] request for tip/cpus4096
+X-Priority: 1 (Highest)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090111153011H.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Jan 2009 15:25:42 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Hi Ingo,
 
-> On Fri, 9 Jan 2009 17:19:25 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > Impact: add debug callbacks for dma_[alloc|free]_coherent
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  include/linux/dma-debug.h |   16 ++++++++++++++++
-> >  lib/dma-debug.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 61 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-> > index b2131f4..a28a701 100644
-> > --- a/include/linux/dma-debug.h
-> > +++ b/include/linux/dma-debug.h
-> > @@ -40,6 +40,12 @@ extern void debug_map_sg(struct device *dev, struct scatterlist *sg,
-> >  extern void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
-> >  			   int nelems, int dir);
-> >  
-> > +extern void debug_alloc_coherent(struct device *dev, size_t size,
-> > +				 dma_addr_t dma_addr, void *virt);
-> > +
-> > +extern void debug_free_coherent(struct device *dev, size_t size,
-> > +				void *virt, dma_addr_t addr);
-> > +
-> >  #else /* CONFIG_DMA_API_DEBUG */
-> >  
-> >  static inline void dma_debug_init(u32 num_entries)
-> > @@ -68,6 +74,16 @@ static inline void debug_unmap_sg(struct device *dev,
-> >  {
-> >  }
-> >  
-> > +static inline void debug_alloc_coherent(struct device *dev, size_t size,
-> > +					dma_addr_t dma_addr, void *virt)
-> > +{
-> > +}
-> > +
-> > +static inline void debug_free_coherent(struct device *dev, size_t size,
-> > +				       void *virt, dma_addr_t addr)
-> > +{
-> > +}
-> > +
-> >  #endif /* CONFIG_DMA_API_DEBUG */
-> >  
-> >  #endif /* __DMA_DEBUG_H */
-> > diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-> > index e6d45f9..a4a5b0f 100644
-> > --- a/lib/dma-debug.c
-> > +++ b/lib/dma-debug.c
-> > @@ -604,3 +604,48 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
-> >  }
-> >  EXPORT_SYMBOL(debug_unmap_sg);
-> >  
-> > +void debug_alloc_coherent(struct device *dev, size_t size,
-> > +			  dma_addr_t dma_addr, void *virt)
-> > +{
-> > +	struct dma_debug_entry *entry;
-> > +
-> > +	if (global_disable)
-> > +		return;
-> > +
-> > +	if (dma_addr == bad_dma_address)
-> > +		return;
-> 
-> Only X86 has 'bad_dma_address' (IA64 also has with some configurations
-> though). You need to use dma_mapping_error, as I pointed out in the
-> previous submission.
+This is a combined "pull request" of both the 1/8/09 pull request for
+'merge-0108' changes for cpumasks, as well as the variable irq patches
+for setting nr_irqs based on nr_cpu_ids.
 
-Oops, this is for dma_alloc_coherent so you need to check 'virt'
-instead of dma_mapping_error().
+Tested on both SPARSE_IRQS/!SPARSE_IRQS and LARGE/SMALL NR_CPUS.
+
+Thanks,
+Mike
+---
+
+The following changes since commit 36c401a44abcc389a00f9cd14892c9cf9bf0780d:
+  Ingo Molnar (1):
+        [IA64] fix typo in cpumask_of_pcibus()
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git master
+
+Mike Travis (14):
+      cpumask: update irq_desc to use cpumask_var_t
+      cpumask: fix bug in use cpumask_var_t in irq_desc
+      SGI UV cpumask: use static temp cpumask in flush_tlb
+      x86: cleanup remaining cpumask_t code in mce_amd_64.c
+      x86: cleanup remaining cpumask_t code in microcode_core.c
+      x86: reduce stack usage in init_intel_cacheinfo
+      cpumask: use cpumask_var_t in dcdbas.c
+      cpumask: reduce stack usage in find_lowest_rq
+      Xen: reduce memory required for cpu_evtchn_mask
+      irq: change references from NR_IRQS to nr_irqs
+      irq: use WARN() instead of WARN_ON().
+      irq: allocate irq_desc_ptrs array based on nr_irqs
+      irq: initialize nr_irqs based on nr_cpu_ids
+      kstat: modify kstat_irqs_legacy to be variable sized
+
+Rusty Russell (5):
+      cpumask: Use topology_core_cpumask()/topology_thread_cpumask()
+      cpumask: convert misc driver functions
+      cpumask: convert drivers/net/sfc
+      cpumask: convert other misc kernel functions
+      x86: change flush_tlb_others to take a const struct cpumask
+
+ Documentation/cputopology.txt           |    6 +-
+ arch/x86/include/asm/apicdef.h          |    8 +--
+ arch/x86/include/asm/apicnum.h          |   12 ++++
+ arch/x86/include/asm/irq_vectors.h      |   16 ++++--
+ arch/x86/include/asm/paravirt.h         |    8 ++-
+ arch/x86/include/asm/tlbflush.h         |    8 ++--
+ arch/x86/include/asm/uv/uv_bau.h        |    3 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c   |   63 ++++++++++++++++-------
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   21 +++++---
+ arch/x86/kernel/io_apic.c               |   22 ++++----
+ arch/x86/kernel/irq_32.c                |    2 +-
+ arch/x86/kernel/irq_64.c                |    2 +-
+ arch/x86/kernel/microcode_core.c        |   74 ++++++++++++++++----------
+ arch/x86/kernel/tlb_32.c                |   67 ++++++++++--------------
+ arch/x86/kernel/tlb_64.c                |   62 ++++++++++++----------
+ arch/x86/kernel/tlb_uv.c                |   16 +++---
+ arch/x86/xen/enlighten.c                |   31 ++++-------
+ drivers/base/cpu.c                      |    2 +-
+ drivers/base/topology.c                 |   33 ++++++------
+ drivers/firmware/dcdbas.c               |   12 +++--
+ drivers/misc/sgi-xp/xpc_main.c          |    2 +-
+ drivers/net/sfc/efx.c                   |   17 ++++--
+ drivers/oprofile/buffer_sync.c          |   22 +++++++--
+ drivers/oprofile/buffer_sync.h          |    4 ++
+ drivers/oprofile/oprof.c                |    9 +++-
+ drivers/xen/events.c                    |   25 +++++++---
+ drivers/xen/manage.c                    |    2 +-
+ include/linux/irq.h                     |   86 +++++++++++++++++++++++++++++-
+ include/linux/irqnr.h                   |    7 +++
+ include/linux/topology.h                |    6 ++
+ kernel/irq/chip.c                       |    5 ++-
+ kernel/irq/handle.c                     |   57 +++++++++++++--------
+ kernel/irq/internals.h                  |    7 +++
+ kernel/irq/manage.c                     |   12 ++--
+ kernel/irq/migration.c                  |   12 ++--
+ kernel/irq/numa_migrate.c               |   19 ++++++-
+ kernel/irq/proc.c                       |    4 +-
+ kernel/sched_rt.c                       |   36 ++++++++-----
+ lib/smp_processor_id.c                  |    2 +-
+ 39 files changed, 520 insertions(+), 282 deletions(-)
+ create mode 100644 arch/x86/include/asm/apicnum.h
