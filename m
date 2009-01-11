@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbZAKSzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZAKTBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbZAKSzs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZAKSzj
+	id S1753230AbZAKTBr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 14:01:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZAKTBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:55:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38087 "EHLO ogre.sisk.pl"
+	Sun, 11 Jan 2009 14:01:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38104 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbZAKSzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:55:38 -0500
+	id S1751816AbZAKTB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 14:01:29 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [Bug #12414] iwl4965 cannot use "ap auto" on latest 2.6.28/29?
-Date: Sun, 11 Jan 2009 19:55:16 +0100
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
+Date: Sun, 11 Jan 2009 20:00:59 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <oWTznAnH9BI.A.e4H.UHfaJB@chimera> <b6a2187b0901110557xb696d03n9a7c7acad122e561@mail.gmail.com>
-In-Reply-To: <b6a2187b0901110557xb696d03n9a7c7acad122e561@mail.gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <3f9a31f40901110546h4c069b5dx9726a0fbf8caf5a1@mail.gmail.com> <20090111135237.GA20184@elte.hu>
+In-Reply-To: <20090111135237.GA20184@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901111955.16997.rjw@sisk.pl>
+Message-Id: <200901112001.00394.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Jeff Chua wrote:
-> On Sun, Jan 11, 2009 at 7:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12414
-> > Subject         : iwl4965 cannot use "ap auto" on latest 2.6.28/29?
-> > Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> > Date            : 2009-01-05 4:13 (7 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=123112882127823&w=4
+On Sunday 11 January 2009, Ingo Molnar wrote:
 > 
-> Latest git pull still not fixed.
+> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+> 
+> > On Sun, Jan 11, 2009 at 4:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >
+> > > Regressions with patches
+> > > ------------------------
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12428
+> > > Subject         : Build error on latest git
+> > > Submitter       : Petr Titera <P.Titera@century.cz>
+> > > Date            : 2009-01-11 9:49 (1 days old)
+> > > References      : http://marc.info/?l=linux-kernel&m=123166856318712&w=4
+> > > Handled-By      : Petr Titera <P.Titera@century.cz>
+> > > Patch           : http://marc.info/?l=linux-kernel&m=123167509024996&w=4
+> > 
+> > This is a wrong fix, asm/smp.h should only be included when CONFIG_SMP 
+> > is defined.
+> > 
+> > I am still in the process of cleaning non-smp data from asm/smp.h for 
+> > x86
+> > 
+> > Attach patch is the solution for the time being
+> > 
+> > Ingo, can you please put this in urgent queue.
+> 
+> yes, it already is - see below.
 
-Thanks for the update.
+Link to this patch was added to the bug entry.  Pleaes let me know or close the
+bug when it's merged.
 
+Thanks,
 Rafael
