@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZAKLnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZAKLnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbZAKLnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 06:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZAKLnF
+	id S1753353AbZAKLnt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 06:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZAKLnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 06:43:05 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:46129 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751349AbZAKLnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 06:43:04 -0500
-Message-ID: <4969DAF3.70409@pardus.org.tr>
-Date: Sun, 11 Jan 2009 13:41:39 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 11 Jan 2009 06:43:39 -0500
+Received: from mail00a.mail.t-online.hu ([84.2.40.5]:60937 "EHLO
+	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbZAKLni (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 06:43:38 -0500
+Message-ID: <4969DB65.3090309@freemail.hu>
+Date: Sun, 11 Jan 2009 12:43:33 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: A really interesting mass-storage BUG introduced after 2.6.18
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org
+Subject: block: how shall register_blkdev() work?
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32722; Body=2 Fuz1=2
+	Fuz2=2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-One of our users reported[0] that his 128MB mass storage driver doesn't 
-work anymore on our current stock kernel 2.6.25.20 by hotplugging but 
-works flawlessly if it was plugged before booting the OS. He also said 
-that it was working out of the box with our old kernel 2.6.18. I 
-gathered a lot of output and debugging stuff from the user[1][2] and 
-found out that the device has some problems with SCSI Inquiry commands 
-then I discovered the patch of Alan Stern about the bad residue 
-values[3], backported it and no way it didn't solve the problem.
+I started to write some testcases for register_blkdev(), see
+http://sourceforge.net/mailarchive/forum.php?thread_name=4969BE28.2030303%40freemail.hu&forum_name=ltp-list .
 
-I also suggested to give a try to the current stable 2.6.28 but the 
-behaviour is still the same.
+I am not sure how register_blkdev() should work, so I tried to
+write down what I could find out so far, but there are still some open
+questions.
 
-When hotplugged, the kernel doesn't detect the partitions in the device 
-leaving the block device on its own but if it's plugged during the boot, 
-the partitions are correctly detected and have their own /sys/block 
-entries. Note that the device reports a "usb embedded hub" beside a mass 
-storage device (dunno if it's the case with all of these kind devices).
+Could you please review and correct the following description?
 
-[0]: http://bugs.pardus.org.tr/show_bug.cgi?id=8369
-[1]: http://bugzilla.kernel.org/show_bug.cgi?id=11125
-[2]: http://bugs.pardus.org.tr/attachment.cgi?id=3553 (Hotplugged dmesg 
-output)
-[3]: http://bugs.pardus.org.tr/attachment.cgi?id=3561 (Coldplug dmesg 
-output, correctly detected)
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+
+--- linux-2.6.28/block/genhd.c.orig	2008-12-25 00:26:37.000000000 +0100
++++ linux-2.6.28/block/genhd.c	2009-01-11 12:27:02.000000000 +0100
+@@ -244,6 +244,24 @@ void blkdev_show(struct seq_file *seqf,
+ }
+ #endif /* CONFIG_PROC_FS */
+
++/**
++ * register_blkdev - register a new block device
++ *
++ * @major: [in] the requested major device number [1..255]. If
++ *         @major=0, try to allocate any unused major number.
++ * @name: [in] the name of the new block device
++ *
++ * ??? The @name must be unique within the system. ???
++ * OR: ??? You can use any zero terminated @name string. Note, however, if
++ *         you use a name which is already used it might mask the previous
++ *         device. ???
++ *
++ * Returns the allocated major number [1..255] or the return value is
++ * a negative error code if the wanted @major number is not available
++ * or there is no more major nubmers available when @major=0.
++ *
++ * ??? What does the return value 0 mean?
++ */
+ int register_blkdev(unsigned int major, const char *name)
+ {
+ 	struct blk_major_name **n, *p;
+
+
 
 Regards,
 
--- 
-
-Ozan Çağlayan
-<ozan_at_pardus.org.tr>
-
+	Márton Németh
