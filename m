@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZAKQsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbZAKQuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbZAKQsk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 11:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZAKQs3
+	id S1754763AbZAKQuP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 11:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZAKQt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 11:48:29 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45607 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZAKQs2 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 11:48:28 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: David Miller <davem@davemloft.net>, alessandro.suardi@gmail.com,
-       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-In-Reply-To: Your message of "Sun, 11 Jan 2009 12:59:59 GMT."
-             <1231678799.25018.195.camel@macbook.infradead.org>
-From: Valdis.Kletnieks@vt.edu
-References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com> <20090109.140422.60087297.davem@davemloft.net> <43805.1231672258@turing-police.cc.vt.edu> <20090111.040842.86784676.davem@davemloft.net> <1231676698.25018.147.camel@macbook.infradead.org>
-            <1231678799.25018.195.camel@macbook.infradead.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231692502_4078P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 11 Jan 2009 11:49:59 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:35605 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751547AbZAKQt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 11:49:58 -0500
+Message-ID: <496A232A.5070801@sgi.com>
+Date: Sun, 11 Jan 2009 08:49:46 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, mingo@elte.hu,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: cpumask change causes sparc build bustage
+References: <20090111.003103.39502700.davem@davemloft.net>	<20090111205008.db0a410e.sfr@canb.auug.org.au> <20090111.040640.188129980.davem@davemloft.net>
+In-Reply-To: <20090111.040640.188129980.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 11:48:22 -0500
-Message-ID: <58054.1231692502@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231692502_4078P
-Content-Type: text/plain; charset=us-ascii
-
-On Sun, 11 Jan 2009 12:59:59 GMT, David Woodhouse said:
-> On Sun, 2009-01-11 at 12:25 +0000, David Woodhouse wrote:
-> > I'll take a look and see if I can remedy that. Then we wouldn't _need_
-> > the FIRMWARE_IN_KERNEL option.
+David Miller wrote:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Sun, 11 Jan 2009 20:50:08 +1100
 > 
-> How about this? If it fails to load the firmware from userspace during
-> the initialisation, it'll try again later in tg3_open(). 
+>> On Sun, 11 Jan 2009 00:31:03 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+>>> I'm surprised linux-next builds didn't catch this.
+>> So am I.  http://kisskb.ellerman.id.au/kisskb/compiler/5/ shows my latest
+>> builds of both linux-next and Linus' tree are OK for defconfig and
+>> allnoconfig (allmodconfig fails for a different reason).
+>>
+>> What is different about the failing config (compiler)?  Are there other
+>> configs it would be sensible to build test?
 > 
-> I _think_ that's fine, because we don't do anything else in the early
-> initialisation which requires the firmware to be loaded.
+> Maybe you don't have NUMA enabled in the test build configs.
+> I hit it during an allmodconfig.
 > 
-> So if you build with CONFIG_TIGON3=y, CONFIG_FIRMWARE_IN_KERNEL=n, you
-> should see it fail to load the firmware at boot, but then it should load
-> it successfully when you bring the device up.
+> Anyways this fixes it, someone please apply:
 > 
-> Untested-but-otherwise-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> sparc64: Fix cpumask related build failure.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/arch/sparc/include/asm/topology_64.h b/arch/sparc/include/asm/topology_64.h
+> index b8a65b6..5bc0b8f 100644
+> --- a/arch/sparc/include/asm/topology_64.h
+> +++ b/arch/sparc/include/asm/topology_64.h
+> @@ -47,6 +47,10 @@ static inline int pcibus_to_node(struct pci_bus *pbus)
+>  	(pcibus_to_node(bus) == -1 ? \
+>  	 CPU_MASK_ALL : \
+>  	 node_to_cpumask(pcibus_to_node(bus)))
+> +#define cpumask_of_pcibus(bus)	\
+> +	(pcibus_to_node(bus) == -1 ? \
+> +	 CPU_MASK_ALL_PTR : \
+> +	 cpumask_of_node(pcibus_to_node(bus)))
+>  
+>  #define SD_NODE_INIT (struct sched_domain) {		\
+>  	.min_interval		= 8,			\
 
-I'll see if I can give it a test drive sometime in the next 24 hours or so.
+Ouch.  Sorry you had to find this.  I thought Rusty had pushed all the arch
+changes required for cpumask_of_pcibus() quite some time ago.
 
-One unanswered question:  What do we expect the system to do if they have this
-patch, TIGON3=y, FIRMWARE_IN_KERNEL=n, and configure a netconsole for boot
-messages?  I'm *hoping* the answer is "the netconsole doesn't come up at boot,
-but can be re-enabled via the /sys/kernel/config/netconsole interface after
-you've done an 'ifconfig eth0 up' or similar, or do a 'modprobe netconsole'.
+Thanks for fixing it.  In actuality though, it should return cpu_mask_all
+instead of CPU_MASK_ALL_PTR but that's a small nit.
 
-Those seem like reasonable semantics to me - anybody got a different opinion?
-
-
---==_Exmh_1231692502_4078P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJaiLWcC3lWbTT17ARAhbiAKD6akLybhJneWIx6nEeo6Vs+cqT4wCeJb9y
-7Zfk95Gs5u5g8ypyydfrJ8c=
-=mmwi
------END PGP SIGNATURE-----
-
---==_Exmh_1231692502_4078P--
+Thanks,
+Mike
