@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZAKVjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZAKVj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbZAKVjl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 16:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZAKVjY
+	id S1755198AbZAKVj4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 16:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZAKVjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 16:39:24 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:42497 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbZAKVjX (ORCPT
+	Sun, 11 Jan 2009 16:39:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38330
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752924AbZAKVj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 16:39:23 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: current git kernel has strange problems during bisect
-Date: Sun, 11 Jan 2009 22:39:20 +0100
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200901111602.53082.borntraeger@de.ibm.com> <20090111194258.GA4840@uranus.ravnborg.org> <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 11 Jan 2009 16:39:29 -0500
+Date: Sun, 11 Jan 2009 13:39:29 -0800 (PST)
+Message-Id: <20090111.133929.57600645.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: Valdis.Kletnieks@vt.edu, alessandro.suardi@gmail.com,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
+ (-git7 is ok)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1231676698.25018.147.camel@macbook.infradead.org>
+References: <43805.1231672258@turing-police.cc.vt.edu>
+	<20090111.040842.86784676.davem@davemloft.net>
+	<1231676698.25018.147.camel@macbook.infradead.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901112239.20306.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 11 Januar 2009 schrieb Linus Torvalds:
-> Well, you don't actually have to mark that semi-random one as good either. 
-> What you can do is to just mark anything that _only_ contains fs/btrfs as 
-> good. IOW, you don't have to know the magic number - you just have to be 
-> told that "oh, if you only have btrfs files, and you're not actively 
-> bisecting a btrfs bug, just do 'git bisect good' and continue".
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Sun, 11 Jan 2009 12:24:58 +0000
 
-That should work.
+> Other drivers will load the firmware later, at the time the device is
+> brought up. This means that even if you build the driver into the kernel
+> without its firmware, it can still request the firmware later, when you
+> try to start _using_ it. And when the file system is available.
 
-<rant>
-Still, I am a bit frustrated. During this weekend I reported 2 regressions 
-(wlan and ata)  and I still try to find out why suspend/resume stopped 
-working. In the meantime I have identified 2 patches (one was already known, 
-I reported the 2nd to the usb maintainers) after 2.6.28 that caused suspend 
-to ram regressions. In rc1 S2R was broken again. So I tried bisecting the 
-third patch - which finally brought me to the btrfs bisect problem.
+For example, for mounting an NFS root using that device.... Oh, will I
+need an initramfs for that once you pull the firmware-in-kernel
+option?
 
-For me, this was the most annoying  merge window ever.
-
-In my opinion we should really avoid subtree merges in the future as a curtesy 
-to people who do the uncool work of testing, problem tracking and bisecting. 
-</rant>
-
-Christian
+To me, device probe is in fact the place to fail firmware discovery
+for networking devices.  Because such a failure can mean you can't
+mount your root filesystem.
