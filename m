@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbZAKHHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbZAKHcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbZAKHHQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 02:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZAKHHB
+	id S1752015AbZAKHcu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 02:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZAKHcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 02:07:01 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:12534 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbZAKHHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 02:07:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Dn2D6GjDttfKPnVD6HMuy0Z52xn87r80FO+pIggprWyMj1tkHhG2lmuF+m/uayQsVX
-         4TK1HjLR9rzpLHN6IgNNnBG/cWy/WMlfpPWsRGVhKa5HMJX3oYjFqH7w32+hajRNdXul
-         MsDV7AEthWak3jOWT+ezH+PE54zyS0MxVPl1I=
-Message-ID: <86802c440901102307s2f58d106nce3400bc2dc01bd6@mail.gmail.com>
-Date: Sat, 10 Jan 2009 23:07:00 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT PULL] bzip2/lzma kernel compression
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Alain Knaff" <alain@knaff.lu>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <49695E5B.3060308@zytor.com>
+	Sun, 11 Jan 2009 02:32:41 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37252 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZAKHcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 02:32:41 -0500
+Date: Sat, 10 Jan 2009 23:31:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core: Convert '/' to '!' in dev_set_name()
+Message-ID: <20090111073127.GA8283@suse.de>
+References: <adaljtjog90.fsf@cisco.com> <adad4evoeu9.fsf@cisco.com> <ac3eb2510901092230i5f1a37c6s8e7ef20cfaf67dc6@mail.gmail.com> <adapriumj1c.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200901091845.n09IjBsT003630@terminus.zytor.com>
-	 <86802c440901091252r2eab513dnf048851aea505d8d@mail.gmail.com>
-	 <86802c440901091343p6797536bxf73107fa1672d29b@mail.gmail.com>
-	 <20090111024756.GB7077@elte.hu> <49695E5B.3060308@zytor.com>
-X-Google-Sender-Auth: d1f118d685d3c29a
+In-Reply-To: <adapriumj1c.fsf@cisco.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 10, 2009 at 6:50 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Ingo Molnar wrote:
->>
->> was the linux/.lzma file corrupted, and once you removed the stale file it
->> all works fine and the problem does not come back?
->>
->> I.e. the tree as offered by hpa is fine?
->>
->
-> That was the understanding I got.
+On Sat, Jan 10, 2009 at 10:52:15PM -0800, Roland Dreier wrote:
+>  > Great! Thanks a lot for fixing this,
+> 
+> I assume you will make sure this gets upstream (since the problem causes
+> some boxes with root on cciss to panic on boot, and possibly breaks
+> other stuff)?
 
-yes.
+Yes, I'll queue it up on Monday.
 
-something wrong with lzma util somehow. when loading is high, it could
-produce corrupted result.
-it seems only one window has problem.
+thanks,
 
-it is opensuse 11.1 ...
-
-YH
+greg k-h
