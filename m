@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZAKMGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZAKMHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZAKMGv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 07:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZAKMGl
+	id S1751920AbZAKMHN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZAKMGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 07:06:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50810
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751376AbZAKMGk (ORCPT
+	Sun, 11 Jan 2009 07:06:54 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34785 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753522AbZAKMGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 07:06:40 -0500
-Date: Sun, 11 Jan 2009 04:06:40 -0800 (PST)
-Message-Id: <20090111.040640.188129980.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, travis@sgi.com,
-       mingo@elte.hu
-Subject: Re: cpumask change causes sparc build bustage
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090111205008.db0a410e.sfr@canb.auug.org.au>
-References: <20090111.003103.39502700.davem@davemloft.net>
-	<20090111205008.db0a410e.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 11 Jan 2009 07:06:52 -0500
+Date: Sun, 11 Jan 2009 11:24:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] Re: todays git: WARNING: at
+ drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+Message-ID: <20090111112436.33136222@lxorguk.ukuu.org.uk>
+In-Reply-To: <4969B956.6010802@ru.mvista.com>
+References: <200901091334.55823.borntraeger@de.ibm.com>
+	<200901101009.13699.borntraeger@de.ibm.com>
+	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>
+	<200901101242.05203.borntraeger@de.ibm.com>
+	<49688B63.5030105@ru.mvista.com>
+	<20090110122130.318cf168@lxorguk.ukuu.org.uk>
+	<20090110130745.GA14049@elte.hu>
+	<49689EA8.20506@garzik.org>
+	<20090110132412.GB14049@elte.hu>
+	<20090110133617.GA22304@elte.hu>
+	<20090110135731.0da08c90@lxorguk.ukuu.org.uk>
+	<4968BA6F.8050207@ru.mvista.com>
+	<20090110152800.44308491@lxorguk.ukuu.org.uk>
+	<4968C5CA.6010508@ru.mvista.com>
+	<4968FFD7.6070302@ru.mvista.com>
+	<20090111001038.33943d2e@lxorguk.ukuu.org.uk>
+	<4969B956.6010802@ru.mvista.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Sun, 11 Jan 2009 20:50:08 +1100
-
-> On Sun, 11 Jan 2009 00:31:03 -0800 (PST) David Miller <davem@davemloft.net> wrote:
-> >
-> > I'm surprised linux-next builds didn't catch this.
+> > The VLB controller docs explicitly require you do entirely 32bit.
 > 
-> So am I.  http://kisskb.ellerman.id.au/kisskb/compiler/5/ shows my latest
-> builds of both linux-next and Linus' tree are OK for defconfig and
-> allnoconfig (allmodconfig fails for a different reason).
-> 
-> What is different about the failing config (compiler)?  Are there other
-> configs it would be sensible to build test?
+>    Didn't VLB contollers largely predate ATAPI devices?
 
-Maybe you don't have NUMA enabled in the test build configs.
-I hit it during an allmodconfig.
+Yes but they generally work with ATAPI.
 
-Anyways this fixes it, someone please apply:
-
-sparc64: Fix cpumask related build failure.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/arch/sparc/include/asm/topology_64.h b/arch/sparc/include/asm/topology_64.h
-index b8a65b6..5bc0b8f 100644
---- a/arch/sparc/include/asm/topology_64.h
-+++ b/arch/sparc/include/asm/topology_64.h
-@@ -47,6 +47,10 @@ static inline int pcibus_to_node(struct pci_bus *pbus)
- 	(pcibus_to_node(bus) == -1 ? \
- 	 CPU_MASK_ALL : \
- 	 node_to_cpumask(pcibus_to_node(bus)))
-+#define cpumask_of_pcibus(bus)	\
-+	(pcibus_to_node(bus) == -1 ? \
-+	 CPU_MASK_ALL_PTR : \
-+	 cpumask_of_node(pcibus_to_node(bus)))
- 
- #define SD_NODE_INIT (struct sched_domain) {		\
- 	.min_interval		= 8,			\
