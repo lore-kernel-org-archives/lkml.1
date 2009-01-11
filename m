@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZAKTOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbZAKTO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbZAKTOn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 14:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZAKTOJ
+	id S1754470AbZAKTO7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 14:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZAKTOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 14:14:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41628 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751738AbZAKTOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 14:14:06 -0500
-Date: Sun, 11 Jan 2009 11:13:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-cc: Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: current git kernel has strange problems during bisect
-In-Reply-To: <200901111620.03345.borntraeger@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0901111113150.6528@localhost.localdomain>
-References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com> <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de> <200901111620.03345.borntraeger@de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 11 Jan 2009 14:14:48 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:33630 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752910AbZAKTOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 14:14:47 -0500
+Message-ID: <496A451C.5030400@sgi.com>
+Date: Sun, 11 Jan 2009 11:14:36 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dieter Ries <clip2@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc1 does not boot
+References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu> <496A3F62.8090902@gmx.de> <20090111190218.GA18651@elte.hu>
+In-Reply-To: <20090111190218.GA18651@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 11 Jan 2009, Christian Borntraeger wrote:
+Ingo Molnar wrote:
+> * Dieter Ries <clip2@gmx.de> wrote:
 > 
-> I think we should really avoid merging subtrees to the linux kernel. It 
-> makes bisecting a real PITA. Furthermore, It is unlikely, but what if 
-> the problem is part of the 581 changesets from btrfs?
+>> Bisected it:
+>>
+>> ####################################################################
+>> 7503bfbae89eba07b46441a5d1594647f6b8ab7d is first bad commit
+>> commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
+>> Author: Mike Travis <travis@sgi.com>
+>> Date:   Sun Jan 4 05:18:09 2009 -0800
+>>
+>> cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+>>
+>> Impact: use new cpumask API to reduce stack usage
+> 
+> thanks, this is very helpful!
+> 
+> Mike, most of the work_on_cpu() patches you did so far were rather 
+> problematic. Especially something like cpufreq can run rather early during 
+> bootup or during suspend/resume, so i'm not sure it's correct to rely on 
+> keventd for it.
+> 
+> I dont see anything particularly wrong in the commit itself - but 
+> obviously it causes this boot hang - if the bug is not found we'll revert 
+> it .
 
-Umm, yes? 
+All of these are low use functions, primarily used when bringing up
+cpus.  So reverting the patches does not have a big effect on the stack
+size problem.
+> 
+> Also, this bit in get_cur_val():
+> 
+> +       if (unlikely(!alloc_cpumask_var(&cmd.mask, GFP_KERNEL)))
+> +               return 0;
+> 
+> how is that supposed to work? If we fail to allocate a cpumask we just 
+> ignore the call silently? That cannot be right. (but has no connection to 
+> this boot problem)
+> 
+> 	Ingo
 
-The thing is, btrfs was developed as an outside module. There are two 
-choices: import it with history, or import it without history. The history 
-is interesting, so importing _with_ it is a much nicer one. But that does 
-mean that btrfs introduces into the kernel tree the same behaviour we've 
-had in the git development tree for a long time - multiple root commits, 
-and "independent" branches that get merged.
+Well I did have a different approach but Rusty seemed to really be
+attached to work_on_cpu.  (The alternate was to add a 2nd cpumask to the
+task struct to hold current->cpus_allowed while setting it to a special
+cpus_allowed mask.)
 
-It's actually very natural for git, and the btrfs tree actually was 
-re-done with "git filter-branch" to move all the history so that it is in 
-fs/btrfs, rather than moving around from the root like the _original_ 
-development was done. So it's not technically a subtree merge, it's a 
-regular merge with just two different root commits - one for the original 
-base kernel development, one for the original btrfs kernel development.
+In any case, except for the get_online_cpus() call, work_on_cpu is a
+fairly straight forward approach.  But I'm just not familiar enough
+with the whole locking scheme to determine whether the cpu hotplug lock
+has already been taken, which is causing this weird lockdep warning.
+And I don't know of an adaptive way to do it (figure out in work_on_cpu()
+if get_online_cpus() should be called or not.)
 
-For bisect, it's indeed somewhat annoying, and we could have perhaps done 
-some things a bit differently, but it's about the closest you can get to 
-"real history" without making the first btrfs merge-point a _total_ 
-disaster.
+About the return 0, it was the default return for another error case.
+Should the function panic because it can't read a cpu reg?  That seems
+wrong too.
 
-For bisect purposes, if you know you're not chasing down a btrfs issue, 
-you can do
-
-	git bisect good 34353029534a08e41cfb8be647d734b9ce9ebff8
-
-where that commit 34353029 is the last one which has _just_ the btrfs 
-files. The next commit is when it does "Merge Btrfs into fs/btrfs", and 
-that one has the whole kernel tree again.
-
-			Linus
+Thanks,
+Mike
