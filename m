@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZAKHfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbZAKHhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752767AbZAKHfW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 02:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZAKHfE
+	id S1752649AbZAKHhU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 02:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZAKHhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 02:35:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59590
+	Sun, 11 Jan 2009 02:37:03 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59598
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751065AbZAKHfD (ORCPT
+	by vger.kernel.org with ESMTP id S1751065AbZAKHhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 02:35:03 -0500
-Date: Sat, 10 Jan 2009 23:35:03 -0800 (PST)
-Message-Id: <20090110.233503.222465267.davem@davemloft.net>
-To: paulus@samba.org
-Cc: gorcunov@gmail.com, akpm@linux-foundation.org, jchapman@katalix.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: ppp_generic - fix broken userspace
+	Sun, 11 Jan 2009 02:37:00 -0500
+Date: Sat, 10 Jan 2009 23:36:59 -0800 (PST)
+Message-Id: <20090110.233659.144845240.davem@davemloft.net>
+To: gorcunov@gmail.com
+Cc: jchapman@katalix.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       devel@openvz.org, xemul@openvz.org
+Subject: Re: [RFC 3/4] net: pppol2tp - introduce net-namespace functionality
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <18793.15831.279207.252421@cargo.ozlabs.ibm.com>
-References: <20090110202802.GF29349@localhost>
-	<20090110203112.GG29349@localhost>
-	<18793.15831.279207.252421@cargo.ozlabs.ibm.com>
+In-Reply-To: <20090110125444.GB29349@localhost>
+References: <49688120.9000507@katalix.com>
+	<20090110111359.GA29349@localhost>
+	<20090110125444.GB29349@localhost>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,15 +29,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sun, 11 Jan 2009 11:31:19 +1100
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Date: Sat, 10 Jan 2009 15:54:44 +0300
 
-> Judging by the subject, it sounds like I'm not going to like it...
+> Maybe you have some other commits which are not propogated
+> to net-next-2.6 yet?
 
-PPP was converted to use IDR instead of PPP's duplicate
-implementation.
+net-next-2.6 is a throw away tree that is a clone of essentially
+2.6.28 after Linus first took the net-next-2.6
 
-A bug was introduced in that conversion, and that bug is being fixed
-here.
-
-What is not to like? :-)
+It has not been updated for weeks, all development has been
+occurring in the net-2.6 tree
