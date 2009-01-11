@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbZAKLdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZAKLnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbZAKLdX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 06:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAKLdL
+	id S1752835AbZAKLnU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 06:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZAKLnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 06:33:11 -0500
-Received: from ozlabs.org ([203.10.76.45]:47049 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbZAKLdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 06:33:10 -0500
+	Sun, 11 Jan 2009 06:43:05 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:46129 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751349AbZAKLnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 06:43:04 -0500
+Message-ID: <4969DAF3.70409@pardus.org.tr>
+Date: Sun, 11 Jan 2009 13:41:39 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18793.51741.28374.460500@cargo.ozlabs.ibm.com>
-Date: Sun, 11 Jan 2009 21:29:49 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: gorcunov@gmail.com, akpm@linux-foundation.org, jchapman@katalix.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: ppp_generic - fix broken userspace
-In-Reply-To: <20090110.233503.222465267.davem@davemloft.net>
-References: <20090110202802.GF29349@localhost>
-	<20090110203112.GG29349@localhost>
-	<18793.15831.279207.252421@cargo.ozlabs.ibm.com>
-	<20090110.233503.222465267.davem@davemloft.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: A really interesting mass-storage BUG introduced after 2.6.18
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
+Hi,
 
-> PPP was converted to use IDR instead of PPP's duplicate
-> implementation.
-> 
-> A bug was introduced in that conversion, and that bug is being fixed
-> here.
-> 
-> What is not to like? :-)
+One of our users reported[0] that his 128MB mass storage driver doesn't 
+work anymore on our current stock kernel 2.6.25.20 by hotplugging but 
+works flawlessly if it was plugged before booting the OS. He also said 
+that it was working out of the box with our old kernel 2.6.18. I 
+gathered a lot of output and debugging stuff from the user[1][2] and 
+found out that the device has some problems with SCSI Inquiry commands 
+then I discovered the patch of Alan Stern about the bad residue 
+values[3], backported it and no way it didn't solve the problem.
 
-Ah OK, that sounds all right.  I was reacting to the "broken
-userspace" in the patch description which at first glance seemed to be
-saying that userspace (i.e. pppd :) is doing something which has
-recently been declared to be wrong and therefore it is "broken".
+I also suggested to give a try to the current stable 2.6.28 but the 
+behaviour is still the same.
 
-I think "fix broken userspace" as a patch headline is quite
-ambiguous.  Something like "Fix bug in conversion to use IDR" would be
-more informative.
+When hotplugged, the kernel doesn't detect the partitions in the device 
+leaving the block device on its own but if it's plugged during the boot, 
+the partitions are correctly detected and have their own /sys/block 
+entries. Note that the device reports a "usb embedded hub" beside a mass 
+storage device (dunno if it's the case with all of these kind devices).
 
-Paul.
+[0]: http://bugs.pardus.org.tr/show_bug.cgi?id=8369
+[1]: http://bugzilla.kernel.org/show_bug.cgi?id=11125
+[2]: http://bugs.pardus.org.tr/attachment.cgi?id=3553 (Hotplugged dmesg 
+output)
+[3]: http://bugs.pardus.org.tr/attachment.cgi?id=3561 (Coldplug dmesg 
+output, correctly detected)
+
+Regards,
+
+-- 
+
+Ozan Çağlayan
+<ozan_at_pardus.org.tr>
+
