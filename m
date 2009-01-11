@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZAKJSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbZAKJWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199AbZAKJSj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 04:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZAKJSW
+	id S1752326AbZAKJWq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 04:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZAKJWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 04:18:22 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:6877 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750917AbZAKJSV (ORCPT
+	Sun, 11 Jan 2009 04:22:35 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:13558 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbZAKJWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 04:18:21 -0500
-Message-ID: <4969B956.6010802@ru.mvista.com>
-Date: Sun, 11 Jan 2009 12:18:14 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 11 Jan 2009 04:22:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:cc:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=J9vztaLu1Vr4SHWZGC4XB4FgR+9Y8N+ud/ao+ECmBIIu8RYA/TgZKR3BunFZkFYERj
+         zKgOE3RHvV7qWZcMAILDumW5cEjOzLPRtedbGm1f/UAEgj0j7O13SVeOjNNJZMrsHwhu
+         fcSdtewdV6J8fIlbQpRJoIAyHSbbM6WkRESwA=
+Date: Sun, 11 Jan 2009 17:22:36 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: gregkh@suse.de
+Subject: staging: remove duplicated #include's
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20090111171449.0AB4.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected] Re: todays git: WARNING: at drivers/ata/libata-sff.c:1017
- ata_sff_hsm_move+0x45e/0x750()
-References: <200901091334.55823.borntraeger@de.ibm.com>	<200901101009.13699.borntraeger@de.ibm.com>	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>	<200901101242.05203.borntraeger@de.ibm.com>	<49688B63.5030105@ru.mvista.com>	<20090110122130.318cf168@lxorguk.ukuu.org.uk>	<20090110130745.GA14049@elte.hu>	<49689EA8.20506@garzik.org>	<20090110132412.GB14049@elte.hu>	<20090110133617.GA22304@elte.hu>	<20090110135731.0da08c90@lxorguk.ukuu.org.uk>	<4968BA6F.8050207@ru.mvista.com>	<20090110152800.44308491@lxorguk.ukuu.org.uk>	<4968C5CA.6010508@ru.mvista.com>	<4968FFD7.6070302@ru.mvista.com> <20090111001038.33943d2e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090111001038.33943d2e@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Removed duplicated #include's in 
+  drivers/staging/altpciechdma/altpciechdma.c
+  drivers/staging/comedi/comedidev.h
+  drivers/staging/rt2860/rt_linux.h
+  drivers/staging/rt2870/rt_linux.h
 
-Alan Cox wrote:
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
->>>>     data_xfer transfers 18 bytes + 2 padding (correctly) -> 20 bytes
->>>>         
->>    Correctly indeed? I'm not at all sure it's correct to read an extra 
->> 16-bit word off the device when it thinks it's already done with the 
->> data transfer.
->>     
+diff --git a/drivers/staging/altpciechdma/altpciechdma.c b/drivers/staging/altpciechdma/altpciechdma.c
+index 8e2b4ca..03dfade 100644
+--- a/drivers/staging/altpciechdma/altpciechdma.c
++++ b/drivers/staging/altpciechdma/altpciechdma.c
+@@ -46,7 +46,6 @@
+ #include <linux/cdev.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+diff --git a/drivers/staging/comedi/comedidev.h b/drivers/staging/comedi/comedidev.h
+index 3735355..4679911 100644
+--- a/drivers/staging/comedi/comedidev.h
++++ b/drivers/staging/comedi/comedidev.h
+@@ -36,7 +36,6 @@
+ #include <linux/mm.h>
+ #include <linux/init.h>
+ #include <linux/vmalloc.h>
+-#include <linux/mm.h>
+ #include "interrupt.h"
+ #include <linux/dma-mapping.h>
+ #include <linux/uaccess.h>
+diff --git a/drivers/staging/rt2860/rt_linux.h b/drivers/staging/rt2860/rt_linux.h
+index 0fd58f5..f168691 100644
+--- a/drivers/staging/rt2860/rt_linux.h
++++ b/drivers/staging/rt2860/rt_linux.h
+@@ -65,7 +65,6 @@
+ #include <linux/vmalloc.h>
 
-   OTOH, once can generally read the data register with no command 
-active and not have anything locked up, so I'm not sure of how risky 
-this can be... it's better to exclude such risk though.
 
-> The VLB controller docs explicitly require you do entirely 32bit.
+-#include <linux/wireless.h>
+ #include <net/iw_handler.h>
 
-   Didn't VLB contollers largely predate ATAPI devices?
+ // load firmware
+diff --git a/drivers/staging/rt2870/rt_linux.h b/drivers/staging/rt2870/rt_linux.h
+index 859f9ce..49ad37f 100644
+--- a/drivers/staging/rt2870/rt_linux.h
++++ b/drivers/staging/rt2870/rt_linux.h
+@@ -65,7 +65,6 @@
+ #include <linux/vmalloc.h>
 
-> The AMD ones seem to imply you should.
->   
 
-   Indeed, AMD-8111 datasheet requires 32-bit writes -- but only when 
-the write buffer is enabled.
+-#include <linux/wireless.h>
+ #include <net/iw_handler.h>
 
-> Its easy enough to not do that but for the VLB case we have to so the
-> WARN needs fixing which ever path we go down.
->   
-
-   Sure.
-
-MBR, Sergei
-
+ // load firmware
 
