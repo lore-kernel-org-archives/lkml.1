@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbZAKFQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZAKFgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782AbZAKFQS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZAKFQG
+	id S1751821AbZAKFgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbZAKFgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:16:06 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56111 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbZAKFQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:16:04 -0500
-Date: Sat, 10 Jan 2009 21:16:04 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-Message-ID: <20090111051604.GF7061@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111050129.GA6131@nowhere>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 11 Jan 2009 00:36:09 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:37372 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbZAKFgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 00:36:07 -0500
+Subject: Re: How to access a regular file from within a module ?
+From: Jon Masters <jonathan@jonmasters.org>
+To: joseluismarchetti@yahoo.com.br
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <888012.80064.qm@web34402.mail.mud.yahoo.com>
+References: <888012.80064.qm@web34402.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Sun, 11 Jan 2009 00:35:46 -0500
+Message-Id: <1231652146.4235.6.camel@perihelion.bos.jonmasters.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 06:01:31AM +0100, Frederic Weisbecker wrote:
-> On Sun, Jan 11, 2009 at 02:39:40AM +0100, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Sat, Jan 10, 2009 at 03:48:46PM +0800, Li Zefan wrote:
-> > > > Impact: also fix a bug in show_rcustats()
-> > > > 
-> > > > Use seq file for simplification, and the global buffer and mutex can be
-> > > > removed.
-> > > 
-> > > Looks very good, and passes my tests.
-> > > 
-> > > > While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
-> > > > due to a bug in show_rcustats().
-> > > 
-> > > Good eyes!
-> > > 
-> > > The only change I ask is that you pull the contents of
-> > > rcupreempt_debugfs_init() into the now-one-line rcupreempt_trace_init().
-> > > 
-> > > With that change:
-> > > 
-> > > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > >
-> > > > ---
-> > > >  kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
-> > 
-> > i think the whole kernel/rcupreempt_trace.c file might be a good candidate 
-> > for the 'statistical tracing' extensions to ftrace that Frederice is 
-> > working on.
-> > 
-> > That way there would just be a few tracepoints, and the rest would be done 
-> > in kernel/tracing/trace_rcupreempt.c, or so.
-> > 	Ingo
-> 
-> Indeed!
-> 
-> The debugfs and seqfile handling and handled in the statistical
-> tracing engine.
-> 
-> You just have to provide an iterator for your stat entries through two callbacks:
-> 
-> _ stat_start() -> gives the first entry
-> _ stat_next() -> iterates over the next entry
-> 
-> And an output callback
-> 
-> _ stat_show() -> print one entry from your stat list
-> 
-> And two optional things:
-> 
-> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
-> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
-> 
-> The last thing you need is to give a name to your trace file.
-> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
-> of your stats.
-> 
-> It is currently used by the branch tracer, and by a pending patch for a new workqueue
-> tracer which will provide you a simple example.
-> 
-> If you have any question about how to use it, don't hesitate to ask.
+On Sat, 2009-01-10 at 19:44 -0800, Jose Luis Marchetti wrote:
 
-Li Zefan, is this something you would be willing to try?  Sounds like
-it might be a good addition.
+> I would like to open/read/write/close a regular file from my device
+> driver.
 
-							Thanx, Paul
+No, you probably wouldn't :) Generally, this is recommended against
+because there are many better ways to do it:
+
+* Create an interface and have userspace set the parameter (ethtool,
+ifconfig - the latter can already set MAC addresses)
+
+* Create entries in sysfs and have uevents cause various activities,
+including having the response being some file gets loaded (firmware).
+
+Since it looks like you just want to set the MAC address, I suggest
+looking at how this is already done, then rely upon users using ifconfig
+correctly to set the desired address. There should be no reason to have
+a kernel-side network driver reading from a file.
+
+[NOTE: If you're doing embedded development and you don't have an EEPROM
+on your board, and you're asking this because someone told you to find
+the cheapest and nastiest solution in software, then look at passing in
+the desired MAC via the firmware, as many embedded boards already do. ]
+
+Jon.
+
+
