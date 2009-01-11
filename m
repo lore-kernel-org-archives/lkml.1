@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbZAKSwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZAKSw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870AbZAKSwJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:52:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZAKSvz
+	id S1753456AbZAKSw2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 13:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZAKSwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:51:55 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:34817 "EHLO smtp.cs.aau.dk"
+	Sun, 11 Jan 2009 13:52:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38024 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbZAKSvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:51:55 -0500
-Subject: Re: [PATCH -next] jbd2: fix printk format warning
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <20090105121158.94d990c3.randy.dunlap@oracle.com>
-References: <20090105173517.deeff918.sfr@canb.auug.org.au>
-	 <20090105121158.94d990c3.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 11 Jan 2009 19:52:53 +0100
-Message-Id: <1231699973.17759.22.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	id S1752839AbZAKSwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 13:52:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Rolland (=?utf-8?b?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+Subject: Re: [Bug #12413] iwl3945 - Error for wireless request "Set Encode" (8B2A)
+Date: Sun, 11 Jan 2009 19:51:32 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.Gn.LafaJB@chimera> <20090111190455.21b2f7f2@tux.DEF.witbe.net>
+In-Reply-To: <20090111190455.21b2f7f2@tux.DEF.witbe.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901111951.32544.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-man, 05 01 2009 kl. 12:11 -0800, skrev Randy Dunlap:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Sunday 11 January 2009, Paul Rolland wrote:
+> Hello,
 > 
-> Fix jbd2 printk format:
+> On Sun, 11 Jan 2009 12:41:09 +0100 (CET)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> fs/jbd2/journal.c:848: warning: format '%lu' expects type 'long unsigned int',
-> but argument 3 has type 'uint32_t'
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12413
+> > Subject		: iwl3945 - Error for wireless request "Set
+> > Encode" (8B2A) Submitter	: Paul Rolland <rol@witbe.net>
+> > Date		: 2009-01-02 18:32 (10 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123092155803366&w=4
+> > 
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  fs/jbd2/journal.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> This is fixed. Please consider it as a user-bug if you want. 
+> Anyway, the fix was to enable :
+>  
+> "Intel Wireless WiFi Next Gen AGN"
 > 
-> --- linux-next-20090105.orig/fs/jbd2/journal.c
-> +++ linux-next-20090105/fs/jbd2/journal.c
-> @@ -845,7 +845,8 @@ static int jbd2_seq_info_show(struct seq
->  	seq_printf(seq, "  %ums logging transaction\n",
->  	    jiffies_to_msecs(s->stats->u.run.rs_logging / s->stats->ts_tid));
->  	seq_printf(seq, "  %luus average transaction commit time\n",
-> -		   do_div(s->journal->j_average_commit_time, 1000));
-> +		   (unsigned long)do_div(s->journal->j_average_commit_time,
-> +					1000));
->  	seq_printf(seq, "  %lu handles per transaction\n",
->  	    s->stats->u.run.rs_handle_count / s->stats->ts_tid);
->  	seq_printf(seq, "  %lu blocks per transaction\n",
+> in addition to the already enabled support for the iwl3945. 
+> Not sure why we now need to enable both, but this solved the problem
+> for me.
+> Wifi is now fully functional.
 
-This patch is just as wrong as the original code. Please don't
-apply it, but see my "[PATCH] jbd2: fix wrong use of do_div"
-that I just sent out.
+Thanks for the update, the bug has been closed.
 
-
-Simon Holm Thøgersen
-
+Rafael
