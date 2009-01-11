@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZAKTKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZAKTK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZAKTKj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 14:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZAKTK2
+	id S1752503AbZAKTK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 14:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZAKTKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 14:10:28 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:63185 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZAKTK1 (ORCPT
+	Sun, 11 Jan 2009 14:10:35 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:36460 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbZAKTKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 14:10:27 -0500
+	Sun, 11 Jan 2009 14:10:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=Kt6TU1FZTuEhTvIta9t9u4Y7L7fcrWWLeoft9eB05t5CsO2A7Q9TSss5hMYpe7lT9C
-         ZXbHwNvh689aCNp+Uh1/aM880b1R5pwbQjIlBSqZDqU4neVgXVgEH8/4+xLeMvAY21DB
-         foTTAn7QCLcEzPAFTKcdz3iRtNuC4+Vf9k4YU=
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=f01bR/N24fTEDCtk6Ioup3DDNO7KZe4BZzDVYxAWUnicvEHuVZsEfhros9cFLQiGv6
+         Xcj32jfTP9f3km0gASLlJsVJ4iTIATI5rQWnEojps6e/CKHngn7XVNpkt3zaNZ33UEsB
+         AbLbwbBG+YQFf/AXP/T/jSneTZTgymxIGPgaM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 11 Jan 2009 20:11:20 +0100
-Message-Id: <20090111191120.17361.69981.sendpatchset@localhost.localdomain>
-Subject: [PATCH 1/8] ide: remove superfluous check from ide_proc_port_register_devices()
+Date: Sun, 11 Jan 2009 20:11:26 +0100
+Message-Id: <20090111191126.17361.86227.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090111191120.17361.69981.sendpatchset@localhost.localdomain>
+References: <20090111191120.17361.69981.sendpatchset@localhost.localdomain>
+Subject: [PATCH 2/8] ide-acpi: no need to zero ->acpidata for devices
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove superfluous check from ide_proc_port_register_devices()
+Subject: [PATCH] ide-acpi: no need to zero ->acpidata for devices
+
+ide_acpi_init() takes care of it.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-just few cleanup patches for pata-2.6 tree (mainly IDE ACPI related)
+ drivers/ide/ide-acpi.c |    2 --
+ 1 file changed, 2 deletions(-)
 
- drivers/ide/ide-proc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/drivers/ide/ide-proc.c
+Index: b/drivers/ide/ide-acpi.c
 ===================================================================
---- a/drivers/ide/ide-proc.c
-+++ b/drivers/ide/ide-proc.c
-@@ -600,7 +600,7 @@ void ide_proc_port_register_devices(ide_
- 	int i;
- 
+--- a/drivers/ide/ide-acpi.c
++++ b/drivers/ide/ide-acpi.c
+@@ -718,8 +718,6 @@ void ide_acpi_port_init_devices(ide_hwif
+ 	 * Send IDENTIFY for each drive
+ 	 */
  	ide_port_for_each_dev(i, drive, hwif) {
--		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0 || drive->proc)
-+		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
+-		memset(drive->acpidata, 0, sizeof(*drive->acpidata));
+-
+ 		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
  			continue;
  
- 		drive->proc = proc_mkdir(drive->name, parent);
