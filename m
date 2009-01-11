@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZAKR4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZAKR66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbZAKR4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZAKR4A
+	id S1754882AbZAKR66 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAKR6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:56:00 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:46082 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbZAKRz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:55:59 -0500
-Date: Sun, 11 Jan 2009 18:55:47 +0100
-From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
-	<rol@witbe.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
-Subject: Re: Linux 2.6.29-rc1
-Message-ID: <20090111185547.0200a264@tux.DEF.witbe.net>
-In-Reply-To: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
-Organization: Witbe.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
-X-Ncc-RegId: fr.witbe
-X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	Sun, 11 Jan 2009 12:58:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39457 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbZAKR6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:58:45 -0500
+Date: Sun, 11 Jan 2009 19:13:07 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090111181307.GM26290@one.firstfloor.org>
+References: <alpine.LFD.2.00.0901091251380.6528@localhost.localdomain> <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <20090109174158.096dee70.akpm@linux-foundation.org> <20090110030216.GW26290@one.firstfloor.org> <1231676801.25018.150.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231676801.25018.150.camel@macbook.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Sat, 10 Jan 2009 16:13:02 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Sun, Jan 11, 2009 at 12:26:41PM +0000, David Woodhouse wrote:
+>   - Unconditionally have 'inline' meaning 'always_inline'. If we say it,
+>     we should mean it.
 > 
-> The merge window is over, and while it is quite possible that I missed a 
-> few merge requests in the crazy week that is behind us, apart from those 
-> we should now have most of the bulk of 2.6.29 merged up. And now it's
-> just a small matter of making sure it's all stable and ready to go.
+>   - Resist the temptation to use -fno-inline-functions. Allow GCC to
+>     inline other things if it wants to.
 
-Compiz is now refusing to run, and says :
-Jan 11 11:22:47 tux kernel: compiz:3330 map pfn expected mapping type
- write-back for d0040000-d0a40000, got uncached-minus
+The proposal was to use -fno-inline-functions-called-once (but 
+the resulting numbers were not promising)
 
-Due to the "write-back" part of the message, I've check /proc/mtrr and it
-does contain :
-[root@tux log]# cat /root/mtrr-2.6.29-rc1 
-reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
-reg01: base=0x07f800000 ( 2040MB), size=    8MB, count=1: uncachable
-reg02: base=0x07f700000 ( 2039MB), size=    1MB, count=1: uncachable
-reg03: base=0x0d0000000 ( 3328MB), size=  256MB, count=1: write-combining
+We've never allowed gcc to inline any other functions not marked
+inline explicitely because that's not included in -O2. 
 
-When running 2.6.28, it does contain :
-[root@tux log]# cat /proc/mtrr 
-reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
-reg01: base=0x07f800000 ( 2040MB), size=    8MB, count=1: uncachable
-reg02: base=0x07f700000 ( 2039MB), size=    1MB, count=1: uncachable
-reg03: base=0x0d0000000 ( 3328MB), size=  256MB, count=1: write-combining
+>   - Reduce the number of unnecessary 'inline' markers, and have a policy
+>     that the use of 'inline' should be accompanied by either a GCC PR#
+>     or an explanation of why we couldn't reasonably have expected GCC to
+>     get this particular case right.
+> 
+>   - Have a similar policy of PR# or explanation for 'uninline' too.
+> 
+> I don't think we should just give up on GCC ever getting it right. That
+> way lies madness. As we've often found in the past. 
 
-so it's exactly the same content.
+It sounds like you're advocating to set -O3/-finline-functions
+by default.   Not sure that's a good idea.
 
-Is there anything else I should check ?
-
-Regards,
-Paul
+-Andi
 
 -- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
-
-How do you explain Wayne Newton's POWER over millions?  It's th' MOUSTACHE
-...  Have you ever noticed th' way it radiates SINCERITY, HONESTY & WARMTH?
-It's a MOUSTACHE you want to take HOME and introduce to NANCY SINATRA!
+ak@linux.intel.com
