@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZAKIJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbZAKIKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZAKIJT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 03:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZAKIJA
+	id S1753273AbZAKIKo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 03:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZAKIKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 03:09:00 -0500
-Received: from 8bytes.org ([88.198.83.132]:56052 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbZAKII7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 03:08:59 -0500
-Date: Sun, 11 Jan 2009 09:08:58 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: joerg.roedel@amd.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, mingo@redhat.com
-Subject: Re: [PATCH 15/16] dma-debug: x86 architecture bindings
-Message-ID: <20090111080858.GL9466@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-16-git-send-email-joerg.roedel@amd.com> <20090111152209D.fujita.tomonori@lab.ntt.co.jp>
+	Sun, 11 Jan 2009 03:10:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57531 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZAKIKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 03:10:35 -0500
+Date: Sun, 11 Jan 2009 09:12:36 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: MAINTAINERS: add entry for freezer
+Message-ID: <20090111081236.GA29126@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090111152209D.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 03:25:47PM +0900, FUJITA Tomonori wrote:
-> On Fri, 9 Jan 2009 17:19:29 +0100
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > Impact: make use of DMA-API debugging code in x86
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/Kconfig                   |    1 +
-> >  arch/x86/include/asm/dma-mapping.h |   30 ++++++++++++++++++++++++++----
-> >  arch/x86/kernel/pci-dma.c          |    5 +++++
-> >  3 files changed, 32 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index 862adb9..68a806c 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -39,6 +39,7 @@ config X86
-> >  	select HAVE_GENERIC_DMA_COHERENT if X86_32
-> >  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-> >  	select USER_STACKTRACE_SUPPORT
-> > +	select HAVE_DMA_API_DEBUG
-> >  
-> >  config ARCH_DEFCONFIG
-> >  	string
-> > diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-> > index 4035357..939d5b3 100644
-> > --- a/arch/x86/include/asm/dma-mapping.h
-> > +++ b/arch/x86/include/asm/dma-mapping.h
-> > @@ -7,6 +7,7 @@
-> >   */
-> >  
-> >  #include <linux/scatterlist.h>
-> > +#include <linux/dma-debug.h>
-> >  #include <asm/io.h>
-> >  #include <asm/swiotlb.h>
-> >  #include <asm-generic/dma-coherent.h>
-> > @@ -93,9 +94,12 @@ dma_map_single(struct device *hwdev, void *ptr, size_t size,
-> >  	       int direction)
-> >  {
-> >  	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
-> > +	dma_addr_t addr;
-> >  
-> >  	BUG_ON(!valid_dma_direction(direction));
-> > -	return ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
-> > +	addr = ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
-> > +	debug_map_single(hwdev, ptr, size, direction, addr);
-> > +	return addr;
-> 
-> What happens if ops->map_single fails?
-> 
-> Seems that debug_map_single doesn't check the dma mapping fails. So it
-> allocates a new entries and nobody frees it?
+Now that people are using freezer for non-suspend/hibernation stuff,
+it should have separate maintainers entry so that it is easier
+to find.
 
-Ah true. The debug_map_single function has to check for
-dma_mapping_error. Same is true for debug_map_sg.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> Another problem is that what happens if ops->map_single succeeds but
-> debug_map_single fails? Seems that it gives a false warning.
 
-No, this can not happen. If the code fails it disables itself so no more
-warnings will be printed.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6f65a26..206f806 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1814,6 +1814,14 @@ M:	hch@infradead.org
+ W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
+ S:	Maintained
+ 
++FREEZER
++P:	Pavel Machek
++M:	pavel@suse.cz
++P:	Rafael J. Wysocki
++M:	rjw@sisk.pl
++L:	linux-pm@lists.linux-foundation.org
++S:	Supported
++
+ FTRACE
+ P:	Steven Rostedt
+ M:	rostedt@goodmis.org
 
-Joerg
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
