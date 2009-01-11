@@ -1,169 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbZAKNCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZAKNGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbZAKNCu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 08:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAKNCj
+	id S1753446AbZAKNGm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 08:06:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZAKNGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 08:02:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42121 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbZAKNCi (ORCPT
+	Sun, 11 Jan 2009 08:06:33 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:32916 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbZAKNGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 08:02:38 -0500
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
- (-git7 is ok)
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: Valdis.Kletnieks@vt.edu, alessandro.suardi@gmail.com,
-       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <1231676698.25018.147.camel@macbook.infradead.org>
-References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
-	 <20090109.140422.60087297.davem@davemloft.net>
-	 <43805.1231672258@turing-police.cc.vt.edu>
-	 <20090111.040842.86784676.davem@davemloft.net>
-	 <1231676698.25018.147.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 12:59:59 +0000
-Message-Id: <1231678799.25018.195.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+	Sun, 11 Jan 2009 08:06:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jOfS+UPZOGFcpRAT0ZSknBGG8PjokZWe8+mnN60tZaPRYlgAunjysCOstrIIB4wp82
+         LaMq9AUzsbuHtFd/Z/AaoAu0KXIJAszpuA5QI3aVoS1cuM+J/lJ/MaP2xw950F2c1XZR
+         +HMpCHZ8WPT1HXvXqR6pEucwySp8uM+Li6qPU=
+Message-ID: <3f9a31f40901110506v646bd599q863be03accbfd8b2@mail.gmail.com>
+Date: Sun, 11 Jan 2009 18:36:31 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Petr Titera" <P.Titera@century.cz>
+Subject: Re: Build error on latest git
+Cc: linux-kernel@vger.kernel.org,
+       "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <4969DEA0.5020301@century.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <4969C096.9060909@century.cz> <4969DEA0.5020301@century.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 12:25 +0000, David Woodhouse wrote:
-> I'll take a look and see if I can remedy that. Then we wouldn't _need_
-> the FIRMWARE_IN_KERNEL option.
+On Sun, Jan 11, 2009 at 5:27 PM, Petr Titera <P.Titera@century.cz> wrote:
+> Going through source it seems to me (still building) that it is caused by
+> including asm/smp.h only if build with CONFIG_SMP. This patch seems to fix
+> this
+>
+> diff --git a/include/linux/smp.h b/include/linux/smp.h
+> index b824669..fd51bb9 100644
+> --- a/include/linux/smp.h
+> +++ b/include/linux/smp.h
+> @@ -11,6 +11,8 @@
+> #include <linux/list.h>
+> #include <linux/cpumask.h>
+>
+> +#include <asm/smp.h>
+> +
+> extern void cpu_idle(void);
+>
 
-How about this? If it fails to load the firmware from userspace during
-the initialisation, it'll try again later in tg3_open(). 
+No, this is wrong.
 
-I _think_ that's fine, because we don't do anything else in the early
-initialisation which requires the firmware to be loaded.
+asm/smp.h should only be included when CONFIG_SMP is defined.
 
-So if you build with CONFIG_TIGON3=y, CONFIG_FIRMWARE_IN_KERNEL=n, you
-should see it fail to load the firmware at boot, but then it should load
-it successfully when you bring the device up.
+I will send fix of this.
 
-Untested-but-otherwise-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index 5e2dbae..f99218c 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -7535,11 +7535,45 @@ static int tg3_test_msi(struct tg3 *tp)
- 	return err;
- }
- 
-+static int tg3_request_firmware(struct tg3 *tp)
-+{
-+	const __be32 *fw_data;
-+
-+	if (request_firmware(&tp->fw, tp->fw_needed, &tp->pdev->dev)) {
-+		printk(KERN_ERR "tg3: Failed to load firmware \"%s\"\n",
-+		       tp->fw_needed);
-+		return -ENOENT;
-+	}
-+
-+	fw_data = (void *)tp->fw->data;
-+
-+	/* Firmware blob starts with version numbers, followed by
-+	   start address and _full_ length including BSS sections
-+	   (which must be longer than the actual data, of course */
-+
-+	tp->fw_len = be32_to_cpu(fw_data[2]);	/* includes bss */
-+	if (tp->fw_len < (tp->fw->size - 12)) {
-+		printk(KERN_ERR "tg3: bogus length %d in \"%s\"\n",
-+		       tp->fw_len, tp->fw_needed);
-+		return -EINVAL;
-+	}
-+
-+	/* We no longer need firmware; we have it. */
-+	tp->fw_needed = NULL;
-+	return 0;
-+}
-+
- static int tg3_open(struct net_device *dev)
- {
- 	struct tg3 *tp = netdev_priv(dev);
- 	int err;
- 
-+	if (tp->fw_needed) {
-+		err = tg3_request_firmware(tp);
-+		if (err)
-+			return err;
-+	}
-+
- 	netif_carrier_off(tp->dev);
- 
- 	err = tg3_set_power_state(tp, PCI_D0);
-@@ -12934,7 +12968,6 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	struct net_device *dev;
- 	struct tg3 *tp;
- 	int err, pm_cap;
--	const char *fw_name = NULL;
- 	char str[40];
- 	u64 dma_mask, persist_dma_mask;
- 
-@@ -13091,7 +13124,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	tg3_init_bufmgr_config(tp);
- 
- 	if (tp->pci_chip_rev_id == CHIPREV_ID_5701_A0)
--		fw_name = FIRMWARE_TG3;
-+		tp->fw_needed = FIRMWARE_TG3;
- 
- 	if (tp->tg3_flags2 & TG3_FLG2_HW_TSO) {
- 		tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE;
-@@ -13107,34 +13140,19 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	}
- 	if (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) {
- 		if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5705)
--			fw_name = FIRMWARE_TG3TSO5;
-+			tp->fw_needed = FIRMWARE_TG3TSO5;
- 		else
--			fw_name = FIRMWARE_TG3TSO;
-+			tp->fw_needed = FIRMWARE_TG3TSO;
- 	}
- 
--	if (fw_name) {
--		const __be32 *fw_data;
--
--		err = request_firmware(&tp->fw, fw_name, &tp->pdev->dev);
--		if (err) {
--			printk(KERN_ERR "tg3: Failed to load firmware \"%s\"\n",
--			       fw_name);
--			goto err_out_iounmap;
--		}
--
--		fw_data = (void *)tp->fw->data;
--
--		/* Firmware blob starts with version numbers, followed by
--		   start address and _full_ length including BSS sections
--		   (which must be longer than the actual data, of course */
--
--		tp->fw_len = be32_to_cpu(fw_data[2]);	/* includes bss */
--		if (tp->fw_len < (tp->fw->size - 12)) {
--			printk(KERN_ERR "tg3: bogus length %d in \"%s\"\n",
--			       tp->fw_len, fw_name);
--			err = -EINVAL;
-+	if (tp->fw_needed) {
-+		err = tg3_request_firmware(tp);
-+		/* Failure to load firmware at this stage is not fatal; we'll
-+		   try again in tg3_open(). So if you have the driver built
-+		   into the kernel, you can still get the firmware loaded
-+		   after userspace is running, when the device comes up. */
-+		if (err != -ENOENT)
- 			goto err_out_fw;
--		}
- 	}
- 
- 	/* TSO is on by default on chips that support hardware TSO.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+--
+JSR
