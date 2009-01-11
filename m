@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZAKPTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZAKPVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZAKPTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZAKPTf
+	id S1754369AbZAKPVX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZAKPVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:19:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58780 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbZAKPTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:19:34 -0500
-Date: Sun, 11 Jan 2009 16:19:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dieter Ries <clip2@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc1 does not boot
-Message-ID: <20090111151924.GA5722@elte.hu>
-References: <496A085E.8020604@gmx.de>
+	Sun, 11 Jan 2009 10:21:10 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:42449 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbZAKPVJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 10:21:09 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Subject: Re: current git kernel has strange problems during bisect
+Date: Sun, 11 Jan 2009 16:20:03 +0100
+User-Agent: KMail/1.9.9
+Cc: git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com> <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de>
+In-Reply-To: <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <496A085E.8020604@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901111620.03345.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dieter Ries <clip2@gmx.de> wrote:
-
+Am Sonntag 11 Januar 2009 schrieben Sie:
 > Hi,
 > 
-> I just pulled 2.6.29-rc1, ran oldconfig with defaults and built it.
-> When I try to boot it, that kind of works until init should start. Then
-> nothing happens. I tried with init=/bin/bash, which sometimes works, and
-> sometimes gets me a bash without the prompt flashing.
+> On Sun, 11 Jan 2009, Christian Borntraeger wrote:
 > 
-> I captured the output with netconsole, but I cannot see a problem there.
-> It is attached.
+> > Am Sonntag 11 Januar 2009 schrieb Christian Borntraeger:
+> > > doing a 
+> > > git bisect start
+> > > git bisect good a3a798c
+> > > git bisect bad v2.6.29-rc1
+> > > 
+> > > results in a repository without several files, e.g Makefile!
+> > > git describe also fails.
+> > 
+> > In fact, retesting with a clean repository shows, that there are only 
+btrfs 
+> > files - nothing else.
+> > 
+> > Linus did you pull a broken btrfs repository?
 > 
-> My config is also attached.
+> I guess it is a subtree merge.  So no, nothing went wrong
 > 
-> The machine:
-> 
-> Lenovo Thinkpad T60
-> Core2Duo 2GHz
-> 
-> Gentoo 64bit
-> 
-> Everything worked fine with 83bc66f, which was my last pull.
-> 
-> What else should I provide for debugging that?
+> Use "git bisect skip" to skip over those.
 
-hm, there's no 83bc66f in Linus's tree.
+I think we should really avoid merging subtrees to the linux kernel. It makes 
+bisecting a real PITA. 
+Furthermore, It is unlikely, but what if the problem is part of the 581 
+changesets from btrfs?
 
-	Ingo
+Christian
