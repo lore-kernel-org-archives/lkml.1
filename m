@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZAKRA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZAKRKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZAKRA0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZAKQ7u
+	id S1754490AbZAKRKx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZAKRKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 11:59:50 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:38265 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752865AbZAKQ7s (ORCPT
+	Sun, 11 Jan 2009 12:10:41 -0500
+Received: from gw2.cosmosbay.com ([86.64.20.130]:36151 "EHLO gw2.cosmosbay.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752396AbZAKRKk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 11:59:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dje5K/xaTGkC61aobWfq2MY1B9HqHU+V5cNwMmwtcWhtocdcqIBUPYXVPgDJQtWFvg
-         qanlT2u8OR26jqvHKY0XXS/N/9JFdW5/0gQCAhW07ZxGgKGWN1FJWlRhDHPM1wYdpcCS
-         8ZhhMy+FdSB22jEiUZBF4k/iauK5vpNkbcw/8=
-Message-ID: <496A2580.2080103@gmail.com>
-Date: Sun, 11 Jan 2009 12:59:44 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Sun, 11 Jan 2009 12:10:40 -0500
+X-Greylist: delayed 4130 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Jan 2009 12:10:40 EST
+Message-ID: <496A17A5.7010200@cosmosbay.com>
+Date: Sun, 11 Jan 2009 17:00:37 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: venkatesh.pallipadi@intel.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 0/6] PAT fixes/cleanup following the pfnmap changes
-References: <20090110001308.403550000@intel.com> <49689C80.3070905@gmail.com> <20090111020508.GA29153@elte.hu>
-In-Reply-To: <20090111020508.GA29153@elte.hu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>, ben@zeus.com,
+       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+References: <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <20090109224258.GA10257@ioremap.net> <496850D5.8040907@cosmosbay.com> <20090111125759.GB24173@ioremap.net> <4969F0D1.8020504@cosmosbay.com> <20090111133533.GB25337@ioremap.net>
+In-Reply-To: <20090111133533.GB25337@ioremap.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw2.cosmosbay.com [127.0.0.1]); Sun, 11 Jan 2009 17:00:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+Evgeniy Polyakov a écrit :
+> On Sun, Jan 11, 2009 at 02:14:57PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
+>>>> 1) the release_sock/lock_sock done in tcp_splice_read() is not necessary
+>>>> to process backlog. Its already done in skb_splice_bits()
+>>> Yes, in the tcp_splice_read() they are added to remove a deadlock.
+>> Could you elaborate ? A deadlock only if !SPLICE_F_NONBLOCK ?
 > 
->> venkatesh.pallipadi@intel.com wrote:
->>> Individual patch header has descriptions.
->>>
->> $ git am Patches
->> Applying: x86 PAT: change track_pfn_vma_new to take pgprot_t pointer param
->> error: patch failed: mm/memory.c:1604
->> error: mm/memory.c: patch does not apply
->> Patch failed at 0001.
->> When you have resolved this problem run "git am --resolved".
->> If you would prefer to skip this patch, instead run "git am --skip".
->> To restore the original branch and stop patching run "git am --abort".
->>
->> These do not apply for me to latest Linus git, which is the tree where I 
->> experienced the problem.  Is there some way to fuzz them to get them to 
->> apply?
+> Sorry, I meant that we drop lock in skb_splice_bits() to prevent the deadlock,
+> and tcp_splice_read() needs it to process the backlog.
+
+While we drop lock in skb_splice_bits() to prevent the deadlock, we
+also process backlog at this stage. No need to process backlog
+again in the higher level function.
+
 > 
-> Could you check tip/master:
-> 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> do you still get the messages? [ Btw., did you also experience any 3D 
-> performance problems that are solved via Venki's fixes in tip/master? ]
-> 
+> I think that even with non-blocking splice that release_sock/lock_sock
+> is needed, since we are able to do a parallel job: to receive new data
+> (scheduled by early release_sock backlog processing) in bh and to
+> process already received data via splice codepath.
+> Maybe in non-blocking splice mode this is not an issue though, but for
+> the blocking mode this allows to grab more skbs at once in skb_splice_bits.
 
-I just checked tip/master, and I do still get the messages:
-
-[   66.895807] X:5022 map pfn expected mapping type write-back for d0000000-d0101000, got write-combining
-[   66.895873] X:5022 freeing invalid memtype d0000000-d0101000
-
-As for 3D performance issues, glxgears without any other applications running gives:
-
-    457 frames in 5.0 seconds = 91.312 FPS
-    475 frames in 5.0 seconds = 94.887 FPS
-    478 frames in 5.0 seconds = 95.411 FPS
-
-I can't say for sure, but I expect those numbers should be much higher for a 3D accelerated radeon card (even if it is a little old):
-
-    01:00.0 VGA compatible controller: ATI Technologies Inc M9+ 5C61 [Radeon Mobility 9200 (AGP)] (rev 01)
-
-glxinfo gives:
-
-    direct rendering: Yes
+skb_splice_bits() operates on one skb, you lost me :)
 
 
-Anything else I can try?
 
--- 
-Kevin Winchester
