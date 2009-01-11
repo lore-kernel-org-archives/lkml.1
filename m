@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZAKKMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZAKKSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbZAKKMm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 05:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAKKMd
+	id S1753089AbZAKKSr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 05:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZAKKSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 05:12:33 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:48384 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbZAKKMb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 05:12:31 -0500
-Date: Sun, 11 Jan 2009 18:11:35 +0800
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: source line numbers with x86_64 modules? [Was: Re: [patch]
-	measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact]
-In-reply-to: <20090110211531.GD31579@mit.edu>
-To: Theodore Tso <tytso@mit.edu>, Mike Snitzer <snitzer@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, sam@ravnborg.org,
-       Dave Anderson <anderson@redhat.com>
-Message-id: <20090111101135.GA3306@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com>
- <20090110153446.GA13976@elte.hu>
- <170fa0d20901101021s3b9a18e9qe6150c374efa4d6f@mail.gmail.com>
- <20090110211531.GD31579@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 11 Jan 2009 05:18:38 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:41361 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZAKKSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 05:18:36 -0500
+Date: Sun, 11 Jan 2009 11:18:25 +0100
+From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
+Subject: Re: Linux 2.6.29-rc1
+Message-ID: <20090111111825.49eaee0d@tux.DEF.witbe.net>
+In-Reply-To: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 10, 2009  16:15 -0500, Theodore Ts'o wrote:
-> In my experience, there are very few kernel versions and hardware for
-> which kdump works.  I've talked to the people who have to make kdump
-> work, and every 12-18 months, with a new set of enterprise kernels
-> comes out, they have to go and fix kdump so it works again for the set
-> of hardware that they care about, and for the kernel version involved.
+Hello,
 
-I'm sad that netconsole/netdump never made it big.  It was fairly useful,
-and extending the eth drivers to add the polling mode was trivial to do.
-We were using that for a few years, but it got replaced by kdump and it
-appears to be less usable IMHO.
+On Sat, 10 Jan 2009 16:13:02 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+> 
+> The merge window is over, and while it is quite possible that I missed a 
+> few merge requests in the crazy week that is behind us, apart from those 
+> we should now have most of the bulk of 2.6.29 merged up. And now it's
+> just a small matter of making sure it's all stable and ready to go.
+> 
 
+Don't know if this is important or not, but I have :
+
+WARNING: net/dccp/dccp.o(.text+0xf6): Section mismatch in reference from the function ccid_cleanup_builtins() to the function .exit.text:tfrc_lib_exit()
+The function ccid_cleanup_builtins() references a function in an exit section.
+Often the function tfrc_lib_exit() has valid usage outside the exit section
+and the fix is to remove the __exit annotation of tfrc_lib_exit.
+
+WARNING: net/dccp/dccp.o(.init.text+0x53): Section mismatch in reference from the function ccid_initialize_builtins() to the function .exit.text:tfrc_lib_exit()
+The function __init ccid_initialize_builtins() references
+a function __exit tfrc_lib_exit().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __exit annotation of
+tfrc_lib_exit() so it may be used outside an exit section.
+
+Regards,
+Paul
+
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
+navigateur "Some people dream of success... while others wake up and work
+hard at it" 
+
+"And they told us, what they wanted...
+ Was a sound that could kill some-one, from a distance." -- Kate Bush
