@@ -1,100 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZAKNqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbZAKNtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbZAKNqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 08:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZAKNqg
+	id S1754035AbZAKNtP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 08:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZAKNsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 08:46:36 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:39115 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZAKNqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 08:46:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=O3/CE0YwT52QeQhh8WBEikK/LxLiDD4j7YQ4TnroAaYbpFqDdw09kcgJgkhLLtdrhj
-         +KuUreCWA1rpRv8vowITpkVwkC1Y8T7e6J53OyhYabGix8uAjTT5jBW+V015/lKJUrk2
-         91MDimZC+hhLr9HN3mmGiu4l1BP5xILwmp+Nw=
-Message-ID: <3f9a31f40901110546h4c069b5dx9726a0fbf8caf5a1@mail.gmail.com>
-Date: Sun, 11 Jan 2009 19:16:32 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+	Sun, 11 Jan 2009 08:48:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43585 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751506AbZAKNsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 08:48:53 -0500
+Date: Sun, 11 Jan 2009 14:47:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
 Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Natalie Protasevich" <protasnb@gmail.com>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Network Development" <netdev@vger.kernel.org>,
-       "Linux ACPI" <linux-acpi@vger.kernel.org>,
-       "Linux PM List" <linux-pm@lists.linux-foundation.org>,
-       "Linux SCSI List" <linux-scsi@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_265887_17688763.1231681592975"
+Message-ID: <20090111134758.GA18299@elte.hu>
 References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_265887_17688763.1231681592975
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Sun, Jan 11, 2009 at 4:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> Regressions with patches
-> ------------------------
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12428
-> Subject         : Build error on latest git
-> Submitter       : Petr Titera <P.Titera@century.cz>
-> Date            : 2009-01-11 9:49 (1 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123166856318712&w=4
-> Handled-By      : Petr Titera <P.Titera@century.cz>
-> Patch           : http://marc.info/?l=linux-kernel&m=123167509024996&w=4
->
->
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-This is a wrong fix, asm/smp.h should only be included when CONFIG_SMP
-is defined.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12420
+> Subject		: WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+> Submitter	: Christian Borntraeger <borntraeger@de.ibm.com>
+> Date		: 2009-01-09 12:34 (3 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=871af1210f13966ab911ed2166e4ab2ce775b99d
+> References	: http://marc.info/?l=linux-kernel&m=123150457832109&w=4
 
-I am still in the process of cleaning non-smp data from asm/smp.h for x86
+I can trigger it too and it is pretty much resolved - false positive 
+WARN_ON() triggered by new (but correct) libata usage.
 
-Attach patch is the solution for the time being
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
+> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
+> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+> Date		: 2009-01-06 18:46 (6 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
+> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
+> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 
-Ingo, can you please put this in urgent queue.
+Should be solved by Venki's PAT fixes in tip/x86/urgent:
 
-Thanks
---
-JSR
+ 0e95c19: x86, pat: fix reserve_memtype() for legacy 1MB range
+ 74edd61: x86 PAT: remove CPA WARN_ON for zero pte
+ e722dc8: x86 PAT: ioremap_wc should take resource_size_t parameter
+ b61e53c: x86 PAT: return compatible mapping to remap_pfn_range callers
+ e104ba3: x86 PAT: change track_pfn_vma_new to take pgprot_t pointer param
+ 3cedb0d: x86 PAT: consolidate old memtype new memtype check into a function
+ e61304a: x86 PAT: remove PFNMAP type on track_pfn_vma_new() error
 
-------=_Part_265887_17688763.1231681592975
-Content-Type: application/octet-stream;
- name=0001-x86-mpparse.c-fix-compilation-error.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fptr9frv0
-Content-Disposition: attachment;
- filename=0001-x86-mpparse.c-fix-compilation-error.patch
+Soon to be sent to Linus.
 
-RnJvbSA4ZTdiMGQ0ZWE0NDU4Zjk5NjZjNTQ1NTFhYzBiZDc5YjM0ZDVmOTM1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBKYXN3aW5kZXIgU2luZ2ggUmFqcHV0IDxqYXN3aW5kZXJyYWpw
-dXRAZ21haWwuY29tPgpEYXRlOiBTdW4sIDExIEphbiAyMDA5IDE4OjMwOjM0ICswNTMwClN1Ympl
-Y3Q6IFtQQVRDSF0geDg2OiBtcHBhcnNlLmMgZml4IGNvbXBpbGF0aW9uIGVycm9yCgpJbXBhY3Q6
-IGZpeCBjb21waWxhdGlvbiBlcnJvcgoKU2lnbmVkLW9mZi1ieTogSmFzd2luZGVyIFNpbmdoIFJh
-anB1dCA8amFzd2luZGVycmFqcHV0QGdtYWlsLmNvbT4KLS0tCiBhcmNoL3g4Ni9rZXJuZWwvbXBw
-YXJzZS5jIHwgICAgMSArCiAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxl
-dGlvbnMoLSkKCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvbXBwYXJzZS5jIGIvYXJjaC94
-ODYva2VybmVsL21wcGFyc2UuYwppbmRleCA4Mzg1ZDRlLi43OWRhZTYwIDEwMDY0NAotLS0gYS9h
-cmNoL3g4Ni9rZXJuZWwvbXBwYXJzZS5jCisrKyBiL2FyY2gveDg2L2tlcm5lbC9tcHBhcnNlLmMK
-QEAgLTI3LDYgKzI3LDcgQEAKICNpbmNsdWRlIDxhc20vZTgyMC5oPgogI2luY2x1ZGUgPGFzbS90
-cmFtcG9saW5lLmg+CiAjaW5jbHVkZSA8YXNtL3NldHVwLmg+CisjaW5jbHVkZSA8YXNtL3NtcC5o
-PgogCiAjaW5jbHVkZSA8bWFjaF9hcGljLmg+CiAjaWZkZWYgQ09ORklHX1g4Nl8zMgotLSAKMS41
-LjYuNgoK
-------=_Part_265887_17688763.1231681592975--
+	Ingo
