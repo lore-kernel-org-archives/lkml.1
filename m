@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbZAKPCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZAKPEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbZAKPCH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:02:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZAKPBy
+	id S1754125AbZAKPEV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbZAKPEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:01:54 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46534 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbZAKPBy (ORCPT
+	Sun, 11 Jan 2009 10:04:09 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:63027 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZAKPEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:01:54 -0500
-Subject: Re: [Regression] Build failure in current mainline - firmware
- related
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Igor M. Liplianin" <liplianin@me.by>
-In-Reply-To: <20090111124250.05b6dff4@pedra.chehab.org>
-References: <200901031247.14977.rjw@sisk.pl>
-	 <20090103204948.GA5388@uranus.ravnborg.org>
-	 <20090103205437.GA5499@uranus.ravnborg.org>
-	 <200901032243.28684.rjw@sisk.pl>
-	 <20090104214406.GA31668@uranus.ravnborg.org>
-	 <1231598216.5806.124.camel@macbook.infradead.org>
-	 <20090111124250.05b6dff4@pedra.chehab.org>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 15:01:30 +0000
-Message-Id: <1231686091.25018.395.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+	Sun, 11 Jan 2009 10:04:06 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: git@vger.kernel.org
+Subject: current git kernel has strange problems during bisect
+Date: Sun, 11 Jan 2009 16:02:53 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200901111602.53082.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 12:42 -0200, Mauro Carvalho Chehab wrote:
-> So, one patch for me to allow out-of-tree compiling
+doing a 
+git bisect start
+git bisect good a3a798c
+git bisect bad v2.6.29-rc1
 
-Something we should be dealing with...?
+results in a repository without several files, e.g Makefile!
+git describe also fails.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Any ideas how to fix this problem to continue with my bisect?
 
+Christian
