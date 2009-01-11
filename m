@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZAKHjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZAKHrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbZAKHjX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 02:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZAKHjN
+	id S1752504AbZAKHrQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 02:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZAKHq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 02:39:13 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38397
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751065AbZAKHjM (ORCPT
+	Sun, 11 Jan 2009 02:46:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:57266 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbZAKHq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 02:39:12 -0500
-Date: Sat, 10 Jan 2009 23:39:12 -0800 (PST)
-Message-Id: <20090110.233912.19825434.davem@davemloft.net>
-To: paulus@samba.org
-Cc: gorcunov@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	Sun, 11 Jan 2009 02:46:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W8JAjFacff4cQUMJAyPw/nucMHlxyFUf8sRhCiMSIsmm/CCR9yjKOkkGm5ei79X7oe
+         JQY1SV9RY8wgztlTePMOOC28oqIA5JezE+TLYcxROhcIdWGkLqb0CuQJ4MG2QeV7MJoG
+         1MvR7MVwKNIWCHwUVkJmW7YwqWqdXxx1kshn8=
+Date: Sun, 11 Jan 2009 10:46:52 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        devel@openvz.org, xemul@openvz.org
 Subject: Re: [RFC 4/4] net: ppp_generic - introduce net-namespace
- functionality
-From: David Miller <davem@davemloft.net>
+	functionality
+Message-ID: <20090111074652.GB7686@localhost>
+References: <20090109195154.320495476@gmail.com> <4967accd.0305560a.3553.ffffd187@mx.google.com> <20090110092258.GA7622@localhost> <20090110092830.GB7622@localhost> <18793.15953.591733.958862@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <18793.15953.591733.958862@cargo.ozlabs.ibm.com>
-References: <20090110092258.GA7622@localhost>
-	<20090110092830.GB7622@localhost>
-	<18793.15953.591733.958862@cargo.ozlabs.ibm.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sun, 11 Jan 2009 11:33:21 +1100
+[Paul Mackerras - Sun, Jan 11, 2009 at 11:33:21AM +1100]
+| Cyrill Gorcunov writes:
+| 
+| > From: Cyrill Gorcunov <gorcunov@gmail.com>
+| > Subecjt: [RFC] net: ppp_generic - introduce net-namespace functionality
+| > 
+| > - Each namespace contain ppp channels and units separately
+| >   with appropriate locks
+| 
+| This looks like a lot of uglification to me.  Why exactly do
+| individual network drivers need to know or care about namespaces?
+| 
+| Paul.
+| 
 
-> Cyrill Gorcunov writes:
-> 
-> > From: Cyrill Gorcunov <gorcunov@gmail.com>
-> > Subecjt: [RFC] net: ppp_generic - introduce net-namespace functionality
-> > 
-> > - Each namespace contain ppp channels and units separately
-> >   with appropriate locks
-> 
-> This looks like a lot of uglification to me.  Why exactly do
-> individual network drivers need to know or care about namespaces?
+Unfortunately in the whole series ppp has been change more
+then others and it's looks ugly indeed that is why it was RFC.
+Namespaces imply isolation of data right? Including private
+data being 'user related' -- ie units passed to user in one
+namespace should not interfere with units passed to user in
+another namespace. So if I will not 'bind' units pool to
+namespaces it would be possible to steal unit from one namespace
+proposed for another namespace. Right?
 
-They need to know if there is a lookup involved and the device
-type internally has it's own realm of keys that identify such
-devices.
-
-PPP fits that particular case.
+		- Cyrill -
