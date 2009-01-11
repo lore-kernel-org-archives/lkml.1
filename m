@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZAKSkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZAKSlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbZAKSkw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZAKSko
+	id S1753024AbZAKSlx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 13:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZAKSln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:40:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37937 "EHLO ogre.sisk.pl"
+	Sun, 11 Jan 2009 13:41:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37956 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbZAKSkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:40:43 -0500
+	id S1751193AbZAKSlm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 13:41:42 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Fabio Comolli" <fabio.comolli@gmail.com>
-Subject: Re: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Date: Sun, 11 Jan 2009 19:40:05 +0100
+To: =?utf-8?q?Fran=C3=A7ois_Valenduc?= 
+	<francois.valenduc@tvcablenet.be>
+Subject: Re: [Bug #12216] Error when drm is loaded
+Date: Sun, 11 Jan 2009 19:41:19 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.7fD.xbfaJB@chimera> <b637ec0b0901110634i7ea6fa7ao87ec22beb5a51c98@mail.gmail.com>
-In-Reply-To: <b637ec0b0901110634i7ea6fa7ao87ec22beb5a51c98@mail.gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, Keith Packard <keithp@keithp.com>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.35C.HbfaJB@chimera> <496A073D.4070804@tvcablenet.be>
+In-Reply-To: <496A073D.4070804@tvcablenet.be>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200901111940.06014.rjw@sisk.pl>
+Message-Id: <200901111941.20426.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Fabio Comolli wrote:
-> It's been solved in 2.6.28-final and backported to 2.6.27.10 (a revert
-> of a Dave Kelikamp's commit).
-> 
-> On Sun, Jan 11, 2009 at 12:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Sunday 11 January 2009, François Valenduc wrote:
+> Rafael J. Wysocki a écrit :
 > > This message has been generated automatically as a part of a report
 > > of regressions introduced between 2.6.27 and 2.6.28.
 > >
@@ -44,12 +41,26 @@ On Sunday 11 January 2009, Fabio Comolli wrote:
 > > be listed and let me know (either way).
 > >
 > >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12155
-> > Subject         : Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-> > Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
-> > Date            : 2008-11-23 16:17 (50 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5e55aa8db085dad1aabb4574c73c23c7ae571e7b
-> > References      : http://marc.info/?l=linux-kernel&m=122745709926361&w=4
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12216
+> > Subject		: Error when drm is loaded
+> > Submitter	: François Valenduc <francois.valenduc@tvcablenet.be>
+> > Date		: 2008-12-13 09:59 (30 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=52440211dcdc52c0b757f8b34d122e11b12cdd50
+> >
+> >
+> >
+> >   
+> This problem has been solved by the following patch:
+> 
+> commit 077ebed54fe66612f58b076628a72eca2be8df90
+> Author: Dave Airlie <airlied@redhat.com>
+> Date:   Mon Dec 22 17:11:02 2008 +1000
+> 
+>     drm/radeon: fix correctness of irq_enabled check for radeon.
+> 
+> 
+> This fix is in kernel 2.6.28, so this bug can be removed from the
+> regression list.
 
 Thanks, closed.
 
