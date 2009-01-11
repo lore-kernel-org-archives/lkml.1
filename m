@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZAKMFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZAKMFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbZAKMFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 07:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZAKMFB
+	id S1753296AbZAKMFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZAKMFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 07:05:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35260 "EHLO mx3.mail.elte.hu"
+	Sun, 11 Jan 2009 07:05:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45136 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZAKMFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 07:05:00 -0500
-Date: Sun, 11 Jan 2009 13:04:50 +0100
+	id S1752294AbZAKMFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 07:05:21 -0500
+Date: Sun, 11 Jan 2009 13:05:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Noonan <steven@uplinklabs.net>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip 2/2] kernel/sched.c: forward declaration for
-	'double_rq_lock' missing
-Message-ID: <20090111120450.GA27796@elte.hu>
-References: <1231664662-17104-1-git-send-email-steven@uplinklabs.net> <1231664662-17104-2-git-send-email-steven@uplinklabs.net>
+Subject: Re: [PATCH -tip 1/2] kernel/fork.c: unused variable 'ret'
+Message-ID: <20090111120510.GB27796@elte.hu>
+References: <1231664662-17104-1-git-send-email-steven@uplinklabs.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231664662-17104-2-git-send-email-steven@uplinklabs.net>
+In-Reply-To: <1231664662-17104-1-git-send-email-steven@uplinklabs.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,19 +36,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Noonan <steven@uplinklabs.net> wrote:
 
-> Impact: compile error eliminated
-> 
-> Added 'double_rq_lock' forward declaration, allowing double_rq_lock
-> to be used in _double_lock_balance().
+> Removed the unused variable.
 > 
 > Signed-off-by: Steven Noonan <steven@uplinklabs.net>
 > ---
->  kernel/sched.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+>  kernel/fork.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index ce4003a..fb1f5e9 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -822,7 +822,6 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
+>  static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+>  {
+>  	struct signal_struct *sig;
+> -	int ret;
+>  
+>  	if (clone_flags & CLONE_THREAD) {
+>  		atomic_inc(&current->signal->count);
 
-applied to tip/sched/urgent, thanks Steven.
-
-I have not seen such build failures myself - could you please send the 
-.config that triggers it?
+applied to tip/core/urgent, thanks Steve!
 
 	Ingo
