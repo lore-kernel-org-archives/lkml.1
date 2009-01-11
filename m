@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZAKDrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZAKDsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbZAKDrd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 22:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZAKDrY
+	id S1754242AbZAKDsF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 22:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZAKDrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 22:47:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60604 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbZAKDrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 22:47:24 -0500
-Date: Sun, 11 Jan 2009 04:46:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sparseirq: make some func to be used with genirq
-Message-ID: <20090111034646.GA28520@elte.hu>
-References: <496534B1.6080902@kernel.org> <20090108120619.GF1539@elte.hu> <1231435078.3178.278.camel@calx>
+	Sat, 10 Jan 2009 22:47:53 -0500
+Received: from web34403.mail.mud.yahoo.com ([66.163.178.152]:33264 "HELO
+	web34403.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750815AbZAKDrw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 22:47:52 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Jan 2009 22:47:52 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.br;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=TXod+CARz6pZnDIf1Q30w8y/QEABQhkKVpofqTasgpzYUaMnf4m5z0gUN9/fIjXykt+e9LNBTa9Vd7IWMCUOMuqomVh42q9crQo18OG+atfArxpUPtESclMPyTYJOj6dKrqscAAY3QwvnIakOeemR2zyv+kJgGqDsDDBKR4QObU=;
+X-YMail-OSG: RmXB2v4VM1lzIVzMMiD8qYHBisiON73HwVvuAUvXIyqe3Qp.tvtA4cKY.Yz.qcEqJo6odwZoqUtGp_G5uJ95fUYf2PG1XjHbvHYCqQxk4BU5J6s6PiwGOa7_vXCYrjjTQLCu_nIZKiDOlEfOocC.2MNeDWNSfFXy5h1XkgpcCemsEC.28BYljvGNKtq4x._iRjpX8xnsg4axzHqHe5cTdUvdKnpW0g--
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Sat, 10 Jan 2009 19:41:10 -0800 (PST)
+From: Jose Luis Marchetti <joseluismarchetti@yahoo.com.br>
+Reply-To: joseluismarchetti@yahoo.com.br
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231435078.3178.278.camel@calx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <204164.94418.qm@web34403.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Matt Mackall <mpm@selenic.com> wrote:
+I would like to open/read/write/close a regular file from my device
+driver.
+I think it would be possible, but I am confused, the "The Linux Kernel
+Module Programming Guide" states that I can not use standard libraries
+from within a module, I know the standard library ends up calling
+system calls, but which calls should I use to deal with regular
+files ?
+I am developing a Ethernet driver and the Mac address configuration
 
-> On Thu, 2009-01-08 at 13:06 +0100, Ingo Molnar wrote:
-> > (Matt Cc:-ed)
-> > 
-> > Matt, does this look good to you? The point of this cleanup would be to 
-> > make desc->timer_rand_state depend on hardirq (the presence of irq_desc[]) 
-> > - not sparseirq (which does not make much sense).
-> 
-> Seems fine.
-> 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+Thanks in advance!
 
-applied it to tip/irq/urgent, thanks guys!
+José Luís Marchetti
 
-	Ingo
+
+      Veja quais são os assuntos do momento no Yahoo! +Buscados
+http://br.maisbuscados.yahoo.com
