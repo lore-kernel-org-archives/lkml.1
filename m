@@ -1,113 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbZAKCAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZAKCEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbZAKCAk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 21:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZAKCAb
+	id S1755983AbZAKCEU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 21:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZAKCEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 21:00:31 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:40760 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751732AbZAKCAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 21:00:30 -0500
-Message-ID: <496952B1.5070303@sgi.com>
-Date: Sat, 10 Jan 2009 18:00:17 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 10 Jan 2009 21:04:09 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:46354 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZAKCEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 21:04:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xWJFv/lGtvo44bfp4KbHU9+MufOkVI9paUACVoa8mpXKMV0fQrHXLGF1eT0SkGE8nT
+         j3V/oF0mPfCCTaxokSftUnPQU4JhTe8+mCrVveULcp0LSyNNP+305qSM+ZfuNapJtWTZ
+         y8b6vnrWrEu2jKEuPyiQ5J2r0wWNXt9nbzr/8=
+Date: Sun, 11 Jan 2009 11:03:53 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Theodore Tso <tytso@mit.edu>, adilger@sun.com,
+       linux-ext4@vger.kernel.org
+Subject: [PATCH] ext4: fix unhandled ext4_free_data allocation failure
+Message-ID: <20090111020352.GA4285@localhost.localdomain>
+References: <20081223104016.GC7217@localhost.localdomain> <20081223142915.GA23303@unused.rdu.redhat.com> <961aa3350812231437x4debaf9byf230a63582561010@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] irq: initialize nr_irqs based on nr_cpu_ids
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223818.900264000@polaris-admin.engr.sgi.com> <20090110225010.GD17917@elte.hu>
-In-Reply-To: <20090110225010.GD17917@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+In-Reply-To: <961aa3350812231437x4debaf9byf230a63582561010@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> Impact: Reduce memory usage.
->>
->> This is the second half of the changes to make the irq_desc_ptrs be
->> variable sized based on nr_cpu_ids.  The algorithm is the same as the
->> setting of NR_IRQS except use nr_cpu_ids instead of NR_CPUS.  This is
->> only when CONFIG_SPARSE_IRQS=y.
->>
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> ---
->>  kernel/irq/handle.c |    5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> Files linux-2.6-for-ingo.orig/kernel/irq/.handle.c.swp and linux-2.6-for-ingo/kernel/irq/.handle.c.swp differ
->> --- linux-2.6-for-ingo.orig/kernel/irq/handle.c
->> +++ linux-2.6-for-ingo/kernel/irq/handle.c
->> @@ -133,6 +133,11 @@ int __init early_irq_init(void)
->>  	int legacy_count;
->>  	int i;
->>  
->> +	/* initialize nr_irqs based on nr_cpu_ids */
->> + 	nr_irqs =  (8 * nr_cpu_ids) > (32 * MAX_IO_APICS) ?
->> + 			NR_VECTORS + (8 * nr_cpu_ids) :
->> + 			NR_VECTORS + (32 * MAX_IO_APICS);
->> +
-> 
-> this will break non-x86. Please move this to the x86 early-irq-init 
-> function instead, and also sync it up with the current NR_IRQS sizing 
-> macro.
-> 
-> I.e. do not duplicate the numbers but introduce some sort of 
-> max_nr_irqs(nr_cpus) define that is used to initialize NR_IRQS and also 
-> used later on to narrow down nr_irqs later on.
+In ext4_mb_free_blocks() ext4_free_data allocation failure
+is not handled. This error handling cannot be simple error return because
+ext4_mb_free_blocks() cannot fail.
 
-The way it is laid out is:
+This patch add __GFP_NOFAIL to gfp mask for the allocation.
 
-kernel/softirq.c:
+Cc: Theodore Tso <tytso@mit.edu>
+Cc: adilger@sun.com
+Cc: linux-ext4@vger.kernel.org
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ fs/ext4/mballoc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-	int __init __weak early_irq_init(void)
-	{
-        	return 0;
-	}
-
-kernel/irq/handle.c:
-
-	#ifdef CONFIG_SPARSE_IRQ
-	:
-	struct irq_desc **irq_desc_ptrs __read_mostly;
-	:
-	int __init early_irq_init(void)
-	{
-		:
-		nr_irqs = ...
-
-	#else
-	:
-	struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
-	:
-	int __init early_irq_init(void)
-	{
-		<don't set nr_irqs>
-
-So I don't see an x86 specific early_irq_init.
-
-Since NR_IRQS is defined in a lot of different ways (in different places),
-I think I'll have to do something like;
-
-arch/x86/include/asm/irq_vectors.h:
-	
-	#define max_nr_irqs(nr_cpus)	\
-
-include/linux/irqnr.h:
-
-	#ifndef max_nr_irqs
-	#define max_nr_irqs(unused)	NR_IRQS
-	#endif
-
-Would that work for you?
-
-Thanks,
-Mike
-
+Index: 2.6-git/fs/ext4/mballoc.c
+===================================================================
+--- 2.6-git.orig/fs/ext4/mballoc.c
++++ 2.6-git/fs/ext4/mballoc.c
+@@ -4885,7 +4885,8 @@ do_more:
+ 		 * blocks being freed are metadata. these blocks shouldn't
+ 		 * be used until this transaction is committed
+ 		 */
+-		new_entry  = kmem_cache_alloc(ext4_free_ext_cachep, GFP_NOFS);
++		new_entry  = kmem_cache_alloc(ext4_free_ext_cachep,
++						GFP_NOFS | __GFP_NOFAIL);
+ 		new_entry->start_blk = bit;
+ 		new_entry->group  = block_group;
+ 		new_entry->count = count;
