@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZAKVr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZAKVtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZAKVr0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 16:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZAKVrR
+	id S1754641AbZAKVtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 16:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZAKVtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 16:47:17 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:16087 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbZAKVrQ (ORCPT
+	Sun, 11 Jan 2009 16:49:01 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57510 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbZAKVtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 16:47:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ognX/lLUODm0R273IDzzk+wo8Xs98hDqWbHZlVLGWuJYj2XwtTIFlIK/Z37TQagIHf
-         94ASciG1+UK0JkDomM7MeUiQLp/w5Q27Nkcma+yoYmmzPvA/keuhcghaxoamYJ0nJOzO
-         eUJJpDA1tefestzgD3ykAuPLdEaqVJrRpuEXU=
-Message-ID: <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
-Date: Mon, 12 Jan 2009 07:39:29 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Diego Calleja" <diegocg@gmail.com>
-Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
-Cc: "Jan Dittmer" <jdi@l4x.org>, linux-kernel@vger.kernel.org,
-       eric.anholt@iintel.com, airlied@linux.ie
-In-Reply-To: <20090111222122.4d0cb146@diego-desktop>
+	Sun, 11 Jan 2009 16:49:00 -0500
+Date: Sun, 11 Jan 2009 16:48:37 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Dave Jones <davej@redhat.com>,
+       Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, ccache@lists.samba.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090111214837.GA21090@bombadil.infradead.org>
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <20090107131221.GA17110@mit.edu> <20090108191703.GA11273@redhat.com> <20090108213157.GB922@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
-	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
-	 <20090111222122.4d0cb146@diego-desktop>
+In-Reply-To: <20090108213157.GB922@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 7:21 AM, Diego Calleja <diegocg@gmail.com> wrote:
-> I also have a failure with KMS, it's different than yours but I'll post it
-> in this thread...xserver-xorg-video-intel version 2.5.1 (whatever there is
-> in ubuntu unstable repositories)
+On Thu, Jan 08, 2009 at 04:31:58PM -0500, Theodore Tso wrote:
+> On Thu, Jan 08, 2009 at 02:17:03PM -0500, Dave Jones wrote:
+> > 
+> > Fedora rawhide users noticed this same problem this morning too,
+> > when I pushed out a build that eats up a gig of diskspace thanks
+> > to the number of modules we have, that are all afflicted by this problem.
+> > 
+> > I'll have to revert  ad7a953c for our builds to continue tracking mainline
+> > without monopolising the diskspace in the Fedora build system.
+> 
+> Note: you'll probably also have revert 9bb48247 (allow stripping of
+> generated symbols under CONFIG_KALLSYMS_ALL) since I believe it
+> depends on ad7a953c.
+> 
 
-Read the kconfig option before you enabled kms by default?
+This doesn't appear to be the culprit. Or at least, doesn't fix the
+problem.
 
-if not, you cannot just enable kms and have old userspace drivers
-work, there is no
-released userspace for this yet, as that would put the chicken before the egg.
+	make INSTALL_MOD_PATH=mods/ modules_install
 
-Dave.
+with a distro kernel config (ie: Fedora's[1]) still results in
+1.8GB of modules (willy checked that it wasn't a Fedora toolchain
+bug by reproducing on a Debian system.)
 
->
-> -----------------------------------------------
-> (II) [drm] DRM interface version 1.3
-> (II) [drm] DRM open master succeeded.
-> (II) intel(0): [drm] Using the DRM lock SAREA also for drawables.
-> (II) intel(0): [drm] framebuffer mapped by ddx driver
-> (II) intel(0): [drm] added 1 reserved context for kernel
-> (II) intel(0): X context handle = 0x1
-> (II) intel(0): [drm] installed DRM signal handler
-> (**) intel(0): Framebuffer compression disabled
-> (**) intel(0): Tiling enabled
-> (==) intel(0): VideoRam: 262144 KB
-> (II) intel(0): Attempting memory allocation with tiled buffers.
-> (II) intel(0): Tiled allocation successful.
->
-> Fatal server error:
-> AddScreen/ScreenInit failed for driver 0
-> -----------------------------------------------
->
-> Full X.org log attached.
+As near as I can ascertain, this is limited to x86_64, at least on
+Fedora:
+
+kyle@localhost ~/misc $ for i in *.rpm; do echo $i; rpm
+	-qip $i | grep Size; done
+kernel-2.6.29-0.25.rc0.git14.fc11.ppc64.rpm
+Size        : 124858478                        License:
+kernel-2.6.29-0.25.rc0.git14.fc11.ppc.rpm
+Size        : 66313693                         License:
+kernel-2.6.29-0.25.rc0.git14.fc11.x86_64.rpm
+Size        : 1041480317                       License:
+kernel-PAE-2.6.29-0.25.rc0.git14.fc11.i686.rpm
+Size        : 56252360                         License:
+
+x86_64 is an order of magnitude bigger than the rest, which have
+identical debug options enabled.
+
+regards, Kyle
