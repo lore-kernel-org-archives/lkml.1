@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZAKSIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZAKSJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbZAKSIF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZAKSHj
+	id S1755246AbZAKSJG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 13:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZAKSIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:07:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37561 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbZAKSHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:07:38 -0500
-Date: Sun, 11 Jan 2009 19:07:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Daniel Drake <dsd@gentoo.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
-Message-ID: <20090111180714.GB15326@elte.hu>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <b6a2187b0901110813s5429573cm7d78f39e288f70a3@mail.gmail.com> <20090111162949.GA15338@elte.hu> <200901111736.24350.borntraeger@de.ibm.com> <20090111163904.GA21806@elte.hu> <b6a2187b0901110856j3f2ff6fepc19a816178e38a95@mail.gmail.com>
-MIME-Version: 1.0
+	Sun, 11 Jan 2009 13:08:55 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43453 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbZAKSIy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 13:08:54 -0500
+Date: Sun, 11 Jan 2009 19:23:17 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Theodore Tso <tytso@mit.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090111182317.GN26290@one.firstfloor.org>
+References: <2f11576a0901100302s5132a1b9p11c62e27aa9a06f8@mail.gmail.com> <1231587428.3803.0.camel@johannes> <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110222656.GJ26290@one.firstfloor.org> <20090111082010.GA30090@logfs.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0901110856j3f2ff6fepc19a816178e38a95@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090111082010.GA30090@logfs.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+I only listed the proposals I've heard about before, not necessarily 
+endorsing them.
 
-> On Mon, Jan 12, 2009 at 12:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > * Christian Borntraeger <borntraeger@de.ibm.com> wrote
-> >> I guess Jeff, meant the other way around.
-> >> Since a0e280e0f33f6c859a235fb69a875ed8f3420388 is a fix for a known S2R
-> >> problem , the earlier patch (before) does of course not work.
-> > ah, okay.
-> > So i suspect that at every bisection point, this should be done:
-> >  git cherry-pick a0e280e0f33f6c859a235fb69a875ed8f3420388
-> 
-> I started with the latest git, and did this ...
-> 
-> git bisect start
-> git bisect bad
-> git bisect good a0e280e0f33f6c859a235fb69a875ed8f3420388
-> 
-> Everything in-between should have
-> a0e280e0f33f6c859a235fb69a875ed8f3420388 applied?
+> The number of people that truly understand what Judy trees do may be
+> single-digit.  Main disadvantage I see is that Judy trees heavily rely
+> on repacking nodes over and over.  Part of Judy is a memory manager with
+> essentially slab caches for nodes with 2, 4, 6, 8, 12, 16, 24, 32, 48,
+> 64, 96, 128, 192, 256, 384 and 512 words.
 
-not necessarily - if an intermediate tree that is checked happened to have 
-been based on some earlier -rc, it might have that bug included. Safest is 
-to always cherry-pick that commit. (if it has no dependencies)
+Well complicated code is en vogue recently :-) 
 
-	Ingo
+> Splay trees are still binary trees, so the fan-out argument is identical
+> to that against rbtrees.  If we have to pull in a cacheline, we might as
+> well use all of it.
+> 
+> Skip lists are just a Bad Idea(tm).  In O(x) notation they behave like
+> binary trees, waste cachelines left and right, use more memory, depend
+> on a sufficiently good random() function,...  I guess you never closely
+> looked at them, because anyone who does tries to forget them as fast as
+> possible.
+
+Using the radix trees more would be also an alternative.
+
+I honestly don't know how they will all perform in the kernel that is why I 
+thought it would be a good idea to just try them out. But I'm not 
+volunteering to code it up, so it was more an idle thought.
+
+Doing that would be a reasonable student project. In fact I've been asked 
+about this sort of thing by students in the past.
+
+Cleaning up the rbtree interface to be a little more abstract
+would be probably a good idea in general. I never really
+liked the open coded searches.
+
+-Andi
+
