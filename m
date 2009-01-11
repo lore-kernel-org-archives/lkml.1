@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZAKKSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZAKKia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbZAKKSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 05:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZAKKSi
+	id S1752199AbZAKKia (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 05:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZAKKiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 05:18:38 -0500
-Received: from smtp.witbe.net ([81.88.96.48]:41361 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbZAKKSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 05:18:36 -0500
-Date: Sun, 11 Jan 2009 11:18:25 +0100
-From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
-	<rol@witbe.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
-Subject: Re: Linux 2.6.29-rc1
-Message-ID: <20090111111825.49eaee0d@tux.DEF.witbe.net>
-In-Reply-To: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
-References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
-Organization: Witbe.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
-X-Ncc-RegId: fr.witbe
-X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 05:38:21 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:45207 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZAKKiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 05:38:20 -0500
+Date: Sun, 11 Jan 2009 11:38:13 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christoph Hellwig <hch@infradead.org>
+cc: Lachlan McIlroy <lachlan@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] XFS update for 2.6.29
+In-Reply-To: <Pine.LNX.4.64.0901021056360.14380@anakin>
+Message-ID: <Pine.LNX.4.64.0901111137410.30201@anakin>
+References: <20081230030845.A4F0558AE206@chook.melbourne.sgi.com>
+ <Pine.LNX.4.64.0901011048090.14380@anakin> <20090101170329.GA17892@infradead.org>
+ <Pine.LNX.4.64.0901021056360.14380@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Sat, 10 Jan 2009 16:13:02 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Fri, 2 Jan 2009, Geert Uytterhoeven wrote:
+> On Thu, 1 Jan 2009, Christoph Hellwig wrote:
+> > On Thu, Jan 01, 2009 at 10:50:52AM +0100, Geert Uytterhoeven wrote:
+> > > | fs/xfs/xfs_btree.c: In function 'xfs_btree_readahead_lblock':
+> > > | fs/xfs/xfs_btree.c:736: warning: comparison is always true due to limited range of data type
+> > > | fs/xfs/xfs_btree.c:741: warning: comparison is always true due to limited range of data type
+> > > 
+> > > left/right = xfs_fsblock_t (32 or 64 bit), NULLDFSBNO = xfs_dfsbno_t (64 bit)
+> > 
+> > Hmm, can't reproduce it here with CONFIG_LBD=n on x86, but the following
 > 
-> The merge window is over, and while it is quite possible that I missed a 
-> few merge requests in the crazy week that is behind us, apart from those 
-> we should now have most of the bulk of 2.6.29 merged up. And now it's
-> just a small matter of making sure it's all stable and ready to go.
+> x86-32 or -64?
 > 
+> It may also depend on the compiler version. I have gcc version 4.1.2 20061115
+> (prerelease) (Debian 4.1.1-21).
+> 
+> > patch should fix it:
+> 
+> Yep, the warning is good.
+                      ^^^^
+		      gone
 
-Don't know if this is important or not, but I have :
+JFYI, the bug has entered Linus' tree. The fix hasn't.
 
-WARNING: net/dccp/dccp.o(.text+0xf6): Section mismatch in reference from the function ccid_cleanup_builtins() to the function .exit.text:tfrc_lib_exit()
-The function ccid_cleanup_builtins() references a function in an exit section.
-Often the function tfrc_lib_exit() has valid usage outside the exit section
-and the fix is to remove the __exit annotation of tfrc_lib_exit.
+Gr{oetje,eeting}s,
 
-WARNING: net/dccp/dccp.o(.init.text+0x53): Section mismatch in reference from the function ccid_initialize_builtins() to the function .exit.text:tfrc_lib_exit()
-The function __init ccid_initialize_builtins() references
-a function __exit tfrc_lib_exit().
-This is often seen when error handling in the init function
-uses functionality in the exit path.
-The fix is often to remove the __exit annotation of
-tfrc_lib_exit() so it may be used outside an exit section.
+						Geert
 
-Regards,
-Paul
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
-
-"And they told us, what they wanted...
- Was a sound that could kill some-one, from a distance." -- Kate Bush
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
