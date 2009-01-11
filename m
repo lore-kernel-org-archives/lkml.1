@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbZAKEBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZAKEEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbZAKEBk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 23:01:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZAKEBb
+	id S1754770AbZAKEEz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 23:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZAKEEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 23:01:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44543 "EHLO mx2.mail.elte.hu"
+	Sat, 10 Jan 2009 23:04:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57045 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbZAKEBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 23:01:30 -0500
-Date: Sun, 11 Jan 2009 05:01:21 +0100
+	id S1751311AbZAKEEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 23:04:46 -0500
+Date: Sun, 11 Jan 2009 05:04:28 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] RT scheduler updates for tip
-Message-ID: <20090111040121.GD28520@elte.hu>
-References: <493939B1.40506@novell.com> <20081208143228.GF14856@elte.hu> <20081208161246.GB4570@elte.hu> <493E8246.1090309@novell.com> <20081212113415.GH32640@elte.hu> <20081212114952.GA16976@elte.hu> <4958EEB6.5020105@novell.com> <49591331.9080403@novell.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Ian.Campbell@citrix.com, linux-kernel@vger.kernel.org, jeremy@goop.org,
+       jj@chaosbits.net, weiyi.huang@gmail.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 0/2] Re: swiotlb: remove duplicated #include
+Message-ID: <20090111040428.GE28520@elte.hu>
+References: <1231524630.27350.79.camel@zakaz.uk.xensource.com> <1231525930-14087-1-git-send-email-Ian.Campbell@citrix.com> <20090111035527.GC28520@elte.hu> <20090111130018X.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49591331.9080403@novell.com>
+In-Reply-To: <20090111130018X.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: 1.0
@@ -36,56 +35,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> Gregory Haskins wrote:
-> > Ingo Molnar wrote:
-> >   
-> >> * Ingo Molnar <mingo@elte.hu> wrote:
-> >>
-> >>     
-> >>>
-> >>> Could you send a delta fix against cpus4096 for that bug you fixed?
-> >>>     
-> >>>       
+> On Sun, 11 Jan 2009 04:55:27 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Hi Ingo,
->   I have rebased the series against tip/cpus4096 as of today.  I
-> built/boot this kernel for both SMP/UP on a 4-way x86_64 box, and they
-> look sane.  Let me know if they still look broken to you.
+> > 
+> > * Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> > 
+> > > On Fri, 2009-01-09 at 18:10 +0000, Ian Campbell wrote:
+> > > 
+> > > > Patch is against Jeremy's Xen patch queue which is based on a pre-Xmas
+> > > > tip tree so fairly out of date, I hope it is somewhat useful though.
+> > > 
+> > > Here's a version again tip-latest, only compile tested though since my
+> > > testing relies on the Xen dom0 patch queue.
+> > 
+> > Applied them to tip/core/iommu:
+> > 
+> >  961d7d0: swiotlb: do not use sg_virt()
+> >  0b8698a: swiotlb: range_needs_mapping should take a physical address.
 > 
-> The following changes since commit 6092848a2a23b660150a38bc06f59d75838d70c8:
->   Sergio Luis (1):
->         x86: mark get_cpu_leaves() with __cpuinit annotation
-> 
-> are available in the git repository at:
-> 
->  
-> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git
-> sched/latest
-> 
-> Gregory Haskins (11):
->       sched: cleanup inc/dec_rt_tasks
->       sched: track the next-highest priority on each runqueue
->       sched: use highest_prio.curr for pull threshold
->       sched: use highest_prio.next to optimize pull operations
->       sched: only try to push a task on wakeup if it is migratable
->       sched: pull only one task during NEWIDLE balancing to limit
-> critical section
->       sched: make double-lock-balance fair
->       sched: add sched_class->needs_post_schedule() member
->       plist: fix PLIST_NODE_INIT to work with debug enabled
->       sched: create "pushable_tasks" list to limit pushing to one attempt
->       RT: fix push_rt_task() to handle dequeue_pushable properly
-> 
->  include/linux/init_task.h |    1 +
->  include/linux/plist.h     |    9 +-
->  include/linux/sched.h     |    2 +
->  kernel/sched.c            |   89 +++++++++++--
->  kernel/sched_rt.c         |  324
-> +++++++++++++++++++++++++++++++--------------
->  5 files changed, 311 insertions(+), 114 deletions(-)
+> I think that Xen camp wants these changes for 2.6.29. Are you trying to 
+> push tip/core/iommu for 2.6.29?
 
-pulled into tip/sched/rt, thanks Gregory!
+Yet unclear, depends on testing. Will probably wait for 2.6.30 though.
 
 	Ingo
