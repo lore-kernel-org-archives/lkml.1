@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZAKMHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZAKMHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbZAKMHN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 07:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZAKMGy
+	id S1753825AbZAKMHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZAKMHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 07:06:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34785 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753522AbZAKMGw (ORCPT
+	Sun, 11 Jan 2009 07:07:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50816
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751411AbZAKMHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 07:06:52 -0500
-Date: Sun, 11 Jan 2009 11:24:36 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected] Re: todays git: WARNING: at
- drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
-Message-ID: <20090111112436.33136222@lxorguk.ukuu.org.uk>
-In-Reply-To: <4969B956.6010802@ru.mvista.com>
-References: <200901091334.55823.borntraeger@de.ibm.com>
-	<200901101009.13699.borntraeger@de.ibm.com>
-	<20090110104114.633cacd8@lxorguk.ukuu.org.uk>
-	<200901101242.05203.borntraeger@de.ibm.com>
-	<49688B63.5030105@ru.mvista.com>
-	<20090110122130.318cf168@lxorguk.ukuu.org.uk>
-	<20090110130745.GA14049@elte.hu>
-	<49689EA8.20506@garzik.org>
-	<20090110132412.GB14049@elte.hu>
-	<20090110133617.GA22304@elte.hu>
-	<20090110135731.0da08c90@lxorguk.ukuu.org.uk>
-	<4968BA6F.8050207@ru.mvista.com>
-	<20090110152800.44308491@lxorguk.ukuu.org.uk>
-	<4968C5CA.6010508@ru.mvista.com>
-	<4968FFD7.6070302@ru.mvista.com>
-	<20090111001038.33943d2e@lxorguk.ukuu.org.uk>
-	<4969B956.6010802@ru.mvista.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 11 Jan 2009 07:07:31 -0500
+Date: Sun, 11 Jan 2009 04:07:32 -0800 (PST)
+Message-Id: <20090111.040732.196007749.davem@davemloft.net>
+To: rol@witbe.net
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.29-rc1
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090111111825.49eaee0d@tux.DEF.witbe.net>
+References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+	<20090111111825.49eaee0d@tux.DEF.witbe.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The VLB controller docs explicitly require you do entirely 32bit.
-> 
->    Didn't VLB contollers largely predate ATAPI devices?
+From: Paul Rolland (ポール・ロラン) <rol@witbe.net>
+Date: Sun, 11 Jan 2009 11:18:25 +0100
 
-Yes but they generally work with ATAPI.
+> Hello,
+> 
+> On Sat, 10 Jan 2009 16:13:02 -0800 (PST)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > The merge window is over, and while it is quite possible that I missed a 
+> > few merge requests in the crazy week that is behind us, apart from those 
+> > we should now have most of the bulk of 2.6.29 merged up. And now it's
+> > just a small matter of making sure it's all stable and ready to go.
+> > 
+> 
+> Don't know if this is important or not, but I have :
+
+I already have a fix for this pending in my tree:
+
+net: fix section mismatch warnings in dccp/ccids/lib/tfrc.c
+
+Removed the __exit annotation of tfrc_lib_exit(), in order to suppress the following section mismatch messages:
+
+WARNING: net/dccp/dccp.o(.text+0xd9): Section mismatch in reference from the function ccid_cleanup_builtins() to the function .exit.text:tfrc_lib_exit()
+The function ccid_cleanup_builtins() references a function in an exit section.
+Often the function tfrc_lib_exit() has valid usage outside the exit section
+and the fix is to remove the __exit annotation of tfrc_lib_exit.
+
+WARNING: net/dccp/dccp.o(.init.text+0x48): Section mismatch in reference from the function ccid_initialize_builtins() to the function .exit.text:tfrc_lib_exit()
+The function __init ccid_initialize_builtins() references
+a function __exit tfrc_lib_exit().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __exit annotation of
+tfrc_lib_exit() so it may be used outside an exit section.
+
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Acked-by: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/dccp/ccids/lib/tfrc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/dccp/ccids/lib/tfrc.c b/net/dccp/ccids/lib/tfrc.c
+index 60c412c..4902029 100644
+--- a/net/dccp/ccids/lib/tfrc.c
++++ b/net/dccp/ccids/lib/tfrc.c
+@@ -36,7 +36,7 @@ out:
+ 	return rc;
+ }
+ 
+-void __exit tfrc_lib_exit(void)
++void tfrc_lib_exit(void)
+ {
+ 	tfrc_rx_packet_history_exit();
+ 	tfrc_tx_packet_history_exit();
+-- 
+1.6.1.15.g159c88
 
