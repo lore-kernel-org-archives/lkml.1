@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZAKXE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZAKXHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZAKXE7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 18:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZAKXEu
+	id S1754710AbZAKXHe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 18:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZAKXHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 18:04:50 -0500
-Received: from cmpxchg.org ([85.214.51.133]:55138 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbZAKXEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 18:04:50 -0500
-Date: Mon, 12 Jan 2009 00:04:30 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: fix vmalloc breakage
-Message-ID: <20090111230430.GA17873@cmpxchg.org>
-References: <20090107230144.GA30170@jurassic.park.msu.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107230144.GA30170@jurassic.park.msu.ru>
+	Sun, 11 Jan 2009 18:07:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56569 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751568AbZAKXHJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 18:07:09 -0500
+Date: Sun, 11 Jan 2009 15:05:53 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+In-Reply-To: <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
+References: <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <20090109174158.096dee70.akpm@linux-foundation.org> <20090110030216.GW26290@one.firstfloor.org>
+ <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org>
+ <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 08, 2009 at 02:01:44AM +0300, Ivan Kokshaysky wrote:
-> On alpha, we have to map some stuff in the VMALLOC space very
-> early in the boot process (to make SRM console callbacks work
-> and so on, see arch/alpha/mm/init.c). For old VM allocator,
-> we just manually placed a vm_struct onto the global vmlist
-> and this worked for ages.
-> Unfortunately, the new allocator isn't aware of this, so it constantly
-> tries to allocate the VM space which is already in use, making vmalloc
-> on alpha defunct.
-> 
-> This patch forces KVA to import vmlist entries on init.
-> 
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> ---
->  mm/vmalloc.c |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index c5db9a7..0dd9c2e 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -24,6 +24,7 @@
->  #include <linux/rbtree.h>
->  #include <linux/radix-tree.h>
->  #include <linux/rcupdate.h>
-> +#include <linux/bootmem.h>
->  
->  #include <asm/atomic.h>
->  #include <asm/uaccess.h>
-> @@ -984,6 +985,8 @@ EXPORT_SYMBOL(vm_map_ram);
->  
->  void __init vmalloc_init(void)
->  {
-> +	struct vmap_area *va;
-> +	struct vm_struct *tmp;
->  	int i;
->  
->  	for_each_possible_cpu(i) {
-> @@ -996,6 +999,16 @@ void __init vmalloc_init(void)
->  		vbq->nr_dirty = 0;
->  	}
->  
-> +	/* Import existing vmlist entries. */
-> +	for (tmp = vmlist; tmp; tmp = tmp->next) {
-> +		va = alloc_bootmem(sizeof(struct vmap_area));
-> +		if (!va)
-> +			break;
 
-You don't need this check, alloc_bootmem() panics when it fails.
 
-	Hannes
+On Sun, 11 Jan 2009, Linus Torvalds wrote:
+> On Sun, 11 Jan 2009, Andi Kleen wrote:
+> > 
+> > Was -- i think that got fixed in gcc. But again only in newer versions.
+> 
+> I doubt it. People have said that about a million times, it has never 
+> gotten fixed, and I've never seen any actual proof.
+
+In fact, I just double-checked.
+
+Try this:
+
+	struct a {
+		unsigned long array[200];
+		int a;
+	};
+
+	struct b {
+		int b;
+		unsigned long array[200];
+	};
+
+	extern int fn3(int, void *);
+	extern int fn4(int, void *);
+
+	static inline __attribute__((always_inline)) int fn1(int flag)
+	{
+		struct a a;
+		return fn3(flag, &a);
+	}
+
+	static inline __attribute__((always_inline)) int fn2(int flag)
+	{
+		struct b b;
+		return fn4(flag, &b);
+	}
+
+	int fn(int flag)
+	{
+		if (flag & 1)
+			return fn1(flag);
+		return fn2(flag);
+	}
+
+(yeah, I made sure it would inline with "always_inline" just so that the 
+issue wouldn't be hidden by any "avoid stack frames" flags).
+
+Gcc creates a big stack frame that contains _both_ 'a' and 'b', and does 
+not merge the allocations together even though they clearly have no 
+overlap in usage. Both 'a' and 'b' get 201 long-words (1608 bytes) of 
+stack, causing the inlined version to have 3kB+ of stack, even though the 
+non-inlined one would never use more than half of it.
+
+So please stop claiming this is fixed. It's not fixed, never has been, and 
+quite frankly, probably never will be because the lifetime analysis is 
+hard enough (ie once you inline and there is any complex usage, CSE etc 
+will quite possibly mix up the lifetimes - the above is clearly not any 
+_realistic_ example).
+
+So even if the above trivial case could be fixed, I suspect a more complex 
+real-life case would still keep the allocations separate. Because merging 
+the allocations and re-using the same stack for both really is pretty 
+non-trivial, and the best solution is to simply not inline.
+
+(And yeah, the above is such an extreme case that gcc seems to realize 
+that it makes no sense to inline because the stack frame is _so_ big. I 
+don't know what the default stack frame limit is, but it's apparently 
+smaller than 1.5kB ;)
+
+			Linus
