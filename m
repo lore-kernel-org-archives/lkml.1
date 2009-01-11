@@ -1,58 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbZAKAiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZAKAzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755761AbZAKAiT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 19:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZAKAiL
+	id S1755422AbZAKAzn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 19:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZAKAza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 19:38:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52624 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752031AbZAKAiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 19:38:10 -0500
-Message-ID: <49693E70.4050303@zytor.com>
-Date: Sat, 10 Jan 2009 16:33:52 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alain Knaff <alain@knaff.lu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Russell King <rmk@arm.linux.org.uk>,
+	Sat, 10 Jan 2009 19:55:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60669 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbZAKAz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 19:55:28 -0500
+Date: Sun, 11 Jan 2009 01:54:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] bzip2/lzma kernel compression
-References: <200901091845.n09IjBsT003630@terminus.zytor.com> <4968A737.7040909@knaff.lu>
-In-Reply-To: <4968A737.7040909@knaff.lu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090111005458.GA5363@elte.hu>
+References: <20090109213442.GA20051@elte.hu> <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com> <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alain Knaff wrote:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Fri, 9 Jan 2009, H. Peter Anvin wrote:
+> > 
+> > I was thinking about experimenting with this, to see what level of 
+> > upside it might add.  Ingo showed me numbers which indicate that a 
+> > fairly significant fraction of the cases where removing inline helps 
+> > is in .h files, which would require code movement to fix.  Hence to 
+> > see if it can be automated.
 > 
-> But now I am curious how this will evolve from here. I suppose it will
-> soon appear in one of the patch-2.6.28-gitxy.gz under
-> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots , and then in an
-> 2.6.29-rcx etc.
-> Or are there some more other steps involved in between?
+> We _definitely_ have too many inline functions in headers. They usually 
+> start out small, and then they grow. And even after they've grown big, 
+> it's usually not at all clear exactly where else they should go, so even 
+> when you realize that "that shouldn't be inlined", moving them and 
+> making them uninlined is not obvious.
 > 
+> And quite often, some of them go away - or at least shrink a lot - when 
+> some config option or other isn't set. So sometimes it's an inline 
+> because a certain class of people really want it inlined, simply because 
+> for _them_ it makes sense, but when you enable debugging or something, 
+> it absolutely explodes.
 
-Well, Linus opted not to merge it for 2.6.29-rc1, which means it is dead
-for this merge cycle.  This gives us a couple of options, with the aim
-to get it merged into 2.6.30:
+IMO it's all quite dynamic when it comes to inlining.
 
-- We can continue to carry it in the -tip tree, which also means it will
-  be in the linux-next tree.
-- We can push it to Andrew Morton for the -mm tree.
-- Sam could take it in his kbuild tree.
+Beyond the .config variances (which alone is enough degrees of freedom to 
+make this non-static, it at least is a complexity we can control in the 
+kernel to a certain degree) it also depends on the platform, the CPU type, 
+the compiler version - factors which we dont (and probably dont want to) 
+control.
 
-Out of these, I think the kbuild tree is entirely inappropriate.  The
-selection of the other two is mostly a matter of testing, and which way
-will be easier to add the ARM code and other arch support.
+There's also the in-source variance of how many times an inline function 
+is used within a .c file, and that factor is not easily tracked. If it's 
+used once in a single .c file it should be inlined even if it's large. If 
+it's used twice in a .c file it might be put out of line. Transition 
+between those states is not obvious in all cases.
 
-	-hpa
+There's certainly clear-cut cases: the very small/constant ones that must 
+be short and inlined in any environment, and the very large/complex ones 
+that must not be inlined under any circumstance.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+But there's a lot of shades of grey inbetween - and that's where the size 
+wins come from. I'm not sure we can (or should) generally expect kernel 
+coders to continuously maintain the 30,000+ inline attributes in the 
+kernel that involve 100,000+ functions:
 
+ - Nothing breaks if it's there, nothing breaks if it's not there.
+   It's a completely opaque, transparent entity that never pushes itself 
+   to the foreground of human attention.
+
+ - It's so easy to add an inline function call site to a .c file without 
+   noticing that it should not be inlined anymore.
+
+ - It's so easy to _remove_ a usage site from a .c file without noticing
+   that something should be inlined. I.e. local changes will have an 
+   effect on the inline attribute _elsewhere_ - and this link is not 
+   obvious and not tooled when editing the code.
+
+ - The mapping from C statements to assembly can be non-obvious even to
+   experienced developers. Data type details (signed/unsigned, width,
+   etc.) can push an inline function over the (very hard to define)
+   boundary.
+
+I.e. IMO it's all very dynamic, it's opaque, it's not visualized and it's 
+hard to track - so it's very fundamentally not for humans to maintain 
+[except for the really clear-cut cases].
+
+Add to that that in _theory_ the decision to inline or not is boringly 
+mechanic and tools ought to be able to do a near-perfect job with it and 
+just adopt to whatever environment the kernel is in at a given moment when 
+it's built.
+
+GCC limps along with its annoyingly mis-designed inlining heuristics, 
+hopefully LLVC will become a real compiler that is aware of little details 
+like instruction size and has a built-in assembler ...
+
+So IMO all the basic psychological mechanics are missing from the picture 
+that would result in really good, "self-maintained" inline attributes.
+
+We can try to inject the requirement to have good inline attributes as an 
+external rule, as a principle we want to see met - but we cannot expect it 
+to be followed really in its current form, as it goes subtly against the 
+human nature on various levels.
+
+	Ingo
