@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZAKBro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZAKBso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbZAKBro (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZAKBrg
+	id S1756897AbZAKBso (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZAKBsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:47:36 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:45335 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZAKBrf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:47:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=P0qYg4tLpqvKVt19L9vZDSXJnhQZ9bVi1x4gSihIuRucYaalERFw9laslywh/HsgsB
-         fC+tFD9Y5syydJXkqKk++BzIiPBysaBN/JY0q04XjGwrMoFVi0cxrf6oeJ+bkxZQX+OI
-         FCxiFZKtcCOZMLF9fr+icFAdBjgB28xVRFB+4=
-Message-ID: <b6a2187b0901101747m6881dd4ap230dcf8abdf8239b@mail.gmail.com>
-Date: Sun, 11 Jan 2009 09:47:33 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Edward Shishkin" <edward.shishkin@gmail.com>
-Subject: Re: Reiserfsprogs-3.6.21
-Cc: "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Jeff Mahoney" <jeffm@suse.com>
-In-Reply-To: <4968CCC1.1070106@gmail.com>
+	Sat, 10 Jan 2009 20:48:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60816 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbZAKBsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:48:35 -0500
+Date: Sun, 11 Jan 2009 02:48:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/9] Performance counters for POWER
+Message-ID: <20090111014825.GO12885@elte.hu>
+References: <18791.10652.298501.863657@cargo.ozlabs.ibm.com> <20090109134727.GA902@elte.hu> <18791.57319.639438.433546@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4968CCC1.1070106@gmail.com>
+In-Reply-To: <18791.57319.639438.433546@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 12:28 AM, Edward Shishkin
-<edward.shishkin@gmail.com> wrote:
-> Please, find at http://www.kernel.org/pub/linux/utils/fs/reiserfs
 
-Edward, we appreciate your support on reiserfs and reiser4.
+* Paul Mackerras <paulus@samba.org> wrote:
 
-Thanks,
-Jeff.
+> Ingo Molnar writes:
+> 
+> > Do timec.c and kerneltop.c work fine for you by any chance? If yes, could 
+> > you send us some sample output that you get with them on your power 
+> > testbox(es)?
+> 
+> timec.c works with some minor modifications.  I'll post my version in a 
+> separate message.  The main difference is that syscall() on powerpc 
+> returns -1 on error and sets errno, rather than returning a negative 
+> error number.  I also added a way to specify raw events.
+
+thanks - i've picked up your version and uploaded it to:
+
+   http://redhat.com/~mingo/perfcounters/timec.c
+
+	Ingo
