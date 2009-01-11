@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZAKRsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZAKRu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZAKRsl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZAKRsN
+	id S1754774AbZAKRu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZAKRuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:48:13 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:58035 "EHLO relay.sgi.com"
+	Sun, 11 Jan 2009 12:50:20 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:53818 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752799AbZAKRsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:48:11 -0500
-Message-ID: <496A30D0.9070701@sgi.com>
-Date: Sun, 11 Jan 2009 09:48:00 -0800
+	id S1751602AbZAKRuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:50:19 -0500
+Message-ID: <496A314F.8070404@sgi.com>
+Date: Sun, 11 Jan 2009 09:50:07 -0800
 From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable sized
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com>	 <20090110223819.033438000@polaris-admin.engr.sgi.com> <86802c440901102301n5a7bb98ajd44a31ab32ddb726@mail.gmail.com> <496A2F21.8020808@sgi.com>
-In-Reply-To: <496A2F21.8020808@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable	sized
+References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223819.033438000@polaris-admin.engr.sgi.com> <86802c440901102301n5a7bb98ajd44a31ab32ddb726@mail.gmail.com> <20090111121732.GG27796@elte.hu>
+In-Reply-To: <20090111121732.GG27796@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Yinghai Lu wrote:
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
 >> On Sat, Jan 10, 2009 at 2:38 PM, Mike Travis <travis@sgi.com> wrote:
 >>> Impact: reduce memory usage.
 >>>
@@ -70,41 +72,9 @@ Mike Travis wrote:
 >> here should be
 >>
 >> +               desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
->>
->> YH
 > 
-> Hmm, thanks!  (I wonder why I wanted it the other way?  Oh well.)
+> indeed - i fixed this in tip/cpus4096.
 > 
-> I'll make an append patch to fix it.
-> 
-> Thanks,
-> Mike
+> 	Ingo
 
-I'll push this to my cpus4096-for-ingo.git tree:
-
-Subject: irq: fix initialization of legacy kstat irqs
-
-Impact: fix bug with legacy kstat irqs
-
-The sectioning of the allocated kstat_irqs_legacy should use nr_cpu_ids
-instead of NR_IRQS_LEGACY.
-
-Thanks to Yinghai for pointing this out.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- kernel/irq/handle.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6-for-ingo.orig/kernel/irq/handle.c
-+++ linux-2.6-for-ingo/kernel/irq/handle.c
-@@ -155,7 +155,7 @@ int __init early_irq_init(void)
- 
- 	for (i = 0; i < legacy_count; i++) {
- 		desc[i].irq = i;
--		desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
-+		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		init_alloc_desc_masks(&desc[i], 0, true);
- 		irq_desc_ptrs[i] = desc + i;
-
+Ahh, I didn't see this.  Thanks Ingo!
