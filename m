@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZAKBor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZAKBro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbZAKBor (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZAKBoj
+	id S1756523AbZAKBro (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZAKBrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:44:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45728 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbZAKBoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:44:38 -0500
-Date: Sun, 11 Jan 2009 02:44:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/9] Performance counters for POWER
-Message-ID: <20090111014429.GN12885@elte.hu>
-References: <18791.10652.298501.863657@cargo.ozlabs.ibm.com>
+	Sat, 10 Jan 2009 20:47:36 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:45335 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZAKBrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:47:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=P0qYg4tLpqvKVt19L9vZDSXJnhQZ9bVi1x4gSihIuRucYaalERFw9laslywh/HsgsB
+         fC+tFD9Y5syydJXkqKk++BzIiPBysaBN/JY0q04XjGwrMoFVi0cxrf6oeJ+bkxZQX+OI
+         FCxiFZKtcCOZMLF9fr+icFAdBjgB28xVRFB+4=
+Message-ID: <b6a2187b0901101747m6881dd4ap230dcf8abdf8239b@mail.gmail.com>
+Date: Sun, 11 Jan 2009 09:47:33 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Edward Shishkin" <edward.shishkin@gmail.com>
+Subject: Re: Reiserfsprogs-3.6.21
+Cc: "Reiserfs mailing list" <reiserfs-devel@vger.kernel.org>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Jeff Mahoney" <jeffm@suse.com>
+In-Reply-To: <4968CCC1.1070106@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18791.10652.298501.863657@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+References: <4968CCC1.1070106@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jan 11, 2009 at 12:28 AM, Edward Shishkin
+<edward.shishkin@gmail.com> wrote:
+> Please, find at http://www.kernel.org/pub/linux/utils/fs/reiserfs
 
-* Paul Mackerras <paulus@samba.org> wrote:
+Edward, we appreciate your support on reiserfs and reiser4.
 
-> The following series of patches extends Ingo and Thomas's performance
-> counter framework to add support for 64-bit POWER processors.
-> Currently I have the PPC970 family and POWER6 done.
-> 
-> The approach I have taken is to do the constraint checking and the
-> search through the space of alternative event codes as each group of
-> counters is added at the time a task is scheduled in.  That means we
-> are potentially doing the search several times in a row, with
-> interrupts disabled.  I think it will be OK since there are only a few
-> events that have alternatives (and not many of them), and the
-> constraint checking is fast since it is just simple integer
-> operations.  However, one of the things I plan to do is to instrument
-> that code to find out how long it takes in the worst case.  (If it
-> takes too long then I will need some major changes to the generic
-> code.)
-> 
-> This series is also available via git at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git
-> 
-> in the master branch.
-
-Pulled into tip/perfcounters/core, thanks Paul!
-
-	Ingo
+Thanks,
+Jeff.
