@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZAKNQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZAKNX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZAKNQN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 08:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZAKNPz
+	id S1753464AbZAKNX5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 08:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZAKNXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 08:15:55 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:39020 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbZAKNPy convert rfc822-to-8bit (ORCPT
+	Sun, 11 Jan 2009 08:23:49 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:36220 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZAKNXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 08:15:54 -0500
-Message-ID: <4969F0D1.8020504@cosmosbay.com>
-Date: Sun, 11 Jan 2009 14:14:57 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 11 Jan 2009 08:23:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KYggeVm1tRVUH8XOdcMemzh0emw6TiY8CoS50OqzrMW0W67NytXGG+bXosvhDWCLf4
+         VBTN99VRJionlaUbNUtOi6VucxV+Mja17DikicsBpz7miQh9Qd4qu4aS4QtJQbkqMzZI
+         xIg4YRvnOS39JJlFUU4RHtwdmosA4aJsUso1g=
+Message-ID: <3f9a31f40901110523m12b48cc5tf6d1d2309c21411a@mail.gmail.com>
+Date: Sun, 11 Jan 2009 18:53:47 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Petr Titera" <P.Titera@century.cz>
+Subject: Re: Linux 2.6.29-rc1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4969E4D7.5050802@century.cz>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-References: <4966F2F4.9080901@cosmosbay.com> <49677074.5090802@cosmosbay.com> <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <20090109224258.GA10257@ioremap.net> <496850D5.8040907@cosmosbay.com> <20090111125759.GB24173@ioremap.net>
-In-Reply-To: <20090111125759.GB24173@ioremap.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 11 Jan 2009 14:15:00 +0100 (CET)
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+	 <4969E4D7.5050802@century.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov a écrit :
-> Hi Eric.
-> 
-> On Sat, Jan 10, 2009 at 08:40:05AM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
->>> Not to interrupt the discussion, but for the clarification, that
->>> release_sock/lock_sock is used to process the backlog accumulated while
->>> socket was locked. And while dropping additional pair before the final
->>> release is ok, but moving this itself should be thought of twice.
->>>
->> Hum... I just caught the release_sock(sk)/lock_sock(sk) done in skb_splice_bits()
->>
->> So :
->>
->> 1) the release_sock/lock_sock done in tcp_splice_read() is not necessary
->> to process backlog. Its already done in skb_splice_bits()
-> 
-> Yes, in the tcp_splice_read() they are added to remove a deadlock.
+On Sun, Jan 11, 2009 at 5:53 PM, Petr Titera <P.Titera@century.cz> wrote:
+> Unfortunatelly it cannot be built without SMP support. This patch seems to
+> fix it:
+>
+> diff --git a/include/linux/smp.h b/include/linux/smp.h
+> index b824669..fd51bb9 100644
+> --- a/include/linux/smp.h
+> +++ b/include/linux/smp.h
+> @@ -11,6 +11,8 @@
+> #include <linux/list.h>
+> #include <linux/cpumask.h>
+>
+> +#include <asm/smp.h>
+> +
+> extern void cpu_idle(void);
+>
+> struct call_single_data {
+> @@ -30,7 +32,6 @@ extern unsigned int total_cpus;
+> #include <linux/kernel.h>
+> #include <linux/compiler.h>
+> #include <linux/thread_info.h>
+> -#include <asm/smp.h>
+>
+> /*
+>  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
+>
+>
 
-Could you elaborate ? A deadlock only if !SPLICE_F_NONBLOCK ?
+No, this is totally wrong, please check my patch in Subject "Build
+error on latest git"
 
-> 
->> 2) If we loop in tcp_read_sock() calling skb_splice_bits() several times
->> then we should perform the following tests inside this loop ?
->>
->> if (sk->sk_err || sk->sk_state == TCP_CLOSE || (sk->sk_shutdown & RCV_SHUTDOWN) ||
->>    signal_pending(current)) break;
->>
->> And removie them from tcp_splice_read() ?
-> 
-> It could be done, but for what reason? To detect disconnected socket early?
-> Does it worth the changes?
-> 
-
-I was thinking about the case your thread is doing a splice() from tcp socket to
- a pipe, while another thread is doing the splice from this pipe to something else.
-
-Once patched, tcp_read_sock() could loop a long time...
-
-
+--
+JSR
