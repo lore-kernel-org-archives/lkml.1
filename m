@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZAKRwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZAKR4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZAKRwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAKRwO
+	id S1754733AbZAKR4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZAKR4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:52:14 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:1584 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbZAKRwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:52:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:bcc:subject:date:user-agent;
-        b=Y9bg3mGRlVZa+h2aKVQjfynRGXzafIDCbDPHV7AcHV+PZ8vEWOhu8rAeNS/wvgKHMG
-         xF1Sp2qKmuRDsnTuApnPywXRPBvJTl2EdA10J7G7xT27sRyZEvseASGPm/fTy1Yj4Imk
-         BttM21l39XScb1+YWivFpDujw2TmvhwO9nxVk=
-Message-ID: <496a31c9.04506e0a.03e0.0963@mx.google.com>
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] btrfs & squashfs: Move btrfs and squashfsto's magic number
- to <linux/magic.h>
-Date: Mon, 12 Jan 2009 01:52:04 +0800
-User-Agent: sniper-patch-carrier/1.06
+	Sun, 11 Jan 2009 12:56:00 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:46082 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751738AbZAKRz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:55:59 -0500
+Date: Sun, 11 Jan 2009 18:55:47 +0100
+From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
+Subject: Re: Linux 2.6.29-rc1
+Message-ID: <20090111185547.0200a264@tux.DEF.witbe.net>
+In-Reply-To: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the standard magic.h for btrfs and squashfs.
+Hello,
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 0a14b49..7256cf2 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -38,6 +38,7 @@
- #include <linux/namei.h>
- #include <linux/miscdevice.h>
- #include <linux/version.h>
-+#include <linux/magic.h>
- #include "compat.h"
- #include "ctree.h"
- #include "disk-io.h"
-@@ -51,7 +52,6 @@
- #include "export.h"
- #include "compression.h"
- 
--#define BTRFS_SUPER_MAGIC 0x9123683E
- 
- static struct super_operations btrfs_super_ops;
- 
-diff --git a/fs/squashfs/squashfs_fs.h b/fs/squashfs/squashfs_fs.h
-index 6840da1..283daaf 100644
---- a/fs/squashfs/squashfs_fs.h
-+++ b/fs/squashfs/squashfs_fs.h
-@@ -26,7 +26,6 @@
- #define SQUASHFS_CACHED_FRAGMENTS	CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE
- #define SQUASHFS_MAJOR			4
- #define SQUASHFS_MINOR			0
--#define SQUASHFS_MAGIC			0x73717368
- #define SQUASHFS_START			0
- 
- /* size of metadata (inode and directory) blocks */
-diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
-index a0466d7..071df5b 100644
---- a/fs/squashfs/super.c
-+++ b/fs/squashfs/super.c
-@@ -35,6 +35,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/zlib.h>
-+#include <linux/magic.h>
- 
- #include "squashfs_fs.h"
- #include "squashfs_fs_sb.h"
-diff --git a/include/linux/magic.h b/include/linux/magic.h
-index 439f6f3..0b4df7e 100644
---- a/include/linux/magic.h
-+++ b/include/linux/magic.h
-@@ -10,11 +10,13 @@
- #define SYSFS_MAGIC		0x62656572
- #define SECURITYFS_MAGIC	0x73636673
- #define TMPFS_MAGIC		0x01021994
-+#define SQUASHFS_MAGIC		0x73717368
- #define EFS_SUPER_MAGIC		0x414A53
- #define EXT2_SUPER_MAGIC	0xEF53
- #define EXT3_SUPER_MAGIC	0xEF53
- #define XENFS_SUPER_MAGIC	0xabba1974
- #define EXT4_SUPER_MAGIC	0xEF53
-+#define BTRFS_SUPER_MAGIC	0x9123683E
- #define HPFS_SUPER_MAGIC	0xf995e849
- #define ISOFS_SUPER_MAGIC	0x9660
- #define JFFS2_SUPER_MAGIC	0x72b6
+On Sat, 10 Jan 2009 16:13:02 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> 
+> The merge window is over, and while it is quite possible that I missed a 
+> few merge requests in the crazy week that is behind us, apart from those 
+> we should now have most of the bulk of 2.6.29 merged up. And now it's
+> just a small matter of making sure it's all stable and ready to go.
+
+Compiz is now refusing to run, and says :
+Jan 11 11:22:47 tux kernel: compiz:3330 map pfn expected mapping type
+ write-back for d0040000-d0a40000, got uncached-minus
+
+Due to the "write-back" part of the message, I've check /proc/mtrr and it
+does contain :
+[root@tux log]# cat /root/mtrr-2.6.29-rc1 
+reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+reg01: base=0x07f800000 ( 2040MB), size=    8MB, count=1: uncachable
+reg02: base=0x07f700000 ( 2039MB), size=    1MB, count=1: uncachable
+reg03: base=0x0d0000000 ( 3328MB), size=  256MB, count=1: write-combining
+
+When running 2.6.28, it does contain :
+[root@tux log]# cat /proc/mtrr 
+reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+reg01: base=0x07f800000 ( 2040MB), size=    8MB, count=1: uncachable
+reg02: base=0x07f700000 ( 2039MB), size=    1MB, count=1: uncachable
+reg03: base=0x0d0000000 ( 3328MB), size=  256MB, count=1: write-combining
+
+so it's exactly the same content.
+
+Is there anything else I should check ?
+
+Regards,
+Paul
+
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
+navigateur "Some people dream of success... while others wake up and work
+hard at it" 
+
+How do you explain Wayne Newton's POWER over millions?  It's th' MOUSTACHE
+...  Have you ever noticed th' way it radiates SINCERITY, HONESTY & WARMTH?
+It's a MOUSTACHE you want to take HOME and introduce to NANCY SINATRA!
