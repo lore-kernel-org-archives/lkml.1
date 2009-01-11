@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbZAKFFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbZAKFQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751763AbZAKFFi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:05:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZAKFFa
+	id S1751782AbZAKFQS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZAKFQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:05:30 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44095 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbZAKFF3 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:05:29 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Ying Han <yinghan@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
-Subject: Re: 2.6.29 -mm merge plans
-In-Reply-To: Your message of "Wed, 07 Jan 2009 20:18:34 PST."
-             <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090105175433.D875.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090105010726.c0433fea.akpm@linux-foundation.org> <6991.1231194895@turing-police.cc.vt.edu>
-            <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231647500_3490P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 10 Jan 2009 23:18:20 -0500
-Message-ID: <3838.1231647500@turing-police.cc.vt.edu>
+	Sun, 11 Jan 2009 00:16:06 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:56111 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750749AbZAKFQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 00:16:04 -0500
+Date: Sat, 10 Jan 2009 21:16:04 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
+Message-ID: <20090111051604.GF7061@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090111050129.GA6131@nowhere>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231647500_3490P
-Content-Type: text/plain; charset=us-ascii
+On Sun, Jan 11, 2009 at 06:01:31AM +0100, Frederic Weisbecker wrote:
+> On Sun, Jan 11, 2009 at 02:39:40AM +0100, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Sat, Jan 10, 2009 at 03:48:46PM +0800, Li Zefan wrote:
+> > > > Impact: also fix a bug in show_rcustats()
+> > > > 
+> > > > Use seq file for simplification, and the global buffer and mutex can be
+> > > > removed.
+> > > 
+> > > Looks very good, and passes my tests.
+> > > 
+> > > > While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
+> > > > due to a bug in show_rcustats().
+> > > 
+> > > Good eyes!
+> > > 
+> > > The only change I ask is that you pull the contents of
+> > > rcupreempt_debugfs_init() into the now-one-line rcupreempt_trace_init().
+> > > 
+> > > With that change:
+> > > 
+> > > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > >
+> > > > ---
+> > > >  kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
+> > 
+> > i think the whole kernel/rcupreempt_trace.c file might be a good candidate 
+> > for the 'statistical tracing' extensions to ftrace that Frederice is 
+> > working on.
+> > 
+> > That way there would just be a few tracepoints, and the rest would be done 
+> > in kernel/tracing/trace_rcupreempt.c, or so.
+> > 	Ingo
+> 
+> Indeed!
+> 
+> The debugfs and seqfile handling and handled in the statistical
+> tracing engine.
+> 
+> You just have to provide an iterator for your stat entries through two callbacks:
+> 
+> _ stat_start() -> gives the first entry
+> _ stat_next() -> iterates over the next entry
+> 
+> And an output callback
+> 
+> _ stat_show() -> print one entry from your stat list
+> 
+> And two optional things:
+> 
+> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
+> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
+> 
+> The last thing you need is to give a name to your trace file.
+> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
+> of your stats.
+> 
+> It is currently used by the branch tracer, and by a pending patch for a new workqueue
+> tracer which will provide you a simple example.
+> 
+> If you have any question about how to use it, don't hesitate to ask.
 
-On Wed, 07 Jan 2009 20:18:34 PST, Ying Han said:
-> Hi Valdis:
->      Please try this fix and i tested on ubunbu8.10 with xmms and it helps.
+Li Zefan, is this something you would be willing to try?  Sounds like
+it might be a good addition.
 
-Sorry for the long delay in testing, I was offline Wed-Friday taking some
-much-needed leave time.
-
-> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> index 9e268b6..f4bbd9b 100644
-> --- a/arch/x86/mm/fault.c
-> +++ b/arch/x86/mm/fault.c
-
-This didn't apply cleanly to a mmotm-0105 tree, but did apply cleanly
-with the following 3 patches reverted and then this new patch applied.
-
-	page_fault-retry-with-nopage_retry.patch
-	page_fault-retry-with-nopage_retry-fix.patch
-	page_fault-retry-with-nopage_retry-fix-fix.patch
-
-not surprising, since it looks like this patch is a replacement for all 3.  It
-built and booted nicely, and xmms on the resulting kernel behaves properly.
-
-Congrats on being able to debug the problem based on my fairly weird bug
-report. ;)
-
---==_Exmh_1231647500_3490P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJaXMMcC3lWbTT17ARAtAPAJ4gLqls56WlOsgdc8TSNqHyDxPMbACgsv5U
-NS7HDwgJ/fdb4RN4FrE9a78=
-=CZ9i
------END PGP SIGNATURE-----
-
---==_Exmh_1231647500_3490P--
+							Thanx, Paul
