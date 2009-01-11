@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZAKESm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbZAKEWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbZAKESm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 23:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZAKESd
+	id S1753272AbZAKEWn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 23:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZAKEWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 23:18:33 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:45979 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751086AbZAKESd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 23:18:33 -0500
-Message-ID: <49697306.9040103@sgi.com>
-Date: Sat, 10 Jan 2009 20:18:14 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Matt Mackall <mpm@selenic.com>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sparseirq: make some func to be used with genirq
-References: <496534B1.6080902@kernel.org> <20090108120619.GF1539@elte.hu> <1231435078.3178.278.camel@calx> <20090111034646.GA28520@elte.hu> <49696E92.6010804@sgi.com> <20090111040513.GF28520@elte.hu>
-In-Reply-To: <20090111040513.GF28520@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 10 Jan 2009 23:22:35 -0500
+Received: from sh.osrg.net ([192.16.179.4]:42988 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086AbZAKEWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 23:22:34 -0500
+Date: Sun, 11 Jan 2009 13:22:10 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, Ian.Campbell@citrix.com,
+       linux-kernel@vger.kernel.org, jeremy@goop.org, jj@chaosbits.net,
+       weiyi.huang@gmail.com, beckyb@kernel.crashing.org
+Subject: Re: [PATCH 0/2] Re: swiotlb: remove duplicated #include
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090111040428.GE28520@elte.hu>
+References: <20090111035527.GC28520@elte.hu>
+	<20090111130018X.fujita.tomonori@lab.ntt.co.jp>
+	<20090111040428.GE28520@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090111132204L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+On Sun, 11 Jan 2009 05:04:28 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
->> Ingo Molnar wrote:
->>> * Matt Mackall <mpm@selenic.com> wrote:
->>>
->>>> On Thu, 2009-01-08 at 13:06 +0100, Ingo Molnar wrote:
->>>>> (Matt Cc:-ed)
->>>>>
->>>>> Matt, does this look good to you? The point of this cleanup would be to 
->>>>> make desc->timer_rand_state depend on hardirq (the presence of irq_desc[]) 
->>>>> - not sparseirq (which does not make much sense).
->>>> Seems fine.
->>>>
->>>> Signed-off-by: Matt Mackall <mpm@selenic.com>
->>> applied it to tip/irq/urgent, thanks guys!
->>>
->>> 	Ingo
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->> This will conflict with the change of kstat_irqs from unsigned int to 
->> unsigned long.
->>
->> If you do your magic on tip/cpus4096, I will git-remote update my tree 
->> and make the conflict go away...
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> you can defer the change to unsigned long to a later stage, when these 
-> have hit upstream. (in a few days)
+> > On Sun, 11 Jan 2009 04:55:27 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> > > 
+> > > > On Fri, 2009-01-09 at 18:10 +0000, Ian Campbell wrote:
+> > > > 
+> > > > > Patch is against Jeremy's Xen patch queue which is based on a pre-Xmas
+> > > > > tip tree so fairly out of date, I hope it is somewhat useful though.
+> > > > 
+> > > > Here's a version again tip-latest, only compile tested though since my
+> > > > testing relies on the Xen dom0 patch queue.
+> > > 
+> > > Applied them to tip/core/iommu:
+> > > 
+> > >  961d7d0: swiotlb: do not use sg_virt()
+> > >  0b8698a: swiotlb: range_needs_mapping should take a physical address.
+> > 
+> > I think that Xen camp wants these changes for 2.6.29. Are you trying to 
+> > push tip/core/iommu for 2.6.29?
 > 
-> 	Ingo
+> Yet unclear, depends on testing. Will probably wait for 2.6.30 though.
 
-Good idea since the change to long tripped a panic in the CPUMASK_OFFSTACK=n
-case (which doesn't make a lot of sense at this moment.)
+Thanks, I see. Probably, it will get tons of conflict due to the dma
+API unification touching everywhere.
 
-Will push the remainder soon.
 
-Thanks,
-Mike
+BTW, what happened to?
 
+http://marc.info/?l=linux-kernel&m=123125853906986&w=2
+
+
+It's better to have these (especially Becky's work) in mainline now.
