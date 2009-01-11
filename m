@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZAKX6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZAKX70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZAKX6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 18:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZAKX6f
+	id S1754417AbZAKX70 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 18:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZAKX7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 18:58:35 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52703 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbZAKX6e (ORCPT
+	Sun, 11 Jan 2009 18:59:18 -0500
+Received: from mga12.intel.com ([143.182.124.36]:27992 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751795AbZAKX7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 18:58:34 -0500
-Date: Mon, 12 Jan 2009 01:12:55 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090112001255.GR26290@one.firstfloor.org>
-References: <20090109174158.096dee70.akpm@linux-foundation.org> <20090110030216.GW26290@one.firstfloor.org> <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
+	Sun, 11 Jan 2009 18:59:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,249,1231142400"; 
+   d="scan'208";a="98802042"
+Subject: Re: 2.6.29-mmotm0109 Odd prompt for Sharp Corgi backlight.
+From: Richard Purdie <rpurdie@linux.intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <67095.1231699127@turing-police.cc.vt.edu>
+References: <67095.1231699127@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Sun, 11 Jan 2009 23:59:59 +0000
+Message-Id: <1231718399.5304.62.camel@dax.rpnet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 03:05:53PM -0800, Linus Torvalds wrote:
+On Sun, 2009-01-11 at 13:38 -0500, Valdis.Kletnieks@vt.edu wrote:
+> So I'm building mmotm-0109, doing a 'make oldconfig', and out pops:
+> 
+>     Generic (aka Sharp Corgi) Backlight Driver (BACKLIGHT_GENERIC) [Y/n/m/?] (NEW) ?
+> 
+> Say y to enable the generic platform backlight driver previously
+> known as the Corgi backlight driver. If you have a Sharp Zaurus
+> SL-C7xx, SL-Cxx00 or SL-6000x say y.
 > 
 > 
-> On Sun, 11 Jan 2009, Linus Torvalds wrote:
-> > On Sun, 11 Jan 2009, Andi Kleen wrote:
-> > > 
-> > > Was -- i think that got fixed in gcc. But again only in newer versions.
-> > 
-> > I doubt it. People have said that about a million times, it has never 
-> > gotten fixed, and I've never seen any actual proof.
+> Two questions:
 > 
-> In fact, I just double-checked.
-> Try this:
+> 1) Is it a Corgi driver, or truly a generic one?  It can't be *too* generic
+> if it only applies to 3 Sharp Zaurus models?  Or do I want to specify it for
+> my Dell laptop that has a backlight too (in which case that help text needs
+> fixing)...
 
-Hmm, I actually had tested it some time ago with my own program
-(supposed to emulate an ioctl)
+It is truly generic code now. Your Dell laptop won't use it but it won't
+hurt it either.
 
-extern void f5(char *);
+> 2) Why does this default to 'Y'? (Probably depends on the answer to (1) - if
+> it's for one vendor, it probably should be N, but Y may make sense if it's
+> proper for the vast majority of all laptops and similar that have a backlight.
 
-static void f3(void)
-{
-	char y[100];
-	f5(y);
-}
+It defaults to Y since its harmless if not used and will become the
+common case for a large number of devices.
 
-static void f2(void)
-{
-	char x[100];
-	f5(x);
-}
+Cheers,
 
-int f(int cmd)
-{
-	switch (cmd) { 
-	case 1: f3(); break;
-	case 2: f2(); break;
-	}
-	return 1;
-}
+Richard
 
-and with gcc 4.3.1 I get:
 
-.globl f
-	.type	f, @function
-f:
-.LFB4:
-	subq	$120, %rsp			<---- not 200 bytes, stack gets reused; dunno where the 20 comes from
-.LCFI0:
-	cmpl	$1, %edi
-	je	.L4
-	cmpl	$2, %edi
-	je	.L4
-	movl	$1, %eax
-	addq	$120, %rsp
-	ret
-	.p2align 4,,10
-	.p2align 3
-.L4:
-	movq	%rsp, %rdi
-	call	f5
-	movl	$1, %eax
-	addq	$120, %rsp
-	ret
-.LFE4:
 
-so at least least for this case it works. Your case also doesn't work for me.
-So it looks like gcc didn't like something you did in your test program.
-Could be a pointer aliasing problem of some sort.
-
-But yes it doesn't work as well as we hoped.
-
--Andi
