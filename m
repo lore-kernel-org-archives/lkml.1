@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZAKGRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZAKG0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752169AbZAKGRS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 01:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZAKGRJ
+	id S1752504AbZAKG0c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 01:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZAKG0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 01:17:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35514 "EHLO mx2.redhat.com"
+	Sun, 11 Jan 2009 01:26:14 -0500
+Received: from sh.osrg.net ([192.16.179.4]:45344 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZAKGRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 01:17:05 -0500
-Date: Sun, 11 Jan 2009 07:15:05 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       xemul@openvz.org
-Subject: Re: [PATCH 6/7][v6] Protect cinit from blocked fatal signals
-Message-ID: <20090111061505.GB9014@redhat.com>
-References: <20090107074558.GA27881@us.ibm.com> <20090107075214.GF27985@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090107075214.GF27985@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750893AbZAKG0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 01:26:12 -0500
+Date: Sun, 11 Jan 2009 15:25:42 +0900
+To: joerg.roedel@amd.com
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 11/16] dma-debug: add checking for [alloc|free]_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1231517970-20288-12-git-send-email-joerg.roedel@amd.com>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
+	<1231517970-20288-12-git-send-email-joerg.roedel@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090111150026Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06, Sukadev Bhattiprolu wrote:
->
-> --- a/kernel/signal.c
-> +++ b/kernel/signal.c
-> @@ -1890,9 +1890,16 @@ relock:
->
->  		/*
->  		 * Global init gets no signals it doesn't want.
-> +		 * Container-init gets no signals it doesn't want from same
-> +		 * container.
-> +		 *
-> +		 * Note that if global/container-init sees a sig_kernel_only()
-> +		 * signal here, the signal must have been generated internally
-> +		 * or must have come from an ancestor namespace. In either
-> +		 * case, the signal cannot be dropped.
->  		 */
->  		if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-> -		    !signal_group_exit(signal))
-> +				!sig_kernel_only(signr))
+On Fri, 9 Jan 2009 17:19:25 +0100
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Just for record. We still have small problem with fatal_signal_pending(cinit),
-we should add a similar change to complete_signal to ensure that the pending
-SIGKILL implies SIGNAL_GROUP_EXIT. But this needs another patch, and this
-series is imho fine.
+> Impact: add debug callbacks for dma_[alloc|free]_coherent
+> 
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  include/linux/dma-debug.h |   16 ++++++++++++++++
+>  lib/dma-debug.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 61 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
+> index b2131f4..a28a701 100644
+> --- a/include/linux/dma-debug.h
+> +++ b/include/linux/dma-debug.h
+> @@ -40,6 +40,12 @@ extern void debug_map_sg(struct device *dev, struct scatterlist *sg,
+>  extern void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
+>  			   int nelems, int dir);
+>  
+> +extern void debug_alloc_coherent(struct device *dev, size_t size,
+> +				 dma_addr_t dma_addr, void *virt);
+> +
+> +extern void debug_free_coherent(struct device *dev, size_t size,
+> +				void *virt, dma_addr_t addr);
+> +
+>  #else /* CONFIG_DMA_API_DEBUG */
+>  
+>  static inline void dma_debug_init(u32 num_entries)
+> @@ -68,6 +74,16 @@ static inline void debug_unmap_sg(struct device *dev,
+>  {
+>  }
+>  
+> +static inline void debug_alloc_coherent(struct device *dev, size_t size,
+> +					dma_addr_t dma_addr, void *virt)
+> +{
+> +}
+> +
+> +static inline void debug_free_coherent(struct device *dev, size_t size,
+> +				       void *virt, dma_addr_t addr)
+> +{
+> +}
+> +
+>  #endif /* CONFIG_DMA_API_DEBUG */
+>  
+>  #endif /* __DMA_DEBUG_H */
+> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> index e6d45f9..a4a5b0f 100644
+> --- a/lib/dma-debug.c
+> +++ b/lib/dma-debug.c
+> @@ -604,3 +604,48 @@ void debug_unmap_sg(struct device *dev, struct scatterlist *sglist,
+>  }
+>  EXPORT_SYMBOL(debug_unmap_sg);
+>  
+> +void debug_alloc_coherent(struct device *dev, size_t size,
+> +			  dma_addr_t dma_addr, void *virt)
+> +{
+> +	struct dma_debug_entry *entry;
+> +
+> +	if (global_disable)
+> +		return;
+> +
+> +	if (dma_addr == bad_dma_address)
+> +		return;
 
-Oleg.
+Only X86 has 'bad_dma_address' (IA64 also has with some configurations
+though). You need to use dma_mapping_error, as I pointed out in the
+previous submission.
 
+I recommend you to try this on one non-x86 box (at least). Even if you
+don't have non x86, you can use cross compiler.
