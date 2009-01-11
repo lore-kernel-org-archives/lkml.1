@@ -1,101 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZAKB3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZAKBd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbZAKB3W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZAKB3G
+	id S1756586AbZAKBd4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbZAKBdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:29:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37220 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753429AbZAKB3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:29:02 -0500
-Date: Sun, 11 Jan 2009 02:28:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Snitzer <snitzer@gmail.com>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       jim owens <jowens@hp.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, sam@ravnborg.org,
-       Dave Anderson <anderson@redhat.com>
-Subject: Re: source line numbers with x86_64 modules? [Was: Re: [patch]
-	measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact]
-Message-ID: <20090111012811.GG12885@elte.hu>
-References: <170fa0d20901100621m74680e0ewd1916c70f1636c9b@mail.gmail.com> <20090110153446.GA13976@elte.hu> <170fa0d20901101021s3b9a18e9qe6150c374efa4d6f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20901101021s3b9a18e9qe6150c374efa4d6f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 10 Jan 2009 20:33:45 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:48835 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754465AbZAKBdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:33:44 -0500
+X-YMail-OSG: X.R8jKsVM1kPeKadHrYR6k8OxzkdZXt0xSmbOHAXl8o0cF33WmYCg4frmxRaNg6zscyZl6BPqqD7A4N5wwa4v6zO14ZqUZSyOq1eqWIkj6Cz5IFNV1F4t9p.4GezkwgYztIyZ216wOWHEw_nKmznEuHIV3j8yXSCPjkrvcWfobIPinb.acHYJNhrpfEVq9SDuXfkZU5wLPae4YYyqBSOud99iumb2Mw-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [LIO-Target]: Fix explict iSCSI Logout + iSCSI connection
+	failure corner case
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 10 Jan 2009 17:33:20 -0800
+Message-Id: <1231637600.4560.1143.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings all,
 
-* Mike Snitzer <snitzer@gmail.com> wrote:
+This patch is made against lio-core-2.6.git/master
+and tested on v2.6.28.  The lio-core-2.6.git tree can be found at:
 
-> On Sat, Jan 10, 2009 at 10:34 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Mike Snitzer <snitzer@gmail.com> wrote:
-> >
-> >> Yes, especially from someone who lacks the ability to properly 
-> >> configure kdump.  I'm fairly surprised others are giving you a free 
-> >> pass when you keep asserting how broken kdump is with such hollow 
-> >> criticism.  I rely heavily on kdump and it works quite well (kvm 
-> >> integration was lacking but has improved).
-> >
-> > hm, you say you rely heavily on kdump ... for what exactly, and how 
-> > does it help the upstream Linux kernel?
-> >
-> > I see a single fix from you in the whole repository:
-> >
-> >  ffc41cf: nbd: prevent sock_xmit from attempting to use a NULL socket
-> >
-> > ... and that single fix is a NULL pointer dereference that ought to have
-> > been quite debuggable from a plain oops alone.
-> 
-> I've reported various bugs and helped with prototypes for fixes (e.g. 
-> a0da84f3).  But by all means belittle me... must be fun.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
-I really did not want to belittle you - but in hindsight it really reads 
-that way ... sorry about that and how insensitive it was from me! :(
+Thanks,
 
-I just wanted to point out that if kdump is useful it must be _visible_. 
-Ask commit logs to include "this was debugged via kdump" lines, etc. The 
-upstream kernel must feel that it all matters.
+--nab
 
-The upstream kernel really has to be ruthless about such things and must 
-react to how things are not to how things are wished to be - one of the 
-most critical things is that keeps Linux ticking is people like you who 
-report and debug problems.
+>From 6fdadad6ac238cd1a5992c07de7acac0f44a7afb Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Sat, 10 Jan 2009 16:50:16 -0800
+Subject: [PATCH] [LIO-Target]: Fix explict iSCSI Logout + iSCSI connection failure corner case
 
-Note, back when kdump was added to the kernel many moons ago i strongly 
-supported it and helped out with the patches, etc. I still think it might 
-have the potential to become big - but it needs a ton of tech and care to 
-reach that level of convenience.
+While handling a iSCSI Logout with reason_code CLOSESESSION or a
+same CID CLOSECONNECTION request, there was a scenario observed where if the
+iSCSI connection where the Logout PDU was received on was to fail *before*
+the iSCSI TX thread for said connection could call iscsi_send_logout_response(),
+iscsi_close_connection() was being hung indefinately in iscsi_check_conn_usage_count()
+waiting for a zero iscsi_conn_t reference count.
 
-'kdump light' perhaps that dumps the most important data structures like 
-registers of all CPUs, task struct and the symbol tables, the current task 
-itself including the kernel stack plus the surrounding 4K of all pointers 
-that are in current registers and that point into kernel memory - maybe 
-straight to kerneloops.org [if the user agrees] - or something like that.
+This patch moves up the iscsi_inc_conn_usage_count() and iscsi_inc_session_usage_count()
+calls to iscsi_logout_closesession() and iscsi_logout_closeconnection() in iSCSI RX Thread
+context.  This logic had previously been located in iscsi_send_logout_response() in iSCSI
+TX Thread context, which in the case of iSCSI connection failure would cause the following
+logic to trigger in iscsi_target.c:iscsi_close_connection():
 
-	Ingo
+        if (atomic_read(&conn->conn_logout_remove)) {
+                if (conn->conn_logout_reason == CLOSESESSION) {
+                        iscsi_dec_conn_usage_count(conn);
+                        iscsi_dec_session_usage_count(sess);
+                }
+                if (conn->conn_logout_reason == CLOSECONNECTION)
+                        iscsi_dec_conn_usage_count(conn);
+
+                atomic_set(&conn->conn_logout_remove, 0);
+                atomic_set(&sess->session_reinstatement, 0);
+                atomic_set(&sess->session_fall_back_to_erl0, 1);
+        }
+
+This would incorrect call iscsi_dec_conn_usage_count() and iscsi_dec_session_usage_count()
+(depending on logout_reason), even though the iSCSI TX thread context code had not reached
+iscsi_send_logout_response() to actually increment the iscsi_conn_t and iscsi_session_t
+reference counts.  This was because iscsi_conn_t->conn_logout_remove is set in
+iscsi_logout_closesession() and iscsi_logout_closeconnection().
+
+Tested with SC/S CLOSECONNECTION failure and MC/S same CID CLOSECONNECTION + iSCSI
+connection failure cases on v2.6.28.
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/iscsi_target.c |   32 +++++++++++++++++---------------
+ 1 files changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/lio-core/iscsi_target.c b/drivers/lio-core/iscsi_target.c
+index 019fb08..8f572af 100644
+--- a/drivers/lio-core/iscsi_target.c
++++ b/drivers/lio-core/iscsi_target.c
+@@ -2684,16 +2684,17 @@ extern int iscsi_logout_closesession (iscsi_cmd_t *cmd, iscsi_conn_t *conn)
+ 	atomic_set(&sess->session_logout, 1);
+ 	atomic_set(&conn->conn_logout_remove, 1);
+ 	conn->conn_logout_reason = CLOSESESSION;
++
++	iscsi_inc_conn_usage_count(conn);
++	iscsi_inc_session_usage_count(sess);
+ 	
+ 	spin_lock_bh(&sess->conn_lock);
+ 	for (conn_p = sess->conn_head; conn_p; conn_p = conn_p->next) {
+ 		if (conn_p->conn_state != TARG_CONN_STATE_LOGGED_IN)
+ 			continue;
+ 		
+-		iscsi_inc_conn_usage_count(conn_p);
+ 		TRACE(TRACE_STATE, "Moving to TARG_CONN_STATE_IN_LOGOUT.\n");
+ 		conn_p->conn_state = TARG_CONN_STATE_IN_LOGOUT;
+-		iscsi_dec_conn_usage_count(conn_p);
+ 	}
+ 	spin_unlock_bh(&sess->conn_lock);
+ 	
+@@ -2722,8 +2723,11 @@ extern int iscsi_logout_closeconnection (iscsi_cmd_t *cmd, iscsi_conn_t *conn)
+ 		spin_lock_bh(&conn->state_lock);
+ 		TRACE(TRACE_STATE, "Moving to TARG_CONN_STATE_IN_LOGOUT.\n");
+ 		conn->conn_state = TARG_CONN_STATE_IN_LOGOUT;
++
+ 		atomic_set(&conn->conn_logout_remove, 1);
+ 		conn->conn_logout_reason = CLOSECONNECTION;
++		iscsi_inc_conn_usage_count(conn);
++
+ 		spin_unlock_bh(&conn->state_lock);
+ 	} else {
+ 		/*
+@@ -3503,24 +3507,22 @@ static inline int iscsi_send_logout_response (
+ 		TRACE(TRACE_ISCSI, "iSCSI session logout successful, setting"
+ 			" logout response to CONNORSESSCLOSEDSUCCESSFULLY.\n");
+ 		cmd->logout_response = CONNORSESSCLOSEDSUCCESSFULLY;
+-		iscsi_inc_conn_usage_count(conn);
+-		iscsi_inc_session_usage_count(sess);
+ 		break;
+ 	case CLOSECONNECTION:
+ 		if (cmd->logout_response == CIDNOTFOUND)
+ 			break;
++		/*
++		 * For CLOSECONNECTION logout requests carrying
++		 * a matching logout CID -> local CID, the reference
++		 * for the local CID will have been incremented in
++		 * iscsi_logout_closeconnection().
++		 * 
++		 * For CLOSECONNECTION logout requests carrying
++		 * a different CID than the connection it arrived
++		 * on, the connection responding to cmd->logout_cid
++		 * is stopped in iscsi_logout_post_handler_diffcid().
++		 */
+ 
+-		if (conn->cid == cmd->logout_cid)
+-			iscsi_inc_conn_usage_count(conn);
+-		else {
+-			/*
+-			 * For CLOSECONNECTION logout requests carrying
+-			 * a different CID than the connection it arrived
+-			 * on, the connection responding to cmd->logout_cid
+-			 * is stopped in iscsi_logout_post_handler_diffcid().
+-			 */
+-			do {} while(0);
+-		}
+ 		TRACE(TRACE_ISCSI, "iSCSI CID: %hu logout on CID: %hu"
+ 			" successful.\n", cmd->logout_cid, conn->cid);
+ 		cmd->logout_response = CONNORSESSCLOSEDSUCCESSFULLY;
+-- 
+1.5.4.1
+
+
+
