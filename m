@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbZAKPMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZAKPNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbZAKPMf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZAKPMX
+	id S1754719AbZAKPNb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZAKPNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:12:23 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44080 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZAKPMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:12:23 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <496A0C4E.5040502@s5r6.in-berlin.de>
-Date: Sun, 11 Jan 2009 16:12:14 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Sun, 11 Jan 2009 10:13:20 -0500
+Received: from mail.gmx.net ([213.165.64.20]:38639 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751848AbZAKPNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 10:13:19 -0500
+X-Authenticated: #1490710
+X-Provags-ID: V01U2FsdGVkX18PiYxAkJMPEfppsRwL9gWgM7WdcBnRGe5pGLuAUF
+	D7kLs1JibzEhZ+
+Date: Sun, 11 Jan 2009 16:14:03 +0100 (CET)
+From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+X-X-Sender: schindelin@pacific.mpi-cbg.de
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+Subject: Re: current git kernel has strange problems during bisect
+In-Reply-To: <200901111607.59054.borntraeger@de.ibm.com>
+Message-ID: <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de>
+References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: joseluismarchetti@yahoo.com.br
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: MAC address runtime configuration in new driver (was Re: ...no subject)
-References: <204164.94418.qm@web34403.mail.mud.yahoo.com>
-In-Reply-To: <204164.94418.qm@web34403.mail.mud.yahoo.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jose Luis Marchetti wrote:
-> Hi,
-> 
-> I would like to open/read/write/close a regular file from my device
-> driver.
-> I think it would be possible, but I am confused, the "The Linux Kernel
-> Module Programming Guide" states that I can not use standard libraries
-> from within a module, I know the standard library ends up calling
-> system calls, but which calls should I use to deal with regular
-> files ?
+Hi,
 
-http://kernelnewbies.org/FAQ/WhyWritingFilesFromKernelIsBad discusses this.
+On Sun, 11 Jan 2009, Christian Borntraeger wrote:
 
-> I am developing a Ethernet driver and the Mac address configuration
+> Am Sonntag 11 Januar 2009 schrieb Christian Borntraeger:
+> > doing a 
+> > git bisect start
+> > git bisect good a3a798c
+> > git bisect bad v2.6.29-rc1
+> > 
+> > results in a repository without several files, e.g Makefile!
+> > git describe also fails.
 > 
-> Thanks in advance!
+> In fact, retesting with a clean repository shows, that there are only btrfs 
+> files - nothing else.
 > 
-> José Luís Marchetti
+> Linus did you pull a broken btrfs repository?
 
-Userspace could write the necessary configuration data into the kernel,
-for example a sysfs attribute.  Of course the attribute could also be
-readable.  But perhaps there are already established mechanisms for
-exactly this purpose.  I added Cc: netdev, maybe somebody there can give
-advice.
--- 
-Stefan Richter
--=====-==--= ---= -=-==
-http://arcgraph.de/sr/
+I guess it is a subtree merge.  So no, nothing went wrong
+
+Use "git bisect skip" to skip over those.
+
+Hth,
+Dscho
+
