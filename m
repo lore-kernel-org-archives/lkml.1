@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZAKLtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZAKL5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177AbZAKLtU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 06:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZAKLtK
+	id S1752616AbZAKL5k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 06:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZAKL5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 06:49:10 -0500
-Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:63373 "EHLO
-	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbZAKLtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 06:49:09 -0500
-Subject: Re: [GIT PULL] LED updates for 2.6.29
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <lg@denx.de>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <Pine.LNX.4.58.0901102138300.1626@shell2.speakeasy.net>
-References: <1231500186.5317.9.camel@dax.rpnet.com>
-	 <Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp>
-	 <1231543199.5317.63.camel@dax.rpnet.com>
-	 <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
-	 <1231633983.5330.32.camel@dax.rpnet.com>
-	 <Pine.LNX.4.58.0901102138300.1626@shell2.speakeasy.net>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 11:49:19 +0000
-Message-Id: <1231674559.5304.13.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 06:57:31 -0500
+Received: from web.keli.cz ([77.48.235.227]:40892 "EHLO web.keli.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZAKL5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 06:57:31 -0500
+Message-ID: <4969DEA0.5020301@century.cz>
+Date: Sun, 11 Jan 2009 12:57:20 +0100
+From: Petr Titera <P.Titera@century.cz>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Build error on latest git
+References: <4969C096.9060909@century.cz>
+In-Reply-To: <4969C096.9060909@century.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-10 at 21:43 -0800, Trent Piepho wrote:
-> On Sun, 11 Jan 2009, Richard Purdie wrote:
-> > On Sat, 2009-01-10 at 04:31 -0800, Trent Piepho wrote:
-> > > The LED tree makes more sense for what's left I think.  There was a
-> > > openfirmware gpio patch, but that's already gone in.  What's left only
-> > > touches led files and the device tree binding docs.
-> > >
-> > > AFAIK, there were no objections to the patches left.
-> >
-> > Ok, these are now queued in the LED tree:
-> >
-> > http://git.o-hand.com/cgit.cgi/linux-rpurdie-leds/log/
-> >
-> > I did merge the last three patches in one and make some changes to deal
-> > with some other outstanding issues. Let me know ASAP if there are any
-> > problems.
-> 
-> Since the last patch looks like it's just my three patches folded into one,
-> shouldn't I be listed as the author and the primary signed off by?
+Going through source it seems to me (still building) that it is caused 
+by including asm/smp.h only if build with CONFIG_SMP. This patch seems 
+to fix this
 
-I made changes other than just merging the three together (the
-syspend/resume change and the bitfield parts in leds.h) so putting you
-as signed off by/authorship would not have been "correct" and I credited
-you in the commit message instead. I wanted to get the missing patches
-queued ASAP so I went with the way that does fit in the rules as you'd
-not have been happy if a modified patch was attributed to you. I'll put
-you as author and a signoff if you confirm thats acceptable.
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index b824669..fd51bb9 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -11,6 +11,8 @@
+ #include <linux/list.h>
+ #include <linux/cpumask.h>
+ 
++#include <asm/smp.h>
++
+ extern void cpu_idle(void);
+ 
+ struct call_single_data {
+@@ -30,7 +32,6 @@ extern unsigned int total_cpus;
+ #include <linux/kernel.h>
+ #include <linux/compiler.h>
+ #include <linux/thread_info.h>
+-#include <asm/smp.h>
+ 
+ /*
+  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
 
-Cheers,
 
-Richard
+Petr Titera napsal(a):
+> Hello,
+>
+> I'm getting this build error in arch/x86/kernel/mpparse.c using latest 
+> git:
+>
+> arch/x86/kernel/mpparse.c: In function ‘MP_processor_info’:
+> arch/x86/kernel/mpparse.c:57: error: ‘disabled_cpus’ undeclared (first 
+> use in this function)
+> arch/x86/kernel/mpparse.c:57: error: (Each undeclared identifier is 
+> reported only once
+> arch/x86/kernel/mpparse.c:57: error: for each function it appears in.)
+> arch/x86/kernel/mpparse.c: In function ‘MP_bus_info’:
+> arch/x86/kernel/mpparse.c:85: error: implicit declaration of function 
+> ‘apic_printk’
+> arch/x86/kernel/mpparse.c:85: error: ‘APIC_VERBOSE’ undeclared (first 
+> use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘print_MP_intsrc_info’:
+> arch/x86/kernel/mpparse.c:156: error: ‘APIC_VERBOSE’ undeclared (first 
+> use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘print_mp_irq_info’:
+> arch/x86/kernel/mpparse.c:164: error: ‘APIC_VERBOSE’ undeclared (first 
+> use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘MP_lintsrc_info’:
+> arch/x86/kernel/mpparse.c:236: error: ‘APIC_VERBOSE’ undeclared (first 
+> use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘smp_read_mpc’:
+> arch/x86/kernel/mpparse.c:395: error: ‘num_processors’ undeclared 
+> (first use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘__get_smp_config’:
+> arch/x86/kernel/mpparse.c:670: error: ‘num_processors’ undeclared 
+> (first use in this function)
+> arch/x86/kernel/mpparse.c: In function ‘smp_scan_config’:
+> arch/x86/kernel/mpparse.c:692: error: ‘APIC_VERBOSE’ undeclared (first 
+> use in this function)
+> make[1]: *** [arch/x86/kernel/mpparse.o] Error 1
+> make: *** [arch/x86/kernel] Error 2
+>
+> Petr Titera
 
