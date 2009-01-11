@@ -1,109 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZAKKy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZAKKzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752398AbZAKKy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 05:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZAKKyt
+	id S1753239AbZAKKzf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 05:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZAKKzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 05:54:49 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:49558 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbZAKKys (ORCPT
+	Sun, 11 Jan 2009 05:55:16 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:27203 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751204AbZAKKzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 05:54:48 -0500
-Message-ID: <4969CFF2.9020202@freemail.hu>
-Date: Sun, 11 Jan 2009 11:54:42 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Sun, 11 Jan 2009 05:55:14 -0500
+Message-ID: <4969D00C.2010209@panasas.com>
+Date: Sun, 11 Jan 2009 12:55:08 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Paul Gortmaker <p_gortmaker@yahoo.com>, netdev@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] smc-ultra: get rid of "eth%d" message
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] more SCSI updates for 2.6.28
+References: <1231459859.3237.116.camel@localhost.localdomain>
+In-Reply-To: <1231459859.3237.116.camel@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32712; Body=3 Fuz1=3
-	Fuz2=3
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Jan 2009 10:55:11.0467 (UTC) FILETIME=[133E93B0:01C973DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+James Bottomley wrote:
+> This is the second round of SCSI updates for the current merge window.
+> It also includes a round of bug fixes for the previous updates ...
+> 
+> The patch is available here:
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+> 
+> The short changelog is:
+> 
 
-Print out the dev->name only after register_netdev().  If the dev->name is
-printk()ed out before calling register_netdev() the result will be "eth%d"
-in the dmesg instead of "eth0".
+So what is the verdict for OSD initiator. Is it not going into 2.6.29?
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.28/drivers/net/smc-ultra.c.orig	2009-01-10 20:57:36.000000000 +0100
-+++ linux-2.6.28/drivers/net/smc-ultra.c	2009-01-10 20:59:48.000000000 +0100
-@@ -228,9 +228,6 @@ static int __init ultra_probe1(struct ne
- 	for (i = 0; i < 6; i++)
- 		dev->dev_addr[i] = inb(ioaddr + 8 + i);
-
--	printk("%s: %s at %#3x, %s", dev->name, model_name,
--	       ioaddr, print_mac(mac, dev->dev_addr));
--
- 	/* Switch from the station address to the alternate register set and
- 	   read the useful registers there. */
- 	outb(0x80 | reg4, ioaddr + 4);
-@@ -253,8 +250,10 @@ static int __init ultra_probe1(struct ne
- 		irq = irqmap[((irqreg & 0x40) >> 4) + ((irqreg & 0x0c) >> 2)];
-
- 		if (irq == 0) {
--			printk(", failed to detect IRQ line.\n");
--			retval =  -EAGAIN;
-+			printk(KERN_ERR "%s at %#3x, %s, "
-+			       "failed to detect IRQ line.\n", model_name,
-+			       ioaddr, print_mac(mac, dev->dev_addr));
-+			retval = -EAGAIN;
- 			goto out;
- 		}
- 		dev->irq = irq;
-@@ -280,22 +279,19 @@ static int __init ultra_probe1(struct ne
-
- 	ei_status.mem = ioremap(dev->mem_start, (ei_status.stop_page - START_PG)*256);
- 	if (!ei_status.mem) {
--		printk(", failed to ioremap.\n");
--		retval =  -ENOMEM;
-+		printk(KERN_ERR "%s at %#3x, %s, failed to ioremap.\n",
-+		       model_name, ioaddr, print_mac(mac, dev->dev_addr));
-+		retval = -ENOMEM;
- 		goto out;
- 	}
-
- 	dev->mem_end = dev->mem_start + (ei_status.stop_page - START_PG)*256;
-
- 	if (piomode) {
--		printk(",%s IRQ %d programmed-I/O mode.\n",
--			   eeprom_irq ? "EEPROM" : "assigned ", dev->irq);
- 		ei_status.block_input = &ultra_pio_input;
- 		ei_status.block_output = &ultra_pio_output;
- 		ei_status.get_8390_hdr = &ultra_pio_get_hdr;
- 	} else {
--		printk(",%s IRQ %d memory %#lx-%#lx.\n", eeprom_irq ? "" : "assigned ",
--			   dev->irq, dev->mem_start, dev->mem_end-1);
- 		ei_status.block_input = &ultra_block_input;
- 		ei_status.block_output = &ultra_block_output;
- 		ei_status.get_8390_hdr = &ultra_get_8390_hdr;
-@@ -311,6 +307,21 @@ static int __init ultra_probe1(struct ne
- 	retval = register_netdev(dev);
- 	if (retval)
- 		goto out;
-+
-+	if (piomode) {
-+		printk(KERN_INFO "%s: %s at %#3x, %s,"
-+			"%s IRQ %d programmed-I/O mode.\n",
-+			dev->name, model_name, ioaddr,
-+			print_mac(mac, dev->dev_addr),
-+			eeprom_irq ? " EEPROM" : " assigned", dev->irq);
-+	} else {
-+		printk(KERN_INFO "%s: %s at %#3x, %s,"
-+			"%s IRQ %d memory %#lx-%#lx.\n",
-+			dev->name, model_name, ioaddr,
-+			print_mac(mac, dev->dev_addr),
-+			eeprom_irq ? "" : " assigned",
-+			dev->irq, dev->mem_start, dev->mem_end-1);
-+	}
- 	return 0;
- out:
- 	release_region(ioaddr, ULTRA_IO_EXTENT);
+Boaz
