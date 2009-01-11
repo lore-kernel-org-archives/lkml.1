@@ -1,137 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZAKUAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZAKUEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbZAKUAd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 15:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZAKUAN
+	id S1753970AbZAKUEl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 15:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZAKUE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 15:00:13 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59536 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752244AbZAKUAL (ORCPT
+	Sun, 11 Jan 2009 15:04:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34462 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750905AbZAKUE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 15:00:11 -0500
-Date: Sun, 11 Jan 2009 21:14:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090111201427.GP26290@one.firstfloor.org>
-References: <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <20090109174158.096dee70.akpm@linux-foundation.org> <20090110030216.GW26290@one.firstfloor.org> <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 11 Jan 2009 15:04:27 -0500
+Date: Sun, 11 Jan 2009 12:04:12 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: current git kernel has strange problems during bisect
+In-Reply-To: <20090111194258.GA4840@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain>
+References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com> <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de> <200901111620.03345.borntraeger@de.ibm.com> <alpine.LFD.2.00.0901111113150.6528@localhost.localdomain>
+ <20090111194258.GA4840@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 11:25:32AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 11 Jan 2009, Andi Kleen wrote:
-> > 
-> > The proposal was to use -fno-inline-functions-called-once (but 
-> > the resulting numbers were not promising)
-> 
-> Well, the _optimal_ situation would be to not need it, because gcc does a 
-> good job without it. That implies trying to find a better balance between 
-> "worth it" and "causes problems". 
-> 
-> Rigth now, it does sound like gcc simply doesn't try to balance AT ALL, or 
-> balances only when we add some very version-specific random options (ie 
-> the stack-usage one). 
 
-The gcc 4.3 inliner takes stack growth into account by default (without
-any special options). I experimented a bit with it when that
-was introduced and found the default thresholds are too large for the kernel 
-and don't change the checkstack.pl picture much.
 
-I asked back then and was told --param large-stack-frame
-is expected to be a reasonable stable --param (as much as these can
-be) and I did a patch to lower it, but I couldn't get myself
-to actually submit it [if you really want it I can send it]. 
-
-But of course that only helps for gcc 4.3+, older gccs would need
-a different workaround.
-
-On the other hand (my personal opinion, not shared by everyone) is 
-that the ioctl switch stack issue is mostly only a problem with 4K 
-stacks and in the rare cases when I still run 32bit kernels
-I never set that option because I consider it russian roulette
-(because there undoutedly dangerous dynamic stack growth cases that 
-checkstack.pl doesn't flag) 
-
-> And even those options don't actually make much 
-> sense - yes, they "balance" things, but they don't do it in a sensible 
-> manner.
+On Sun, 11 Jan 2009, Sam Ravnborg wrote:
 > 
-> For example: stack usage is undeniably a problem (we've hit it over and 
-> over again), but it's not about "stack must not be larger than X bytes". 
+> The cost of moving this piece of history from one git tree to another
+> git tree is that we make it harder to debug the kernel for the advanced user
+> that knows how to do bisect.
 > 
-> If the call is done unconditionally, then inlining _one_ function will 
-> grow the static stack usage of the function we inline into, but it will 
-> _not_ grow the dynamic stack usage one whit - so deciding to not inline 
-> because of stack usage is pointless.
+> It is not like this history would be lost - one just had to look
+> somewhere else to find it.
+> 
+> That may be a bad pain/benefit ratio - time will tell.
 
-Don't think the current inliner takes that into account from
-a quick look at the sources, although it probably could.  
-Maybe Honza can comment.
+Umm. No. 
 
-But even if it did it could only do that for a single file,
-but if the function is in a different file gcc doesn't
-have the information (unless you run with David's --combine hack).
-This means the kernel developers have to do it anyways.
+Time is exactly what makes it useful. It will make all the downsides 
+shrink, and the advantages stay.
 
-On the other hand I'm not sure it's that big a problem. Just someone
-should run make checkstack occasionally and add noinlines to large
-offenders.
+> There should be a way to avoid such pain when bisecting without
+> having to mark a semi-random (for the average person) commit as good.
 
--Andi
+Well, you don't actually have to mark that semi-random one as good either. 
+What you can do is to just mark anything that _only_ contains fs/btrfs as 
+good. IOW, you don't have to know the magic number - you just have to be 
+told that "oh, if you only have btrfs files, and you're not actively 
+bisecting a btrfs bug, just do 'git bisect good' and continue".
 
-[keep quote for Honza's benefit]
+Yeah, you'll hit it a few times, but you don't even have to compile things 
+or boot anything, so it's not actually going to be all that much slower 
+than just knowing about the magic point either.
 
-> 
-> See? So "stop inlining when you hit a stack limit" IS THE WRONG THING TO 
-> DO TOO! Because it just means that the compiler continues to do bad 
-> inlining decisions until it hits some magical limit - but since the 
-> problem isn't the static stack size of any _single_ function, but the 
-> combined stack size of a dynamic chain of them, that's totally idiotic. 
-> You still grew the dynamic stack, and you have no way of knowing by how 
-> much - the limit on the static one simply has zero bearing what-so-ever on 
-> the dynamic one.
-> 
-> So no, "limit static stack usage" is not a good option, because it stops 
-> inlining when it doesn't matter (single unconditional call), and doesn't 
-> stop inlining when it might (lots of sequential calls, in a deep chain).
-> 
-> The other alternative is to let gcc do what it does, but 
-> 
->  (a) remove lots of unnecessary 'inline's. And we should likely do this 
->      regardless of any "-fno-inline-functions-called-once" issues.
-> 
->  (b) add lots of 'noinline's to avoid all the cases where gcc screws up so 
->      badly that it's either a debugging disaster or an actual correctness 
->      issue.
-> 
-> The problem with (b) is that it's a lot of hard thinking, and debugging 
-> disasters always happen in code that you didn't realize would be a problem 
-> (because if you had, it simply wouldn't be the debugging issue it is).
-> 
-> 			Linus
-> 
+So now you can consider yourself told how to solve it. It wasn't that 
+hard. And the advantage is that we have real history.
 
--- 
-ak@linux.intel.com
+			Linus
