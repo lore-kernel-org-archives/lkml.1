@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZAKSlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZAKSnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZAKSlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZAKSln
+	id S1753104AbZAKSnN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 13:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZAKSm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:41:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37956 "EHLO ogre.sisk.pl"
+	Sun, 11 Jan 2009 13:42:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37968 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbZAKSlm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:41:42 -0500
+	id S1751193AbZAKSmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 13:42:55 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Fran=C3=A7ois_Valenduc?= 
-	<francois.valenduc@tvcablenet.be>
-Subject: Re: [Bug #12216] Error when drm is loaded
-Date: Sun, 11 Jan 2009 19:41:19 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [Bug #12279] 2.6.28 suspend regression - HP 2510p
+Date: Sun, 11 Jan 2009 19:42:34 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, Keith Packard <keithp@keithp.com>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.35C.HbfaJB@chimera> <496A073D.4070804@tvcablenet.be>
-In-Reply-To: <496A073D.4070804@tvcablenet.be>
+       "David Roka" <roka@dawid.hu>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.1SC.wafaJB@chimera> <200901111703.24868.bzolnier@gmail.com>
+In-Reply-To: <200901111703.24868.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901111941.20426.rjw@sisk.pl>
+Message-Id: <200901111942.34899.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, François Valenduc wrote:
-> Rafael J. Wysocki a écrit :
+On Sunday 11 January 2009, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 11 January 2009, Rafael J. Wysocki wrote:
 > > This message has been generated automatically as a part of a report
 > > of regressions introduced between 2.6.27 and 2.6.28.
-> >
+> > 
 > > The following bug entry is on the current list of known regressions
 > > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
 > > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12216
-> > Subject		: Error when drm is loaded
-> > Submitter	: François Valenduc <francois.valenduc@tvcablenet.be>
-> > Date		: 2008-12-13 09:59 (30 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=52440211dcdc52c0b757f8b34d122e11b12cdd50
-> >
-> >
-> >
-> >   
-> This problem has been solved by the following patch:
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12279
+> > Subject		: 2.6.28 suspend regression - HP 2510p
+> > Submitter	: David Roka <roka@dawid.hu>
+> > Date		: 2008-12-23 04:17 (20 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4dde4492d850a4c9bcaa92e5bd7f4eebe3e2f5ab
 > 
-> commit 077ebed54fe66612f58b076628a72eca2be8df90
-> Author: Dave Airlie <airlied@redhat.com>
-> Date:   Mon Dec 22 17:11:02 2008 +1000
+> The fix went in the first IDE updates pull for 2.6.29:
 > 
->     drm/radeon: fix correctness of irq_enabled check for radeon.
+> commit 0e63a588fc3d6a5e6bb66bacaeb11cd9093141f8
+> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date:   Mon Dec 29 20:27:29 2008 +0100
 > 
+>     ide: fix IDE ACPI regression breaking suspend
+> ...
 > 
-> This fix is in kernel 2.6.28, so this bug can be removed from the
-> regression list.
+> so it can be marked as closed now.
 
-Thanks, closed.
+Thanks for closing.
 
+Best,
 Rafael
