@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751409AbZAKFod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZAKFou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751409AbZAKFod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbZAKFoY
+	id S1752827AbZAKFou (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZAKFof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:44:24 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:63866 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbZAKFoX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:44:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=n8522u4/Yhpderr/p16NNt0X3uhJcHX47VYyx5OZzH1owdkxJqUF61wvh1B42V5RhS
-         /taY77J787QCw8e10JjJPNvuJ9Rh6KMX5svLs1fc2OgSudC9n9dZqP3a2n1Rur4SnzzE
-         XO1uaO5C5bDncoyESJkBeH/FJnJv6BAv6AjGs=
-Message-ID: <a9cbba340901102144y2682ae1al4018c3613e99cee9@mail.gmail.com>
-Date: Sun, 11 Jan 2009 13:44:22 +0800
-From: "Cooper Yuan" <cooperyuan@gmail.com>
-To: joseluismarchetti@yahoo.com.br
-Subject: Re:
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <204164.94418.qm@web34403.mail.mud.yahoo.com>
+	Sun, 11 Jan 2009 00:44:35 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54092 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752537AbZAKFoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 00:44:34 -0500
+Message-ID: <49698739.6010003@garzik.org>
+Date: Sun, 11 Jan 2009 00:44:25 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <204164.94418.qm@web34403.mail.mud.yahoo.com>
+To: Tejun Heo <tj@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata hibernation fixes
+References: <20081104062734.GA4420@havoc.gtf.org> <495D7DC9.8070101@kernel.org>
+In-Reply-To: <495D7DC9.8070101@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0B5iawM027651
 
-try following code, hope it helpful:
-unsigned long old_fs;orig_open=sys_call_table(__NR_open);orig_read=sys_call_table(__NR_read);orig_close=sys_call_table(__NR_close);old_fs = get_fs();set_fs(get_ds());fd=orig_open(pathname,O_RDWR,"rwx-rwx-rwx");orig_read(fd,buffer,size);orig_close(fd);set_fs(old_fs);
+Tejun Heo wrote:
+> Jeff Garzik wrote:
+>> This adds code at a late stage (heading towards -rc4), but does
+>> eliminate a particular spin-up overcycling behavior associated with
+>> hibernation.
+>>
+>> Rafael's extended description below...  Separated to make it easier to
+>> pull-or-not, separate from the other libata fixes.  There shouldn't be
+>> any merge trouble between the two.
+>>
+>> SATA: Blacklist systems that spin off disks during ACPI power off
+> 
+> Jeff, I think this should be merged into 2.6.29 unless Linus still
+> objects.  Linus, as discussed in this thread, this is workaround for a
+> hardware / firmware problem and vanilla windows also suffers the
+> problem, so as ugly as it is, we need this to prevent double spin down
+> on the machine.
 
-On Sun, Jan 11, 2009 at 11:41 AM, Jose Luis Marchetti<joseluismarchetti@yahoo.com.br> wrote:> Hi,>> I would like to open/read/write/close a regular file from my device> driver.> I think it would be possible, but I am confused, the "The Linux Kernel> Module Programming Guide" states that I can not use standard libraries> from within a module, I know the standard library ends up calling> system calls, but which calls should I use to deal with regular> files ?> I am developing a Ethernet driver and the Mac address configuration>> Thanks in advance!>> JosÃ© LuÃ­s Marchetti>>>      Veja quais sÃ£o os assuntos do momento no Yahoo! +Buscados> http://br.maisbuscados.yahoo.com> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html> Please read the FAQ at  http://www.tux.org/lkml/>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Oh, I forgot to reply to this...  libata-2.6.git#hibern_regress no 
+longer applies cleanly.
+
+I'll try poking at it on Monday and get it cleaned up, as it is IMO a 
+bug fix and still should go in.
+
+	Jeff
+
+
+
