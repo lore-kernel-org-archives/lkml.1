@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZAKRsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZAKRsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbZAKRsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZAKRsJ
+	id S1755077AbZAKRsl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZAKRsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:48:09 -0500
-Received: from mu-out-0910.google.com ([209.85.134.185]:33209 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZAKRsF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:48:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=Fn3nGq1VO2VnhuaSLOM5ayfzyAbOk2vfXHM7vxjRhXfBcLBDp7oLqzDixfA62OVNRO
-         KeiWwnT4stRANBIv99WbYziI8QbASBi+sNQ4l6+h97UyNjpaN2DuUlgBYMm8x4pX38ph
-         4r0E5K0lpByGJ1o/UNKBB4V6aT9d49b/N9vNo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12279] 2.6.28 suspend regression - HP 2510p
-Date: Sun, 11 Jan 2009 17:03:24 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-next-20090107; KDE/4.1.3; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David Roka" <roka@dawid.hu>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.1SC.wafaJB@chimera>
-In-Reply-To: <nHCfeC0YLrE.A.1SC.wafaJB@chimera>
+	Sun, 11 Jan 2009 12:48:13 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:58035 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752799AbZAKRsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:48:11 -0500
+Message-ID: <496A30D0.9070701@sgi.com>
+Date: Sun, 11 Jan 2009 09:48:00 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901111703.24868.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable sized
+References: <20090110223818.459493000@polaris-admin.engr.sgi.com>	 <20090110223819.033438000@polaris-admin.engr.sgi.com> <86802c440901102301n5a7bb98ajd44a31ab32ddb726@mail.gmail.com> <496A2F21.8020808@sgi.com>
+In-Reply-To: <496A2F21.8020808@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
+Mike Travis wrote:
+> Yinghai Lu wrote:
+>> On Sat, Jan 10, 2009 at 2:38 PM, Mike Travis <travis@sgi.com> wrote:
+>>> Impact: reduce memory usage.
+>>>
+>>> Allocate kstat_irqs_legacy based on nr_cpu_ids to deal with this
+>>> memory usage bump when NR_CPUS bumped from 128 to 4096:
+>>>
+>>>     8192   +253952    262144 +3100%  kstat_irqs_legacy(.bss)
+>>>
+>>> This is only when CONFIG_SPARSE_IRQS=y.
+>>>
+>>> Signed-off-by: Mike Travis <travis@sgi.com>
+>>> ---
+>>>  kernel/irq/handle.c |    9 ++++++---
+>>>  1 file changed, 6 insertions(+), 3 deletions(-)
+>>>
+>>> --- linux-2.6-for-ingo.orig/kernel/irq/handle.c
+>>> +++ linux-2.6-for-ingo/kernel/irq/handle.c
+>>> @@ -124,8 +124,7 @@ static struct irq_desc irq_desc_legacy[N
+>>>        }
+>>>  };
+>>>
+>>> -/* FIXME: use bootmem alloc ...*/
+>>> -static unsigned int kstat_irqs_legacy[NR_IRQS_LEGACY][NR_CPUS];
+>>> +static unsigned int *kstat_irqs_legacy;
+>>>
+>>>  int __init early_irq_init(void)
+>>>  {
+>>> @@ -146,9 +145,13 @@ int __init early_irq_init(void)
+>>>        /* allocate irq_desc_ptrs array based on nr_irqs */
+>>>        irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
+>>>
+>>> +       /* allocate based on nr_cpu_ids */
+>>> +       kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
+>>> +                                         sizeof(int));
+>>> +
+>>>        for (i = 0; i < legacy_count; i++) {
+>>>                desc[i].irq = i;
+>>> -               desc[i].kstat_irqs = kstat_irqs_legacy[i];
+>>> +               desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
+>> here should be
+>>
+>> +               desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+>>
+>> YH
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
+> Hmm, thanks!  (I wonder why I wanted it the other way?  Oh well.)
 > 
+> I'll make an append patch to fix it.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12279
-> Subject		: 2.6.28 suspend regression - HP 2510p
-> Submitter	: David Roka <roka@dawid.hu>
-> Date		: 2008-12-23 04:17 (20 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4dde4492d850a4c9bcaa92e5bd7f4eebe3e2f5ab
+> Thanks,
+> Mike
 
-The fix went in the first IDE updates pull for 2.6.29:
+I'll push this to my cpus4096-for-ingo.git tree:
 
-commit 0e63a588fc3d6a5e6bb66bacaeb11cd9093141f8
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Mon Dec 29 20:27:29 2008 +0100
+Subject: irq: fix initialization of legacy kstat irqs
 
-    ide: fix IDE ACPI regression breaking suspend
-...
+Impact: fix bug with legacy kstat irqs
 
-so it can be marked as closed now.
+The sectioning of the allocated kstat_irqs_legacy should use nr_cpu_ids
+instead of NR_IRQS_LEGACY.
 
-Thanks,
-Bart
+Thanks to Yinghai for pointing this out.
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/irq/handle.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6-for-ingo.orig/kernel/irq/handle.c
++++ linux-2.6-for-ingo/kernel/irq/handle.c
+@@ -155,7 +155,7 @@ int __init early_irq_init(void)
+ 
+ 	for (i = 0; i < legacy_count; i++) {
+ 		desc[i].irq = i;
+-		desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
++		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		init_alloc_desc_masks(&desc[i], 0, true);
+ 		irq_desc_ptrs[i] = desc + i;
+
