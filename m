@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZAKIAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbZAKIFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZAKIAd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 03:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZAKIAV
+	id S1753021AbZAKIFO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 03:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZAKIFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 03:00:21 -0500
-Received: from 8bytes.org ([88.198.83.132]:38444 "EHLO 8bytes.org"
+	Sun, 11 Jan 2009 03:05:00 -0500
+Received: from 1wt.eu ([62.212.114.60]:1409 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZAKIAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 03:00:20 -0500
-Date: Sun, 11 Jan 2009 09:00:19 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com
-Subject: Re: [PATCH 14/16] dma-debug: add checks for sync_single_sg_*
-Message-ID: <20090111080019.GK9466@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-15-git-send-email-joerg.roedel@amd.com> <20090110234641.GB20843@elte.hu>
-MIME-Version: 1.0
+	id S1750998AbZAKIE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 03:04:59 -0500
+Date: Sun, 11 Jan 2009 09:04:20 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29-rc1
+Message-ID: <20090111080420.GI5038@1wt.eu>
+References: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090110234641.GB20843@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.LFD.2.00.0901101551420.6528@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 12:46:41AM +0100, Ingo Molnar wrote:
-> 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > +void debug_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
-> > +			   int nelems, int direction)
-> > +{
-> > +	struct scatterlist *s;
-> > +	int i;
-> > +
-> > +	if (global_disable)
-> > +		return;
-> 
-> "if (unlikely(global_disable))" i suspect?
+On Sat, Jan 10, 2009 at 04:13:02PM -0800, Linus Torvalds wrote:
+> But what perhaps stands out more is that we merged two whole new 
+> filesystems - both btrfs and squashfs got merged. Even if they look pretty 
+> "small" in that relentless onslaught of drivers.
 
-True. I  will add unlikely() to all global_disable checks.
+Wow. I think that a lot of distro packagers who've been used to add
+the squashfs patch to their kernels for something like 5 years will
+applaud ! (I'm not dismissing btrfs, I've just not used it yet).
 
-Joerg
+Cheers,
+Willy
+
