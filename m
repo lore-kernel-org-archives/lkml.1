@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbZAKQGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZAKQKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbZAKQGG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 11:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZAKQFv
+	id S1753691AbZAKQKe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 11:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZAKQKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 11:05:51 -0500
-Received: from tservice.net.ru ([195.178.208.66]:59903 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbZAKQFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 11:05:50 -0500
-Date: Sun, 11 Jan 2009 19:05:48 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090111160548.GA362@ioremap.net>
-References: <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <20090109224258.GA10257@ioremap.net> <496850D5.8040907@cosmosbay.com> <20090111125759.GB24173@ioremap.net> <4969F0D1.8020504@cosmosbay.com> <20090111133533.GB25337@ioremap.net> <496A17A5.7010200@cosmosbay.com>
+	Sun, 11 Jan 2009 11:10:25 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:49828 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752081AbZAKQKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 11:10:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=L1pHg5bhyvxBvJtgmUuFcpexZnGaX+5L/sbPcDYE+0bQslJwJVOnUhbcqnQDLyzug3
+         FobORskNxpdOrz96sRGr+pWox1fMISw/Ah8mcIab44lmBkP9P4Xrqpx6YdaiIMacWxuA
+         peAaAPFkJ/r42BD/V4awPYRiHOLzPyLcYo6tE=
+Message-ID: <b6a2187b0901110810u452b05b8t2d1da38db36113a@mail.gmail.com>
+Date: Mon, 12 Jan 2009 00:10:23 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Daniel Drake" <dsd@gentoo.org>
+Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Phil Dibowitz" <phil@ipom.com>
+In-Reply-To: <4969FD64.8040408@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <496A17A5.7010200@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
+	 <oWTznAnH9BI.A.qDH.EHfaJB@chimera> <4969FD64.8040408@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 05:00:37PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
-> >>>> 1) the release_sock/lock_sock done in tcp_splice_read() is not necessary
-> >>>> to process backlog. Its already done in skb_splice_bits()
-> >>> Yes, in the tcp_splice_read() they are added to remove a deadlock.
-> >> Could you elaborate ? A deadlock only if !SPLICE_F_NONBLOCK ?
-> > 
-> > Sorry, I meant that we drop lock in skb_splice_bits() to prevent the deadlock,
-> > and tcp_splice_read() needs it to process the backlog.
-> 
-> While we drop lock in skb_splice_bits() to prevent the deadlock, we
-> also process backlog at this stage. No need to process backlog
-> again in the higher level function.
+On Sun, Jan 11, 2009 at 10:08 PM, Daniel Drake <dsd@gentoo.org> wrote:
+> Rafael J. Wysocki wrote:
+>>
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.28.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12422
+>> Subject         : 2.6.28-git can't resume from str
+>> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+>> Date            : 2009-01-10 1:39 (2 days old)
+>> References      : http://marc.info/?l=linux-kernel&m=123155157909282&w=4
+>
+> The bisection looks invalid. It is unlikely to be this commit at fault.
 
-Yes, but having it earlier allows to receive new skb while processing
-already received.
+I have doubt about this too, but it's was git bisect zero into. All I
+know is a0e280e0f33f6c859a235fb69a875ed8f3420388 is definitely good.
 
-> > I think that even with non-blocking splice that release_sock/lock_sock
-> > is needed, since we are able to do a parallel job: to receive new data
-> > (scheduled by early release_sock backlog processing) in bh and to
-> > process already received data via splice codepath.
-> > Maybe in non-blocking splice mode this is not an issue though, but for
-> > the blocking mode this allows to grab more skbs at once in skb_splice_bits.
-> 
-> skb_splice_bits() operates on one skb, you lost me :)
+> Jeff, do you even have that camera?
 
-Exactly, and to have it we earlier release a socket so that it could be
-acked and while we copy it or doing anything else, the next one would
-received.
+No, I don't have this.
 
--- 
-	Evgeniy Polyakov
+
+> It is also easy to revert that commit by hand. Just delete the unusual_devs
+> entry for it.
+
+I'm lost reverting this. Right now, I'm just use "git diff" and throw
+away everything after a0e280e0f33f6c859a235fb69a875ed8f3420388, and my
+system can STD, STR without an problem resuming.
+
+Thanks,
+Jeff.
