@@ -1,62 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZAKPkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZAKPmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZAKPkQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:40:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAKPkA
+	id S1754676AbZAKPmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAKPmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:40:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40562 "EHLO mx3.mail.elte.hu"
+	Sun, 11 Jan 2009 10:42:13 -0500
+Received: from xsmtp1.ethz.ch ([82.130.70.13]:13924 "EHLO xsmtp1.ethz.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbZAKPj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:39:59 -0500
-Date: Sun, 11 Jan 2009 16:39:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090111153920.GC7401@elte.hu>
-References: <ac3eb2510901081824g38abc47g4619e80ffaf8f1c5@mail.gmail.com> <20090109023629.GA29520@linuxace.com> <20090109165422.GF24884@logfs.org> <20090109193738.GA9827@linode.davidb.org> <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin>
+	id S1751746AbZAKPmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 10:42:12 -0500
+Message-ID: <496A1341.90009@gmx.de>
+Date: Sun, 11 Jan 2009 16:41:53 +0100
+From: Dieter Ries <clip2@gmx.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901111022590.30201@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc1 does not boot
+References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu>
+In-Reply-To: <20090111153548.GB7401@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig87B5C6DBD1BDAADB0EB2760A"
+X-OriginalArrivalTime: 11 Jan 2009 15:42:10.0880 (UTC) FILETIME=[2AD07C00:01C97403]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig87B5C6DBD1BDAADB0EB2760A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Ingo Molnar schrieb:
+> * Dieter Ries <clip2@gmx.de> wrote:
+>=20
+>> Ingo Molnar schrieb:
+>>> * Dieter Ries <clip2@gmx.de> wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> I just pulled 2.6.29-rc1, ran oldconfig with defaults and built it.
+>>>> When I try to boot it, that kind of works until init should start. T=
+hen
+>>>> nothing happens. I tried with init=3D/bin/bash, which sometimes work=
+s, and
+>>>> sometimes gets me a bash without the prompt flashing.
+>>>>
+>>>> I captured the output with netconsole, but I cannot see a problem th=
+ere.
+>>>> It is attached.
+>>>>
+>>>> My config is also attached.
+>>>>
+>>>> The machine:
+>>>>
+>>>> Lenovo Thinkpad T60
+>>>> Core2Duo 2GHz
+>>>>
+>>>> Gentoo 64bit
+>>>>
+>>>> Everything worked fine with 83bc66f, which was my last pull.
+>>>>
+>>>> What else should I provide for debugging that?
+>>> hm, there's no 83bc66f in Linus's tree.
+>> Sorry, thats because I applied Timo Hoenigs patch for the fingerprint
+>> reader. So the right commit where it worked is 6680598.
+>>
+>> Before pulling today, I reverted that patch, to avoid conflicts, so I
+>> guess it should not matter.
+>=20
+> in the 6680598..v2.6.29-rc1 window there's more than 3000 commits: ther=
+e=20
+> were libata and IDE changes, x86 changes, cpumask changes, ACPI changes=
+=20
+> and more. Any of those categories could produce such error symptoms as =
 
-> > At least IMHO.
-> > 
-> > ( What could _perhaps_ change the picture a bit IMO is drivers/staging/ i 
-> >   think - we could take a far more active role in certain types of 
-> >   projects that have been done out of tree typically, with no formal
-> >   promise for compatibility - or something like that. )
-> 
-> So if staging would have existed +one year ago, we should probably have 
-> included squashfs 3.3 at that time, and just have moved it to fs/ once 
-> the V4 layout was finished?
+> your box is showing.
+>=20
+> Unless you can see some particular badness in the kernel messages=20
+> (something that changed to the last working version) that narrows it do=
+wn=20
+> to some subsystem, i suspect this would have to be bisected ...
 
-might have been a possibility - although there's a notable absence of any 
-filesystem drivers in the latest drivers/staging/ set.
+I am starting to bisect now, will report back when I found something.
 
-Greg, is that just accidental (no one has submitted one yet) or is it some 
-sort of policy?
+>=20
+> 	Ingo
+>=20
 
-	Ingo
+cu
+Dieter
+
+
+--=20
+3rd Law of Computing:
+        Anything that can go wr
+fortune: Segmentation violation -- Core dumped
+
+
+--------------enig87B5C6DBD1BDAADB0EB2760A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAklqE0QACgkQ5YzjaZZeXo2aOQCfc8fNbijJ4/FAaLNQkR+aXmqV
+ofwAnRGn6NN7BrefLcQ1Wf70CYoQNEbB
+=wUnH
+-----END PGP SIGNATURE-----
+
+--------------enig87B5C6DBD1BDAADB0EB2760A--
