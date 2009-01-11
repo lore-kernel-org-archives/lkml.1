@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZAKBTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZAKBUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZAKBTj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:19:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZAKBTb
+	id S1756683AbZAKBUY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZAKBUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:19:31 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:34302 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752031AbZAKBTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:19:30 -0500
-Message-ID: <49694915.7020605@sgi.com>
-Date: Sat, 10 Jan 2009 17:19:17 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 10 Jan 2009 20:20:09 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59583 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752031AbZAKBUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:20:07 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/5DYIvPij5JbQF11VzMlxyrOT45cf5zke0K/beh/
+	tAJPGrQJQQ1pvt
+Date: Sun, 11 Jan 2009 02:20:06 +0100 (CET)
+From: Guennadi Liakhovetski <lg@denx.de>
+X-X-Sender: lyakh@axis700.grange
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: Trent Piepho <xyzzy@speakeasy.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [GIT PULL] LED updates for 2.6.29
+In-Reply-To: <1231633983.5330.32.camel@dax.rpnet.com>
+Message-ID: <Pine.LNX.4.64.0901110216030.24501@axis700.grange>
+References: <1231500186.5317.9.camel@dax.rpnet.com> 
+ <Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp> 
+ <1231543199.5317.63.camel@dax.rpnet.com>  <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
+ <1231633983.5330.32.camel@dax.rpnet.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] irq: change irq_desc and kstat_irq_legacy to	variable
- sized arrays
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110224323.GA17917@elte.hu> <49693A18.5090802@sgi.com> <20090111011044.GE12885@elte.hu>
-In-Reply-To: <20090111011044.GE12885@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> Here's my latest stats:
->>
->> ====== Text/Data ()
->>
->>     1 - 128-defconfig
->>     2 - 4k-defconfig
-> 
-> 
-> small nit, shouldnt this:
->>       .1.       .2.    ..final..
-> 
-> be:
->>       .1.      .2    .delta
-> 
-> as 'final' is .2 in essence, just in absolute numbers, right? Confusing.
-> 
-> 
->>   5935104     -6144   5928960 -0.10%  TextSize
->>   3833856    +43008   3876864 +1.12%  DataSize
->>   9734144   -219136   9515008 -2.25%  BssSize
->>   2449408   +790528   3239936   +32%  InitSize
->>   1884160     +6144   1890304 +0.33%  PerCPU
->>    110592   +462848    573440  +418%  OtherSize
-> 
-> and flip around columns 2 and 3 ? It's the delta that matters, and the 
-> percentage figure.
-> 
-> 	Ingo
+On Sun, 11 Jan 2009, Richard Purdie wrote:
 
-Sure thing.  This originally was built for many columns so the net effect
-of each was fairly important.  But with only two columns it does make
-sense to do a direct comparision.
+> Ok, these are now queued in the LED tree:
+> 
+> http://git.o-hand.com/cgit.cgi/linux-rpurdie-leds/log/
+> 
+> I did merge the last three patches in one and make some changes to deal
+> with some other outstanding issues. Let me know ASAP if there are any
+> problems.
 
-Thanks,
-Mike
+As already replied off-list, looks good mostly to me. Just have to keep in 
+mind, that this version relies on drivers initialising their struct 
+led_classdev instances to 0. Maybe it would be better to set the new 
+max_brightness to 0 (or to LED_FULL) explicitly for them, as I was doing 
+in my v2 of the patch.
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
