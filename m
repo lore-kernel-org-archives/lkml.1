@@ -1,82 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZAKRlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZAKRlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbZAKRlQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAKRk7
+	id S1754702AbZAKRlp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZAKRle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:40:59 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:40925 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751695AbZAKRk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:40:59 -0500
-Message-ID: <496A2F21.8020808@sgi.com>
-Date: Sun, 11 Jan 2009 09:40:49 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 11 Jan 2009 12:41:34 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:51734 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751695AbZAKRld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:41:33 -0500
+Date: Sun, 11 Jan 2009 18:41:59 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Another libata error related to OCZ SSD
+Message-ID: <20090111174159.GC4250@ics.muni.cz>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable sized
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com>	 <20090110223819.033438000@polaris-admin.engr.sgi.com> <86802c440901102301n5a7bb98ajd44a31ab32ddb726@mail.gmail.com>
-In-Reply-To: <86802c440901102301n5a7bb98ajd44a31ab32ddb726@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 11 Jan 2009 18:41:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Sat, Jan 10, 2009 at 2:38 PM, Mike Travis <travis@sgi.com> wrote:
->> Impact: reduce memory usage.
->>
->> Allocate kstat_irqs_legacy based on nr_cpu_ids to deal with this
->> memory usage bump when NR_CPUS bumped from 128 to 4096:
->>
->>     8192   +253952    262144 +3100%  kstat_irqs_legacy(.bss)
->>
->> This is only when CONFIG_SPARSE_IRQS=y.
->>
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> ---
->>  kernel/irq/handle.c |    9 ++++++---
->>  1 file changed, 6 insertions(+), 3 deletions(-)
->>
->> --- linux-2.6-for-ingo.orig/kernel/irq/handle.c
->> +++ linux-2.6-for-ingo/kernel/irq/handle.c
->> @@ -124,8 +124,7 @@ static struct irq_desc irq_desc_legacy[N
->>        }
->>  };
->>
->> -/* FIXME: use bootmem alloc ...*/
->> -static unsigned int kstat_irqs_legacy[NR_IRQS_LEGACY][NR_CPUS];
->> +static unsigned int *kstat_irqs_legacy;
->>
->>  int __init early_irq_init(void)
->>  {
->> @@ -146,9 +145,13 @@ int __init early_irq_init(void)
->>        /* allocate irq_desc_ptrs array based on nr_irqs */
->>        irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
->>
->> +       /* allocate based on nr_cpu_ids */
->> +       kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
->> +                                         sizeof(int));
->> +
->>        for (i = 0; i < legacy_count; i++) {
->>                desc[i].irq = i;
->> -               desc[i].kstat_irqs = kstat_irqs_legacy[i];
->> +               desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
-> 
-> here should be
-> 
-> +               desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
-> 
-> YH
+Hello,
 
-Hmm, thanks!  (I wonder why I wanted it the other way?  Oh well.)
+I encountered another problem with the OCZ SSD disk. If I suspend to ram while
+running from batteries, my disk disappears. I had no problem with suspends on
+AC power.
 
-I'll make an append patch to fix it.
+I created a screenshot of dmesg mesages:
+http://www.fi.muni.cz/~xhejtman/IMG_3221.JPG
 
-Thanks,
-Mike
-
+-- 
+Luká¹ Hejtmánek
