@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZAKUw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZAKU6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbZAKUw2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 15:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZAKUwR
+	id S1753548AbZAKU6c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 15:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZAKU6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 15:52:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59047 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752204AbZAKUwQ (ORCPT
+	Sun, 11 Jan 2009 15:58:23 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:13097 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751468AbZAKU6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 15:52:16 -0500
-Date: Sun, 11 Jan 2009 12:51:31 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
- adaptive spinning
-In-Reply-To: <20090111203441.GQ26290@one.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain>
-References: <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <20090109174158.096dee70.akpm@linux-foundation.org> <20090110030216.GW26290@one.firstfloor.org>
- <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org>
- <20090111203441.GQ26290@one.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 11 Jan 2009 15:58:22 -0500
+Message-ID: <496A5D64.6030007@ru.mvista.com>
+Date: Sun, 11 Jan 2009 23:58:12 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/9] ide: move ->rqsize init from init_irq() to ide_init_port()
+References: <20090106183520.21193.63704.sendpatchset@localhost.localdomain> <20090106183602.21193.67001.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090106183602.21193.67001.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
+
+Bartlomiej Zolnierkiewicz wrote:
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
+
+> Index: b/drivers/ide/ide-probe.c
+> ===================================================================
+> --- a/drivers/ide/ide-probe.c
+> +++ b/drivers/ide/ide-probe.c
+>   
+[...]
+> @@ -1242,6 +1234,13 @@ static void ide_init_port(ide_hwif_t *hw
+>  
+>  	if (d->max_sectors)
+>  		hwif->rqsize = d->max_sectors;
+> +	else {
+> +		if ((hwif->host_flags & IDE_HFLAG_NO_LBA48) ||
+> +		    (hwif->host_flags & IDE_HFLAG_NO_LBA48_DMA))
+>   
+
+   Er, why not:
+
+		if (hwif->host_flags &
+		    (IDE_HFLAG_NO_LBA48 | IDE_HFLAG_NO_LBA48_DMA))
 
 
-On Sun, 11 Jan 2009, Andi Kleen wrote:
-> 
-> Was -- i think that got fixed in gcc. But again only in newer versions.
+MBR, Sergei
 
-I doubt it. People have said that about a million times, it has never 
-gotten fixed, and I've never seen any actual proof.
 
-I think that what got fixed was that gcc now at least re-uses stack slots 
-for temporary spills. But only for things that fit in registers - not if 
-you actually had variables that are big enough to be of type MEM. And the 
-latter is what tends to eat stack-space (ie structures etc on stack).
-
-But hey, maybe it really did get fixed. But the last big stack user wasn't 
-that long ago, and I saw it and I have a pretty recent gcc (gcc-4.3.2 
-right now, it could obviously have been slightly older back a few months 
-ago).
-
-		Linus
