@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZAKMIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbZAKMLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbZAKMIy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 07:08:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZAKMIm
+	id S1752556AbZAKMLD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:11:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZAKMKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 07:08:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37888
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751367AbZAKMIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 07:08:41 -0500
-Date: Sun, 11 Jan 2009 04:08:42 -0800 (PST)
-Message-Id: <20090111.040842.86784676.davem@davemloft.net>
-To: Valdis.Kletnieks@vt.edu
-Cc: alessandro.suardi@gmail.com, jaswinderlinux@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       dwmw2@infradead.org
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
- (-git7 is ok)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <43805.1231672258@turing-police.cc.vt.edu>
-References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
-	<20090109.140422.60087297.davem@davemloft.net>
-	<43805.1231672258@turing-police.cc.vt.edu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 07:10:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53913 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbZAKMKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 07:10:53 -0500
+Date: Sun, 11 Jan 2009 13:10:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL] request for tip/cpus4096
+Message-ID: <20090111121043.GD27796@elte.hu>
+References: <4969922B.5050807@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4969922B.5050807@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4844]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Valdis.Kletnieks@vt.edu
-Date: Sun, 11 Jan 2009 06:10:58 -0500
 
-> On Fri, 09 Jan 2009 14:04:22 PST, David Miller said:
-> > From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-> > Date: Fri, 9 Jan 2009 18:30:40 +0100
-> > 
-> > > Clearly the requirement changed in -git8, AFAICS.
-> > 
-> > Because -git8 is where the firmware requirement got added.
-> > 
-> > If you build the TG3 driver statically into your kernel,
-> > the only way to get the firmware properly loaded is to
-> > enable that CONFIG_FIRMWARE_IN_KERNEL option.
-> 
-> Maybe this is one of those cases where we actually do want a SELECT?
-> 
-> 	select FIRMWARE_IN_KERNEL if TIGON3=y
-> 
-> or similar?
+* Mike Travis <travis@sgi.com> wrote:
 
-I have no idea how this is intended to work, David will
-know.
+> Hi Ingo,
+> 
+> This is a combined "pull request" of both the 1/8/09 pull request for
+> 'merge-0108' changes for cpumasks, as well as the variable irq patches
+> for setting nr_irqs based on nr_cpu_ids.
+> 
+> Tested on both SPARSE_IRQS/!SPARSE_IRQS and LARGE/SMALL NR_CPUS.
+> 
+> Thanks,
+> Mike
+> ---
+> 
+> The following changes since commit 36c401a44abcc389a00f9cd14892c9cf9bf0780d:
+>   Ingo Molnar (1):
+>         [IA64] fix typo in cpumask_of_pcibus()
+> 
+> are available in the git repository at:
+> 
+>   ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git master
+
+Pulled into tip/cpus4096, thanks Mike!
+
+	Ingo
