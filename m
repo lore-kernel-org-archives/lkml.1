@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZAKPgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZAKPiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbZAKPgE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZAKPfx
+	id S1754655AbZAKPiK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAKPhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:35:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55923 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750905AbZAKPfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:35:52 -0500
-Date: Sun, 11 Jan 2009 16:35:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dieter Ries <clip2@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc1 does not boot
-Message-ID: <20090111153548.GB7401@elte.hu>
-References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de>
+	Sun, 11 Jan 2009 10:37:55 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:57151 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750755AbZAKPhy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 10:37:54 -0500
+Message-ID: <496A1246.6070007@lwfinger.net>
+Date: Sun, 11 Jan 2009 09:37:42 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496A107A.2090301@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christian Lamparter <chunkeey@web.de>,
+       Linux wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [Bug #12260] Regression due to commit 2b80848e3818fb1c (p54usb:
+ support LM87 firmwares)
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.EpC.8afaJB@chimera>
+In-Reply-To: <nHCfeC0YLrE.A.EpC.8afaJB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Dieter Ries <clip2@gmx.de> wrote:
-
-> Ingo Molnar schrieb:
-> > * Dieter Ries <clip2@gmx.de> wrote:
-> > 
-> >> Hi,
-> >>
-> >> I just pulled 2.6.29-rc1, ran oldconfig with defaults and built it.
-> >> When I try to boot it, that kind of works until init should start. Then
-> >> nothing happens. I tried with init=/bin/bash, which sometimes works, and
-> >> sometimes gets me a bash without the prompt flashing.
-> >>
-> >> I captured the output with netconsole, but I cannot see a problem there.
-> >> It is attached.
-> >>
-> >> My config is also attached.
-> >>
-> >> The machine:
-> >>
-> >> Lenovo Thinkpad T60
-> >> Core2Duo 2GHz
-> >>
-> >> Gentoo 64bit
-> >>
-> >> Everything worked fine with 83bc66f, which was my last pull.
-> >>
-> >> What else should I provide for debugging that?
-> > 
-> > hm, there's no 83bc66f in Linus's tree.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
 > 
-> Sorry, thats because I applied Timo Hoenigs patch for the fingerprint
-> reader. So the right commit where it worked is 6680598.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> Before pulling today, I reverted that patch, to avoid conflicts, so I
-> guess it should not matter.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12260
+> Subject		: Regression due to commit 2b80848e3818fb1c (p54usb: support LM87 firmwares)
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2008-12-20 10:45 (23 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2b80848e3818fb1c8ccddc105b065a86c68afa9d
+> Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=12260
 
-in the 6680598..v2.6.29-rc1 window there's more than 3000 commits: there 
-were libata and IDE changes, x86 changes, cpumask changes, ACPI changes 
-and more. Any of those categories could produce such error symptoms as 
-your box is showing.
+The patch has _NOT_ been applied.
 
-Unless you can see some particular badness in the kernel messages 
-(something that changed to the last working version) that narrows it down 
-to some subsystem, i suspect this would have to be bisected ...
+Larry
 
-	Ingo
