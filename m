@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZAKMp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZAKMre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbZAKMp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 07:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZAKMpK
+	id S1753351AbZAKMre (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZAKMrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 07:45:10 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42195 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbZAKMpI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 07:45:08 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 11 Jan 2009 13:44:46 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: cdev: simplify a schedule_delayed_work wrapper
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, David Moore <dcm@acm.org>
-In-Reply-To: <4969CE1A.8010800@s5r6.in-berlin.de>
-Message-ID: <tkrat.2ab2f7113c10a9d4@s5r6.in-berlin.de>
-References: <tkrat.3905b2754a8fc519@s5r6.in-berlin.de>
- <tkrat.f364570373ba8da5@s5r6.in-berlin.de>
- <1231643968.3538.59.camel@localhost.localdomain>
- <1231656885.3538.67.camel@localhost.localdomain>
- <4969CE1A.8010800@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sun, 11 Jan 2009 07:47:23 -0500
+Received: from ns.firmix.at ([62.141.48.66]:3375 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZAKMrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 07:47:22 -0500
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com>
+References: <200901020207.30359.rob@landley.net>
+	 <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com>
+	 <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net>
+	 <20090104030619.GA21466@linux-sh.org>
+	 <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Sun, 11 Jan 2009 13:45:39 +0100
+Message-Id: <1231677939.3517.5.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -1.096 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-1.096 required=5
+X-Spam-Score: -1.096 () AWL,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel API documentation says that queue_delayed_work() returns 0
-(only) if the work was already queued.  The return codes of
-schedule_delayed_work() are not documented but the same.
+On Son, 2009-01-04 at 11:23 +0100, Leon Woestenberg wrote:
+[...]
+> On Sun, Jan 4, 2009 at 4:06 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+[...]
 
-In init_iso_resource(), the work has never been queued yet, hence we
-can assume schedule_delayed_work() to be a guaranteed success there.
+I'm ignoring the "cross-compile perl" issue - haven't tried it for
+years.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-cdev.c |   18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+> 5. Tool *version* dependency is hard to get right. When cross-building
+> 30 software packages all requiring native perl, we probably need to
+> build a few versions of perl (native), one for each set of packages.
 
-Index: linux/drivers/firewire/fw-cdev.c
-===================================================================
---- linux.orig/drivers/firewire/fw-cdev.c
-+++ linux/drivers/firewire/fw-cdev.c
-@@ -129,7 +129,7 @@ struct iso_resource {
- 	struct iso_resource_event *e_alloc, *e_dealloc;
- };
- 
--static int schedule_iso_resource(struct iso_resource *);
-+static void schedule_iso_resource(struct iso_resource *);
- static void release_iso_resource(struct client *, struct client_resource *);
- 
- /*
-@@ -1111,17 +1111,11 @@ static void iso_resource_work(struct wor
- 	client_put(client);
- }
- 
--static int schedule_iso_resource(struct iso_resource *r)
-+static void schedule_iso_resource(struct iso_resource *r)
- {
--	int scheduled;
--
- 	client_get(r->client);
--
--	scheduled = schedule_delayed_work(&r->work, 0);
--	if (!scheduled)
-+	if (!schedule_delayed_work(&r->work, 0))
- 		client_put(r->client);
--
--	return scheduled;
- }
- 
- static void release_iso_resource(struct client *client,
-@@ -1173,13 +1167,13 @@ static int init_iso_resource(struct clie
- 	if (todo == ISO_RES_ALLOC) {
- 		r->resource.release = release_iso_resource;
- 		ret = add_client_resource(client, &r->resource, GFP_KERNEL);
-+		if (ret < 0)
-+			goto fail;
- 	} else {
- 		r->resource.release = NULL;
- 		r->resource.handle = -1;
--		ret = schedule_iso_resource(r) ? 0 : -ENOMEM;
-+		schedule_iso_resource(r);
- 	}
--	if (ret < 0)
--		goto fail;
- 	request->handle = r->resource.handle;
- 
- 	return 0;
+perl is IMHO special (and quite different to others - including
+especially autotools): perl5 is used widely enough so that "one somewhat
+recent version" should cover all of 30 software packages.
+The hard part are the CPAN modules and their versions which are really a
+PITA.
+As long as you don't use modules from CPAN, "perl5" should be specific
+enough.
 
+	Bernd
 -- 
-Stefan Richter
--=====-==--= ---= -=-==
-http://arcgraph.de/sr/
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
