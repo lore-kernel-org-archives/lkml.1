@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZAKNh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZAKNjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbZAKNh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 08:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZAKNfi
+	id S1754248AbZAKNjk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 08:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZAKNjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 08:35:38 -0500
-Received: from kandzendo.ru ([195.178.208.66]:48642 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754248AbZAKNfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 08:35:36 -0500
-Date: Sun, 11 Jan 2009 16:35:33 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090111133533.GB25337@ioremap.net>
-References: <20090109185448.GA1999@1wt.eu> <4967B8C5.10803@cosmosbay.com> <20090109212400.GA3727@1wt.eu> <20090109220737.GA4111@1wt.eu> <4967CBB9.1060403@cosmosbay.com> <20090109221744.GA4819@1wt.eu> <20090109224258.GA10257@ioremap.net> <496850D5.8040907@cosmosbay.com> <20090111125759.GB24173@ioremap.net> <4969F0D1.8020504@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4969F0D1.8020504@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 11 Jan 2009 08:39:31 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:64134 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752380AbZAKNja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 08:39:30 -0500
+Subject: Re: [GIT PULL] LED updates for 2.6.29
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <lg@denx.de>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.58.0901110416510.1626@shell2.speakeasy.net>
+References: <1231500186.5317.9.camel@dax.rpnet.com>
+	 <Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp>
+	 <1231543199.5317.63.camel@dax.rpnet.com>
+	 <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
+	 <1231633983.5330.32.camel@dax.rpnet.com>
+	 <Pine.LNX.4.58.0901102138300.1626@shell2.speakeasy.net>
+	 <1231674559.5304.13.camel@dax.rpnet.com>
+	 <Pine.LNX.4.58.0901110416510.1626@shell2.speakeasy.net>
+Content-Type: text/plain
+Date: Sun, 11 Jan 2009 13:39:05 +0000
+Message-Id: <1231681145.5304.31.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 02:14:57PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
-> >> 1) the release_sock/lock_sock done in tcp_splice_read() is not necessary
-> >> to process backlog. Its already done in skb_splice_bits()
-> > 
-> > Yes, in the tcp_splice_read() they are added to remove a deadlock.
+On Sun, 2009-01-11 at 04:58 -0800, Trent Piepho wrote:
+> It doesn't seem right to merge someone's patches together, make a very
+> small change, and then no longer credit them as the author.  Seems like it
+> defeats the purpose of the SOB lines for tracing the train of custody too.
+> If someone looks to see where the code came from, it will look like you
+> wrote it.  Maybe Freescale will say Intel stole our code?  Without the SOB,
+> what record is there in git that Freescale gave permission to put the code
+> in the kernel?
 > 
-> Could you elaborate ? A deadlock only if !SPLICE_F_NONBLOCK ?
+> I also put some significant effort into writing informative commit
+> messages, which have been lost.  Along with Grant's acks for my patches.
 
-Sorry, I meant that we drop lock in skb_splice_bits() to prevent the deadlock,
-and tcp_splice_read() needs it to process the backlog.
+It also doesn't make sense to make three changes adding different
+interfaces and rearranging the same section of code three different
+times. I'm dropping the patch, please send me a merged version of those
+patches with a commit message you're happy with. If you want Acked-by
+lines, we'll have to wait for them on the new patch as I'm going to do
+this exactly by the book regardless of time pressures now. Please
+indicate who you want Ack-ed by lines from so I know who to wait for.
+Also, you'd better exclude the suspend/resume change and credit me for
+the bitfield change, just to be 100% sure this is all legally accurate.
 
-I think that even with non-blocking splice that release_sock/lock_sock
-is needed, since we are able to do a parallel job: to receive new data
-(scheduled by early release_sock backlog processing) in bh and to
-process already received data via splice codepath.
-Maybe in non-blocking splice mode this is not an issue though, but for
-the blocking mode this allows to grab more skbs at once in skb_splice_bits.
+Regards,
 
-> > 
-> >> 2) If we loop in tcp_read_sock() calling skb_splice_bits() several times
-> >> then we should perform the following tests inside this loop ?
-> >>
-> >> if (sk->sk_err || sk->sk_state == TCP_CLOSE || (sk->sk_shutdown & RCV_SHUTDOWN) ||
-> >>    signal_pending(current)) break;
-> >>
-> >> And removie them from tcp_splice_read() ?
-> > 
-> > It could be done, but for what reason? To detect disconnected socket early?
-> > Does it worth the changes?
-> 
-> I was thinking about the case your thread is doing a splice() from tcp socket to
->  a pipe, while another thread is doing the splice from this pipe to something else.
-> 
-> Once patched, tcp_read_sock() could loop a long time...
- 
-Well, it maybe a good idea... Can not say anything against it :)
+Richard
 
--- 
-	Evgeniy Polyakov
+
+
+
+
