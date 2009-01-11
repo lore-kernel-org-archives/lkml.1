@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZAKVOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZAKVPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbZAKVOu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 16:14:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZAKVOi
+	id S1753313AbZAKVPI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 16:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZAKVOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 16:14:38 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:45647 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbZAKVOh (ORCPT
+	Sun, 11 Jan 2009 16:14:45 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:13209 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753081AbZAKVOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 16:14:37 -0500
-Date: Mon, 12 Jan 2009 00:14:55 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, klausman@schwarzvogel.de
-Subject: Re: WARNING in vmap_page_range on alpha since 2.6.28
-Message-ID: <20090111211455.GB1641@jurassic.park.msu.ru>
-References: <20090111141855.GA7416@eric.schwarzvogel.de> <20090111183600.GA2728@ds20.borg.net>
+	Sun, 11 Jan 2009 16:14:44 -0500
+Message-ID: <496A613F.5090901@ru.mvista.com>
+Date: Mon, 12 Jan 2009 00:14:39 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111183600.GA2728@ds20.borg.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 2/9] sl82c105: remove dead code
+References: <20090106183520.21193.63704.sendpatchset@localhost.localdomain> <20090106183526.21193.24866.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090106183526.21193.24866.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 06:36:00PM +0000, Thorsten Kranzkowski wrote:
-> I see similar traces:
-> 
-> ------------[ cut here ]------------
-> WARNING: at /export/data/scm/linux-2.6/mm/vmalloc.c:104 vmap_page_range+0x1c4/0x264()
+Hello.
 
-The problem is that alpha allocates some VMALLOC space very early
-on boot, but the new VM allocator doesn't know about this.
+Bartlomiej Zolnierkiewicz wrote:
 
-I've posted a fix few days ago:
-http://lkml.org/lkml/2009/1/7/574
+> CONFIG_LOPEC and CONFIG_SANDPOINT config options are gone.
+>   
 
-Ivan.
+  So these are gone with arch/ppc/?
+  That's a pity -- MV has spent a lot of efforts on porting the latter 
+to arch/powerpc/ but somehow it haven't got merged upstream. My patches 
+ot this driver were actually due to it being used on Sandpoint. :-)
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
+
+
