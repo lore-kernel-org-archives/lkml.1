@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbZAKTTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZAKTYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbZAKTTh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 14:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZAKTT0
+	id S1753407AbZAKTYW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 14:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZAKTYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 14:19:26 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:37054 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbZAKTT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 14:19:26 -0500
-Subject: Re: [PATCH -next] jbd2: fix printk format warning
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <496A4361.5040807@oracle.com>
-References: <20090105173517.deeff918.sfr@canb.auug.org.au>
-	 <20090105121158.94d990c3.randy.dunlap@oracle.com>
-	 <1231699973.17759.22.camel@odie.local>  <496A4361.5040807@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 11 Jan 2009 20:20:45 +0100
-Message-Id: <1231701645.17759.35.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 11 Jan 2009 14:24:07 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:34724 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZAKTYE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 14:24:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PTuCdN4PBwjHcFxPN8GVHkN/ewHmpehfVyL3yxas9J11ZnbDyt/0w8mTA5z7I7+3+Z
+         TmwHcPP2nyvS5nBR6OJQVL7IfghsVxqDrGCSLCvIWdf7OizW7LmuvHe+sHsn71Eh0no/
+         00Dxjy5O8cTI+0gTEM3kijEb1HhVNhy0uRRPo=
+Message-ID: <5a4c581d0901111124p753e0436q5dc3f4645e481c8b@mail.gmail.com>
+Date: Sun, 11 Jan 2009 20:24:02 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+Cc: "David Miller" <davem@davemloft.net>, Valdis.Kletnieks@vt.edu,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <1231692789.25018.415.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
+	 <20090109.140422.60087297.davem@davemloft.net>
+	 <43805.1231672258@turing-police.cc.vt.edu>
+	 <20090111.040842.86784676.davem@davemloft.net>
+	 <1231676698.25018.147.camel@macbook.infradead.org>
+	 <1231678799.25018.195.camel@macbook.infradead.org>
+	 <5a4c581d0901110842i5520cea1uff89d5772d0f3b6e@mail.gmail.com>
+	 <1231692789.25018.415.camel@macbook.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-søn, 11 01 2009 kl. 11:07 -0800, skrev Randy Dunlap:
-> ok, where did you send it?  I don't see it...
+On Sun, Jan 11, 2009 at 5:53 PM, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Sun, 2009-01-11 at 17:42 +0100, Alessandro Suardi wrote:
+>> Patches cleanly but doesn't build in 2.6.29-rc1:
+>
+> Pants; sorry, I omitted this bit...
+>
+> diff --git a/drivers/net/tg3.h b/drivers/net/tg3.h
+> index ae5da60..508def3 100644
+> --- a/drivers/net/tg3.h
+> +++ b/drivers/net/tg3.h
+> @@ -2764,6 +2764,7 @@ struct tg3 {
+>        struct ethtool_coalesce         coal;
+>
+>        /* firmware info */
+> +       const char                      *fw_needed;
+>        const struct firmware           *fw;
+>        u32                             fw_len; /* includes BSS */
+>  };
+>
 
-It had a wrong recipient address so it never made it. I've sent it again
-and verified that it made it this time.
+This one works, thank you.
 
+However, with the combination of in-kernel tg3 and
+ CONFIG_IN_KERNEL_FIRMWARE=n there is at least a 30" delay
+ during boot while waiting for the firmware request (which will fail).
 
-Simon
+Such wait didn't use to be there, and stuff worked. Could the wait
+ be removed, to behave as it used to - as well ?
 
+Thanks again, ciao,
+
+--alessandro
+
+ "Sun keeps rising in the west / I keep on waking fully confused"
+
+   (The Replacements, "Within Your Reach")
