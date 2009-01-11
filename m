@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZAKWxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZAKWz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZAKWxH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 17:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZAKWwz
+	id S1753486AbZAKWz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 17:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZAKWzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 17:52:55 -0500
-Received: from styx.suse.cz ([82.119.242.94]:33771 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751384AbZAKWwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 17:52:54 -0500
-Date: Sun, 11 Jan 2009 23:52:53 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Avi Kivity <avi@redhat.com>
-cc: Jeremy Fitzhardinge <jeremy@xensource.com>, linux-kernel@vger.kernel.org
-Subject: Re: Does CONFIG_PARAVIRT imply usage of byte locks?
-In-Reply-To: <49693515.5000106@goop.org>
-Message-ID: <alpine.LNX.1.10.0901112350580.5377@jikos.suse.cz>
-References: <alpine.LNX.1.10.0901092253240.5377@jikos.suse.cz> <49693515.5000106@goop.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 11 Jan 2009 17:55:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38166 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbZAKWzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 17:55:20 -0500
+Date: Sun, 11 Jan 2009 17:55:03 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Kyle McMartin <kyle@infradead.org>,
+       Dave Jones <davej@redhat.com>, Jan Beulich <jbeulich@novell.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       ccache@lists.samba.org
+Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090111225503.GB21090@bombadil.infradead.org>
+References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <20090107131221.GA17110@mit.edu> <20090108191703.GA11273@redhat.com> <20090108213157.GB922@mit.edu> <20090111214837.GA21090@bombadil.infradead.org> <20090111225138.GF29383@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090111225138.GF29383@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Jan 2009, Jeremy Fitzhardinge wrote:
-
-> > Looking at the code, I wonder whether are we in fact really using byte 
-> > locks in CONFIG_PARAVIRT situation? Where are we actually setting 
-> > pv_lock_ops.spin_lock pointer to point to __byte_spin_lock?
+On Sun, Jan 11, 2009 at 05:51:38PM -0500, Theodore Tso wrote:
+> On Sun, Jan 11, 2009 at 04:48:37PM -0500, Kyle McMartin wrote:
 > > 
-> > Such initialization seems to happen only in paravirt_use_bytelocks()
-> > function, but my blind eyes prevent me from finding a callsite from which
-> > this function would eventually get called.
-> > 
-> > It seems to me that paravirt_use_bytelocks() is a dead code that gets never
-> > called, and the same applies to the implementations of write locks. What did
-> > I miss?
+> > with a distro kernel config (ie: Fedora's[1]) still results in
+> > 1.8GB of modules (willy checked that it wasn't a Fedora toolchain
+> > bug by reproducing on a Debian system.)
 > 
-> Probably nothing.  Xen has its own optimised spinlock implementation, and so
-> doesn't use the plain byte locks.  But ticket locks are awesomely bad for any
-> virtual environment which doesn't gang schedule VCPUs, so the kvm folks would
-> do well to at least consider using them.
+> P.S.  I have a hacked make-kpkg which installs the modules via:
+> 
+>       make INSTALL_MOD_STRIP=1  modules_install
+> 
+> Unfortunately, I'm not using kbuild's make install builddeb since it
+> doesn't create the headers and debuginfo files; and the debian's
+> official kernel building scripts (make-kpkg has been deprecated)
+> doesn't correctly deal with creating debuginfo files, either. 
+> 
+> In any case, its make INSTALL_MOD_STRIP=1 which is getting busted by
+> the two commits, and which also spike out ccache and distcc.
+> 
 
-Avi, are there any plans to make KVM use byte locks implementation for 
-spinlocks in the near future?
+Right, I had a braino and forgot that having 1.8GB of modules is
+actually expected. The broken stage is the stripping of the debuginfo
+into a seperate set of files, so it's likely Fedora-specific.
 
-If not, we should remove them completely, as it's completely dead code.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+regards, Kyle
