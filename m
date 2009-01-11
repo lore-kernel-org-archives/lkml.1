@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZAKRlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZAKRqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbZAKRlp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 12:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZAKRle
+	id S1754255AbZAKRqT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 12:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZAKRqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 12:41:34 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:51734 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbZAKRld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 12:41:33 -0500
-Date: Sun, 11 Jan 2009 18:41:59 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Another libata error related to OCZ SSD
-Message-ID: <20090111174159.GC4250@ics.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Sun, 11 Jan 2009 12:46:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33526 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbZAKRqB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 12:46:01 -0500
+Date: Sun, 11 Jan 2009 19:00:20 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb alsa oops in 2.6.28 in snd_mixer_oss_notify_handler
+Message-ID: <20090111180020.GK26290@one.firstfloor.org>
+References: <20090109182653.GA12123@basil.nowhere.org> <s5hmydy2gk7.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 11 Jan 2009 18:41:22 +0100 (CET)
+In-Reply-To: <s5hmydy2gk7.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, Jan 11, 2009 at 01:06:00PM +0100, Takashi Iwai wrote:
+> At Fri, 9 Jan 2009 19:26:53 +0100,
+> Andi Kleen wrote:
+> > 
+> > 
+> > Just got this oops in ALSA with 2.6.28 when I pulled a usb 
+> > sound device while something was writing to it.
+> > It looks like it jumped to Nirvana through a bad function
+> > pointer.
+> 
+> Bah, this is a die-hard bug.
+> 
+> What kind of apps and sound-subsystem were you running while it's
+> disconnected?
 
-I encountered another problem with the OCZ SSD disk. If I suspend to ram while
-running from batteries, my disk disappears. I had no problem with suspends on
-AC power.
+Just mpg321 playing (that's also what crashed), nothing more (no sound server
+or similar) 
 
-I created a screenshot of dmesg mesages:
-http://www.fi.muni.cz/~xhejtman/IMG_3221.JPG
+The system has two sound outputs, one motherboard snd_hda and
+a usb headset. The output was on the USB headset in this case
+which I pulled out.
+
+-Andi
+
 
 -- 
-Luká¹ Hejtmánek
+ak@linux.intel.com
