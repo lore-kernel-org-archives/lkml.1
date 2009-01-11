@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZAKTBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZAKTCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZAKTBr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 14:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZAKTBb
+	id S1753733AbZAKTCB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 14:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZAKTBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 14:01:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38104 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751816AbZAKTB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 14:01:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
-Date: Sun, 11 Jan 2009 20:00:59 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <3f9a31f40901110546h4c069b5dx9726a0fbf8caf5a1@mail.gmail.com> <20090111135237.GA20184@elte.hu>
-In-Reply-To: <20090111135237.GA20184@elte.hu>
+	Sun, 11 Jan 2009 14:01:45 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58356 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbZAKTBo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 14:01:44 -0500
+Date: Sun, 11 Jan 2009 19:39:36 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Mike Travis <travis@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Cliff Wickman <cpw@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: Re: [patch] x86: make UV support optional
+Message-ID: <20090111183935.GC2217@ucw.cz>
+References: <20090106060348.GA16738@wotan.suse.de> <20090106143330.GB18913@sgi.com> <20090106144843.GH16738@wotan.suse.de> <49637346.6060105@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901112001.00394.rjw@sisk.pl>
+In-Reply-To: <49637346.6060105@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Ingo Molnar wrote:
-> 
-> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
-> 
-> > On Sun, Jan 11, 2009 at 4:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >
-> > > Regressions with patches
-> > > ------------------------
-> > >
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12428
-> > > Subject         : Build error on latest git
-> > > Submitter       : Petr Titera <P.Titera@century.cz>
-> > > Date            : 2009-01-11 9:49 (1 days old)
-> > > References      : http://marc.info/?l=linux-kernel&m=123166856318712&w=4
-> > > Handled-By      : Petr Titera <P.Titera@century.cz>
-> > > Patch           : http://marc.info/?l=linux-kernel&m=123167509024996&w=4
-> > 
-> > This is a wrong fix, asm/smp.h should only be included when CONFIG_SMP 
-> > is defined.
-> > 
-> > I am still in the process of cleaning non-smp data from asm/smp.h for 
-> > x86
-> > 
-> > Attach patch is the solution for the time being
-> > 
-> > Ingo, can you please put this in urgent queue.
-> 
-> yes, it already is - see below.
+Hi!
 
-Link to this patch was added to the bug entry.  Pleaes let me know or close the
-bug when it's merged.
+> The problem arises that if the option becomes too obscure (and never
+> enabled), then it won't get tested.  We (as many companies do) rely on
+> distros to certify applications and security features using a standard
+> kernel, and if an option (such as X86_UV) causes any problems whatsoever,
+> they'll drop it and we no longer have that application certification.
 
-Thanks,
-Rafael
+If SGI UV is really important, I'm sure you can ask distros to keep it
+enabled.
+
+
+> Currently, Ingo's test setup sets MAXSMP quite a bit and he's found
+> many problems with large NR_CPUS counts that we never would have found
+> ourselves.  Please don't make that process any harder.
+
+Yeah, and remove config_386 too. Just hardcode it to y.
+
+No, sorry, I don't see why we should treat UV specially.
+
+> In fact, 13k is peanuts.  Why don't you set something like "very minimal
+
+13K is quite a lot, actually.
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
