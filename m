@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZAKPNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZAKPPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZAKPNb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 10:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZAKPNU
+	id S1754198AbZAKPPt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 10:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZAKPPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 10:13:20 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38639 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751848AbZAKPNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 10:13:19 -0500
-X-Authenticated: #1490710
-X-Provags-ID: V01U2FsdGVkX18PiYxAkJMPEfppsRwL9gWgM7WdcBnRGe5pGLuAUF
-	D7kLs1JibzEhZ+
-Date: Sun, 11 Jan 2009 16:14:03 +0100 (CET)
-From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-X-X-Sender: schindelin@pacific.mpi-cbg.de
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-cc: git@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org
-Subject: Re: current git kernel has strange problems during bisect
-In-Reply-To: <200901111607.59054.borntraeger@de.ibm.com>
-Message-ID: <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de>
-References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
+	Sun, 11 Jan 2009 10:15:40 -0500
+Received: from smtp.cs.aau.dk ([130.225.194.6]:34524 "EHLO smtp.cs.aau.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751816AbZAKPPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 10:15:39 -0500
+Subject: Re: multiple bugs
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: w.landgraf@yahoo.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <929931.34382.qm@web112216.mail.gq1.yahoo.com>
+References: <929931.34382.qm@web112216.mail.gq1.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 11 Jan 2009 16:17:29 +0100
+Message-Id: <1231687049.17759.12.camel@odie.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+(Please use reply-to-all in order not to break threading, it makes it a
+ pain for everyone that tries to follow the discussion.)
 
-On Sun, 11 Jan 2009, Christian Borntraeger wrote:
+søn, 11 01 2009 kl. 06:46 -0800, skrev We La:
+> 1) More exactly, with all kernels since 2.6.27 -rcX until now, on attempts
+> on about 10 machines, I don't get connection or data transfer. Thus I
+> think it's not a regression on particular eth drivers, but perhaps on
+> the routing or package handling.   On my original message, I gave the
+> config for one of these kernels.  Below I give, for comparison, the
+> config of 2.6.26.2 with which it still was working.  I have no idea
+> which of the differences of the config, or new features, can cause
+> this problem.
 
-> Am Sonntag 11 Januar 2009 schrieb Christian Borntraeger:
-> > doing a 
-> > git bisect start
-> > git bisect good a3a798c
-> > git bisect bad v2.6.29-rc1
-> > 
-> > results in a repository without several files, e.g Makefile!
-> > git describe also fails.
-> 
-> In fact, retesting with a clean repository shows, that there are only btrfs 
-> files - nothing else.
-> 
-> Linus did you pull a broken btrfs repository?
+How do you generate the config for 2.6.27-* and the other versions that
+fail? You should normally just use the .config for 2.6.26.2 or whatever
+you used last and run 'make oldconfig' selecting the default answer to
+each new option unless you have a good reason not to and have read and
+understood the help text that goes along with the option. This way you
+wouldn't have run into the problem with kernel mode setting either.
 
-I guess it is a subtree merge.  So no, nothing went wrong
+And still, even if it is not a problem with a network driver but in
+another part of the network layer etc. a bisection run would be a good
+way to pinpoint the issue. But see if it is not your config that causes
+the problem first.
 
-Use "git bisect skip" to skip over those.
 
-Hth,
-Dscho
+Simon Holm Thøgersen
 
