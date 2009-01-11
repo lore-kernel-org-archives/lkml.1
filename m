@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZAKBJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZAKBLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZAKBJL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZAKBI5
+	id S1756056AbZAKBLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZAKBLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:08:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43744 "EHLO mx3.mail.elte.hu"
+	Sat, 10 Jan 2009 20:11:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57208 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbZAKBI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:08:56 -0500
-Date: Sun, 11 Jan 2009 02:08:31 +0100
+	id S1752031AbZAKBLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:11:09 -0500
+Date: Sun, 11 Jan 2009 02:10:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] kstat: modify kstat_irqs_legacy to be variable sized
-Message-ID: <20090111010831.GD12885@elte.hu>
-References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110223819.033438000@polaris-admin.engr.sgi.com> <20090110225229.GE17917@elte.hu> <49692A50.7010402@sgi.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] irq: change irq_desc and kstat_irq_legacy to
+	variable sized arrays
+Message-ID: <20090111011044.GE12885@elte.hu>
+References: <20090110223818.459493000@polaris-admin.engr.sgi.com> <20090110224323.GA17917@elte.hu> <49693A18.5090802@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49692A50.7010402@sgi.com>
+In-Reply-To: <49693A18.5090802@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,62 +39,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Mike Travis <travis@sgi.com> wrote:
 
-> Ingo Molnar wrote:
-> > * Mike Travis <travis@sgi.com> wrote:
-> > 
-> >> Impact: reduce memory usage.
-> >>
-> >> Allocate kstat_irqs_legacy based on nr_cpu_ids to deal with this
-> >> memory usage bump when NR_CPUS bumped from 128 to 4096:
-> >>
-> >>      8192   +253952    262144 +3100%  kstat_irqs_legacy(.bss)
-> >>
-> >> This is only when CONFIG_SPARSE_IRQS=y.
-> >>
-> >> Signed-off-by: Mike Travis <travis@sgi.com>
-> >> ---
-> >>  kernel/irq/handle.c |    9 ++++++---
-> >>  1 file changed, 6 insertions(+), 3 deletions(-)
-> >>
-> >> --- linux-2.6-for-ingo.orig/kernel/irq/handle.c
-> >> +++ linux-2.6-for-ingo/kernel/irq/handle.c
-> >> @@ -124,8 +124,7 @@ static struct irq_desc irq_desc_legacy[N
-> >>  	}
-> >>  };
-> >>  
-> >> -/* FIXME: use bootmem alloc ...*/
-> >> -static unsigned int kstat_irqs_legacy[NR_IRQS_LEGACY][NR_CPUS];
-> >> +static unsigned int *kstat_irqs_legacy;
-> >>  
-> >>  int __init early_irq_init(void)
-> >>  {
-> >> @@ -146,9 +145,13 @@ int __init early_irq_init(void)
-> >>  	/* allocate irq_desc_ptrs array based on nr_irqs */
-> >>  	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
-> >>  
-> >> +	/* allocate based on nr_cpu_ids */
-> >> +	kstat_irqs_legacy = alloc_bootmem(NR_IRQS_LEGACY * nr_cpu_ids *
-> >> +					  sizeof(int));
-> >> +
-> >>  	for (i = 0; i < legacy_count; i++) {
-> >>  		desc[i].irq = i;
-> >> -		desc[i].kstat_irqs = kstat_irqs_legacy[i];
-> >> +		desc[i].kstat_irqs = kstat_irqs_legacy + i * NR_IRQS_LEGACY;
-> >>  		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
-> >>  		init_alloc_desc_masks(&desc[i], 0, true);
-> >>  		irq_desc_ptrs[i] = desc + i;
-> > 
-> > btw., while at it - dont we want to upgrade this to a 'long' (in a 
-> > separate commit)? Having more than 4 billion irqs after bootup is easily 
-> > possible.
-> > 
-> > 	Ingo
+> Here's my latest stats:
 > 
-> Yes, I can do that.  There are two places where it allocated, both for
-> legacy and dynamically added desc's.
+> ====== Text/Data ()
 > 
-> You want basically this, yes?
+>     1 - 128-defconfig
+>     2 - 4k-defconfig
 
-yes - but please also check all that places that use it.
+
+small nit, shouldnt this:
+>       .1.       .2.    ..final..
+
+be:
+>       .1.      .2    .delta
+
+as 'final' is .2 in essence, just in absolute numbers, right? Confusing.
+
+
+>   5935104     -6144   5928960 -0.10%  TextSize
+>   3833856    +43008   3876864 +1.12%  DataSize
+>   9734144   -219136   9515008 -2.25%  BssSize
+>   2449408   +790528   3239936   +32%  InitSize
+>   1884160     +6144   1890304 +0.33%  PerCPU
+>    110592   +462848    573440  +418%  OtherSize
+
+and flip around columns 2 and 3 ? It's the delta that matters, and the 
+percentage figure.
 
 	Ingo
