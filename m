@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZAKU2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZAKUaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbZAKU2u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 15:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZAKU2l
+	id S1754737AbZAKUaA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 15:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZAKU3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 15:28:41 -0500
-Received: from THUNK.ORG ([69.25.196.29]:46046 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752569AbZAKU2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 15:28:41 -0500
-Date: Sun, 11 Jan 2009 15:28:38 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Alex Buell <alex.buell@munted.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Online ext4 defragmention
-Message-ID: <20090111202838.GA29383@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alex Buell <alex.buell@munted.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090111134443.581cfc83@lithium.local.net>
+	Sun, 11 Jan 2009 15:29:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35672 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZAKU3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 15:29:48 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: current git kernel has strange problems during bisect
+From: Andi Kleen <andi@firstfloor.org>
+References: <200901111602.53082.borntraeger@de.ibm.com>
+	<200901111607.59054.borntraeger@de.ibm.com>
+	<alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de>
+	<200901111620.03345.borntraeger@de.ibm.com>
+	<alpine.LFD.2.00.0901111113150.6528@localhost.localdomain>
+Date: Sun, 11 Jan 2009 21:29:20 +0100
+In-Reply-To: <alpine.LFD.2.00.0901111113150.6528@localhost.localdomain> (Linus Torvalds's message of "Sun, 11 Jan 2009 11:13:30 -0800 (PST)")
+Message-ID: <87tz85fuxr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111134443.581cfc83@lithium.local.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 01:44:43PM +0000, Alex Buell wrote:
-> Can someone confirm if the online ext4 defragmentation ioctls will
-> be going into 2.6.29? Thanks, I'm planning a migration from a
-> disparate collection of filesystems to ext4 over the next few months. 
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+>
+> For bisect purposes, if you know you're not chasing down a btrfs issue, 
+> you can do
+>
+> 	git bisect good 34353029534a08e41cfb8be647d734b9ce9ebff8
 
-Unfortunately, the defragmentation patches need to a lot of work (to
-be honest, largely refactored and almost rewritten) before they are
-ready to for mainline yes.  I am also concerned that the current
-defrag patches also try too hard to keep blocks in the same block
-group, even as a higher priority keeping them non-fragmented.
+Could you perhaps add some standard tag for that commit? That 
+would make it easier than to always find the exact btrfs commit.
 
-Also, note that some of the benefits of ext4 only show up if you do a
-backup, mkfs, and restore; that's because there are layout changes
-that can only take place if you reformat the filesystem.  Finally,
-there are some allocation algorithm changes which didn't make the
-2.6.29 merge window which I think will make a long-term difference.
-So you'll probably want to use 2.6.29 with the ext4 patch set.
+Just an idea.
 
-So if you want the best performance and fastest fsck times (which I
-infer given your query about the defragmentation ioctls), you may want
-to consider doing a reformat and restore operation as part of your
-ext4 migration, at least for filesystem that you plan to use for
-active use.  If the filesystem is just going to be an mp3 archive, for
-example, it might not be worth it to do the backup/reformat/restore
-path.
+-Andi
 
-Regards,
-
-						- Ted
+-- 
+ak@linux.intel.com
