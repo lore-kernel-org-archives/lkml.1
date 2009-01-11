@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZAKJt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbZAKJuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbZAKJt0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 04:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZAKJtR
+	id S1752915AbZAKJuf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 04:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZAKJu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 04:49:17 -0500
-Received: from smarthost1.greenhost.nl ([195.190.28.78]:55126 "EHLO
-	smarthost1.samage.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751200AbZAKJtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 04:49:16 -0500
-Message-ID: <35454.58.169.129.127.1231667354.squirrel@secure.greenhost.nl>
-In-Reply-To: <1231168176.15476.6.camel@localhost.localdomain>
-References: <54882.124.179.251.206.1230523141.squirrel@secure.greenhost.nl>
-    <1230536044-14847-1-git-send-email-indan@nul.nu>
-    <1231168176.15476.6.camel@localhost.localdomain>
-Date: Sun, 11 Jan 2009 10:49:14 +0100 (CET)
-Subject: Re: [PATCH] Fix race in ring_buffer_consume(): Replace 
-     ring_buffer_consume and ring_buffer_peek with ring_buffer_get_event
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Steven Rostedt" <srostedt@redhat.com>
-Cc: "Ingo Molnar" <mingo@redhat.com>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
-MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: 0.1
-X-Scan-Signature: 76f3589a93270604ea078d468a2051b3
+	Sun, 11 Jan 2009 04:50:26 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34593 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751200AbZAKJuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 04:50:25 -0500
+Date: Sun, 11 Jan 2009 20:50:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, travis@sgi.com,
+       mingo@elte.hu
+Subject: Re: cpumask change causes sparc build bustage
+Message-Id: <20090111205008.db0a410e.sfr@canb.auug.org.au>
+In-Reply-To: <20090111.003103.39502700.davem@davemloft.net>
+References: <20090111.003103.39502700.davem@davemloft.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__11_Jan_2009_20_50_08_+1100_2NPpNzhxVnEL8+=4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, January 5, 2009 16:09, Steven Rostedt wrote:
-> I just hate public functions that have flags that can get confusing.
-> Looking at code where I see:
+--Signature=_Sun__11_Jan_2009_20_50_08_+1100_2NPpNzhxVnEL8+=4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Dave,
+
+On Sun, 11 Jan 2009 00:31:03 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
 >
-> 	ring_buffer_get_event(buffer, cpu, ts, 0);
->
-> I find it hard to know if the ",0" is correct or should be a ",1"
-> instead.
+> I'm surprised linux-next builds didn't catch this.
 
-That's what I didn't like about the original patch either.
-Sent a new patch against tip doing the above, as well as doing
-the same for rb_iter_peek (ignore the first one, see try 2).
+So am I.  http://kisskb.ellerman.id.au/kisskb/compiler/5/ shows my latest
+builds of both linux-next and Linus' tree are OK for defconfig and
+allnoconfig (allmodconfig fails for a different reason).
 
-Slightly different topic, there are quite a few unused functions,
-e.g. ring_buffer_read_page(). Should those be removed until they
-are actually used, or are there things in the pipeline that will
-use them?
+What is different about the failing config (compiler)?  Are there other
+configs it would be sensible to build test?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'm not sure if rb_event_length() is safe as it is, returning -1
-for RINGBUF_TYPE_PADDING, for an unsigned return value. That
-easily overflows into a low value in e.g. rb_advance_iter().
-Wouldn't it be better to return the maximum possible size?
+--Signature=_Sun__11_Jan_2009_20_50_08_+1100_2NPpNzhxVnEL8+=4
+Content-Type: application/pgp-signature
 
-rb_advance_reader() calls rb_get_reader_page() and rb_reader_event(),
-but rb_get_event(), which is the only caller of rb_advance_reader,
-does that as well, which seems a bit more of the same.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Further, rb_get_reader_page() takes cpu_buffer->lock, but all callers
-of rb_get_event() take the cpu_buffer->reader_lock. As rb_get_event()
-always calls rb_get_reader_page(), both locks will be taken for each
-of those calls. Doesn't that make the cpu_buffer->lock redundant?
-Getting rid of it and moving the locking into rb_get_event() would
-simplify things (except that ring_buffer_read_page() is a bit funny).
+iEUEARECAAYFAklpwNAACgkQjjKRsyhoI8zgzgCY+lB8esA4SSbL6SckrGEvfkTW
+yACdEpS7aKGfKWNAlsYxj//iTN88Pnk=
+=AUI2
+-----END PGP SIGNATURE-----
 
-Greetings,
-
-Indan
-
-
+--Signature=_Sun__11_Jan_2009_20_50_08_+1100_2NPpNzhxVnEL8+=4--
