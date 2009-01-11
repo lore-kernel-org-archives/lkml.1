@@ -1,66 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZAKIeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZAKIfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZAKIeU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 03:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZAKIeG
+	id S1752884AbZAKIfy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 03:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZAKIfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 03:34:06 -0500
-Received: from 8bytes.org ([88.198.83.132]:33477 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbZAKIeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 03:34:05 -0500
-Date: Sun, 11 Jan 2009 09:34:02 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: iommu@lists.linux-foundation.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
-Message-ID: <20090111083402.GN9466@8bytes.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-9-git-send-email-joerg.roedel@amd.com> <20090110231127.GK17917@elte.hu> <20090111075752.GI9466@8bytes.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111075752.GI9466@8bytes.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 11 Jan 2009 03:35:46 -0500
+Received: from smarthost1.greenhost.nl ([195.190.28.78]:41638 "EHLO
+	smarthost1.samage.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750779AbZAKIfp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 03:35:45 -0500
+From: Indan Zupancic <indan@nul.nu>
+To: srostedt@redhat.com
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Indan Zupancic <indan@nul.nu>
+Subject: [PATCH] Minor cleanups in ring_buffer.c
+Date: Sun, 11 Jan 2009 19:35:28 +1100
+Message-Id: <1231662928-19740-1-git-send-email-indan@nul.nu>
+X-Mailer: git-send-email 1.6.1
+In-Reply-To: <1231168176.15476.6.camel@localhost.localdomain>
+References: <1231168176.15476.6.camel@localhost.localdomain>
+X-Spam-Score: 0.1
+X-Scan-Signature: 27c1264e312f7e45ec0349526d776c80
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 08:57:52AM +0100, Joerg Roedel wrote:
-> On Sun, Jan 11, 2009 at 12:11:27AM +0100, Ingo Molnar wrote:
-> > 
-> > * Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > +#define err_printk(dev, format, arg...) do {			\
-> > > +		error_count += 1;				\
-> > > +		if (show_all_errors || show_num_errors > 0) {	\
-> > > +			WARN(1, "%s %s: " format,		\
-> > > +			     dev_driver_string(dev),		\
-> > > +			     dev_name(dev) , ## arg);		\
-> > > +		}						\
-> > > +		if (!show_all_errors && show_num_errors > 0)	\
-> > > +			show_num_errors -= 1;			\
-> > 
-> > Note that the arithmetics here is SMP-unsafe: we only hold the hash bucket 
-> > so if two errors hit at once on two CPUs then the error tracking variables 
-> > can be accessed at once.
-> > 
-> > I'd suggest a simple global lock for this error case (taken inside the 
-> > hash bucket lock), to be on the safe side.
-> > 
-> > Also, please dont use a macro for this - printk details can be passed in 
-> > to helper inlines/functions too.
-> 
-> Yeah, this is not SMP-safe, I know. But debugfs does not support
-> atomic_t so I made the variables u32. But at least a race condition has
-> not a too bad impact. What may habben is that error_count misses a error
-> or the show_num_errors become negative.
-> But if we really want to avoid this I think its better to add atomic_t
-> support to debugfs. What do you think?
+Signed-off-by: Indan Zupancic <indan@nul.nu>
+---
+ kernel/trace/ring_buffer.c |   37 +++++++++++++------------------------
+ 1 files changed, 13 insertions(+), 24 deletions(-)
 
-Even a global lock will not really help here because show_num_errors and
-show_all_errors can be set using debugfs. Either we live with the small
-race (with limited impact) or I add atomic_t support to debugfs.
-
-Joerg
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 4832ffa..11560b3 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1849,7 +1849,7 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ }
+ 
+ static struct ring_buffer_event *
+-rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
++rb_get_event(struct ring_buffer *buffer, int cpu, u64 *ts, int consume)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event;
+@@ -1900,6 +1900,8 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 			*ts = cpu_buffer->read_stamp + event->time_delta;
+ 			ring_buffer_normalize_time_stamp(cpu_buffer->cpu, ts);
+ 		}
++		if (consume)
++			rb_advance_reader(cpu_buffer);
+ 		return event;
+ 
+ 	default:
+@@ -1908,10 +1910,9 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 
+ 	return NULL;
+ }
+-EXPORT_SYMBOL_GPL(ring_buffer_peek);
+ 
+ static struct ring_buffer_event *
+-rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
++rb_iter_get(struct ring_buffer_iter *iter, u64 *ts, int consume)
+ {
+ 	struct ring_buffer *buffer;
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+@@ -1961,6 +1962,8 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ 			*ts = iter->read_stamp + event->time_delta;
+ 			ring_buffer_normalize_time_stamp(cpu_buffer->cpu, ts);
+ 		}
++		if (consume)
++			rb_advance_iter(iter);
+ 		return event;
+ 
+ 	default:
+@@ -1988,11 +1991,12 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+-	event = rb_buffer_peek(buffer, cpu, ts);
++	event = rb_get_event(buffer, cpu, ts, 0);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return event;
+ }
++EXPORT_SYMBOL_GPL(ring_buffer_peek);
+ 
+ /**
+  * ring_buffer_iter_peek - peek at the next event to be read
+@@ -2010,7 +2014,7 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+-	event = rb_iter_peek(iter, ts);
++	event = rb_iter_peek(iter, ts, 0);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return event;
+@@ -2031,18 +2035,8 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	struct ring_buffer_event *event;
+ 	unsigned long flags;
+ 
+-	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+-		return NULL;
+-
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+-
+-	event = rb_buffer_peek(buffer, cpu, ts);
+-	if (!event)
+-		goto out;
+-
+-	rb_advance_reader(cpu_buffer);
+-
+- out:
++	event = rb_get_event(buffer, cpu, ts, 1);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return event;
+@@ -2124,12 +2118,7 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+-	event = rb_iter_peek(iter, ts);
+-	if (!event)
+-		goto out;
+-
+-	rb_advance_iter(iter);
+- out:
++	event = rb_iter_peek(iter, ts, 1);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return event;
+@@ -2404,10 +2393,10 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+ 
+ 	/*
+-	 * rb_buffer_peek will get the next ring buffer if
++	 * rb_get_event will get the next ring buffer if
+ 	 * the current reader page is empty.
+ 	 */
+-	event = rb_buffer_peek(buffer, cpu, NULL);
++	event = rb_get_event(buffer, cpu, NULL, 0);
+ 	if (!event)
+ 		goto out;
+ 
+-- 
+1.6.1
 
