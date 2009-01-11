@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZAKIbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751491AbZAKIbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbZAKIbT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 03:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbZAKIbF
+	id S1751491AbZAKIbf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 03:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZAKIbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 03:31:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38996
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750837AbZAKIbD (ORCPT
+	Sun, 11 Jan 2009 03:31:13 -0500
+Received: from lazybastard.de ([212.112.238.170]:56322 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674AbZAKIbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 03:31:03 -0500
-Date: Sun, 11 Jan 2009 00:31:03 -0800 (PST)
-Message-Id: <20090111.003103.39502700.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-CC: sparclinux@vger.kernel.org, travis@sgi.com, mingo@elte.hu
-Subject: cpumask change causes sparc build bustage
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 03:31:12 -0500
+Date: Sun, 11 Jan 2009 09:30:34 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Andi Kleen <andi@firstfloor.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090111083034.GB30090@logfs.org>
+References: <1231587428.3803.0.camel@johannes> <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110220135.GF20611@logfs.org> <20090110142330.295a8847.akpm@linux-foundation.org> <1231631840.13420.24.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1231631840.13420.24.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 January 2009 00:57:20 +0100, Peter Zijlstra wrote:
+> 
+> B-tree's however have one thing over RB-trees, B-trees can be made
+> RCU-safe whereas RB-trees cannot be -- the only problem is that Joern's
+> doesn't do that.
 
-drivers/pci/probe.c: In function 'pci_bus_show_cpuaffinity':
-drivers/pci/probe.c:56: error: implicit declaration of function 'cpumask_of_pcibus'
-drivers/pci/probe.c:56: warning: assignment makes pointer from integer without a cast
+And yours doesn't support multiple key sizes afaics.  I don't mind
+using your version as a basis, so long as my^Wboth requirements get
+fulfilled. ;)
 
-Almost certainly caused by:
+Do you see a problem combining rcu with keys being an array of unsigned
+long?
 
-commit 588235bb53f2c215f0d4b08fd30b461fedc3338e
-Author: Mike Travis <travis@sgi.com>
-Date:   Sun Jan 4 05:18:02 2009 -0800
+Jörn
 
-    cpumask: update pci_bus_show_cpuaffinity to use new cpumask API
-    
-    Impact: use new cpumask API to reduce stack usage
-    
-    Replace the local cpumask_t variable with a pointer to the
-    const cpumask that needs to be printed.
-    
-    Signed-off-by: Mike Travis <travis@sgi.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-I'm surprised linux-next builds didn't catch this.
+-- 
+Schrödinger's cat is <BLINK>not</BLINK> dead.
+-- Illiad
