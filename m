@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147AbZAKFh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZAKFnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752147AbZAKFh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZAKFhu
+	id S1751966AbZAKFnt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZAKFnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:37:50 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:37378 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZAKFht (ORCPT
+	Sun, 11 Jan 2009 00:43:41 -0500
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:56335 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZAKFnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:37:49 -0500
-Subject: Re: Is it possible for a module to load in use a shared object
-	(.so) ?
-From: Jon Masters <jonathan@jonmasters.org>
-To: joseluismarchetti@yahoo.com.br
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <874675.96328.qm@web34403.mail.mud.yahoo.com>
-References: <874675.96328.qm@web34403.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Sun, 11 Jan 2009 00:37:47 -0500
-Message-Id: <1231652267.4235.8.camel@perihelion.bos.jonmasters.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Sun, 11 Jan 2009 00:43:40 -0500
+Date: Sat, 10 Jan 2009 21:43:27 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Guennadi Liakhovetski <lg@denx.de>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [GIT PULL] LED updates for 2.6.29
+In-Reply-To: <1231633983.5330.32.camel@dax.rpnet.com>
+Message-ID: <Pine.LNX.4.58.0901102138300.1626@shell2.speakeasy.net>
+References: <1231500186.5317.9.camel@dax.rpnet.com> 
+ <Pine.LNX.4.64.0901091231310.22972@t2.domain.actdsltmp> 
+ <1231543199.5317.63.camel@dax.rpnet.com>  <Pine.LNX.4.58.0901100428230.1626@shell2.speakeasy.net>
+ <1231633983.5330.32.camel@dax.rpnet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-10 at 19:42 -0800, Jose Luis Marchetti wrote:
-> Hi,
-> 
-> I know a module can load another module, but is it possible for a
-> module to use a shared object (.so) file ?
+On Sun, 11 Jan 2009, Richard Purdie wrote:
+> On Sat, 2009-01-10 at 04:31 -0800, Trent Piepho wrote:
+> > The LED tree makes more sense for what's left I think.  There was a
+> > openfirmware gpio patch, but that's already gone in.  What's left only
+> > touches led files and the device tree binding docs.
+> >
+> > AFAIK, there were no objections to the patches left.
+>
+> Ok, these are now queued in the LED tree:
+>
+> http://git.o-hand.com/cgit.cgi/linux-rpurdie-leds/log/
+>
+> I did merge the last three patches in one and make some changes to deal
+> with some other outstanding issues. Let me know ASAP if there are any
+> problems.
 
-Nope. Not directly. The only in-kernel use of "shared objects" is in the
-quasi-shared object that is VDSO, but that's entirely different (the
-kernel provides what looks like a shared library to userspace).
-
-Also, you probably want to ask these questions on the kernelnewbies
-mailing list, and check the archive for similar questions - both of
-these questions you asked this evening have come up before :)
-
-Jon.
-
-
+Since the last patch looks like it's just my three patches folded into one,
+shouldn't I be listed as the author and the primary signed off by?
