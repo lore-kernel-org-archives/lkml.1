@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbZAKOgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZAKOk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753639AbZAKOgh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 09:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZAKOg2
+	id S1753671AbZAKOk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 09:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZAKOkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 09:36:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34984 "EHLO mx2.mail.elte.hu"
+	Sun, 11 Jan 2009 09:40:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33480 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751468AbZAKOg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 09:36:26 -0500
-Date: Sun, 11 Jan 2009 15:36:15 +0100
+	id S1751468AbZAKOkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 09:40:08 -0500
+Date: Sun, 11 Jan 2009 15:39:51 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [git pull] core kernel fixes
-Message-ID: <20090111143615.GA5633@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20090111143951.GA6666@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,395 +32,480 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 Linus,
 
-Please pull the latest core-fixes-for-linus git tree from:
+Please pull the latest x86-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+out-of-topic modifications in x86-fixes-for-linus:
+--------------------------------------------------
+include/asm-generic/pgtable.h      # e104ba3: x86 PAT: change track_pfn_vma_new
+mm/memory.c                        # e104ba3: x86 PAT: change track_pfn_vma_new
+                                   # e61304a: x86 PAT: remove PFNMAP type on tr
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Andrew Morton (1):
-      smp_call_function_single(): be slightly less stupid
+Andi Kleen (2):
+      x86: hpet: allow force enable on ICH10 HPET
+      x86: avoid theoretical vmalloc fault loop
 
-David Miller (1):
-      sparc64: Fix cpumask related build failure
+Jaswinder Singh Rajput (1):
+      x86: fix mpparse.c build error on latest git
 
-Ingo Molnar (1):
-      smp_call_function_single(): be slightly less stupid, fix
+Kyle McMartin (1):
+      x86, mtrr: fix types used in userspace exported header
 
-Paul E. McKenney (1):
-      rcu: fix bug in rcutorture system-shutdown code
+Suresh Siddha (1):
+      x86, pat: fix reserve_memtype() for legacy 1MB range
+
+venkatesh.pallipadi@intel.com (6):
+      x86 PAT: remove PFNMAP type on track_pfn_vma_new() error
+      x86 PAT: consolidate old memtype new memtype check into a function
+      x86 PAT: change track_pfn_vma_new to take pgprot_t pointer param
+      x86 PAT: return compatible mapping to remap_pfn_range callers
+      x86 PAT: ioremap_wc should take resource_size_t parameter
+      x86 PAT: remove CPA WARN_ON for zero pte
 
 
- arch/sparc/include/asm/topology_64.h |    4 +
- include/linux/smp.h                  |   13 +---
- kernel/Makefile                      |    6 ++-
- kernel/rcutorture.c                  |  113 ++++++++++++++++++++-------------
- kernel/up.c                          |   20 ++++++
- 5 files changed, 100 insertions(+), 56 deletions(-)
- create mode 100644 kernel/up.c
+ arch/x86/include/asm/io.h      |    2 +-
+ arch/x86/include/asm/mtrr.h    |   10 ++--
+ arch/x86/include/asm/pgtable.h |   19 +++++++
+ arch/x86/kernel/mpparse.c      |    1 +
+ arch/x86/kernel/quirks.c       |    3 +-
+ arch/x86/mm/fault.c            |    2 +-
+ arch/x86/mm/ioremap.c          |    2 +-
+ arch/x86/mm/pageattr.c         |   10 ++--
+ arch/x86/mm/pat.c              |  109 +++++++++++++++++++++++++++------------
+ arch/x86/pci/i386.c            |   12 +----
+ include/asm-generic/pgtable.h  |    4 +-
+ mm/memory.c                    |   15 ++++--
+ 12 files changed, 125 insertions(+), 64 deletions(-)
 
-diff --git a/arch/sparc/include/asm/topology_64.h b/arch/sparc/include/asm/topology_64.h
-index b8a65b6..5bc0b8f 100644
---- a/arch/sparc/include/asm/topology_64.h
-+++ b/arch/sparc/include/asm/topology_64.h
-@@ -47,6 +47,10 @@ static inline int pcibus_to_node(struct pci_bus *pbus)
- 	(pcibus_to_node(bus) == -1 ? \
- 	 CPU_MASK_ALL : \
- 	 node_to_cpumask(pcibus_to_node(bus)))
-+#define cpumask_of_pcibus(bus)	\
-+	(pcibus_to_node(bus) == -1 ? \
-+	 CPU_MASK_ALL_PTR : \
-+	 cpumask_of_node(pcibus_to_node(bus)))
+diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+index 05cfed4..bdbb4b9 100644
+--- a/arch/x86/include/asm/io.h
++++ b/arch/x86/include/asm/io.h
+@@ -91,7 +91,7 @@ extern void unxlate_dev_mem_ptr(unsigned long phys, void *addr);
  
- #define SD_NODE_INIT (struct sched_domain) {		\
- 	.min_interval		= 8,			\
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index b824669..715196b 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -24,6 +24,9 @@ struct call_single_data {
- /* total number of cpus in this system (may exceed NR_CPUS) */
- extern unsigned int total_cpus;
- 
-+int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
-+				int wait);
-+
- #ifdef CONFIG_SMP
- 
- #include <linux/preempt.h>
-@@ -79,8 +82,6 @@ smp_call_function_mask(cpumask_t mask, void(*func)(void *info), void *info,
- 	return 0;
- }
- 
--int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
--				int wait);
- void __smp_call_function_single(int cpuid, struct call_single_data *data);
+ extern int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+ 				unsigned long prot_val);
+-extern void __iomem *ioremap_wc(unsigned long offset, unsigned long size);
++extern void __iomem *ioremap_wc(resource_size_t offset, unsigned long size);
  
  /*
-@@ -140,14 +141,6 @@ static inline int up_smp_call_function(void (*func)(void *), void *info)
- static inline void smp_send_reschedule(int cpu) { }
- #define num_booting_cpus()			1
- #define smp_prepare_boot_cpu()			do {} while (0)
--#define smp_call_function_single(cpuid, func, info, wait) \
--({ \
--	WARN_ON(cpuid != 0);	\
--	local_irq_disable();	\
--	(func)(info);		\
--	local_irq_enable();	\
--	0;			\
--})
- #define smp_call_function_mask(mask, func, info, wait) \
- 			(up_smp_call_function(func, info))
- #define smp_call_function_many(mask, func, info, wait) \
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 2921d90..2aebc4c 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -40,7 +40,11 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
- obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
- obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
- obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
--obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
-+ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
-+obj-y += smp.o
-+else
-+obj-y += up.o
-+endif
- obj-$(CONFIG_SMP) += spinlock.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
- obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 1cff28d..7c4142a 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -136,29 +136,47 @@ static int stutter_pause_test = 0;
- #endif
- int rcutorture_runnable = RCUTORTURE_RUNNABLE_INIT;
+  * early_ioremap() and early_iounmap() are for temporary early boot-time
+diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
+index cb988aa..14080d2 100644
+--- a/arch/x86/include/asm/mtrr.h
++++ b/arch/x86/include/asm/mtrr.h
+@@ -58,15 +58,15 @@ struct mtrr_gentry {
+ #endif /* !__i386__ */
  
--#define FULLSTOP_SHUTDOWN 1	/* Bail due to system shutdown/panic. */
--#define FULLSTOP_CLEANUP  2	/* Orderly shutdown. */
--static int fullstop;		/* stop generating callbacks at test end. */
--DEFINE_MUTEX(fullstop_mutex);	/* protect fullstop transitions and */
--				/*  spawning of kthreads. */
-+/* Mediate rmmod and system shutdown.  Concurrent rmmod & shutdown illegal! */
-+
-+#define FULLSTOP_DONTSTOP 0	/* Normal operation. */
-+#define FULLSTOP_SHUTDOWN 1	/* System shutdown with rcutorture running. */
-+#define FULLSTOP_RMMOD    2	/* Normal rmmod of rcutorture. */
-+static int fullstop = FULLSTOP_RMMOD;
-+DEFINE_MUTEX(fullstop_mutex);	/* Protect fullstop transitions and spawning */
-+				/*  of kthreads. */
+ struct mtrr_var_range {
+-	u32 base_lo;
+-	u32 base_hi;
+-	u32 mask_lo;
+-	u32 mask_hi;
++	__u32 base_lo;
++	__u32 base_hi;
++	__u32 mask_lo;
++	__u32 mask_hi;
+ };
  
- /*
-- * Detect and respond to a signal-based shutdown.
-+ * Detect and respond to a system shutdown.
-  */
- static int
- rcutorture_shutdown_notify(struct notifier_block *unused1,
- 			   unsigned long unused2, void *unused3)
- {
--	if (fullstop)
--		return NOTIFY_DONE;
- 	mutex_lock(&fullstop_mutex);
--	if (!fullstop)
-+	if (fullstop == FULLSTOP_DONTSTOP)
- 		fullstop = FULLSTOP_SHUTDOWN;
-+	else
-+		printk(KERN_WARNING /* but going down anyway, so... */
-+		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
- 	mutex_unlock(&fullstop_mutex);
- 	return NOTIFY_DONE;
- }
+ /* In the Intel processor's MTRR interface, the MTRR type is always held in
+    an 8 bit field: */
+-typedef u8 mtrr_type;
++typedef __u8 mtrr_type;
  
- /*
-+ * Absorb kthreads into a kernel function that won't return, so that
-+ * they won't ever access module text or data again.
-+ */
-+static void rcutorture_shutdown_absorb(char *title)
+ #define MTRR_NUM_FIXED_RANGES 88
+ #define MTRR_MAX_VAR_RANGES 256
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 83e69f4..06bbcbd 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -341,6 +341,25 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
+ 
+ #define canon_pgprot(p) __pgprot(pgprot_val(p) & __supported_pte_mask)
+ 
++static inline int is_new_memtype_allowed(unsigned long flags,
++						unsigned long new_flags)
 +{
-+	if (ACCESS_ONCE(fullstop) == FULLSTOP_SHUTDOWN) {
-+		printk(KERN_NOTICE
-+		       "rcutorture thread %s parking due to system shutdown\n",
-+		       title);
-+		schedule_timeout_uninterruptible(MAX_SCHEDULE_TIMEOUT);
++	/*
++	 * Certain new memtypes are not allowed with certain
++	 * requested memtype:
++	 * - request is uncached, return cannot be write-back
++	 * - request is write-combine, return cannot be write-back
++	 */
++	if ((flags == _PAGE_CACHE_UC_MINUS &&
++	     new_flags == _PAGE_CACHE_WB) ||
++	    (flags == _PAGE_CACHE_WC &&
++	     new_flags == _PAGE_CACHE_WB)) {
++		return 0;
 +	}
++
++	return 1;
 +}
 +
-+/*
-  * Allocate an element from the rcu_tortures pool.
-  */
- static struct rcu_torture *
-@@ -219,13 +237,14 @@ rcu_random(struct rcu_random_state *rrsp)
- }
+ #ifndef __ASSEMBLY__
+ /* Indicate that x86 has its own track and untrack pfn vma functions */
+ #define __HAVE_PFNMAP_TRACKING
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index c0601c2..a649a4c 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -27,6 +27,7 @@
+ #include <asm/e820.h>
+ #include <asm/trampoline.h>
+ #include <asm/setup.h>
++#include <asm/smp.h>
  
- static void
--rcu_stutter_wait(void)
-+rcu_stutter_wait(char *title)
- {
--	while ((stutter_pause_test || !rcutorture_runnable) && !fullstop) {
-+	while (stutter_pause_test || !rcutorture_runnable) {
- 		if (rcutorture_runnable)
- 			schedule_timeout_interruptible(1);
- 		else
- 			schedule_timeout_interruptible(round_jiffies_relative(HZ));
-+		rcutorture_shutdown_absorb(title);
- 	}
- }
- 
-@@ -287,7 +306,7 @@ rcu_torture_cb(struct rcu_head *p)
- 	int i;
- 	struct rcu_torture *rp = container_of(p, struct rcu_torture, rtort_rcu);
- 
--	if (fullstop) {
-+	if (fullstop != FULLSTOP_DONTSTOP) {
- 		/* Test is ending, just drop callbacks on the floor. */
- 		/* The next initialization will pick up the pieces. */
- 		return;
-@@ -619,10 +638,11 @@ rcu_torture_writer(void *arg)
- 		}
- 		rcu_torture_current_version++;
- 		oldbatch = cur_ops->completed();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_writer");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SHUTDOWN)
-+	rcutorture_shutdown_absorb("rcu_torture_writer");
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -643,11 +663,12 @@ rcu_torture_fakewriter(void *arg)
- 		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
- 		udelay(rcu_random(&rand) & 0x3ff);
- 		cur_ops->sync();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_fakewriter");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task stopping");
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SHUTDOWN)
-+	rcutorture_shutdown_absorb("rcu_torture_fakewriter");
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -752,12 +773,13 @@ rcu_torture_reader(void *arg)
- 		preempt_enable();
- 		cur_ops->readunlock(idx);
- 		schedule();
--		rcu_stutter_wait();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcu_stutter_wait("rcu_torture_reader");
-+	} while (!kthread_should_stop() && fullstop == FULLSTOP_DONTSTOP);
- 	VERBOSE_PRINTK_STRING("rcu_torture_reader task stopping");
-+	rcutorture_shutdown_absorb("rcu_torture_reader");
- 	if (irqreader && cur_ops->irqcapable)
- 		del_timer_sync(&t);
--	while (!kthread_should_stop() && fullstop != FULLSTOP_SHUTDOWN)
-+	while (!kthread_should_stop())
- 		schedule_timeout_uninterruptible(1);
- 	return 0;
- }
-@@ -854,7 +876,8 @@ rcu_torture_stats(void *arg)
- 	do {
- 		schedule_timeout_interruptible(stat_interval * HZ);
- 		rcu_torture_stats_print();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_stats");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_stats task stopping");
- 	return 0;
- }
-@@ -866,52 +889,49 @@ static int rcu_idle_cpu;	/* Force all torture tasks off this CPU */
-  */
- static void rcu_torture_shuffle_tasks(void)
- {
--	cpumask_var_t tmp_mask;
-+	cpumask_t tmp_mask;
- 	int i;
- 
--	if (!alloc_cpumask_var(&tmp_mask, GFP_KERNEL))
--		BUG();
+ #include <mach_apic.h>
+ #ifdef CONFIG_X86_32
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index 309949e..697d1b7 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -172,7 +172,8 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_4,
+ 			 ich_force_enable_hpet);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_7,
+ 			 ich_force_enable_hpet);
 -
--	cpumask_setall(tmp_mask);
-+	cpus_setall(tmp_mask);
- 	get_online_cpus();
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x3a16,	/* ICH10 */
++			 ich_force_enable_hpet);
  
- 	/* No point in shuffling if there is only one online CPU (ex: UP) */
--	if (num_online_cpus() == 1)
--		goto out;
-+	if (num_online_cpus() == 1) {
-+		put_online_cpus();
-+		return;
+ static struct pci_dev *cached_dev;
+ 
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index 9e268b6..90dfae5 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -534,7 +534,7 @@ static int vmalloc_fault(unsigned long address)
+ 	   happen within a race in page table update. In the later
+ 	   case just flush. */
+ 
+-	pgd = pgd_offset(current->mm ?: &init_mm, address);
++	pgd = pgd_offset(current->active_mm, address);
+ 	pgd_ref = pgd_offset_k(address);
+ 	if (pgd_none(*pgd_ref))
+ 		return -1;
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index bd85d42..2ddb1e7 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -367,7 +367,7 @@ EXPORT_SYMBOL(ioremap_nocache);
+  *
+  * Must be freed with iounmap.
+  */
+-void __iomem *ioremap_wc(unsigned long phys_addr, unsigned long size)
++void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
+ {
+ 	if (pat_enabled)
+ 		return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WC,
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index e89d248..4cf30de 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -555,10 +555,12 @@ repeat:
+ 	if (!pte_val(old_pte)) {
+ 		if (!primary)
+ 			return 0;
+-		WARN(1, KERN_WARNING "CPA: called for zero pte. "
+-		       "vaddr = %lx cpa->vaddr = %lx\n", address,
+-		       *cpa->vaddr);
+-		return -EINVAL;
++
++		/*
++		 *  Special error value returned, indicating that the mapping
++		 * did not exist at this address.
++		 */
++		return -EFAULT;
+ 	}
+ 
+ 	if (level == PG_LEVEL_4K) {
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 85cbd3c..ec8cd49 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -333,11 +333,20 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 					      req_type & _PAGE_CACHE_MASK);
+ 	}
+ 
+-	is_range_ram = pagerange_is_ram(start, end);
+-	if (is_range_ram == 1)
+-		return reserve_ram_pages_type(start, end, req_type, new_type);
+-	else if (is_range_ram < 0)
+-		return -EINVAL;
++	/*
++	 * For legacy reasons, some parts of the physical address range in the
++	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
++	 * the e820 tables).  So we will track the memory attributes of this
++	 * legacy 1MB region using the linear memtype_list always.
++	 */
++	if (end >= ISA_END_ADDRESS) {
++		is_range_ram = pagerange_is_ram(start, end);
++		if (is_range_ram == 1)
++			return reserve_ram_pages_type(start, end, req_type,
++						      new_type);
++		else if (is_range_ram < 0)
++			return -EINVAL;
 +	}
  
- 	if (rcu_idle_cpu != -1)
--		cpumask_clear_cpu(rcu_idle_cpu, tmp_mask);
-+		cpu_clear(rcu_idle_cpu, tmp_mask);
- 
--	set_cpus_allowed_ptr(current, tmp_mask);
-+	set_cpus_allowed_ptr(current, &tmp_mask);
- 
- 	if (reader_tasks) {
- 		for (i = 0; i < nrealreaders; i++)
- 			if (reader_tasks[i])
- 				set_cpus_allowed_ptr(reader_tasks[i],
--						     tmp_mask);
-+						     &tmp_mask);
- 	}
- 
- 	if (fakewriter_tasks) {
- 		for (i = 0; i < nfakewriters; i++)
- 			if (fakewriter_tasks[i])
- 				set_cpus_allowed_ptr(fakewriter_tasks[i],
--						     tmp_mask);
-+						     &tmp_mask);
- 	}
- 
- 	if (writer_task)
--		set_cpus_allowed_ptr(writer_task, tmp_mask);
-+		set_cpus_allowed_ptr(writer_task, &tmp_mask);
- 
- 	if (stats_task)
--		set_cpus_allowed_ptr(stats_task, tmp_mask);
-+		set_cpus_allowed_ptr(stats_task, &tmp_mask);
- 
- 	if (rcu_idle_cpu == -1)
- 		rcu_idle_cpu = num_online_cpus() - 1;
- 	else
- 		rcu_idle_cpu--;
- 
--out:
- 	put_online_cpus();
--	free_cpumask_var(tmp_mask);
+ 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
+ 	if (!new)
+@@ -505,6 +514,35 @@ static inline int range_is_allowed(unsigned long pfn, unsigned long size)
  }
+ #endif /* CONFIG_STRICT_DEVMEM */
  
- /* Shuffle tasks across CPUs, with the intent of allowing each CPU in the
-@@ -925,7 +945,8 @@ rcu_torture_shuffle(void *arg)
- 	do {
- 		schedule_timeout_interruptible(shuffle_interval * HZ);
- 		rcu_torture_shuffle_tasks();
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_shuffle");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_shuffle task stopping");
- 	return 0;
- }
-@@ -940,10 +961,11 @@ rcu_torture_stutter(void *arg)
- 	do {
- 		schedule_timeout_interruptible(stutter * HZ);
- 		stutter_pause_test = 1;
--		if (!kthread_should_stop() && !fullstop)
-+		if (!kthread_should_stop())
- 			schedule_timeout_interruptible(stutter * HZ);
- 		stutter_pause_test = 0;
--	} while (!kthread_should_stop() && !fullstop);
-+		rcutorture_shutdown_absorb("rcu_torture_stutter");
-+	} while (!kthread_should_stop());
- 	VERBOSE_PRINTK_STRING("rcu_torture_stutter task stopping");
- 	return 0;
- }
-@@ -970,15 +992,16 @@ rcu_torture_cleanup(void)
- 	int i;
- 
- 	mutex_lock(&fullstop_mutex);
--	if (!fullstop) {
--		/* If being signaled, let it happen, then exit. */
-+	if (fullstop == FULLSTOP_SHUTDOWN) {
-+		printk(KERN_WARNING /* but going down anyway, so... */
-+		       "Concurrent 'rmmod rcutorture' and shutdown illegal!\n");
- 		mutex_unlock(&fullstop_mutex);
--		schedule_timeout_interruptible(10 * HZ);
-+		schedule_timeout_uninterruptible(10);
- 		if (cur_ops->cb_barrier != NULL)
- 			cur_ops->cb_barrier();
- 		return;
- 	}
--	fullstop = FULLSTOP_CLEANUP;
-+	fullstop = FULLSTOP_RMMOD;
- 	mutex_unlock(&fullstop_mutex);
- 	unregister_reboot_notifier(&rcutorture_nb);
- 	if (stutter_task) {
-@@ -1078,7 +1101,7 @@ rcu_torture_init(void)
- 	else
- 		nrealreaders = 2 * num_online_cpus();
- 	rcu_torture_print_module_parms("Start of test");
--	fullstop = 0;
-+	fullstop = FULLSTOP_DONTSTOP;
- 
- 	/* Set up the freelist. */
- 
-diff --git a/kernel/up.c b/kernel/up.c
-new file mode 100644
-index 0000000..c04b9dc
---- /dev/null
-+++ b/kernel/up.c
-@@ -0,0 +1,20 @@
 +/*
-+ * Uniprocessor-only support functions.  The counterpart to kernel/smp.c
++ * Change the memory type for the physial address range in kernel identity
++ * mapping space if that range is a part of identity map.
 + */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/smp.h>
-+
-+int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
-+				int wait)
++static int kernel_map_sync_memtype(u64 base, unsigned long size,
++					unsigned long flags)
 +{
-+	WARN_ON(cpu != 0);
++	unsigned long id_sz;
++	int ret;
 +
-+	local_irq_disable();
-+	(func)(info);
-+	local_irq_enable();
++	if (!pat_enabled || base >= __pa(high_memory))
++		return 0;
 +
-+	return 0;
++	id_sz = (__pa(high_memory) < base + size) ?
++						__pa(high_memory) - base :
++						size;
++
++	ret = ioremap_change_attr((unsigned long)__va(base), id_sz, flags);
++	/*
++	 * -EFAULT return means that the addr was not valid and did not have
++	 * any identity mapping. That case is a success for
++	 * kernel_map_sync_memtype.
++	 */
++	if (ret == -EFAULT)
++		ret = 0;
++
++	return ret;
 +}
-+EXPORT_SYMBOL(smp_call_function_single);
++
+ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 				unsigned long size, pgprot_t *vma_prot)
+ {
+@@ -555,9 +593,7 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+ 	if (retval < 0)
+ 		return 0;
+ 
+-	if (((pfn < max_low_pfn_mapped) ||
+-	     (pfn >= (1UL<<(32 - PAGE_SHIFT)) && pfn < max_pfn_mapped)) &&
+-	    ioremap_change_attr((unsigned long)__va(offset), size, flags) < 0) {
++	if (kernel_map_sync_memtype(offset, size, flags)) {
+ 		free_memtype(offset, offset + size);
+ 		printk(KERN_INFO
+ 		"%s:%d /dev/mem ioremap_change_attr failed %s for %Lx-%Lx\n",
+@@ -601,12 +637,13 @@ void unmap_devmem(unsigned long pfn, unsigned long size, pgprot_t vma_prot)
+  * Reserved non RAM regions only and after successful reserve_memtype,
+  * this func also keeps identity mapping (if any) in sync with this new prot.
+  */
+-static int reserve_pfn_range(u64 paddr, unsigned long size, pgprot_t vma_prot)
++static int reserve_pfn_range(u64 paddr, unsigned long size, pgprot_t *vma_prot,
++				int strict_prot)
+ {
+ 	int is_ram = 0;
+-	int id_sz, ret;
++	int ret;
+ 	unsigned long flags;
+-	unsigned long want_flags = (pgprot_val(vma_prot) & _PAGE_CACHE_MASK);
++	unsigned long want_flags = (pgprot_val(*vma_prot) & _PAGE_CACHE_MASK);
+ 
+ 	is_ram = pagerange_is_ram(paddr, paddr + size);
+ 
+@@ -625,26 +662,27 @@ static int reserve_pfn_range(u64 paddr, unsigned long size, pgprot_t vma_prot)
+ 		return ret;
+ 
+ 	if (flags != want_flags) {
+-		free_memtype(paddr, paddr + size);
+-		printk(KERN_ERR
+-		"%s:%d map pfn expected mapping type %s for %Lx-%Lx, got %s\n",
+-			current->comm, current->pid,
+-			cattr_name(want_flags),
+-			(unsigned long long)paddr,
+-			(unsigned long long)(paddr + size),
+-			cattr_name(flags));
+-		return -EINVAL;
++		if (strict_prot || !is_new_memtype_allowed(want_flags, flags)) {
++			free_memtype(paddr, paddr + size);
++			printk(KERN_ERR "%s:%d map pfn expected mapping type %s"
++				" for %Lx-%Lx, got %s\n",
++				current->comm, current->pid,
++				cattr_name(want_flags),
++				(unsigned long long)paddr,
++				(unsigned long long)(paddr + size),
++				cattr_name(flags));
++			return -EINVAL;
++		}
++		/*
++		 * We allow returning different type than the one requested in
++		 * non strict case.
++		 */
++		*vma_prot = __pgprot((pgprot_val(*vma_prot) &
++				      (~_PAGE_CACHE_MASK)) |
++				     flags);
+ 	}
+ 
+-	/* Need to keep identity mapping in sync */
+-	if (paddr >= __pa(high_memory))
+-		return 0;
+-
+-	id_sz = (__pa(high_memory) < paddr + size) ?
+-				__pa(high_memory) - paddr :
+-				size;
+-
+-	if (ioremap_change_attr((unsigned long)__va(paddr), id_sz, flags) < 0) {
++	if (kernel_map_sync_memtype(paddr, size, flags)) {
+ 		free_memtype(paddr, paddr + size);
+ 		printk(KERN_ERR
+ 			"%s:%d reserve_pfn_range ioremap_change_attr failed %s "
+@@ -689,6 +727,7 @@ int track_pfn_vma_copy(struct vm_area_struct *vma)
+ 	unsigned long vma_start = vma->vm_start;
+ 	unsigned long vma_end = vma->vm_end;
+ 	unsigned long vma_size = vma_end - vma_start;
++	pgprot_t pgprot;
+ 
+ 	if (!pat_enabled)
+ 		return 0;
+@@ -702,7 +741,8 @@ int track_pfn_vma_copy(struct vm_area_struct *vma)
+ 			WARN_ON_ONCE(1);
+ 			return -EINVAL;
+ 		}
+-		return reserve_pfn_range(paddr, vma_size, __pgprot(prot));
++		pgprot = __pgprot(prot);
++		return reserve_pfn_range(paddr, vma_size, &pgprot, 1);
+ 	}
+ 
+ 	/* reserve entire vma page by page, using pfn and prot from pte */
+@@ -710,7 +750,8 @@ int track_pfn_vma_copy(struct vm_area_struct *vma)
+ 		if (follow_phys(vma, vma_start + i, 0, &prot, &paddr))
+ 			continue;
+ 
+-		retval = reserve_pfn_range(paddr, PAGE_SIZE, __pgprot(prot));
++		pgprot = __pgprot(prot);
++		retval = reserve_pfn_range(paddr, PAGE_SIZE, &pgprot, 1);
+ 		if (retval)
+ 			goto cleanup_ret;
+ 	}
+@@ -741,7 +782,7 @@ cleanup_ret:
+  * Note that this function can be called with caller trying to map only a
+  * subrange/page inside the vma.
+  */
+-int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
++int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
+ 			unsigned long pfn, unsigned long size)
+ {
+ 	int retval = 0;
+@@ -758,14 +799,14 @@ int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
+ 	if (is_linear_pfn_mapping(vma)) {
+ 		/* reserve the whole chunk starting from vm_pgoff */
+ 		paddr = (resource_size_t)vma->vm_pgoff << PAGE_SHIFT;
+-		return reserve_pfn_range(paddr, vma_size, prot);
++		return reserve_pfn_range(paddr, vma_size, prot, 0);
+ 	}
+ 
+ 	/* reserve page by page using pfn and size */
+ 	base_paddr = (resource_size_t)pfn << PAGE_SHIFT;
+ 	for (i = 0; i < size; i += PAGE_SIZE) {
+ 		paddr = base_paddr + i;
+-		retval = reserve_pfn_range(paddr, PAGE_SIZE, prot);
++		retval = reserve_pfn_range(paddr, PAGE_SIZE, prot, 0);
+ 		if (retval)
+ 			goto cleanup_ret;
+ 	}
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index f884740..5ead808 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -314,17 +314,7 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 		return retval;
+ 
+ 	if (flags != new_flags) {
+-		/*
+-		 * Do not fallback to certain memory types with certain
+-		 * requested type:
+-		 * - request is uncached, return cannot be write-back
+-		 * - request is uncached, return cannot be write-combine
+-		 * - request is write-combine, return cannot be write-back
+-		 */
+-		if ((flags == _PAGE_CACHE_UC_MINUS &&
+-		     (new_flags == _PAGE_CACHE_WB)) ||
+-		    (flags == _PAGE_CACHE_WC &&
+-		     new_flags == _PAGE_CACHE_WB)) {
++		if (!is_new_memtype_allowed(flags, new_flags)) {
+ 			free_memtype(addr, addr+len);
+ 			return -EINVAL;
+ 		}
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 72ebe91..8e6d0ca 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -301,7 +301,7 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
+  * track_pfn_vma_new is called when a _new_ pfn mapping is being established
+  * for physical range indicated by pfn and size.
+  */
+-static inline int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
++static inline int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
+ 					unsigned long pfn, unsigned long size)
+ {
+ 	return 0;
+@@ -332,7 +332,7 @@ static inline void untrack_pfn_vma(struct vm_area_struct *vma,
+ {
+ }
+ #else
+-extern int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
++extern int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t *prot,
+ 				unsigned long pfn, unsigned long size);
+ extern int track_pfn_vma_copy(struct vm_area_struct *vma);
+ extern void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
+diff --git a/mm/memory.c b/mm/memory.c
+index e009ce8..238fb8e 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1511,6 +1511,7 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+ 			unsigned long pfn)
+ {
+ 	int ret;
++	pgprot_t pgprot = vma->vm_page_prot;
+ 	/*
+ 	 * Technically, architectures with pte_special can avoid all these
+ 	 * restrictions (same for remap_pfn_range).  However we would like
+@@ -1525,10 +1526,10 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
+ 
+ 	if (addr < vma->vm_start || addr >= vma->vm_end)
+ 		return -EFAULT;
+-	if (track_pfn_vma_new(vma, vma->vm_page_prot, pfn, PAGE_SIZE))
++	if (track_pfn_vma_new(vma, &pgprot, pfn, PAGE_SIZE))
+ 		return -EINVAL;
+ 
+-	ret = insert_pfn(vma, addr, pfn, vma->vm_page_prot);
++	ret = insert_pfn(vma, addr, pfn, pgprot);
+ 
+ 	if (ret)
+ 		untrack_pfn_vma(vma, pfn, PAGE_SIZE);
+@@ -1671,9 +1672,15 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
+ 
+ 	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+ 
+-	err = track_pfn_vma_new(vma, prot, pfn, PAGE_ALIGN(size));
+-	if (err)
++	err = track_pfn_vma_new(vma, &prot, pfn, PAGE_ALIGN(size));
++	if (err) {
++		/*
++		 * To indicate that track_pfn related cleanup is not
++		 * needed from higher level routine calling unmap_vmas
++		 */
++		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
+ 		return -EINVAL;
++	}
+ 
+ 	BUG_ON(addr >= end);
+ 	pfn -= addr >> PAGE_SHIFT;
