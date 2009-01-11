@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZAKW37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZAKWar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZAKW37 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 17:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZAKW3q
+	id S1755020AbZAKWar (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 17:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZAKWaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 17:29:46 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49455 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbZAKW3p (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 17:29:45 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Miller <davem@davemloft.net>
-Cc: dwmw2@infradead.org, alessandro.suardi@gmail.com, jaswinderlinux@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-In-Reply-To: Your message of "Sun, 11 Jan 2009 13:49:37 PST."
-             <20090111.134937.135396505.davem@davemloft.net>
-From: Valdis.Kletnieks@vt.edu
-References: <1231676698.25018.147.camel@macbook.infradead.org> <1231678799.25018.195.camel@macbook.infradead.org> <58054.1231692502@turing-police.cc.vt.edu>
-            <20090111.134937.135396505.davem@davemloft.net>
+	Sun, 11 Jan 2009 17:30:35 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:53348 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbZAKWae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 17:30:34 -0500
+Date: Sun, 11 Jan 2009 23:32:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: current git kernel has strange problems during bisect
+Message-ID: <20090111223215.GA6296@uranus.ravnborg.org>
+References: <200901111602.53082.borntraeger@de.ibm.com> <200901111607.59054.borntraeger@de.ibm.com> <alpine.DEB.1.00.0901111613250.3586@pacific.mpi-cbg.de> <200901111620.03345.borntraeger@de.ibm.com> <alpine.LFD.2.00.0901111113150.6528@localhost.localdomain> <20090111194258.GA4840@uranus.ravnborg.org> <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain> <f19298770901111417t6762e1e3x79b2f488ee6f1243@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231712979_4078P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 17:29:39 -0500
-Message-ID: <99827.1231712979@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770901111417t6762e1e3x79b2f488ee6f1243@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231712979_4078P
-Content-Type: text/plain; charset=us-ascii
-
-On Sun, 11 Jan 2009 13:49:37 PST, David Miller said:
-> From: Valdis.Kletnieks@vt.edu
-> Date: Sun, 11 Jan 2009 11:48:22 -0500
+On Mon, Jan 12, 2009 at 01:17:31AM +0300, Alexey Zaytsev wrote:
+> On Sun, Jan 11, 2009 at 23:04, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> >
+> > On Sun, 11 Jan 2009, Sam Ravnborg wrote:
+> >>
+> >> The cost of moving this piece of history from one git tree to another
+> >> git tree is that we make it harder to debug the kernel for the advanced user
+> >> that knows how to do bisect.
+> >>
+> >> It is not like this history would be lost - one just had to look
+> >> somewhere else to find it.
+> >>
+> >> That may be a bad pain/benefit ratio - time will tell.
+> >
+> > Umm. No.
+> >
+> > Time is exactly what makes it useful. It will make all the downsides
+> > shrink, and the advantages stay.
+> >
+> >> There should be a way to avoid such pain when bisecting without
+> >> having to mark a semi-random (for the average person) commit as good.
+> >
+> > Well, you don't actually have to mark that semi-random one as good either.
+> > What you can do is to just mark anything that _only_ contains fs/btrfs as
+> > good. IOW, you don't have to know the magic number - you just have to be
+> > told that "oh, if you only have btrfs files, and you're not actively
+> > bisecting a btrfs bug, just do 'git bisect good' and continue".
+> >
+> > Yeah, you'll hit it a few times, but you don't even have to compile things
+> > or boot anything, so it's not actually going to be all that much slower
+> > than just knowing about the magic point either.
 > 
-> > One unanswered question:  What do we expect the system to do if they have this
-> > patch, TIGON3=y, FIRMWARE_IN_KERNEL=n, and configure a netconsole for boot
-> > messages?  I'm *hoping* the answer is "the netconsole doesn't come up at boot,
-> > but can be re-enabled via the /sys/kernel/config/netconsole interface after
-> > you've done an 'ifconfig eth0 up' or similar, or do a 'modprobe netconsole'.
-> > 
-> > Those seem like reasonable semantics to me - anybody got a different opinion?
+> But would not such bug avoid being bisected if you blindly
+> mark btrfs commits as good?
 > 
-> Even better, how about nfsroot?  There is no "later", either you
-> can mount to root filesystem or you fail.
+> v2.6.29 <-- bad
+> ...
+> ...
+> ...
+> btrfs stuff <-- mark as good
+> ...
+> the-real-bug
+> ...
+> v2.6.28 <-- good
+> 
+> So you hit the btrfs commit, mark it as good, leaving the real bug below,
+> and the bisection continues, with both sides being actually bad.
+> 
+> Am I missing something?
 
-I don't see any sane way for an nfsroot to work unless you've built the kernel
-with TIGON3=y, and FIRMWARE=y.  Anything else is just crazy talk.  For that
-case, I'd suggest we just do this:
+Yep - you miss that people get confused when suddenly they have no kernel source.
 
-Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+	Sam
 
---- linux-2.6.28-mmotm0109/Documentation/filesystems/nfsroot.txt.dist	2008-12-24 18:26:37.000000000 -0500
-+++ linux-2.6.28-mmotm0109/Documentation/filesystems/nfsroot.txt	2009-01-11 17:27:31.000000000 -0500
-@@ -30,6 +30,9 @@ In the networking options, kernel level 
- along with the types of autoconfiguration to support. Selecting all of
- DHCP, BOOTP and RARP is safe.
- 
-+In addition, your network interface driver must be selected as built-in,
-+and if the card is a Tigon3 or other card that requires a firmware load
-+to become functional, you need to select FIRMWARE_IN_KERNEL.
- 
- 
- 
-
-
-
---==_Exmh_1231712979_4078P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJanLTcC3lWbTT17ARAugYAJ9fciw425S1g46gWUS6ZddGigI10gCg24ul
-jto5m7FyVX+Yv9aWoxBgGVk=
-=+xsA
------END PGP SIGNATURE-----
-
---==_Exmh_1231712979_4078P--
