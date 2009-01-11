@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZAKL5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZAKMFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbZAKL5k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 06:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZAKL5b
+	id S1752597AbZAKMFR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 07:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZAKMFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 06:57:31 -0500
-Received: from web.keli.cz ([77.48.235.227]:40892 "EHLO web.keli.cz"
+	Sun, 11 Jan 2009 07:05:01 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35260 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbZAKL5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 06:57:31 -0500
-Message-ID: <4969DEA0.5020301@century.cz>
-Date: Sun, 11 Jan 2009 12:57:20 +0100
-From: Petr Titera <P.Titera@century.cz>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	id S1751400AbZAKMFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 07:05:00 -0500
+Date: Sun, 11 Jan 2009 13:04:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Noonan <steven@uplinklabs.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip 2/2] kernel/sched.c: forward declaration for
+	'double_rq_lock' missing
+Message-ID: <20090111120450.GA27796@elte.hu>
+References: <1231664662-17104-1-git-send-email-steven@uplinklabs.net> <1231664662-17104-2-git-send-email-steven@uplinklabs.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Build error on latest git
-References: <4969C096.9060909@century.cz>
-In-Reply-To: <4969C096.9060909@century.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231664662-17104-2-git-send-email-steven@uplinklabs.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Going through source it seems to me (still building) that it is caused 
-by including asm/smp.h only if build with CONFIG_SMP. This patch seems 
-to fix this
 
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index b824669..fd51bb9 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -11,6 +11,8 @@
- #include <linux/list.h>
- #include <linux/cpumask.h>
- 
-+#include <asm/smp.h>
-+
- extern void cpu_idle(void);
- 
- struct call_single_data {
-@@ -30,7 +32,6 @@ extern unsigned int total_cpus;
- #include <linux/kernel.h>
- #include <linux/compiler.h>
- #include <linux/thread_info.h>
--#include <asm/smp.h>
- 
- /*
-  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
+* Steven Noonan <steven@uplinklabs.net> wrote:
 
+> Impact: compile error eliminated
+> 
+> Added 'double_rq_lock' forward declaration, allowing double_rq_lock
+> to be used in _double_lock_balance().
+> 
+> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+> ---
+>  kernel/sched.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 
-Petr Titera napsal(a):
-> Hello,
->
-> I'm getting this build error in arch/x86/kernel/mpparse.c using latest 
-> git:
->
-> arch/x86/kernel/mpparse.c: In function ‘MP_processor_info’:
-> arch/x86/kernel/mpparse.c:57: error: ‘disabled_cpus’ undeclared (first 
-> use in this function)
-> arch/x86/kernel/mpparse.c:57: error: (Each undeclared identifier is 
-> reported only once
-> arch/x86/kernel/mpparse.c:57: error: for each function it appears in.)
-> arch/x86/kernel/mpparse.c: In function ‘MP_bus_info’:
-> arch/x86/kernel/mpparse.c:85: error: implicit declaration of function 
-> ‘apic_printk’
-> arch/x86/kernel/mpparse.c:85: error: ‘APIC_VERBOSE’ undeclared (first 
-> use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘print_MP_intsrc_info’:
-> arch/x86/kernel/mpparse.c:156: error: ‘APIC_VERBOSE’ undeclared (first 
-> use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘print_mp_irq_info’:
-> arch/x86/kernel/mpparse.c:164: error: ‘APIC_VERBOSE’ undeclared (first 
-> use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘MP_lintsrc_info’:
-> arch/x86/kernel/mpparse.c:236: error: ‘APIC_VERBOSE’ undeclared (first 
-> use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘smp_read_mpc’:
-> arch/x86/kernel/mpparse.c:395: error: ‘num_processors’ undeclared 
-> (first use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘__get_smp_config’:
-> arch/x86/kernel/mpparse.c:670: error: ‘num_processors’ undeclared 
-> (first use in this function)
-> arch/x86/kernel/mpparse.c: In function ‘smp_scan_config’:
-> arch/x86/kernel/mpparse.c:692: error: ‘APIC_VERBOSE’ undeclared (first 
-> use in this function)
-> make[1]: *** [arch/x86/kernel/mpparse.o] Error 1
-> make: *** [arch/x86/kernel] Error 2
->
-> Petr Titera
+applied to tip/sched/urgent, thanks Steven.
 
+I have not seen such build failures myself - could you please send the 
+.config that triggers it?
+
+	Ingo
