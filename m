@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZAKNLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZAKNOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbZAKNLW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 08:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZAKNLN
+	id S1753662AbZAKNOg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 08:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZAKNOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 08:11:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38132 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZAKNLN (ORCPT
+	Sun, 11 Jan 2009 08:14:21 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55661 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbZAKNOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 08:11:13 -0500
-Subject: Re: Build error on latest git
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: Petr Titera <P.Titera@century.cz>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <3f9a31f40901110506v646bd599q863be03accbfd8b2@mail.gmail.com>
-References: <4969C096.9060909@century.cz> <4969DEA0.5020301@century.cz>
-	 <3f9a31f40901110506v646bd599q863be03accbfd8b2@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 18:38:55 +0530
-Message-Id: <1231679335.3244.1.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 08:14:19 -0500
+Date: Sun, 11 Jan 2009 14:14:06 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, fweisbec@gmail.com, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/4] Fastboot revisited: Asynchronous function calls
+Message-ID: <20090111131405.GA2217@ucw.cz>
+References: <20090104092430.7ffd2c41@infradead.org> <alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901041009060.3179@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 18:36 +0530, Jaswinder Singh Rajput wrote:
-> On Sun, Jan 11, 2009 at 5:27 PM, Petr Titera <P.Titera@century.cz> wrote:
-> > Going through source it seems to me (still building) that it is caused by
-> > including asm/smp.h only if build with CONFIG_SMP. This patch seems to fix
-> > this
-> >
-> > diff --git a/include/linux/smp.h b/include/linux/smp.h
-> > index b824669..fd51bb9 100644
-> > --- a/include/linux/smp.h
-> > +++ b/include/linux/smp.h
-> > @@ -11,6 +11,8 @@
-> > #include <linux/list.h>
-> > #include <linux/cpumask.h>
-> >
-> > +#include <asm/smp.h>
-> > +
-> > extern void cpu_idle(void);
-> >
+On Sun 2009-01-04 10:16:57, Linus Torvalds wrote:
 > 
-> No, this is wrong.
 > 
-> asm/smp.h should only be included when CONFIG_SMP is defined.
+> On Sun, 4 Jan 2009, Arjan van de Ven wrote:
+> > 
+> > To see this working, I uploaded a "before" and "after" kernel bootchart
+> > for one of my testboxes at
+> > 
+> > http://www.fenrus.org/linux/before.svg
+> > http://www.fenrus.org/linux/after.svg
 > 
-> I will send fix of this.
+> Ok, so why does the serial port init take so long? That's a quarter of a 
+> second for you, which is ridiculous.
 > 
+> I _think_ it's the irq auto-probing, but that's just a guess. The 8250 
+> driver does some historical crud, like
+> 
+> 	probe_irq_off(probe_irq_on());
+> 
+> to get rid of any pending irq's, but that should be entirely pointless 
+> these days. I bet that line basically goes back to pre-history, before we 
+> made the auto-probing much stabler.
+> 
+> The irq auto-probing itself also has a few excessive delays, like waiting 
+> for 0.1 s just to wait for spurious interrupts to trigger. Doing the extra 
+> unnecessary probe makes that doubly expensive.
+> 
+> Does this patch make any difference to you? I'm not at all sure that it's 
+> the irq probing, but if it is, then this should make the serial probe go 
+> much faster.
 
-Here is the temporary fix, later on I will remove non-smp data from
-smp.h
+Do serial ports even matter for the netbooks this is targeted at?
+Serial ports are gone even on normal notebooks and getting rare at
+desktop...
 
-Subject: [PATCH] x86: mpparse.c fix compilation error
 
-Impact: fix compilation error
+>  	}
+>  
+>  	/* forget possible initially masked and pending IRQ */
+> -	probe_irq_off(probe_irq_on());
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/mpparse.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Delete the comment, too? :-).
 
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 8385d4e..79dae60 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -27,6 +27,7 @@
- #include <asm/e820.h>
- #include <asm/trampoline.h>
- #include <asm/setup.h>
-+#include <asm/smp.h>
- 
- #include <mach_apic.h>
- #ifdef CONFIG_X86_32
 -- 
-1.5.6.6
-
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
