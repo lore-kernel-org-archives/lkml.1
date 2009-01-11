@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZAKBkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZAKBlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZAKBkI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Jan 2009 20:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZAKBj4
+	id S1755227AbZAKBlJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Jan 2009 20:41:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZAKBk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Jan 2009 20:39:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42811 "EHLO mx3.mail.elte.hu"
+	Sat, 10 Jan 2009 20:40:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43035 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752353AbZAKBj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Jan 2009 20:39:56 -0500
-Date: Sun, 11 Jan 2009 02:39:40 +0100
+	id S1752353AbZAKBkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Jan 2009 20:40:55 -0500
+Date: Sun, 11 Jan 2009 02:40:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-Message-ID: <20090111013940.GL12885@elte.hu>
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: partly revert "sched debug: remove NULL
+	checking in print_cfs_rt_rq()"
+Message-ID: <20090111014050.GM12885@elte.hu>
+References: <49685193.6010302@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090110223151.GD7061@linux.vnet.ibm.com>
+In-Reply-To: <49685193.6010302@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,36 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> On Sat, Jan 10, 2009 at 03:48:46PM +0800, Li Zefan wrote:
-> > Impact: also fix a bug in show_rcustats()
-> > 
-> > Use seq file for simplification, and the global buffer and mutex can be
-> > removed.
+> Impact: avoid accessing NULL tg.css->cgroup
 > 
-> Looks very good, and passes my tests.
+> In commit 0a0db8f5c9d4bbb9bbfcc2b6cb6bce2d0ef4d73d, I removed checking
+> NULL tg.css->cgroup, but I realized I was wrong when I found reading
+> /proc/sched_debug can race with cgroup_create().
 > 
-> > While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
-> > due to a bug in show_rcustats().
-> 
-> Good eyes!
-> 
-> The only change I ask is that you pull the contents of
-> rcupreempt_debugfs_init() into the now-one-line rcupreempt_trace_init().
-> 
-> With that change:
-> 
-> Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->
-> > ---
-> >  kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/sched_debug.c |   21 +++++++++++++++++----
+>  1 files changed, 17 insertions(+), 4 deletions(-)
 
-i think the whole kernel/rcupreempt_trace.c file might be a good candidate 
-for the 'statistical tracing' extensions to ftrace that Frederice is 
-working on.
+applied to tip/sched/urgent, thanks!
 
-That way there would just be a few tracepoints, and the rest would be done 
-in kernel/tracing/trace_rcupreempt.c, or so.
 	Ingo
