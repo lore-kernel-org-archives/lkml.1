@@ -1,67 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZAKLLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZAKLM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZAKLLX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 06:11:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZAKLLJ
+	id S1753062AbZAKLM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 06:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZAKLMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 06:11:09 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51871 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbZAKLLI (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 06:11:08 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Miller <davem@davemloft.net>
-Cc: alessandro.suardi@gmail.com, jaswinderlinux@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       dwmw2@infradead.org
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-In-Reply-To: Your message of "Fri, 09 Jan 2009 14:04:22 PST."
-             <20090109.140422.60087297.davem@davemloft.net>
-From: Valdis.Kletnieks@vt.edu
-References: <5a4c581d0901081233y6b546167sbe3ed9f2ea37f1f9@mail.gmail.com> <20090108.125331.03608787.davem@davemloft.net> <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
-            <20090109.140422.60087297.davem@davemloft.net>
+	Sun, 11 Jan 2009 06:12:51 -0500
+Received: from smtp.cs.aau.dk ([130.225.194.6]:49793 "EHLO smtp.cs.aau.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751150AbZAKLMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 06:12:50 -0500
+X-Greylist: delayed 2121 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Jan 2009 06:12:50 EST
+Subject: Re: multiple bugs
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: We La <w.landgraf@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <211380.10787.qm@web112201.mail.gq1.yahoo.com>
+References: <211380.10787.qm@web112201.mail.gq1.yahoo.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 11 Jan 2009 11:39:20 +0100
+Message-Id: <1231670360.15041.41.camel@odie.local>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231672258_4078P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 06:10:58 -0500
-Message-ID: <43805.1231672258@turing-police.cc.vt.edu>
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231672258_4078P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 09 Jan 2009 14:04:22 PST, David Miller said:
-> From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-> Date: Fri, 9 Jan 2009 18:30:40 +0100
+lør, 10 01 2009 kl. 20:21 -0800, skrev We La:
+> I compile continuously almost all git's and test them on several computers.
 > 
-> > Clearly the requirement changed in -git8, AFAICS.
+> 1) Since the 2.6.27 serie, until 2.6.28 and its gits, on many machines
+> the eth connections don't longer work.  The drivers seems to 'work' so
+> that with ifconfig the device is listed, however one don't get
+> connections nor responses of ping.  Booting instead with 2.6.26.X or
+> earlier (changing nothing else on the system), everything works
+> correctly.  The routes are unchanged, too.   Probably this is less a
+> problem of the eth card drivers but of the routing or package handling.
 > 
-> Because -git8 is where the firmware requirement got added.
-> 
-> If you build the TG3 driver statically into your kernel,
-> the only way to get the firmware properly loaded is to
-> enable that CONFIG_FIRMWARE_IN_KERNEL option.
+The 2.6.27 series have been out for a while, so it's not a common bug
+you have hit and something must be special in your case. Perhaps its
+your config, but it's impossible to pinpoint anything from your
+description above.
 
-Maybe this is one of those cases where we actually do want a SELECT?
+It sounds like that you could use git-bisect(1) to tell you which commit
+it started not working from. According to your description above I'd say
+you would want to start with
 
-	select FIRMWARE_IN_KERNEL if TIGON3=y
+git bisect start
+git bisect good v2.6.26
+git bisect bad v2.6.27
 
-or similar?
+and git will respond with something like
 
---==_Exmh_1231672258_4078P
-Content-Type: application/pgp-signature
+Bisecting: 5685 revisions left to test after this
+[dd9ca5d9be7eba99d685d733e23d5be7110e9556] USB: usb-serial: fix a sparse
+warning about different signedness
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Then you'd make, install and test the kernel for this revision and
+determine whether it was good or bad and get the next revision by
+stating 'git bisect good/bad'. You'd have to repeat this about 13 times.
 
-iD8DBQFJadPCcC3lWbTT17ARAq/mAJ9i0L89DnH4b63OSy89fNFJLFyY5ACfW8xy
-qfn7lWQiu+ANURHa1W5Jbt8=
-=83EK
------END PGP SIGNATURE-----
+> 2) For all 2.6.28 -git's , and almost on all machines - office/home
+> computers, and laptops inclusive my eeepc and msi win - I get error
+> messages like that below.  After the error occures, the video changes
+> in a small-letter video mode, and later on trying startx with a
+> framebuffer driver, X don't start.   Annexed is also the configuration
+> file.
 
---==_Exmh_1231672258_4078P--
+> CONFIG_DRM_I915_KMS=y
+
+Don't set that. The help text for this option warned you:
+
+  Choose this option if you want kernel modesetting enabled by default,
+  and you have a new enough userspace to support this. Running old
+  userspaces with this enabled will cause pain.  Note that this causes
+  the driver to bind to PCI devices, which precludes loading things like
+  intelfb.
+
+> 3) For the kernel politics:  For the most new computers / laptops
+> which come out and which are runners in the shops -- such like the
+> eeepc or ms wind -- often it's only 1-2 drivers which are not yet in
+> the kernel -- in this examples, the atl2 or the RL2700E drivers.
+> Then it needs almost 1 year until they are included. During this 
+> time, people consider Linux as difficult to run on these machines;
+> although some distros compile/add drivers, these depends on the
+> kernel version.  I suggest to include more fast the few modules for
+> the important new computers. Even if these drivers aren't perfect,
+> this is better than that people have to compile and install them
+> separately. 
+
+Yeah, see [1].
+
+[1] http://lwn.net/Articles/298570/
+
+P.S. Please set a subject for your emails, and make it something more
+descriptive than the one I provided if possible.
+
+
+Simon Holm Thøgersen
+
