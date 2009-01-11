@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZAKWmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZAKWqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZAKWmY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 17:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZAKWmH
+	id S1752677AbZAKWqY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 17:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZAKWqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 17:42:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52401 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZAKWmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 17:42:05 -0500
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
- (-git7 is ok)
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: Valdis.Kletnieks@vt.edu, alessandro.suardi@gmail.com,
-       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20090111.140559.126980927.davem@davemloft.net>
-References: <1231676698.25018.147.camel@macbook.infradead.org>
-	 <20090111.133929.57600645.davem@davemloft.net>
-	 <1231711347.25018.658.camel@macbook.infradead.org>
-	 <20090111.140559.126980927.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 22:41:38 +0000
-Message-Id: <1231713698.25018.700.camel@macbook.infradead.org>
+	Sun, 11 Jan 2009 17:46:12 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33331 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbZAKWqK (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 17:46:10 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, jim owens <jowens@hp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Subject: Re: [patch] measurements, numbers about CONFIG_OPTIMIZE_INLINING=y impact
+In-Reply-To: Your message of "Fri, 09 Jan 2009 08:34:57 PST."
+             <49677CB1.3030701@zytor.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20090108141808.GC11629@elte.hu> <1231426014.11687.456.camel@twins> <alpine.LFD.2.00.0901080849550.3283@localhost.localdomain> <1231434515.14304.27.camel@think.oraclecorp.com> <alpine.LFD.2.00.0901080955400.3283@localhost.localdomain> <20090108183306.GA22916@elte.hu> <496648C7.5050700@zytor.com> <alpine.LFD.2.00.0901081943150.6528@localhost.localdomain> <20090109130057.GA31845@elte.hu> <49675920.4050205@hp.com> <20090109153508.GA4671@elte.hu>
+            <49677CB1.3030701@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+Content-Type: multipart/signed; boundary="==_Exmh_1231713934_4078P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Sun, 11 Jan 2009 17:45:34 -0500
+Message-ID: <100584.1231713934@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 14:05 -0800, David Miller wrote:
-> So what used to work out of the box by typing make now
-> will have all kinds of strange depencies, right?
-> 
-> This is a regression, no matter how you spin it, in my
-> book.
+--==_Exmh_1231713934_4078P
+Content-Type: text/plain; charset=us-ascii
 
-I know you think that, but I disagree. Yes, it's slightly less
-convenient for a small handful of older drivers, but in the general case
-it's a massive improvement -- because now we can have a single canonical
-location to collect _all_ the firmware that is redistributable, for use
-with the kernel. And we've already started adding a whole bunch of new
-firmwares to that repository.
+On Fri, 09 Jan 2009 08:34:57 PST, "H. Peter Anvin" said:
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+> A lot of noise is being made about the naming of the levels (and I
+> personally believe we should have a different annotation for "inline
+> unconditionally for correctness" and "inline unconditionally for
+> performance", as a documentation issue), but those are the four we get.
 
+I know we use __builtin_return_address() in several places, and several
+other places we introspect the stack and need to find the right frame entry.
+Are there any other places that need to be inlined for correctness?
+
+--==_Exmh_1231713934_4078P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJanaOcC3lWbTT17ARAhshAJ9EuXy6AsnovZqJBsb30GqNfgRW6QCgvxMc
+9XcAbNlET4hJRlR00Jexkjk=
+=CaEV
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1231713934_4078P--
