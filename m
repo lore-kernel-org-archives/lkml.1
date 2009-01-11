@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZAKHrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZAKHwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZAKHrQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 02:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZAKHq5
+	id S1752696AbZAKHwk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 02:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZAKHwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 02:46:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:57266 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZAKHq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 02:46:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=W8JAjFacff4cQUMJAyPw/nucMHlxyFUf8sRhCiMSIsmm/CCR9yjKOkkGm5ei79X7oe
-         JQY1SV9RY8wgztlTePMOOC28oqIA5JezE+TLYcxROhcIdWGkLqb0CuQJ4MG2QeV7MJoG
-         1MvR7MVwKNIWCHwUVkJmW7YwqWqdXxx1kshn8=
-Date: Sun, 11 Jan 2009 10:46:52 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       devel@openvz.org, xemul@openvz.org
-Subject: Re: [RFC 4/4] net: ppp_generic - introduce net-namespace
-	functionality
-Message-ID: <20090111074652.GB7686@localhost>
-References: <20090109195154.320495476@gmail.com> <4967accd.0305560a.3553.ffffd187@mx.google.com> <20090110092258.GA7622@localhost> <20090110092830.GB7622@localhost> <18793.15953.591733.958862@cargo.ozlabs.ibm.com>
+	Sun, 11 Jan 2009 02:52:30 -0500
+Received: from 8bytes.org ([88.198.83.132]:41419 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751389AbZAKHw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 02:52:29 -0500
+Date: Sun, 11 Jan 2009 08:52:27 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com
+Subject: Re: [PATCH 07/16] dma-debug: add debugfs interface
+Message-ID: <20090111075227.GG9466@8bytes.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-8-git-send-email-joerg.roedel@amd.com> <20090110230826.GJ17917@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18793.15953.591733.958862@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090110230826.GJ17917@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Paul Mackerras - Sun, Jan 11, 2009 at 11:33:21AM +1100]
-| Cyrill Gorcunov writes:
-| 
-| > From: Cyrill Gorcunov <gorcunov@gmail.com>
-| > Subecjt: [RFC] net: ppp_generic - introduce net-namespace functionality
-| > 
-| > - Each namespace contain ppp channels and units separately
-| >   with appropriate locks
-| 
-| This looks like a lot of uglification to me.  Why exactly do
-| individual network drivers need to know or care about namespaces?
-| 
-| Paul.
-| 
+On Sun, Jan 11, 2009 at 12:08:26AM +0100, Ingo Molnar wrote:
+> 
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > +/* Global error count */
+> > +static u32 error_count;
+> > +
+> > +/* Global error show enable*/
+> > +static u32 show_all_errors __read_mostly;
+> > +/* Number of errors to show */
+> > +static u32 show_num_errors = 1;
+> > +
+> >  static u32 num_free_entries;
+> >  static u32 min_free_entries;
+> 
+> Small detail: please use native C types for non-hardware variables - 
+> 'unsigned int', 'unsigned long', etc.
+> 
+> u32/u64 is typically used for variables where there is a real significance 
+> to the precise width of the variable: there's either a hardware or a 
+> user-space ABI involved.
 
-Unfortunately in the whole series ppp has been change more
-then others and it's looks ugly indeed that is why it was RFC.
-Namespaces imply isolation of data right? Including private
-data being 'user related' -- ie units passed to user in one
-namespace should not interfere with units passed to user in
-another namespace. So if I will not 'bind' units pool to
-namespaces it would be possible to steal unit from one namespace
-proposed for another namespace. Right?
+Hmm, these variables are exported to debugfs. Thats the reason I made
+them u32.
 
-		- Cyrill -
+Joerg
