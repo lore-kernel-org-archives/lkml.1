@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZAKSjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZAKSkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbZAKSjc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 13:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZAKSjY
+	id S1752727AbZAKSkw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 13:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZAKSko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 13:39:24 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47043 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbZAKSjX (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 13:39:23 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <rpurdie@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.29-mmotm0109 Odd prompt for Sharp Corgi backlight.
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231699127_4078P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 11 Jan 2009 13:40:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37937 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbZAKSkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 13:40:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Fabio Comolli" <fabio.comolli@gmail.com>
+Subject: Re: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Date: Sun, 11 Jan 2009 19:40:05 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.7fD.xbfaJB@chimera> <b637ec0b0901110634i7ea6fa7ao87ec22beb5a51c98@mail.gmail.com>
+In-Reply-To: <b637ec0b0901110634i7ea6fa7ao87ec22beb5a51c98@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 13:38:47 -0500
-Message-ID: <67095.1231699127@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200901111940.06014.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231699127_4078P
-Content-Type: text/plain; charset=us-ascii
+On Sunday 11 January 2009, Fabio Comolli wrote:
+> It's been solved in 2.6.28-final and backported to 2.6.27.10 (a revert
+> of a Dave Kelikamp's commit).
+> 
+> On Sun, Jan 11, 2009 at 12:41 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12155
+> > Subject         : Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+> > Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
+> > Date            : 2008-11-23 16:17 (50 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5e55aa8db085dad1aabb4574c73c23c7ae571e7b
+> > References      : http://marc.info/?l=linux-kernel&m=122745709926361&w=4
 
-So I'm building mmotm-0109, doing a 'make oldconfig', and out pops:
+Thanks, closed.
 
-    Generic (aka Sharp Corgi) Backlight Driver (BACKLIGHT_GENERIC) [Y/n/m/?] (NEW) ?
-
-Say y to enable the generic platform backlight driver previously
-known as the Corgi backlight driver. If you have a Sharp Zaurus
-SL-C7xx, SL-Cxx00 or SL-6000x say y.
-
-
-Two questions:
-
-1) Is it a Corgi driver, or truly a generic one?  It can't be *too* generic
-if it only applies to 3 Sharp Zaurus models?  Or do I want to specify it for
-my Dell laptop that has a backlight too (in which case that help text needs
-fixing)...
-
-2) Why does this default to 'Y'? (Probably depends on the answer to (1) - if
-it's for one vendor, it probably should be N, but Y may make sense if it's
-proper for the vast majority of all laptops and similar that have a backlight.
-
---==_Exmh_1231699127_4078P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJajy3cC3lWbTT17ARAkeRAJ9GzgU+R0P/woFRuxB8uRPxpA28sQCfQ4qr
-AptIUo4WOltSKmPMa0TPZQs=
-=Crel
------END PGP SIGNATURE-----
-
---==_Exmh_1231699127_4078P--
+Rafael
