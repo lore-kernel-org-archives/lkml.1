@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbZAKFBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbZAKFFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751811AbZAKFBw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 00:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZAKFBn
+	id S1751763AbZAKFFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 00:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZAKFFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 00:01:43 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:50422 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbZAKFBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 00:01:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=yIWCFwtXFPaOiXzsGUxuYYlI7aLqUq5rCthjFyKLSQbxr3Zgt3ptyrUB0qbIZSNRad
-         6bhr2msDEG1P2ckxi2msn+Trj9MY4Quou4xvNr1thWPP6JApxX1FdmMHhlBl8W0I+/M5
-         nKiL/Nr+kvRiUK5KCJRVWJN1CVrcRPwlj+vbU=
-Date: Sun, 11 Jan 2009 06:01:31 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-Message-ID: <20090111050129.GA6131@nowhere>
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111013940.GL12885@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 11 Jan 2009 00:05:30 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44095 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZAKFF3 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 00:05:29 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Ying Han <yinghan@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
+Subject: Re: 2.6.29 -mm merge plans
+In-Reply-To: Your message of "Wed, 07 Jan 2009 20:18:34 PST."
+             <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090105175433.D875.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090105010726.c0433fea.akpm@linux-foundation.org> <6991.1231194895@turing-police.cc.vt.edu>
+            <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231647500_3490P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 10 Jan 2009 23:18:20 -0500
+Message-ID: <3838.1231647500@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 02:39:40AM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Sat, Jan 10, 2009 at 03:48:46PM +0800, Li Zefan wrote:
-> > > Impact: also fix a bug in show_rcustats()
-> > > 
-> > > Use seq file for simplification, and the global buffer and mutex can be
-> > > removed.
-> > 
-> > Looks very good, and passes my tests.
-> > 
-> > > While doing this, I found rcustats will never show 'ggp' and 'rcc' fields
-> > > due to a bug in show_rcustats().
-> > 
-> > Good eyes!
-> > 
-> > The only change I ask is that you pull the contents of
-> > rcupreempt_debugfs_init() into the now-one-line rcupreempt_trace_init().
-> > 
-> > With that change:
-> > 
-> > Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> >
-> > > ---
-> > >  kernel/rcupreempt_trace.c |  155 ++++++++++++++++++++-------------------------
-> 
-> i think the whole kernel/rcupreempt_trace.c file might be a good candidate 
-> for the 'statistical tracing' extensions to ftrace that Frederice is 
-> working on.
-> 
-> That way there would just be a few tracepoints, and the rest would be done 
-> in kernel/tracing/trace_rcupreempt.c, or so.
-> 	Ingo
+--==_Exmh_1231647500_3490P
+Content-Type: text/plain; charset=us-ascii
 
-Indeed!
+On Wed, 07 Jan 2009 20:18:34 PST, Ying Han said:
+> Hi Valdis:
+>      Please try this fix and i tested on ubunbu8.10 with xmms and it helps.
 
-The debugfs and seqfile handling and handled in the statistical
-tracing engine.
+Sorry for the long delay in testing, I was offline Wed-Friday taking some
+much-needed leave time.
 
-You just have to provide an iterator for your stat entries through two callbacks:
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index 9e268b6..f4bbd9b 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
 
-_ stat_start() -> gives the first entry
-_ stat_next() -> iterates over the next entry
+This didn't apply cleanly to a mmotm-0105 tree, but did apply cleanly
+with the following 3 patches reverted and then this new patch applied.
 
-And an output callback
+	page_fault-retry-with-nopage_retry.patch
+	page_fault-retry-with-nopage_retry-fix.patch
+	page_fault-retry-with-nopage_retry-fix-fix.patch
 
-_ stat_show() -> print one entry from your stat list
+not surprising, since it looks like this patch is a replacement for all 3.  It
+built and booted nicely, and xmms on the resulting kernel behaves properly.
 
-And two optional things:
+Congrats on being able to debug the problem based on my fairly weird bug
+report. ;)
 
-_ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
-_ stat_headers() -> provide the first line in your stat file, typically to describe your columns
+--==_Exmh_1231647500_3490P
+Content-Type: application/pgp-signature
 
-The last thing you need is to give a name to your trace file.
-You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
-of your stats.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-It is currently used by the branch tracer, and by a pending patch for a new workqueue
-tracer which will provide you a simple example.
+iD8DBQFJaXMMcC3lWbTT17ARAtAPAJ4gLqls56WlOsgdc8TSNqHyDxPMbACgsv5U
+NS7HDwgJ/fdb4RN4FrE9a78=
+=CZ9i
+-----END PGP SIGNATURE-----
 
-If you have any question about how to use it, don't hesitate to ask.
-
-Frederic.
-
+--==_Exmh_1231647500_3490P--
