@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbZALCOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZALCai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbZALCOq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 21:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZALCOi
+	id S1753202AbZALCai (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 21:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZALCa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 21:14:38 -0500
-Received: from web34408.mail.mud.yahoo.com ([66.163.178.157]:44887 "HELO
-	web34408.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751174AbZALCOh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 21:14:37 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=a2ccVZTYrtHbZITSdKzL+x3QCXJjDtDE8ZPYMwkg9Y33Nfl5/HdG53tdVuHxEdG3+DcUsWVvHneQVJNvc84RDxB7cXXs+cesH7Br+pF76VmqeHA0MBMxhyR3N0XtzNReiDQRNtS1ZaH5LGRd81PEgKt1MW4GBbULNqnobNkqJ9w=;
-X-YMail-OSG: aKUvGM0VM1nE.BGMEW40Yc5gYR1zTnwMjiJ2agABpvt6b.1iiv.Wu38VQQO9vQuMvc3q4ndfn3uSce4y9Z53a7jFn7_lUipXUJwwP3JTE85j_u9viFiYX0MEJ7Wg3TBJMsChCDLi8Li9jQqnm4EpEfSSFFT6PUPGanmKlZ2Nc1Y1EkeVKEF4UjSblVNomYtxOBuXZnCnrepwlRn2mqqGunqwQML4kHVegefo6cc-
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Sun, 11 Jan 2009 18:14:35 -0800 (PST)
-From: Jose Luis Marchetti <joseluismarchetti@yahoo.com.br>
-Reply-To: joseluismarchetti@yahoo.com.br
-Subject: Re: MAC address runtime configuration in new driver (was Re: ...no subject)
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <496A0C4E.5040502@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <658601.69208.qm@web34408.mail.mud.yahoo.com>
+	Sun, 11 Jan 2009 21:30:28 -0500
+Received: from mga03.intel.com ([143.182.124.21]:15937 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZALCa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 21:30:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,250,1231142400"; 
+   d="asc'?scan'208";a="98828394"
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090110100823.GA22352@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
+	 <20090109070144.GA7358@gondor.apana.org.au>
+	 <1231491273.5937.94.camel@yhuang-dev.sh.intel.com>
+	 <20090109091814.GA10881@gondor.apana.org.au>
+	 <20090110100823.GA22352@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QBT1SP4U6wWICTx+2DMP"
+Date: Mon, 12 Jan 2009 10:30:23 +0800
+Message-Id: <1231727423.5937.101.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> http://kernelnewbies.org/FAQ/WhyWritingFilesFromKernelIsBad
-> discusses this.
 
-Thanks, I have missed this faq.
+--=-QBT1SP4U6wWICTx+2DMP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Userspace could write the necessary configuration data into
-> the kernel,
-> for example a sysfs attribute.  Of course the attribute
-> could also be
-> readable.  But perhaps there are already established
-> mechanisms for
-> exactly this purpose.  I added Cc: netdev, maybe somebody
-> there can give
-> advice.
+On Sat, 2009-01-10 at 18:08 +0800, Herbert Xu wrote:
+> On Fri, Jan 09, 2009 at 08:18:14PM +1100, Herbert Xu wrote:
+> >
+> > Not at all, tfms are just "shell" objects and they were designed
+> > to be used in thie way.  Calling setkey twice is an issue but it's
+> > not a show-stopper.  We have the same problem in other places to
+> > so this something that we can potentially optimise.
+>=20
+> Here's how we can solve the double setkey problem.  We can make
+> a new cryptd_alloc_ablkcipher interface that returns a cryptd
+> ablkcipher object.  Since it's cryptd specific we can then access
+> its underlying blkcipher object, which can be shared between the
+> cryptd object and the user of the cryptd object.  This way you
+> only need to do setkey on the cryptd object and it'll get set
+> on the underlying blkcipher automatically.
 
-Thanks for the advice, I have another scenario where it should be nice to access files from inside the kernel, I am going to describe it on another email, but know I am not sure I should keep pursuint it.
+With this method, we can allocate only one cryptd tfm internally,
+without dedicated blkcipher tfm. If kernel is using FPU, crypd tfm is
+used, otherwise, the underlying blkcipher tfm is used directly.
 
-Thanks again.
+Best Regards,
+Huang Ying
 
 
+--=-QBT1SP4U6wWICTx+2DMP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-      Veja quais são os assuntos do momento no Yahoo! +Buscados
-http://br.maisbuscados.yahoo.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklqqzwACgkQKhFGF+eHlphBXwCePKPOXICxSqUUn3pgJr3KpCaB
+/A8AoIgDuVLEvnjwJTk9CMC5D5sd6vxz
+=Hlwu
+-----END PGP SIGNATURE-----
+
+--=-QBT1SP4U6wWICTx+2DMP--
+
