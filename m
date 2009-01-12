@@ -1,49 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbZALFCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZALFDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752528AbZALFCh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 00:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZALFC0
+	id S1754094AbZALFDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 00:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZALFDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 00:02:26 -0500
-Received: from smtp3-g21.free.fr ([212.27.42.3]:43346 "EHLO smtp3-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695AbZALFCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 00:02:25 -0500
-X-Greylist: delayed 665 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 00:02:24 EST
-From: Christian Couder <chriscool@tuxfamily.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: current git kernel has strange problems during bisect
-Date: Mon, 12 Jan 2009 06:03:03 +0100
-User-Agent: KMail/1.9.9
-Cc: Pierre Habouzit <madcoder@debian.org>,
-       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200901111602.53082.borntraeger@de.ibm.com> <20090111230240.GA27489@artemis.corp> <200901120551.56791.chriscool@tuxfamily.org>
-In-Reply-To: <200901120551.56791.chriscool@tuxfamily.org>
+	Mon, 12 Jan 2009 00:03:07 -0500
+Received: from stinky.trash.net ([213.144.137.162]:55456 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZALFDD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 00:03:03 -0500
+Message-ID: <496ACEF8.2030605@trash.net>
+Date: Mon, 12 Jan 2009 06:02:48 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901120603.03977.chriscool@tuxfamily.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Dave Jones <davej@redhat.com>, Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Jan Engelhardt <jengelh@medozas.de>, David Miller <davem@davemloft.net>,
+       ajax@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH] net: Remove a noisy printk
+References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu> <20081214200353.GA2994@redhat.com> <200812191151.55607.rusty@rustcorp.com.au>
+In-Reply-To: <200812191151.55607.rusty@rustcorp.com.au>
+Content-Type: multipart/mixed;
+ boundary="------------010905040301040309060905"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
->
-> Anyway it looks to me that this kind of problem could be avoided if one
-> could "replace" some commits only when bisecting. In this case what could
-> be done is that one could "replace" the commit where btrfs is merged with
-> one commit that cuts off the btrfs history.
+This is a multi-part message in MIME format.
+--------------010905040301040309060905
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-By the way, it possible right now to cut off the btrfs history in one's own 
-repository using a graft. One don't need to wait for me to finish the 
-replace stuff I am slowly working on. But on the other hand it will have 
-all the restrictions of the current graft mechanism.
+Rusty Russell wrote:
+> On Monday 15 December 2008 06:33:53 Dave Jones wrote:
+>> On Sun, Dec 14, 2008 at 06:09:17PM +0100, Jozsef Kadlecsik wrote:
+>>  > In a >normal< system one usually does not use raw sockets. So if a root 
+>>  > process do use raw socket, at least netfilter sends a notification and 
+>>  > there's a chance that someone take notice it by checking the kernel logs.
+>>
+>> 'normal' systems are irrelevant here. This message is triggerable remotely.
+> 
+> I don't think it can be.  This is for truncated locally-generated outgoing
+> packets, which can only happen when root is playing with raw sockets.
 
-Regards,
-Christian.
+Yes, it can only be triggered locally by root.
+
+> As you can probably tell, I was the one who wrote this printk :)  IMHO,
+> one reasonable complaint is sufficient to have it removed, so just remove
+> it.  If anyone thinks it's valuable, put a static counter < 5 around it
+> and add pid/comm info.
+
+I've queued this patch to remove it.
+
+
+--------------010905040301040309060905
+Content-Type: text/x-patch;
+ name="01.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="01.diff"
+
+commit ea1926cabd0076846119a7e10f29070907fc296c
+Author: Patrick McHardy <kaber@trash.net>
+Date:   Mon Jan 12 06:01:48 2009 +0100
+
+    netfilter: remove "happy cracking" message
+    
+    Don't spam logs for locally generated short packets. these can only
+    be generated by root.
+    
+    Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+diff --git a/net/ipv4/netfilter/iptable_filter.c b/net/ipv4/netfilter/iptable_filter.c
+index c922431..52cb693 100644
+--- a/net/ipv4/netfilter/iptable_filter.c
++++ b/net/ipv4/netfilter/iptable_filter.c
+@@ -93,13 +93,8 @@ ipt_local_out_hook(unsigned int hook,
+ {
+ 	/* root is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr) ||
+-	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk("iptable_filter: ignoring short SOCK_RAW "
+-			       "packet.\n");
++	    ip_hdrlen(skb) < sizeof(struct iphdr))
+ 		return NF_ACCEPT;
+-	}
+-
+ 	return ipt_do_table(skb, hook, in, out,
+ 			    dev_net(out)->ipv4.iptable_filter);
+ }
+diff --git a/net/ipv4/netfilter/iptable_mangle.c b/net/ipv4/netfilter/iptable_mangle.c
+index 69f2c42..3929d20 100644
+--- a/net/ipv4/netfilter/iptable_mangle.c
++++ b/net/ipv4/netfilter/iptable_mangle.c
+@@ -132,12 +132,8 @@ ipt_local_hook(unsigned int hook,
+ 
+ 	/* root is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr)
+-	    || ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk("iptable_mangle: ignoring short SOCK_RAW "
+-			       "packet.\n");
++	    || ip_hdrlen(skb) < sizeof(struct iphdr))
+ 		return NF_ACCEPT;
+-	}
+ 
+ 	/* Save things which could affect route */
+ 	mark = skb->mark;
+diff --git a/net/ipv4/netfilter/iptable_raw.c b/net/ipv4/netfilter/iptable_raw.c
+index 8faebfe..7f65d18 100644
+--- a/net/ipv4/netfilter/iptable_raw.c
++++ b/net/ipv4/netfilter/iptable_raw.c
+@@ -65,12 +65,8 @@ ipt_local_hook(unsigned int hook,
+ {
+ 	/* root is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr) ||
+-	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk("iptable_raw: ignoring short SOCK_RAW "
+-			       "packet.\n");
++	    ip_hdrlen(skb) < sizeof(struct iphdr))
+ 		return NF_ACCEPT;
+-	}
+ 	return ipt_do_table(skb, hook, in, out,
+ 			    dev_net(out)->ipv4.iptable_raw);
+ }
+diff --git a/net/ipv4/netfilter/iptable_security.c b/net/ipv4/netfilter/iptable_security.c
+index 36f3be3..a52a35f 100644
+--- a/net/ipv4/netfilter/iptable_security.c
++++ b/net/ipv4/netfilter/iptable_security.c
+@@ -96,12 +96,8 @@ ipt_local_out_hook(unsigned int hook,
+ {
+ 	/* Somebody is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr)
+-	    || ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk(KERN_INFO "iptable_security: ignoring short "
+-			       "SOCK_RAW packet.\n");
++	    || ip_hdrlen(skb) < sizeof(struct iphdr))
+ 		return NF_ACCEPT;
+-	}
+ 	return ipt_do_table(skb, hook, in, out,
+ 			    dev_net(out)->ipv4.iptable_security);
+ }
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index b2141e1..4beb04f 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -145,11 +145,8 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
+ {
+ 	/* root is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr) ||
+-	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk("ipt_hook: happy cracking.\n");
++	    ip_hdrlen(skb) < sizeof(struct iphdr))
+ 		return NF_ACCEPT;
+-	}
+ 	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
+ }
+ 
+
+--------------010905040301040309060905--
