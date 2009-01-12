@@ -1,128 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZALXAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbZALXBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbZALXAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 18:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZALXAe
+	id S1759563AbZALXBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 18:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZALXBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 18:00:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49463 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751707AbZALXAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 18:00:33 -0500
-Date: Mon, 12 Jan 2009 14:59:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ying Han <yinghan@google.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mikew@google.com,
-       rohitseth@google.com
-Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
-Message-Id: <20090112145939.5ae28ada.akpm@linux-foundation.org>
-In-Reply-To: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
-References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 18:01:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36197 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbZALXBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 18:01:02 -0500
+Date: Tue, 13 Jan 2009 00:00:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090112230052.GB18771@elte.hu>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112223421.GA20594@localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009 15:39:07 -0800
-Ying Han <yinghan@google.com> wrote:
 
-> From: Ying Han <yinghan@google.com>
-> 
-> Fix 32bit binary get 64bit stack vma offset.
-> 
-> 32bit binary running on 64bit system, the /proc/pid/maps shows for the
-> vma represents stack get a 64bit adress:
-> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
-> 
-> Signed-off-by:	Ying Han <yinghan@google.com>
-> 
-> fs/exec.c                     |    5 +-
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 4e834f1..8c3eff4 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -517,6 +517,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->  	unsigned long length = old_end - old_start;
->  	unsigned long new_start = old_start - shift;
->  	unsigned long new_end = old_end - shift;
-> +	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
->  	struct mmu_gather *tlb;
-> 
->  	BUG_ON(new_start > new_end);
-> @@ -531,7 +532,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->  	/*
->  	 * cover the whole range: [new_start, old_end)
->  	 */
-> -	vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
-> +	vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
-> 
->  	/*
->  	 * move the page tables downwards, on failure we rely on
-> @@ -564,7 +565,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->  	/*
->  	 * shrink the vma to just the new range.
->  	 */
-> -	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-> +	vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
-> 
->  	return 0;
+* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
-I rewrote the chagnelog as below.  Please confirm that it makes sense?
+> Hi Frederik,
+> 
+> On Mon, Jan 12, 2009 at 10:35:42PM +0100, Frederik Deweerdt wrote:
+> >
+> >Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> >
+> >diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+> >index f8be6f1..c177a1f 100644
+> >--- a/arch/x86/kernel/tlb_64.c
+> >+++ b/arch/x86/kernel/tlb_64.c
+> >@@ -33,7 +33,7 @@
+> >  *	To avoid global state use 8 different call vectors.
+> >  *	Each CPU uses a specific vector to trigger flushes on other
+> >  *	CPUs. Depending on the received vector the target CPUs look into
+> >- *	the right per cpu variable for the flush data.
+> >+ *	the right array slot for the flush data.
+> >  *
+> >  *	With more than 8 CPUs they are hashed to the 8 available
+> >  *	vectors. The limited global vector space forces us to this right now.
+> >@@ -54,7 +54,7 @@ union smp_flush_state {
+> > /* State is put into the per CPU data section, but padded
+> >    to a full cache line because other CPUs can access it and we don't
+> >    want false sharing in the per cpu data segment. */
+> >-static DEFINE_PER_CPU(union smp_flush_state, flush_state);
+> >+static union smp_flush_state flush_state[NUM_INVALIDATE_TLB_VECTORS];
+> 
+> Since flush_state has a spinlock, an array of flush_states would end up 
+> having multiples spinlocks on the same L1 cacheline.  However, I see 
+> that the union smp_flush_state is already padded to SMP_CACHE_BYTES.
 
+Correct.
 
-Subject: fs/exec.c: fix value of vma->vm_pgoff for the stack VMA of 32-bit processes
-From: Ying Han <yinghan@google.com>
+> With per-cpu areas, locks belonging to different array elements did not 
+> end up on the same internode cacheline due to per-node allocation of 
+> per-cpu areas, but with a simple array, two locks could end up on the 
+> same internode cacheline.
+> 
+> Hence, can you please change the padding in smp_flush_state to 
+> INTERNODE_CACHE_BYTES (you have to derive this off 
+> INTERNODE_CACHE_SHIFT) and align it using 
+> ____cacheline_internodealigned_in_smp?
 
-With a 32 bit binary running on a 64 bit system, the /proc/pid/maps for
-the [stack] VMA displays a 64-bit address:
+Yes, that matters to vsmp, which has ... 4K node cache-lines.
 
-ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
+Note that there's already CONFIG_X86_INTERNODE_CACHE_BYTES which is set 
+properly on vsmp.
 
-This is because vma->vm_pgoff for that VMA is incorrectly being stored in
-units of offset-in-bytes.  It should be stored in units of offset-in-pages.
+So ... something like the commit below?
 
-Signed-off-by: Ying Han <yinghan@google.com>
-Cc: Mike Waychison <mikew@google.com>
-Cc: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+	Ingo
+
+--------------->
+>From 23d9dc8bffc759c131b09a48b5215cc2b37a5ac3 Mon Sep 17 00:00:00 2001
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Date: Mon, 12 Jan 2009 22:35:42 +0100
+Subject: [PATCH] x86, tlb flush_data: replace per_cpu with an array
+
+Impact: micro-optimization, memory reduction
+
+On x86_64 flush tlb data is stored in per_cpu variables. This is
+unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
+are accessed.
+
+This patch aims at making the code less confusing (there's nothing
+really "per_cpu") by using a plain array. It also would save some memory
+on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
+
+[ Ravikiran G Thirumalai also pointed out that the correct alignment
+  is ____cacheline_internodealigned_in_smp, so that there's no
+  bouncing on vsmp. ]
+
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/kernel/tlb_64.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
- fs/exec.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff -puN fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes fs/exec.c
---- a/fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes
-+++ a/fs/exec.c
-@@ -509,6 +509,7 @@ static int shift_arg_pages(struct vm_are
- 	unsigned long length = old_end - old_start;
- 	unsigned long new_start = old_start - shift;
- 	unsigned long new_end = old_end - shift;
-+	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
- 	struct mmu_gather *tlb;
+diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+index f8be6f1..c5a6c6f 100644
+--- a/arch/x86/kernel/tlb_64.c
++++ b/arch/x86/kernel/tlb_64.c
+@@ -33,7 +33,7 @@
+  *	To avoid global state use 8 different call vectors.
+  *	Each CPU uses a specific vector to trigger flushes on other
+  *	CPUs. Depending on the received vector the target CPUs look into
+- *	the right per cpu variable for the flush data.
++ *	the right array slot for the flush data.
+  *
+  *	With more than 8 CPUs they are hashed to the 8 available
+  *	vectors. The limited global vector space forces us to this right now.
+@@ -48,13 +48,13 @@ union smp_flush_state {
+ 		unsigned long flush_va;
+ 		spinlock_t tlbstate_lock;
+ 	};
+-	char pad[SMP_CACHE_BYTES];
+-} ____cacheline_aligned;
++	char pad[X86_INTERNODE_CACHE_BYTES];
++} ____cacheline_internodealigned_in_smp;
  
- 	BUG_ON(new_start > new_end);
-@@ -523,7 +524,7 @@ static int shift_arg_pages(struct vm_are
- 	/*
- 	 * cover the whole range: [new_start, old_end)
+ /* State is put into the per CPU data section, but padded
+    to a full cache line because other CPUs can access it and we don't
+    want false sharing in the per cpu data segment. */
+-static DEFINE_PER_CPU(union smp_flush_state, flush_state);
++static union smp_flush_state flush_state[NUM_INVALIDATE_TLB_VECTORS];
+ 
+ /*
+  * We cannot call mmdrop() because we are in interrupt context,
+@@ -129,7 +129,7 @@ asmlinkage void smp_invalidate_interrupt(struct pt_regs *regs)
+ 	 * Use that to determine where the sender put the data.
  	 */
--	vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
-+	vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
+ 	sender = ~regs->orig_ax - INVALIDATE_TLB_VECTOR_START;
+-	f = &per_cpu(flush_state, sender);
++	f = &flush_state[sender];
+ 
+ 	if (!cpu_isset(cpu, f->flush_cpumask))
+ 		goto out;
+@@ -169,7 +169,7 @@ void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
+ 
+ 	/* Caller has disabled preemption */
+ 	sender = smp_processor_id() % NUM_INVALIDATE_TLB_VECTORS;
+-	f = &per_cpu(flush_state, sender);
++	f = &flush_state[sender];
  
  	/*
- 	 * move the page tables downwards, on failure we rely on
-@@ -556,7 +557,7 @@ static int shift_arg_pages(struct vm_are
- 	/*
- 	 * shrink the vma to just the new range.
- 	 */
--	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-+	vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
+ 	 * Could avoid this lock when
+@@ -205,8 +205,8 @@ static int __cpuinit init_smp_flush(void)
+ {
+ 	int i;
+ 
+-	for_each_possible_cpu(i)
+-		spin_lock_init(&per_cpu(flush_state, i).tlbstate_lock);
++	for (i = 0; i < ARRAY_SIZE(flush_state); i++)
++		spin_lock_init(&flush_state[i].tlbstate_lock);
  
  	return 0;
  }
-_
-
