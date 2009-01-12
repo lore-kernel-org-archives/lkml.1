@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZALPYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZALPZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZALPYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 10:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZALPYZ
+	id S1755355AbZALPZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 10:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZALPZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 10:24:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47389 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbZALPYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 10:24:25 -0500
-Date: Mon, 12 Jan 2009 16:24:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Brian Rogers <brian@xyzw.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG] How to get real-time priority using idle priority
-Message-ID: <20090112152419.GA20003@elte.hu>
-References: <4969D0D7.2060401@xyzw.org> <1231736941.6003.7.camel@marge.simson.net> <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu> <1231773786.10060.0.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231773786.10060.0.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 12 Jan 2009 10:25:15 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60800 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbZALPZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 10:25:14 -0500
+Date: Mon, 12 Jan 2009 16:18:57 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "???? ??" <mauriceliu27@hotmail.com>, linux-kernel@vger.kernel.org,
+       nick piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [BUG] AS-ioscheduler: kernel panic at as_exit_queue
+Message-ID: <20090112161857.06d237a7@mjolnir.drzeus.cx>
+In-Reply-To: <20090109080517.GI32491@kernel.dk>
+References: <COL120-W718F2E0FBF40D8870415BFDEDC0@phx.gbl>
+	<20090109080517.GI32491@kernel.dk>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-6686-1231773541-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Mike Galbraith <efault@gmx.de> wrote:
+--=_freyr.drzeus.cx-6686-1231773541-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2009-01-12 at 14:14 +0100, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > > I haven't been able to reproduce complete hangs, but with your proggy 
-> > > > adapted to my quad, _and_ the addition of a SCHED_NORMAL hog, I can 
-> > > > reproduce some very bad interactivity, including massive character 
-> > > > repeats while attempting to type, and general "lurchiness" (_bad_ 
-> > > > wakeup latency).  I'll poke it with a sharp stick or two.
-> > > 
-> > > Would you mind trying the below?
-> > 
-> > i've applied your fix to tip/sched/urgent and merged it into tip/master.
-> 
-> BTW, I forgot the Reported-by: Brian Rogers <brian@xyzw.org> :-/
+On Fri, 9 Jan 2009 09:05:17 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-yeah, i noticed that and added it when i committed the change.
+>=20
+> Please try a newer version, I _think_ this was fixed in sd. CC'ing
+> Pierre, just in case.
+>=20
 
-	Ingo
+When it comes to block layer interactions, and hot removal in
+particular, I'm still sticking my head in the sand and wishing the
+problems away.
+
+Fully understanding that creation of yours has so far proved to require
+way more time than I've been able to put into it. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-6686-1231773541-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAklrX2UACgkQ7b8eESbyJLj/FACgreKUFxmZvursJP19mhvJ+91h
+gcsAn0jCBuYtqCWQyKGxi2yDCIr2z2IQ
+=U3f+
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-6686-1231773541-0001-2--
