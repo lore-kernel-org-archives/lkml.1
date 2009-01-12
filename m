@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbZALLNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZALLOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754273AbZALLNG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZALLMz
+	id S1754586AbZALLOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZALLOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:12:55 -0500
-Received: from styx.suse.cz ([82.119.242.94]:60887 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751003AbZALLMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:12:54 -0500
-Date: Mon, 12 Jan 2009 12:12:53 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: build breakage -- paravirt_{alloc,free}_ldt
-In-Reply-To: <20090112105202.GF10405@elte.hu>
-Message-ID: <alpine.LNX.1.10.0901121211000.5377@jikos.suse.cz>
-References: <alpine.LNX.1.10.0901121121410.5377@jikos.suse.cz> <20090112105202.GF10405@elte.hu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Jan 2009 06:14:05 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56950 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752040AbZALLOE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:14:04 -0500
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090112213339.feefdd02.sfr@canb.auug.org.au>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20090108144538.e5195575.akpm@linux-foundation.org>
+	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
+	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 12 Jan 2009 11:13:13 +0000
+Message-Id: <1231758793.10982.13.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jan 2009 11:13:14.0389 (UTC) FILETIME=[C3211C50:01C974A6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009, Ingo Molnar wrote:
-
-> > with Linus' tree (ae04d14015) doesn't build for me with
-> > 
-> > arch/x86/kernel/ldt.c: In function 'alloc_ldt':
-> > arch/x86/kernel/ldt.c:55: error: implicit declaration of function 'paravirt_alloc_ldt'
-> > arch/x86/kernel/ldt.c:79: error: implicit declaration of function 'paravirt_free_ldt'
-> > 
-> > Config on http://www.jikos.cz/jikos/junk/.config
+On Mon, 2009-01-12 at 21:33 +1100, Stephen Rothwell wrote:
+> On Mon, 12 Jan 2009 02:21:38 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > The many trees in linux-next are actually based on current mainline. 
+> > So if you can prepare and maintain a tree based on current mainline,
+> > Stephen could integrate that into linux-next, hopefully.
 > 
-> hm, it builds fine here with your config. Did .28 build fine for you? The 
-> only change to this file since .28 has been Jaswinder's "423a540: x86: 
-> ldt.c fix style problems".
+> That's what I'm here for :-)
 
-Puzzled. On one system, I still get this build error even after make 
-mrpoper (I use this machine to build kernel routinely, so it certainly 
-didn't happen a few days ago). 
+OK. I'll update the branch to 2.6.29-rc1 later today and let you know
+(I'll also check for any obvious conflicts with linux-next).
 
-But I just tried on different system, and there is builds flawlessly. It's 
-gcc 4.3.1 vs 4.3.2. I will check a little bit more.
+Thanks.
 
 -- 
-Jiri Kosina
-SUSE Labs
+Catalin
+
