@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZALTzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbZALTzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbZALTzV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZALTzE
+	id S1757320AbZALTzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZALTzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:55:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38659 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755399AbZALTzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:55:01 -0500
-Message-ID: <496B9FF3.3080909@kernel.org>
-Date: Mon, 12 Jan 2009 11:54:27 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: make 32bit MAX_HARDIRQSS_PER_CPU to be NR_VECTORS
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 14:55:20 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46183 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756101AbZALTzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:55:19 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH v2.6.29] mfd: Initialise WM8350 interrupts earlier
+Date: Mon, 12 Jan 2009 19:55:17 +0000
+Message-Id: <1231790117-15468-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ensure that the interrupt handling is configured before we do platform
+specific init. This allows the platform specific initialisation to
+configure things which use interrupts safely.
 
-Impact: clean up to be same as 64bit
-
-32bit is use per-cpu vector too, so don't use default NR_IRQS
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- arch/x86/include/asm/hardirq_32.h  |    3 +++
- arch/x86/include/asm/irq_vectors.h |    4 ++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/mfd/wm8350-core.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/hardirq_32.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/hardirq_32.h
-+++ linux-2.6/arch/x86/include/asm/hardirq_32.h
-@@ -20,6 +20,9 @@ typedef struct {
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index ff1ec82..e5e82c7 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -1419,15 +1419,6 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 		return ret;
+ 	}
  
- DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+-	if (pdata && pdata->init) {
+-		ret = pdata->init(wm8350);
+-		if (ret != 0) {
+-			dev_err(wm8350->dev, "Platform init() failed: %d\n",
+-				ret);
+-			goto err;
+-		}
+-	}
+-
+ 	mutex_init(&wm8350->auxadc_mutex);
+ 	mutex_init(&wm8350->irq_mutex);
+ 	INIT_WORK(&wm8350->irq_work, wm8350_irq_worker);
+@@ -1445,6 +1436,15 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 	}
+ 	wm8350->chip_irq = irq;
  
-+/* We can have at most NR_VECTORS irqs routed to a cpu at a time */
-+#define MAX_HARDIRQS_PER_CPU NR_VECTORS
++	if (pdata && pdata->init) {
++		ret = pdata->init(wm8350);
++		if (ret != 0) {
++			dev_err(wm8350->dev, "Platform init() failed: %d\n",
++				ret);
++			goto err;
++		}
++	}
 +
- #define __ARCH_IRQ_STAT
- #define __IRQ_STAT(cpu, member) (per_cpu(irq_stat, cpu).member)
+ 	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0x0);
  
+ 	wm8350_client_dev_register(wm8350, "wm8350-codec",
+-- 
+1.5.6.5
+
