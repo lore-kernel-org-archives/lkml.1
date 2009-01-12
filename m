@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZALBkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZALBn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZALBkV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbZALBkD
+	id S1753644AbZALBn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 20:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZALBnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:40:03 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42325 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZALBkA (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:40:00 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-Cc: David Woodhouse <dwmw2@infradead.org>, David Miller <davem@davemloft.net>,
-       alessandro.suardi@gmail.com, jaswinderlinux@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
-In-Reply-To: Your message of "Sun, 11 Jan 2009 19:10:36 EST."
-             <4407.1231719036@turing-police.cc.vt.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com> <20090109.140422.60087297.davem@davemloft.net> <43805.1231672258@turing-police.cc.vt.edu> <20090111.040842.86784676.davem@davemloft.net> <1231676698.25018.147.camel@macbook.infradead.org> <1231678799.25018.195.camel@macbook.infradead.org>
-            <4407.1231719036@turing-police.cc.vt.edu>
+	Sun, 11 Jan 2009 20:43:16 -0500
+Received: from smtp.cs.aau.dk ([130.225.194.6]:37588 "EHLO smtp.cs.aau.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZALBnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:43:15 -0500
+Subject: Re: [PATCH] jbd2: fix wrong use of do_div
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-ext4 <linux-ext4@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+In-Reply-To: <1231701393.17759.30.camel@odie.local>
+References: <1231701393.17759.30.camel@odie.local>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 12 Jan 2009 02:44:40 +0100
+Message-Id: <1231724680.3094.3.camel@odie.local>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231724395_4327P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 20:39:55 -0500
-Message-ID: <9108.1231724395@turing-police.cc.vt.edu>
-To: unlisted-recipients:; (no To-header on input)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231724395_4327P
-Content-Type: text/plain; charset=us-ascii
+[I got a simpler version 2 of the patch here]
 
-On Sun, 11 Jan 2009 19:10:36 EST, Valdis.Kletnieks@vt.edu said:
+the following warning:
 
-> In the dmesg I see during early bootup:
-> 
-> [    0.694230] loop: module loaded
-> [    0.694249] tg3.c:v3.97 (December 10, 2008)
-> [    0.694261] vendor=8086 device=27d4
-> [    0.694265] tg3 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [    0.694274] tg3 0000:09:00.0: setting latency timer to 64
-> [    0.696087] tg3 0000:09:00.0: wake-up capability disabled by ACPI
-> [    0.696094] tg3 0000:09:00.0: PME# disabled
-> [    0.702276] tg3 0000:09:00.0: firmware: using built-in firmware tigon/tg3_tso.bin
-> [    0.702287] vendor=8086 device=27d4
-> [    0.702288] tg3 0000:09:00.0: PCI INT A disabled
-> [    0.702512] console [netcon0] enabled
-> [    0.702515] netconsole: network logging started
-> [    0.702575] Driver 'sd' needs updating - please use bus_type methods
-> 
-> but once we get to userspace, 'ifconfig' or 'ip link show' have *zero*
-> about an eth0 device.
-> 
-> For comparison, the dmesg if I revert your patch:
-> 
-> [    0.696638] loop: module loaded
-> [    0.696658] tg3.c:v3.97 (December 10, 2008)
-> [    0.696670] vendor=8086 device=27d4
-> [    0.696674] tg3 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [    0.696683] tg3 0000:09:00.0: setting latency timer to 64
-> [    0.698063] tg3 0000:09:00.0: wake-up capability disabled by ACPI
-> [    0.698070] tg3 0000:09:00.0: PME# disabled
-> [    0.704276] tg3 0000:09:00.0: firmware: using built-in firmware tigon/tg3_tso.bin
-> [    0.704445] eth0: Tigon3 [partno(BCM5752KFBG) rev 6002] (PCI Express) MAC address 00:15:c5:c8:33:4e
-> [    0.704448] eth0: attached PHY is 5752 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-> [    0.704451] eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-> [    0.704453] eth0: dma_rwctrl[76180000] dma_mask[64-bit]
-> [    0.704653] console [netcon0] enabled
-> [    0.704656] netconsole: network logging started
-> [    0.704718] Driver 'sd' needs updating - please use bus_type methods
-> 
-> So it looks like the patch is failing to finish initialization of the card.
-> Damned if *I* can see what's breaking it, the conversion to use a helper
-> function tg3_request_firmware seems sane enough....
+fs/jbd2/journal.c: In function ‘jbd2_seq_info_show’:
+fs/jbd2/journal.c:850: warning: format ‘%lu’ expects type ‘long
+unsigned int’, but argument 3 has type ‘uint32_t’
 
-Damn.  I wonder if netconsole's initialization is turning around and stomping
-on everything?  This looks suspicious:
+is caused by wrong usage of do_div that modifies the dividend in-place
+and returns the quotient. So not only would an incorrect value be
+displayed, but s->journal->j_average_commit_time would also be changed
+to a wrong value!
 
-static int tg3_open(struct net_device *dev)
- {
-        struct tg3 *tp = netdev_priv(dev);
-        int err;
+Fix it by using div_u64 instead.
+
+Signed-off-by: Simon Holm Thøgersen <odie@cs.aau.dk>
+---
+ fs/jbd2/journal.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 5667530..eb34300 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -37,10 +37,10 @@
+ #include <linux/proc_fs.h>
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
++#include <linux/math64.h>
  
-+       if (tp->fw_needed) {
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+-#include <asm/div64.h>
+ 
+ EXPORT_SYMBOL(jbd2_journal_start);
+ EXPORT_SYMBOL(jbd2_journal_restart);
+@@ -846,8 +846,8 @@ static int jbd2_seq_info_show(struct seq_file *seq,
+void *v)
+ 	    jiffies_to_msecs(s->stats->u.run.rs_flushing / s->stats->ts_tid));
+ 	seq_printf(seq, "  %ums logging transaction\n",
+ 	    jiffies_to_msecs(s->stats->u.run.rs_logging / s->stats->ts_tid));
+-	seq_printf(seq, "  %luus average transaction commit time\n",
+-		   do_div(s->journal->j_average_commit_time, 1000));
++	seq_printf(seq, "  %lluus average transaction commit time\n",
++		   div_u64(s->journal->j_average_commit_time, 1000));
+ 	seq_printf(seq, "  %lu handles per transaction\n",
+ 	    s->stats->u.run.rs_handle_count / s->stats->ts_tid);
+ 	seq_printf(seq, "  %lu blocks per transaction\n",
+-- 
+1.6.0.2.526.g5c283
 
-Do we know for sure that tp-> struct is the same one we set up back in
-tg3_request_firmware, *and* that tg3_open() doesn't get called before
-tg3_init_one() (which would result in an uninitialized fw_needed)?
-
---==_Exmh_1231724395_4327P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJap9rcC3lWbTT17ARAvx6AKCuceTXvq7tuHbmoFnX0fHsAztKSwCgvlVL
-kXpCi5I2KhSA3FlAusijqQs=
-=mLtx
------END PGP SIGNATURE-----
-
---==_Exmh_1231724395_4327P--
