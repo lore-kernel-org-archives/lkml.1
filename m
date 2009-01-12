@@ -1,261 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZALR0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZALRac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZALR0G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZALRZq
+	id S1755400AbZALRac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZALRaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:25:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44818 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbZALRZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:25:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: Regression 2.6.28-git: suspend/resume failure. git bisected to usb suspend/resume patch
-Date: Mon, 12 Jan 2009 18:25:20 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org
-References: <200901111348.46216.borntraeger@de.ibm.com> <200901120103.53390.rjw@sisk.pl> <200901121341.51674.rjw@sisk.pl>
-In-Reply-To: <200901121341.51674.rjw@sisk.pl>
+	Mon, 12 Jan 2009 12:30:24 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:39369 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZALRaX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 12:30:23 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: question on line disciplines
+Date: Mon, 12 Jan 2009 18:30:40 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901121825.20943.rjw@sisk.pl>
+Message-Id: <200901121830.41333.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009, Rafael J. Wysocki wrote:
-> On Monday 12 January 2009, Rafael J. Wysocki wrote:
-> > On Sunday 11 January 2009, Christian Borntraeger wrote:
-> > > Hello Alan,
-> > > 
-> > > git bisect found this patch 
-> > > 
-> > > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 is first bad commit
-> > > commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
-> > > Author: Alan Stern <stern@rowland.harvard.edu>
-> > > Date:   Wed Dec 17 15:06:03 2008 -0500
-> > > 
-> > >     USB: fix up suspend and resume for PCI host controllers
-> > > 
-> > >     This patch (as1192) rearranges the USB PCI host controller suspend and
-> > >     resume and resume routines:
-> > > 
-> > > 
-> > > To cause my suspend to ram problem with my Thinkpad T61p.
-> > > I can confirm that 
-> > > a81a81a25d3ecdab777abca87c5ddf484056103d works
-> > > and a0d4922da2e4ccb0973095d8d29f36f6b1b5f703  does not work.
-> > > 
-> > > Thing is, 29-rc1 with a0d4922da2e4ccb0973095d8d29f36f6b1b5f703  reverted also 
-> > > fails with suspend/resume. Seems that there was another problem introduced 
-> > > after that patch.
+Hi,
 
-Please see if reverting commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
-(cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write) in
-addition to a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 helps.
+a few years ago we had trouble with a line discipline that assumed
+that room for more than 1 byte meant that two single pushes of one
+byte each were possible. Is that still the case?
 
-Also, please check if the appended patch fixes the issue with
-a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
-
-Thanks,
-Rafael
-
-
----
- drivers/usb/core/hcd-pci.c  |   96 +++++++-------------------------------------
- drivers/usb/core/hcd.h      |    1 
- drivers/usb/host/ehci-pci.c |    1 
- drivers/usb/host/ohci-pci.c |    1 
- drivers/usb/host/uhci-hcd.c |    1 
- 5 files changed, 16 insertions(+), 84 deletions(-)
-
-Index: linux-2.6/drivers/usb/core/hcd-pci.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/hcd-pci.c
-+++ linux-2.6/drivers/usb/core/hcd-pci.c
-@@ -201,6 +201,7 @@ int usb_hcd_pci_suspend(struct pci_dev *
- 	struct usb_hcd		*hcd = pci_get_drvdata(dev);
- 	int			retval = 0;
- 	int			wake, w;
-+	int			has_pci_pm;
- 
- 	/* Root hub suspend should have stopped all downstream traffic,
- 	 * and all bus master traffic.  And done so for both the interface
-@@ -247,26 +248,6 @@ int usb_hcd_pci_suspend(struct pci_dev *
- 	 * low power state, if the hardware allows.
- 	 */
- 	pci_disable_device(dev);
-- done:
--	return retval;
--}
--EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
--
--/**
-- * usb_hcd_pci_suspend_late - suspend a PCI-based HCD after IRQs are disabled
-- * @dev: USB Host Controller being suspended
-- * @message: Power Management message describing this state transition
-- *
-- * Store this function in the HCD's struct pci_driver as .suspend_late.
-- */
--int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t message)
--{
--	int			retval = 0;
--	int			has_pci_pm;
--
--	/* We might already be suspended (runtime PM -- not yet written) */
--	if (dev->current_state != PCI_D0)
--		goto done;
- 
- 	pci_save_state(dev);
- 
-@@ -315,7 +296,7 @@ int usb_hcd_pci_suspend_late(struct pci_
-  done:
- 	return retval;
- }
--EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_late);
-+EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
- 
- /**
-  * usb_hcd_pci_resume_early - resume a PCI-based HCD before IRQs are enabled
-@@ -325,65 +306,8 @@ EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_la
-  */
- int usb_hcd_pci_resume_early(struct pci_dev *dev)
- {
--	int		retval = 0;
--	pci_power_t	state = dev->current_state;
--
--#ifdef CONFIG_PPC_PMAC
--	/* Reenable ASIC clocks for USB */
--	if (machine_is(powermac)) {
--		struct device_node *of_node;
--
--		of_node = pci_device_to_OF_node(dev);
--		if (of_node)
--			pmac_call_feature(PMAC_FTR_USB_ENABLE,
--						of_node, 0, 1);
--	}
--#endif
--
--	/* NOTE:  chip docs cover clean "real suspend" cases (what Linux
--	 * calls "standby", "suspend to RAM", and so on).  There are also
--	 * dirty cases when swsusp fakes a suspend in "shutdown" mode.
--	 */
--	if (state != PCI_D0) {
--#ifdef	DEBUG
--		int	pci_pm;
--		u16	pmcr;
--
--		pci_pm = pci_find_capability(dev, PCI_CAP_ID_PM);
--		pci_read_config_word(dev, pci_pm + PCI_PM_CTRL, &pmcr);
--		pmcr &= PCI_PM_CTRL_STATE_MASK;
--		if (pmcr) {
--			/* Clean case:  power to USB and to HC registers was
--			 * maintained; remote wakeup is easy.
--			 */
--			dev_dbg(&dev->dev, "resume from PCI D%d\n", pmcr);
--		} else {
--			/* Clean:  HC lost Vcc power, D0 uninitialized
--			 *   + Vaux may have preserved port and transceiver
--			 *     state ... for remote wakeup from D3cold
--			 *   + or not; HCD must reinit + re-enumerate
--			 *
--			 * Dirty: D0 semi-initialized cases with swsusp
--			 *   + after BIOS init
--			 *   + after Linux init (HCD statically linked)
--			 */
--			dev_dbg(&dev->dev, "resume from previous PCI D%d\n",
--					state);
--		}
--#endif
--
--		retval = pci_set_power_state(dev, PCI_D0);
--	} else {
--		/* Same basic cases: clean (powered/not), dirty */
--		dev_dbg(&dev->dev, "PCI legacy resume\n");
--	}
--
--	if (retval < 0)
--		dev_err(&dev->dev, "can't resume: %d\n", retval);
--	else
--		pci_restore_state(dev);
--
--	return retval;
-+	pci_restore_state(dev);
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(usb_hcd_pci_resume_early);
- 
-@@ -398,6 +322,18 @@ int usb_hcd_pci_resume(struct pci_dev *d
- 	struct usb_hcd		*hcd;
- 	int			retval;
- 
-+#ifdef CONFIG_PPC_PMAC
-+	/* Reenable ASIC clocks for USB */
-+	if (machine_is(powermac)) {
-+		struct device_node *of_node;
-+
-+		of_node = pci_device_to_OF_node(dev);
-+		if (of_node)
-+			pmac_call_feature(PMAC_FTR_USB_ENABLE,
-+						of_node, 0, 1);
-+	}
-+#endif
-+
- 	hcd = pci_get_drvdata(dev);
- 	if (hcd->state != HC_STATE_SUSPENDED) {
- 		dev_dbg(hcd->self.controller,
-Index: linux-2.6/drivers/usb/core/hcd.h
-===================================================================
---- linux-2.6.orig/drivers/usb/core/hcd.h
-+++ linux-2.6/drivers/usb/core/hcd.h
-@@ -257,7 +257,6 @@ extern void usb_hcd_pci_remove(struct pc
- 
- #ifdef CONFIG_PM
- extern int usb_hcd_pci_suspend(struct pci_dev *dev, pm_message_t msg);
--extern int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t msg);
- extern int usb_hcd_pci_resume_early(struct pci_dev *dev);
- extern int usb_hcd_pci_resume(struct pci_dev *dev);
- #endif /* CONFIG_PM */
-Index: linux-2.6/drivers/usb/host/ehci-pci.c
-===================================================================
---- linux-2.6.orig/drivers/usb/host/ehci-pci.c
-+++ linux-2.6/drivers/usb/host/ehci-pci.c
-@@ -432,7 +432,6 @@ static struct pci_driver ehci_pci_driver
- 
- #ifdef	CONFIG_PM
- 	.suspend =	usb_hcd_pci_suspend,
--	.suspend_late =	usb_hcd_pci_suspend_late,
- 	.resume_early =	usb_hcd_pci_resume_early,
- 	.resume =	usb_hcd_pci_resume,
- #endif
-Index: linux-2.6/drivers/usb/host/ohci-pci.c
-===================================================================
---- linux-2.6.orig/drivers/usb/host/ohci-pci.c
-+++ linux-2.6/drivers/usb/host/ohci-pci.c
-@@ -487,7 +487,6 @@ static struct pci_driver ohci_pci_driver
- 
- #ifdef	CONFIG_PM
- 	.suspend =	usb_hcd_pci_suspend,
--	.suspend_late =	usb_hcd_pci_suspend_late,
- 	.resume_early =	usb_hcd_pci_resume_early,
- 	.resume =	usb_hcd_pci_resume,
- #endif
-Index: linux-2.6/drivers/usb/host/uhci-hcd.c
-===================================================================
---- linux-2.6.orig/drivers/usb/host/uhci-hcd.c
-+++ linux-2.6/drivers/usb/host/uhci-hcd.c
-@@ -942,7 +942,6 @@ static struct pci_driver uhci_pci_driver
- 
- #ifdef	CONFIG_PM
- 	.suspend =	usb_hcd_pci_suspend,
--	.suspend_late =	usb_hcd_pci_suspend_late,
- 	.resume_early =	usb_hcd_pci_resume_early,
- 	.resume =	usb_hcd_pci_resume,
- #endif	/* PM */
-
+	TIA
+		Oliver
