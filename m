@@ -1,145 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZALTyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZALTyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbZALTyW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbZALTyN
+	id S1757194AbZALTyw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZALTyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:54:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46365 "EHLO hera.kernel.org"
+	Mon, 12 Jan 2009 14:54:40 -0500
+Received: from mga14.intel.com ([143.182.124.37]:21834 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbZALTyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:54:13 -0500
-Message-ID: <496B9FC3.7080306@kernel.org>
-Date: Mon, 12 Jan 2009 11:53:39 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: Mike Travis <travis@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: arch_probe_nr_irqs
-References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu>
-In-Reply-To: <20090112092613.GA1822@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1755517AbZALTyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:54:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,254,1231142400"; 
+   d="scan'208";a="99138996"
+Date: Mon, 12 Jan 2009 11:54:38 -0800
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090112195438.GA4538@linux-os.sc.intel.com>
+References: <20090111143951.GA6666@elte.hu> <64bb37e0901110845o2561db4auf68b86d024d210a0@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC4643BB73C5@orsmsx505.amr.corp.intel.com> <64bb37e0901121101y73c492fel38a70681f226b526@mail.gmail.com> <20090112191934.GA28851@linux-os.sc.intel.com> <20090112192912.GA31650@linux-os.sc.intel.com> <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 12, 2009 at 11:47:13AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 12 Jan 2009, Pallipadi, Venkatesh wrote:
+> > +		if (strict_prot ||
+> > +		    (want_flags == _PAGE_CACHE_UC_MINUS &&
+> > +		     flags == _PAGE_CACHE_WB) ||
+> > +		    (want_flags == _PAGE_CACHE_WC &&
+> > +		     flags == _PAGE_CACHE_WB)) {
+> 
+> Please don't write code like this.
+> 
+> Do it as an inline function that returns true/false and has comments on 
+> what the hell is going on.
+> 
+> If a conditional doesn't fit on one line, it should generally be 
+> abstracted away into a readable function where the name explains what it 
+> does conceptually.
+> 
 
-Impact: save RAM with large NR_CPUS, get smaller nr_irqs
+Yes. The actual patch that is lined up in tip fixes indeed has this as a
+macro sharing this code with 2 callers and comment about this
+(is_new_memtype_allowed()). I wanted to keep the changes smaller in this
+test patch, which is just to root cause this particular crash and ended
+up with above code.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/irq_vectors.h |    7 ++-----
- arch/x86/kernel/io_apic.c          |   16 ++++++++++++++++
- include/linux/interrupt.h          |    1 +
- kernel/irq/handle.c                |    9 ++-------
- kernel/softirq.c                   |    5 +++++
- 5 files changed, 26 insertions(+), 12 deletions(-)
-
-Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
-+++ linux-2.6/arch/x86/include/asm/irq_vectors.h
-@@ -120,14 +120,11 @@
- # endif
- #else
- 
--/* defined as a macro so nr_irqs = max_nr_irqs(nr_cpu_ids) can be used */
--# define max_nr_irqs(nr_cpus)				\
--	((8 * nr_cpus) > (32 * MAX_IO_APICS) ?		\
-+# define NR_IRQS					\
-+	((8 * NR_CPUS) > (32 * MAX_IO_APICS) ?		\
- 		(NR_VECTORS + (8 * NR_CPUS)) :		\
- 		(NR_VECTORS + (32 * MAX_IO_APICS)))	\
- 
--# define NR_IRQS max_nr_irqs(NR_CPUS)
--
- #endif
- 
- #elif defined(CONFIG_X86_VOYAGER)
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -3851,6 +3851,22 @@ void __init probe_nr_irqs_gsi(void)
- 		nr_irqs_gsi = nr;
- }
- 
-+#ifdef CONFIG_SPARSE_IRQ
-+int __init arch_probe_nr_irqs(void)
-+{
-+	int nr;
-+
-+	nr = ((8 * nr_cpu_ids) > (32 * nr_ioapics) ?
-+		(NR_VECTORS + (8 * nr_cpu_ids)) :
-+		(NR_VECTORS + (32 * nr_ioapics)));
-+
-+	if (nr < nr_irqs && nr > nr_irqs_gsi)
-+		nr_irqs = nr;
-+
-+	return 0;
-+}
-+#endif
-+
- /* --------------------------------------------------------------------------
-                           ACPI-based IOAPIC Configuration
-    -------------------------------------------------------------------------- */
-Index: linux-2.6/include/linux/interrupt.h
-===================================================================
---- linux-2.6.orig/include/linux/interrupt.h
-+++ linux-2.6/include/linux/interrupt.h
-@@ -481,6 +481,7 @@ int show_interrupts(struct seq_file *p,
- struct irq_desc;
- 
- extern int early_irq_init(void);
-+extern int arch_probe_nr_irqs(void);
- extern int arch_early_irq_init(void);
- extern int arch_init_chip_data(struct irq_desc *desc, int cpu);
- 
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -59,10 +59,6 @@ EXPORT_SYMBOL_GPL(nr_irqs);
- 
- #ifdef CONFIG_SPARSE_IRQ
- 
--#ifndef max_nr_irqs
--#define max_nr_irqs(nr_cpus)	NR_IRQS
--#endif
--
- static struct irq_desc irq_desc_init = {
- 	.irq	    = -1,
- 	.status	    = IRQ_DISABLED,
-@@ -137,9 +133,8 @@ int __init early_irq_init(void)
- 	int legacy_count;
- 	int i;
- 
--	/* initialize nr_irqs based on nr_cpu_ids */
--	nr_irqs = max_nr_irqs(nr_cpu_ids);
--
-+	 /* initialize nr_irqs based on nr_cpu_ids */
-+	arch_probe_nr_irqs();
- 	printk(KERN_INFO "NR_IRQS:%d nr_irqs:%d\n", NR_IRQS, nr_irqs);
- 
- 	desc = irq_desc_legacy;
-Index: linux-2.6/kernel/softirq.c
-===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -806,6 +806,11 @@ int __init __weak early_irq_init(void)
- 	return 0;
- }
- 
-+int __init __weak arch_probe_nr_irqs(void)
-+{
-+	return 0;
-+}
-+
- int __init __weak arch_early_irq_init(void)
- {
- 	return 0;
+Thanks,
+Venki
