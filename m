@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbZALWDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZALWFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbZALWDw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZALWDn
+	id S1757498AbZALWFf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZALWFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:03:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48021 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbZALWDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:03:42 -0500
-Date: Mon, 12 Jan 2009 23:03:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Mon, 12 Jan 2009 17:05:21 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:46112 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751045AbZALWFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 17:05:21 -0500
+Message-Id: <20090112220519.566749000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 12 Jan 2009 14:05:19 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20090112220326.GB12462@elte.hu>
-References: <20090111143951.GA6666@elte.hu> <64bb37e0901110845o2561db4auf68b86d024d210a0@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC4643BB73C5@orsmsx505.amr.corp.intel.com> <64bb37e0901121101y73c492fel38a70681f226b526@mail.gmail.com> <20090112191934.GA28851@linux-os.sc.intel.com> <20090112192912.GA31650@linux-os.sc.intel.com> <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain> <20090112205259.GA5303@elte.hu> <64bb37e0901121355o78815c9dp5d4753c04886adc7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0901121355o78815c9dp5d4753c04886adc7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] irq: update all archs to use new irq_desc cpumask_var_t's.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+Impact: cleanup, use new cpumask API.
 
-> On Mon, Jan 12, 2009 at 9:52 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > The reason why we wanted to re-test the functional changes was that
-> > Torsten's crash looks very weird: double Call Trace line, a crash in the
-> > scsi/ata code, showing the after-effects of some sort of memory corruption
-> > there.
-> 
-> The double Call Trace: line was a copy&paste error on my part. Its not
-> there in the original oops.
-> 
-> Sorry for that...
+Minor cleanup to use the new affinity and pending_mask cpumask_var_t's
+in irq_desc:
 
-ah, ok - that's fine.
+	alpha irq: update alpha for new irq_desc
+	arm irq: update arm for new irq_desc
+	blackfin irq: update blackfin for new irq_desc
+	ia64 irq: update ia64 for new irq_desc
+	mips irq: update mips for new irq_desc
+	parisc irq: update parisc for new irq_desc
+	powerpc irq: update powerpc for new irq_desc
+	arm irq: update arm for new irq_desc
 
-I was just wondering whether it was two CPUs crashing at once and 
-producing an overlap - or something like that. (although typically in that 
-case we dont get such nice line duplication - we get totally garbled 
-output of the two oopses superimposed.)
+Ingo - should I push these to tip/cpus4096 via the cpus4096-for-ingo tree
+since that has the relevant changes to irq_desc?  Or by some other means?
 
-It's just that when an oops looks weird we have to look at every small 
-detail, to be able to imagine the unimaginable.
+Based on tip/cpus4096: v2.6.29-rc1-19-g92296c6
 
-Bugs you cannot even imagine are the toughest nuts usually, as the process 
-of debugging narrows imagination usually - often it involves repetitive 
-automatisms which are not helpful in expanding your thoughts to cover 
-tricky, unusual bugs.
+[I'm setting up the cross-compile toolchain and will verify (as much as I
+can) that the above builds correctly.]
 
-If an oops looks difficult there's a way out of that trap: co-debug in 
-duos if you can - the same folks rarely get unimaginative for the very 
-same detail. (Or put it aside and leave it for the next morning - to flush 
-out the invisible temporary mental dead-ends one has installed 
-subconsciously and which are blocking you from reaching the real 
-solution.)
+Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: <kernel@wantstofly.org>
+Cc: <linuxppc-dev@ozlabs.org>
+Cc: <linux-ia64@vger.kernel.org>
+Cc: <linux-mips@linux-mips.org>
+Cc: <linux-parisc@vger.kernel.org>
+Cc: <sparclinux@vger.kernel.org>
 
-	Ingo
+-- 
