@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZALIAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZALIDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZALIAu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZALIAl
+	id S1754598AbZALIDh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZALID2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:00:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39904 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbZALIAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:00:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Caleb Cushing" <xenoterracide@gmail.com>
-Subject: Re: [Bug #12264] i915: switching from kwin in opengl mode to a VT then back to x11, x11 freezes
-Date: Mon, 12 Jan 2009 09:00:20 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.ncC.2afaJB@chimera> <81bfc67a0901111642i37f46edar8592899d7193b863@mail.gmail.com>
-In-Reply-To: <81bfc67a0901111642i37f46edar8592899d7193b863@mail.gmail.com>
+	Mon, 12 Jan 2009 03:03:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50821 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZALID1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:03:27 -0500
+Date: Mon, 12 Jan 2009 03:03:25 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Qinghuang Feng <qhfeng.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       neilb@suse.de, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH] NFSD: cleanup for nfs3proc.c
+Message-ID: <20090112080325.GA418@infradead.org>
+References: <496a44f7.05636e0a.69b8.6278@mx.google.com> <20090112011231.GA31971@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901120900.20446.rjw@sisk.pl>
+In-Reply-To: <20090112011231.GA31971@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009, Caleb Cushing wrote:
-> so far I'm tracking with gentoo here.
-> http://bugs.gentoo.org/show_bug.cgi?id=253813 and freedesktop here
-> http://bugs.freedesktop.org/process_bug.cgi
+On Sun, Jan 11, 2009 at 08:12:31PM -0500, J. Bruce Fields wrote:
+> On Mon, Jan 12, 2009 at 03:13:53AM +0800, Qinghuang Feng wrote:
+> > MSDOS_SUPER_MAGIC is defined in <linux/magic.h>,
+> > so use MSDOS_SUPER_MAGIC directly.
 > 
-> and I've tested the first 2 kernel patches alone, and still have the
-> issue, haven't been able to add the libdrm patch to libdrm so far.
+> Thanks.  But does anyone know if there's any better way to figure out
+> whether a filesystem supports links and symlinks than by checking
+> s_magic == MSDOS_SUPER_MAGIC??
 
-Thanks for the update.
+Or case insenstivit or..
 
-Rafael
+If we had a working pathconf syscall and inode operation that'd be
+easy..
 
-
-> On 1/11/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> >  of regressions introduced between 2.6.27 and 2.6.28.
-> >
-> >  The following bug entry is on the current list of known regressions
-> >  introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> >  be listed and let me know (either way).
-> >
-> >
-> >  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12264
-> >  Subject         : i915: switching from kwin in opengl mode to a VT then back to x11, x11 freezes
-> >  Submitter       : Caleb Cushing <xenoterracide@gmail.com>
-> >  Date            : 2008-12-16 11:40 (27 days old)
-> >  References      : http://marc.info/?l=linux-kernel&m=122942777030666&w=4
