@@ -1,148 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbZALXXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZALX0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756336AbZALXXm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 18:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZALXXd
+	id S1756096AbZALX0Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 18:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZALX0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 18:23:33 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:35731 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbZALXXc (ORCPT
+	Mon, 12 Jan 2009 18:26:06 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59158 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752041AbZALX0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 18:23:32 -0500
-X-Greylist: delayed 1023 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 18:23:31 EST
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=pBDy4MIwMv6LvOovqEFSsxihEDGhKQhWSEt9V4mDdNGxgm3AzChCvzkVxyuEUQ9fx
-	mE5pyP5W9RFVzpeAVxOJg==
-MIME-Version: 1.0
-In-Reply-To: <20090112145939.5ae28ada.akpm@linux-foundation.org>
-References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
-	 <20090112145939.5ae28ada.akpm@linux-foundation.org>
-Date: Mon, 12 Jan 2009 15:06:24 -0800
-Message-ID: <604427e00901121506x1cfaaed7hdb17cbbd2a184509@mail.gmail.com>
-Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
-From: Ying Han <yinghan@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mikew@google.com,
-       rohitseth@google.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Jan 2009 18:26:04 -0500
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Matthew Wilcox <matthew@wil.cx>,
+       Benny Halevy <bhalevy@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <496BA671.3070900@garzik.org>
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>
+	 <20081229121423.efde9d06.akpm@linux-foundation.org>
+	 <495B8D90.1090004@panasas.com>
+	 <1230739053.3408.74.camel@localhost.localdomain>
+	 <4960D3CA.2000202@panasas.com>
+	 <1231783926.3256.29.camel@localhost.localdomain>
+	 <496B989F.7050907@garzik.org>
+	 <1231790190.15161.29.camel@localhost.localdomain>
+	 <496BA671.3070900@garzik.org>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 17:25:57 -0600
+Message-Id: <1231802758.27151.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.85
-X-GMailtapped: yinghan
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Andrew.
+On Mon, 2009-01-12 at 15:22 -0500, Jeff Garzik wrote: 
+> James Bottomley wrote:
+> > On Mon, 2009-01-12 at 14:23 -0500, Jeff Garzik wrote:
+> >>> It's an indicator of one.  If you buy my premise that OSD cannot be
+> >>> relevant without compelling user cases, then the lack of a user API can
+> >>> be viewed as a symptom of this.
+> >> If having a compelling user case was a prereq for kernel inclusion, well 
+> >> over half the code would be gone.
+> > 
+> > I'm not holding this against inclusion ... I'm saying it's a symptom of
+> > the generic relevance to user issues problem that OSD has.
+> > 
+> >>> I think your choice of using a character device will turn out to be a
+> >>> design mistake because the migration path of existing filesystems is
+> >>> bound to be a block device with extra features (which they may or may
+> >>> not make use of) but only if there's a way to make ODS relevant to
+> >>> users.
+> >> It is fantasy to think we will be migrating ext4 to OSD.  That fantasy 
+> >> is not a compelling reason to block OSD development.
+> > 
+> > OK, so your quote managed to miss this bit:
+> > 
+> > "Right, so I'm reasonably happy to accept libosd for what it is:  an
+> > enabler for a few specialised applications. "
+> > 
+> > I can't see how that can be construed as "blocking OSD development".
+> > The word "accept" is conventionally used in Linux parlance to mean "will
+> > send upstream".
+> 
+> Yet you continue to expend energy complaining about migrating 
+> block-based filesystems to OSD, a complex, overhead-laden undertaking 
+> _no one_ has proposed or entertained.
 
-On Mon, Jan 12, 2009 at 2:59 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 5 Jan 2009 15:39:07 -0800
-> Ying Han <yinghan@google.com> wrote:
->
->> From: Ying Han <yinghan@google.com>
->>
->> Fix 32bit binary get 64bit stack vma offset.
->>
->> 32bit binary running on 64bit system, the /proc/pid/maps shows for the
->> vma represents stack get a 64bit adress:
->> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
->>
->> Signed-off-by:        Ying Han <yinghan@google.com>
->>
->> fs/exec.c                     |    5 +-
->>
->> diff --git a/fs/exec.c b/fs/exec.c
->> index 4e834f1..8c3eff4 100644
->> --- a/fs/exec.c
->> +++ b/fs/exec.c
->> @@ -517,6 +517,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->>       unsigned long length = old_end - old_start;
->>       unsigned long new_start = old_start - shift;
->>       unsigned long new_end = old_end - shift;
->> +     unsigned long new_pgoff = new_start >> PAGE_SHIFT;
->>       struct mmu_gather *tlb;
->>
->>       BUG_ON(new_start > new_end);
->> @@ -531,7 +532,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->>       /*
->>        * cover the whole range: [new_start, old_end)
->>        */
->> -     vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
->> +     vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
->>
->>       /*
->>        * move the page tables downwards, on failure we rely on
->> @@ -564,7 +565,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
->>       /*
->>        * shrink the vma to just the new range.
->>        */
->> -     vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
->> +     vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
->>
->>       return 0;
->
-> I rewrote the chagnelog as below.  Please confirm that it makes sense?
->
->
-> Subject: fs/exec.c: fix value of vma->vm_pgoff for the stack VMA of 32-bit processes
-> From: Ying Han <yinghan@google.com>
->
-> With a 32 bit binary running on a 64 bit system, the /proc/pid/maps for
-> the [stack] VMA displays a 64-bit address:
->
-> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
-looks good.
->
-> This is because vma->vm_pgoff for that VMA is incorrectly being stored in
-> units of offset-in-bytes.  It should be stored in units of offset-in-pages.
-that is not the problem. the real problem here is that the
-vma->vm_pgoff is initialized as 64bit address. When
-it is doing the shift_arg_pages, it supposed to be readjust to 32bit.
-It did for newstart and newend, but still
-used the old vma->start(64bit) for vma->pgoff. Here i make the change
-to get the newpgoff based on the newstart.
-> Signed-off-by: Ying Han <yinghan@google.com>
-> Cc: Mike Waychison <mikew@google.com>
-> Cc: Hugh Dickins <hugh@veritas.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  fs/exec.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff -puN fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes fs/exec.c
-> --- a/fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes
-> +++ a/fs/exec.c
-> @@ -509,6 +509,7 @@ static int shift_arg_pages(struct vm_are
->        unsigned long length = old_end - old_start;
->        unsigned long new_start = old_start - shift;
->        unsigned long new_end = old_end - shift;
-> +       unsigned long new_pgoff = new_start >> PAGE_SHIFT;
->        struct mmu_gather *tlb;
->
->        BUG_ON(new_start > new_end);
-> @@ -523,7 +524,7 @@ static int shift_arg_pages(struct vm_are
->        /*
->         * cover the whole range: [new_start, old_end)
->         */
-> -       vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
-> +       vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
->
->        /*
->         * move the page tables downwards, on failure we rely on
-> @@ -556,7 +557,7 @@ static int shift_arg_pages(struct vm_are
->        /*
->         * shrink the vma to just the new range.
->         */
-> -       vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-> +       vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
->
->        return 0;
->  }
-> _
->
->
+You're the one who keeps suggesting migration, not me.  I keep
+suggesting ways to make OSD more relevant to current user problems.
+
+A maintainer doesn't have to like everything they merge.
+
+> >> To sum,
+> >>
+> >> * exofs needs a userspace library, around which the standard filesystem 
+> >> tools will be built, most notably mkfs, dump, restore, fsck
+> >>
+> >> * talk of migrating existing filesystems is wildly premature (and a bit 
+> >> of a silly argument, since you are also arguing that OSD lacks 
+> >> compelling use cases)
+> > 
+> > So criticising lacking compelling use cases while at the same time
+> > suggesting how to find them is wrong?
+> > 
+> > Actually, If the only use case OSD can bring to the table is requiring
+> > new filesystems, then there's nothing of general user relevance for it
+> > on the horizon ... anywhere.  There's never going to be a compelling
+> > reason to move the consumer OSDs in the various development labs to
+> > production because nothing would be able to use them on a mass scale.
+> 
+> > If we could derive a benefit from OSD in existing filesystems, then they
+> > do have user relevance, and Seagate and the others might just consider
+> > releasing the devices.
+> 
+> If Seagate were to release a production OSD device, do you really think 
+> they would prefer a block-based filesystem hacked to work with OSDs?  I 
+> don't think so.
+
+Um, speaking with my business hat on, I'd really beg to differ ... you
+don't release a product into an empty market.  you pick an existing one,
+or fill a fundamental need that a market nucleates around.  If that
+means block based filesystems hacked to work with OSDs, I think they'd
+take it, yes.
+
+> Existing block filesystems are very much purpose built for sector-based 
+> storage as implemented on modern storage devices.  No kernel API can 
+> hand-wave that away.
+> 
+> The whole point of OSDs is to move some of the overhead to the storage 
+> device, not _add_ to the overhead.
+
+Well, that was the idea, with OSD version 1.  The problem is that the
+benchmarks didn't confirm that letting the disk take care of object
+placement was a win over block based filesystems.   If you want to
+migrate objects across disks (i.e. cfs paradigm), then it is a win, but
+not really for performance.  That's why OSDv2 has been beefing up
+attributes and security.
+
+The interesting question is what does it take to allow arbitrary
+filesystems to benefit from this.
+
+> > Note that "providing benefit to" does not equate to "rewriting the
+> > filesystem for" ... and it shouldn't; the benefit really should be
+> > incremental.  And that's the crux of my criticism.  While OSD are
+> > separate things that we have to rewrite whole filesystems for, they're
+> > never going to set the world on fire.  If they could be used with only
+> > incremental effort, they might.  The bridge for the incremental effort
+> > will come from a properly designed kernel API.
+> 
+> Well, hey, if you wanna expend energy creating a kernel API that 
+> presents a complex OSD as simple block-based storage, go for it.  AFAICS 
+> it's just extra overhead and complexity when a new filesystem could do 
+> the job much better.
+
+Because writing a new filesystem is so much easier?
+
+> And I seriously doubt Linus or anyone else will want to hack up a 
+> block-based filesystem in this manner.  Better to create a silly "for 
+> argument's sake" OSD block device, upon which any block-based filesystem 
+> can be mounted.  (Note I said block device, _not_ filesystem)
+
+That's a possibility ... as I said before: a block device with extra
+features that allows incremental use in the filesystem.
+
+> >> * an in-kernel OSD-based filesystem needs some sort of generic in-kernel 
+> >> libosd API, so that multiple OSD filesystems do not reinvent the wheel 
+> >> each time.
+> >>
+> >> * OSD was bound to be annoying, because it forces the kernel filesystem 
+> >> to either (a) talk SCSI or (b) use messages that can be converted to 
+> >> SCSI OSD commands, like existing drivers convert the block layer's READ 
+> >> and WRITE to device-specific commands.
+> > 
+> > OK, so what you're arguing is that unlike block devices where we can
+> > produce a useful generic abstraction that is protocol agnostic, for OSD
+> > we can't?  As I've said before, I think this might be true, but fear it
+> > dooms OSD to being too difficult to use.
+> 
+> No, a generic abstraction is "(b)" in my quoted paragraph.
+> 
+> But it's certainly easy to create an OSD block device client, that 
+> simulates sector-based storage, if you are motivated in that direction.
+> 
+> But that only makes sense if you want the extra overhead (square peg, 
+> round hole), which no sane person will want.  Face it, only screwballs 
+> want to mount ext4 on an OSD.
+
+So what's your proposal for lowering the barrier to adoption then?
+
+> >> * Trying to force OSD to export a block device is pushing a square peg 
+> >> through a round hole.  Thus, the best (and only) alternative is 
+> >> character device.  What you really want is a Third Way(tm):  a mmap'able 
+> >> message device, since you really want to export an API to userspace.
+> > 
+> > only allowing a character tap raises the effort bar on getting other
+> > filesystems to use it, because they're all block based ...
+> 
+> That's irrelevant, since no one is calling for block-based filesystems 
+> to be converted to use OSD.
+
+It's relevant to lowering the barrier to adoption, unless there's some
+other means I haven't seen.
+
+> And I can only imagine the push-back, should someone actually propose 
+> doing so.  Filesystems are very much purpose-built for their storage 
+> paradigm.
+
+Filesystems are complex and difficult beasts to get right.  Btrfs took a
+year to get to the point of kernel inclusion and will take some little
+time longer to get enterprises to the point of trusting data to it.  So
+if we say a two year lead time, that would mean that even if someone
+started a general purpose OSD based filesystem today, it wouldn't be
+ready for the consumer market until 2011.  That's not really going to
+convince the disk vendors that OSD based devices should be marketed
+today.
+
+James
+
+
