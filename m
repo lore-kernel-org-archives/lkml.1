@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZAKX70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZALAEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbZAKX70 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 18:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZAKX7S
+	id S1753979AbZALAEl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 19:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZALAEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 18:59:18 -0500
-Received: from mga12.intel.com ([143.182.124.36]:27992 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751795AbZAKX7R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 18:59:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,249,1231142400"; 
-   d="scan'208";a="98802042"
-Subject: Re: 2.6.29-mmotm0109 Odd prompt for Sharp Corgi backlight.
-From: Richard Purdie <rpurdie@linux.intel.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <67095.1231699127@turing-police.cc.vt.edu>
-References: <67095.1231699127@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Sun, 11 Jan 2009 23:59:59 +0000
-Message-Id: <1231718399.5304.62.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sun, 11 Jan 2009 19:04:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38885 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752116AbZALAEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 19:04:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: Regression 2.6.28-git: suspend/resume failure. git bisected to usb suspend/resume patch
+Date: Mon, 12 Jan 2009 01:03:52 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org
+References: <200901111348.46216.borntraeger@de.ibm.com>
+In-Reply-To: <200901111348.46216.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901120103.53390.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 13:38 -0500, Valdis.Kletnieks@vt.edu wrote:
-> So I'm building mmotm-0109, doing a 'make oldconfig', and out pops:
+On Sunday 11 January 2009, Christian Borntraeger wrote:
+> Hello Alan,
 > 
->     Generic (aka Sharp Corgi) Backlight Driver (BACKLIGHT_GENERIC) [Y/n/m/?] (NEW) ?
+> git bisect found this patch 
 > 
-> Say y to enable the generic platform backlight driver previously
-> known as the Corgi backlight driver. If you have a Sharp Zaurus
-> SL-C7xx, SL-Cxx00 or SL-6000x say y.
+> a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 is first bad commit
+> commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+> Author: Alan Stern <stern@rowland.harvard.edu>
+> Date:   Wed Dec 17 15:06:03 2008 -0500
+> 
+>     USB: fix up suspend and resume for PCI host controllers
+> 
+>     This patch (as1192) rearranges the USB PCI host controller suspend and
+>     resume and resume routines:
 > 
 > 
-> Two questions:
+> To cause my suspend to ram problem with my Thinkpad T61p.
+> I can confirm that 
+> a81a81a25d3ecdab777abca87c5ddf484056103d works
+> and a0d4922da2e4ccb0973095d8d29f36f6b1b5f703  does not work.
 > 
-> 1) Is it a Corgi driver, or truly a generic one?  It can't be *too* generic
-> if it only applies to 3 Sharp Zaurus models?  Or do I want to specify it for
-> my Dell laptop that has a backlight too (in which case that help text needs
-> fixing)...
+> Thing is, 29-rc1 with a0d4922da2e4ccb0973095d8d29f36f6b1b5f703  reverted also 
+> fails with suspend/resume. Seems that there was another problem introduced 
+> after that patch.
 
-It is truly generic code now. Your Dell laptop won't use it but it won't
-hurt it either.
+Please try if suspend-resume works for you if you make commit
+fa58d305d9925b01830e535896a7227a868a9e15
+(PCI PM: Add suspend counterpart of pci_reenable_device) the head of your
+tree ('git checkout -b test-branch fa58d305d9925b01830e535896a7227a868a9e15').
 
-> 2) Why does this default to 'Y'? (Probably depends on the answer to (1) - if
-> it's for one vendor, it probably should be N, but Y may make sense if it's
-> proper for the vast majority of all laptops and similar that have a backlight.
+If it does, please check the same for commit
+571ff7584bb9e05fca0eb79752ae55a46faf3a98
+(PCI PM: Power-manage devices without drivers during suspend-resume).
 
-It defaults to Y since its harmless if not used and will become the
-common case for a large number of devices.
-
-Cheers,
-
-Richard
-
-
-
+Thanks,
+Rafael
