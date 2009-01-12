@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZALKnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZALKny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbZALKnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZALKnY
+	id S1754743AbZALKny (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZALKnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:43:24 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:58467 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbZALKnX (ORCPT
+	Mon, 12 Jan 2009 05:43:42 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:50980 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752143AbZALKnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:43:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BzZqpgFxbz5Fl58i6tt/yNEG8NcxfTAfnSixxVce9nrlXExFa943W0NEtJsz8SdfJq
-         j2qXVC90A+3ULIJTd7ud/kmZ8gDRjkgsXP9KrafiRXp2k/QSQT0zWw/XyhSbZZdyzWMq
-         hJQeGpvLZfR+TJ48Oj/sCSsTRqcy/sTERwvFA=
-Message-ID: <3f9a31f40901120243u5ca60bc6n31dee913a02a081a@mail.gmail.com>
-Date: Mon, 12 Jan 2009 16:13:22 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PULL -tip] x86: fix style problems in microcode_intel.c, msr.c and module_XX.c
-Cc: "Jaswinder Singh Rajput" <jaswinder@infradead.org>,
-       "H. Peter Anvin" <hpa@kernel.org>, tigran@aivazian.fsnet.co.uk,
-       shaohua.li@intel.com, rusty@rustcorp.com.au,
-       "Andi Kleen" <andi@firstfloor.org>, "x86 maintainers" <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090112102011.GB10405@elte.hu>
+	Mon, 12 Jan 2009 05:43:41 -0500
+Date: Mon, 12 Jan 2009 21:43:35 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+Message-ID: <20090112104335.GA4942@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com> <20090109070144.GA7358@gondor.apana.org.au> <1231743310.5937.107.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1231753169.7087.5.camel@jaswinder.satnam>
-	 <20090112102011.GB10405@elte.hu>
+In-Reply-To: <1231743310.5937.107.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 3:50 PM, Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Jan 12, 2009 at 02:55:10PM +0800, Huang Ying wrote:
 >
-> hm, are the mpparse.c structural cleanups that i suggested some time ago
-> still on your list? I think the functions replace_intsrc_all(),
-> smp_scan_config() and smp_read_mpc() need those cleanups.
->
+> I use a "shell" cbc(aes) algorithm which chooses between
+> cryptd(__cbc-aes-aesni) and __cbc-aes-aesni according to context. But
+> the struct ablkcipher_request passed in can not be used for cryptd(*).
+> This can be resolved by allocating another struct ablkcipher_request for
+> cryptd(*) for each incoming struct ablkcipher_request. But is there any
+> better solution?
 
-Yes, it is still in my TODO list. But before that I need to submit
-patches to get some extra space:
-0001-x86-replacing-mp_config_ioapic-with-mpc_ioapic.patch
-0002-x86-replacing-mp_config_intsrc-with-mpc_intsrc.patch
+You should include that other ablkcipher_request as part of the
+context of your ablkcipher_request.
 
-And then I will make final changes in mpparse.c
+See for example how aead embeds it.
 
-Thanks,
-
---
-JSR
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
