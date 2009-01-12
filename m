@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZALIht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZALIiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZALIht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZALIhk
+	id S1753897AbZALIiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZALIhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:37:40 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:37935 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbZALIhk (ORCPT
+	Mon, 12 Jan 2009 03:37:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:16947 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbZALIho (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:37:40 -0500
-Date: Mon, 12 Jan 2009 14:07:34 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
-       sfr@canb.auug.org.au, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org, mel@csn.ul.ie
-Subject: Re: [BUG] 2.6.28-git-4 - powerpc - kernel expection 'c01 at
-	.kernel_thread'
-Message-ID: <20090112083734.GB8409@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090102125752.GA5743@linux.vnet.ibm.com> <200901110108.20848.rjw@sisk.pl> <20090112072132.GA8409@linux.vnet.ibm.com> <200901120907.20418.rjw@sisk.pl>
+	Mon, 12 Jan 2009 03:37:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=uMm8pffTMGMDg5V1aVY75CzHsvGCO8t6hGhKI6bSUNEEzle7zCSEg4iIs68X5qhRjR
+         Rm+HmuN7On4B9ZFRs4frJFVaoh2ndaLnaweAbjRSOkbmR38QPt7J6+T7dxxjO5iYMdcZ
+         3J4Bs1LaO+C3okvPRk68gG+lu6p9He49VEEiI=
+Message-ID: <621d098f0901120037y4e17b4bn8d52a8ecdbc3fcff@mail.gmail.com>
+Date: Mon, 12 Jan 2009 09:37:42 +0100
+From: "Jan Dittmer" <jdi@l4x.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
+Cc: "Diego Calleja" <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
+       eric.anholt@iintel.com, airlied@linux.ie
+In-Reply-To: <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901120907.20418.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
+	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
+	 <20090111222122.4d0cb146@diego-desktop>
+	 <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
+	 <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
+	 <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
+X-Google-Sender-Auth: 67f4f82c99aceef4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki <rjw@sisk.pl> [2009-01-12 09:07:19]:
+On Mon, Jan 12, 2009 at 9:04 AM, Dave Airlie <airlied@gmail.com> wrote:
+> the latest git should work with kms on most chipsets, we are still
+> chasing down some issues on some chipsets,
 
-> On Monday 12 January 2009, Kamalesh Babulal wrote:
-> > * Rafael J. Wysocki <rjw@sisk.pl> [2009-01-11 01:08:19]:
-> > 
-> > > On Friday 02 January 2009, Kamalesh Babulal wrote:
-> > > > Hi,
-> > > > 
-> > > > 	2.6.28-git4 kernel drops to xmon with kernel expection. Similar kernel
-> > > > expection was seen next-20081230 and next-20081231 and was reported 
-> > > > earlier at http://lkml.org/lkml/2008/12/31/157
-> > > 
-> > > Is this a regression from 2.6.27?
-> > > 
-> > > Rafael
-> > >
-> > 
-> > This is not a regression from 2.6.27, this expection was first seen 
-> > next-20081230 patches and then was introduced into 2.6.28-git4 and is 
-> > reproducible with 2.6.28-rc1 kernel.
-> 
-> Presumably you meant 2.6.29-rc1 ?  In which case it would be a regression from
-> 2.6.28 .  Please confirm.
-> 
-> Thanks,
-> Rafael
-> 
-sorry, I meant it was introduced in 2.6.28-git4 and is still reproducible
-with 2.6.29-rc1.
+So is there anything I can test to help you get it going on 'my' chipset
+(GM965, Lenovo X300)?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Jan
