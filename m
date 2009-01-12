@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZALVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZALV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZALVTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbZALVTb
+	id S1756265AbZALV1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZALV1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:19:31 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:53139 "EHLO
+	Mon, 12 Jan 2009 16:27:13 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:39517 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753880AbZALVTa (ORCPT
+	with ESMTP id S1752944AbZALV1N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:19:30 -0500
-Date: Mon, 12 Jan 2009 22:21:09 +0100
+	Mon, 12 Jan 2009 16:27:13 -0500
+Date: Mon, 12 Jan 2009 22:28:55 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: wrong usage of __devexit_p and __exit_p
-Message-ID: <20090112212109.GA15185@uranus.ravnborg.org>
-References: <20090112135057.GA10250@pengutronix.de> <20090112141457.GA11777@uranus.ravnborg.org> <20090112144327.GB29183@pengutronix.de> <20090112205520.GA10870@pengutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Can we get warnings from the x86 userspace headers fixed?
+Message-ID: <20090112212855.GB15185@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090112205520.GA10870@pengutronix.de>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 09:55:20PM +0100, Uwe Kleine-König wrote:
-> Hello Sam,
-> 
-> > > Did you check that this did not introduce any new Section mismatch warnings?
-> > > We have seen several __exit annotated functions that was used from __init
-> > > annotated code or even from normal code.
-> > > Thus the __exit annotation was wrong in these cases.
-> > I wrote in the commit logs, that the functions are only used as argument
-> > to __{dev,}exit_p.  There are no direct calls. (IIRC there was only one
-> > exception that I checked manually.)
-> Actually the case I remembered here isn't part of the series.
->  
-> > I think the __{dev,}exit_p wrappers are only used to define remove
-> > callbacks, so there should be no harm.
-> In the meantime I checked this:
-> 
-> 	~/gsrc/linux-2.6$ git diff-tree -r linus/master expsec-master | cut -f 2 | xargs grep -h -E '__(dev)?exit_p'
-> 		.remove		= __devexit_p(s3c_adc_remove),
-> 		.remove		= __devexit_p(s3c_pwm_remove),
-> 		.remove =	__devexit_p(virtblk_remove),
-> 		.remove =	__devexit_p(virtrng_remove),
-> 		.remove = __devexit_p(stli_pciremove)
-> 		.remove   = __devexit_p(hifn_remove),
-> 		.remove = __devexit_p(mpc85xx_pci_err_remove),
-> 		.remove = __devexit_p(mv64x60_pci_err_remove),
-> 		.remove		= __devexit_p(max7301_remove),
-> 		.remove		= __devexit_p(bbc_remove),
-> 		.remove		= __devexit_p(grover_remove),
-> 		.remove		= __exit_p(pxa_camera_remove),
-> 		.remove		= __devexit_p(asic3_remove),
-> 		.remove   = __devexit_p(ilo_remove),
-> 		.remove = __exit_p(mxcnd_remove),
-> 		.remove =	__devexit_p(virtnet_remove),
-> 		.remove		= __devexit_p(atp870u_remove),
-> 		.remove		= __devexit_p(megaraid_detach_one),
-> 		.remove		= __devexit_p(stex_remove),
-> 		.remove		= __devexit_p(jsm_remove_one),
-> 		.remove	= __devexit_p(sc26xx_driver_remove),
-> 		.remove =	__devexit_p(spidev_remove),
-> 		.remove	= __devexit_p(vhci_hcd_remove),
-> 		.remove =	__devexit_p(virtballoon_remove),
-> 
-> So in the patched files __(dev)?exit_p is only used to fill struct
-> members.  Provided this is the only usage of the respective
-> functions---and I checked that---it doesn't make sense that they don't
-> live in .devexit.text (or .exit.text respectively).
-> 
-> Does it make sence for you, too?
+Hi Ingo.
 
-Yes - if I understood you correct.
+We have recently introduced a lot of new warnings for our
+userspace headers.
 
-You already convinced me with your first mail that you had checked
-that the functions was not used for anything else then the exit path.
+Try to do a "make headers_check" and enjoy...
+
+Are there any chance you could ask one of your helpers to
+start to look into the x86 specific ones?
+
+If we get x86 clean this would create more incentive to
+make the generic clean too.
+
+I had originally planned to attack the generic headers
+(include/linux/*) but I'm faced by reality after my
+vacation and has almost no spare time for the time being.
+
+I already fixed the sparc headers but that is not 
+visible compared to x86 (the fixes was btw easy).
+
+I can try to help by doing a few reviews in the
+beginning but I need to fix kbuild stuff first where
+I have a few serious issues pending. And lacks time...
 
 	Sam
+
