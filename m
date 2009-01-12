@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZALR4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZALR4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbZALR4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZALR4V
+	id S1753239AbZALR4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZALR4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:56:21 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51659
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbZALR4U (ORCPT
+	Mon, 12 Jan 2009 12:56:36 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:57353 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754789AbZALR4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:56:20 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Mon, 12 Jan 2009 11:56:16 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: "Mark A. Miller" <mark@mirell.org>, Bernd Petrovitsch <bernd@firmix.at>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <31014a580901120118u55256b51g448f22e9e0ef5d1f@mail.gmail.com> <20090112094121.GD28564@linux-sh.org>
-In-Reply-To: <20090112094121.GD28564@linux-sh.org>
+	Mon, 12 Jan 2009 12:56:34 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Date: Mon, 12 Jan 2009 18:56:12 +0100
+User-Agent: KMail/1.9.9
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ira Snyder <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, David Miller <davem@davemloft.net>
+References: <20090107195052.GA24981@ovro.caltech.edu> <20090108215127.GA28935@ovro.caltech.edu> <1231630355.2142.92.camel@pasglop>
+In-Reply-To: <1231630355.2142.92.camel@pasglop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901121156.17377.rob@landley.net>
+Message-Id: <200901121856.12814.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+9/dhKazHi6rfwT+A1PFIinVQj9o6F3Bg8Vgv
+ LpEry9y5+b+C4MmJhEBrPGj7ld1UJRSYhfBA52MLTaGZk2HsuO
+ jWBgUpLg8zhnlRXkneQsQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009 03:41:22 Paul Mundt wrote:
-> Personally I think perl (and python for that matter) is a terrible
-> language and I wouldn't use it for anything of consequence, but again,
-> that is my personal opinion and has nothing to do with regards to the
-> build system and whether it was the better tool for the job as perceived
-> by the people that elected to implemented infrastructure using it. I
-> choose not to use it for my own projects, but I have no qualms with those
-> that do.
+On Sunday 11 January 2009, Benjamin Herrenschmidt wrote:
+> On Thu, 2009-01-08 at 13:51 -0800, Ira Snyder wrote:
+> > The guests (PowerPC computers running Linux) are PCI cards in the host
+> > system (an Intel Pentium3-M system). The guest computers can access all
+> > of the host's memory. The guests provide a 1MB (movable) window into
+> > their memory.
+> > 
+> > The PowerPC computers also have a DMA controller, which I've used to get
+> > better throughput from my driver. I have a way to create interrupts to
+> > both the host and guest systems.
+> 
+> That looks -very- similar to the PCI driver for CAB and Cell triblades
+> that was, I think, submitted a while ago. Arnd what's the status with
+> that driver ?
 
-Apparently you have qualms with people who chose to reimplement the perl bits 
-in one of the languages kernel developers already needed to know this time 
-last year (shell, C, make).
+Complicated ;-)
 
-> The kernel does not need to provide justification for every change that
-> goes on as long as there is a reasonable attempt not to break things for
-> other people.
+There were two device drivers for the Axon PCIe endpoint (from Mercury
+and IBM), but both were abandoned due to being too complex to get into
+a mergeable stage, and all the original developers are doing other work
+now.
 
-I submitted a change, you insisted that I justify it to your satisfaction.  
-That pretty much summarizes your participation in this thread.
+I'm maintaining the IBM driver now, but have no plans to submit that
+for inclusion. I hope that I can soon find more time to work on a
+replacement driver that will provide the right abstraction through
+virtio for kernel drivers, plus a ibverbs user interface for direct
+application programming. It should also have pluggable backends to
+support not only Cell hardware but anything with a similar hardware
+implementation.
 
-> The onus is (and always has been) on you to demonstrate why
-> perl is an unreasonable dependency to push on embedded developers, and
-> you have failed utterly at demonstrating this in any sort of coherent
-> fashion.
+I did make a presentation about this at the Plumbers Conference, see
+http://userweb.kernel.org/%7Earnd/papers/plumbers08/plumbers-slides.pdf.
+Since then, I have come to a much clearer idea of what needs to be
+done, but not more actual code.
 
-Large additional dependencies without benefit are unreasonable.  My primary 
-objection to perl is that it happens to be an additional large dependency 
-without a correspondingly large benefit.
-
-Your position is not internally consistent.  There was no need to scrutinize 
-it when it went in, but there is a need to scrutinize patches reimplementing 
-those bits without it.  You don't need the word "perl" in that sentence for 
-your position to be a touch unbalanced.
-
-> I will repeat, there has not been a single coherent argument against what
-> makes perl inherently incapable of being supported.
-
-I didn't say it was incapable of being supported.  We're _capable_ of 
-reimplementing the entire kernel in perl except for a microkernel interpreter 
-running on the bare metal.  Or cobol.  Sun spent some time trying to do one in 
-Java a few years back.
-
-"It can be done" and "It's a good idea" are two completely different criteria.
-
-> Every single thing
-> you have presented as a rebuttal has been your personal preference, which
-> in this case is simply irrelevant.
-
-Stop getting so hung up on the word "perl".  Did you ever notice the _shipped 
-files in the kernel so you don't have to have lex or yacc installed?  That's 
-been kernel policy for how many years now?  The arguments about "dash vs bash" 
-when reviewing the shell versions of these scripts are a similar impulse: 
-trying to reduce unnecessary dependencies.
-
-My first version of the timeconst patch didn't remove the perl script that 
-generated the file, it simply shipped the pregenerated .h file so it was 
-possible to _build_ without perl.  That was not sufficient for technical 
-reasons (due to the two architectures that allow you to enter arbitrary 
-values), so I redid the patch.
-
-Rob
+	Arnd <><
