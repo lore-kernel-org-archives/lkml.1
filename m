@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbZALVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZALVfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbZALVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZALVfN
+	id S1757631AbZALVfu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZALVfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:35:13 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:32961 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753023AbZALVfM (ORCPT
+	Mon, 12 Jan 2009 16:35:36 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56362 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbZALVfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:35:12 -0500
-Date: Mon, 12 Jan 2009 22:36:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Can we get warnings from the x86 userspace headers fixed?
-Message-ID: <20090112213655.GA15312@uranus.ravnborg.org>
-References: <20090112212855.GB15185@uranus.ravnborg.org> <1231795863.5405.8.camel@brick>
+	Mon, 12 Jan 2009 16:35:34 -0500
+Date: Mon, 12 Jan 2009 22:50:01 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Valdis.Kletnieks@vt.edu,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Michael Stone <michael@laptop.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: RFC: Network privilege separation.
+Message-ID: <20090112215001.GG23848@one.firstfloor.org>
+References: <1231307334-9542-1-git-send-email-michael@laptop.org> <200901122230.25976.rdenis@simphalempin.com> <20090112205547.GE23848@one.firstfloor.org> <200901122247.22059.rdenis@simphalempin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1231795863.5405.8.camel@brick>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200901122247.22059.rdenis@simphalempin.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 01:31:03PM -0800, Harvey Harrison wrote:
-> On Mon, 2009-01-12 at 22:28 +0100, Sam Ravnborg wrote:
-> > Hi Ingo.
-> > 
-> > We have recently introduced a lot of new warnings for our
-> > userspace headers.
-> > 
-> > Try to do a "make headers_check" and enjoy...
-> > 
-> > Are there any chance you could ask one of your helpers to
-> > start to look into the x86 specific ones?
-> > 
-> > If we get x86 clean this would create more incentive to
-> > make the generic clean too.
-> > 
-> > I had originally planned to attack the generic headers
-> > (include/linux/*) but I'm faced by reality after my
-> > vacation and has almost no spare time for the time being.
-> > 
-> > I already fixed the sparc headers but that is not 
-> > visible compared to x86 (the fixes was btw easy).
-> > 
-> > I can try to help by doing a few reviews in the
-> > beginning but I need to fix kbuild stuff first where
-> > I have a few serious issues pending. And lacks time...
-> > 
+On Mon, Jan 12, 2009 at 10:47:21PM +0200, Rémi Denis-Courmont wrote:
+> Le lundi 12 janvier 2009 22:55:47 Andi Kleen, vous avez écrit :
+> > Fair point, although I'm afraid you didn't do a very good
+> > job explaining your reasons, so it sounds like a
+> > quite arbitary decision.
 > 
-> I'll have a go at some of them this afternoon unless someone beats me to it.
+> Fair enough. It's just way too much interface/adaptation work compared to the 
+> benefit. Especially considering that it would be much easier, and almost as 
+> secure, with a "relaxed" SECCOMP. 
 
-Thanks Harvey!
+What system calls would you want in a relaxed SECCOMP?
 
-	Sam
+> And on top of that, it's causing 
+> unnecessary overhead (we're also interested in those small Linux-based 
+
+Would be interesting to try that out -- just adding two memcpyies to 
+the existing code and see how much slower it gets. My guess
+would be not very, even e.g. on a Atom system (which are really
+not all that slow).
+
+Presumably you could always #ifdef it if it's really a problem
+on some specific system. That would be needed anyways for 
+non linux systems.
+
+-And
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
