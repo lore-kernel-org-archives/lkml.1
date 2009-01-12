@@ -1,88 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZALKJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZALKOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZALKJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZALKJK
+	id S1752767AbZALKOA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbZALKNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:09:10 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:65130 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbZALKJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:09:09 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18795.5822.969121.564217@harpo.it.uu.se>
-Date: Mon, 12 Jan 2009 11:09:02 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: bigboy <snakky.zhang@gmail.com>
+	Mon, 12 Jan 2009 05:13:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46012 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbZALKNu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 05:13:50 -0500
+Date: Mon, 12 Jan 2009 10:16:01 +0000
+From: Arjan van de Ven <arjan@infradead.org>
+To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to active/validate the NPE-B NIC of intel_ixdp465?
-In-Reply-To: <47ae62e20901120137k13e9987eyb8fb5d5691d0b3cc@mail.gmail.com>
-References: <47ae62e20901120137k13e9987eyb8fb5d5691d0b3cc@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Subject: [PATCH] async: fix __lowest_in_progress()
+Message-ID: <20090112101601.7cec05d5@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bigboy writes:
- > Hi,
- > 
- > I have an Intel IXDP465 target with a NPE-B mezzanine card and that
- > was supported & validated with linux-2.6.21 + "Intel IXP400 Software
- > Access Library". And now the NPE ether net driver moved into the linux
- > baseline (drivers/net/arm/ixp4xx_eth.c) so I want to try it without
- > Intel's lib but failed. Here is my operations:
- > 
- > Build the zImage with linux-2.6.28, I configure the kernel with
- > ixp4xx_defconfig and just change the IXP4XX_ETH to Y.
- > 
- > Build the firmware for NPE-B:
- > 
- > -) download the "Intel(R) IXP400 software - Access Library
- > (non-crypto)" to get the head file IxNpeMicrocode.h;
- > 
- > -) download the "Intel IXP400 software - NPE microcode (non-crypto)",
- > both 2.4 and 3.0/3.0.1 version, unpack it and copy the head file
- > IxNpeMicrocode.h to its source code subdirectory;
- > 
- > -) Edit the head file and comment out those macros for NPE-A and NPE-C
- > and just leave the one for NPE-B;
- > 
- > -) Edit the IxNpeMicrocode.c and comment out line 25664, the 8 bytes
- > of  "END OF IMAGE LIBRARY MARKER".
- > 
- > -) "gcc ixNpeDlImageConverter.c" and get a a.out; run it and get the
- > firmware called IxNpeMicrocode.dat.
- > 
- > -) Rename the IxNpeMicrocode.dat to NPE-B and copy it to the NFS
- > rootfs of the target in /lib/firmware.
- > 
- > 
- > There is a PCI E100 NIC and the linux kernel mount NFS rootfs through
- > it. The kernel can find two NICs related to NPE, eth1 for NPE-B and
- > eth2 for NPE-C. Then, I tried to active the NIC of NPE-B(eth1):
- > 
- > -) "ifconfig eth1 hw ether 1234567890ab 192.168.1.1 netmask
- > 255.255.255.0 broadcast 192.168.1.255". With this I can see the driver
- > output "eht1: link up, speed 100 Mb/s, full duplex".
- > 
- > -) Then "ping -I eth1 192.168.1.2". Then all I can get is "Destination
- > Host Unreachable" :-(
- > 
- > With the firmware built with Microcode-V2.4, it can send up to 6
- > packages(get tx irq) and at last the "Link is down"; with the firmware
- > of V3.0, no package TX and at last the TX queue full and was
- > deactivated. With both of these firmware, no packages received.
- > 
- > I wonder if there are anything wrong with my operations or if I need
- > some other special configurations/operations? Or any advises on
- > debugging that.
+>From 24bafdeb8a42e2e43a1928ca72159e6ff90cfe85 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 11 Jan 2009 15:35:01 +0000
+Subject: [PATCH] async: fix __lowest_in_progress()
 
-You'd have better luck reaching the people in charge of this
-on the arm kernel mailing list, or possibly the netdev list.
+At 37000 feet somewhere near Greenland I woke up from a half-sleep with the 
+realisation that __lowest_in_progress() is buggy. After landing I checked 
+and there were indeed 2 problems with it; this patch fixes both:
+* The order of the list checks was wrong
+* The locking was not correct.
 
-As I recall, the procedure for converting Intel's microcode .h
-file to something ixp4xx_eth wanted to load involved using a
-.h or .c file off the ixp4xx_eth driver's old web site.
-(I don't have the details handy.)
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/async.c |   21 ++++++++++++++++-----
+ 1 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/async.c b/kernel/async.c
+index f286e9f..608b32b 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -90,12 +90,12 @@ extern int initcall_debug;
+ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+ {
+ 	struct async_entry *entry;
+-	if (!list_empty(&async_pending)) {
+-		entry = list_first_entry(&async_pending,
++	if (!list_empty(running)) {
++		entry = list_first_entry(running,
+ 			struct async_entry, list);
+ 		return entry->cookie;
+-	} else if (!list_empty(running)) {
+-		entry = list_first_entry(running,
++	} else if (!list_empty(&async_pending)) {
++		entry = list_first_entry(&async_pending,
+ 			struct async_entry, list);
+ 		return entry->cookie;
+ 	} else {
+@@ -104,6 +104,17 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+ 	}
+ 
+ }
++
++static async_cookie_t  lowest_in_progress(struct list_head *running)
++{
++	unsigned long flags;
++	async_cookie_t ret;
++
++	spin_lock_irqsave(&async_lock, flags);
++	ret = __lowest_in_progress(running);
++	spin_unlock_irqrestore(&async_lock, flags);
++	return ret;
++}
+ /*
+  * pick the first pending entry and run it
+  */
+@@ -229,7 +240,7 @@ void async_synchronize_cookie_special(async_cookie_t cookie, struct list_head *r
+ 		starttime = ktime_get();
+ 	}
+ 
+-	wait_event(async_done, __lowest_in_progress(running) >= cookie);
++	wait_event(async_done, lowest_in_progress(running) >= cookie);
+ 
+ 	if (initcall_debug && system_state == SYSTEM_BOOTING) {
+ 		endtime = ktime_get();
+-- 
+1.6.0.6
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
