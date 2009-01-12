@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZALRZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZALRZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbZALRZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZALRZA
+	id S1753631AbZALRZk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZALRZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:25:00 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:57900 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbZALRY7 (ORCPT
+	Mon, 12 Jan 2009 12:25:05 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53799 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481AbZALRZC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:24:59 -0500
-Date: Mon, 12 Jan 2009 11:23:27 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, travis@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Mon, 12 Jan 2009 12:25:02 -0500
+Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>, steiner@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: regarding the x86_64 zero-based percpu patches
-In-Reply-To: <200901101716.04220.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0901121120280.30369@quilx.com>
-References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>
- <49649C65.6000706@kernel.org> <200901101716.04220.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <1231780491.22806.28.camel@think.oraclecorp.com>
+References: <1231774622.4371.96.camel@laptop>
+	 <alpine.LFD.2.00.0901120802430.6528@localhost.localdomain>
+	 <alpine.LFD.2.00.0901120818070.6528@localhost.localdomain>
+	 <1231778757.22806.24.camel@think.oraclecorp.com>
+	 <1231779015.4371.138.camel@laptop>
+	 <1231780491.22806.28.camel@think.oraclecorp.com>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 18:24:39 +0100
+Message-Id: <1231781079.4371.198.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Jan 2009, Rusty Russell wrote:
+On Mon, 2009-01-12 at 12:14 -0500, Chris Mason wrote:
+> On Mon, 2009-01-12 at 17:50 +0100, Peter Zijlstra wrote:
+> > > 
+> > > (the file stat run is total run time, so lower is better.  The other
+> > > numbers are files or MB per second, so higher is better)
+> > > 
+> > > For the file create run, v8 had much lower system time than v7,
+> > > averaging 1s of sys time per proc instead of 1.6s.
+> > 
+> > Right, how about the spread in completion time, because that is the only
+> > reason I tried this fairness stuff, because you reported massive
+> > differences there.
+> > 
+> 
+> I reran the numbers with a slightly different kernel config and they
+> have changed somewhat.  These are just for the 4k file create run, all
+> numbers in files created per second (and the numbers are stable across
+> runs)
+> 
+> v8 avg 176.90 median 171.85 std 12.49 high 215.97 low 165.54
+> v7 avg 169.02 median 163.77 std 16.82 high 267.95 low 157.95
 
-> > As I was trying to do more stuff per-cpu
-> > (not putting a lot of stuff into per-cpu area but even with small
-> > things limited per-cpu area poses scalability problems), cpu_alloc
-> > seems to fit the bill better.
->
-> Unfortunately cpu_alloc didn't solve this problem either.
->
-> We need to grow the areas, but for NUMA layouts it's non-trivial.  I don't
-> like the idea of remapping: one TLB entry per page per cpu is going to suck.
-> Finding pages which are "congruent" with the original percpu pages is more
-> promising, but it will almost certainly need to elbow pages out the way to
-> have a chance of succeeding on a real system.
-
-An allocation automatically falls back to the nearest node on NUMA
-cpu_to_node() gives you the current node.
-
-There are 2M TLB entries on x86_64. If we really get into a high usage
-scenario then the 2M entry makes sense. Average server memory sizes likely
-already are way beyond 10G per box. The higher that goes the more
-reasonable the 2M TLB entry will be.
-
+Any opinions on the fairness matter, will -v9 be unlocked and unfair
+again?
 
