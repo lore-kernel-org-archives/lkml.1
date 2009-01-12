@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbZALWm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761858AbZALWnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761755AbZALWm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbZALW34
+	id S1761858AbZALWnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZALWaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:29:56 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49285 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759415AbZALW3y (ORCPT
+	Mon, 12 Jan 2009 17:30:01 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:21952 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758640AbZALW37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:29:54 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:24:51 +0100
-Message-Id: <1231799107-20136-46-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
-References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
+	Mon, 12 Jan 2009 17:29:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Nfyf+QNgv0vxWKk58Ci2RIIajpLGvdWM7hEASMB6sREKe14T4sMaEKxEKVdF0U7DE1
+         ZMwRVtIizvLz7576icPzGNvtPIJCRM6Mmw4MWGLDC/WurPj3+jd8CPvgD7hIGbzn5yOv
+         RwxtKbIKxIf7Hhtok94XVo+xR6DMOCn4K+cfk=
+Message-ID: <621d098f0901121429w6d0792e4g259c8bdbeebc8bdd@mail.gmail.com>
+Date: Mon, 12 Jan 2009 23:29:57 +0100
+From: "Jan Dittmer" <jdi@l4x.org>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
+Cc: "Dave Airlie" <airlied@gmail.com>, "Diego Calleja" <diegocg@gmail.com>,
+       linux-kernel@vger.kernel.org, eric.anholt@intel.com, airlied@linux.ie
+In-Reply-To: <621d098f0901121408y2cf8c2c9y2a6a5cc77ea8e8f5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move sgiseeq's probe function to .devinit.text
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
+	 <200901120956.31728.jbarnes@virtuousgeek.org>
+	 <621d098f0901121319j1be02f82j368250314664b997@mail.gmail.com>
+	 <200901121353.40270.jbarnes@virtuousgeek.org>
+	 <621d098f0901121408y2cf8c2c9y2a6a5cc77ea8e8f5@mail.gmail.com>
+X-Google-Sender-Auth: a5b6369a74a5cc7c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sgiseeq_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+On Mon, Jan 12, 2009 at 11:08 PM, Jan Dittmer <jdi@l4x.org> wrote:
+> On Mon, Jan 12, 2009 at 10:53 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+>>> name of display: :0.0
+>>> libGL: XF86DRIGetClientDriverName: 1.9.0 i965 (screen 0)
+>>> libGL: OpenDriver: trying /usr/local/lib/dri/i965_dri.so
+>>> drmOpenDevice: node name is /dev/dri/card0
+>>> drmOpenDevice: open result is 4, (OK)
+>>> drmOpenByBusid: Searching for BusID pci:0000:00:02.0
+>>> drmOpenDevice: node name is /dev/dri/card0
+>>> drmOpenDevice: open result is 4, (OK)
+>>> drmOpenByBusid: drmOpenMinor returns 4
+>>> drmOpenByBusid: drmGetBusid reports pci:0000:00:02.0
+>>> libGL error: drmMap of framebuffer failed (Resource temporarily
+>>> unavailable) libGL error: reverting to software direct rendering
+>>>
+>>> ?
+>>> This is with latest mesa git libGL. Any special compilation options for
+>>> mesa?
+>>
+>> Nope, not afaik.  Are you sure UXA is enabled?  And that Mesa was built
+>> against the same libdrm bits as your 2D driver?  If so, then I guess it's
+>> time to file a bug. :)
+>
+> With the patches againg 29-rc1 from here
+> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdiff;h=3a03ac1a0223f779a3de313523408ddb099e5679;hp=dc1336ff4fe08ae7cfe8301bfd7f0b2cfd31d20a
+> and here
+> http://groups.google.com/group/linux.kernel/msg/26aa0471cfb54b06?dmode=source&output=gplain
+> at least glxinfo works.
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+Using drm-intel-next from anholt on top, I've working GL (yeah!) but
+get millions of
+[  649.472172] [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
+counter, -22
+[  649.512429] [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
+counter, -22
+[  649.554513] [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
+counter, -22
+[  649.596972] [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
+counter, -22
+[  649.638744] [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
+counter, -22
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/net/sgiseeq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+entries in my log. libGL says
 
-diff --git a/drivers/net/sgiseeq.c b/drivers/net/sgiseeq.c
-index 97d6856..c95da7a 100644
---- a/drivers/net/sgiseeq.c
-+++ b/drivers/net/sgiseeq.c
-@@ -709,7 +709,7 @@ static inline void setup_rx_ring(struct net_device *dev,
- 	dma_sync_desc_dev(dev, &buf[i]);
- }
- 
--static int __init sgiseeq_probe(struct platform_device *pdev)
-+static int __devinit sgiseeq_probe(struct platform_device *pdev)
- {
- 	struct sgiseeq_platform_data *pd = pdev->dev.platform_data;
- 	struct hpc3_regs *hpcregs = pd->hpc;
--- 
-1.5.6.5
+do_wait: drmWaitVBlank returned -1, IRQs don't seem to be working correctly.
+Try adjusting the vblank_mode configuration parameter.
 
+?
+
+Jan
