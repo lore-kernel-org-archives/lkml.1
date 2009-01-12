@@ -1,105 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZALH7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZALIAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbZALH7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 02:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZALH7b
+	id S1754789AbZALIAu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZALIAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 02:59:31 -0500
-Received: from csamuel.org ([207.210.213.14]:55586 "EHLO csamuel.org"
+	Mon, 12 Jan 2009 03:00:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39904 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbZALH7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 02:59:30 -0500
-From: Chris Samuel <chris@csamuel.org>
-To: linux-btrfs@vger.kernel.org
-Subject: Hard to debug kernel issues (was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning)
-Date: Mon, 12 Jan 2009 18:59:16 +1100
-User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
-Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-References: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090110030216.GW26290@one.firstfloor.org> <1231676801.25018.150.camel@macbook.infradead.org>
-In-Reply-To: <1231676801.25018.150.camel@macbook.infradead.org>
+	id S1751605AbZALIAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:00:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Caleb Cushing" <xenoterracide@gmail.com>
+Subject: Re: [Bug #12264] i915: switching from kwin in opengl mode to a VT then back to x11, x11 freezes
+Date: Mon, 12 Jan 2009 09:00:20 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.ncC.2afaJB@chimera> <81bfc67a0901111642i37f46edar8592899d7193b863@mail.gmail.com>
+In-Reply-To: <81bfc67a0901111642i37f46edar8592899d7193b863@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4283922.WHj4pGa4DB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901121859.20893.chris@csamuel.org>
+Content-Disposition: inline
+Message-Id: <200901120900.20446.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4283922.WHj4pGa4DB
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Monday 12 January 2009, Caleb Cushing wrote:
+> so far I'm tracking with gentoo here.
+> http://bugs.gentoo.org/show_bug.cgi?id=253813 and freedesktop here
+> http://bugs.freedesktop.org/process_bug.cgi
+> 
+> and I've tested the first 2 kernel patches alone, and still have the
+> issue, haven't been able to add the libdrm patch to libdrm so far.
 
-On Sun, 11 Jan 2009 11:26:41 pm David Woodhouse wrote:
+Thanks for the update.
 
-> Sometimes you weren't going to get a backtrace if something goes wrong
-> _anyway_.
-
-Case in point - we've been struggling with some of our SuperMicro based=20
-systems with AMD Barcelona B3 k10h CPUs *turning themselves off* when runni=
-ng=20
-various HPC applications.
-
-Nothing in the kernel logs, nothing in the IPMI controller logs. It's just=
-=20
-like someone has wandered in and held the power button down (and no, it's n=
-ot=20
-that).
-
-It's been driving us up the wall.
-
-We'd assumed it was a hardware issue as it was happening with all sorts of=
-=20
-kernels but today we tried 2.6.29-rc1 "just in case" and I've not been able=
- to=20
-reproduce the crash (yet) on a node I can crash in about 30 seconds, and=20
-rebooting back into 2.6.28 makes it crash again.
-
-If the test boxes are still alive tomorrow I might see if we can attempt so=
-me=20
-form of a reverse bisect to track down what commit fixed it (git doesn't se=
-em=20
-to support that so we've going to have to invert the good/bad commands).
-
-cheers,
-Chris
-=2D-=20
- Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
-
-This email may come with a PGP signature as a file. Do not panic.
-=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+Rafael
 
 
---nextPart4283922.WHj4pGa4DB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQEVAwUASWr4WI1yjaOTJg85AQKTcAf+P0AcoISkYMQNMd/A77CGGEABURCdPauB
-I1VLpvvN4DteXebOhYQDvSU8VOP4nlQQUus1YQWiIMIfOh+jd+6c7RIfnMJVZY+6
-HHzKLLuk4EcS/vIfCI9PEGySqmn1rFAo6Z/TAry1xXF6ihgle1f/QtbGqM72JCJT
-djYDJ8OmA2dFF8cq6lLz8lTWZTG9CEuYJU88dwjLmCr+DU6rJ543xd1QOeQSe0iP
-8oqjIjtqnHvSa6hQul611JZ72pZh+VqvKO5SG1zNtETVKC2eyfsumys6qgrcocyr
-h4QcdDiu5fZMmWSRC0lVzhEzJ/Ve0Qh/EmtRkTvs8x6HtPyrggpo9A==
-=h4j+
------END PGP SIGNATURE-----
-
---nextPart4283922.WHj4pGa4DB--
+> On 1/11/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> >  of regressions introduced between 2.6.27 and 2.6.28.
+> >
+> >  The following bug entry is on the current list of known regressions
+> >  introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> >  be listed and let me know (either way).
+> >
+> >
+> >  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12264
+> >  Subject         : i915: switching from kwin in opengl mode to a VT then back to x11, x11 freezes
+> >  Submitter       : Caleb Cushing <xenoterracide@gmail.com>
+> >  Date            : 2008-12-16 11:40 (27 days old)
+> >  References      : http://marc.info/?l=linux-kernel&m=122942777030666&w=4
