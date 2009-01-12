@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZALHng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbZALHtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbZALHng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 02:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZALHn0
+	id S1751571AbZALHtL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 02:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZALHsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 02:43:26 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45420 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZALHnZ (ORCPT
+	Mon, 12 Jan 2009 02:48:54 -0500
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:65178 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751370AbZALHsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 02:43:25 -0500
-Date: Mon, 12 Jan 2009 08:43:23 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Patrick McHardy <kaber@trash.net>
-cc: matthltc@us.ibm.com, Matt Cross <matt.cross@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH] ebtables match inverted in 2.6.28? (Was: Re: ebtables
- match inverted in 2.6.28?)
-In-Reply-To: <496AD1C6.9080906@trash.net>
-Message-ID: <alpine.LSU.2.00.0901120835390.21692@fbirervta.pbzchgretzou.qr>
-References: <84ee33570812311400m5492af64n45c645a13fe91c2c@mail.gmail.com> <1230779772.29793.31.camel@localhost> <496AD1C6.9080906@trash.net>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Mon, 12 Jan 2009 02:48:52 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEOEakl5LDnl/2dsb2JhbADSLoVv
+X-IronPort-AV: E=Sophos;i="4.37,252,1231075800"; 
+   d="scan'208";a="291820495"
+Date: Mon, 12 Jan 2009 18:48:46 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()
+	while holding sb_lock
+Message-ID: <20090112074846.GJ8071@disturbed>
+Mail-Followup-To: Jamie Lokier <jamie@shareable.org>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>
+References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com> <20090112023138.GD6428@shareable.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112023138.GD6428@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 12, 2009 at 02:31:38AM +0000, Jamie Lokier wrote:
+> Arjan van de Ven wrote:
+> > >	- removing a million files and queuing all of the
+> > >	  deletes in the async queues....
+> > 
+> > the async code throttles at 32k outstanding.
+> > Yes 32K is arbitrary, but if you delete  a million files fast, all but the 
+> > first few thousand are
+> > synchronous.
+> 
+> Hmm.
+> 
+> If I call unlink() a thousand times and then call fsync() on the
+> parent directories covering files I've unlinked... I expect the
+> deletes to be committed to disk when the last fsync() has returned.  I
+> require that a crash and restart will not see the files.  Several
+> kinds of transactional software and even some shell scripts expect this.
+> 
+> Will these asynchronous deletes break the guaranteed
+> commit-of-the-delete provided by fsync() on the parent directory?
 
-On Monday 2009-01-12 06:14, Patrick McHardy wrote:
+It depends on the implementation of the filesystem you are running
+on.
 
-> Matthew Helsley wrote:
->> On Wed, 2008-12-31 at 17:00 -0500, Matt Cross wrote:
->>> I think the work to move ebtables to use xtables broke ebtables.
->>> Specifically, in commit 8cc784eec6676b58e7f60419c88179aaa97bf71c the
->>> return value of the match functions was inverted so that they return 1
->>> (true) on matches instead of EBT_MATCH (0), and vice versa (look in
->>> ebt_ip.c).  The logic in ebtables.c (ebt_do_table() and
->>> EBT_MATCH_ITERATE()) expect match functions to return 0 for matches.
->>>
->>> The patch at the end of this message fixes the problem, but seems a
->>> little hacky to me.  Who's the right person to address this?
->
-> Jan, could you have a look at this please?
+On XFS, it won't break anything because it uses a two-phase unlink.
+The unlink() syscall removes the inode from the namespace
+transactionally which means that even if you crash after the
+directory fsync then they will never, ever appear in the directory
+after recovery. In fact, recovery will see all those inodes as
+existing on the unlinked lists and hence the execute the second
+phase of the unlink during recovery.
 
-That seemds indeed so.
-Patch is both for 2.6.29-running and 2.6.28.
+I have no idea what the behaviour of other filesystems will
+be but it needs to be evaluated on a filesystem-by-filesystem
+basis.
 
-parent 1e8ca9528de86bdb2d73fbdfb27a10131bb5c593 (v2.6.29-rc1-21-g1e8ca95)
-commit cc46eb3e855b7c1f628e934e01b97f4f2642973e
-Author: Jan Engelhardt <jengelh@medozas.de>
-Date:   Mon Jan 12 08:40:22 2009 +0100
+Hmmmm. That introduces another interesting question w.r.t async
+unlink in XFS - it's going to hammer the on-disk unlinked list hash
+tables in XFS. The hashes are only 64 chains wide (per AG) so
+pumping thousands of inodes into them is going to increase the
+minimum memory footprint of XFS during rm -rf operations
+substantially.
 
-netfilter: ebtables: fix inversion in match code
+Cheers,
 
-Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
----
- net/bridge/netfilter/ebtables.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
-index fa108c4..9f46235 100644
---- a/net/bridge/netfilter/ebtables.c
-+++ b/net/bridge/netfilter/ebtables.c
-@@ -79,7 +79,7 @@ static inline int ebt_do_match (struct ebt_entry_match *m,
- {
- 	par->match     = m->u.match;
- 	par->matchinfo = m->data;
--	return m->u.match->match(skb, par);
-+	return m->u.match->match(skb, par) ? EBT_MATCH : EBT_NOMATCH;
- }
- 
- static inline int ebt_dev_check(char *entry, const struct net_device *device)
+Dave.
 -- 
-# Created with git-export-patch
+Dave Chinner
+david@fromorbit.com
