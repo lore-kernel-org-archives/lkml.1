@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZALMCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZALMDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZALMCz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 07:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZALMCr
+	id S1754312AbZALMDk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 07:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZALMD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 07:02:47 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:21688 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752105AbZALMCq (ORCPT
+	Mon, 12 Jan 2009 07:03:27 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:37607 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752187AbZALMD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 07:02:46 -0500
-Message-ID: <496B3105.6030107@gentoo.org>
-Date: Mon, 12 Jan 2009 12:01:09 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090101)
+	Mon, 12 Jan 2009 07:03:26 -0500
+Date: Mon, 12 Jan 2009 23:02:57 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jarek Poplawski <jarkao2@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
+       Changli Gao <xiaosuo@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090112120257.GA5697@gondor.apana.org.au>
+References: <20090106085442.GA9513@ff.dom.local> <20090106094138.GE25644@1wt.eu> <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk> <20090107124946.GA9677@ff.dom.local> <20090107125217.GA26235@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>, klausman@gentoo.org,
-       rth@twiddle.net
-Subject: Re: cant compile on alpha with gcc-4.3 and CONFIG_ALPHA_NAUTILUS
-References: <49688C67.5050502@gentoo.org> <20090111210532.GA1641@jurassic.park.msu.ru>
-In-Reply-To: <20090111210532.GA1641@jurassic.park.msu.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=9jjR1oMCFskA:10 a=vxFckkwZ0Y8A:10 a=zEchxxm6Pp8P_IKT8l0A:9 a=TdNDaFbkBhLkypn4nv5MW8JhgXAA:4 a=csDljm-qqwUA:10
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090107125217.GA26235@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Kokshaysky wrote:
-> Your patch looks fine, but there is simpler fix which makes the compiler
-> to optimize problematic code away on systems with NR_IRQS <= 16.
+On Wed, Jan 07, 2009 at 11:52:17PM +1100, Herbert Xu wrote:
+> On Wed, Jan 07, 2009 at 12:49:46PM +0000, Jarek Poplawski wrote:
+> > 
+> > Hmm... in any case: take 3
+> 
+> Yes this should fix the corruption but it kind of defeats the
+> purpose of splice by copying the data.
 
-Yes, I guess that works too. Would you like me to submit that to Andrew 
-or are you going to take care of it?
+However, as we don't have a better fix yet, we probably should
+take Jarek's patch for now since data corruption is bad.
 
-cheers
-Daniel
+This is a very hard problem, so in the end the only viable solution
+might be to get the drivers to switch to using page frags, like
+the Intel page split method.
 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
