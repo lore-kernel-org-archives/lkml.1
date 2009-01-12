@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbZALPO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbZALPSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbZALPO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 10:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbZALPOr
+	id S1754357AbZALPSV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 10:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZALPSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 10:14:47 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50881 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbZALPOq (ORCPT
+	Mon, 12 Jan 2009 10:18:07 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:52129 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbZALPSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 10:14:46 -0500
-Date: Mon, 12 Jan 2009 20:44:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, vatsa@linux.vnet.ibm.com, cfriesen@nortel.com,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 0/2] sched: task group weight interface
-Message-ID: <20090112151436.GC4189@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20081210194048.464111787@chello.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210194048.464111787@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 12 Jan 2009 10:18:06 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Miguel Figueiredo Mascarenhas Sousa Filipe 
+	<miguel.filipe@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+In-Reply-To: <f058a9c30901120714n55b60bb9h3372983f54d41b6d@mail.gmail.com>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20090111153437.b069d38d.akpm@linux-foundation.org>
+	 <1231768730.17356.0.camel@think.oraclecorp.com>
+	 <f058a9c30901120714n55b60bb9h3372983f54d41b6d@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 10:17:17 -0500
+Message-Id: <1231773437.22806.0.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.496B5F01.0188:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 08:40:48PM +0100, Peter Zijlstra wrote:
+On Mon, 2009-01-12 at 15:14 +0000, Miguel Figueiredo Mascarenhas Sousa
+Filipe wrote:
 > Hi,
 > 
-> Dhaval poked me that he (and others) didn't like the weight interface we
-> currently have for task groups. I concurr and dusted off these old patches.
+> On Mon, Jan 12, 2009 at 1:58 PM, Chris Mason <chris.mason@oracle.com> wrote:
+> > On Sun, 2009-01-11 at 15:34 -0800, Andrew Morton wrote:
+> >> http://bugzilla.kernel.org/show_bug.cgi?id=12435
+> >>
+> 
+> This is by far the biggest issue btrfs has for simple/domestic users.
+> Its probably the most tested miss-feature of btrfs, something almost
+> all new testers encounter & report.
+> 
+> Is fixing this having maximum priority?
+> The sooner this is fixed, less energy is spend by everyone
+> (entusiasts, testers, bug reporters, bug triagers, mailing list
+> campers..etc) and we might save some whales, dolphins and pinguins by
+> reducing our carbon footprint. :)
 > 
 
-/me wonders what happened to these patches?
+Yes, this definitely at the top of my list.  Along with better
+documentation of the project as a whole.
 
-> 
-> -- 
+-chris
 
--- 
-regards,
-Dhaval
+
