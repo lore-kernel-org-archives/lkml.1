@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZALIH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbZALIOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZALIH5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZALIHt
+	id S1752785AbZALIOW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZALIOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:07:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39933 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbZALIHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:07:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.28-git-4 - powerpc - kernel expection 'c01 at .kernel_thread'
-Date: Mon, 12 Jan 2009 09:07:19 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
-       sfr@canb.auug.org.au, benh@kernel.crashing.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org, mel@csn.ul.ie
-References: <20090102125752.GA5743@linux.vnet.ibm.com> <200901110108.20848.rjw@sisk.pl> <20090112072132.GA8409@linux.vnet.ibm.com>
-In-Reply-To: <20090112072132.GA8409@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Jan 2009 03:14:07 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41125 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbZALIOF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:14:05 -0500
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading
+ (-git7 is ok)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: David Miller <davem@davemloft.net>, alessandro.suardi@gmail.com,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <4407.1231719036@turing-police.cc.vt.edu>
+References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com>
+	 <20090109.140422.60087297.davem@davemloft.net>
+	 <43805.1231672258@turing-police.cc.vt.edu>
+	 <20090111.040842.86784676.davem@davemloft.net>
+	 <1231676698.25018.147.camel@macbook.infradead.org>
+	 <1231678799.25018.195.camel@macbook.infradead.org>
+	 <4407.1231719036@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 08:13:59 +0000
+Message-Id: <1231748039.25018.1277.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901120907.20418.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009, Kamalesh Babulal wrote:
-> * Rafael J. Wysocki <rjw@sisk.pl> [2009-01-11 01:08:19]:
-> 
-> > On Friday 02 January 2009, Kamalesh Babulal wrote:
-> > > Hi,
-> > > 
-> > > 	2.6.28-git4 kernel drops to xmon with kernel expection. Similar kernel
-> > > expection was seen next-20081230 and next-20081231 and was reported 
-> > > earlier at http://lkml.org/lkml/2008/12/31/157
-> > 
-> > Is this a regression from 2.6.27?
-> > 
-> > Rafael
-> >
-> 
-> This is not a regression from 2.6.27, this expection was first seen 
-> next-20081230 patches and then was introduced into 2.6.28-git4 and is 
-> reproducible with 2.6.28-rc1 kernel.
+On Sun, 2009-01-11 at 19:10 -0500, Valdis.Kletnieks@vt.edu wrote:
+> So it looks like the patch is failing to finish initialization of the card.
+> Damned if *I* can see what's breaking it, the conversion to use a helper
+> function tg3_request_firmware seems sane enough....
 
-Presumably you meant 2.6.29-rc1 ?  In which case it would be a regression from
-2.6.28 .  Please confirm.
+Ahem...
 
-Thanks,
-Rafael
+--- drivers/net/tg3.c.stupiddwmw2	2009-01-12 08:13:05.000000000 +0000
++++ drivers/net/tg3.c	2009-01-12 08:13:09.000000000 +0000
+@@ -13151,7 +13151,7 @@ static int __devinit tg3_init_one(struct
+ 		   try again in tg3_open(). So if you have the driver built
+ 		   into the kernel, you can still get the firmware loaded
+ 		   after userspace is running, when the device comes up. */
+-		if (err != -ENOENT)
++		if (err && err != -ENOENT)
+ 			goto err_out_fw;
+ 	}
+ 
+
+-- 
+dwmw2
+
