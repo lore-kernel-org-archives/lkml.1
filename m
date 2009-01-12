@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZALWkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZALWkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZALWkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758856AbZALW3N
+	id S1754746AbZALWkm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbZALW3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:29:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49208 "EHLO
+	Mon, 12 Jan 2009 17:29:18 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49220 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758783AbZALW3L (ORCPT
+	with ESMTP id S1759240AbZALW3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:29:11 -0500
+	Mon, 12 Jan 2009 17:29:17 -0500
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:24:43 +0100
-Message-Id: <1231799107-20136-38-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Mon, 12 Jan 2009 23:24:44 +0100
+Message-Id: <1231799107-20136-39-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
 References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
@@ -23,7 +23,7 @@ Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move orion_nand's probe function to .devinit.text
+Subject: [PATCH] move gen_nand's probe function to .devinit.text
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
@@ -31,7 +31,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to orion_nand_probe is passed to the core via
+A pointer to plat_nand_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -43,22 +43,22 @@ from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/mtd/nand/orion_nand.c |    2 +-
+ drivers/mtd/nand/plat_nand.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
-index 917cf8d..26f466f 100644
---- a/drivers/mtd/nand/orion_nand.c
-+++ b/drivers/mtd/nand/orion_nand.c
-@@ -47,7 +47,7 @@ static void orion_nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl
- 	writeb(cmd, nc->IO_ADDR_W + offs);
- }
- 
--static int __init orion_nand_probe(struct platform_device *pdev)
-+static int __devinit orion_nand_probe(struct platform_device *pdev)
+diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
+index 75f9f48..86e1d08 100644
+--- a/drivers/mtd/nand/plat_nand.c
++++ b/drivers/mtd/nand/plat_nand.c
+@@ -30,7 +30,7 @@ struct plat_nand_data {
+ /*
+  * Probe for the NAND device.
+  */
+-static int __init plat_nand_probe(struct platform_device *pdev)
++static int __devinit plat_nand_probe(struct platform_device *pdev)
  {
- 	struct mtd_info *mtd;
- 	struct nand_chip *nc;
+ 	struct platform_nand_data *pdata = pdev->dev.platform_data;
+ 	struct plat_nand_data *data;
 -- 
 1.5.6.5
 
