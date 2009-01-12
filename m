@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZALMIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZALMKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZALMIL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 07:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZALMHs
+	id S1754522AbZALMKM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 07:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZALMJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 07:07:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53455 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754733AbZALMHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 07:07:47 -0500
-Date: Mon, 12 Jan 2009 13:07:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: remove byte locks
-Message-ID: <20090112120743.GC24266@elte.hu>
-References: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz>
+	Mon, 12 Jan 2009 07:09:59 -0500
+Received: from mail.gmx.net ([213.165.64.20]:60397 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750720AbZALMJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 07:09:59 -0500
+X-Authenticated: #6028172
+X-Provags-ID: V01U2FsdGVkX18V2tAaA/UVOgNNwZsoeYIfU3AH2gxnhTLVIyrD7U
+	Bb2c6rQ1KJemFE
+Message-ID: <496B3331.1070709@gmx.de>
+Date: Mon, 12 Jan 2009 13:10:25 +0100
+From: Dieter Ries <clip2@gmx.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Maciej Rutecki <maciej.rutecki@gmail.com>, travis@sgi.com,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc1 does not boot
+References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu> <496A3F62.8090902@gmx.de> <8db1092f0901120322x5e453fd0x61a78cc1a55982aa@mail.gmail.com> <20090112112608.GB19388@elte.hu>
+In-Reply-To: <20090112112608.GB19388@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.78
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar schrieb:
+> Dieter did not have lockdep enabled so we dont have a nice stack
+> trace proof for this, but using work_on_cpu() in such a lowlevel
+> place certainly looks wrong, so we revert the patch.
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+I can send a stack trace in the evening, when I have access to my other
+machine for getting the netconsole output. Would that help?
 
-> Remove byte locks implementation, which was introduced by Jeremy in 
-> 8efcbab6 ("paravirt: introduce a "lock-byte" spinlock implementation"), 
-> but turned out to be dead code that is not used by any in-kernel 
-> virtualization guest (Xen uses its own variant of spinlocks implementation 
-> and KVM is not planning to move to byte locks).
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> ---
->  arch/x86/include/asm/paravirt.h      |    2 -
->  arch/x86/include/asm/spinlock.h      |   66 +--------------------------------
->  arch/x86/kernel/paravirt-spinlocks.c |   10 -----
->  3 files changed, 2 insertions(+), 76 deletions(-)
-
-didnt you send a patch in this lkml thread:
-
-  Subject: Re: Is 386 processor still supported?
-
-that makes use of byte-locks on i386 ?
-
-But i guess we should solve M386 and M486 by only allowing it on !SMP, 
-hence spinlock support is moot there, right?
-
-	Ingo
+cu
+Dieter
