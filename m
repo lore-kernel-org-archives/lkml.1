@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751290AbZALJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZALJdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751290AbZALJcv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 04:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZALJcm
+	id S1754112AbZALJdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 04:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZALJdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 04:32:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44379 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbZALJcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 04:32:41 -0500
-Date: Mon, 12 Jan 2009 10:32:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-next@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: linux-next: origin tree build failure
-Message-ID: <20090112093214.GA6798@elte.hu>
-References: <20090112104837.69feedec.sfr@canb.auug.org.au> <1231719015.22571.4.camel@pasglop> <20090112090552.GD26750@elte.hu> <20090112202427.3b918490.sfr@canb.auug.org.au>
+	Mon, 12 Jan 2009 04:33:22 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:29165 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbZALJdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 04:33:21 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -14.389
+Message-ID: <496B0E5F.1020902@tremplin-utc.net>
+Date: Mon, 12 Jan 2009 10:33:19 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112202427.3b918490.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4956]
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: hp accelerometer: fix LED handling and add freefall detection
+References: <20090112092839.GA2190@elf.ucw.cz>
+In-Reply-To: <20090112092839.GA2190@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> > It slipped through because it didnt get caught in build tests because 
-> > cpufreq isnt enabled in the powerpc defconfig.
+Pavel Machek wrote:
+> lis3 chip can provide interrupt when it detects freefall; it is done
+> by hardware and is rather reliable. This adds (experimental) support
+> for it. 
 > 
-> Which is one of the reasons we have linux-next: "integration testing".
+> LED on HP notebooks is connected through ACPI. That unfortunately
+> means that it needs to be delayed by using schedule_work() to avoid
+> calling ACPI interpretter in invalid context. This patch fixes that.
+> 
+Hi Pavel,
+Thanks a lot for doing it! I'll test it this week. However, I think
+eventually the LED fix and the freefall infrastructure should be two
+different patches. Also, while adding the freefall support, you should
+add the info in the doc, as well as the little C program demonstrating
+its use.
 
-Build bugs slipped through that net too in the past.
-
-And we dont really want developers and maintainers to rely on an external 
-middle man facility to be able to submit patches. So the best method is to 
-make the defconfigs good enough to catch everyday build bugs. Random 
-testing and linux-next can then catch the weird special cases as well.
-
-	Ingo
+See you,
+Eric
