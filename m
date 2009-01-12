@@ -1,71 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZALAHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZALAKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZALAHR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 19:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZALAHB
+	id S1753983AbZALAKx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 19:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZALAKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 19:07:01 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56629 "EHLO
+	Sun, 11 Jan 2009 19:10:41 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37547 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbZALAHA (ORCPT
+	with ESMTP id S1752116AbZALAKk (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 19:07:00 -0500
+	Sun, 11 Jan 2009 19:10:40 -0500
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: 2.6.28-mmotm0109 WARNING: at drivers/ata/libata-sff.c:1017
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, alessandro.suardi@gmail.com,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+In-Reply-To: Your message of "Sun, 11 Jan 2009 12:59:59 GMT."
+             <1231678799.25018.195.camel@macbook.infradead.org>
 From: Valdis.Kletnieks@vt.edu
+References: <5a4c581d0901090930j5d4760b0x730b5609fa2b5614@mail.gmail.com> <20090109.140422.60087297.davem@davemloft.net> <43805.1231672258@turing-police.cc.vt.edu> <20090111.040842.86784676.davem@davemloft.net> <1231676698.25018.147.camel@macbook.infradead.org>
+            <1231678799.25018.195.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231717499_4563P";
+Content-Type: multipart/signed; boundary="==_Exmh_1231719035_4327P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Sun, 11 Jan 2009 18:44:59 -0500
-Message-ID: <4967.1231717499@turing-police.cc.vt.edu>
+Date: Sun, 11 Jan 2009 19:10:36 -0500
+Message-ID: <4407.1231719036@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231717499_4563P
+--==_Exmh_1231719035_4327P
 Content-Type: text/plain; charset=us-ascii
 
-Seeing lots of these in my dmesg (149  in first 7 minutes of uptime):
+On Sun, 11 Jan 2009 12:59:59 GMT, David Woodhouse said:
+> On Sun, 2009-01-11 at 12:25 +0000, David Woodhouse wrote:
+> > I'll take a look and see if I can remedy that. Then we wouldn't _need_
+> > the FIRMWARE_IN_KERNEL option.
+> 
+> How about this? If it fails to load the firmware from userspace during
+> the initialisation, it'll try again later in tg3_open(). 
+> 
+> I _think_ that's fine, because we don't do anything else in the early
+> initialisation which requires the firmware to be loaded.
+> 
+> So if you build with CONFIG_TIGON3=y, CONFIG_FIRMWARE_IN_KERNEL=n, you
+> should see it fail to load the firmware at boot, but then it should load
+> it successfully when you bring the device up.
+> 
+> Untested-but-otherwise-Signed-off-by: David Woodhouse <David.Woodhouse@intel.
+com>
+> 
+> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
 
-[    0.885878] ------------[ cut here ]------------
-[    0.885881] WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x477/0x677()
-[    0.885883] Hardware name: Latitude D820
-[    0.885885] Modules linked in:
-[    0.885889] Pid: 0, comm: swapper Not tainted 2.6.28-mmotm0109 #1
-[    0.885891] Call Trace:
-[    0.885894]  <IRQ>  [<ffffffff8023532d>] warn_slowpath+0xb1/0xed
-[    0.885906]  [<ffffffff80548eea>] ? _spin_unlock_irqrestore+0x53/0x58
-[    0.885910]  [<ffffffff803f8f9e>] ? scsi_eh_scmd_add+0x96/0xa6
-[    0.885913]  [<ffffffff803f9002>] ? scsi_times_out+0x54/0x70
-[    0.885917]  [<ffffffff8036294d>] ? kobject_put+0x47/0x4b
-[    0.885921]  [<ffffffff80356ead>] ? blk_rq_timed_out+0x16/0x55
-[    0.885926]  [<ffffffff803d9fd8>] ? put_device+0x12/0x14
-[    0.885932]  [<ffffffff8024d185>] ? sched_clock_cpu+0x138/0x144
-[    0.885935]  [<ffffffff8041457a>] ? ata_sff_data_xfer32+0x62/0xa6
-[    0.885938]  [<ffffffff80414091>] ata_sff_hsm_move+0x477/0x677
-[    0.885942]  [<ffffffff80414376>] ata_sff_host_intr+0xe5/0x131
-[    0.885945]  [<ffffffff80414448>] ata_sff_interrupt+0x86/0xc2
-[    0.885949]  [<ffffffff80269465>] handle_IRQ_event+0x2c/0x61
-[    0.885952]  [<ffffffff8026a7f2>] handle_edge_irq+0xce/0x114
-[    0.885957]  [<ffffffff8020dd21>] do_IRQ+0xdc/0x153
-[    0.885960]  [<ffffffff8020c2d3>] ret_from_intr+0x0/0xf
-[    0.885962]  <EOI> <4>---[ end trace 515a9d577eac5d9e ]---
+So I took it for a test drive, using my currently-working .config, which has
+
+CONFIG_TIGON3=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+
+In the dmesg I see during early bootup:
+
+[    0.694230] loop: module loaded
+[    0.694249] tg3.c:v3.97 (December 10, 2008)
+[    0.694261] vendor=8086 device=27d4
+[    0.694265] tg3 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[    0.694274] tg3 0000:09:00.0: setting latency timer to 64
+[    0.696087] tg3 0000:09:00.0: wake-up capability disabled by ACPI
+[    0.696094] tg3 0000:09:00.0: PME# disabled
+[    0.702276] tg3 0000:09:00.0: firmware: using built-in firmware tigon/tg3_tso.bin
+[    0.702287] vendor=8086 device=27d4
+[    0.702288] tg3 0000:09:00.0: PCI INT A disabled
+[    0.702512] console [netcon0] enabled
+[    0.702515] netconsole: network logging started
+[    0.702575] Driver 'sd' needs updating - please use bus_type methods
+
+but once we get to userspace, 'ifconfig' or 'ip link show' have *zero*
+about an eth0 device.
+
+For comparison, the dmesg if I revert your patch:
+
+[    0.696638] loop: module loaded
+[    0.696658] tg3.c:v3.97 (December 10, 2008)
+[    0.696670] vendor=8086 device=27d4
+[    0.696674] tg3 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[    0.696683] tg3 0000:09:00.0: setting latency timer to 64
+[    0.698063] tg3 0000:09:00.0: wake-up capability disabled by ACPI
+[    0.698070] tg3 0000:09:00.0: PME# disabled
+[    0.704276] tg3 0000:09:00.0: firmware: using built-in firmware tigon/tg3_tso.bin
+[    0.704445] eth0: Tigon3 [partno(BCM5752KFBG) rev 6002] (PCI Express) MAC address 00:15:c5:c8:33:4e
+[    0.704448] eth0: attached PHY is 5752 (10/100/1000Base-T Ethernet) (WireSpeed[1])
+[    0.704451] eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
+[    0.704453] eth0: dma_rwctrl[76180000] dma_mask[64-bit]
+[    0.704653] console [netcon0] enabled
+[    0.704656] netconsole: network logging started
+[    0.704718] Driver 'sd' needs updating - please use bus_type methods
+
+So it looks like the patch is failing to finish initialization of the card.
+Damned if *I* can see what's breaking it, the conversion to use a helper
+function tg3_request_firmware seems sane enough....
 
 
---==_Exmh_1231717499_4563P
+--==_Exmh_1231719035_4327P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFJaoR7cC3lWbTT17ARAskhAJ9eSxGmjnqSqDBIi2LrNS06Xkar2wCgkEUC
-atqD5/ZLCiHMK1g5Da3M0Yw=
-=u18f
+iD8DBQFJaop7cC3lWbTT17ARAp5YAKClOvsSReSfp3pkWieos8yw3BRIHACeOhqm
+Gwn0+10DP1XXpNfEW4SUCqI=
+=DBEG
 -----END PGP SIGNATURE-----
 
---==_Exmh_1231717499_4563P--
+--==_Exmh_1231719035_4327P--
