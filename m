@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZALUAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZALUCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZALUAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbZALUAI
+	id S1757015AbZALUCZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 15:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZALUCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:00:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44712 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755984AbZALUAG (ORCPT
+	Mon, 12 Jan 2009 15:02:13 -0500
+Received: from ext-cn0ut-4.online-age.net ([63.210.253.233]:12389 "EHLO
+	ext-cn0ut-4.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754101AbZALUCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:00:06 -0500
-Date: Mon, 12 Jan 2009 21:14:35 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Valdis.Kletnieks@vt.edu,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Michael Stone <michael@laptop.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: RFC: Network privilege separation.
-Message-ID: <20090112201435.GC23848@one.firstfloor.org>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <12821.1231785850@turing-police.cc.vt.edu> <20090112194333.GB23848@one.firstfloor.org> <200901122147.57731.rdenis@simphalempin.com>
-Mime-Version: 1.0
+	Mon, 12 Jan 2009 15:02:12 -0500
+Date: Mon, 12 Jan 2009 21:01:56 +0100
+From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, David Vrabel <david.vrabel@csr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reference counting of MMC host driver modules
+Message-ID: <20090112200156.GA22537@ngeserver2.localdomain>
+References: <49678443.8040909@ge.com> <49679570.3070403@csr.com> <20090109200024.GA14754@ngeserver2.localdomain> <49686F0C.7030807@s5r6.in-berlin.de> <20090111104111.5a0f00e1@mjolnir.drzeus.cx> <20090112154150.GA27289@ngeserver2.localdomain> <496B7969.5050706@s5r6.in-berlin.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901122147.57731.rdenis@simphalempin.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <496B7969.5050706@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 12 Jan 2009 20:02:04.0820 (UTC) FILETIME=[A3F0A540:01C974F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Expanding the heap,
+Stefan Richter wrote:
+> Enrik Berkhan wrote:
+> > When removing the mmc_host_driver, everything seems to be fine; the
+> > MMC/SD block device has been deactivated by mmc_blk_remove(), that in
+> > turn has stopped the queue via mmc_cleanup_queue(). mmc_cleanup_queue()
+> > calls blk_cleanup_queue() on the underlying struct request_queue. By
+> > this, the reference count of the struct request_queues kboj drops to
+> > zero. The MD driver still has the block device open and, actually,
+> > things work fine unless the memory of the struct request_queue isn't
+> > touched, because it is marked dead. Of course, accessing the MD device
+> > returns EIO, but that's fine.
+> > 
+> > When the mmc_host_driver is reloaded, new struct request_queues will be
+> > allocated and with some probability, the old memory will be re-used for
+> > them or the old memory locations will be re-used for something else. The
+> > key point is that the queues still in use by the MD layer will
+> > effectively no longer be marked dead or completely corrupted.
+> 
+> So in short, the request_queue's reference count goes to zero even
+> though something still points to it?
 
-That's a problem agreed  Ok you can just always use very
-bss arrays sized for the worst case.
+Exactly. AFAICS.
 
-> Getting timestamps. 
+I haven't checked yet if this happens using other block device
+infrastructure, too.
 
-At least on 64bit that's done in ring 3 only with a vsyscall.
-
-> Waiting on futexes, 
-> catching signals, polling file descriptors. Seeking, doing vectorized I/O. 
-> Cloning.
-
-That all can be done by the frontend reading/feeding
-data into the pipe. But it shouldn't directly access the user data
-to be immune against attacks.
-
-> Codecs don't like to read/write raw video through a pipe...
-
-I don't think that's given. It would need some restructuring,
-but I think the end result would be likely worth it.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Enrik
