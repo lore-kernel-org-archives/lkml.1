@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZALKDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZALKE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbZALKDo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZALKDe
+	id S1754477AbZALKE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZALKEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:03:34 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:55926 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbZALKDd (ORCPT
+	Mon, 12 Jan 2009 05:04:47 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34724 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbZALKEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:03:33 -0500
-Message-ID: <31014a580901120203v593ce9bdn6876263770efbeae@mail.gmail.com>
-Date: Mon, 12 Jan 2009 04:03:32 -0600
-From: "Mark A. Miller" <mark@mirell.org>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Mark A. Miller" <mark@mirell.org>,
-       "Bernd Petrovitsch" <bernd@firmix.at>,
-       "Leon Woestenberg" <leon.woestenberg@gmail.com>,
-       "Rob Landley" <rob@landley.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-In-Reply-To: <20090112094121.GD28564@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901020207.30359.rob@landley.net> <495FEEAF.5020005@zytor.com>
-	 <200901032006.47652.rob@landley.net>
-	 <20090104030619.GA21466@linux-sh.org>
-	 <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com>
-	 <1231677939.3517.5.camel@gimli.at.home>
-	 <31014a580901111936q41486efagcb90af2b6880a470@mail.gmail.com>
-	 <20090112082058.GB28564@linux-sh.org>
-	 <31014a580901120118u55256b51g448f22e9e0ef5d1f@mail.gmail.com>
-	 <20090112094121.GD28564@linux-sh.org>
+	Mon, 12 Jan 2009 05:04:46 -0500
+To: rjw@sisk.pl
+CC: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       miklos@szeredi.hu
+In-reply-to: <nHCfeC0YLrE.A.kFD.NbfaJB@chimera> (rjw@sisk.pl)
+Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.kFD.NbfaJB@chimera>
+Message-Id: <E1LMJex-0001lB-SE@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 12 Jan 2009 11:04:39 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 3:41 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+On Sun, 11 Jan 2009, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
+> Subject		: uml is very slow on 2.6.28 host
+> Submitter	: Miklos Szeredi <miklos@szeredi.hu>
+> Date		: 2008-12-12 9:35 (31 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
 
-> I will repeat, there has not been a single coherent argument against what
-> makes perl inherently incapable of being supported.
+Yes, this still exists on latest -git.
 
-You're right, this thread is worthless with that particular mindset,
-Paul. Not, perhaps that the tool in question is brittle, and prone to
-potentially break on more architectures than the current make and C
-code infrastructure, no, your stance is, unless Perl *cannot* run on
-that particular architecture and environment, it has a valid place in
-the kernel because it was chosen by certain developers.
-
-And you're right, I did patch around Perl in order to get it to build
-under a MIPSEL uclibc environment.
-
-But yes, this particular thread with you *is* worthless, because it's
-an argument who's stance is not worth fighting against because of it's
-flawed premise.
-
--- 
-Mark A. Miller
-mark@mirell.org
+Thanks,
+Miklos
