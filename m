@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763324AbZALWyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbZALWzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763324AbZALWyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762205AbZALWqy
+	id S1760324AbZALWzJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762505AbZALWsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:46:54 -0500
-Received: from ams-iport-1.cisco.com ([144.254.224.140]:43020 "EHLO
-	ams-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762281AbZALWqw (ORCPT
+	Mon, 12 Jan 2009 17:48:33 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:42929 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760913AbZALWsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:46:52 -0500
-X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 17:46:51 EST
-X-IronPort-AV: E=Sophos;i="4.37,255,1231113600"; 
-   d="scan'208";a="30678712"
-Date: Mon, 12 Jan 2009 22:36:21 +0000
-From: Derek Fawcus <dfawcus@cisco.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
-       linux-input@vger.kernel.org
-Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
-Message-ID: <20090112223621.GA21489@cisco.com>
-References: <20090107005813.GA4987@const.famille.thibault.fr> <20090109212358.GG5073@const.famille.thibault.fr> <20090109213555.7f9275c9@lxorguk.ukuu.org.uk> <20090109214357.GH5073@const.famille.thibault.fr> <20090109220144.6b99ed72@lxorguk.ukuu.org.uk> <20090109222341.GI5073@const.famille.thibault.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 12 Jan 2009 17:48:30 -0500
+Date: Mon, 12 Jan 2009 22:48:06 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Matthew Wilcox <matthew@wil.cx>,
+       Benny Halevy <bhalevy@panasas.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+Message-ID: <20090112224806.GB26430@shareable.org>
+References: <4947BFAA.4030208@panasas.com> <4947CA5C.50104@panasas.com> <20081229121423.efde9d06.akpm@linux-foundation.org> <495B8D90.1090004@panasas.com> <1230739053.3408.74.camel@localhost.localdomain> <4960D3CA.2000202@panasas.com> <1231783926.3256.29.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090109222341.GI5073@const.famille.thibault.fr>
-User-Agent: Mutt/1.4.2.3i
-Organization: Cisco Systems Limited (Company Number: 02558939), is registered in England and Wales with its registered office at 1 Callaghan Square, Cardiff, South Glamorgan CF10 5BT
-Authentication-Results: ams-dkim-1; header.From=dfawcus@cisco.com; dkim=pass (
-	sig from cisco.com/amsdkim1002 verified; ); 
+In-Reply-To: <1231783926.3256.29.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 09, 2009 at 11:23:41PM +0100, Samuel Thibault wrote:
-> Alan Cox, le Fri 09 Jan 2009 22:01:44 +0000, a écrit :
-> > > > Surely that is just a new keymap ?
-> > > 
-> > > No. That would mean a lot of keymapSSS. Doing it the keymap way
-> > 
-> > Why - its an  algorithmic question about how to edit them - remember you
-> > can edit keymaps in programs at runtime and live.
-> 
-> Right. I'm still afraid by that: we'd need to know how to remap the
-> various keycodes (amiga, atari, i386, mc, sun).
+James Bottomley wrote:
+> Um, your submission path is character.  You pick up block again because
+> SCSI uses it for queues, but it's not really part of your paradigm.
 
-Err - just use EVIOCSKEYCODE to swap the keycodes around,  this works
-in terms of the evdev keycodes.  I use it in a small program to swap
-around a bunch of keys.
+> I think your choice of using a character device will turn out to be a
+> design mistake because the migration path of existing filesystems is
+> bound to be a block device with extra features (which they may or may
+> not make use of) but only if there's a way to make ODS relevant to
+> users.
 
-A bit more of a challange would be listening to evdev,  and when
-detecting the 'swap' keycode,  doing the reload with the actual swaps.
+We mount character devices already when it's appropriate.
 
-I'm not sure w/o reading the code if the kernel will allow this to be
-shared between the tty and evdev on the same vt,  but then one could
-run a controller program talking through a pty and direct to the keyboard.
+Look at JFFS, JFFS2, UBIFS and LOGFS.  All of them operate on MTD
+devices, which are character device interfaces to flash storage, using
+the common MTD interface instead of the block layer.
 
-DF
+This is quite correct, because block devices have specific
+characteristics (generic block caching and ability to read/write each
+block independently) which neither flash nor OSDs have.
+
+Imho, OSDs are similar to flash in this respected.  There is no
+fixed-size block/sector indexed storage device, therefore a block
+device would be wrong.
+
+Admittedly lumping everything else under "character" is daft, when you
+can't read and write character streams to the device, but that's unix
+for you.  Character device used to mean serial ports etc. until it
+become "any old crap that's not a block device". :-)
+
+-- Jamie
