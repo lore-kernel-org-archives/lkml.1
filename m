@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbZALWSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZALWTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbZALWSE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZALWRw
+	id S1757899AbZALWTU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZALWTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:17:52 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:35886 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbZALWRv (ORCPT
+	Mon, 12 Jan 2009 17:19:06 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3568 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752006AbZALWTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:17:51 -0500
-Date: Mon, 12 Jan 2009 23:32:20 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090112223220.GK23848@one.firstfloor.org>
-References: <20090112213539.GA10720@gambetta> <20090112215701.GH23848@one.firstfloor.org> <20090112221023.GB10720@gambetta>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112221023.GB10720@gambetta>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 12 Jan 2009 17:19:05 -0500
+Date: Mon, 12 Jan 2009 17:19:02 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: A really interesting mass-storage BUG introduced after 2.6.18
+In-Reply-To: <4969DAF3.70409@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0901121717520.13021-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 11:10:23PM +0100, Frederik Deweerdt wrote:
-> On Mon, Jan 12, 2009 at 10:57:02PM +0100, Andi Kleen wrote:
-> > On Mon, Jan 12, 2009 at 10:35:42PM +0100, Frederik Deweerdt wrote:
-> > > Hi,
-> > > 
-> > > On x86_64 flush tlb data is stored in per_cpu variables. This is
-> > > unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
-> > > are accessed.
-> > > This patch aims at making the code less confusing (there's nothing
-> > > really "per_cpu") by using a plain array. It also would save some memory
-> > > on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
-> > 
-> > Nope it doesn't save memory on most systems because per cpu is only allocated
-> > based on the CPUs that are actually there. And if you have more than 8
-> > cores you can likely afford a few bytes per CPU.
-> I did not understand that, thanks for clarifiying
-> > 
-> > You would need to cache line pad each entry then, otherwise you risk
-> > false sharing. That would make the array 1K on 128 bytes cache line 
-> > system.  This means on small systems this would actually waste
-> > much more memory.
-> > 
-> > per cpu avoids that problem completely.
-> It is also slower (or so percpu.h says), and confusing I'd say.
+On Sun, 11 Jan 2009, [UTF-8] Ozan Çağlayan wrote:
 
-Well it's something like 3 instructions versus one. You would
-have a hard time benchmarking it unless you run it in a very tight 
-loop. It will be lost in the noise compared to all the other costs
-of the IPI.
+> Hi,
+> 
+> One of our users reported[0] that his 128MB mass storage driver doesn't 
+> work anymore on our current stock kernel 2.6.25.20 by hotplugging but 
+> works flawlessly if it was plugged before booting the OS. He also said 
+> that it was working out of the box with our old kernel 2.6.18. I 
+> gathered a lot of output and debugging stuff from the user[1][2] and 
+> found out that the device has some problems with SCSI Inquiry commands 
+> then I discovered the patch of Alan Stern about the bad residue 
+> values[3], backported it and no way it didn't solve the problem.
+> 
+> I also suggested to give a try to the current stable 2.6.28 but the 
+> behaviour is still the same.
+> 
+> When hotplugged, the kernel doesn't detect the partitions in the device 
+> leaving the block device on its own but if it's plugged during the boot, 
+> the partitions are correctly detected and have their own /sys/block 
+> entries. Note that the device reports a "usb embedded hub" beside a mass 
+> storage device (dunno if it's the case with all of these kind devices).
+> 
+> [0]: http://bugs.pardus.org.tr/show_bug.cgi?id=8369
+> [1]: http://bugzilla.kernel.org/show_bug.cgi?id=11125
+> [2]: http://bugs.pardus.org.tr/attachment.cgi?id=3553 (Hotplugged dmesg 
+> output)
+> [3]: http://bugs.pardus.org.tr/attachment.cgi?id=3561 (Coldplug dmesg 
+> output, correctly detected)
 
-Also why i don't like this patch is that on the typical small single/dual
-core system running a 128 byte cache line distro kernel you always pay the 
-1K cost now, while with per cpu it only needed one/two entries.
+Please ask Antoon to collect a usbmon log during a hotplug test.  The 
+instructions are in Documentation/usb/usbmon.txt.
 
-Admittedly it could have been better commented.
+Alan Stern
 
-Not that it matters now unfortunately it's already applied. Sometimes
-wonder why I still bother to do patch review...
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
