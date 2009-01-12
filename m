@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZAMAs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZAMAxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZAMAs1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZAMAsS
+	id S1756633AbZAMAxy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 19:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZAMAxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:48:18 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41673 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753130AbZAMAsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:48:17 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 18:48:13 -0600
-Message-Id: <1231807693.27151.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 19:53:43 -0500
+Received: from r00tworld.com ([212.85.137.21]:45764 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbZAMAxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 19:53:43 -0500
+X-Greylist: delayed 2012 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 19:53:42 EST
+From: pageexec@freemail.hu
+To: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>
+Date: Tue, 13 Jan 2009 01:19:09 +0200
+MIME-Version: 1.0
+Subject: Re: [patch] x86: fix PTE corruption issue while mapping RAM using /dev/mem
+Reply-to: pageexec@freemail.hu
+CC: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, Daniel.Beschorner@facton.com,
+       stable@kernel.org
+Message-ID: <496BDDFD.27997.A74B06@pageexec.freemail.hu>
+In-reply-to: <20090112235135.GA22722@elte.hu>
+References: <20090112203114.GA13157@linux-os.sc.intel.com>, <20090112235135.GA22722@elte.hu>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Tue, 13 Jan 2009 01:19:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 16:16 -0500, Len Brown wrote:
-> > This is on an IBM Maia system with the calgary IOMMU enabled. It's a
-> > fatal boot up panic.
-> > 
+On 13 Jan 2009 at 0:51, Ingo Molnar wrote:
+
+> applied to tip/x86/urgent, thanks Suresh!
 > 
-> James,
-> A guided bisect...
-> Please let me know which of these fail
-> 
-> a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2 is 2.6.29 at ACPI merge
-> efcb3cf7f00c3c424db012380a8a974c2676a3c8 is 2.6.29 before ACPI merge
+> note that the patch caused some conflicts (there were other changes in 
+> pat.c) - i merged it up manually but could you please check the final 
+> commit in tip/master whether it's all OK?
 
-Didn't try these (being after the failure)
+i don't think that it got applied properly:
 
-> ec9f168fcc344d2ffec1c8c822076bf22dab5c33 is 2.6.28 with most ACPI
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 85cbd3c..ea36ed7 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -347,9 +347,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+        new->end        = end;
+        new->type       = actual_type;
 
-This is the failing one.
+-       if (new_type)
+-               *new_type = actual_type;
+-
+        spin_lock(&memtype_lock);
 
-> e8443c358c34f3fe65236e24147ddf0cd0e61b08 is 2.6.28 plus just ACPICA
+        if (cached_entry && start >= cached_start)
+@@ -437,6 +434,9 @@ int free_memtype(u64 start, u64 end)
+        if (is_ISA_range(start, end - 1))
+                return 0;
 
-This one boots fine.
++       if (new_type)
++               *new_type = actual_type;
++
+        is_range_ram = pagerange_is_ram(start, end);
+        if (is_range_ram == 1)
+                return free_ram_pages_type(start, end);
 
-> Please test the "2.6.28+ACPICA" one first.
-> If it fails, we are close so you can skip the others above
-> and bisect between that and 2.6.28.
-
-I'll try bisecting between ec9f168fcc344d2ffec1c8c822076bf22dab5c33 and
-e8443c358c34f3fe65236e24147ddf0cd0e61b08.
-
-James
-
+free_memtype doesn't even have a new_type argument for starters ;), patch
+must have applied it at the wrong place...
 
