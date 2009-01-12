@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbZALSve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbZALSvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797AbZALSve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 13:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZALSvX
+	id S1756264AbZALSvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 13:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZALSv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 13:51:23 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:19453 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbZALSvW (ORCPT
+	Mon, 12 Jan 2009 13:51:28 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:44406 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbZALSv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 13:51:22 -0500
-Message-ID: <496B9112.8070908@oracle.com>
-Date: Mon, 12 Jan 2009 10:50:58 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Mon, 12 Jan 2009 13:51:27 -0500
+Date: Mon, 12 Jan 2009 18:51:14 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -next] libfc: needs CRC32
-References: <20090112154539.4857f533.sfr@canb.auug.org.au>
-In-Reply-To: <20090112154539.4857f533.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.496B9117.00DF:SCFSTAT928724,ss=1,fgs=0
+Subject: Re: checkpatch warning of struct indentation
+Message-ID: <20090112185114.GB13925@shadowen.org>
+References: <alpine.DEB.1.10.0901121253350.22796@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901121253350.22796@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, Jan 12, 2009 at 12:57:23PM -0500, Steven Rostedt wrote:
+> 
+> Hi,
+> 
+> I'm now seeing the following warnings from checkpatch:
+> 
+> #325: FILE: kernel/trace/trace_stat.c:21:
+> +	void 			*stat;
+> 
+> ERROR: "foo 	*bar" should be "foo *bar"
+> #334: FILE: kernel/trace/trace_stat.c:27:
+> +	struct tracer_stat 	*ts;
+> 
+> ERROR: "foo		*bar" should be "foo	*bar"
+> #337: FILE: kernel/trace/trace_stat.c:30:
+> +	struct dentry		*file;
 
-libfc uses crc32 functions, so cause it to be built
-via select:
+Yes those are bogus.  They should be fixed in the latest push to akpm.
+You can check that with this version:
 
-drivers/built-in.o: In function `fc_frame_crc_check':
-(.text+0x75dae): undefined reference to `crc32_le'
-drivers/built-in.o: In function `fc_fcp_recv':
-fc_fcp.c:(.text+0x7b919): undefined reference to `crc32_le'
-fc_fcp.c:(.text+0x7b9d5): undefined reference to `crc32_le'
-fc_fcp.c:(.text+0x7ba54): undefined reference to `crc32_le'
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/scsi/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20090112.orig/drivers/scsi/Kconfig
-+++ linux-next-20090112/drivers/scsi/Kconfig
-@@ -608,6 +608,7 @@ config SCSI_FLASHPOINT
- config LIBFC
- 	tristate "LibFC module"
- 	select SCSI_FC_ATTRS
-+	select CRC32
- 	---help---
- 	  Fibre Channel library module
- 
-
--- 
-~Randy
+-apw
