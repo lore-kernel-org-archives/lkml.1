@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZALWJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbZALWKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbZALWJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbZALWIJ
+	id S1752700AbZALWKj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZALWK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:08:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:25548 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756509AbZALWIH (ORCPT
+	Mon, 12 Jan 2009 17:10:29 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:60302 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbZALWK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:08:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=VwogRN38jxXwqFd+UBHOLpvlgWq/PDWOVUseSGJwjbauajXndOlRfxzPXxf0DbEu8S
-         tv/haBGFoUDEVgA5OTwr3O6afutmvyO1XTDZuWJsLD/3L1IA32aUO0DJojrnUoTiQCh6
-         9SxA8WAKfQnBjQI8zkyhmbxVXalv2Usif26+c=
-Message-ID: <621d098f0901121408y2cf8c2c9y2a6a5cc77ea8e8f5@mail.gmail.com>
-Date: Mon, 12 Jan 2009 23:08:03 +0100
-From: "Jan Dittmer" <jdi@l4x.org>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
-Cc: "Dave Airlie" <airlied@gmail.com>, "Diego Calleja" <diegocg@gmail.com>,
-       linux-kernel@vger.kernel.org, eric.anholt@intel.com, airlied@linux.ie
-In-Reply-To: <200901121353.40270.jbarnes@virtuousgeek.org>
+	Mon, 12 Jan 2009 17:10:28 -0500
+Date: Mon, 12 Jan 2009 23:10:23 +0100
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090112221023.GB10720@gambetta>
+References: <20090112213539.GA10720@gambetta> <20090112215701.GH23848@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
-	 <200901120956.31728.jbarnes@virtuousgeek.org>
-	 <621d098f0901121319j1be02f82j368250314664b997@mail.gmail.com>
-	 <200901121353.40270.jbarnes@virtuousgeek.org>
-X-Google-Sender-Auth: 0fdc0fb297c92050
+In-Reply-To: <20090112215701.GH23848@one.firstfloor.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 10:53 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->> name of display: :0.0
->> libGL: XF86DRIGetClientDriverName: 1.9.0 i965 (screen 0)
->> libGL: OpenDriver: trying /usr/local/lib/dri/i965_dri.so
->> drmOpenDevice: node name is /dev/dri/card0
->> drmOpenDevice: open result is 4, (OK)
->> drmOpenByBusid: Searching for BusID pci:0000:00:02.0
->> drmOpenDevice: node name is /dev/dri/card0
->> drmOpenDevice: open result is 4, (OK)
->> drmOpenByBusid: drmOpenMinor returns 4
->> drmOpenByBusid: drmGetBusid reports pci:0000:00:02.0
->> libGL error: drmMap of framebuffer failed (Resource temporarily
->> unavailable) libGL error: reverting to software direct rendering
->>
->> ?
->> This is with latest mesa git libGL. Any special compilation options for
->> mesa?
->
-> Nope, not afaik.  Are you sure UXA is enabled?  And that Mesa was built
-> against the same libdrm bits as your 2D driver?  If so, then I guess it's
-> time to file a bug. :)
+On Mon, Jan 12, 2009 at 10:57:02PM +0100, Andi Kleen wrote:
+> On Mon, Jan 12, 2009 at 10:35:42PM +0100, Frederik Deweerdt wrote:
+> > Hi,
+> > 
+> > On x86_64 flush tlb data is stored in per_cpu variables. This is
+> > unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
+> > are accessed.
+> > This patch aims at making the code less confusing (there's nothing
+> > really "per_cpu") by using a plain array. It also would save some memory
+> > on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
+> 
+> Nope it doesn't save memory on most systems because per cpu is only allocated
+> based on the CPUs that are actually there. And if you have more than 8
+> cores you can likely afford a few bytes per CPU.
+I did not understand that, thanks for clarifiying
+> 
+> You would need to cache line pad each entry then, otherwise you risk
+> false sharing. That would make the array 1K on 128 bytes cache line 
+> system.  This means on small systems this would actually waste
+> much more memory.
+> 
+> per cpu avoids that problem completely.
+It is also slower (or so percpu.h says), and confusing I'd say.
 
-With the patches againg 29-rc1 from here
-http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdiff;h=3a03ac1a0223f779a3de313523408ddb099e5679;hp=dc1336ff4fe08ae7cfe8301bfd7f0b2cfd31d20a
-and here
-http://groups.google.com/group/linux.kernel/msg/26aa0471cfb54b06?dmode=source&output=gplain
-at least glxinfo works.
-
-Anyways thanks for your help, time to get some sleep,
-
-Jan
+Regards,
+Frederik
