@@ -1,48 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZALJdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZALJhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZALJdb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 04:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZALJdW
+	id S1753894AbZALJhf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 04:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZALJh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 04:33:22 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:29165 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbZALJdV (ORCPT
+	Mon, 12 Jan 2009 04:37:26 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:2550 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbZALJh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 04:33:21 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <496B0E5F.1020902@tremplin-utc.net>
-Date: Mon, 12 Jan 2009 10:33:19 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
+	Mon, 12 Jan 2009 04:37:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=jC+jJTVFskW89PYlOO9ApApIFdxsBkdRWUx+ChhDyZ1/QPLt7CxYNYPHqQ8e/rLn1e
+         +qiSQU7EU6KWQ6aH7w8XmO8A8qmOClxwdFKlcvuwbW/8hc9nz2Je/rw+VIZJ6gc2Y+iZ
+         774qt91lILbvrHkGg7rt5LZg9Vtw9x8qt0Ppg=
+Message-ID: <47ae62e20901120137k13e9987eyb8fb5d5691d0b3cc@mail.gmail.com>
+Date: Mon, 12 Jan 2009 17:37:24 +0800
+From: bigboy <snakky.zhang@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: How to active/validate the NPE-B NIC of intel_ixdp465?
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: hp accelerometer: fix LED handling and add freefall detection
-References: <20090112092839.GA2190@elf.ucw.cz>
-In-Reply-To: <20090112092839.GA2190@elf.ucw.cz>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> lis3 chip can provide interrupt when it detects freefall; it is done
-> by hardware and is rather reliable. This adds (experimental) support
-> for it. 
-> 
-> LED on HP notebooks is connected through ACPI. That unfortunately
-> means that it needs to be delayed by using schedule_work() to avoid
-> calling ACPI interpretter in invalid context. This patch fixes that.
-> 
-Hi Pavel,
-Thanks a lot for doing it! I'll test it this week. However, I think
-eventually the LED fix and the freefall infrastructure should be two
-different patches. Also, while adding the freefall support, you should
-add the info in the doc, as well as the little C program demonstrating
-its use.
+Hi,
 
-See you,
-Eric
+I have an Intel IXDP465 target with a NPE-B mezzanine card and that
+was supported & validated with linux-2.6.21 + "Intel IXP400 Software
+Access Library". And now the NPE ether net driver moved into the linux
+baseline (drivers/net/arm/ixp4xx_eth.c) so I want to try it without
+Intel's lib but failed. Here is my operations:
+
+Build the zImage with linux-2.6.28, I configure the kernel with
+ixp4xx_defconfig and just change the IXP4XX_ETH to Y.
+
+Build the firmware for NPE-B:
+
+-) download the "Intel(R) IXP400 software - Access Library
+(non-crypto)" to get the head file IxNpeMicrocode.h;
+
+-) download the "Intel IXP400 software - NPE microcode (non-crypto)",
+both 2.4 and 3.0/3.0.1 version, unpack it and copy the head file
+IxNpeMicrocode.h to its source code subdirectory;
+
+-) Edit the head file and comment out those macros for NPE-A and NPE-C
+and just leave the one for NPE-B;
+
+-) Edit the IxNpeMicrocode.c and comment out line 25664, the 8 bytes
+of  "END OF IMAGE LIBRARY MARKER".
+
+-) "gcc ixNpeDlImageConverter.c" and get a a.out; run it and get the
+firmware called IxNpeMicrocode.dat.
+
+-) Rename the IxNpeMicrocode.dat to NPE-B and copy it to the NFS
+rootfs of the target in /lib/firmware.
+
+
+There is a PCI E100 NIC and the linux kernel mount NFS rootfs through
+it. The kernel can find two NICs related to NPE, eth1 for NPE-B and
+eth2 for NPE-C. Then, I tried to active the NIC of NPE-B(eth1):
+
+-) "ifconfig eth1 hw ether 1234567890ab 192.168.1.1 netmask
+255.255.255.0 broadcast 192.168.1.255". With this I can see the driver
+output "eht1: link up, speed 100 Mb/s, full duplex".
+
+-) Then "ping -I eth1 192.168.1.2". Then all I can get is "Destination
+Host Unreachable" :-(
+
+With the firmware built with Microcode-V2.4, it can send up to 6
+packages(get tx irq) and at last the "Link is down"; with the firmware
+of V3.0, no package TX and at last the TX queue full and was
+deactivated. With both of these firmware, no packages received.
+
+I wonder if there are anything wrong with my operations or if I need
+some other special configurations/operations? Or any advises on
+debugging that.
+
+
+Thanks
+Xiao
