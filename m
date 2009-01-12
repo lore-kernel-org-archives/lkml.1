@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbZALWhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbZALWhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbZALWhM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZALW2e
+	id S1760785AbZALWhn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbZALW2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:28:34 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49146 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759092AbZALW2c (ORCPT
+	Mon, 12 Jan 2009 17:28:37 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56307 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758788AbZALW2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:28:32 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:24:36 +0100
-Message-Id: <1231799107-20136-31-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
-References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
+	Mon, 12 Jan 2009 17:28:35 -0500
+Date: Mon, 12 Jan 2009 23:28:34 +0100
+From: Jan Kara <jack@suse.cz>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20090112222834.GA25494@atrey.karlin.mff.cuni.cz>
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move mailbox's probe function to .devinit.text
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494ADEB3.8010109@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap1_mbox_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+  Hi Eric,
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+> Jan Kara wrote:
+> >   Hello,
+> > 
+> >   I'm sorry I'm replying late but I got time to react to this only now...
+> > 
+> 
+> >> I tried this and it too fixes the problem.  FWIW I agree it
+> >> looks better...
+> >   Well, shouldn't we rather fix what journal_start_commit() returns?
+> > The interface which returns 1 when a transaction is already committing or
+> > a transaction commit has just been started but 0 when we race with
+> > somebody staring the commit is fairly unusable. Moreover
+> > ext3_force_commit() will unnecessarily create new sync transaction and
+> > commit it if there's no transaction running which is quite expensive
+> > (even merging empty sync handle is not for free because of sync
+> > transaction batching). But this is minor problem since we probably
+> > don't care too much about sync() performance - BTW this is probably a
+> > cause for bug 12224, isn't it?
+> 
+> Yep, it is!  :)
+> 
+> >   BTW: ocfs2 would need fixing as well if done your way since it's
+> > sync_fs function has been copied over from ext3.
+> >   To summarized I'd rather see a patch like below (untested) going in
+> > and your patch reverted... Opinions? I can cookup a JBD2 version of
+> > the patch in case we agree to go this way.
+> 
+> Thanks, I'll look that over.
+  Any chance you've looked over that patch? Thanks.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- arch/arm/mach-omap1/mailbox.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
-index 59abbf3..e91211c 100644
---- a/arch/arm/mach-omap1/mailbox.c
-+++ b/arch/arm/mach-omap1/mailbox.c
-@@ -143,7 +143,7 @@ struct omap_mbox mbox_dsp_info = {
- };
- EXPORT_SYMBOL(mbox_dsp_info);
- 
--static int __init omap1_mbox_probe(struct platform_device *pdev)
-+static int __devinit omap1_mbox_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
- 	int ret = 0;
+								Honza
 -- 
-1.5.6.5
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
