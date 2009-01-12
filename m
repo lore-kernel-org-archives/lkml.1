@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbZALTZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbZALT03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbZALTZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZALTZM
+	id S1756300AbZALT03 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZALT0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:25:12 -0500
-Received: from ns2.suse.de ([195.135.220.15]:46052 "EHLO mx2.suse.de"
+	Mon, 12 Jan 2009 14:26:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42772 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbZALTZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:25:11 -0500
-Date: Mon, 12 Jan 2009 11:23:51 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Steve French <smfrench@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org
-Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
-Message-ID: <20090112192351.GA7607@suse.de>
-References: <20090112154539.4857f533.sfr@canb.auug.org.au> <496B899E.7060605@oracle.com> <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com> <1231787958.6383.18.camel@norville.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231787958.6383.18.camel@norville.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751300AbZALT0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:26:18 -0500
+Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
+	interrupt equivalent
+From: Jon Masters <jcm@redhat.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Stefan Assmann <sassmann@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+In-Reply-To: <200901121151.53195.bjorn.helgaas@hp.com>
+References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain>
+	 <496B24E5.1070804@suse.de>  <200901121151.53195.bjorn.helgaas@hp.com>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Mon, 12 Jan 2009 14:25:49 -0500
+Message-Id: <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 01:19:18PM -0600, Dave Kleikamp wrote:
-> On Mon, 2009-01-12 at 12:58 -0600, Steve French wrote:
-> > There is not just the cifs md5 one (which has been around a long
-> > time), but an md5_init (static) in crypto and the new one in rt.  The
-> > addition of the new one (rt md5_init) causes the build problem.   It
-> > would be nice if we could use the same md5 routines though ... last
-> > time we checked the crypto one was not well suited for calculating
-> > signatures as a network fs would do though.
-> 
-> Is that due to the byte-swapping?  Can the cifs and rt* drivers use the
-> same code.  rt28[67]0/common/md5.c are identical files.  In fact those
-> "common" directories should probably be combined into a single truly
-> common directory.
+On Mon, 2009-01-12 at 11:51 -0700, Bjorn Helgaas wrote:
+> (I added Eric, Maciej, and Jon because they participated in
+> previous discussion here: http://lkml.org/lkml/2008/6/2/269)
 
-Yes, the "common" directories are going to be merged, but as they
-originally came from different driver sources, they didn't start out
-that way.  It will take some refactoring to get it to work properly,
-which is on my todo list...
+Thanks. You know what I'd really like even more than being on the CC?
+I'd *love* someone to post a link to documentation on how this actually
+is supposed to work. We had to guess last time because none of the
+public documentation actually explains this. The guys at SuSE likely
+received some docs, but I'm not sure where from or the title thereof.
 
-thanks,
+If we all knew how this was supposed to work then we might have a much
+better likelihood of fixing this behavior. It's only going to get worse
+over time - we want to get threaded IRQs upstream (I'm about to be
+poking at that again over here) and that'll mean mainline has to learn
+to deal with these boot interrupts just as much as RT does today.
 
-greg k-h
+Jon.
+
+
