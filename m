@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZALJqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZALJuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbZALJqg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 04:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZALJq1
+	id S1753630AbZALJuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 04:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZALJuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 04:46:27 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:43979 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751411AbZALJq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 04:46:26 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org,
-       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
-       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
-       Tom Tucker <tom@opengridcomputing.com>
-In-Reply-To: <20090108212605.GG19312@fieldses.org>
-References: <1227737539.31008.2.camel@localhost.localdomain>
-	 <1228090631.7112.11.camel@heimdal.trondhjem.org>
-	 <1228169383.20370.3.camel@localhost.localdomain>
-	 <1228565812.10856.30.camel@localhost.localdomain>
-	 <1229279045.3721.1.camel@localhost.localdomain>
-	 <20081216175503.GG16388@fieldses.org>
-	 <1229452775.3721.25.camel@localhost.localdomain>
-	 <20090107222115.GI965@fieldses.org> <20090108182003.GB17623@fieldses.org>
-	 <1231449753.21688.12.camel@localhost.localdomain>
-	 <20090108212605.GG19312@fieldses.org>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 09:46:04 +0000
-Message-Id: <1231753564.27350.83.camel@zakaz.uk.xensource.com>
+	Mon, 12 Jan 2009 04:50:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:35422 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbZALJuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 04:50:02 -0500
+Subject: Re: linux-next: origin tree build failure
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>,
+       linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090112090552.GD26750@elte.hu>
+References: <20090112104837.69feedec.sfr@canb.auug.org.au>
+	 <1231719015.22571.4.camel@pasglop>  <20090112090552.GD26750@elte.hu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-fMSAHM2yExMWsU+/H95c"
+Date: Mon, 12 Jan 2009 20:49:51 +1100
+Message-Id: <1231753791.8959.7.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
-	than 120 seconds"
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=jSbuyrlv4UgA:10 a=ehd10kmKHQgA:10 a=aq3DK3jhhem-GUqUKqwA:9 a=Mu7kGG3ZleBMiS8pg6FvXzflbaYA:4 a=LY0hPdMaydYA:10
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-08 at 16:26 -0500, J. Bruce Fields wrote:
-> On Thu, Jan 08, 2009 at 09:22:33PM +0000, Ian Campbell wrote:
 
-> > These two look like the relevant ones to me but I'm not sure:
-> > 22945e4a1c7454c97f5d8aee1ef526c83fef3223 svc: Clean up deferred requests on transport destruction
-> > 69b6ba3712b796a66595cfaf0a5ab4dfe1cf964a SUNRPC: Ensure the server closes sockets in a timely fashion
-> > 
-> > I think 69b6 was in the set of three I tested previously and the other
-> > two turned into 2294?
-> 
-> Yep, exactly.--b.
+--=-fMSAHM2yExMWsU+/H95c
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-OK, I have patched my 2.6.26 kernel with these and it is now running.
-It'll be about a week before I can say with any certainty that the issue
-hasn't recurred.
+On Mon, 2009-01-12 at 10:05 +0100, Ingo Molnar wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>=20
+> > On Mon, 2009-01-12 at 10:48 +1100, Stephen Rothwell wrote:
+> > > Hi Linus,
+> > >=20
+> > > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> > >=20
+> > > arch/powerpc/platforms/pasemi/cpufreq.c: In function 'pas_cpufreq_cpu=
+_init':
+> > > arch/powerpc/platforms/pasemi/cpufreq.c:216: error: incompatible type=
+s in assignment
+> > > arch/powerpc/platforms/powermac/cpufreq_64.c: In function 'g5_cpufreq=
+_cpu_init':
+> > > arch/powerpc/platforms/powermac/cpufreq_64.c:365: error: incompatible=
+ types in assignment
+> > > arch/powerpc/platforms/cell/cbe_cpufreq.c: In function 'cbe_cpufreq_c=
+pu_init':
+> > > arch/powerpc/platforms/cell/cbe_cpufreq.c:121: error: incompatible ty=
+pes in assignment
+> > >=20
+> > > Caused by commit 835481d9bcd65720b473db6b38746a74a3964218 ("cpumask:
+> > > convert struct cpufreq_policy to cpumask_var_t") which missed updatin=
+g
+> > > all the powerpc (at least) cpufreq drivers.
+> >=20
+> > Yeah, it only updates x86 it seems ...=20
+>=20
+> Yeah - and that build bug was stupid too - when touching a generic file=20
+> that is called include/linux/cpufreq.h and changing a key data field one=20
+> should at minimum get the idea that it's generic for a reason and should=20
+> start grepping the tree ...
+>=20
+> It slipped through because it didnt get caught in build tests because=20
+> cpufreq isnt enabled in the powerpc defconfig.
 
-Ian.
--- 
-Ian Campbell
-Current Noise: Pitchshifter - Subject To Status
+Which defconfig?
 
-Do I have a lifestyle yet?
+powerpc(master) $ git grep CPU_FREQ=3Dy arch/powerpc/configs/ppc64_defconfi=
+g
+arch/powerpc/configs/ppc64_defconfig:CONFIG_CPU_FREQ=3Dy
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-fMSAHM2yExMWsU+/H95c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklrEj8ACgkQdSjSd0sB4dI1sQCeNse/NW8O16+C2QED0qb2owYq
+fLQAnjZ8C9w39aprGODx0/e2TVMvIZPB
+=B0P8
+-----END PGP SIGNATURE-----
+
+--=-fMSAHM2yExMWsU+/H95c--
 
