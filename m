@@ -1,116 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZALQZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZALQ2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZALQZG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 11:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZALQYx
+	id S1755160AbZALQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZALQ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 11:24:53 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:57016 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbZALQYv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 11:24:51 -0500
-Date: Mon, 12 Jan 2009 08:24:49 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] smc-ultra: get rid of "eth%d" message
-Message-ID: <20090112082449.5cfcd2cb@extreme>
-In-Reply-To: <4969CFF2.9020202@freemail.hu>
-References: <4969CFF2.9020202@freemail.hu>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Jan 2009 11:28:24 -0500
+Received: from cet.com.ru ([195.178.208.66]:46800 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752423AbZALQ2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 11:28:23 -0500
+Date: Mon, 12 Jan 2009 19:28:20 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Dave Jones <davej@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090112162820.GA22881@ioremap.net>
+References: <20090112153304.GA19995@ioremap.net> <20090112154922.6003750b@lxorguk.ukuu.org.uk> <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112162209.GB7046@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112162209.GB7046@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Jan 2009 11:54:42 +0100
-Németh Márton <nm127@freemail.hu> wrote:
+On Mon, Jan 12, 2009 at 11:22:09AM -0500, Dave Jones (davej@redhat.com) wrote:
+>  > Not one, but tasks which have the given string in the name. Like script
+>  > names spawned at DoS time.
+> 
+> There is also the problem that process names aren't unique.
+> If the process table contains two entries called 'Kenny', there's nothing
+> that says they came from the same executable.
 
-> From: Márton Németh <nm127@freemail.hu>
-> 
-> Print out the dev->name only after register_netdev().  If the dev->name is
-> printk()ed out before calling register_netdev() the result will be "eth%d"
-> in the dmesg instead of "eth0".
-> 
-> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> ---
-> --- linux-2.6.28/drivers/net/smc-ultra.c.orig	2009-01-10 20:57:36.000000000 +0100
-> +++ linux-2.6.28/drivers/net/smc-ultra.c	2009-01-10 20:59:48.000000000 +0100
-> @@ -228,9 +228,6 @@ static int __init ultra_probe1(struct ne
->  	for (i = 0; i < 6; i++)
->  		dev->dev_addr[i] = inb(ioaddr + 8 + i);
-> 
-> -	printk("%s: %s at %#3x, %s", dev->name, model_name,
-> -	       ioaddr, print_mac(mac, dev->dev_addr));
-> -
->  	/* Switch from the station address to the alternate register set and
->  	   read the useful registers there. */
->  	outb(0x80 | reg4, ioaddr + 4);
-> @@ -253,8 +250,10 @@ static int __init ultra_probe1(struct ne
->  		irq = irqmap[((irqreg & 0x40) >> 4) + ((irqreg & 0x0c) >> 2)];
-> 
->  		if (irq == 0) {
-> -			printk(", failed to detect IRQ line.\n");
-> -			retval =  -EAGAIN;
-> +			printk(KERN_ERR "%s at %#3x, %s, "
-> +			       "failed to detect IRQ line.\n", model_name,
-> +			       ioaddr, print_mac(mac, dev->dev_addr));
-> +			retval = -EAGAIN;
->  			goto out;
->  		}
->  		dev->irq = irq;
-> @@ -280,22 +279,19 @@ static int __init ultra_probe1(struct ne
-> 
->  	ei_status.mem = ioremap(dev->mem_start, (ei_status.stop_page - START_PG)*256);
->  	if (!ei_status.mem) {
-> -		printk(", failed to ioremap.\n");
-> -		retval =  -ENOMEM;
-> +		printk(KERN_ERR "%s at %#3x, %s, failed to ioremap.\n",
-> +		       model_name, ioaddr, print_mac(mac, dev->dev_addr));
+Agree, oom-killer will try to get theirs points and if they are really
+different applications, the 'bad' one will be killed.
 
-Use dev_err() instead, it gives useful PCI information.
-
-> +		retval = -ENOMEM;
->  		goto out;
->  	}
-> 
->  	dev->mem_end = dev->mem_start + (ei_status.stop_page - START_PG)*256;
-> 
->  	if (piomode) {
-> -		printk(",%s IRQ %d programmed-I/O mode.\n",
-> -			   eeprom_irq ? "EEPROM" : "assigned ", dev->irq);
->  		ei_status.block_input = &ultra_pio_input;
->  		ei_status.block_output = &ultra_pio_output;
->  		ei_status.get_8390_hdr = &ultra_pio_get_hdr;
->  	} else {
-> -		printk(",%s IRQ %d memory %#lx-%#lx.\n", eeprom_irq ? "" : "assigned ",
-> -			   dev->irq, dev->mem_start, dev->mem_end-1);
->  		ei_status.block_input = &ultra_block_input;
->  		ei_status.block_output = &ultra_block_output;
->  		ei_status.get_8390_hdr = &ultra_get_8390_hdr;
-> @@ -311,6 +307,21 @@ static int __init ultra_probe1(struct ne
->  	retval = register_netdev(dev);
->  	if (retval)
->  		goto out;
-> +
-> +	if (piomode) {
-> +		printk(KERN_INFO "%s: %s at %#3x, %s,"
-> +			"%s IRQ %d programmed-I/O mode.\n",
-> +			dev->name, model_name, ioaddr,
-> +			print_mac(mac, dev->dev_addr),
-> +			eeprom_irq ? " EEPROM" : " assigned", dev->irq);
-> +	} else {
-> +		printk(KERN_INFO "%s: %s at %#3x, %s,"
-> +			"%s IRQ %d memory %#lx-%#lx.\n",
-> +			dev->name, model_name, ioaddr,
-> +			print_mac(mac, dev->dev_addr),
-> +			eeprom_irq ? "" : " assigned",
-> +			dev->irq, dev->mem_start, dev->mem_end-1);
-> +	}
->
-dev_info?
+-- 
+	Evgeniy Polyakov
