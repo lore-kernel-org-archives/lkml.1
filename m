@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZALPxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZALPyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZALPxI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 10:53:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZALPwz
+	id S1755368AbZALPyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 10:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZALPyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 10:52:55 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38228 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751979AbZALPwy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 10:52:54 -0500
-Date: Mon, 12 Jan 2009 15:52:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-Message-ID: <20090112155239.5f677a17@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090112155030.GA21063@ioremap.net>
-References: <20090112153304.GA19995@ioremap.net>
-	<20090112154922.6003750b@lxorguk.ukuu.org.uk>
-	<20090112155030.GA21063@ioremap.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 12 Jan 2009 10:54:13 -0500
+Received: from vena.lwn.net ([206.168.112.25]:40296 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbZALPyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 10:54:13 -0500
+Date: Mon, 12 Jan 2009 08:54:09 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wang Chen <wangchen@cn.fujitsu.com>
+Cc: Greg KH <gregkh@suse.de>, Theodore Tso <tytso@mit.edu>,
+       David Miller <davem@davemloft.net>, jaswinderlinux@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Who wrote 2.6.28
+Message-ID: <20090112085409.3e0b4534@bike.lwn.net>
+In-Reply-To: <496ACF74.1060602@cn.fujitsu.com>
+References: <496224D7.2030109@cn.fujitsu.com>
+	<3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
+	<20090109.141124.154196743.davem@davemloft.net>
+	<20090110213121.GF31579@mit.edu>
+	<20090110220004.GA5875@suse.de>
+	<496AA506.20900@cn.fujitsu.com>
+	<20090112040927.GA26742@suse.de>
+	<496ACF74.1060602@cn.fujitsu.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009 18:50:30 +0300
-Evgeniy Polyakov <zbr@ioremap.net> wrote:
+On Mon, 12 Jan 2009 13:04:52 +0800
+Wang Chen <wangchen@cn.fujitsu.com> wrote:
 
-> On Mon, Jan 12, 2009 at 03:49:22PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > > Do you want to own a tame killer? Do you want to control the world?
-> > 
-> > We've got /proc/*/oom_adj already
+> > No, I haven't, sorry.  I need to push out a new update soon.  Hm,
+> > gitdm-config?  Did I release that?  If so, where?
+> >   
 > 
-> Which has to be checked for every process ever created,
-> which is quite unfeasible in some conditions.
+> Here
+> http://lwn.net/images/gitdm/
 
-The task name is not a reliable indicator of true name and truncated so
-is useless. You only nominate one task, you don't integrate with the
-existing interface.
+I put out a sanitized version of the database the better part of a year
+ago.  "Sanitized" because we asked a number of developers about their
+affiliation with the promise that we would not spread that information
+further.  I make an updated version; will do, but can't promise it
+before LCA.
 
-What you actually need is notifiers to work on /proc (exactly the same as
-we need to avoid the bogus waitfd crap). At that point you can implement
-arbitary policy by using dnotify/inotify/etc on /proc.
-
-Alan
+jon
