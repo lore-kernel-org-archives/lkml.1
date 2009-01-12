@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZALV4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZALV7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757801AbZALV4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZALV4e
+	id S1756393AbZALV7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZALV7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:56:34 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51022 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbZALV4d (ORCPT
+	Mon, 12 Jan 2009 16:59:45 -0500
+Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:42068 "HELO
+	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752439AbZALV7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:56:33 -0500
-Date: Mon, 12 Jan 2009 23:11:03 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tim Abbott <tabbott@MIT.EDU>, andi@firstfloor.org, jbarnold@MIT.EDU,
-       linux-kernel@vger.kernel.org, vda.linux@googlemail.com, andersk@MIT.EDU,
-       wdaher@MIT.EDU, knikanth@suse.de
-Subject: Re: [PATCH 1/7] Make section names compatible with -ffunction-sections -fdata-sections
-Message-ID: <20090112221103.GJ23848@one.firstfloor.org>
-References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-2-git-send-email-jbarnold@mit.edu> <8763lxwv0d.fsf@basil.nowhere.org> <alpine.DEB.2.00.0812311410070.2230@vinegar-pot.mit.edu> <20081231195215.GU496@one.firstfloor.org> <alpine.DEB.2.00.0812311649180.2230@vinegar-pot.mit.edu> <20090101083230.34cffeac.akpm@linux-foundation.org> <alpine.DEB.2.00.0901011725320.10164@vinegar-pot.mit.edu> <20090112135127.7a0bb392.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Jan 2009 16:59:44 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=gXWxMZB6fpddwHA4IN1hnuP10t5lzszYX+JosQNwPfMd2Bds5jKnHVrzuL7yrM1ziguBaSyty7xR4L/EnbBxZu3pK8JBVfB0MvdDVcp9Iii0r2PHHDoyM/5EbvgwvMwq;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Olivier Galibert <galibert@pobox.com>
+Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
+Date: Mon, 12 Jan 2009 13:59:39 -0800
+User-Agent: KMail/1.9.10
+Cc: Dave Airlie <airlied@gmail.com>, Jan Dittmer <jdi@l4x.org>,
+       Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
+       eric.anholt@iintel.com, airlied@linux.ie
+References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com> <200901120953.50167.jbarnes@virtuousgeek.org> <20090112213235.GA58682@dspnet.fr.eu.org>
+In-Reply-To: <20090112213235.GA58682@dspnet.fr.eu.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090112135127.7a0bb392.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901121359.40158.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So we `make it possible to build the kernel > with "gcc
-> -ffunction-sections -fdata-sections"'.  So what?  Where is the value in
-> that?
+On Monday, January 12, 2009 1:32 pm Olivier Galibert wrote:
+> On Mon, Jan 12, 2009 at 09:53:49AM -0800, Jesse Barnes wrote:
+> > On the contrary, I think we have way too many options and configuration
+> > possibilities.  The more we have, the more likely some combination of
+> > them will be broken.
+>
+> You need to be able to fix wrong data coming from the bios or other roms.
+>
+> > That said, modes are generally pretty easy to handle, so users can
+> > provide them through xrandr and xorg.conf; I don't see that changing.
+>
+> The intel driver ignores modelines if a bios mode is present, at least
+> for lvds.  Check i830_lvds_mode_fixup.
 
-The original reason was that it allows the linker to drop unused
-functions automatically. That is a good thing by itself -- e.g.
-if it was universal we could avoid a lot of #ifdefs.  And it
-also turned out that standard kernel builds get smaller by it iirc.
-
--Andi
+We have an LVDSFixedMode option though; afaik it should allow you to override 
+any VBT info.  If not you should file a bug.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jesse Barnes, Intel Open Source Technology Center
