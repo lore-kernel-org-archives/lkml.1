@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZALUCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbZALUFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbZALUCZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZALUCN
+	id S1756804AbZALUFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 15:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZALUFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:02:13 -0500
-Received: from ext-cn0ut-4.online-age.net ([63.210.253.233]:12389 "EHLO
-	ext-cn0ut-4.online-age.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754101AbZALUCM (ORCPT
+	Mon, 12 Jan 2009 15:05:07 -0500
+Received: from mailout10.t-online.de ([194.25.134.21]:43042 "EHLO
+	mailout10.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbZALUFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:02:12 -0500
-Date: Mon, 12 Jan 2009 21:01:56 +0100
-From: Enrik Berkhan <Enrik.Berkhan@ge.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, David Vrabel <david.vrabel@csr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Reference counting of MMC host driver modules
-Message-ID: <20090112200156.GA22537@ngeserver2.localdomain>
-References: <49678443.8040909@ge.com> <49679570.3070403@csr.com> <20090109200024.GA14754@ngeserver2.localdomain> <49686F0C.7030807@s5r6.in-berlin.de> <20090111104111.5a0f00e1@mjolnir.drzeus.cx> <20090112154150.GA27289@ngeserver2.localdomain> <496B7969.5050706@s5r6.in-berlin.de>
+	Mon, 12 Jan 2009 15:05:05 -0500
+Message-ID: <496BA036.3010101@t-online.de>
+Date: Mon, 12 Jan 2009 20:55:34 +0100
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496B7969.5050706@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 12 Jan 2009 20:02:04.0820 (UTC) FILETIME=[A3F0A540:01C974F0]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+References: <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain> <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ID: ZkddcqZSghvT-2k5KDKPEjGbT23avGJfLVAC26Hw3mIKQLol6W7TGNm0SZ9Ou4xZGX
+X-TOI-MSGID: f7146ea3-30ce-4a15-a23e-82144b43667c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Enrik Berkhan wrote:
-> > When removing the mmc_host_driver, everything seems to be fine; the
-> > MMC/SD block device has been deactivated by mmc_blk_remove(), that in
-> > turn has stopped the queue via mmc_cleanup_queue(). mmc_cleanup_queue()
-> > calls blk_cleanup_queue() on the underlying struct request_queue. By
-> > this, the reference count of the struct request_queues kboj drops to
-> > zero. The MD driver still has the block device open and, actually,
-> > things work fine unless the memory of the struct request_queue isn't
-> > touched, because it is marked dead. Of course, accessing the MD device
-> > returns EIO, but that's fine.
-> > 
-> > When the mmc_host_driver is reloaded, new struct request_queues will be
-> > allocated and with some probability, the old memory will be re-used for
-> > them or the old memory locations will be re-used for something else. The
-> > key point is that the queues still in use by the MD layer will
-> > effectively no longer be marked dead or completely corrupted.
+Linus Torvalds wrote:
 > 
-> So in short, the request_queue's reference count goes to zero even
-> though something still points to it?
+> On Mon, 12 Jan 2009, Bernd Schmidt wrote:
+>> Something at the back of my mind said "aliasing".
+>>
+>> $ gcc linus.c -O2 -S ; grep subl linus.s
+>>         subl    $1624, %esp
+>> $ gcc linus.c -O2 -S -fno-strict-aliasing; grep subl linus.s
+>>         subl    $824, %esp
+>>
+>> That's with 4.3.2.
+> 
+> Interesting. 
+> 
+> Nonsensical, but interesting.
+> 
+> Since they have no overlap in lifetime, confusing this with aliasing is 
+> really really broken (if the functions _hadn't_ been inlined, you'd have 
+> gotten the same address for the two variables anyway! So anybody who 
+> thinks that they need different addresses because they are different types 
+> is really really fundmantally confused!).
 
-Exactly. AFAICS.
+I've never really looked at the stack slot sharing code.  But I think
+it's not hard to see what's going on: "no overlap in lifetime" may be a
+temporary state.  Let's say you have
 
-I haven't checked yet if this happens using other block device
-infrastructure, too.
+ {
+   variable_of_some_type a;
+   writes to a;
+   other stuff;
+   reads from a;
+ }
+ {
+   variable_of_some_other_type b;
+   writes to b;
+   other stuff;
+   reads from b;
+ }
 
-Enrik
+At the point where the compiler generates RTL, stack space has to be
+allocated for variables A and B.  At this point the lifetimes are
+non-overlapping.  However, if the compiler chooses to put them into the
+same stack location, the RTL-based alias analysis will happily conclude
+(based on the differing types) that the reads from A and the writes to B
+can't possibly conflict, and some passes may end up reordering them.
+End result: overlapping lifetimes and overlapping stack slots.  Oops.
+
+
+Bernd
+-- 
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
