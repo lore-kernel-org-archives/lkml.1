@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZALMHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZALMIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbZALMHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 07:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZALMH1
+	id S1754892AbZALMIL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 07:08:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZALMHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 07:07:27 -0500
-Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:40876
-	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751316AbZALMHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 07:07:23 -0500
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 07:07:23 EST
-Date: Mon, 12 Jan 2009 12:57:41 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [BUG] 2.6.29-rc1: /proc/mtd partition names obfuscated
-Message-ID: <20090112115741.GA23365@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-	linux-kernel@vger.kernel.org
+	Mon, 12 Jan 2009 07:07:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53455 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbZALMHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 07:07:47 -0500
+Date: Mon, 12 Jan 2009 13:07:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: remove byte locks
+Message-ID: <20090112120743.GC24266@elte.hu>
+References: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i'm running 2.6.29-rc1 on a edb9302 (ARM) board. the partitioning of
-the flash is passed as usual as parameter:
 
-cat /proc/cmdline
-console=ttyAM0,115200
-mtdparts=physmap-flash.0:256k(u-boot),128k(cfg_boot),128k(cfg_boot.bak),1664k(kernel_1),6144k(rootfs_1),1664k(kernel_2),6144k(rootfs_2),128k(cfg_app),128k(cfg_app.bak)
+* Jiri Kosina <jkosina@suse.cz> wrote:
 
+> Remove byte locks implementation, which was introduced by Jeremy in 
+> 8efcbab6 ("paravirt: introduce a "lock-byte" spinlock implementation"), 
+> but turned out to be dead code that is not used by any in-kernel 
+> virtualization guest (Xen uses its own variant of spinlocks implementation 
+> and KVM is not planning to move to byte locks).
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> ---
+>  arch/x86/include/asm/paravirt.h      |    2 -
+>  arch/x86/include/asm/spinlock.h      |   66 +--------------------------------
+>  arch/x86/kernel/paravirt-spinlocks.c |   10 -----
+>  3 files changed, 2 insertions(+), 76 deletions(-)
 
-dmesg shows that the command line is interpreted correctly:
+didnt you send a patch in this lkml thread:
 
-9 cmdlinepart partitions found on MTD device physmap-flash.0
-Creating 9 MTD partitions on "physmap-flash.0":
-0x000000000000-0x000000040000 : "u-boot"
-0x000000040000-0x000000060000 : "cfg_boot"
-0x000000060000-0x000000080000 : "cfg_boot.bak"
-0x000000080000-0x000000220000 : "kernel_1"
-0x000000220000-0x000000820000 : "rootfs_1"
-0x000000820000-0x0000009c0000 : "kernel_2"
-0x0000009c0000-0x000000fc0000 : "rootfs_2"
-0x000000fc0000-0x000000fe0000 : "cfg_app"
-0x000000fe0000-0x000001000000 : "cfg_app.bak"
+  Subject: Re: Is 386 processor still supported?
 
+that makes use of byte-locks on i386 ?
 
-but when looking at /proc/mtd, the partition names are somehow, 'obfuscated':
+But i guess we should solve M386 and M486 by only allowing it on !SMP, 
+hence spinlock support is moot there, right?
 
- cat /proc/mtd
-dev:    size   erasesize  name
-mtd0: 00040000 00020000 ""
-mtd1: 00020000 00020000 ""
-mtd2: 00020000 00020000 ""
-mtd3: 001a0000 00020000 "�"
-mtd4: 00600000 00020000 ""
-mtd5: 001a0000 00020000 ""
-mtd6: 00600000 00020000 ""
-mtd7: 00020000 00020000 ""
-mtd8: 00020000 00020000 "s"
-
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
-
-               For to be free is not merely to cast off
-               one's chains, but to live in a way that
-              respects and enhances the freedom of others
-                           (Nelson Mandela)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+	Ingo
