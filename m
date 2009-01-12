@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZALNvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZALNws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZALNvQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 08:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZALNu7
+	id S1753509AbZALNws (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 08:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZALNwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 08:50:59 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49528 "EHLO
+	Mon, 12 Jan 2009 08:52:38 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49615 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbZALNu6 (ORCPT
+	with ESMTP id S1751690AbZALNwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 08:50:58 -0500
-Date: Mon, 12 Jan 2009 14:50:57 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	Mon, 12 Jan 2009 08:52:38 -0500
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Subject: wrong usage of __devexit_p and __exit_p
-Message-ID: <20090112135057.GA10250@pengutronix.de>
+Date: Mon, 12 Jan 2009 14:52:08 +0100
+Message-Id: <1231768351-30502-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20090112135057.GA10250@pengutronix.de>
+References: <20090112135057.GA10250@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+Subject: [PATCH] move asic3_remove to .devexit.text
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+The function asic3_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
-I found several drivers that use __devexit_p and __exit_p on functions
-that don't live in .devexit.text or .exit.text resp.
+Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/mfd/asic3.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The impact is either that these functions use memory without being used
-or that they don't link.
-
-I send 24 patches as a reply to this mail.  I choosed to move the
-functions into the respective function instead of using the right
-__{dev,}exit_p wrapper because it seems to me to have less impact.
-
-I didn't made the effort to find out the right people to Cc: but I hope
-that Andrew takes care of that :-)
-
-Best regards
-Uwe
-
+diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
+index 9e48545..b8150ec 100644
+--- a/drivers/mfd/asic3.c
++++ b/drivers/mfd/asic3.c
+@@ -606,7 +606,7 @@ static int __init asic3_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int asic3_remove(struct platform_device *pdev)
++static int __devexit asic3_remove(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct asic3 *asic = platform_get_drvdata(pdev);
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+1.5.6.5
+
