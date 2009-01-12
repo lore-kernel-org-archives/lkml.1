@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZALHm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZALHng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZALHm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 02:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZALHmR
+	id S1752634AbZALHng (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 02:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZALHn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 02:42:17 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:45425 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZALHmQ (ORCPT
+	Mon, 12 Jan 2009 02:43:26 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45420 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbZALHnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 02:42:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=kBe/Jc97+bfn+EPG9JdJuOvbx0zpB700hTUnhN4ARbJAMn3sjtIVxUdb5rBk4R863Y
-         IRiLqtrEH8k1eiQHnWQV39LMV9Kp1yGj74x0186Csvxg+lWnnc0p84B1uC2CFsIOqKKT
-         QLDreF//xfI9dZZlAQv8cqmF6WVZmqz1fYi5M=
-Message-ID: <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
-Date: Mon, 12 Jan 2009 08:42:14 +0100
-From: "Jan Dittmer" <jdi@l4x.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
-Cc: "Diego Calleja" <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
-       eric.anholt@iintel.com, airlied@linux.ie
-In-Reply-To: <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
+	Mon, 12 Jan 2009 02:43:25 -0500
+Date: Mon, 12 Jan 2009 08:43:23 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Patrick McHardy <kaber@trash.net>
+cc: matthltc@us.ibm.com, Matt Cross <matt.cross@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH] ebtables match inverted in 2.6.28? (Was: Re: ebtables
+ match inverted in 2.6.28?)
+In-Reply-To: <496AD1C6.9080906@trash.net>
+Message-ID: <alpine.LSU.2.00.0901120835390.21692@fbirervta.pbzchgretzou.qr>
+References: <84ee33570812311400m5492af64n45c645a13fe91c2c@mail.gmail.com> <1230779772.29793.31.camel@localhost> <496AD1C6.9080906@trash.net>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
-	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
-	 <20090111222122.4d0cb146@diego-desktop>
-	 <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
-X-Google-Sender-Auth: a4c2a0e0f867728c
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 10:39 PM, Dave Airlie <airlied@gmail.com> wrote:
-> On Mon, Jan 12, 2009 at 7:21 AM, Diego Calleja <diegocg@gmail.com> wrote:
->> I also have a failure with KMS, it's different than yours but I'll post it
->> in this thread...xserver-xorg-video-intel version 2.5.1 (whatever there is
->> in ubuntu unstable repositories)
+
+On Monday 2009-01-12 06:14, Patrick McHardy wrote:
+
+> Matthew Helsley wrote:
+>> On Wed, 2008-12-31 at 17:00 -0500, Matt Cross wrote:
+>>> I think the work to move ebtables to use xtables broke ebtables.
+>>> Specifically, in commit 8cc784eec6676b58e7f60419c88179aaa97bf71c the
+>>> return value of the match functions was inverted so that they return 1
+>>> (true) on matches instead of EBT_MATCH (0), and vice versa (look in
+>>> ebt_ip.c).  The logic in ebtables.c (ebt_do_table() and
+>>> EBT_MATCH_ITERATE()) expect match functions to return 0 for matches.
+>>>
+>>> The patch at the end of this message fixes the problem, but seems a
+>>> little hacky to me.  Who's the right person to address this?
 >
-> Read the kconfig option before you enabled kms by default?
->
-> if not, you cannot just enable kms and have old userspace drivers
-> work, there is no
-> released userspace for this yet, as that would put the chicken before the egg.
+> Jan, could you have a look at this please?
 
-But latest xf86-intel-video git tree should work, shouldn't it? An explicit
-VideoRam line in xorg.conf is ignored btw.
+That seemds indeed so.
+Patch is both for 2.6.29-running and 2.6.28.
 
-Thanks,
+parent 1e8ca9528de86bdb2d73fbdfb27a10131bb5c593 (v2.6.29-rc1-21-g1e8ca95)
+commit cc46eb3e855b7c1f628e934e01b97f4f2642973e
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Mon Jan 12 08:40:22 2009 +0100
 
-Jan
+netfilter: ebtables: fix inversion in match code
 
+Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ net/bridge/netfilter/ebtables.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
+index fa108c4..9f46235 100644
+--- a/net/bridge/netfilter/ebtables.c
++++ b/net/bridge/netfilter/ebtables.c
+@@ -79,7 +79,7 @@ static inline int ebt_do_match (struct ebt_entry_match *m,
+ {
+ 	par->match     = m->u.match;
+ 	par->matchinfo = m->data;
+-	return m->u.match->match(skb, par);
++	return m->u.match->match(skb, par) ? EBT_MATCH : EBT_NOMATCH;
+ }
+ 
+ static inline int ebt_dev_check(char *entry, const struct net_device *device)
 -- 
-Jan Dittmer <jdi@l4x.org>
+# Created with git-export-patch
