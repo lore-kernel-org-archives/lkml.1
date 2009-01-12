@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZALWYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZALWZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbZALWYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZALWYN
+	id S1758190AbZALWZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZALWZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:24:13 -0500
-Received: from ottmail.xandros.com ([142.46.212.35]:42032 "EHLO
-	ottmail.xandros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbZALWYM (ORCPT
+	Mon, 12 Jan 2009 17:25:15 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47056 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbZALWZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:24:12 -0500
-X-Greylist: delayed 707 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 17:24:12 EST
-Date: Mon, 12 Jan 2009 17:11:54 -0500
-From: Woody Suwalski <woodys@xandros.com>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-cc: Matthias Kaehlcke <matthias@kaehlcke.net>, linux-kernel@vger.kernel.org
-Message-ID: <496BC02A.2020402@xandros.com>
-In-Reply-To: <496B597A.7020807@lougher.demon.co.uk>
-References: <20090112140822.GB23365@traven>
-References: <496B597A.7020807@lougher.demon.co.uk>
-Subject: Re: [BUG?] SQUASHFS error: Major/Minor mismatch
-x-scalix-Hops: 1
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Mon, 12 Jan 2009 17:25:13 -0500
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Date: Mon, 12 Jan 2009 23:24:06 +0100
+Message-Id: <1231799107-20136-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
+References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII";
-	format="flowed"
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+Subject: [PATCH] move acornfb's probe function to .devinit.text
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Lougher wrote:
-> Matthias Kaehlcke wrote:
->> i get the following error when trying to mount a squashfs partition on
->> an ARM system (edb9302) with linux 2.6.29-rc1:
->>
->> mount /dev/mtdblock6 /mnt/
->> SQUASHFS error: Major/Minor mismatch, older Squashfs 3.1 filesystems
->> are unsupported
->> mount: mounting /dev/mtdblock6 on /mnt/ failed: Invalid argument
->>
->> the image has been created using mksquashfs v3.4:
->>
->> mksquashfs . /tmp/rootfs.squfs -le -noappend
->>
->
-> You have to use the latest version of Mksquashfs in CVS available
-> from http://squashfs.org.
->
-> git-cvsimport -v -d 
-> :pserver:anonymous@squashfs.cvs.sourceforge.net:/cvsroot/squashfs 
-> squashfs
->
-> Phillip
->
-Does not look good! I have squashfs images which work OK in 3.3 and 3.4, 
-but now I try to boot 2.6.29-rc1 and it can not mount my squashfs root 
-partition!
-Does it mean that squashfs4 is not backward-compatible? If so - I can 
-not use it - all my images are generated on 3.3 .. 3.4...
+A pointer to acornfb_probe is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
-Woody
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/acornfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 61c3d3f..19e4b21 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -1259,7 +1259,7 @@ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
+ 	printk("acornfb: freed %dK memory\n", mb_freed);
+ }
+ 
+-static int __init acornfb_probe(struct platform_device *dev)
++static int __devinit acornfb_probe(struct platform_device *dev)
+ {
+ 	unsigned long size;
+ 	u_int h_sync, v_sync;
 -- 
-Woody Suwalski, Xandros, Ottawa, Canada, 1-613-842-3498 x414
+1.5.6.5
 
