@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZALOBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZALOBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbZALOBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZALN7h
+	id S1756130AbZALOBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZALNzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 08:59:37 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:49306 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756555AbZALN7f (ORCPT
+	Mon, 12 Jan 2009 08:55:15 -0500
+Received: from p02c12o141.mxlogic.net ([208.65.145.74]:42364 "EHLO
+	p02c12o141.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbZALNzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 08:59:35 -0500
-Subject: Re: Btrfs for mainline
-From: Chris Mason <chris.mason@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>
-In-Reply-To: <20090111153437.b069d38d.akpm@linux-foundation.org>
-References: <1230722935.4680.5.camel@think.oraclecorp.com>
-	 <20090111153437.b069d38d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 08:58:50 -0500
-Message-Id: <1231768730.17356.0.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 12 Jan 2009 08:55:13 -0500
+Message-ID: <496B4BBE.5040701@steeleye.com>
+Date: Mon, 12 Jan 2009 08:55:10 -0500
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: do not allow two nbd-clients at same time
+References: <20081208213542.GA10134@elf.ucw.cz> <20081208225758.GA2872@elf.ucw.cz> <20090112110322.GA2001@elf.ucw.cz>
+In-Reply-To: <20090112110322.GA2001@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.496B4C9E.003D:SCFSTAT928724,ss=1,fgs=0
+X-OriginalArrivalTime: 12 Jan 2009 13:55:11.0116 (UTC) FILETIME=[62BFFCC0:01C974BD]
+X-Spam: [F=0.2000000000; S=0.200(2008120801)]
+X-MAIL-FROM: <paul.clements@steeleye.com>
+X-SOURCE-IP: [207.43.68.209]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-11 at 15:34 -0800, Andrew Morton wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12435
-> 
-> Congratulations ;)
+Pavel Machek wrote:
+> Two nbd-clients at same time are bad idea, and cause WARN_ON from nbd
+> in 2.6.28-rc7 from sysfs_add_one. This simply prevents that from
+> happening.
 
-Rejected documented, that's the best buzilla tag ever ;)
+Thanks for this. But I think we also need the following:
+
+--- drivers/block/nbd.c        2008-12-24 18:26:37.000000000 -0500
++++ drivers/block/nbd.c 2009-01-12 08:50:17.000000000 -0500
+@@ -406,6 +406,7 @@ static int nbd_do_it(struct nbd_device *
+         ret = sysfs_create_file(&disk_to_dev(lo->disk)->kobj, 
+&pid_attr.attr);
+         if (ret) {
+                 printk(KERN_ERR "nbd: sysfs_create_file failed!");
++               lo->pid = 0;
+                 return ret;
+         }
+
+
+To zero out pid in the error case. Otherwise, it looks good.
 
 Thanks,
-Chris
-
+Paul
 
