@@ -1,168 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZALFDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZALFEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbZALFDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 00:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZALFDH
+	id S1753379AbZALFEw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 00:04:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZALFEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 00:03:07 -0500
-Received: from stinky.trash.net ([213.144.137.162]:55456 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZALFDD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 00:03:03 -0500
-Message-ID: <496ACEF8.2030605@trash.net>
-Date: Mon, 12 Jan 2009 06:02:48 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Mon, 12 Jan 2009 00:04:44 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51411 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750852AbZALFEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 00:04:43 -0500
+Message-ID: <496ACF74.1060602@cn.fujitsu.com>
+Date: Mon, 12 Jan 2009 13:04:52 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Dave Jones <davej@redhat.com>, Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
-       Jan Engelhardt <jengelh@medozas.de>, David Miller <davem@davemloft.net>,
-       ajax@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH] net: Remove a noisy printk
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu> <20081214200353.GA2994@redhat.com> <200812191151.55607.rusty@rustcorp.com.au>
-In-Reply-To: <200812191151.55607.rusty@rustcorp.com.au>
-Content-Type: multipart/mixed;
- boundary="------------010905040301040309060905"
+To: Greg KH <gregkh@suse.de>
+CC: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org, corbet@lwn.net
+Subject: Re: Who wrote 2.6.28
+References: <496224D7.2030109@cn.fujitsu.com> <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com> <20090109.141124.154196743.davem@davemloft.net> <20090110213121.GF31579@mit.edu> <20090110220004.GA5875@suse.de> <496AA506.20900@cn.fujitsu.com> <20090112040927.GA26742@suse.de>
+In-Reply-To: <20090112040927.GA26742@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010905040301040309060905
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Rusty Russell wrote:
-> On Monday 15 December 2008 06:33:53 Dave Jones wrote:
->> On Sun, Dec 14, 2008 at 06:09:17PM +0100, Jozsef Kadlecsik wrote:
->>  > In a >normal< system one usually does not use raw sockets. So if a root 
->>  > process do use raw socket, at least netfilter sends a notification and 
->>  > there's a chance that someone take notice it by checking the kernel logs.
->>
->> 'normal' systems are irrelevant here. This message is triggerable remotely.
+Greg KH said the following on 2009-1-12 12:09:
+> On Mon, Jan 12, 2009 at 10:03:50AM +0800, Wang Chen wrote:
+>>> If you look at the tool that Jon wrote, and the data files that I keep
+>>> up to date, this is already handled there.
+>>>
+>>> thanks,
+>>>
+>> Greg, I've used your gitdm-config-2.6. And don't see any update, where should
+>> I find your latest work?
 > 
-> I don't think it can be.  This is for truncated locally-generated outgoing
-> packets, which can only happen when root is playing with raw sockets.
+> No, I haven't, sorry.  I need to push out a new update soon.  Hm,
+> gitdm-config?  Did I release that?  If so, where?
+> 
 
-Yes, it can only be triggered locally by root.
-
-> As you can probably tell, I was the one who wrote this printk :)  IMHO,
-> one reasonable complaint is sufficient to have it removed, so just remove
-> it.  If anyone thinks it's valuable, put a static counter < 5 around it
-> and add pid/comm info.
-
-I've queued this patch to remove it.
-
-
---------------010905040301040309060905
-Content-Type: text/x-patch;
- name="01.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="01.diff"
-
-commit ea1926cabd0076846119a7e10f29070907fc296c
-Author: Patrick McHardy <kaber@trash.net>
-Date:   Mon Jan 12 06:01:48 2009 +0100
-
-    netfilter: remove "happy cracking" message
-    
-    Don't spam logs for locally generated short packets. these can only
-    be generated by root.
-    
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
-
-diff --git a/net/ipv4/netfilter/iptable_filter.c b/net/ipv4/netfilter/iptable_filter.c
-index c922431..52cb693 100644
---- a/net/ipv4/netfilter/iptable_filter.c
-+++ b/net/ipv4/netfilter/iptable_filter.c
-@@ -93,13 +93,8 @@ ipt_local_out_hook(unsigned int hook,
- {
- 	/* root is playing with raw sockets. */
- 	if (skb->len < sizeof(struct iphdr) ||
--	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
--		if (net_ratelimit())
--			printk("iptable_filter: ignoring short SOCK_RAW "
--			       "packet.\n");
-+	    ip_hdrlen(skb) < sizeof(struct iphdr))
- 		return NF_ACCEPT;
--	}
--
- 	return ipt_do_table(skb, hook, in, out,
- 			    dev_net(out)->ipv4.iptable_filter);
- }
-diff --git a/net/ipv4/netfilter/iptable_mangle.c b/net/ipv4/netfilter/iptable_mangle.c
-index 69f2c42..3929d20 100644
---- a/net/ipv4/netfilter/iptable_mangle.c
-+++ b/net/ipv4/netfilter/iptable_mangle.c
-@@ -132,12 +132,8 @@ ipt_local_hook(unsigned int hook,
- 
- 	/* root is playing with raw sockets. */
- 	if (skb->len < sizeof(struct iphdr)
--	    || ip_hdrlen(skb) < sizeof(struct iphdr)) {
--		if (net_ratelimit())
--			printk("iptable_mangle: ignoring short SOCK_RAW "
--			       "packet.\n");
-+	    || ip_hdrlen(skb) < sizeof(struct iphdr))
- 		return NF_ACCEPT;
--	}
- 
- 	/* Save things which could affect route */
- 	mark = skb->mark;
-diff --git a/net/ipv4/netfilter/iptable_raw.c b/net/ipv4/netfilter/iptable_raw.c
-index 8faebfe..7f65d18 100644
---- a/net/ipv4/netfilter/iptable_raw.c
-+++ b/net/ipv4/netfilter/iptable_raw.c
-@@ -65,12 +65,8 @@ ipt_local_hook(unsigned int hook,
- {
- 	/* root is playing with raw sockets. */
- 	if (skb->len < sizeof(struct iphdr) ||
--	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
--		if (net_ratelimit())
--			printk("iptable_raw: ignoring short SOCK_RAW "
--			       "packet.\n");
-+	    ip_hdrlen(skb) < sizeof(struct iphdr))
- 		return NF_ACCEPT;
--	}
- 	return ipt_do_table(skb, hook, in, out,
- 			    dev_net(out)->ipv4.iptable_raw);
- }
-diff --git a/net/ipv4/netfilter/iptable_security.c b/net/ipv4/netfilter/iptable_security.c
-index 36f3be3..a52a35f 100644
---- a/net/ipv4/netfilter/iptable_security.c
-+++ b/net/ipv4/netfilter/iptable_security.c
-@@ -96,12 +96,8 @@ ipt_local_out_hook(unsigned int hook,
- {
- 	/* Somebody is playing with raw sockets. */
- 	if (skb->len < sizeof(struct iphdr)
--	    || ip_hdrlen(skb) < sizeof(struct iphdr)) {
--		if (net_ratelimit())
--			printk(KERN_INFO "iptable_security: ignoring short "
--			       "SOCK_RAW packet.\n");
-+	    || ip_hdrlen(skb) < sizeof(struct iphdr))
- 		return NF_ACCEPT;
--	}
- 	return ipt_do_table(skb, hook, in, out,
- 			    dev_net(out)->ipv4.iptable_security);
- }
-diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-index b2141e1..4beb04f 100644
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -145,11 +145,8 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
- {
- 	/* root is playing with raw sockets. */
- 	if (skb->len < sizeof(struct iphdr) ||
--	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
--		if (net_ratelimit())
--			printk("ipt_hook: happy cracking.\n");
-+	    ip_hdrlen(skb) < sizeof(struct iphdr))
- 		return NF_ACCEPT;
--	}
- 	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
- }
- 
-
---------------010905040301040309060905--
+Here
+http://lwn.net/images/gitdm/
