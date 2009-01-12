@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbZALWc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbZALWdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbZALWc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbZALW1e
+	id S1760082AbZALWdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbZALW1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:27:34 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49033 "EHLO
+	Mon, 12 Jan 2009 17:27:38 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49040 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758811AbZALW1c (ORCPT
+	with ESMTP id S1758980AbZALW1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:27:32 -0500
+	Mon, 12 Jan 2009 17:27:37 -0500
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:24:25 +0100
-Message-Id: <1231799107-20136-20-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Mon, 12 Jan 2009 23:24:26 +0100
+Message-Id: <1231799107-20136-21-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
 References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
@@ -23,7 +23,7 @@ Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move h1940-leds's probe function to .devinit.text
+Subject: [PATCH] move hgafb's probe function to .devinit.text
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
@@ -31,7 +31,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to h1940leds_probe is passed to the core via
+A pointer to hgafb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -43,21 +43,21 @@ from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/leds/leds-h1940.c |    2 +-
+ drivers/video/hgafb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/leds/leds-h1940.c b/drivers/leds/leds-h1940.c
-index 11b77a7..1aa46a3 100644
---- a/drivers/leds/leds-h1940.c
-+++ b/drivers/leds/leds-h1940.c
-@@ -104,7 +104,7 @@ static struct led_classdev h1940_blueled = {
- 	.default_trigger	= "h1940-bluetooth",
- };
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index 0129c04..db9b785 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -551,7 +551,7 @@ static struct fb_ops hgafb_ops = {
+ 	 *  Initialization
+ 	 */
  
--static int __init h1940leds_probe(struct platform_device *pdev)
-+static int __devinit h1940leds_probe(struct platform_device *pdev)
+-static int __init hgafb_probe(struct platform_device *pdev)
++static int __devinit hgafb_probe(struct platform_device *pdev)
  {
- 	int ret;
+ 	struct fb_info *info;
  
 -- 
 1.5.6.5
