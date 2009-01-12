@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZALMAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZALMCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbZALMAh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 07:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZALMAY
+	id S1753815AbZALMCz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 07:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZALMCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 07:00:24 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:53521 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751778AbZALMAW (ORCPT
+	Mon, 12 Jan 2009 07:02:47 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:21688 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752105AbZALMCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 07:00:22 -0500
-Date: Mon, 12 Jan 2009 11:59:49 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: dtor@mail.ru, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: gpio_keys: request_irq with level triggered flags
-Message-ID: <20090112115949.GP12431@fluff.org.uk>
-References: <5d5443650901120338h5cfbb102k6459938d1a6f110@mail.gmail.com>
+	Mon, 12 Jan 2009 07:02:46 -0500
+Message-ID: <496B3105.6030107@gentoo.org>
+Date: Mon, 12 Jan 2009 12:01:09 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090101)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d5443650901120338h5cfbb102k6459938d1a6f110@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>, klausman@gentoo.org,
+       rth@twiddle.net
+Subject: Re: cant compile on alpha with gcc-4.3 and CONFIG_ALPHA_NAUTILUS
+References: <49688C67.5050502@gentoo.org> <20090111210532.GA1641@jurassic.park.msu.ru>
+In-Reply-To: <20090111210532.GA1641@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=9jjR1oMCFskA:10 a=vxFckkwZ0Y8A:10 a=zEchxxm6Pp8P_IKT8l0A:9 a=TdNDaFbkBhLkypn4nv5MW8JhgXAA:4 a=csDljm-qqwUA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 05:08:44PM +0530, Trilok Soni wrote:
-> Hi Dmitry,
-> 
-> >From the gpio_keys.c, I can see that request_irq is assuming all the
-> gpio line interrupts to be edge triggered one, but what if we have
-> level triggered interrupts? Doesn't this flags need to come from
-> platform data hooks too? So, that we can specify either
-> (IRQF_TRIGGER_RISING |  IRQF_TRIGGER_FALLING ) or (IRQF_TRIGGER_HIGH |
-> IRQF_TRIGGER_LOW) based on the platform data?
+Ivan Kokshaysky wrote:
+> Your patch looks fine, but there is simpler fix which makes the compiler
+> to optimize problematic code away on systems with NR_IRQS <= 16.
 
-If you are going to change to level triggered IRQs, any active IRQs
-will have to be masked until the key is release, otherwise the IRQ
-handler will keep being re-entered whilst the IRQ is active.
+Yes, I guess that works too. Would you like me to submit that to Andrew 
+or are you going to take care of it?
 
-> 
-> -- 
-> ---Trilok Soni
-> http://triloksoni.wordpress.com
-> http://www.linkedin.com/in/triloksoni
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+cheers
+Daniel
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
