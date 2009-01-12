@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZALB5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZALCAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbZALB5b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALB5T
+	id S1754422AbZALCAK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 21:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALB75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:57:19 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:44135 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZALB5S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:57:18 -0500
-Date: Mon, 12 Jan 2009 01:56:20 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090112015620.GA6428@shareable.org>
-References: <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com> <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain> <20090111005458.GA5363@elte.hu>
+	Sun, 11 Jan 2009 20:59:57 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:55477 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZALB74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:59:56 -0500
+Date: Sun, 11 Jan 2009 17:59:54 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
+Message-ID: <20090112015954.GC6864@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere> <20090111051604.GF7061@linux.vnet.ibm.com> <496A982E.3020103@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090111005458.GA5363@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <496A982E.3020103@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> If it's used once in a single .c file it should be inlined even if
-> it's large.
+On Mon, Jan 12, 2009 at 09:09:02AM +0800, Li Zefan wrote:
+> >> The debugfs and seqfile handling and handled in the statistical
+> >> tracing engine.
+> >>
+> >> You just have to provide an iterator for your stat entries through two callbacks:
+> >>
+> >> _ stat_start() -> gives the first entry
+> >> _ stat_next() -> iterates over the next entry
+> >>
+> >> And an output callback
+> >>
+> >> _ stat_show() -> print one entry from your stat list
+> >>
+> >> And two optional things:
+> >>
+> >> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
+> >> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
+> >>
+> >> The last thing you need is to give a name to your trace file.
+> >> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
+> >> of your stats.
+> >>
+> >> It is currently used by the branch tracer, and by a pending patch for a new workqueue
+> >> tracer which will provide you a simple example.
+> >>
+> >> If you have any question about how to use it, don't hesitate to ask.
+> > 
+> > Li Zefan, is this something you would be willing to try?  Sounds like
+> > it might be a good addition.
+> 
+> Sure, I'll try. :)
 
-As Linus has pointed out, because of GCC not sharing stack among
-different inlined functions, the above is surprisingly not true.
+Very cool!  I look forward to seeing it!!!
 
-In kernel it's a problem due to raw stack usage.
-
-In userspace apps (where stack used is larger), inlining single-call
-functions could, paradoxically, run slower due to increased stack
-dcache pressure for some larger functions.
-
--- Jamie
+							Thanx, Paul
