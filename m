@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbZALDzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZALD6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753366AbZALDzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 22:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZALDyy
+	id S1753889AbZALD6y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 22:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbZALD6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 22:54:54 -0500
-Received: from mga10.intel.com ([192.55.52.92]:52867 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752151AbZALDyx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 22:54:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,250,1231142400"; 
-   d="scan'208";a="656277077"
-Message-ID: <496ABF01.50001@linux.intel.com>
-Date: Mon, 12 Jan 2009 03:54:41 +0000
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 11 Jan 2009 22:58:45 -0500
+Received: from thunk.org ([69.25.196.29]:60172 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752133AbZALD6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 22:58:44 -0500
+Date: Sun, 11 Jan 2009 22:58:35 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Josef Bacik <jbacik@redhat.com>, Akinobu Mita <akinobu.mita@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       adilger@sun.com, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] ext4: fix unhandled ext4_free_data allocation failure
+Message-ID: <20090112035835.GA16898@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>, Josef Bacik <jbacik@redhat.com>,
+	Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, adilger@sun.com,
+	linux-ext4@vger.kernel.org
+References: <20081223104016.GC7217@localhost.localdomain> <20081223142915.GA23303@unused.rdu.redhat.com> <961aa3350812231437x4debaf9byf230a63582561010@mail.gmail.com> <20090111020352.GA4285@localhost.localdomain> <20090111143942.GA28488@unused.rdu.redhat.com> <496A0648.9050100@redhat.com>
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()	while
- holding sb_lock
-References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com> <20090112023138.GD6428@shareable.org>
-In-Reply-To: <20090112023138.GD6428@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496A0648.9050100@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier wrote:
-> Arjan van de Ven wrote:
->>> 	- removing a million files and queuing all of the
->>> 	  deletes in the async queues....
->> the async code throttles at 32k outstanding.
->> Yes 32K is arbitrary, but if you delete  a million files fast, all but the 
->> first few thousand are
->> synchronous.
+On Sun, Jan 11, 2009 at 08:46:32AM -0600, Eric Sandeen wrote:
 > 
-> Hmm.
+> Well, this will now force a filesystem error (then remount-ro or panic
+> (or ignore) if the allocation fails.  I'm not sure that's better...?
 > 
-> If I call unlink() a thousand times and then call fsync() on the
-> parent directories covering files I've unlinked... I expect the
-> deletes to be committed to disk when the last fsync() has returned.  I
-> require that a crash and restart will not see the files.  Several
-> kinds of transactional software and even some shell scripts expect this.
-> 
-> Will these asynchronous deletes break the guaranteed
-> commit-of-the-delete provided by fsync() on the parent directory?
 
-3 things:
-1) removing the name from the directory and removing the data from disk are independent things.
-The former happens from unlink(), the later happens when the refcount hits 0 (eg no more openers nor
-any directory on disk referencing it). fsync() on a parent dir obviously only covers the first part,
-while only the 2nd part was made asynchronous.
-2) with the right synchronization point in fsync, it will still work out
-3) this code will be redone for 2.6.30; for 2.6.29 it is removed.
+Well, our choices basically are:
 
+1)  Force a filesystem error
+2)  Sleep and retry the allocation
+3)  Don't add the freed blocks to the list regions that mballoc should
+    be allowed to allocate from after the transaction commits.  This 
+    results in the blocks getting "leaked" until the filesystem is
+    mounted/unounted.
+
+						- Ted
