@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZALApT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZALAs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbZALApT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 19:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZALApA
+	id S1753374AbZALAs1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 19:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZALAsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 19:45:00 -0500
-Received: from hera.rbi.informatik.uni-frankfurt.de ([141.2.1.1]:50995 "EHLO
-	hera.rbi.informatik.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751378AbZALAo6 (ORCPT
+	Sun, 11 Jan 2009 19:48:19 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:65509 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbZALAsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 19:44:58 -0500
-X-Greylist: delayed 37300 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Jan 2009 19:44:57 EST
-From: Matthias Heinz <mheinz@informatik.uni-frankfurt.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
-Date: Sun, 11 Jan 2009 15:22:14 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       "Linux PM List" <linux-pm@lists.linux-foundation.org>,
-       "Linux SCSI List" <linux-scsi@vger.kernel.org>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
-In-Reply-To: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
+	Sun, 11 Jan 2009 19:48:18 -0500
+Date: Mon, 12 Jan 2009 01:48:16 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
+Message-ID: <20090112004816.GA13068@osiris.boeblingen.de.ibm.com>
+References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com> <8db1092f0901111215m5712caccvc0d2e5e7cb7e8f7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901111522.18056.mheinz@informatik.uni-frankfurt.de>
+In-Reply-To: <8db1092f0901111215m5712caccvc0d2e5e7cb7e8f7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, 11. Januar 2009 schrieb Rafael J. Wysocki:
-> If you know of any other unresolved regressions from 2.6.28, please let me
-> know either and I'll add them to the list.  Also, please let me know if any
-> of the entries below are invalid.
+On Sun, Jan 11, 2009 at 09:15:38PM +0100, Maciej Rutecki wrote:
+> 2009/1/11 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
+> > Hi
+> >
+> > I've booted and tested 2.6.29-rc1 (c59765042f53a79a7a65585042ff463b69cb248c)
+> >
+> > I've observed that suspend is unusable - it goes to sleep - the sleep
+> > LED is on. After few secs system turns on back itself - and stays in
+> > some frozen state
+> 
+> A have similar situation, one difference: I get blank screen during
+> resume from suspend to ram. Also sometimes, like You, system turns on
+> back itself.
+> 
+> [...]
+> 
+> > but most probably this is not very helpful - however it's kind of hard
+> > to bisect kernel, because patches in the transition from
+> > 2.6.28->2.6.29-rc1 usually caused a lot of unstable behavior on my
+> > T61.
+> 
+> The same. Suspend to disk die on this message:
+> http://www.unixy.pl/maciek/download/kernel/2.6.29-rc1/pc/img_0002.jpg
+> (this is during go to suspend to disk, NOT resume)
+> 
+> I try bisect, but I got many other problems, like this:
+> http://www.unixy.pl/maciek/download/kernel/2.6.29-rc1/pc/img_0003.jpg
+> 
+> So, I cannot finish bisect.
 
-Unresolved regressions
-----------------------
+The bug seen in img_0003.jpg is fixed with
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12174
-Subject		: No backlight control on Samsung x360
+a0e280e0f33f6c859a235fb69a875ed8f3420388
 
-I think this is a common bug on systems with a broken(?) bios, exposing wrong 
-driver names. With 2.6.27 it was at least possible to control the backlight 
-over the NVID interface.
+So you could continue bisecting if you would apply the patch, compile
+the kernel and test it, and revert the patch again before marking the
+kernel good/bad.
