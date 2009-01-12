@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZALLCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZALLIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbZALLCF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZALLBy
+	id S1753834AbZALLIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZALLIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:01:54 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41720 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbZALLBx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:01:53 -0500
-Date: Mon, 12 Jan 2009 12:04:00 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Paul.Clements@steeleye.com,
-       Andrew Morton <akpm@osdl.org>
-Subject: do not allow two nbd-clients at same time
-Message-ID: <20090112110322.GA2001@elf.ucw.cz>
-References: <20081208213542.GA10134@elf.ucw.cz> <20081208225758.GA2872@elf.ucw.cz>
+	Mon, 12 Jan 2009 06:08:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37216 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751023AbZALLIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:08:04 -0500
+Date: Mon, 12 Jan 2009 12:07:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@snapgear.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-m68k@vger.kernel.org, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig
+	can't build
+Message-ID: <20090112110739.GA17514@elte.hu>
+References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org> <20090112105942.GA10936@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081208225758.GA2872@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090112105942.GA10936@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Two nbd-clients at same time are bad idea, and cause WARN_ON from nbd
-in 2.6.28-rc7 from sysfs_add_one. This simply prevents that from
-happening.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-To reproduce:
+> We just did the exercise with sparc/sparc64 unification and if you 
+> forget the few times I broke sparc32 then it went well with only limited 
+> problems.
 
- cat /dev/zero | head -c 10000000 > /tmp/delme.fstest.fs
- nbd-server 9100 -l /anyone.can.connect > /tmp/delme.fstest.fs &
- sleep 1
- nbd-client localhost 9100 /dev/nd0 &
- nbd-client localhost 9100 /dev/nd0 &
+We also had the x86 unification finished in the past year which went very 
+well too, so i can only encourage similar efforts.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> One key factor why it went well was that patches were reviewed and 
+> applied within a few days whch is why I stresses that the maintainer 
+> needs spare time to support the effort.
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 78e22d7..0da741e 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -413,6 +410,7 @@ static int nbd_do_it(struct nbd_device *
- 		nbd_end_request(req);
- 
- 	sysfs_remove_file(&disk_to_dev(lo->disk)->kobj, &pid_attr.attr);
-+	lo->pid = 0;
- 	return 0;
- }
- 
-@@ -627,5 +626,7 @@ static int nbd_ioctl(struct block_device
- 		return 0;
- 	case NBD_DO_IT:
-+		if (lo->pid)
-+			return -EBUSY;
- 		if (!lo->file)
- 			return -EINVAL;
- 		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+Yes.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Unification is the Linux meme of the century i guess ;-)
+
+There's two main unification themes:
+
+ - per arch unification (x86, powerpc, sparc
+
+ - cross-arch unification: the moving of useful stuff out of architectures 
+   into the core kernel (genirq, gtod, etc.).
+
+	Ingo
