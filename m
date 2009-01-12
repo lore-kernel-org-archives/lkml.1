@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbZALWfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbZALWfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760545AbZALWfR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758414AbZALW2H
+	id S1757227AbZALWfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758510AbZALW2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:28:07 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49078 "EHLO
+	Mon, 12 Jan 2009 17:28:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49088 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758492AbZALW2F (ORCPT
+	with ESMTP id S1757959AbZALW2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:28:05 -0500
+	Mon, 12 Jan 2009 17:28:10 -0500
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:24:31 +0100
-Message-Id: <1231799107-20136-26-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Mon, 12 Jan 2009 23:24:32 +0100
+Message-Id: <1231799107-20136-27-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
 References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
@@ -23,7 +23,7 @@ Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move jornada_ssp's probe function to .devinit.text
+Subject: [PATCH] move ks8695_wdt's probe function to .devinit.text
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
 X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
@@ -31,7 +31,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to jornada_ssp_probe is passed to the core via
+A pointer to ks8695wdt_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -43,21 +43,21 @@ from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/arm/mach-sa1100/jornada720_ssp.c |    2 +-
+ drivers/watchdog/ks8695_wdt.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
-index 28cf369..ce4c6cb 100644
---- a/arch/arm/mach-sa1100/jornada720_ssp.c
-+++ b/arch/arm/mach-sa1100/jornada720_ssp.c
-@@ -130,7 +130,7 @@ void jornada_ssp_end(void)
+diff --git a/drivers/watchdog/ks8695_wdt.c b/drivers/watchdog/ks8695_wdt.c
+index 0b798fd..e71dfad 100644
+--- a/drivers/watchdog/ks8695_wdt.c
++++ b/drivers/watchdog/ks8695_wdt.c
+@@ -220,7 +220,7 @@ static struct miscdevice ks8695wdt_miscdev = {
+ 	.fops		= &ks8695wdt_fops,
  };
- EXPORT_SYMBOL(jornada_ssp_end);
  
--static int __init jornada_ssp_probe(struct platform_device *dev)
-+static int __devinit jornada_ssp_probe(struct platform_device *dev)
+-static int __init ks8695wdt_probe(struct platform_device *pdev)
++static int __devinit ks8695wdt_probe(struct platform_device *pdev)
  {
- 	int ret;
+ 	int res;
  
 -- 
 1.5.6.5
