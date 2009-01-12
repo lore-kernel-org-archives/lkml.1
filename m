@@ -1,70 +1,36 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZALVSs (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 12 Jan 2009 16:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZALVSi
+	id S1756793AbZALVoB (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 12 Jan 2009 16:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZALVnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:18:38 -0500
-Received: from delivery-a-02.cablevision.net.mx ([200.77.170.2]:17627 "EHLO
-	delivery-a-02.cablevision.net.mx" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752689AbZALVSh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:18:37 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AocOAJNCa0kKAwFr/2dsb2JhbAAIgT8vEIVzhHsBXsYJhW+BIA
-X-IronPort-AV: E=Sophos;i="4.37,254,1231135200"; 
-   d="scan'208";a="272968337"
-Date: Mon, 12 Jan 2009 15:18:05 -0600
-From: Curso Sky Running <907655443@cablevision.net.mx>
-Subject: =?windows-1252?Q?=DAltimos_Lugares._Enero_25._Nevado_de_Toluca?=
-To: Clasificados <907655443@cablevision.net.mx>
-Message-id: <415-22009111221185281@user-b01ab84ab0>
-MIME-version: 1.0
-Content-type: text/plain; charset=windows-1252
-Content-transfer-encoding: 8BIT
+	Mon, 12 Jan 2009 16:43:50 -0500
+Received: from mxr3.wow.lk ([202.124.160.46]:40958 "EHLO mxr3.wow.lk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbZALVnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 16:43:49 -0500
+X-Greylist: delayed 29148 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 16:43:48 EST
+Message-ID: <ee55cc8a24a2f573955894ec8041bdde.squirrel@webmail.wow.lk>
+Date: Tue, 13 Jan 2009 01:23:22 +0400 (RET)
+Subject: HELLO
+From: "prudent" <prudent_mygirl@yahoo.com>
+Reply-To: prudent_mygirl@yahoo.com
+User-Agent: SquirrelMail/1.4.17
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757137AbZALVSs@vger.kernel.org>
-
-Curso Sky Running
-
-Enero 25. Nevado de Toluca
-
-Últimos Lugares
-
-Inscripción ONLINE con 20% Descuento, hasta Enero 15.
-
-http://www.deporte6am.com
-
-Tel. 51350564
-
-----------------------------------------------------
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756793AbZALVoB@vger.kernel.org>
 
 
-CLASIFICADOS GRATIS
-
-Por Deportistas, para Deportistas.
-
-http://www.deporte6am.com/clasificados
-
-INSTRUCCIOINES
-1. Dar click en POST AD.
-2. Revisar su bandeja de entrada de e-mails.
-3. Activar clasificado en el e-mail que le llegará automaticamente.
-
-
--------------------------------------
-
-
-Atentamente
-Deporte6am.com
-Tel. 51350564
-Mexico DF
-
-
-
-remover de lista
-nuevomtb100k@yahoo.com
-
-
+Hello,
+How are you doing today hope fine.My name is prudent.I came accross your profile  here
+()and after going through it l found you so intresting hope you don't mind.You can
+contact me with this email addresse so that l can send you my pic mail to
+(prudent_mygirl@yahoo.com) Hope to hear from you soon, Have a nice day & stay blessed.
+prudent
 
