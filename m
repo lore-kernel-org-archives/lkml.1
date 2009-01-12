@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZALUao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZALUb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbZALUao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbZALUaa
+	id S1757734AbZALUb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 15:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbZALUbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:30:30 -0500
-Received: from yop.chewa.net ([91.121.105.214]:37694 "EHLO yop.chewa.net"
+	Mon, 12 Jan 2009 15:31:16 -0500
+Received: from mga01.intel.com ([192.55.52.88]:58477 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757411AbZALUa3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:30:29 -0500
-From: =?iso-8859-1?q?R=E9mi_Denis-Courmont?= <rdenis@simphalempin.com>
-Organization: Remlab.net
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: RFC: Network privilege separation.
-Date: Mon, 12 Jan 2009 22:30:25 +0200
-User-Agent: KMail/1.9.9
-Cc: Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <200901122215.27842.rdenis@simphalempin.com> <20090112203931.GD23848@one.firstfloor.org>
-In-Reply-To: <20090112203931.GD23848@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	id S1753303AbZALUbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 15:31:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,254,1231142400"; 
+   d="scan'208";a="421738589"
+Date: Mon, 12 Jan 2009 12:31:14 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       Daniel.Beschorner@facton.com, pageexec@freemail.hu, stable@kernel.org
+Subject: [patch] x86: fix PTE corruption issue while mapping RAM using /dev/mem
+Message-ID: <20090112203114.GA13157@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901122230.25976.rdenis@simphalempin.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 12 janvier 2009 22:39:31 Andi Kleen, vous avez écrit :
-> > What's the point of writing a parser (that could also have bugs) when the
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: fix PTE corruption issue while mapping RAM using /dev/mem 
+
+Beschorner Daniel reported:
+> hwinfo problem since 2.6.28, showing this in the oops:
+> 	Corrupted page table at address 7fd04de3ec00
+
+PaX Team reported a regression with this commit:
+
+>	commit 9542ada803198e6eba29d3289abb39ea82047b92
+>	Author: Suresh Siddha <suresh.b.siddha@intel.com>
+>	Date:   Wed Sep 24 08:53:33 2008 -0700
 >
-> Sorry you lost me. What do you mean with parser here?
->
-> > kernel can do it?
->
-> And what does it have to do with the kernel?
+>	    x86: track memtype for RAM in page struct
 
-The parser at the other end of the pipe. The more intricate the over-the-pipe 
-protocol is, the more likely it is to be buggy and the security scheme to 
-break.
+This commit breaks mapping any RAM page through /dev/mem, as the
+reserve_memtype() was not initializing the return attribute type and as such
+corrupting the PTE entry that was setup with the return attribute type.
 
-> > A normal DVD would be over 30 megabytes per seconds once decoded, just
-> > for the
->
-> On many modern systems 30MB/s copies is nothing ... Also in this
-> case they tend to be cache hot, which makes them much cheaper.
+Because of this bug, application mapping this RAM page through /dev/mem
+will die with "Corrupted page table at address xxxx" message in the kernel
+log and also the kernel identity mapping which maps the underlying RAM
+page gets converted to UC.
 
-> Yes it would be somewhat slower, but if it avoids a couple of security
-> updates that would be probably worth it.
+Fix this by initializing the return attribute type before calling
+reserve_ram_pages_type()
 
-If codecs did not care about performance, they'd be written in some high-level 
-language that could easily be sandboxed by its own VM.
+Reported-by: PaX Team <pageexec@freemail.hu>
+Reported-and-tested-by: Beschorner Daniel <Daniel.Beschorner@facton.com>
+Tested-and-Acked-by: PaX Team <pageexec@freemail.hu>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: <stable@kernel.org>
+---
 
-As the guy who's been dealing with VLC security issues for the past two years, 
-I have to say, I am in no way interested in SECCOMP as it _currently_ is.
-
--- 
-Rémi Denis-Courmont
-http://www.remlab.net/
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 85cbd3c..d52ba1a 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -333,6 +333,9 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 					      req_type & _PAGE_CACHE_MASK);
+ 	}
+ 
++	if (new_type)
++		*new_type = actual_type;
++
+ 	is_range_ram = pagerange_is_ram(start, end);
+ 	if (is_range_ram == 1)
+ 		return reserve_ram_pages_type(start, end, req_type, new_type);
+@@ -347,9 +350,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 	new->end	= end;
+ 	new->type	= actual_type;
+ 
+-	if (new_type)
+-		*new_type = actual_type;
+-
+ 	spin_lock(&memtype_lock);
+ 
+ 	if (cached_entry && start >= cached_start)
