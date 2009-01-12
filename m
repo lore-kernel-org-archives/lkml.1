@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZALBn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZALBol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbZALBn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZALBnQ
+	id S1754087AbZALBol (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 20:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZALBoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:43:16 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:37588 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZALBnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:43:15 -0500
-Subject: Re: [PATCH] jbd2: fix wrong use of do_div
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-ext4 <linux-ext4@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <1231701393.17759.30.camel@odie.local>
-References: <1231701393.17759.30.camel@odie.local>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 12 Jan 2009 02:44:40 +0100
-Message-Id: <1231724680.3094.3.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 11 Jan 2009 20:44:30 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:42629 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZALBo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:44:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=mBUO5gsYiDblS0iN6qMfTNFw9Ric1xIHatA02lR1Oz7Z5Zeve4A1MnoM/O11DgRUxw
+         WaTa7HwKcLjml4WmuibshF8DoHQTi7nY2bQ4QkUygutnrRVAiX157eTGIAN/P9bU7iVg
+         u+MPhVVLAwROWGn00G1Z8Z75ejZvWa35AzHM4=
+Message-ID: <496AA076.8080205@gmail.com>
+Date: Mon, 12 Jan 2009 10:44:22 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Soeren Sonnenburg <kernel@nn7.de>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: Do ICH10+AHCI-driver support port-multiplying on a eSATA port?
+References: <1231513287.2631.68.camel@localhost>
+In-Reply-To: <1231513287.2631.68.camel@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I got a simpler version 2 of the patch here]
+Soeren Sonnenburg wrote:
+> Dear all,
+> 
+> I am trying to connect an external 2-disk case (eCube II  see
+> http://www.one-tech.com/EN/htm_ecube.htm) to an ICH10 skyburg dp45sg
+> board via eSATA. As the case requires a port-multiplying sata card, I am
+> wondering if ich10+ahci support it?
+> 
+> At least with 2.6.27.10 I am seeing only one drive. Connecting the case
+> via usb gives two (dmesg parts below).
+> 
+> So is port multiplying not yet available for ahci or not at all or does
+> the the ich10 not support it and I should rather try a sil 3132 or so?
 
-the following warning:
+ahci on ich10 can do port multiplier.  I can't tell from the web page
+but if it's one of simg5723 and its friends, you'll need to put it
+into JBOD mode using the dip switch or whatever.
 
-fs/jbd2/journal.c: In function ‘jbd2_seq_info_show’:
-fs/jbd2/journal.c:850: warning: format ‘%lu’ expects type ‘long
-unsigned int’, but argument 3 has type ‘uint32_t’
-
-is caused by wrong usage of do_div that modifies the dividend in-place
-and returns the quotient. So not only would an incorrect value be
-displayed, but s->journal->j_average_commit_time would also be changed
-to a wrong value!
-
-Fix it by using div_u64 instead.
-
-Signed-off-by: Simon Holm Thøgersen <odie@cs.aau.dk>
----
- fs/jbd2/journal.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index 5667530..eb34300 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -37,10 +37,10 @@
- #include <linux/proc_fs.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-+#include <linux/math64.h>
- 
- #include <asm/uaccess.h>
- #include <asm/page.h>
--#include <asm/div64.h>
- 
- EXPORT_SYMBOL(jbd2_journal_start);
- EXPORT_SYMBOL(jbd2_journal_restart);
-@@ -846,8 +846,8 @@ static int jbd2_seq_info_show(struct seq_file *seq,
-void *v)
- 	    jiffies_to_msecs(s->stats->u.run.rs_flushing / s->stats->ts_tid));
- 	seq_printf(seq, "  %ums logging transaction\n",
- 	    jiffies_to_msecs(s->stats->u.run.rs_logging / s->stats->ts_tid));
--	seq_printf(seq, "  %luus average transaction commit time\n",
--		   do_div(s->journal->j_average_commit_time, 1000));
-+	seq_printf(seq, "  %lluus average transaction commit time\n",
-+		   div_u64(s->journal->j_average_commit_time, 1000));
- 	seq_printf(seq, "  %lu handles per transaction\n",
- 	    s->stats->u.run.rs_handle_count / s->stats->ts_tid);
- 	seq_printf(seq, "  %lu blocks per transaction\n",
 -- 
-1.6.0.2.526.g5c283
-
+tejun
