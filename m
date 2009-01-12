@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZALOoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZALOog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbZALOoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZALOoG
+	id S1752375AbZALOog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZALOoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 09:44:06 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:51692 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbZALOoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 09:44:05 -0500
-Date: Mon, 12 Jan 2009 15:43:57 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Yauhen Kharuzhy <jekhor@gmail.com>, linux-kernel@vger.kernel.org,
-       Yauhen Kharuzhy <jekhor@gmail.com>
-Subject: Re: [PATCH] s3cmci: Fix hangup in do_pio_write()
-Message-ID: <20090112154357.4f4d4f48@mjolnir.drzeus.cx>
-In-Reply-To: <1230808144-11166-1-git-send-email-jekhor@gmail.com>
-References: <1230808144-11166-1-git-send-email-jekhor@gmail.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Jan 2009 09:44:22 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:61196 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbZALOoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 09:44:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Qsu5DwWB8HrJGAC2jHFb6TpvW502WBBsxB8UWv/QevkmSMEsc/qBTSnWn/fftfLA2A
+         slStdut2o/fnHK+fueJjtXEef4woZppS/t/NRJCNb99MBebCWY2qF6DBINewZbywrzfb
+         c13HbSu0MPWCDct0TMFbfiYH+RVitH6CDbA1I=
+Message-ID: <170fa0d20901120644g3f208430y46d129facbebb38b@mail.gmail.com>
+Date: Mon, 12 Jan 2009 09:44:17 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>
+Subject: Re: Online ext4 defragmention
+Cc: "Alex Buell" <alex.buell@munted.org.uk>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <20090112141539.GD21793@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090111134443.581cfc83@lithium.local.net>
+	 <20090111202838.GA29383@mit.edu>
+	 <170fa0d20901120539w4e3bbc03na39f01edde206d25@mail.gmail.com>
+	 <20090112141539.GD21793@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  1 Jan 2009 13:09:04 +0200
-Yauhen Kharuzhy <jekhor@gmail.com> wrote:
+On 1/12/09, Theodore Tso <tytso@mit.edu> wrote:
+> On Mon, Jan 12, 2009 at 08:39:33AM -0500, Mike Snitzer wrote:
+>  >
+>  > Hi Ted,
+>  >
+>  > Could you elaborate on which allocation patches you're referring to in
+>  > the ext4 patch queue (2.6.28-ext4-3?) ?
+>
+>
+> They haven't been implemented yet.  They've been discussed on the ext4
+>  mailing list, however.  Basically, the Orlov algorithm was disabled
+>  for flex_bg, and I want to optimize how directory blocks are allocated
+>  to hopefully speed up fsck times a tad bit more.  The design has been
+>  roughly worked out; but it's a matter of me finding time to code and
+>  test it...
 
-> This commit fixes the regression what was added by commit
-> 088a78af978d0c8e339071a9b2bca1f4cb368f30 "s3cmci: Support transfers
-> which are not multiple of 32 bits."
-> 
-> fifo_free() now returns amount of available space in FIFO buffer in
-> bytes. But do_pio_write() writes to FIFO 32-bit words. Condition for
-> return from cycle is (fifo_free() == 0), but when fifo has 1..3 bytes of
-> free space then this condition will never be true and system hangs.
-> 
-> This patch changes condition in the while() to (fifo_free() > 3).
-> 
-> Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
+Ah, that ext4 thread is here:
+http://kerneltrap.org/mailarchive/linux-ext4/2008/12/12/4403324
 
-Any objections here Ben? An Acked-by would be nice.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Thanks for clarifying,
+Mike
