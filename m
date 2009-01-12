@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZALLIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZALLJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZALLIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZALLIG
+	id S1754503AbZALLJK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZALLI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:08:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37216 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbZALLIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:08:04 -0500
-Date: Mon, 12 Jan 2009 12:07:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@snapgear.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
-       linux-m68k@vger.kernel.org, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig
-	can't build
-Message-ID: <20090112110739.GA17514@elte.hu>
-References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org> <20090112105942.GA10936@uranus.ravnborg.org>
+	Mon, 12 Jan 2009 06:08:56 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:6494 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbZALLIz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:08:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NGcpFeh7w6xJL6rs5nC0AEVNhLNcwJptG1y9mv/aMB7zOlacphWmwg5bdavlB01lWp
+         /RS5y21vQ+tsEqWaJkIgVZhV3lmm7CYHv4taATdO/2DYAQsgHm6Ywe2WECwyLJrCwDue
+         q99lGNpOxfgTJoK7rzph/PudG0SFUUKUhaq2o=
+Message-ID: <3f9a31f40901120308h32665bx9365c9b745138449@mail.gmail.com>
+Date: Mon, 12 Jan 2009 16:38:54 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: build breakage -- paravirt_{alloc,free}_ldt
+Cc: "Jiri Kosina" <jkosina@suse.cz>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org,
+       "Jaswinder Singh Rajput" <jaswinderrajput@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <3f9a31f40901120257m27a9b047kd8dcee2793467bb3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090112105942.GA10936@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <alpine.LNX.1.10.0901121121410.5377@jikos.suse.cz>
+	 <20090112105202.GF10405@elte.hu>
+	 <3f9a31f40901120257m27a9b047kd8dcee2793467bb3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 12, 2009 at 4:27 PM, Jaswinder Singh Rajput
+<jaswinderlinux@gmail.com> wrote:
+> On Mon, Jan 12, 2009 at 4:22 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Jiri Kosina <jkosina@suse.cz> wrote:
+>>
+>>> Hi,
+>>>
+>>> with Linus' tree (ae04d14015) doesn't build for me with
+>>>
+>>> arch/x86/kernel/ldt.c: In function 'alloc_ldt':
+>>> arch/x86/kernel/ldt.c:55: error: implicit declaration of function 'paravirt_alloc_ldt'
+>>> arch/x86/kernel/ldt.c:79: error: implicit declaration of function 'paravirt_free_ldt'
+>>>
+>>> Config on http://www.jikos.cz/jikos/junk/.config
+>>
+>> hm, it builds fine here with your config. Did .28 build fine for you? The
+>> only change to this file since .28 has been Jaswinder's "423a540: x86:
+>> ldt.c fix style problems".
+>>
+>
+> No, it is not because of my patch but I will check for the solution.
+>
+>
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+With your config I am also not getting any error with -tip tree:
 
-> We just did the exercise with sparc/sparc64 unification and if you 
-> forget the few times I broke sparc32 then it went well with only limited 
-> problems.
+  CC      arch/x86/kernel/dumpstack_64.o
+  CC      arch/x86/kernel/time_64.o
+  CC      arch/x86/kernel/ioport.o
+  CC      arch/x86/kernel/ldt.o
+  CC      arch/x86/kernel/dumpstack.o
 
-We also had the x86 unification finished in the past year which went very 
-well too, so i can only encourage similar efforts.
+Jiri, make clean and also check for -tip tree.
 
-> One key factor why it went well was that patches were reviewed and 
-> applied within a few days whch is why I stresses that the maintainer 
-> needs spare time to support the effort.
-
-Yes.
-
-Unification is the Linux meme of the century i guess ;-)
-
-There's two main unification themes:
-
- - per arch unification (x86, powerpc, sparc
-
- - cross-arch unification: the moving of useful stuff out of architectures 
-   into the core kernel (genirq, gtod, etc.).
-
-	Ingo
+Thanks,
+--
+JSR
