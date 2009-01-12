@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZALCAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZALCD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbZALCAK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 21:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALB75
+	id S1754510AbZALCD5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 21:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZALCDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:59:57 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55477 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZALB74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:59:56 -0500
-Date: Sun, 11 Jan 2009 17:59:54 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-Message-ID: <20090112015954.GC6864@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere> <20090111051604.GF7061@linux.vnet.ibm.com> <496A982E.3020103@cn.fujitsu.com>
+	Sun, 11 Jan 2009 21:03:46 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59710 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751578AbZALCDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 21:03:45 -0500
+Message-ID: <496AA506.20900@cn.fujitsu.com>
+Date: Mon, 12 Jan 2009 10:03:50 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496A982E.3020103@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Greg KH <gregkh@suse.de>
+CC: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org, corbet@lwn.net
+Subject: Re: Who wrote 2.6.28
+References: <496224D7.2030109@cn.fujitsu.com> <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com> <20090109.141124.154196743.davem@davemloft.net> <20090110213121.GF31579@mit.edu> <20090110220004.GA5875@suse.de>
+In-Reply-To: <20090110220004.GA5875@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 09:09:02AM +0800, Li Zefan wrote:
-> >> The debugfs and seqfile handling and handled in the statistical
-> >> tracing engine.
-> >>
-> >> You just have to provide an iterator for your stat entries through two callbacks:
-> >>
-> >> _ stat_start() -> gives the first entry
-> >> _ stat_next() -> iterates over the next entry
-> >>
-> >> And an output callback
-> >>
-> >> _ stat_show() -> print one entry from your stat list
-> >>
-> >> And two optional things:
-> >>
-> >> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
-> >> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
-> >>
-> >> The last thing you need is to give a name to your trace file.
-> >> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
-> >> of your stats.
-> >>
-> >> It is currently used by the branch tracer, and by a pending patch for a new workqueue
-> >> tracer which will provide you a simple example.
-> >>
-> >> If you have any question about how to use it, don't hesitate to ask.
-> > 
-> > Li Zefan, is this something you would be willing to try?  Sounds like
-> > it might be a good addition.
+Greg KH said the following on 2009-1-11 6:00:
+> On Sat, Jan 10, 2009 at 04:31:21PM -0500, Theodore Tso wrote:
+>> On Fri, Jan 09, 2009 at 02:11:24PM -0800, David Miller wrote:
+>>> From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+>>> Date: Fri, 9 Jan 2009 19:39:17 +0530
+>>>
+>>>> In http://remword.com/kps_result/2_6_29_whole_line.html
+>>>> Earlier I was using email address: Jaswinder Singh
+>>>> <jaswinder@infradead.org> (Unknown #25) and now I am using:
+>>>> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
+>>>>
+>>>> If possible can you link above two emails.
+>>> This reminds me that I noticed another one that needs linking,
+>>> shemminger@linux-foundation.org became shemminger@vyatta.com
+>> ... and most of the engineers listed as working for the Linux
+>> Foundation in the above-mentioned analysis don't....
 > 
-> Sure, I'll try. :)
 
-Very cool!  I look forward to seeing it!!!
+Thanks Ted and Greg.
 
-							Thanx, Paul
+Ted, when you said this, do you mean the page "all_whole.html"?
+If so, my explanation is that this page lists all the people who
+ever worked for TLF since 2.6.13 age.
+Is there any mistake?
+
+If you mean the page "2_6_29_whole.html".
+Here are only four people be listed:
+Stephen Hemminger <shemminger@vyatta.com> \\working for vyatta now?
+Theodore Ts'o <tytso@mit.edu>
+Linus Torvalds <torvalds@linux-foundation.org>
+Chris Wright <chrisw@osdl.org> \\redhat engineer
+
+I will fix that.
+
+> If you look at the tool that Jon wrote, and the data files that I keep
+> up to date, this is already handled there.
+> 
+> thanks,
+> 
+
+Greg, I've used your gitdm-config-2.6. And don't see any update, where should
+I find your latest work?
+
