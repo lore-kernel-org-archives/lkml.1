@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZALFeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZALFm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbZALFeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 00:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZALFeO
+	id S1753171AbZALFm7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 00:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZALFmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 00:34:14 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:59823 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbZALFeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 00:34:13 -0500
-Date: Mon, 12 Jan 2009 06:35:52 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Mark A. Miller" <mark@mirell.org>
-Cc: Bernd Petrovitsch <bernd@firmix.at>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Message-ID: <20090112053552.GA9061@uranus.ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com> <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net> <20090104030619.GA21466@linux-sh.org> <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com> <1231677939.3517.5.camel@gimli.at.home> <31014a580901111928u586e2246uccf370ff941c8a01@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <31014a580901111928u586e2246uccf370ff941c8a01@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 12 Jan 2009 00:42:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44396 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751261AbZALFmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 00:42:49 -0500
+Message-ID: <496AD835.6000509@kernel.org>
+Date: Sun, 11 Jan 2009 21:42:13 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: include apicnum.h in acpidef.h
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There are several other packages which are broken for embedded
-> architectures, which I will hopefully attempt to fix by submitting patches
-> upstream. But this is why we should be cautious about including new tools
-> for compiling the kernel. Sam Ravnborg was correct in that a C program to do
-> the work would be the proper way. But by not addressing a currently existing
-> problem with an adequate replacement with something that does not exist
-> currently, seems faulty.
 
-Why are "make headers_install" such a crucial thing for your
-embedded environmnet?
+Impact: clean up
 
-I would assume that if this of such improtance then there is also
-someone to step up and contribute a C version of it.
+it seems Ingo revert it wrongly.
+put it back again
 
-	Sam
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/apicdef.h |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/apicdef.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/apicdef.h
++++ linux-2.6/arch/x86/include/asm/apicdef.h
+@@ -132,12 +132,7 @@
+ #define APIC_BASE_MSR	0x800
+ #define X2APIC_ENABLE	(1UL << 10)
+ 
+-#ifdef CONFIG_X86_32
+-# define MAX_IO_APICS 64
+-#else
+-# define MAX_IO_APICS 128
+-# define MAX_LOCAL_APIC 32768
+-#endif
++#include <asm/apicnum.h>
+ 
+ /*
+  * All x86-64 systems are xAPIC compatible.
