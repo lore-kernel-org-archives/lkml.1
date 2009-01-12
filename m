@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZALE7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbZALFCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbZALE7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 23:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZALE7O
+	id S1752528AbZALFCh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 00:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZALFC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 23:59:14 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:47972 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbZALE7O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 23:59:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jGfZDSyiAG/I/13rFf70yOBlHUt6HNRJ3nKWc4X6fMzlL0cIG68+sKkokhkuYTDPci
-         X+4conESQMAmh7uazCXXnUXtCTcHqSzj6RI3OdfwgR/n6RqQad/bvfAVrT2dc1ztlADH
-         SxvvE87KaVQILDhA3AzgVKmAs699m59f8pzuk=
-Message-ID: <a0e7fce50901112059u6ac9bb6duba38795aa85f854c@mail.gmail.com>
-Date: Mon, 12 Jan 2009 12:59:13 +0800
-From: "yi li" <liyi.dev@gmail.com>
-To: "Nifty niftylinkern Mitch" <niftylinkern@niftyegg.com>
-Subject: Re: [BUG] MMC/SD: SDHC card capacity not correct
-Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
-In-Reply-To: <20090111204852.GA3869@compegg.wr.niftyegg.com>
+	Mon, 12 Jan 2009 00:02:26 -0500
+Received: from smtp3-g21.free.fr ([212.27.42.3]:43346 "EHLO smtp3-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbZALFCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 00:02:25 -0500
+X-Greylist: delayed 665 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 00:02:24 EST
+From: Christian Couder <chriscool@tuxfamily.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: current git kernel has strange problems during bisect
+Date: Mon, 12 Jan 2009 06:03:03 +0100
+User-Agent: KMail/1.9.9
+Cc: Pierre Habouzit <madcoder@debian.org>,
+       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200901111602.53082.borntraeger@de.ibm.com> <20090111230240.GA27489@artemis.corp> <200901120551.56791.chriscool@tuxfamily.org>
+In-Reply-To: <200901120551.56791.chriscool@tuxfamily.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a0e7fce50901081953h7ae152a7y557794c07fbb843b@mail.gmail.com>
-	 <20090111204852.GA3869@compegg.wr.niftyegg.com>
+Message-Id: <200901120603.03977.chriscool@tuxfamily.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 4:48 AM, Nifty niftylinkern Mitch
-<niftylinkern@niftyegg.com> wrote:
+I wrote:
 >
-> Check the partition map.  I see one partition smaller than the SD card.
-> Compare /dev/mmcblk0 and /dev/mmcblk0p1.
-> If this is the answer post a follow up to the kernel list that it was solved.
->
+> Anyway it looks to me that this kind of problem could be avoided if one
+> could "replace" some commits only when bisecting. In this case what could
+> be done is that one could "replace" the commit where btrfs is merged with
+> one commit that cuts off the btrfs history.
 
-Thanks for the response, but what do you mean?
-There is only one partition in the partition table, i.e.,
-/dev/mmcblk0p1, isn't it?
+By the way, it possible right now to cut off the btrfs history in one's own 
+repository using a graft. One don't need to wait for me to finish the 
+replace stuff I am slowly working on. But on the other hand it will have 
+all the restrictions of the current graft mechanism.
 
-fdisk /dev/mmcblk0
-
-Command (m for help): p
-
-Disk /dev/mmcblk0: 8068 MB, 8068268032 bytes
-249 heads, 62 sectors/track, 1020 cylinders
-Units = cylinders of 15438 * 512 = 7904256 bytes
-
-        Device Boot      Start         End      Blocks  Id System
-/dev/mmcblk0p1               1        1020     7873349  83 Linux
-
-Command (m for help): x
-Expert command (m for help): p
-Disk /dev/mmcblk0: 249 heads, 62 sectors, 1020 cylinders
-
-Nr AF  Hd Sec  Cyl  Hd Sec  Cyl      Start       Size ID
- 1 00   1   1    0 248  62 1019         62   15746698 83
- 2 00   0   0    0   0   0    0          0          0 00
- 3 00   0   0    0   0   0    0          0          0 00
- 4 00   0   0    0   0   0    0          0          0 00
-
--Yi
+Regards,
+Christian.
