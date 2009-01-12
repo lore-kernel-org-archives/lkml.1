@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZALOt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZALOxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbZALOt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZALOts
+	id S1753740AbZALOxZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZALOxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 09:49:48 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:57636 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752064AbZALOtr (ORCPT
+	Mon, 12 Jan 2009 09:53:18 -0500
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:49916 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750907AbZALOxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 09:49:47 -0500
-Date: Mon, 12 Jan 2009 15:49:36 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-cc: phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: [BUG?] SQUASHFS error: Major/Minor mismatch
-In-Reply-To: <20090112140822.GB23365@traven>
-Message-ID: <Pine.LNX.4.64.0901121548040.13607@vixen.sonytel.be>
-References: <20090112140822.GB23365@traven>
+	Mon, 12 Jan 2009 09:53:17 -0500
+Message-ID: <496B597A.7020807@lougher.demon.co.uk>
+Date: Mon, 12 Jan 2009 14:53:46 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Matthias Kaehlcke <matthias@kaehlcke.net>, phillip@lougher.demon.co.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] SQUASHFS error: Major/Minor mismatch
+References: <20090112140822.GB23365@traven>
+In-Reply-To: <20090112140822.GB23365@traven>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009, Matthias Kaehlcke wrote:
+Matthias Kaehlcke wrote:
 > i get the following error when trying to mount a squashfs partition on
 > an ARM system (edb9302) with linux 2.6.29-rc1:
 > 
@@ -37,25 +38,12 @@ On Mon, 12 Jan 2009, Matthias Kaehlcke wrote:
 > the image has been created using mksquashfs v3.4:
 > 
 > mksquashfs . /tmp/rootfs.squfs -le -noappend
+> 
 
-You have to use a version of mksquashfs that creates file systems with the v4.0
-layout, i.e. from the squashfs-tools on SourceForge.net:
+You have to use the latest version of Mksquashfs in CVS available
+from http://squashfs.org.
 
-    git-cvsimport -v -d :pserver:anonymous@squashfs.cvs.sourceforge.net:/cvsroot/squashfs squashfs
+git-cvsimport -v -d :pserver:anonymous@squashfs.cvs.sourceforge.net:/cvsroot/squashfs squashfs
 
-With kind regards,
+Phillip
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
