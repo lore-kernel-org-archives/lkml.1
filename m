@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZALUNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbZALUPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZALUNm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZALUNb
+	id S1757159AbZALUPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 15:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZALUPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:13:31 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:45176 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbZALUNa (ORCPT
+	Mon, 12 Jan 2009 15:15:33 -0500
+Received: from yop.chewa.net ([91.121.105.214]:60314 "EHLO yop.chewa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbZALUPc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:13:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=csuMWtYOIBVasAxoUkTyDhHzUU+dEAl8L7Ygvco8Mq5Z5gfq1X3R9FJOh0XNHYH2CA
-         kWYP9Y20dfgocvmpgm6bqG81F5Mz2dLepdBGi8buTSqi6swOZ6vkOCLpF4oeyYxPn2ts
-         ZSP7Y7jKtkwrHnt3oYCKcb8MGxhLpFODbejtw=
-Message-ID: <524f69650901121213l76dd4b6ap831d6da16876422f@mail.gmail.com>
-Date: Mon, 12 Jan 2009 14:13:29 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org
-In-Reply-To: <20090112193218.GA7751@suse.de>
+	Mon, 12 Jan 2009 15:15:32 -0500
+From: =?iso-8859-1?q?R=E9mi_Denis-Courmont?= <rdenis@simphalempin.com>
+Organization: Remlab.net
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: RFC: Network privilege separation.
+Date: Mon, 12 Jan 2009 22:15:27 +0200
+User-Agent: KMail/1.9.9
+Cc: Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <1231307334-9542-1-git-send-email-michael@laptop.org> <200901122147.57731.rdenis@simphalempin.com> <20090112201435.GC23848@one.firstfloor.org>
+In-Reply-To: <20090112201435.GC23848@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20090112154539.4857f533.sfr@canb.auug.org.au>
-	 <496B899E.7060605@oracle.com>
-	 <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com>
-	 <20090112191330.GC7111@suse.de>
-	 <524f69650901121123i1765dc3fye3ce636c91dd25bd@mail.gmail.com>
-	 <20090112193218.GA7751@suse.de>
+Message-Id: <200901122215.27842.rdenis@simphalempin.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 1:32 PM, Greg KH <gregkh@suse.de> wrote:
-> On Mon, Jan 12, 2009 at 01:23:07PM -0600, Steve French wrote:
->> Is there some magic compile option alternative (other than renaming
->> the function, which may be ok, since others probably don't depend on
->> it)?  MD5Init is used outside fs/cifs/md5.c so can't be static
+Le lundi 12 janvier 2009 22:14:35 Andi Kleen, vous avez écrit :
+> > Expanding the heap,
 >
-> No, you should rename it to cifs_md5init to show that it is only for the
-> cifs module to use.  Try not to polute the global namespace with generic
-> function names.
+> That's a problem agreed  Ok you can just always use very
+> bss arrays sized for the worst case.
+>
+> > Getting timestamps.
+>
+> At least on 64bit that's done in ring 3 only with a vsyscall.
+>
+> > Waiting on futexes,
+> > catching signals, polling file descriptors. Seeking, doing vectorized
+> > I/O. Cloning.
+>
+> That all can be done by the frontend reading/feeding
+> data into the pipe. But it shouldn't directly access the user data
+> to be immune against attacks.
 
-Looks like cifs has the following related functions which I can rename
-if that makes it easier:
-001a2e9 R_386_PC32        MD5Final
-0001a302 R_386_PC32        MD5Update
-0001a38c R_386_PC32        MD5Init
-0001a39f R_386_PC32        MD5Update
+What's the point of writing a parser (that could also have bugs) when the 
+kernel can do it? One could argue that shared futexes could be dangerous, but 
+not the rest?
 
-Any others that I missed ...
+> > Codecs don't like to read/write raw video through a pipe...
+>
+> I don't think that's given. It would need some restructuring,
+> but I think the end result would be likely worth it.
+
+A normal DVD would be over 30 megabytes per seconds once decoded, just for the 
+video. And remember vmsplice() is not allowed by SECCOMP. Media players have 
+assembly-coded memory copy optimizations (like the kernel) for some reason.
 
 -- 
-Thanks,
-
-Steve
+Rémi Denis-Courmont
+http://www.remlab.net/
