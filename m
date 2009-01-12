@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZALESV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZALEWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZALESV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 23:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZALESM
+	id S1752932AbZALEWR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 23:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZALEWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 23:18:12 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:16168 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbZALESL (ORCPT
+	Sun, 11 Jan 2009 23:22:02 -0500
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2117 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbZALEWA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 23:18:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=yiXVJ3ob6FfrGi/wrxTDLz1MYvOP2tZYejX6HHSkUt83COCTOfP4IwJ8khJVX+1Zx
-	arccGssIlsmPDyaEqMSJA==
-MIME-Version: 1.0
-In-Reply-To: <3838.1231647500@turing-police.cc.vt.edu>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org>
-	 <20090105175433.D875.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090105010726.c0433fea.akpm@linux-foundation.org>
-	 <6991.1231194895@turing-police.cc.vt.edu>
-	 <604427e00901072018o42ff0627yb5282f2a81a13c65@mail.gmail.com>
-	 <3838.1231647500@turing-police.cc.vt.edu>
-Date: Sun, 11 Jan 2009 20:18:06 -0800
-Message-ID: <604427e00901112018p43e96f1fw555dceccaa419147@mail.gmail.com>
+	Sun, 11 Jan 2009 23:22:00 -0500
+Date: Mon, 12 Jan 2009 05:21:39 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: "Diego E. 'Flameeyes' =?ISO-8859-1?Q?Petten=F2?=" 
+	<flameeyes@gmail.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Warren Turkal <wt@penguintechs.org>
 Subject: Re: 2.6.29 -mm merge plans
-From: Ying Han <yinghan@google.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.93
-X-GMailtapped: yinghan
+In-Reply-To: <1231284433.5158.2.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0901120442280.28002@localhost.localdomain>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> 
+ <20090106225744.GA10553@infradead.org>  <20090106151747.c640dfd4.akpm@linux-foundation.org>
+  <20090106231958.GA30271@infradead.org> <1231284433.5158.2.camel@localhost>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-57660524-1231731821=:28002"
+Content-ID: <Pine.LNX.4.64.0901120444070.28002@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you Valdis for your work and that is a really good news. :-)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---Ying
+--8323328-57660524-1231731821=:28002
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0901120444071.28002@localhost.localdomain>
 
-On Sat, Jan 10, 2009 at 8:18 PM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Wed, 07 Jan 2009 20:18:34 PST, Ying Han said:
->> Hi Valdis:
->>      Please try this fix and i tested on ubunbu8.10 with xmms and it helps.
->
-> Sorry for the long delay in testing, I was offline Wed-Friday taking some
-> much-needed leave time.
->
->> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
->> index 9e268b6..f4bbd9b 100644
->> --- a/arch/x86/mm/fault.c
->> +++ b/arch/x86/mm/fault.c
->
-> This didn't apply cleanly to a mmotm-0105 tree, but did apply cleanly
-> with the following 3 patches reverted and then this new patch applied.
->
->        page_fault-retry-with-nopage_retry.patch
->        page_fault-retry-with-nopage_retry-fix.patch
->        page_fault-retry-with-nopage_retry-fix-fix.patch
->
-> not surprising, since it looks like this patch is a replacement for all 3.  It
-> built and booted nicely, and xmms on the resulting kernel behaves properly.
->
-> Congrats on being able to debug the problem based on my fairly weird bug
-> report. ;)
->
+Hi,
+
+On Wed, 7 Jan 2009, Diego E. 'Flameeyes' Pettenò wrote:
+
+> Yes that one wasn't good at all, and I feel sorry for not having noticed
+> that before sending it in the first place.
+
+In general you could also use the create_date field to initialize the 
+generation field (it's set in hfsplus_cat_build_record and should be read 
+in hfsplus_cat_read_inode). (BTW OS X doesn't use create_date because it 
+can be changed by the user, which isn't an issue for Linux).
+I have some doubts about the hfsplus_get_parent() function. One has to 
+know about HFS+ that every hard link has it's own link id (which is 
+usually not visible) and the common inode id. If you lookup the parent 
+like this you expose the usually hidden and private directory.
+The link id is stored in d_fsdata under Linux, which seems not to be 
+restored by hfsplus_fh_to_dentry(), so any catalog manipulations are 
+likely to hit the wrong catalog entry. Any catalog change requires the 
+correct link id, but with just the common id you currently can't find back 
+the link entry.
+Newer HFS+ OS X driver support a link chain, which would make it possible 
+to find back the link entry using the common id and create_date in case 
+the normal file became a hard link, but this isn't implemented under Linux 
+yet.
+So it seems the hard link handling may need a bit more work...
+
+bye, Roman
+--8323328-57660524-1231731821=:28002--
