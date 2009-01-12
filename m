@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZALR4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZALR5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZALR4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZALR4g
+	id S1756012AbZALR5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZALR5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:56:36 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:57353 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754789AbZALR4e (ORCPT
+	Mon, 12 Jan 2009 12:57:06 -0500
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:56225 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751387AbZALR5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:56:34 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Date: Mon, 12 Jan 2009 18:56:12 +0100
-User-Agent: KMail/1.9.9
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ira Snyder <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, David Miller <davem@davemloft.net>
-References: <20090107195052.GA24981@ovro.caltech.edu> <20090108215127.GA28935@ovro.caltech.edu> <1231630355.2142.92.camel@pasglop>
-In-Reply-To: <1231630355.2142.92.camel@pasglop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 12 Jan 2009 12:57:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=oMJBUM855MrG5jWPYHmE2CtCUKfWZphsTaOeJD49GlZSCGNMXB4tNYmyKMORibV5KX7FwF94ao/wi6fZfWRAeuirIMd9uFNptQb8bEM3+KpN7QRMgNpBwstEQ0Crjjm8;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
+Date: Mon, 12 Jan 2009 09:56:30 -0800
+User-Agent: KMail/1.9.10
+Cc: "Dave Airlie" <airlied@gmail.com>, "Diego Calleja" <diegocg@gmail.com>,
+       linux-kernel@vger.kernel.org, eric.anholt@iintel.com, airlied@linux.ie
+References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com> <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com> <621d098f0901120037y4e17b4bn8d52a8ecdbc3fcff@mail.gmail.com>
+In-Reply-To: <621d098f0901120037y4e17b4bn8d52a8ecdbc3fcff@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901121856.12814.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+9/dhKazHi6rfwT+A1PFIinVQj9o6F3Bg8Vgv
- LpEry9y5+b+C4MmJhEBrPGj7ld1UJRSYhfBA52MLTaGZk2HsuO
- jWBgUpLg8zhnlRXkneQsQ==
+Message-Id: <200901120956.31728.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-01-08 at 13:51 -0800, Ira Snyder wrote:
-> > The guests (PowerPC computers running Linux) are PCI cards in the host
-> > system (an Intel Pentium3-M system). The guest computers can access all
-> > of the host's memory. The guests provide a 1MB (movable) window into
-> > their memory.
-> > 
-> > The PowerPC computers also have a DMA controller, which I've used to get
-> > better throughput from my driver. I have a way to create interrupts to
-> > both the host and guest systems.
-> 
-> That looks -very- similar to the PCI driver for CAB and Cell triblades
-> that was, I think, submitted a while ago. Arnd what's the status with
-> that driver ?
+On Monday, January 12, 2009 12:37 am Jan Dittmer wrote:
+> On Mon, Jan 12, 2009 at 9:04 AM, Dave Airlie <airlied@gmail.com> wrote:
+> > the latest git should work with kms on most chipsets, we are still
+> > chasing down some issues on some chipsets,
+>
+> So is there anything I can test to help you get it going on 'my' chipset
+> (GM965, Lenovo X300)?
 
-Complicated ;-)
+I do much of my testing on GM965, so you should be able to get it to work with 
+the latest bits:
+  - libdrm from git master of mesa/drm
+  - mesa from git master of mesa/mesa
+  - xf86-video-intel from git master
+  - drm-intel-next from anholt's kernel tree
+    (git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel)
 
-There were two device drivers for the Axon PCIe endpoint (from Mercury
-and IBM), but both were abandoned due to being too complex to get into
-a mergeable stage, and all the original developers are doing other work
-now.
+You'll need to use UXA as your AccelMethod.  If you run into issues with the 
+above, please file bugs (if you don't already see your issue filed) at 
+bugs.freedesktop.org.
 
-I'm maintaining the IBM driver now, but have no plans to submit that
-for inclusion. I hope that I can soon find more time to work on a
-replacement driver that will provide the right abstraction through
-virtio for kernel drivers, plus a ibverbs user interface for direct
-application programming. It should also have pluggable backends to
-support not only Cell hardware but anything with a similar hardware
-implementation.
-
-I did make a presentation about this at the Plumbers Conference, see
-http://userweb.kernel.org/%7Earnd/papers/plumbers08/plumbers-slides.pdf.
-Since then, I have come to a much clearer idea of what needs to be
-done, but not more actual code.
-
-	Arnd <><
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
