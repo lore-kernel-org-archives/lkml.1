@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZALMyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZALM4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbZALMyO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 07:54:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZALMx6
+	id S1754547AbZALM4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 07:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZALM40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 07:53:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55495 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbZALMx6 (ORCPT
+	Mon, 12 Jan 2009 07:56:26 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:40743 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752127AbZALM4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 07:53:58 -0500
-Subject: Re: [PULL -tip] x86: fix style problems in microcode_intel.c,
-	msr.c and module_XX.c
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       "H. Peter Anvin" <hpa@kernel.org>, tigran@aivazian.fsnet.co.uk,
-       shaohua.li@intel.com, rusty@rustcorp.com.au,
-       Andi Kleen <andi@firstfloor.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090112104429.GE10405@elte.hu>
-References: <1231753169.7087.5.camel@jaswinder.satnam>
-	 <20090112102011.GB10405@elte.hu>
-	 <3f9a31f40901120243u5ca60bc6n31dee913a02a081a@mail.gmail.com>
-	 <20090112104429.GE10405@elte.hu>
-Content-Type: text/plain; charset=utf8
-Date: Mon, 12 Jan 2009 18:21:17 +0530
-Message-Id: <1231764677.10461.8.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 12 Jan 2009 07:56:25 -0500
+Date: Mon, 12 Jan 2009 23:56:07 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jarek Poplawski <jarkao2@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jens Axboe <jens.axboe@oracle.com>, Willy Tarreau <w@1wt.eu>,
+       Changli Gao <xiaosuo@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Data corruption issue with splice() on 2.6.27.10
+Message-ID: <20090112125607.GA6370@gondor.apana.org.au>
+References: <20090106100112.GB9513@ff.dom.local> <20090106155715.GA28783@1wt.eu> <20090107093915.GA6899@ff.dom.local> <20090107122205.GA6051@1wt.eu> <20090107123153.GA9597@ff.dom.local> <20090107123504.GN32491@kernel.dk> <20090107124946.GA9677@ff.dom.local> <20090107125217.GA26235@gondor.apana.org.au> <20090112120257.GA5697@gondor.apana.org.au> <20090112124545.GA10893@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112124545.GA10893@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 11:44 +0100, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
-> 
-> > On Mon, Jan 12, 2009 at 3:50 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > hm, are the mpparse.c structural cleanups that i suggested some time ago
-> > > still on your list? I think the functions replace_intsrc_all(),
-> > > smp_scan_config() and smp_read_mpc() need those cleanups.
-> > >
-> > 
-> > Yes, it is still in my TODO list. But before that I need to submit
-> > patches to get some extra space:
-> > 0001-x86-replacing-mp_config_ioapic-with-mpc_ioapic.patch
-> > 0002-x86-replacing-mp_config_intsrc-with-mpc_intsrc.patch
-> > 
-> > And then I will make final changes in mpparse.c
-> 
-> ok.
-> 
+On Mon, Jan 12, 2009 at 03:45:46PM +0300, Evgeniy Polyakov wrote:
+>
+> As a long-term solution this sounds as the best case, but introduces
+> quite heavy overhead for the allocators. Right now we allocate
+> 1500+shared_info rounded up to the nearest power of the two (2k), but
+> then we will either need to have own network allocator (I have one :) or
+> allocate PAGE_SIZE+shared_info rounded up to the pwoer of the two (i.e.
+> 8k), which is unfeasible.
 
-I send ﻿[PULL -tip] x86: replacing mp_config_X with mpc_X which
-includes:
+No that's not what I was suggesting.  The page split model allocates
+an skb with a very small head that accomodates only the headers.
+All payload is stored in the frags structure.
 
-﻿  x86: replacing mp_config_ioapic with mpc_ioapic
-  x86: replacing mp_config_intsrc with mpc_intsrc
+For 1500-byte packets, we can manage the payload area efficiently
+by dividing each allocated page into 2K chunks.  The page will
+then be automatically freed once all the 2K chunks on it have been
+freed through the page ref count mechanism.
 
---
-JSR
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
