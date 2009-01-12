@@ -1,92 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbZALQLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZALQNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbZALQLr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 11:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZALQLi
+	id S1755160AbZALQNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 11:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZALQNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 11:11:38 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37190 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752329AbZALQLi (ORCPT
+	Mon, 12 Jan 2009 11:13:23 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:40513 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752612AbZALQNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 11:11:38 -0500
-Date: Mon, 12 Jan 2009 17:11:15 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Linas Vepstas <linasvepstas@gmail.com>
-Cc: david@lang.hm, Nick Andrew <nick@nick-andrew.net>,
-       David Newall <davidn@davidnewall.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Ben Goodger <goodgerster@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, "Jeffrey J. Kosowsky" <jeff@kosowsky.org>,
-       MentalMooMan <slashdot@jameshallam.info>,
-       Travis Crump <pretzalz@techhouse.org>, burdell@iruntheinter.net,
-       mills@udel.edu, Brian Haberman <brian@innovationslab.net>,
-       "Karen O'Donoghue" <karen.odonoghue@navy.mil>, ntpwg@lists.ntp.isc.org
-Subject: Re: Bug: Status/Summary of slashdot leap-second crash on new years
-	2008-2009
-Message-ID: <20090112161115.GA1474@ucw.cz>
-References: <4960897D.5030603@davidnewall.com> <alpine.DEB.1.10.0901040310070.24563@asgard.lang.hm> <4961432A.80509@davidnewall.com> <alpine.DEB.1.10.0901041628100.25545@asgard.lang.hm> <49614835.7000505@davidnewall.com> <3ae3aa420901042148o1c96985dube8e03085c997a07@mail.gmail.com> <20090105143335.GC18055@mail.local.tull.net> <3ae3aa420901050808r100e533fo5f88edfbb5f0747a@mail.gmail.com> <alpine.DEB.1.10.0901050949560.27641@asgard.lang.hm> <3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>
+	Mon, 12 Jan 2009 11:13:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=k68Dv1QlzLVDCRoTMsNepTc1oEPODM5zR6R8FcjjylK5jLK+Cnwhlza7fioGMVdMG7
+         1klY5ediEPeGvMCddhgZI0hXlj87URaLdgkDGUWow02PbgDGMHLaCpRBRuXbiMb5yI+X
+         iUcQS3/OVFz244X537GCYerRo11rf9gPfSWaE=
+Message-ID: <e7b7bf130901120813x3e7a178cwbd17435d669b0e78@mail.gmail.com>
+Date: Mon, 12 Jan 2009 21:43:18 +0530
+From: "linux linux" <linux.tina@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: need fusion driver guide
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <e7b7bf130901062124r18d93598jabcd5628f3cdca41@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <3ae3aa420901050942y56f0ecdei39c091a73e49c1fd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20090106214538.GA18370@uranus.ravnborg.org>
+	 <1231278625.10475.28.camel@localhost.localdomain>
+	 <e7b7bf130901062002ke59c0dkd7ca0ed73352066f@mail.gmail.com>
+	 <1231302074.19352.12.camel@localhost.localdomain>
+	 <e7b7bf130901062124r18d93598jabcd5628f3cdca41@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-01-05 11:42:35, Linas Vepstas wrote:
-> 2009/1/5  <david@lang.hm>:
-> > On Mon, 5 Jan 2009, Linas Vepstas wrote:
-> >
-> >>> Arguably the kernel's responsibility should be to keep track of the
-> >>> most fundamental representation of time possible for a machine (that's
-> >>> probably TAI) and it is a userspace responsibility to map from that
-> >>> value to other time standards including UTC,
-> >>
-> >> Yes, this really does seem like the right solution.
-> >>
-> >>> using control files
-> >>> which are updated as leap seconds are declared.
-> >>
-> >> Lets be clear on what "control files" means.  This does
-> >> *NOT* mean some config file shipped by some distro
-> >> for some package. That would be a horrid solution.
-> >> People don't install updates, patches, etc.  Distros
-> >> ship them late, or never, if the distro is old enough.
-> >>
-> >> A more appropriate solution would be to have
-> >> either the kernel or ntpd track the leap seconds
-> >> automatically.  First, the ntp protocol already provides
-> >> the needed notification of a leap second to anyone
-> >> who cares about it (i.e. there is no point in getting a
-> >> Linux distro involved in this -- a distribution mechanism
-> >> already exists, and works *better* than having a distro
-> >> do it).
-> >
-> > I disagree with this. NTP will only know about leap seconds if it was
-> > running and connected to a server that advertised the leap seconds during
-> > that month.
-> >
-> > for example, if you installed a new server today, how would it ever know
-> > that there was a leap second a couple of days ago?
-> 
-> OK, good point.  Unless your distro was less
-> than a few days old (unlikely), you are faced with the
-> same problem.  Sure, eventually, the distro will publish
-> an update (which will add to the existing list of 36 leap
-> seconds -- which is needed in any case, since no one
-> has a server that's been up since 1958),  but this is
-> unlikely to happen during this install window.
-> 
-> The long term solution would be write an RFC to extend
-> NTP to also provide TAI information -- e.g. to add a
-> message that indicates the current leap-second offset
-> between UTC and TAI.
+HI James,
 
-Offset is not enough; you'd have to provide list of all previous leap
-seconds with 'when it happened' timestamps.
+I got some idea about fusion driver from this link
+http://bugzilla.kernel.org/show_bug.cgi?id=12195
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And i found there is bug in fusion driver (kernel version 2.6.10) from this link
+http://www.nabble.com/MPT-fusion-driver,-better-but-still-buggy-at-errors-handling-under-2.6-td1095505.html
+
+
+
+On Wed, Jan 7, 2009 at 10:54 AM, linux linux <linux.tina@gmail.com> wrote:
+> Hi James,.
+> Now it should be received by all...
+> Many many thanks for the help.
+>
+> I am sending the kernel log.
+>
+>
+> On Wed, Jan 7, 2009 at 9:51 AM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+>>
+>> You still need to turn off html email attachments, otherwise your
+>> messages won't be accepted by the mailing lists.  It will be an option
+>> like recipient wants text/plain only or something.
+>>
+>> On Wed, 2009-01-07 at 09:32 +0530, linux linux wrote:
+>> > Hi,
+>> >
+>> > Sam many thanks for ur help.
+>> >
+>> > Hi James,
+>> >
+>> > I am getting some error on for fusion device driver.
+>> > The error message look like this
+>> >
+>> >
+>> >        2F240F4C226078: 19/12/2008 EST 04:42:45, mptscsih: ioc1: >>
+>> > Attempting task abort! (sc=e40df080)
+>> >        2F240F6E8C2E00: 19/12/2008 EST 04:42:45, mptbase: ioc1:
+>> > IOCStatus(0x0048): SCSI Task Terminated
+>> >        2F240F6E905A98: 19/12/2008 EST 04:42:45, mptscsih: ioc1: >>
+>> > Attempting task abort! (sc=f7e23680)
+>> >
+>> > 2F24117BDA2438: 19/12/2008 EST 04:42:50, mptscsih: ioc1: >>
+>> > Attempting bus reset! (sc=e40df080)
+>> >
+>> > After then the server has been rebooted.
+>> >
+>> > I can see the code is written inside /drivers/message/fussion/
+>> > mptscsih.c
+>> > The responsible function is
+>> > mptscsih_host_reset()
+>> > i am very new in SCSI fusion device driver. read some help guide from
+>> > google but still i do not understand when the mptscsih_host_reset() is
+>> > called by kernel. I normal situation i am not able to see this message
+>> > in kernel log.
+>> > Can any one help me to understand when these type of kernel message
+>> > are comming, is it foe SCSI hardware problem ?
+>> > when mptscsih_host_reset() will be executed?
+>>
+>> It looks like a standard error handling escalation sequence.  Why is
+>> very hard to tell without the entire kernel log.  Why there wasn't a
+>> recovery is also not clear.
+>>
+yes its error handler sequence. But as describe into the above
+link(http://www.nabble.com/MPT-fusion-driver,-better-but-still-buggy-at-errors-handling-under-2.6-td1095505.html)
+that
+2.6.xx  xx <= 11, enters an infinit loop attempting to reset the SCSI
+        so the box gets unusable and requires a rough power cycle to recover.
+
+So i think that is  the reason to restart the server(after "Attempting host
+reset! )as a power cycle is required to recover.
+
+when next time server was booting i got  some kernel messages on
+recovery of SCSI. So recovery is done after reboot the server.
+
+Still i do not know how to over come this bug fo infinite loop. If you
+have any suggestion please let me know.
+
+
+
+
+
+
+
+>
+> Pls let me know when this kind of error handler is happened?
+> is it for SCSI hard ware failure?
+>
+>> > Only one time i show this message in my kernel log, is there any way
+>> > to reproduce this message manually?
+>> >
+>> > where i get much info regarding this issue and SCSI fusion kernel
+>> > driver except kernel code itself?
+>> >
+>> > I am writting this after reading help doc from
+>> > http://www.lsi.com/insight_center/tech_trends/advanced_architectures/fusionmpt/index.html
+>> >
+>> > But still i am very few knowledge to solve it.
+>> >
+>> > waiting for your help.
+>>
+>> There's not much else I can do.  If you post the entire kernel log, the
+>> fusion people hang out on this list and might see something that
+>> indicates what the problem is.
+>>
+>> James
+>>
+>>
+>
+
+Thanks
+Tina
+http://teachmeembedded.blogspot.com/
