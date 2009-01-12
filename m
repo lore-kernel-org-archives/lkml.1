@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbZALIDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZALIEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752317AbZALIDy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZALIDl
+	id S1755078AbZALIEc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZALIEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:03:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39919 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752177AbZALIDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:03:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
-Date: Mon, 12 Jan 2009 09:03:19 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
-Cc: "Maciej Rutecki" <maciej.rutecki@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com> <8db1092f0901111215m5712caccvc0d2e5e7cb7e8f7@mail.gmail.com> <c4e36d110901111459p6d02892fwce0d89c52e62385e@mail.gmail.com>
-In-Reply-To: <c4e36d110901111459p6d02892fwce0d89c52e62385e@mail.gmail.com>
+	Mon, 12 Jan 2009 03:04:21 -0500
+Received: from mail-gx0-f17.google.com ([209.85.217.17]:50488 "EHLO
+	mail-gx0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbZALIEU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:04:20 -0500
+X-Greylist: delayed 37489 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 03:04:20 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Nm7cNYkVmZWpogzwWSP52168YKbAQM6ctwBThU1xhc2NhQozyEvahKjuEVwkvfSZtI
+         HYGxtESvEPlnAZ3Q9MQs1u8iEPLNEIUtpdr1hBnObgykb/NXzMrTrZPUQCD3CU7eziro
+         SWv5BNy82JLl6mh1azsaawXIhT82fsmR3gMXc=
+Message-ID: <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
+Date: Mon, 12 Jan 2009 18:04:19 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
+Cc: "Diego Calleja" <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
+       eric.anholt@iintel.com, airlied@linux.ie
+In-Reply-To: <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901120903.20371.rjw@sisk.pl>
+References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
+	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
+	 <20090111222122.4d0cb146@diego-desktop>
+	 <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
+	 <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 January 2009, Zdenek Kabelac wrote:
-> 2009/1/11 Maciej Rutecki <maciej.rutecki@gmail.com>:
-> > 2009/1/11 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> >> Hi
-> >>
-> >> I've booted and tested 2.6.29-rc1 (c59765042f53a79a7a65585042ff463b69cb248c)
-> >>
-> >> I've observed that suspend is unusable - it goes to sleep - the sleep
-> >> LED is on. After few secs system turns on back itself - and stays in
-> >> some frozen state
-> >
-> > A have similar situation, one difference: I get blank screen during
-> > resume from suspend to ram. Also sometimes, like You, system turns on
-> > back itself.
-> >
-> 
-> So it looks like reverting this commit:
-> 
-> http://marc.info/?l=linux-kernel&m=123140019117968&w=4
-> (6fd9086a518d4f14213a32fe6c9ac17fabebbc1e)
-> (which is already a tracked regression)
-> fixes the problem with auto-resume
-> 
-> But the problem with deadlock in the resume phase is still there.
+On Mon, Jan 12, 2009 at 5:42 PM, Jan Dittmer <jdi@l4x.org> wrote:
+> On Sun, Jan 11, 2009 at 10:39 PM, Dave Airlie <airlied@gmail.com> wrote:
+>> On Mon, Jan 12, 2009 at 7:21 AM, Diego Calleja <diegocg@gmail.com> wrote:
+>>> I also have a failure with KMS, it's different than yours but I'll post it
+>>> in this thread...xserver-xorg-video-intel version 2.5.1 (whatever there is
+>>> in ubuntu unstable repositories)
+>>
+>> Read the kconfig option before you enabled kms by default?
+>>
+>> if not, you cannot just enable kms and have old userspace drivers
+>> work, there is no
+>> released userspace for this yet, as that would put the chicken before the egg.
+>
+> But latest xf86-intel-video git tree should work, shouldn't it? An explicit
+> VideoRam line in xorg.conf is ignored btw.
 
-Please check if unloading all of the USB controller modules before suspend
-helps.
+explicit VideoRAM is most likely ignored by xorg as well for Intel
+chipsets with the latest driver,
+the latest git should work with kms on most chipsets, we are still
+chasing down some issues on some chipsets,
+its still development code, its mainly upstream to get the API stable
+and find the corner cases.
 
-Thanks,
-Rafael
+Dave.
+
+
+>
+> Thanks,
+>
+> Jan
+>
+> --
+> Jan Dittmer <jdi@l4x.org>
+>
