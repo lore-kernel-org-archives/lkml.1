@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZALLZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZALL02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZALLZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbZALLZI
+	id S1754057AbZALL02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZALL0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:25:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44041 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Jan 2009 06:26:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44503 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751425AbZALLZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:25:06 -0500
-Date: Mon, 12 Jan 2009 12:24:58 +0100
+	id S1752141AbZALL0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:26:19 -0500
+Date: Mon, 12 Jan 2009 12:26:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: build breakage -- paravirt_{alloc,free}_ldt
-Message-ID: <20090112112458.GA19388@elte.hu>
-References: <alpine.LNX.1.10.0901121121410.5377@jikos.suse.cz> <20090112105202.GF10405@elte.hu> <alpine.LNX.1.10.0901121211000.5377@jikos.suse.cz> <3f9a31f40901120319l4fac84e4me193fb314bdbbcaa@mail.gmail.com>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Dieter Ries <clip2@gmx.de>, travis@sgi.com, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc1 does not boot
+Message-ID: <20090112112608.GB19388@elte.hu>
+References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu> <496A3F62.8090902@gmx.de> <8db1092f0901120322x5e453fd0x61a78cc1a55982aa@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3f9a31f40901120319l4fac84e4me193fb314bdbbcaa@mail.gmail.com>
+In-Reply-To: <8db1092f0901120322x5e453fd0x61a78cc1a55982aa@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,49 +35,158 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+* Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
 
-> On Mon, Jan 12, 2009 at 4:42 PM, Jiri Kosina <jkosina@suse.cz> wrote:
-> > On Mon, 12 Jan 2009, Ingo Molnar wrote:
+> 2009/1/11 Dieter Ries <clip2@gmx.de>:
+> > Hi,
 > >
-> >> > with Linus' tree (ae04d14015) doesn't build for me with
-> >> >
-> >> > arch/x86/kernel/ldt.c: In function 'alloc_ldt':
-> >> > arch/x86/kernel/ldt.c:55: error: implicit declaration of function 'paravirt_alloc_ldt'
-> >> > arch/x86/kernel/ldt.c:79: error: implicit declaration of function 'paravirt_free_ldt'
-> >> >
-> >> > Config on http://www.jikos.cz/jikos/junk/.config
-> >>
-> >> hm, it builds fine here with your config. Did .28 build fine for you? The
-> >> only change to this file since .28 has been Jaswinder's "423a540: x86:
-> >> ldt.c fix style problems".
-> >
-> > Puzzled. On one system, I still get this build error even after make
-> > mrpoper (I use this machine to build kernel routinely, so it certainly
-> > didn't happen a few days ago).
-> >
-> > But I just tried on different system, and there is builds flawlessly. It's
-> > gcc 4.3.1 vs 4.3.2. I will check a little bit more.
-> >
+> > Ingo Molnar schrieb:
+> >>>> * Dieter Ries <clip2@gmx.de> wrote:
+> >>>>
+> >>>>> Hi,
+> >>>>>
+> >>>>> I just pulled 2.6.29-rc1, ran oldconfig with defaults and built it.
+> >>>>> When I try to boot it, that kind of works until init should start. Then
+> >>>>> nothing happens. I tried with init=/bin/bash, which sometimes works, and
+> >>>>> sometimes gets me a bash without the prompt flashing.
+> >>>>>
 > 
-> I am using gcc 4.3.2
+> Simmilar issue, described:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0901.1/01701.html
 > 
-> Please check 'git diff' if by mistake some thing is gone wrong or check 
-> 'git log'
+> [...]
+> ####################################################################
+> > 7503bfbae89eba07b46441a5d1594647f6b8ab7d is first bad commit
+> > commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
+> > Author: Mike Travis <travis@sgi.com>
+> > Date:   Sun Jan 4 05:18:09 2009 -0800
+> >
+> > cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+> >
+> > Impact: use new cpumask API to reduce stack usage
+> >
+> > Replace the saving of current->cpus_allowed and set_cpus_allowed_ptr()
+> > with a work_on_cpu function for drv_read() and drv_write().
+> >
+> > Basically converts do_drv_{read,write} into "work_on_cpu" functions that
+> > are now called by drv_read and drv_write.
+> >
+> > Signed-off-by: Mike Travis <travis@sgi.com>
+> > Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Revert this commit also solves problem on my laptoop.
 
-That wont show working tree corruption.
-
-Safest is to move away the working tree into a backup directory and check 
-out the tree again:
-
-  cd linux
-  mkdir ../linux-backup
-  mv * ../linux-backup
-
-  git checkout HEAD .
-
-then, if this solves the build problem, do some forensics by looking at:
-
- diff -rNu ../linux-backup ../linux'
+yes - the revert patch can be found below.
 
 	Ingo
+
+------------------->
+>From e0b7a3bea054249b27ca3c843bf6eefcb509d1c2 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 12 Jan 2009 10:49:53 +0100
+Subject: [PATCH] Revert "cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write"
+
+This reverts commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d.
+
+Dieter Ries reported bootup soft-hangs and bisected it back to
+this commit, and reverting this commit gave him a working system.
+
+The commit introduces work_on_cpu() use into the cpufreq code,
+but that is subtly problematic from a lock hierarchy POV: the
+hotplug-cpu lock is an highlevel lock that is taken before
+lowlevel locks, and in this codepath we are called with the
+policy lock taken.
+
+Dieter did not have lockdep enabled so we dont have a nice stack
+trace proof for this, but using work_on_cpu() in such a lowlevel
+place certainly looks wrong, so we revert the patch.
+
+work_on_cpu() needs to be reworked to be more generally usable.
+
+Reported-by: Dieter Ries <clip2@gmx.de>
+Tested-by: Dieter Ries <clip2@gmx.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   25 ++++++++++++-------------
+ 1 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 06fcd8f..6f11e02 100644
+--- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -150,9 +150,8 @@ struct drv_cmd {
+ 	u32 val;
+ };
+ 
+-static long do_drv_read(void *_cmd)
++static void do_drv_read(struct drv_cmd *cmd)
+ {
+-	struct drv_cmd *cmd = _cmd;
+ 	u32 h;
+ 
+ 	switch (cmd->type) {
+@@ -167,12 +166,10 @@ static long do_drv_read(void *_cmd)
+ 	default:
+ 		break;
+ 	}
+-	return 0;
+ }
+ 
+-static long do_drv_write(void *_cmd)
++static void do_drv_write(struct drv_cmd *cmd)
+ {
+-	struct drv_cmd *cmd = _cmd;
+ 	u32 lo, hi;
+ 
+ 	switch (cmd->type) {
+@@ -189,23 +186,30 @@ static long do_drv_write(void *_cmd)
+ 	default:
+ 		break;
+ 	}
+-	return 0;
+ }
+ 
+ static void drv_read(struct drv_cmd *cmd)
+ {
++	cpumask_t saved_mask = current->cpus_allowed;
+ 	cmd->val = 0;
+ 
+-	work_on_cpu(cpumask_any(cmd->mask), do_drv_read, cmd);
++	set_cpus_allowed_ptr(current, cmd->mask);
++	do_drv_read(cmd);
++	set_cpus_allowed_ptr(current, &saved_mask);
+ }
+ 
+ static void drv_write(struct drv_cmd *cmd)
+ {
++	cpumask_t saved_mask = current->cpus_allowed;
+ 	unsigned int i;
+ 
+ 	for_each_cpu(i, cmd->mask) {
+-		work_on_cpu(i, do_drv_write, cmd);
++		set_cpus_allowed_ptr(current, cpumask_of(i));
++		do_drv_write(cmd);
+ 	}
++
++	set_cpus_allowed_ptr(current, &saved_mask);
++	return;
+ }
+ 
+ static u32 get_cur_val(const struct cpumask *mask)
+@@ -231,15 +235,10 @@ static u32 get_cur_val(const struct cpumask *mask)
+ 		return 0;
+ 	}
+ 
+-	if (unlikely(!alloc_cpumask_var(&cmd.mask, GFP_KERNEL)))
+-		return 0;
+-
+ 	cpumask_copy(cmd.mask, mask);
+ 
+ 	drv_read(&cmd);
+ 
+-	free_cpumask_var(cmd.mask);
+-
+ 	dprintk("get_cur_val = %u\n", cmd.val);
+ 
+ 	return cmd.val;
