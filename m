@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbZALWtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbZALWte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111AbZALWtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbZALWbS
+	id S1762696AbZALWte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZALWbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:31:18 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57829 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755178AbZALWbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:31:16 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:25:04 +0100
-Message-Id: <1231799107-20136-59-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
-References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
+	Mon, 12 Jan 2009 17:31:19 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:47463 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758586AbZALWbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 17:31:17 -0500
+Message-ID: <496BC4B1.1080002@sgi.com>
+Date: Mon, 12 Jan 2009 14:31:13 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move w100fb's probe function to .devinit.text
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] irq: update all archs to use new irq_desc	cpumask_var_t's.
+References: <20090112220519.566749000@polaris-admin.engr.sgi.com> <20090112222123.GB15294@elte.hu>
+In-Reply-To: <20090112222123.GB15294@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to w100fb_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> Ingo - should I push these to tip/cpus4096 via the cpus4096-for-ingo 
+>> tree since that has the relevant changes to irq_desc?  Or by some other 
+>> means?
+> 
+> yes, please update cpus4096-for-ingo so that i can pull it from your tree.
+> 
+> 	Ingo
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+Ok, I will do that right now.  And then you'll pull and do these other things:
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/video/w100fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> this should all be a single patch, because the cpus4096 tree does not 
+> build on these arhitectures right now.
 
-diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-index d0674f1..c966b12 100644
---- a/drivers/video/w100fb.c
-+++ b/drivers/video/w100fb.c
-@@ -626,7 +626,7 @@ static int w100fb_resume(struct platform_device *dev)
- #endif
- 
- 
--int __init w100fb_probe(struct platform_device *pdev)
-+int __devinit w100fb_probe(struct platform_device *pdev)
- {
- 	int err = -EIO;
- 	struct w100fb_mach_info *inf;
--- 
-1.5.6.5
+> in fact, i think i'll rebase the whole lineup (so no need to resend - i'll 
+> squash these fixes together), because this is how it looks like right now:
 
+???
+
+Thanks,
+Mike
