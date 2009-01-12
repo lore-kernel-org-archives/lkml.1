@@ -1,168 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZALDHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZALDSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbZALDHw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 22:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZALDHT
+	id S1753379AbZALDSw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 22:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALDSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 22:07:19 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63280 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753677AbZALDHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 22:07:17 -0500
-Message-ID: <496AB3B2.6080407@cn.fujitsu.com>
-Date: Mon, 12 Jan 2009 11:06:26 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 11 Jan 2009 22:18:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40783 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbZALDSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 22:18:43 -0500
+Date: Sun, 11 Jan 2009 22:18:41 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: rusty@rustcorp.com.au
+Subject: [PATCH] [RFC] remove (more or less) unnecessary cacheline_aligned
+	from module_ref
+Message-ID: <20090112031841.GC21090@bombadil.infradead.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] ftrace: fix trace_output
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On x86_64 systems with CONFIG_MAXSMP set, NR_CPUS is exploded to 4096
+cpus. This cacheline_aligned attribute on the local_t in module_ref
+results in struct module bloating to over 512KB in size on x86_64, which
+tends to, er, add up. This results in insane disk usage on distro
+kernel configs (1GB+ on Fedora.)
 
-Impact: fix bug for handling partial line
+Killing cacheline_aligned reduces the size of struct module to somewhat
+more sane levels.
 
-trace_seq_printf(), seq_print_userip_objs(), ... return
-0          -- partial line was written
-other(>0)  -- success
-
-duplicate output is also removed in trace_print_raw().
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
 ---
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index df0c25c..c688c16 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -443,9 +443,9 @@ trace_fn_raw(struct trace_seq *s, struct trace_entry *entry, int flags)
- 	if (trace_seq_printf(s, "%x %x\n",
- 			     field->ip,
- 			     field->parent_ip))
--		return TRACE_TYPE_PARTIAL_LINE;
-+		return 0;
- 
--	return 0;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
- static int
-@@ -505,9 +505,9 @@ trace_ctxwake_print(struct trace_seq *s, struct trace_entry *entry, int flags,
- 			     field->next_pid,
- 			     field->next_prio,
- 			     T, comm))
--		return TRACE_TYPE_PARTIAL_LINE;
-+		return 0;
- 
--	return 0;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
- static int
-@@ -542,9 +542,9 @@ trace_ctxwake_raw(struct trace_seq *s, struct trace_entry *entry, int flags,
- 			     field->next_pid,
- 			     field->next_prio,
- 			     T))
--		return TRACE_TYPE_PARTIAL_LINE;
-+		return 0;
- 
--	return 0;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
- static int
-@@ -643,9 +643,9 @@ trace_special_print(struct trace_seq *s, struct trace_entry *entry, int flags)
- 			     field->arg1,
- 			     field->arg2,
- 			     field->arg3))
--		return TRACE_TYPE_PARTIAL_LINE;
-+		return 0;
- 
--	return 0;
-+	return TRACE_TYPE_PARTIAL_LINE;
- }
- 
- static int
-@@ -697,13 +697,13 @@ trace_stack_print(struct trace_seq *s, struct trace_entry *entry, int flags)
- 
- 	for (i = 0; i < FTRACE_STACK_ENTRIES; i++) {
- 		if (i) {
--			if (trace_seq_puts(s, " <= "))
-+			if (!trace_seq_puts(s, " <= "))
- 				goto partial;
- 
--			if (seq_print_ip_sym(s, field->caller[i], flags))
-+			if (!seq_print_ip_sym(s, field->caller[i], flags))
- 				goto partial;
- 		}
--		if (trace_seq_puts(s, "\n"))
-+		if (!trace_seq_puts(s, "\n"))
- 			goto partial;
- 	}
- 
-@@ -731,10 +731,10 @@ trace_user_stack_print(struct trace_seq *s, struct trace_entry *entry,
- 
- 	trace_assign_type(field, entry);
- 
--	if (seq_print_userip_objs(field, s, flags))
-+	if (!seq_print_userip_objs(field, s, flags))
- 		goto partial;
- 
--	if (trace_seq_putc(s, '\n'))
-+	if (!trace_seq_putc(s, '\n'))
- 		goto partial;
- 
- 	return 0;
-@@ -760,10 +760,10 @@ trace_print_print(struct trace_seq *s, struct trace_entry *entry, int flags)
- 
- 	trace_assign_type(field, entry);
- 
--	if (seq_print_ip_sym(s, field->ip, flags))
-+	if (!seq_print_ip_sym(s, field->ip, flags))
- 		goto partial;
- 
--	if (trace_seq_printf(s, ": %s", field->buf))
-+	if (!trace_seq_printf(s, ": %s", field->buf))
- 		goto partial;
- 
- 	return 0;
-@@ -779,10 +779,7 @@ trace_print_raw(struct trace_seq *s, struct trace_entry *entry, int flags)
- 
- 	trace_assign_type(field, entry);
- 
--	if (seq_print_ip_sym(s, field->ip, flags))
--		goto partial;
--
--	if (trace_seq_printf(s, "# %lx %s", field->ip, field->buf))
-+	if (!trace_seq_printf(s, "# %lx %s", field->ip, field->buf))
- 		goto partial;
- 
- 	return 0;
-diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
-index ecab4ea..b2c1461 100644
---- a/kernel/trace/trace_output.h
-+++ b/kernel/trace/trace_output.h
-@@ -45,14 +45,14 @@ trace_nop_print(struct trace_seq *s, struct trace_entry *entry, int flags);
- #define SEQ_PUT_FIELD_RET(s, x)				\
- do {							\
- 	if (!trace_seq_putmem(s, &(x), sizeof(x)))	\
--		return 0;				\
-+		return TRACE_TYPE_PARTIAL_LINE;		\
- } while (0)
- 
- #define SEQ_PUT_HEX_FIELD_RET(s, x)			\
- do {							\
- 	BUILD_BUG_ON(sizeof(x) > MAX_MEMHEX_BYTES);	\
- 	if (!trace_seq_putmem_hex(s, &(x), sizeof(x)))	\
--		return 0;				\
-+		return TRACE_TYPE_PARTIAL_LINE;		\
- } while (0)
- 
- #endif
+I'll followup with a patch to make mod->ref dynamically allocated, but
+that needs a bit more thinking because module_unload_init currently
+doesn't have a failure path.
 
+Of course, reducing NR_CPUS to something sane was an easy way to patch
+over the problem.
 
-
-
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 4f7ea12..32b0bda 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -222,7 +222,7 @@ void *__symbol_get_gpl(const char *symbol);
+ struct module_ref
+ {
+ 	local_t count;
+-} ____cacheline_aligned;
++};
+ 
+ enum module_state
+ {
