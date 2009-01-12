@@ -1,54 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZALSUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZALSUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbZALSUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 13:20:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZALSUA
+	id S1754298AbZALSUu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 13:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZALSUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 13:20:00 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:58677 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZALST7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 13:19:59 -0500
-Message-ID: <496B899E.7060605@oracle.com>
-Date: Mon, 12 Jan 2009 10:19:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
+	Mon, 12 Jan 2009 13:20:41 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:50993 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750918AbZALSUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 13:20:40 -0500
+Message-ID: <496B89F4.7080406@sgi.com>
+Date: Mon, 12 Jan 2009 10:20:36 -0800
+From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sfrench@samba.org, Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
-References: <20090112154539.4857f533.sfr@canb.auug.org.au>
-In-Reply-To: <20090112154539.4857f533.sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christophe Saout <christophe@saout.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]: xen: fix too early kmalloc call
+References: <496A4C8F.8070005@sgi.com> <20090112085302.GB21976@elte.hu>
+In-Reply-To: <20090112085302.GB21976@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.496B89A2.00CF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> Some people took me at my word and so we have the 2.6.30 code starting to
-> trickle in already.
+>> Subject: xen: fix too early kmalloc call
+>>
+>> From: Christophe Saout <christophe@saout.de> 
+>>
+>> Impact: fixes bootup of xen.
+>>
+>> Christophe reported the following problem:
+>>
+>>>  (basically it seems that SLAB is not yet up, with earlyprintk it is
+>>>  giving me an Oops in __kmalloc before)
+>> Replace call to kmalloc with alloc_bootmem.
+>>
+>> Also from Christophe:
+>>> (me)
+>>>> Or I could copy the text and submit it as a new patch?
+>>> Yes, I would prefer that.  Also, my commit message was not really
+>>> following Kernel standards and it's only a very simple change.
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+> 
+> i've applied the fix to tip/cpus4096, in the form below.
+> 
+> Please submit clean log messages. Your commit description was confused - 
+> the patch is From: Christophe, but the message talks about Christophe in 
+> the third person. Also, it included conversational bits that have no 
+> value for the Git history.
+> 
+> 	Ingo
 
+Ahh, ok, will do.  I wasn't sure how many "liberties" we can take in
+submitting/changing something from someone else.
 
+THanks,
+Mike
 
-When CIFS is built-in (=y) and staging/rt28[67]0 =y, there are multiple
-definitions of:
+> 
+> -------------------->
+>>From 28e08861b9afab4168b758fb7b95aa7a4da0f668 Mon Sep 17 00:00:00 2001
+> From: Christophe Saout <christophe@saout.de>
+> Date: Sun, 11 Jan 2009 11:46:23 -0800
+> Subject: [PATCH] xen: fix too early kmalloc call
+> 
+> Impact: fix bootup crash on xen guests
+> 
+> SLAB is not yet up, with earlyprintk it is giving me an Oops in __kmalloc.
+> 
+> Replace call to kmalloc() with alloc_bootmem().
+> 
+> Reported-by: Christophe Saout <christophe@saout.de>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/xen/events.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> index ed7527b..3141e14 100644
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/irq.h>
+>  #include <linux/module.h>
+>  #include <linux/string.h>
+> +#include <linux/bootmem.h>
+>  
+>  #include <asm/ptrace.h>
+>  #include <asm/irq.h>
+> @@ -831,8 +832,8 @@ void __init xen_init_IRQ(void)
+>  	int i;
+>  	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+>  
+> -	cpu_evtchn_mask_p = kmalloc(size, GFP_KERNEL);
+> -	BUG_ON(cpu_evtchn_mask == NULL);
+> +	cpu_evtchn_mask_p = alloc_bootmem(size);
+> +	BUG_ON(cpu_evtchn_mask_p == NULL);
+>  
+>  	init_evtchn_cpu_bindings();
+>  
 
-build-r8250.out:(.text+0x1d8ad0): multiple definition of `MD5Init'
-build-r8250.out:(.text+0x1dbb30): multiple definition of `MD5Update'
-build-r8250.out:(.text+0x1db9b0): multiple definition of `MD5Final'
-
-all of which need to have more unique identifiers for their global
-symbols (e.g., rt28_md5_init, cifs_md5_init, foo, blah, bar).
-
-
--- 
-~Randy
