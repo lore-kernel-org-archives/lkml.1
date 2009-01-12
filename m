@@ -1,56 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbZALEgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZALEqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbZALEgy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 23:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZALEgo
+	id S1753263AbZALEqF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 23:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZALEpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 23:36:44 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:39674 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbZALEgo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 23:36:44 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=Zh0AFbd5_N1bNxy9LMQA:9 a=cylitK_hICJDPMSk3GoA:7 a=-JyQe8hQmbL92fnaCbJ6o0I2lMEA:4 a=6BydmXIbXuwA:10 a=YcwOXTN8GhIA:10
-Message-ID: <496AC8D9.1020402@shaw.ca>
-Date: Sun, 11 Jan 2009 22:36:41 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: joseluismarchetti@yahoo.com.br
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: How to access a regular file from within a module ?
-References: <20090111113053.42dc34ad@lxorguk.ukuu.org.uk> <207506.58372.qm@web34401.mail.mud.yahoo.com>
-In-Reply-To: <207506.58372.qm@web34401.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Jan 2009 23:45:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51578 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751239AbZALEpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 23:45:51 -0500
+Date: Mon, 12 Jan 2009 15:45:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 12
+Message-Id: <20090112154539.4857f533.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__12_Jan_2009_15_45_39_+1100_fuP.netu5XIBEdga"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jose Luis Marchetti wrote:
->> You don't generally get to do this. What are you
->> actually trying to achieve ?
-> 
-> Thanks for asking, there are two scenarios, the first one it would be to save an ethernet mac address, I got already emails with some work arounds for this. The other scenario is a little bit more complicated:
-> 
-> The system I am working now ( Kernel drivers + User applications ) performs cryptographic operations and it has a regulatory constraint: the user application have to undergo (expensive) certification everytime it is changed, but that is only true if the user application have access to the cryptographic keys, imagine a i++ is missing in the code, then we have to undergo the expensive certification for that.
-> To avoid that I am trying to isolate the keys ( about 30 X 128bit keys, some of the keys chance everytime they are used ) and cryptographic algorithm from the application and putting them into the kernel so the application can not access that. Well you would say, saving the keys into a file is not a good security measure as it is accessible, the trick is that before saving the key into the file the kernel would encrypt the keys with another key ( KEK- Key Encryption Key ) and this KEK is stored into non volatile register inside the processor, so although the file is accessible it is encrypted.
-> In this scenario the user application would request encryption/decryption services from the kernel, but it would never pass the Key to be used during the operation, it would pass a Key Id, like this: encrypt this data using key number 7 and Key number 7 is stored in a file ( encrypted ) the kernel could read.
-> OK, some would say, the user application could read the key file and passed the encrypted key into the kernel function, the kernel would decrypt the encrypted key and do the operation, which is fine, but some of those keys change at every operation, so they have to be re-stored into the file at every operation, it would be nice to have it done by the kernel.
+--Signature=_Mon__12_Jan_2009_15_45_39_+1100_fuP.netu5XIBEdga
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-One big problem with file access in the kernel is that all the file 
-operations require a process context - they need a process to stick the 
-file descriptor into, to determine access permissions, etc. If you just 
-start calling file operations from inside the kernel you're essentially 
-stealing whatever process you're being called from's context for these 
-operations, which is unlikely to be a good idea.
+Hi all,
 
-Not to mention, that accessing files from inside the kernel usually 
-means the kernel enforces a policy on file naming/locations, and putting 
-that sort of policy in the kernel is usually frowned upon.
+Some people took me at my word and so we have the 2.6.30 code starting to
+trickle in already.
 
-In the case you're describing I'm not sure why you couldn't just store 
-the keys in encrypted form inside the user app and have it write them 
-back out when they change, instead of making the kernel do it..
+Changes since 20090109:
+
+Undropped tree:
+	ocfs2
+
+Dropped trees (temporarily):
+	rr (difficult conflict)
+	mfd (build problem)
+	drm (build problem)
+	cpu_alloc (build problem)
+	audit (difficult conflicts)
+
+Linus' tree gained a build failure which caused me to revert a merge.
+
+The driver-core tree inherited a conflicts from the scsi tree.
+
+The scsi tree lost its conflicts.
+
+The ocfs2 tree lost its build failure.
+
+The mtd tree lost its conflicts.
+
+The blk-removal tree lost its conflict.
+
+The firmware tree lost its conflicts.
+
+The kmemcheck tree inherited a conflicts from the nommu tree.
+
+The mfd tree gained a build failure so I dropped it.
+
+The drm tree gained a build failure so I dropped it.
+
+The nommu tree lost its conflict.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 129 trees (counting Linus' and 15 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Created commit a3e6439: Revert "Merge branch 'cpus4096-for-linus' of git://=
+git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip"
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
+CONFLICT (content): Merge conflict in kernel/auditsc.c
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/scsi/scsi_ioctl.c
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in kernel/rcuclassic.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+CONFLICT (content): Merge conflict in kernel/time/tick-common.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/sysfs.c
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git reset --hard
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+$ git reset --hard HEAD^
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+$ git reset --hard HEAD^
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging squashfs/master
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Mon__12_Jan_2009_15_45_39_+1100_fuP.netu5XIBEdga
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklqyvMACgkQjjKRsyhoI8wviACglwwZJr2wSPcejSbX69I4HEzO
+MzUAoIu4MtgrQs6imJFIXR7WVct8B/gs
+=/FI8
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__12_Jan_2009_15_45_39_+1100_fuP.netu5XIBEdga--
