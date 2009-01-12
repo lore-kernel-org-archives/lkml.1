@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZALQVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZALQWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbZALQVf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 11:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZALQVX
+	id S1755562AbZALQWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 11:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZALQWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 11:21:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55848 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752377AbZALQVW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 11:21:22 -0500
-Date: Mon, 12 Jan 2009 08:20:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+	Mon, 12 Jan 2009 11:22:30 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58464 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752377AbZALQWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 11:22:30 -0500
+Date: Mon, 12 Jan 2009 11:22:09 -0500
+From: Dave Jones <davej@redhat.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901120802430.6528@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0901120818070.6528@localhost.localdomain>
-References: <1231774622.4371.96.camel@laptop> <alpine.LFD.2.00.0901120802430.6528@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090112162209.GB7046@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Evgeniy Polyakov <zbr@ioremap.net>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <20090112153304.GA19995@ioremap.net> <20090112154922.6003750b@lxorguk.ukuu.org.uk> <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112155615.GA21350@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 12, 2009 at 06:56:15PM +0300, Evgeniy Polyakov wrote:
+ > On Mon, Jan 12, 2009 at 03:52:39PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+ > > > Which has to be checked for every process ever created,
+ > > > which is quite unfeasible in some conditions.
+ > > 
+ > > The task name is not a reliable indicator of true name and truncated so
+ > > is useless. You only nominate one task, you don't integrate with the
+ > > existing interface.
+ > 
+ > Not one, but tasks which have the given string in the name. Like script
+ > names spawned at DoS time.
 
+There is also the problem that process names aren't unique.
+If the process table contains two entries called 'Kenny', there's nothing
+that says they came from the same executable.
 
-On Mon, 12 Jan 2009, Linus Torvalds wrote:
-> 
-> You made it back into the locked version.
+	Dave
 
-Btw, even if you probably had some reason for this, one thing to note is 
-that I think Chris' performance testing showed that the version using a 
-lock was inferior to his local btrfs hack, while the unlocked version 
-actually beat his hack.
-
-Maybe I misunderstood his numbers, though. But if I followed that sub-part 
-of the test right, it really means that the locked version is pointless - 
-it will never be able to replace peoples local hacks for this same thing, 
-because it just doesn't give the performance people are looking for.
-
-Since the whole (and _only_) point of this thing is to perform well, 
-that's a big deal.
-
-		Linus
+-- 
+http://www.codemonkey.org.uk
