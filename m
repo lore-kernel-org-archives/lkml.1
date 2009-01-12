@@ -1,41 +1,43 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZALOYF (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 12 Jan 2009 09:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZALOXw
+	id S1755816AbZALSsQ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 12 Jan 2009 13:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZALSr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 09:23:52 -0500
-Received: from simmts6.bellnexxia.net ([206.47.199.164]:42295 "EHLO
-	simmts6-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751494AbZALOXw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 09:23:52 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmcFAJ/caknOL8eg/2dsb2JhbACBbIppy3U
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [189.112.246.195]
-From: Sarah <brian.lalande@sympatico.ca>
-Reply-To: edward.brown27@btinternet.com
-To: <info@result.org>
-Subject: claims of =?iso-8859-1?B?ozEsMzUwLjAwMA==?=
-Date: Mon, 12 Jan 2009 9:23:49 -0500
+	Mon, 12 Jan 2009 13:47:57 -0500
+Received: from mxr1.wow.lk ([202.124.160.60]:42832 "EHLO mxr1.wow.lk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752578AbZALSr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 13:47:56 -0500
+Message-ID: <5ec0810f1cd9b96f572b70b8bf9ab276.squirrel@webmail.wow.lk>
+Date: Mon, 12 Jan 2009 22:31:43 +0400 (RET)
+Subject: HELLO
+From: "prudent" <prudent_mygirl@yahoo.com>
+Reply-To: prudent_mygirl@yahoo.com
+User-Agent: SquirrelMail/1.4.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090112142349.SJYP1652.simmts6-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-www.wow.lk-MailScanner-Information: Please contact the ISP for more information
+X-www.wow.lk-MailScanner: Found to be clean
+X-www.wow.lk-MailScanner-From: prudent_mygirl@yahoo.com
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753906AbZALOYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755816AbZALSsQ@vger.kernel.org>
 
-E-MAIL ID Has won you the sum of £1,350,000.00 pounds in our MONTHLY 
-Irish Promo.get back to this office with your details.
+Hello,
+How are you doing today hope fine.My name is prudent.I came accross your profile  here
+()and after going through it l found you so intresting hope you don't mind.You can
+contact me with this email addresse so that l can send you my pic mail to
+(prudent_mygirl@yahoo.com) Hope to hear from you soon, Have a nice day & stay blessed.
+prudent
 
-Names:
-Address:
-Country:
-Email:edward.brown27@btinternet.com
 
-Regards
-Mrs Sarah Wood.
-
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
