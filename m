@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZALK2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZALK2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbZALK2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZALK2P
+	id S1754397AbZALK2u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZALK2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:28:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54516 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751713AbZALK2O (ORCPT
+	Mon, 12 Jan 2009 05:28:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58850 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbZALK2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:28:14 -0500
-Date: Mon, 12 Jan 2009 02:21:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-Message-Id: <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
-In-Reply-To: <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	<20090108144538.e5195575.akpm@linux-foundation.org>
-	<1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 12 Jan 2009 05:28:39 -0500
+Subject: Re: [RFC][PATCH] Multimedia scheduling class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jussi Laako <jussi@sonarnerd.net>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4959DE51.2020605@sonarnerd.net>
+References: <4959198A.3020209@sonarnerd.net>
+	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 11:28:34 +0100
+Message-Id: <1231756114.19771.6.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009 09:51:06 +0000 Catalin Marinas <catalin.marinas@arm.com> wrote:
+Right, so I totally lost this thread in my inbox -- sorry for that.
 
-> Hi Andrew,
-> 
-> On Thu, 2009-01-08 at 14:45 -0800, Andrew Morton wrote:
-> > On Fri, 19 Dec 2008 18:12:56 +0000
-> > Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > 
-> > > A new kmemleak version is available.
-> > 
-> > Sorry, I'll drop this.  The level of code churn in linux-next (during
-> > the merge window!) means that I've basically lost confidence that my
-> > lameass fixed-up code will still even work.
-> 
-> OK. I noticed some minor conflicts with 2.6.29-rc1 but I'll have a look
-> at linux-next as well. IIRC, is the -mm tree based on top of linux-next?
+On Tue, 2008-12-30 at 10:39 +0200, Jussi Laako wrote:
 
-It actually includes linux-next and Linus's tree.  -mm is based on the
-last-released kernel version (2.6.28, 2.6.29-rc1, etc) and includes
-origin.patch (takes it up to current Linus) and linux-next.patch (takes
-it up to current linux-next).
-
-> > > git://linux-arm.org/linux-2.6.git kmemleak
-> > 
-> > It might be better to add that to linux-next.  If we want to merge
-> > kmemleak.
+> > Eventually we'd hope to provide an sporadic task EDF based scheduler
+> > with hard and soft realtime capabilities, but until that time, FIFO and
+> > RR are the classes to use for anything realtime.
 > 
-> I would feel a bit more comfortable if kmemleak lived for (at least) a
-> release cycle in the -mm tree so that it may get wider testing. As I
-> said, I mainly tested it on ARM.
-> 
-> If you are OK with this, I'll update the branch and make sure there are
-> as few conflicts as possible (the alternative is patches by e-mail and
-> based on top of linux-next).
+> Yes, this is also what I thought first and I still believe this would
+> also be a good addition. After a bit more thinking I concluded that it
+> might be a bit too hard-realtime'ish for many of the tasks. It would
+> become rather close to running FIFO with flat priority?
 
-The many trees in linux-next are actually based on current mainline. 
-So if you can prepare and maintain a tree based on current mainline,
-Stephen could integrate that into linux-next, hopefully.
+Not quite so, you can avoid starvation with deadline schedulers, just
+limit their budget.
+
+> ....and these tasks are not sporadic, but strictly periodic...
+> 
+> > I'm not sure why you think SCHED_FIFO isn't good enough for your
+> > applications, could you elaborate on that?
+> 
+> Actually the biggest problem is that many of the developers are not
+> comfortable with using SCHED_FIFO for the purpose... :)
+
+Well, that's not my problem is it ;-), just batter them with a
+clue-stick, no need to fudge the kernel for that.
+
+> FIFO is unsuitable for video codecs, RR would be better there, but still
+> it would starve rest of the system too much in some cases (it can lose
+> some frames to keep rest of the system responsive).
+
+Right, which is where deadline scheduling would be nice. Once you start
+running into the budget throttle you know you've got to start dropping
+frames in order to keep up.
+
+The proposal is for it to start sending SIGXCPU once it starts
+throttling tasks in order to notify them of missed deadlines etc.
+
+> Some multimedia software is just not implemented in a way that it would
+> be safe to run these at RT-priority (having various too
+> nondeterministic code paths).
+
+Like said, deadline schedulers can help here. You can even dynamically
+adjust the parameters -- eg. fall back to half frame rate but double
+budget or something.
 
