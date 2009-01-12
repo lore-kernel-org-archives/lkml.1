@@ -1,86 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZALHzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZALH7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZALHzi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 02:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZALHz1
+	id S1754549AbZALH7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 02:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZALH7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 02:55:27 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:47278 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751376AbZALHz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 02:55:26 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAEOEakl5LDnl/2dsb2JhbADSLoVv
-X-IronPort-AV: E=Sophos;i="4.37,252,1231075800"; 
-   d="scan'208";a="291823432"
-Date: Mon, 12 Jan 2009 18:55:16 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Mon, 12 Jan 2009 02:59:31 -0500
+Received: from csamuel.org ([207.210.213.14]:55586 "EHLO csamuel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751407AbZALH7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 02:59:30 -0500
+From: Chris Samuel <chris@csamuel.org>
+To: linux-btrfs@vger.kernel.org
+Subject: Hard to debug kernel issues (was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning)
+Date: Mon, 12 Jan 2009 18:59:16 +1100
+User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
+Cc: David Woodhouse <dwmw2@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()
-	while holding sb_lock
-Message-ID: <20090112075516.GK8071@disturbed>
-Mail-Followup-To: Arjan van de Ven <arjan@linux.intel.com>,
-	Jamie Lokier <jamie@shareable.org>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>
-References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com> <20090112023138.GD6428@shareable.org> <496ABF01.50001@linux.intel.com>
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+References: <alpine.LFD.2.00.0901090759420.6528@localhost.localdomain> <20090110030216.GW26290@one.firstfloor.org> <1231676801.25018.150.camel@macbook.infradead.org>
+In-Reply-To: <1231676801.25018.150.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496ABF01.50001@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart4283922.WHj4pGa4DB";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901121859.20893.chris@csamuel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 03:54:41AM +0000, Arjan van de Ven wrote:
-> Jamie Lokier wrote:
->> Arjan van de Ven wrote:
->>>> 	- removing a million files and queuing all of the
->>>> 	  deletes in the async queues....
->>> the async code throttles at 32k outstanding.
->>> Yes 32K is arbitrary, but if you delete  a million files fast, all 
->>> but the first few thousand are
->>> synchronous.
->>
->> Hmm.
->>
->> If I call unlink() a thousand times and then call fsync() on the
->> parent directories covering files I've unlinked... I expect the
->> deletes to be committed to disk when the last fsync() has returned.  I
->> require that a crash and restart will not see the files.  Several
->> kinds of transactional software and even some shell scripts expect this.
->>
->> Will these asynchronous deletes break the guaranteed
->> commit-of-the-delete provided by fsync() on the parent directory?
->
-> 3 things:
-> 1) removing the name from the directory and removing the data from disk are independent things.
-> The former happens from unlink(), the later happens when the refcount hits 0 (eg no more openers nor
-> any directory on disk referencing it). fsync() on a parent dir obviously only covers the first part,
-> while only the 2nd part was made asynchronous.
-> 2) with the right synchronization point in fsync, it will still work out
+--nextPart4283922.WHj4pGa4DB
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-What scope does that synchronisation point have? I sincerely
-hope you are not proposing to put a filesystem global
-synchronisation point into fsync....
+On Sun, 11 Jan 2009 11:26:41 pm David Woodhouse wrote:
 
-> 3) this code will be redone for 2.6.30; for 2.6.29 it is removed.
+> Sometimes you weren't going to get a backtrace if something goes wrong
+> _anyway_.
 
-Can you tell use how you plan to redo this code and test it
-adequately for 2.6.30?
+Case in point - we've been struggling with some of our SuperMicro based=20
+systems with AMD Barcelona B3 k10h CPUs *turning themselves off* when runni=
+ng=20
+various HPC applications.
 
-Cheers,
+Nothing in the kernel logs, nothing in the IPMI controller logs. It's just=
+=20
+like someone has wandered in and held the power button down (and no, it's n=
+ot=20
+that).
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+It's been driving us up the wall.
+
+We'd assumed it was a hardware issue as it was happening with all sorts of=
+=20
+kernels but today we tried 2.6.29-rc1 "just in case" and I've not been able=
+ to=20
+reproduce the crash (yet) on a node I can crash in about 30 seconds, and=20
+rebooting back into 2.6.28 makes it crash again.
+
+If the test boxes are still alive tomorrow I might see if we can attempt so=
+me=20
+form of a reverse bisect to track down what commit fixed it (git doesn't se=
+em=20
+to support that so we've going to have to invert the good/bad commands).
+
+cheers,
+Chris
+=2D-=20
+ Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
+
+This email may come with a PGP signature as a file. Do not panic.
+=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+
+
+--nextPart4283922.WHj4pGa4DB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQEVAwUASWr4WI1yjaOTJg85AQKTcAf+P0AcoISkYMQNMd/A77CGGEABURCdPauB
+I1VLpvvN4DteXebOhYQDvSU8VOP4nlQQUus1YQWiIMIfOh+jd+6c7RIfnMJVZY+6
+HHzKLLuk4EcS/vIfCI9PEGySqmn1rFAo6Z/TAry1xXF6ihgle1f/QtbGqM72JCJT
+djYDJ8OmA2dFF8cq6lLz8lTWZTG9CEuYJU88dwjLmCr+DU6rJ543xd1QOeQSe0iP
+8oqjIjtqnHvSa6hQul611JZ72pZh+VqvKO5SG1zNtETVKC2eyfsumys6qgrcocyr
+h4QcdDiu5fZMmWSRC0lVzhEzJ/Ve0Qh/EmtRkTvs8x6HtPyrggpo9A==
+=h4j+
+-----END PGP SIGNATURE-----
+
+--nextPart4283922.WHj4pGa4DB--
