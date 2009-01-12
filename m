@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZALIiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZALIlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbZALIiG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZALIhp
+	id S1753934AbZALIlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZALIlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:37:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:16947 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbZALIho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:37:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=uMm8pffTMGMDg5V1aVY75CzHsvGCO8t6hGhKI6bSUNEEzle7zCSEg4iIs68X5qhRjR
-         Rm+HmuN7On4B9ZFRs4frJFVaoh2ndaLnaweAbjRSOkbmR38QPt7J6+T7dxxjO5iYMdcZ
-         3J4Bs1LaO+C3okvPRk68gG+lu6p9He49VEEiI=
-Message-ID: <621d098f0901120037y4e17b4bn8d52a8ecdbc3fcff@mail.gmail.com>
-Date: Mon, 12 Jan 2009 09:37:42 +0100
-From: "Jan Dittmer" <jdi@l4x.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
-Cc: "Diego Calleja" <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
-       eric.anholt@iintel.com, airlied@linux.ie
-In-Reply-To: <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
+	Mon, 12 Jan 2009 03:41:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46525 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbZALIlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:41:19 -0500
+Date: Mon, 12 Jan 2009 09:40:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090112084041.GA21976@elte.hu>
+References: <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com> <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain> <20090111005458.GA5363@elte.hu> <20090112015620.GA6428@shareable.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
-	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
-	 <20090111222122.4d0cb146@diego-desktop>
-	 <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
-	 <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
-	 <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
-X-Google-Sender-Auth: 67f4f82c99aceef4
+In-Reply-To: <20090112015620.GA6428@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 9:04 AM, Dave Airlie <airlied@gmail.com> wrote:
-> the latest git should work with kms on most chipsets, we are still
-> chasing down some issues on some chipsets,
 
-So is there anything I can test to help you get it going on 'my' chipset
-(GM965, Lenovo X300)?
+* Jamie Lokier <jamie@shareable.org> wrote:
 
-Jan
+> Ingo Molnar wrote:
+> > If it's used once in a single .c file it should be inlined even if
+> > it's large.
+> 
+> As Linus has pointed out, because of GCC not sharing stack among 
+> different inlined functions, the above is surprisingly not true.
+
+Yes, but note that this has no relevance to the specific case of 
+CONFIG_OPTIMIZE_INLINING: GCC can at most decide to inline _less_, not 
+more. I.e. under CONFIG_OPTIMIZE_INLINING we can only end up having less 
+stack sharing trouble.
+
+	Ingo
