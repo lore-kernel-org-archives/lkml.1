@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZALIEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZALIH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbZALIEc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZALIEV
+	id S1754118AbZALIH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZALIHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:04:21 -0500
-Received: from mail-gx0-f17.google.com ([209.85.217.17]:50488 "EHLO
-	mail-gx0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbZALIEU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:04:20 -0500
-X-Greylist: delayed 37489 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 03:04:20 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Nm7cNYkVmZWpogzwWSP52168YKbAQM6ctwBThU1xhc2NhQozyEvahKjuEVwkvfSZtI
-         HYGxtESvEPlnAZ3Q9MQs1u8iEPLNEIUtpdr1hBnObgykb/NXzMrTrZPUQCD3CU7eziro
-         SWv5BNy82JLl6mh1azsaawXIhT82fsmR3gMXc=
-Message-ID: <21d7e9970901120004t2dd68241x6b9533f489601109@mail.gmail.com>
-Date: Mon, 12 Jan 2009 18:04:19 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jan Dittmer" <jdi@l4x.org>
-Subject: Re: intel kms "Failed to allocate space for kernel memory manager"
-Cc: "Diego Calleja" <diegocg@gmail.com>, linux-kernel@vger.kernel.org,
-       eric.anholt@iintel.com, airlied@linux.ie
-In-Reply-To: <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
+	Mon, 12 Jan 2009 03:07:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39933 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751409AbZALIHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:07:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.28-git-4 - powerpc - kernel expection 'c01 at .kernel_thread'
+Date: Mon, 12 Jan 2009 09:07:19 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rjw; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
+       sfr@canb.auug.org.au, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org, mel@csn.ul.ie
+References: <20090102125752.GA5743@linux.vnet.ibm.com> <200901110108.20848.rjw@sisk.pl> <20090112072132.GA8409@linux.vnet.ibm.com>
+In-Reply-To: <20090112072132.GA8409@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <621d098f0901110546p2b99a525k5de54e37fa181197@mail.gmail.com>
-	 <621d098f0901110551v5a05f69aqc4e06a6905989d6e@mail.gmail.com>
-	 <20090111222122.4d0cb146@diego-desktop>
-	 <21d7e9970901111339q705bcea4i44941bfd84a075fe@mail.gmail.com>
-	 <621d098f0901112342q353326b2k31c276e044ad9d0a@mail.gmail.com>
+Message-Id: <200901120907.20418.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 5:42 PM, Jan Dittmer <jdi@l4x.org> wrote:
-> On Sun, Jan 11, 2009 at 10:39 PM, Dave Airlie <airlied@gmail.com> wrote:
->> On Mon, Jan 12, 2009 at 7:21 AM, Diego Calleja <diegocg@gmail.com> wrote:
->>> I also have a failure with KMS, it's different than yours but I'll post it
->>> in this thread...xserver-xorg-video-intel version 2.5.1 (whatever there is
->>> in ubuntu unstable repositories)
->>
->> Read the kconfig option before you enabled kms by default?
->>
->> if not, you cannot just enable kms and have old userspace drivers
->> work, there is no
->> released userspace for this yet, as that would put the chicken before the egg.
->
-> But latest xf86-intel-video git tree should work, shouldn't it? An explicit
-> VideoRam line in xorg.conf is ignored btw.
+On Monday 12 January 2009, Kamalesh Babulal wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> [2009-01-11 01:08:19]:
+> 
+> > On Friday 02 January 2009, Kamalesh Babulal wrote:
+> > > Hi,
+> > > 
+> > > 	2.6.28-git4 kernel drops to xmon with kernel expection. Similar kernel
+> > > expection was seen next-20081230 and next-20081231 and was reported 
+> > > earlier at http://lkml.org/lkml/2008/12/31/157
+> > 
+> > Is this a regression from 2.6.27?
+> > 
+> > Rafael
+> >
+> 
+> This is not a regression from 2.6.27, this expection was first seen 
+> next-20081230 patches and then was introduced into 2.6.28-git4 and is 
+> reproducible with 2.6.28-rc1 kernel.
 
-explicit VideoRAM is most likely ignored by xorg as well for Intel
-chipsets with the latest driver,
-the latest git should work with kms on most chipsets, we are still
-chasing down some issues on some chipsets,
-its still development code, its mainly upstream to get the API stable
-and find the corner cases.
+Presumably you meant 2.6.29-rc1 ?  In which case it would be a regression from
+2.6.28 .  Please confirm.
 
-Dave.
-
-
->
-> Thanks,
->
-> Jan
->
-> --
-> Jan Dittmer <jdi@l4x.org>
->
+Thanks,
+Rafael
