@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZALBvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZALB5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbZALBvS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZALBvI
+	id S1753770AbZALB5b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 20:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALB5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:51:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50821 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZALBvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:51:07 -0500
-Message-ID: <496AA21A.6010905@cn.fujitsu.com>
-Date: Mon, 12 Jan 2009 09:51:22 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 11 Jan 2009 20:57:19 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:44135 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZALB5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:57:18 -0500
+Date: Mon, 12 Jan 2009 01:56:20 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090112015620.GA6428@shareable.org>
+References: <1231537320.5726.2.camel@brick> <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com> <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain> <20090111005458.GA5363@elte.hu>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       corbet@lwn.net, Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: Who wrote 2.6.28
-References: <496224D7.2030109@cn.fujitsu.com>	<3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com> <20090109.141124.154196743.davem@davemloft.net>
-In-Reply-To: <20090109.141124.154196743.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090111005458.GA5363@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller said the following on 2009-1-10 6:11:
-> From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-> Date: Fri, 9 Jan 2009 19:39:17 +0530
-> 
->> In http://remword.com/kps_result/2_6_29_whole_line.html
->> Earlier I was using email address: Jaswinder Singh
->> <jaswinder@infradead.org> (Unknown #25) and now I am using:
->> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
->>
->> If possible can you link above two emails.
-> 
-> This reminds me that I noticed another one that needs linking,
-> shemminger@linux-foundation.org became shemminger@vyatta.com
-> 
+Ingo Molnar wrote:
+> If it's used once in a single .c file it should be inlined even if
+> it's large.
 
-Thanks Dave.
-But I wonder that whether Stephen still be LF people.
-If not, I will separate these two addresses to different employers.
+As Linus has pointed out, because of GCC not sharing stack among
+different inlined functions, the above is surprisingly not true.
+
+In kernel it's a problem due to raw stack usage.
+
+In userspace apps (where stack used is larger), inlining single-call
+functions could, paradoxically, run slower due to increased stack
+dcache pressure for some larger functions.
+
+-- Jamie
