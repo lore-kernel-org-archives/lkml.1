@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757063AbZALTql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZALTsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063AbZALTql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbZALTq2
+	id S1756685AbZALTsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZALTsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:46:28 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:4386 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756595AbZALTq0 (ORCPT
+	Mon, 12 Jan 2009 14:48:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753179AbZALTsB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:46:26 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jon Masters <jcm@redhat.com>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot interrupt equivalent
-Date: Mon, 12 Jan 2009 12:45:16 -0700
-User-Agent: KMail/1.9.10
-Cc: Stefan Assmann <sassmann@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <200901121151.53195.bjorn.helgaas@hp.com> <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
-In-Reply-To: <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
+	Mon, 12 Jan 2009 14:48:01 -0500
+Date: Mon, 12 Jan 2009 11:47:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: Torsten Kaiser <just.for.lkml@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+In-Reply-To: <20090112192912.GA31650@linux-os.sc.intel.com>
+Message-ID: <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain>
+References: <20090111143951.GA6666@elte.hu> <64bb37e0901110845o2561db4auf68b86d024d210a0@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC4643BB73C5@orsmsx505.amr.corp.intel.com> <64bb37e0901121101y73c492fel38a70681f226b526@mail.gmail.com>
+ <20090112191934.GA28851@linux-os.sc.intel.com> <20090112192912.GA31650@linux-os.sc.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901121245.17479.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009 12:25:49 pm Jon Masters wrote:
-> On Mon, 2009-01-12 at 11:51 -0700, Bjorn Helgaas wrote:
-> > (I added Eric, Maciej, and Jon because they participated in
-> > previous discussion here: http://lkml.org/lkml/2008/6/2/269)
-> 
-> Thanks. You know what I'd really like even more than being on the CC?
-> I'd *love* someone to post a link to documentation on how this actually
-> is supposed to work.
 
-I don't work for Intel, so I don't have any internal knowledge.  All
-I know is what I read in section 2.15 of the 6700PXH datasheet here:
-  http://www.intel.com/Assets/PDF/datasheet/302628.pdf
+
+On Mon, 12 Jan 2009, Pallipadi, Venkatesh wrote:
+> +		if (strict_prot ||
+> +		    (want_flags == _PAGE_CACHE_UC_MINUS &&
+> +		     flags == _PAGE_CACHE_WB) ||
+> +		    (want_flags == _PAGE_CACHE_WC &&
+> +		     flags == _PAGE_CACHE_WB)) {
+
+Please don't write code like this.
+
+Do it as an inline function that returns true/false and has comments on 
+what the hell is going on.
+
+If a conditional doesn't fit on one line, it should generally be 
+abstracted away into a readable function where the name explains what it 
+does conceptually.
+
+		Linus
