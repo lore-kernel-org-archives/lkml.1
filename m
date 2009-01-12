@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbZALOAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZALOBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbZALOAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZALNym
+	id S1756164AbZALOBg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZALN7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 08:54:42 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49867 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337AbZALNyk (ORCPT
+	Mon, 12 Jan 2009 08:59:37 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:49306 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756555AbZALN7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 08:54:40 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 14:52:31 +0100
-Message-Id: <1231768351-30502-24-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20090112135057.GA10250@pengutronix.de>
-References: <20090112135057.GA10250@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move virtrng_remove to .devexit.text
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 12 Jan 2009 08:59:35 -0500
+Subject: Re: Btrfs for mainline
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>
+In-Reply-To: <20090111153437.b069d38d.akpm@linux-foundation.org>
+References: <1230722935.4680.5.camel@think.oraclecorp.com>
+	 <20090111153437.b069d38d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 08:58:50 -0500
+Message-Id: <1231768730.17356.0.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.496B4C9E.003D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function virtrng_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+On Sun, 2009-01-11 at 15:34 -0800, Andrew Morton wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12435
+> 
+> Congratulations ;)
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/char/hw_random/virtio-rng.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Rejected documented, that's the best buzilla tag ever ;)
 
-diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
-index d0e563e..8cb8061 100644
---- a/drivers/char/hw_random/virtio-rng.c
-+++ b/drivers/char/hw_random/virtio-rng.c
-@@ -108,7 +108,7 @@ static int virtrng_probe(struct virtio_device *vdev)
- 	return 0;
- }
- 
--static void virtrng_remove(struct virtio_device *vdev)
-+static void __devexit virtrng_remove(struct virtio_device *vdev)
- {
- 	vdev->config->reset(vdev);
- 	hwrng_unregister(&virtio_hwrng);
--- 
-1.5.6.5
+Thanks,
+Chris
+
 
