@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZALLOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZALLOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbZALLOS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZALLOF
+	id S1754831AbZALLOx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZALLOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:14:05 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56950 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752040AbZALLOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:14:04 -0500
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090112213339.feefdd02.sfr@canb.auug.org.au>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20090108144538.e5195575.akpm@linux-foundation.org>
-	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
-	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 12 Jan 2009 11:13:13 +0000
-Message-Id: <1231758793.10982.13.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jan 2009 11:13:14.0389 (UTC) FILETIME=[C3211C50:01C974A6]
+	Mon, 12 Jan 2009 06:14:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35521 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752049AbZALLOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:14:40 -0500
+Date: Mon, 12 Jan 2009 06:14:36 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: xfs@oss.sgi.com
+cc: linux-kernel@vger.kernel.org
+Subject: spurious -ENOSPC on XFS
+Message-ID: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 21:33 +1100, Stephen Rothwell wrote:
-> On Mon, 12 Jan 2009 02:21:38 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > The many trees in linux-next are actually based on current mainline. 
-> > So if you can prepare and maintain a tree based on current mainline,
-> > Stephen could integrate that into linux-next, hopefully.
-> 
-> That's what I'm here for :-)
+Hi
 
-OK. I'll update the branch to 2.6.29-rc1 later today and let you know
-(I'll also check for any obvious conflicts with linux-next).
+I discovered a bug in XFS in delayed allocation.
 
-Thanks.
+When you take a small partition (52MB in my case) and copy many small 
+files on it (source code) that barely fits there, you get -ENOSPC. Then 
+sync the partition, some free space pops up, click "retry" in MC an the 
+copy continues. They you get again -ENOSPC, you must sync, click "retry" 
+and go on. And so on few times until the source code finally fits on the 
+XFS partition.
 
--- 
-Catalin
+This misbehavior is apparently caused by delayed allocation, delayed 
+allocation does not exactly know how much space will be occupied by data, 
+so it makes some upper bound guess. Because free space count is only a 
+guess, not the actual data being consumed, XFS should not return -ENOSPC 
+on behalf of it. When the free space overflows, XFS should sync itself, 
+retry allocation and only return -ENOSPC if it fails the second time, 
+after the sync.
 
+Mikulas
