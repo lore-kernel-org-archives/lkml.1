@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZALKQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZALKVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZALKQe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZALKQX
+	id S1753518AbZALKVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZALKUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:16:23 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60059 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbZALKQV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:16:21 -0500
-Date: Mon, 12 Jan 2009 11:18:03 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Mark A. Miller" <mark@mirell.org>
-Cc: Bernd Petrovitsch <bernd@firmix.at>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, Rob Landley <rob@landley.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Message-ID: <20090112101803.GB10086@uranus.ravnborg.org>
-References: <200901020207.30359.rob@landley.net> <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com> <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net> <20090104030619.GA21466@linux-sh.org> <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com> <1231677939.3517.5.camel@gimli.at.home> <31014a580901111928u586e2246uccf370ff941c8a01@mail.gmail.com> <20090112053552.GA9061@uranus.ravnborg.org> <31014a580901112150x57cd715aj5f42ee19bc28c701@mail.gmail.com>
-Mime-Version: 1.0
+	Mon, 12 Jan 2009 05:20:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60045 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751425AbZALKUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 05:20:51 -0500
+Date: Mon, 12 Jan 2009 11:20:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, tigran@aivazian.fsnet.co.uk,
+       shaohua.li@intel.com, rusty@rustcorp.com.au,
+       Andi Kleen <andi@firstfloor.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL -tip] x86: fix style problems in microcode_intel.c,
+	msr.c and module_XX.c
+Message-ID: <20090112102011.GB10405@elte.hu>
+References: <1231753169.7087.5.camel@jaswinder.satnam>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31014a580901112150x57cd715aj5f42ee19bc28c701@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1231753169.7087.5.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 11:50:31PM -0600, Mark A. Miller wrote:
-> On Sun, Jan 11, 2009 at 11:35 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> >> There are several other packages which are broken for embedded
-> >> architectures, which I will hopefully attempt to fix by submitting patches
-> >> upstream. But this is why we should be cautious about including new tools
-> >> for compiling the kernel. Sam Ravnborg was correct in that a C program to do
-> >> the work would be the proper way. But by not addressing a currently existing
-> >> problem with an adequate replacement with something that does not exist
-> >> currently, seems faulty.
-> >
-> > Why are "make headers_install" such a crucial thing for your
-> > embedded environmnet?
+
+* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
+
+> Hello Ingo,
 > 
-> Sanity check. If the environment cannot replicate itself, then
-> something has been faulty in the cross-compiling stage, that was used
-> to propagate a native environment for the target architecture.
+> These are safe cleanup patches, please pull them.
+> 
+> The following changes since commit bb3d7f3c5e418992c9012a850d16d2e11fe43f7e:
+>   Ingo Molnar (1):
+>         Merge branch 'linus'
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tiptop.git master
+> 
+> Jaswinder Singh Rajput (4):
+>       x86: microcode_intel.c fix style problems
+>       x86: msr.c fix style problems
+>       x86: module_32.c fix style problems
+>       x86: module_64.c fix style problems
 
-So you actually build your target toolchain on your target?
+hm, are the mpparse.c structural cleanups that i suggested some time ago 
+still on your list? I think the functions replace_intsrc_all(), 
+smp_scan_config() and smp_read_mpc() need those cleanups.
 
-	Sam
+	Ingo
