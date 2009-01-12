@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752130AbZALJ2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751290AbZALJcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752130AbZALJ2E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 04:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZALJ1t
+	id S1751290AbZALJcv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 04:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZALJcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 04:27:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51088 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Jan 2009 04:32:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44379 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbZALJ1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 04:27:48 -0500
-Date: Mon, 12 Jan 2009 10:27:35 +0100
+	id S1751462AbZALJcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 04:32:41 -0500
+Date: Mon, 12 Jan 2009 10:32:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Mike Travis <travis@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: include apicnum.h in acpidef.h
-Message-ID: <20090112092735.GB1822@elte.hu>
-References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-next@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: linux-next: origin tree build failure
+Message-ID: <20090112093214.GA6798@elte.hu>
+References: <20090112104837.69feedec.sfr@canb.auug.org.au> <1231719015.22571.4.camel@pasglop> <20090112090552.GD26750@elte.hu> <20090112202427.3b918490.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090112092613.GA1822@elte.hu>
+In-Reply-To: <20090112202427.3b918490.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4956]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> like:
+> > It slipped through because it didnt get caught in build tests because 
+> > cpufreq isnt enabled in the powerpc defconfig.
 > 
-> In file included from /home/mingo/tip/arch/x86/include/asm/i387.h:16,
->                  from 
-> /home/mingo/tip/arch/x86/include/asm/suspend_32.h:10,
->                  from /home/mingo/tip/arch/x86/include/asm/suspend.h:2,
->                  from include/linux/suspend.h:5,
->                  from arch/x86/kernel/asm-offsets_32.c:11,
->                  from arch/x86/kernel/asm-offsets.c:2:
-> include/linux/hardirq.h:41:27: error:  ':' without preceding '?'
-> In file included from arch/x86/kernel/asm-offsets_32.c:24,
->                  from arch/x86/kernel/asm-offsets.c:2:
-> include/linux/lguest.h:60:1: error: unterminated argument list invoking 
-> macro "BITS_TO_LONGS"
-> In file included from arch/x86/kernel/asm-offsets_32.c:25,
->                  from arch/x86/kernel/asm-offsets.c:2:
-> arch/x86/kernel/../../../drivers/lguest/lg.h:236:1: error: unterminated 
-> argument list invoking macro "BITS_TO_LONGS"
-> 
-> so i've reverted it again. config attached.
+> Which is one of the reasons we have linux-next: "integration testing".
 
-(Below are the two commits that i reverted - please reuse the improved 
-changelogs when resubmitting it.)
+Build bugs slipped through that net too in the past.
+
+And we dont really want developers and maintainers to rely on an external 
+middle man facility to be able to submit patches. So the best method is to 
+make the defconfigs good enough to catch everyday build bugs. Random 
+testing and linux-next can then catch the weird special cases as well.
 
 	Ingo
-
------------>
->From af95e2305842d3192ab782abb8ceedc1a2b82d39 Mon Sep 17 00:00:00 2001
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Sun, 11 Jan 2009 21:42:13 -0800
-Subject: [PATCH] x86: include apicnum.h in acpidef.h
-
-Impact: clean up
-
-MAX_IO_APICS and MAX_LOCAL_APIC is already defined in apicnum.h, no
-need to duplicate it in apicdef.h.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/apicdef.h |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/include/asm/apicdef.h b/arch/x86/include/asm/apicdef.h
-index 63134e3..85b50a0 100644
---- a/arch/x86/include/asm/apicdef.h
-+++ b/arch/x86/include/asm/apicdef.h
-@@ -132,12 +132,7 @@
- #define APIC_BASE_MSR	0x800
- #define X2APIC_ENABLE	(1UL << 10)
- 
--#ifdef CONFIG_X86_32
--# define MAX_IO_APICS 64
--#else
--# define MAX_IO_APICS 128
--# define MAX_LOCAL_APIC 32768
--#endif
-+#include <asm/apicnum.h>
- 
- /*
-  * All x86-64 systems are xAPIC compatible.
-
->From adf320a657d774d8bdf58b8ffc81670238824c9c Mon Sep 17 00:00:00 2001
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Sun, 11 Jan 2009 21:43:49 -0800
-Subject: [PATCH] x86: use nr_cpus in max_nr_irqs()
-
-Impact: save RAM with large NR_CPUS, get smaller nr_irqs
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Mike Travis <travis@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/irq_vectors.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
-index 602361a..5b285ca 100644
---- a/arch/x86/include/asm/irq_vectors.h
-+++ b/arch/x86/include/asm/irq_vectors.h
-@@ -117,8 +117,8 @@
- 
- /* defined as a macro so nr_irqs = max_nr_irqs(nr_cpu_ids) can be used */
- # define max_nr_irqs(nr_cpus)				\
--	((8 * nr_cpus) > (32 * MAX_IO_APICS) ?		\
--		(NR_VECTORS + (8 * NR_CPUS)) :		\
-+	((8 * (nr_cpus)) > (32 * MAX_IO_APICS) ?		\
-+		(NR_VECTORS + (8 * (nr_cpus)) :		\
- 		(NR_VECTORS + (32 * MAX_IO_APICS)))	\
- 
- # define NR_IRQS max_nr_irqs(NR_CPUS)
