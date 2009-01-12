@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZALDhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbZALDzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbZALDhS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 22:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZALDhB
+	id S1753366AbZALDzI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 22:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZALDyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 22:37:01 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:32722 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZALDhA (ORCPT
+	Sun, 11 Jan 2009 22:54:54 -0500
+Received: from mga10.intel.com ([192.55.52.92]:52867 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752151AbZALDyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 22:37:00 -0500
-Message-ID: <31014a580901111936q41486efagcb90af2b6880a470@mail.gmail.com>
-Date: Sun, 11 Jan 2009 21:36:58 -0600
-From: "Mark A. Miller" <mark@mirell.org>
-To: "Bernd Petrovitsch" <bernd@firmix.at>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Cc: "Leon Woestenberg" <leon.woestenberg@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>, "Rob Landley" <rob@landley.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Embedded Linux mailing list" <linux-embedded@vger.kernel.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <1231677939.3517.5.camel@gimli.at.home>
+	Sun, 11 Jan 2009 22:54:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,250,1231142400"; 
+   d="scan'208";a="656277077"
+Message-ID: <496ABF01.50001@linux.intel.com>
+Date: Mon, 12 Jan 2009 03:54:41 +0000
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jamie Lokier <jamie@shareable.org>
+CC: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()	while
+ holding sb_lock
+References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com> <20090112023138.GD6428@shareable.org>
+In-Reply-To: <20090112023138.GD6428@shareable.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200901020207.30359.rob@landley.net>
-	 <c384c5ea0901031454n451bc899w166bb146c96f6164@mail.gmail.com>
-	 <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net>
-	 <20090104030619.GA21466@linux-sh.org>
-	 <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com>
-	 <1231677939.3517.5.camel@gimli.at.home>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 6:45 AM, Bernd Petrovitsch <bernd@firmix.at> wrote:
->
-> On Son, 2009-01-04 at 11:23 +0100, Leon Woestenberg wrote:
-> [...]
-> > On Sun, Jan 4, 2009 at 4:06 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> [...]
->
-> I'm ignoring the "cross-compile perl" issue - haven't tried it for
-> years.
->
-> > 5. Tool *version* dependency is hard to get right. When cross-building
-> > 30 software packages all requiring native perl, we probably need to
-> > build a few versions of perl (native), one for each set of packages.
->
-> perl is IMHO special (and quite different to others - including
-> especially autotools): perl5 is used widely enough so that "one somewhat
-> recent version" should cover all of 30 software packages.
-> The hard part are the CPAN modules and their versions which are really a
-> PITA.
-> As long as you don't use modules from CPAN, "perl5" should be specific
-> enough.
->
->        Bernd
-> --
-> Firmix Software GmbH                   http://www.firmix.at/
-> mobil: +43 664 4416156                 fax: +43 1 7890849-55
->          Embedded Linux Development and Services
+Jamie Lokier wrote:
+> Arjan van de Ven wrote:
+>>> 	- removing a million files and queuing all of the
+>>> 	  deletes in the async queues....
+>> the async code throttles at 32k outstanding.
+>> Yes 32K is arbitrary, but if you delete  a million files fast, all but the 
+>> first few thousand are
+>> synchronous.
+> 
+> Hmm.
+> 
+> If I call unlink() a thousand times and then call fsync() on the
+> parent directories covering files I've unlinked... I expect the
+> deletes to be committed to disk when the last fsync() has returned.  I
+> require that a crash and restart will not see the files.  Several
+> kinds of transactional software and even some shell scripts expect this.
+> 
+> Will these asynchronous deletes break the guaranteed
+> commit-of-the-delete provided by fsync() on the parent directory?
 
-Actually, something that has amused me during this discussion, is that
-right now, the latest stable Perl (5.8.8) does not compile correctly
-on a uclibc host, which is typically what you want for embedded
-systems, which is why you'd bother to cross compile. (Albeit I was
-doing this natively under QEMU with a gcc/uclibc toolchain).
+3 things:
+1) removing the name from the directory and removing the data from disk are independent things.
+The former happens from unlink(), the later happens when the refcount hits 0 (eg no more openers nor
+any directory on disk referencing it). fsync() on a parent dir obviously only covers the first part,
+while only the 2nd part was made asynchronous.
+2) with the right synchronization point in fsync, it will still work out
+3) this code will be redone for 2.6.30; for 2.6.29 it is removed.
 
-I'll have a patch submitted upstream shortly, but basically the
-hints/linux.sh assumes *obviously* you're linking to glibc. I've made
-that less libc dependent, looking for either glibc or uclibc.
-
-So without patching Perl, by adding it to the kernel configuration,
-it's broken being able to compile the kernel on most embedded
-architectures.
-
-And for H. Peter Anvin, before you refer to such uses as compiling the
-kernel under a native environment as a "piece of art", please be aware
-that the mainstream embedded development environment, buildroot, is
-also attempting to utilize QEMU for a "sanity check" on the
-environment.
-
-There are several other packages which are broken for embedded
-architectures, which I will hopefully attempt to fix by submitting
-patches upstream. But this is why we should be cautious about
-including new tools for compiling the kernel. Sam Ravnborg was correct
-in that a C program to do the work would be the proper way. But by not
-addressing a currently existing problem with an adequate replacement
-with something that does not exist currently, seems faulty.
---
-Mark A. Miller
-mark@mirell.org
