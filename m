@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZALCai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZALCby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202AbZALCai (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 21:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZALCa2
+	id S1753244AbZALCby (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 21:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZALCbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 21:30:28 -0500
-Received: from mga03.intel.com ([143.182.124.21]:15937 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZALCa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 21:30:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,250,1231142400"; 
-   d="asc'?scan'208";a="98828394"
-Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090110100823.GA22352@gondor.apana.org.au>
-References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
-	 <20090109070144.GA7358@gondor.apana.org.au>
-	 <1231491273.5937.94.camel@yhuang-dev.sh.intel.com>
-	 <20090109091814.GA10881@gondor.apana.org.au>
-	 <20090110100823.GA22352@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QBT1SP4U6wWICTx+2DMP"
-Date: Mon, 12 Jan 2009 10:30:23 +0800
-Message-Id: <1231727423.5937.101.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 11 Jan 2009 21:31:43 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:48232 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbZALCbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 21:31:43 -0500
+Date: Mon, 12 Jan 2009 02:31:38 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Grissiom <chaos.proton@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] async: Don't call async_synchronize_full_special()	while holding sb_lock
+Message-ID: <20090112023138.GD6428@shareable.org>
+References: <a0adeea50901080007q5a3ed5c8y5a744ce37e677325@mail.gmail.com> <1231425472.21528.13.camel@norville.austin.ibm.com> <20090108072111.1ebadebd@infradead.org> <1231429591.27353.14.camel@norville.austin.ibm.com> <20090108225050.GL9448@disturbed> <49668388.708@linux.intel.com> <20090109014054.GN9448@disturbed> <4966D652.4070105@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4966D652.4070105@linux.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
+> >	- removing a million files and queuing all of the
+> >	  deletes in the async queues....
+> 
+> the async code throttles at 32k outstanding.
+> Yes 32K is arbitrary, but if you delete  a million files fast, all but the 
+> first few thousand are
+> synchronous.
 
---=-QBT1SP4U6wWICTx+2DMP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hmm.
 
-On Sat, 2009-01-10 at 18:08 +0800, Herbert Xu wrote:
-> On Fri, Jan 09, 2009 at 08:18:14PM +1100, Herbert Xu wrote:
-> >
-> > Not at all, tfms are just "shell" objects and they were designed
-> > to be used in thie way.  Calling setkey twice is an issue but it's
-> > not a show-stopper.  We have the same problem in other places to
-> > so this something that we can potentially optimise.
->=20
-> Here's how we can solve the double setkey problem.  We can make
-> a new cryptd_alloc_ablkcipher interface that returns a cryptd
-> ablkcipher object.  Since it's cryptd specific we can then access
-> its underlying blkcipher object, which can be shared between the
-> cryptd object and the user of the cryptd object.  This way you
-> only need to do setkey on the cryptd object and it'll get set
-> on the underlying blkcipher automatically.
+If I call unlink() a thousand times and then call fsync() on the
+parent directories covering files I've unlinked... I expect the
+deletes to be committed to disk when the last fsync() has returned.  I
+require that a crash and restart will not see the files.  Several
+kinds of transactional software and even some shell scripts expect this.
 
-With this method, we can allocate only one cryptd tfm internally,
-without dedicated blkcipher tfm. If kernel is using FPU, crypd tfm is
-used, otherwise, the underlying blkcipher tfm is used directly.
+Will these asynchronous deletes break the guaranteed
+commit-of-the-delete provided by fsync() on the parent directory?
 
-Best Regards,
-Huang Ying
-
-
---=-QBT1SP4U6wWICTx+2DMP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklqqzwACgkQKhFGF+eHlphBXwCePKPOXICxSqUUn3pgJr3KpCaB
-/A8AoIgDuVLEvnjwJTk9CMC5D5sd6vxz
-=Hlwu
------END PGP SIGNATURE-----
-
---=-QBT1SP4U6wWICTx+2DMP--
-
+-- Jamie
