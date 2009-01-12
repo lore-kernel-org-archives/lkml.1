@@ -1,42 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZALW7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZALXAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbZALW7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:59:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZALW7Z
+	id S1758842AbZALXAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 18:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZALXAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:59:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33039 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZALW7Z (ORCPT
+	Mon, 12 Jan 2009 18:00:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49463 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751707AbZALXAd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:59:25 -0500
-Message-ID: <496BCB60.6040504@zytor.com>
-Date: Mon, 12 Jan 2009 14:59:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-References: <20090112213539.GA10720@gambetta> <20090112215701.GH23848@one.firstfloor.org> <20090112224037.GA16585@elte.hu>
-In-Reply-To: <20090112224037.GA16585@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 12 Jan 2009 18:00:33 -0500
+Date: Mon, 12 Jan 2009 14:59:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ying Han <yinghan@google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mikew@google.com,
+       rohitseth@google.com
+Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
+Message-Id: <20090112145939.5ae28ada.akpm@linux-foundation.org>
+In-Reply-To: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
+References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Mon, 5 Jan 2009 15:39:07 -0800
+Ying Han <yinghan@google.com> wrote:
 
->> Nope it doesn't save memory on most systems because per cpu is only 
->> allocated based on the CPUs that are actually there. And if you have 
->> more than 8 cores you can likely afford a few bytes per CPU.
+> From: Ying Han <yinghan@google.com>
 > 
-> No distro kernel will build with less than 8 CPUs anyway so this point is 
-> moot.
+> Fix 32bit binary get 64bit stack vma offset.
+> 
+> 32bit binary running on 64bit system, the /proc/pid/maps shows for the
+> vma represents stack get a 64bit adress:
+> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
+> 
+> Signed-off-by:	Ying Han <yinghan@google.com>
+> 
+> fs/exec.c                     |    5 +-
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 4e834f1..8c3eff4 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -517,6 +517,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>  	unsigned long length = old_end - old_start;
+>  	unsigned long new_start = old_start - shift;
+>  	unsigned long new_end = old_end - shift;
+> +	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
+>  	struct mmu_gather *tlb;
+> 
+>  	BUG_ON(new_start > new_end);
+> @@ -531,7 +532,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>  	/*
+>  	 * cover the whole range: [new_start, old_end)
+>  	 */
+> -	vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
+> +	vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
+> 
+>  	/*
+>  	 * move the page tables downwards, on failure we rely on
+> @@ -564,7 +565,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, uns
+>  	/*
+>  	 * shrink the vma to just the new range.
+>  	 */
+> -	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
+> +	vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
+> 
+>  	return 0;
 
-Except for embedded, which will build for exactly what's in the box.
+I rewrote the chagnelog as below.  Please confirm that it makes sense?
 
-	-hpa
+
+Subject: fs/exec.c: fix value of vma->vm_pgoff for the stack VMA of 32-bit processes
+From: Ying Han <yinghan@google.com>
+
+With a 32 bit binary running on a 64 bit system, the /proc/pid/maps for
+the [stack] VMA displays a 64-bit address:
+
+ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
+
+This is because vma->vm_pgoff for that VMA is incorrectly being stored in
+units of offset-in-bytes.  It should be stored in units of offset-in-pages.
+
+Signed-off-by: Ying Han <yinghan@google.com>
+Cc: Mike Waychison <mikew@google.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/exec.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff -puN fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes fs/exec.c
+--- a/fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes
++++ a/fs/exec.c
+@@ -509,6 +509,7 @@ static int shift_arg_pages(struct vm_are
+ 	unsigned long length = old_end - old_start;
+ 	unsigned long new_start = old_start - shift;
+ 	unsigned long new_end = old_end - shift;
++	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
+ 	struct mmu_gather *tlb;
+ 
+ 	BUG_ON(new_start > new_end);
+@@ -523,7 +524,7 @@ static int shift_arg_pages(struct vm_are
+ 	/*
+ 	 * cover the whole range: [new_start, old_end)
+ 	 */
+-	vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
++	vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
+ 
+ 	/*
+ 	 * move the page tables downwards, on failure we rely on
+@@ -556,7 +557,7 @@ static int shift_arg_pages(struct vm_are
+ 	/*
+ 	 * shrink the vma to just the new range.
+ 	 */
+-	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
++	vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
+ 
+ 	return 0;
+ }
+_
+
