@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZALBKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZALBMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZALBKE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbZALBJx
+	id S1753979AbZALBMn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 20:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbZALBMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:09:53 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63825 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbZALBJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:09:53 -0500
-Message-ID: <496A982E.3020103@cn.fujitsu.com>
-Date: Mon, 12 Jan 2009 09:09:02 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 11 Jan 2009 20:12:34 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:45861 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbZALBMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:12:33 -0500
+Date: Sun, 11 Jan 2009 20:12:31 -0500
+To: Qinghuang Feng <qhfeng.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, neilb@suse.de, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH] NFSD: cleanup for nfs3proc.c
+Message-ID: <20090112011231.GA31971@fieldses.org>
+References: <496a44f7.05636e0a.69b8.6278@mx.google.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere> <20090111051604.GF7061@linux.vnet.ibm.com>
-In-Reply-To: <20090111051604.GF7061@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496a44f7.05636e0a.69b8.6278@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> The debugfs and seqfile handling and handled in the statistical
->> tracing engine.
->>
->> You just have to provide an iterator for your stat entries through two callbacks:
->>
->> _ stat_start() -> gives the first entry
->> _ stat_next() -> iterates over the next entry
->>
->> And an output callback
->>
->> _ stat_show() -> print one entry from your stat list
->>
->> And two optional things:
->>
->> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
->> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
->>
->> The last thing you need is to give a name to your trace file.
->> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
->> of your stats.
->>
->> It is currently used by the branch tracer, and by a pending patch for a new workqueue
->> tracer which will provide you a simple example.
->>
->> If you have any question about how to use it, don't hesitate to ask.
-> 
-> Li Zefan, is this something you would be willing to try?  Sounds like
-> it might be a good addition.
-> 
+On Mon, Jan 12, 2009 at 03:13:53AM +0800, Qinghuang Feng wrote:
+> MSDOS_SUPER_MAGIC is defined in <linux/magic.h>,
+> so use MSDOS_SUPER_MAGIC directly.
 
-Sure, I'll try. :)
+Thanks.  But does anyone know if there's any better way to figure out
+whether a filesystem supports links and symlinks than by checking
+s_magic == MSDOS_SUPER_MAGIC??
 
+--b.
+
+> 
+> Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+> ---
+> diff --git a/fs/nfsd/nfs3proc.c b/fs/nfsd/nfs3proc.c
+> index 9dbd2eb..579ce8c 100644
+> --- a/fs/nfsd/nfs3proc.c
+> +++ b/fs/nfsd/nfs3proc.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/unistd.h>
+>  #include <linux/slab.h>
+>  #include <linux/major.h>
+> +#include <linux/magic.h>
+>  
+>  #include <linux/sunrpc/svc.h>
+>  #include <linux/nfsd/nfsd.h>
+> @@ -569,7 +570,7 @@ nfsd3_proc_fsinfo(struct svc_rqst * rqstp, struct nfsd_fhandle    *argp,
+>  		struct super_block *sb = argp->fh.fh_dentry->d_inode->i_sb;
+>  
+>  		/* Note that we don't care for remote fs's here */
+> -		if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
+> +		if (sb->s_magic == MSDOS_SUPER_MAGIC) {
+>  			resp->f_properties = NFS3_FSF_BILLYBOY;
+>  		}
+>  		resp->f_maxfilesize = sb->s_maxbytes;
+> @@ -610,7 +611,7 @@ nfsd3_proc_pathconf(struct svc_rqst * rqstp, struct nfsd_fhandle      *argp,
+>  			resp->p_link_max = EXT2_LINK_MAX;
+>  			resp->p_name_max = EXT2_NAME_LEN;
+>  			break;
+> -		case 0x4d44:	/* MSDOS_SUPER_MAGIC */
+> +		case MSDOS_SUPER_MAGIC:
+>  			resp->p_case_insensitive = 1;
+>  			resp->p_case_preserving  = 0;
+>  			break;
+> 
