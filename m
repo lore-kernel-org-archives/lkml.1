@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbZALXC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbZALXG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760324AbZALXC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 18:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbZALXCN
+	id S1758790AbZALXG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 18:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZALXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 18:02:13 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:49231 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753953AbZALXCL (ORCPT
+	Mon, 12 Jan 2009 18:06:14 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:43385 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751243AbZALXGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 18:02:11 -0500
-Date: Mon, 12 Jan 2009 23:01:17 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090112230117.GC26430@shareable.org>
-References: <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain> <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain> <20090112193201.GA23848@one.firstfloor.org> <496B9890.1090002@zytor.com> <alpine.LFD.2.00.0901121143070.6528@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901121143070.6528@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 12 Jan 2009 18:06:13 -0500
+X-YMail-OSG: CQicJhQVM1nJcnQgu7gZcMR6qZ0z27Av1vL_n18un_BJeHcz3vHPe.p1NfUN_mwdot.MG6RNyKX5evZKLCSsEb9eIwAhTDGaAap8U_3zHnZO1y2qO.VaRPPHuRt5gwXiOftY5Vd_O_zaNhnn0vpY0aHalTxeCzGNLIVIx8aXeEFiojzYK6K_NGwX4XM-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod/MIBS]: Add missing SCSI MIBs
+	initialization call during module_init()
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 15:03:08 -0800
+Message-Id: <1231801388.4560.1169.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> > This is about storage allocation, not aliases.  Storage allocation only
-> > depends on lifetime.
-> 
-> Well, the thing is, code motion does extend life-times, and if you think 
-> you can move stores across each other (even when you can see that they 
-> alias statically) due to type-based alias decisions, that does essentially 
-> end up making what _used_ to be disjoint lifetimes now be potentially 
-> overlapping.
+Greetings all,
 
-Sometimes code motion makes code faster and/or smaller but use more
-stack space.  If you want to keep the stack use down, it blocks some
-other optimisations.
+This patch is made against lio-core-2.6.git/master
+and tested on v2.6.28.  The lio-core-2.6.git tree can be found at:
 
-Register allocation is similar: code motion optimisations may use more
-registers due to overlapping lifetimes, which causes more register
-spills and changes the code.  The two interact; it's not trivial to
-optimise fully.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
--- Jamie
+Thanks,
+
+--nab
+
+>From 53b6924090a2182433e36cbd106d2f0249e3b8cc Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Mon, 12 Jan 2009 14:56:56 -0800
+Subject: [PATCH] [Target_Core_Mod/MIBS]: Add missing SCSI MIBs initialization call during module_init()
+
+During the v3.0 splitup of SCSI MIBs and iSCSI MIBs into target_core_mibs.c and
+iscsi_target_mibs.c respectively, a new initialization function for SCSI MIBs was
+added called init_scsi_index_table().  However this function was not added to
+target_core_mod's module_init() function: target_core_init_configfs().
+
+This patch adds the missing init_scsi_index_table() before init_se_global()
+(which uses SCSI MIB logic) in target_core_init_configfs().
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_configfs.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
+index 0fceeab..46a84a7 100644
+--- a/drivers/lio-core/target_core_configfs.c
++++ b/drivers/lio-core/target_core_configfs.c
+@@ -1023,7 +1023,9 @@ extern int target_core_init_configfs (void)
+ 	 */
+ 	INIT_LIST_HEAD(&g_tf_list);
+ 	mutex_init(&g_tf_lock);
+-
++#ifdef SNMP_SUPPORT
++	init_scsi_index_table();
++#endif
+ 	if ((ret = configfs_register_subsystem(subsys)) < 0) {
+ 		printk(KERN_ERR "Error %d while registering subsystem %s\n",
+ 			ret, subsys->su_group.cg_item.ci_namebuf);
+-- 
+1.5.4.1
+
+
+
