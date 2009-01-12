@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZALBol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZALBtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZALBol (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 20:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZALBoa
+	id S1753955AbZALBtJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 20:49:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZALBsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 20:44:30 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:42629 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZALBo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 20:44:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=mBUO5gsYiDblS0iN6qMfTNFw9Ric1xIHatA02lR1Oz7Z5Zeve4A1MnoM/O11DgRUxw
-         WaTa7HwKcLjml4WmuibshF8DoHQTi7nY2bQ4QkUygutnrRVAiX157eTGIAN/P9bU7iVg
-         u+MPhVVLAwROWGn00G1Z8Z75ejZvWa35AzHM4=
-Message-ID: <496AA076.8080205@gmail.com>
-Date: Mon, 12 Jan 2009 10:44:22 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 11 Jan 2009 20:48:55 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51031 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751459AbZALBsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Jan 2009 20:48:55 -0500
+Message-ID: <496AA191.5060703@cn.fujitsu.com>
+Date: Mon, 12 Jan 2009 09:49:05 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: Do ICH10+AHCI-driver support port-multiplying on a eSATA port?
-References: <1231513287.2631.68.camel@localhost>
-In-Reply-To: <1231513287.2631.68.camel@localhost>
-X-Enigmail-Version: 0.95.7
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+CC: linux-kernel@vger.kernel.org, gregkh@suse.de, corbet@lwn.net
+Subject: Re: Who wrote 2.6.28
+References: <496224D7.2030109@cn.fujitsu.com> <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
+In-Reply-To: <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
-> Dear all,
+Jaswinder Singh Rajput said the following on 2009-1-9 22:09:
+> On Mon, Jan 5, 2009 at 8:48 PM, Wang Chen <wangchen@cn.fujitsu.com> wrote:
+>> As Jonathon and Greg did, I also made a statistic about who wrote the Linux kernel.
+>> The following data is for 2.6.28 development. (http://www.remword.com/kps_result/)
+>>
+>> 1. The attachment graph "commit.png" shows the change of commit amount of patches and changed lines.
+>>   It seems that 2.6.28 has less commits than 2.6.27 of both patch set and changed lines.
+>>
+>> 2. The attachment graph "who.png" shows the involved developers and employers in each version of kernel.
+>>   It seems that 2.6.28 has more developers and companies involved than previous two versions, but
+>>   less than that of 2.6.25. From a long vision, more and more developers and companies join to the
+>>   development of Linux kernel, but the increase speed is not so fast.
+>>
 > 
-> I am trying to connect an external 2-disk case (eCube II  see
-> http://www.one-tech.com/EN/htm_ecube.htm) to an ICH10 skyburg dp45sg
-> board via eSATA. As the case requires a port-multiplying sata card, I am
-> wondering if ich10+ahci support it?
+> In http://remword.com/kps_result/2_6_29_whole_line.html
+> Earlier I was using email address: Jaswinder Singh
+> <jaswinder@infradead.org> (Unknown #25) and now I am using:
+> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
 > 
-> At least with 2.6.27.10 I am seeing only one drive. Connecting the case
-> via usb gives two (dmesg parts below).
+> If possible can you link above two emails.
 > 
-> So is port multiplying not yet available for ahci or not at all or does
-> the the ich10 not support it and I should rather try a sil 3132 or so?
 
-ahci on ich10 can do port multiplier.  I can't tell from the web page
-but if it's one of simg5723 and its friends, you'll need to put it
-into JBOD mode using the dip switch or whatever.
-
--- 
-tejun
+Sure. Will fix.
+Thanks Jaswinder.
