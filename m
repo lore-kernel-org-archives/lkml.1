@@ -1,154 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZALWDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbZALWDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZALWDI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:03:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZALWCy
+	id S1757780AbZALWDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZALWDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:02:54 -0500
-Received: from mail-gx0-f12.google.com ([209.85.217.12]:59314 "EHLO
-	mail-gx0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbZALWCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:02:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dAmZnFRdrVQQ7ik3L4oS3UuGOpDrVbS8Z1QbA4lIEyYnkHbfQ+mHGMNwqNJYi1mJG7
-         J7nHEh5UMYExcUZ3cyDTWfhO997ZP9GoWxnr3+grrzVdK2WQ1DF+i7oCuyEBl0FYa/jb
-         A/ZOwbuzahJOUN4Epfe3Mmc2MbUZWf6fch/TA=
-Message-ID: <b3ece790901121402k4e84f8e7k7993b5fda90456cb@mail.gmail.com>
-Date: Mon, 12 Jan 2009 14:02:51 -0800
-From: "Tim Hockin" <thockin@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-Cc: "Andi Kleen" <ak@linux.intel.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       priyankag@google.com, "Aaron Durbin" <adurbin@gmail.com>,
-       "Duncan Laurie" <dlaurie@google.com>
-In-Reply-To: <20081227155019.GA15493@elte.hu>
+	Mon, 12 Jan 2009 17:03:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48021 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752678AbZALWDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 17:03:42 -0500
+Date: Mon, 12 Jan 2009 23:03:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090112220326.GB12462@elte.hu>
+References: <20090111143951.GA6666@elte.hu> <64bb37e0901110845o2561db4auf68b86d024d210a0@mail.gmail.com> <7E82351C108FA840AB1866AC776AEC4643BB73C5@orsmsx505.amr.corp.intel.com> <64bb37e0901121101y73c492fel38a70681f226b526@mail.gmail.com> <20090112191934.GA28851@linux-os.sc.intel.com> <20090112192912.GA31650@linux-os.sc.intel.com> <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain> <20090112205259.GA5303@elte.hu> <64bb37e0901121355o78815c9dp5d4753c04886adc7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081227155019.GA15493@elte.hu>
+In-Reply-To: <64bb37e0901121355o78815c9dp5d4753c04886adc7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 27, 2008 at 7:50 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> We really need to get rid of /dev/mcelog. It's a quirky binary logging
-> facility not available on 32-bit on current kernels and it has a couple of
-> limitations:
 
-It's not quirky, it's structured.  Until and unless there is a better,
-structured interface, this needs to stay.
+* Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
 
->  - it squeezes all MCE errors from the whole system into a small,
->    32-entry ringbuffer.
+> On Mon, Jan 12, 2009 at 9:52 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > The reason why we wanted to re-test the functional changes was that
+> > Torsten's crash looks very weird: double Call Trace line, a crash in the
+> > scsi/ata code, showing the after-effects of some sort of memory corruption
+> > there.
+> 
+> The double Call Trace: line was a copy&paste error on my part. Its not
+> there in the original oops.
+> 
+> Sorry for that...
 
-Yes 32 is small, but not really a big problem in practice.  The MCE daemon
-(http://mcedaemon.googlecode.com) goes a long way towards making this
-a non-issue.  Every distro should ship mced.
+ah, ok - that's fine.
 
->  - it puts all the MCE logging info into an intermediary binary log
->    record format: 'struct mce' - just for userspace to in essence
->    printf out those entries with minimal post-processing. The fact that
->    we squeeze all information into a fixed-size binary record makes it
->    hard to extend and complicates the code needlessly.
+I was just wondering whether it was two CPUs crashing at once and 
+producing an overlap - or something like that. (although typically in that 
+case we dont get such nice line duplication - we get totally garbled 
+output of the two oopses superimposed.)
 
-This is not true, we do EXTENSIVE post-processing of MCEs.  Yes it is hard
-to extend, but that's not the same as saying it is useless.
+It's just that when an oops looks weird we have to look at every small 
+detail, to be able to imagine the unimaginable.
 
->  - these design aspects are also quite harmful to usability: by
->    default all MCEs are fatal currently (pre-Nehalem anyway), so
->    /dev/mcelog will only be used if a user goes out on a limb to
->    configure it and sets the tolerant flag.
+Bugs you cannot even imagine are the toughest nuts usually, as the process 
+of debugging narrows imagination usually - often it involves repetitive 
+automatisms which are not helpful in expanding your thoughts to cover 
+tricky, unusual bugs.
 
-Not true.  The vast vast vast majority of MCEs are corrected, as per our
-experience, and I suspect we've got more experience with MCEs than just
-about any other consumer.
+If an oops looks difficult there's a way out of that trap: co-debug in 
+duos if you can - the same folks rarely get unimaginative for the very 
+same detail. (Or put it aside and leave it for the next morning - to flush 
+out the invisible temporary mental dead-ends one has installed 
+subconsciously and which are blocking you from reaching the real 
+solution.)
 
-> A far more useful design for handling MCE events would be to feed them
-> into printk logging. So instead of printing such rather cryptic error
-> messages:
->
->   MCE 0
->   HARDWARE ERROR. This is *NOT* a software problem!
->   Please contact your hardware vendor
->   CPU 0 BANK 6 MISC 202d ADDR ffeef740
->   This is not a software problem!
->   Run through mcelog --ascii to decode and contact your hardware vendor
->
-> and expecting people to run mcelog, we should print plain-text something
-> like:
->
->   MCE 0
->   HARDWARE ERROR. This is *NOT* a software problem!
->   Please contact your hardware vendor
->   CPU 1 4 northbridge TSC 89a560bb249
->   ADDR 1dfa49690
->     Northbridge Chipkill ECC error
->     Chipkill ECC syndrome = 2021
->          bit46 = corrected ecc error
->     bus error 'local node response, request didn't time out
->         generic read mem transaction
->         memory access, level generic'
->   STATUS 9410c00020080a13 MCGSTATUS 0
-
-NO!  This moves in the completely wrong direction.  This output is just
-about impossible to parse sanely.  And don't get me started about how much
-of a pain it is to encode all of the vendor-centric and per-platform
-specifics so that it decodes all the useful bits.
-
-I promise you that there are things that are useful to us that the kernel
-will not parse and print.
-
-> straight from the kernel. This means that the MCEs will make a lot more
-> sense at a glance - and the user can figure out the suspected trouble
-> area, without having to find some other box to run mcelog on, etc. We can
-> eliminate the user-space mcelog utility/daemon component altogether - it
-> buys us little but needless complexity and inflexibility.
-
-I disagree totally.  Putting the logic for decoding MCEs into the kernel
-adds a large amount of complex, hard to maintain code precisely where it
-is most destructive.  Any sort of decoding of this data in-kernel is
-probably a mistake (yes, I am looking at you EDAC).
-
-It would be much cleaner to instead make the kernel really good at
-publishing errors and let userspace decode them.  A naive end user won't
-know the difference - they will see a message on the syslog or the
-console.  Power users will be able to do better things.
-
-> If we want to enable userspace to capture MCE events, then it must be done
-> in a way that benefits the whole kernel, not just x86: a structured
-> logging facility that is in essence a printk variant and is ASCII driven.
-
-I would be fine with this (though I disagree that it *must* be ASCII).  I
-don't care how the raw data comes out of the kernel, just that it is the
-raw data, not some half-assedly parsed data.
-
-> Such event sources should be discoverable, and only 'aware' printouts
-> should go into this new facility (not all printks). Demultiplexing should
-> be easy and well-defined.
-
-I agree 1000% with this - it is something I have wanted for a long time,
-and that some of my team are starting to look at again.
-
-> I.e. we could use this opportunity of the MCE code unification to bring
-> the code to the next level - and not prolongue to broken concepts of the
-> past.
-
-Don't dicard the past until the present can stand on it's own.  Please.
-
-> I'd be glad to help out with any portion of this, it should be easy to
-> solve and it will clearly improve the code. For .29 we could just do a raw
-> printk based approach with no decoding just yet, and layer smart decoding
-> and structured logging for .30.
-
-Please leave /dev/mcelog as a CONFIG option until such time as an
-appropriate replacement is *done*.  We rely on it.
-
-Tim
+	Ingo
