@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZALEWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbZALEgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbZALEWR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 23:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZALEWC
+	id S1752682AbZALEgy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 23:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZALEgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 23:22:02 -0500
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2117 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbZALEWA (ORCPT
+	Sun, 11 Jan 2009 23:36:44 -0500
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:39674 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbZALEgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 23:22:00 -0500
-Date: Mon, 12 Jan 2009 05:21:39 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: "Diego E. 'Flameeyes' =?ISO-8859-1?Q?Petten=F2?=" 
-	<flameeyes@gmail.com>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Warren Turkal <wt@penguintechs.org>
-Subject: Re: 2.6.29 -mm merge plans
-In-Reply-To: <1231284433.5158.2.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0901120442280.28002@localhost.localdomain>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> 
- <20090106225744.GA10553@infradead.org>  <20090106151747.c640dfd4.akpm@linux-foundation.org>
-  <20090106231958.GA30271@infradead.org> <1231284433.5158.2.camel@localhost>
+	Sun, 11 Jan 2009 23:36:44 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=Zh0AFbd5_N1bNxy9LMQA:9 a=cylitK_hICJDPMSk3GoA:7 a=-JyQe8hQmbL92fnaCbJ6o0I2lMEA:4 a=6BydmXIbXuwA:10 a=YcwOXTN8GhIA:10
+Message-ID: <496AC8D9.1020402@shaw.ca>
+Date: Sun, 11 Jan 2009 22:36:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-57660524-1231731821=:28002"
-Content-ID: <Pine.LNX.4.64.0901120444070.28002@localhost.localdomain>
+Newsgroups: gmane.linux.kernel
+To: joseluismarchetti@yahoo.com.br
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: How to access a regular file from within a module ?
+References: <20090111113053.42dc34ad@lxorguk.ukuu.org.uk> <207506.58372.qm@web34401.mail.mud.yahoo.com>
+In-Reply-To: <207506.58372.qm@web34401.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Jose Luis Marchetti wrote:
+>> You don't generally get to do this. What are you
+>> actually trying to achieve ?
+> 
+> Thanks for asking, there are two scenarios, the first one it would be to save an ethernet mac address, I got already emails with some work arounds for this. The other scenario is a little bit more complicated:
+> 
+> The system I am working now ( Kernel drivers + User applications ) performs cryptographic operations and it has a regulatory constraint: the user application have to undergo (expensive) certification everytime it is changed, but that is only true if the user application have access to the cryptographic keys, imagine a i++ is missing in the code, then we have to undergo the expensive certification for that.
+> To avoid that I am trying to isolate the keys ( about 30 X 128bit keys, some of the keys chance everytime they are used ) and cryptographic algorithm from the application and putting them into the kernel so the application can not access that. Well you would say, saving the keys into a file is not a good security measure as it is accessible, the trick is that before saving the key into the file the kernel would encrypt the keys with another key ( KEK- Key Encryption Key ) and this KEK is stored into non volatile register inside the processor, so although the file is accessible it is encrypted.
+> In this scenario the user application would request encryption/decryption services from the kernel, but it would never pass the Key to be used during the operation, it would pass a Key Id, like this: encrypt this data using key number 7 and Key number 7 is stored in a file ( encrypted ) the kernel could read.
+> OK, some would say, the user application could read the key file and passed the encrypted key into the kernel function, the kernel would decrypt the encrypted key and do the operation, which is fine, but some of those keys change at every operation, so they have to be re-stored into the file at every operation, it would be nice to have it done by the kernel.
 
---8323328-57660524-1231731821=:28002
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0901120444071.28002@localhost.localdomain>
+One big problem with file access in the kernel is that all the file 
+operations require a process context - they need a process to stick the 
+file descriptor into, to determine access permissions, etc. If you just 
+start calling file operations from inside the kernel you're essentially 
+stealing whatever process you're being called from's context for these 
+operations, which is unlikely to be a good idea.
 
-Hi,
+Not to mention, that accessing files from inside the kernel usually 
+means the kernel enforces a policy on file naming/locations, and putting 
+that sort of policy in the kernel is usually frowned upon.
 
-On Wed, 7 Jan 2009, Diego E. 'Flameeyes' Pettenò wrote:
-
-> Yes that one wasn't good at all, and I feel sorry for not having noticed
-> that before sending it in the first place.
-
-In general you could also use the create_date field to initialize the 
-generation field (it's set in hfsplus_cat_build_record and should be read 
-in hfsplus_cat_read_inode). (BTW OS X doesn't use create_date because it 
-can be changed by the user, which isn't an issue for Linux).
-I have some doubts about the hfsplus_get_parent() function. One has to 
-know about HFS+ that every hard link has it's own link id (which is 
-usually not visible) and the common inode id. If you lookup the parent 
-like this you expose the usually hidden and private directory.
-The link id is stored in d_fsdata under Linux, which seems not to be 
-restored by hfsplus_fh_to_dentry(), so any catalog manipulations are 
-likely to hit the wrong catalog entry. Any catalog change requires the 
-correct link id, but with just the common id you currently can't find back 
-the link entry.
-Newer HFS+ OS X driver support a link chain, which would make it possible 
-to find back the link entry using the common id and create_date in case 
-the normal file became a hard link, but this isn't implemented under Linux 
-yet.
-So it seems the hard link handling may need a bit more work...
-
-bye, Roman
---8323328-57660524-1231731821=:28002--
+In the case you're describing I'm not sure why you couldn't just store 
+the keys in encrypted form inside the user app and have it write them 
+back out when they change, instead of making the kernel do it..
