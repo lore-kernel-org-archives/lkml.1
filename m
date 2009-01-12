@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZALVoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZALVrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZALVoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZALVod
+	id S1756393AbZALVrM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZALVq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:44:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:20181 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbZALVoc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:44:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qOGzs1nAnvvdX+U5UE1OZPYijddwNNJMGHtRKeSPDEtDtmCjf1F0UJQlI/fFt0K+/o
-         80WZX/J5xOPN4Py8d9urh4L4Ywac2sB93ix5wjWIvdnc5j1ZyyJNG9PSjuVr1xeNcokj
-         Ijgp29Ng9rATZTAw0j61rTwOnDkK7mTSK0Qu4=
-Date: Tue, 13 Jan 2009 00:44:20 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Subject: Re: Can we get warnings from the x86 userspace headers fixed?
-Message-ID: <20090112214420.GE13384@localhost>
-References: <20090112212855.GB15185@uranus.ravnborg.org> <1231795863.5405.8.camel@brick> <20090112213719.GC7320@elte.hu>
+	Mon, 12 Jan 2009 16:46:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49860 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZALVq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 16:46:56 -0500
+Date: Mon, 12 Jan 2009 22:46:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: andi@firstfloor.org, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090112214643.GD7320@elte.hu>
+References: <20090112213539.GA10720@gambetta>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090112213719.GC7320@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090112213539.GA10720@gambetta>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Mon, Jan 12, 2009 at 10:37:19PM +0100]
-| 
-| * Harvey Harrison <harvey.harrison@gmail.com> wrote:
-| 
-| > On Mon, 2009-01-12 at 22:28 +0100, Sam Ravnborg wrote:
-| > > Hi Ingo.
-| > > 
-| > > We have recently introduced a lot of new warnings for our
-| > > userspace headers.
-| > > 
-| > > Try to do a "make headers_check" and enjoy...
-| > > 
-| > > Are there any chance you could ask one of your helpers to
-| > > start to look into the x86 specific ones?
-| > > 
-| > > If we get x86 clean this would create more incentive to
-| > > make the generic clean too.
-| > > 
-| > > I had originally planned to attack the generic headers
-| > > (include/linux/*) but I'm faced by reality after my
-| > > vacation and has almost no spare time for the time being.
-| > > 
-| > > I already fixed the sparc headers but that is not 
-| > > visible compared to x86 (the fixes was btw easy).
-| > > 
-| > > I can try to help by doing a few reviews in the
-| > > beginning but I need to fix kbuild stuff first where
-| > > I have a few serious issues pending. And lacks time...
-| > > 
-| > 
-| > I'll have a go at some of them this afternoon unless someone beats me to 
-| > it.
-| 
-| thanks Harvey! Please work against tip/master if you do that, there's a 
-| few header file changes in the queue already.
-| 
-| 	Ingo
-| 
 
-hmm... what I've got:
+* Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
 
----
-cyrill@lenovo linux-2.6.git $ make headers_check
-  CHK     include/linux/version.h
-make[1]: `scripts/unifdef' is up to date.
-cyrill@lenovo linux-2.6.git $ 
----
+> Hi,
+> 
+> On x86_64 flush tlb data is stored in per_cpu variables. This is 
+> unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries 
+> are accessed.
+>
+> This patch aims at making the code less confusing (there's nothing 
+> really "per_cpu") by using a plain array. It also would save some memory 
+> on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
 
-I don't know what to think...
+indeed, well spotted!
 
-		- Cyrill -
+This construct was indeed an abuse of the per_cpu facilities.
+
+Note that beyond the obvious memory savings, your patch should make the 
+code a bit faster and a bit smaller as well in the SMP TLB flush codepath: 
+the smp_flush_state data structure is 64 (or 128) bytes so static array 
+arithmetics will be faster than the per_cpu indirection.
+
+I have applied your patch to tip/x86/mm, thanks Frederik!
+
+	Ingo
