@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZALK57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZALK6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZALK57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:57:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZALK5u
+	id S1754747AbZALK6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZALK6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:57:50 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:9439 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbZALK5u (ORCPT
+	Mon, 12 Jan 2009 05:58:06 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54129 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753911AbZALK6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:57:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hWkSe+fH+0lGk/Uzu0CsRX6eWCUj2MU6FlIMQ1bbnIR08/PRwf2k4M9DctOp73oBjp
-         47+q8GDfW5TmLS080O5btgRYYTWAwL1wVmJr9oFcCpvT/S7KYZ3xv345Ze1xglGjAZMt
-         Eo7AMZk0XJcXAkVq1iYrc+NmqUrkB9E03YCQE=
-Message-ID: <3f9a31f40901120257m27a9b047kd8dcee2793467bb3@mail.gmail.com>
-Date: Mon, 12 Jan 2009 16:27:48 +0530
-From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: build breakage -- paravirt_{alloc,free}_ldt
-Cc: "Jiri Kosina" <jkosina@suse.cz>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org,
-       "Jaswinder Singh Rajput" <jaswinderrajput@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20090112105202.GF10405@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 05:58:05 -0500
+Date: Mon, 12 Jan 2009 11:59:42 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@snapgear.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-m68k@vger.kernel.org, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig can't build
+Message-ID: <20090112105942.GA10936@uranus.ravnborg.org>
+References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LNX.1.10.0901121121410.5377@jikos.suse.cz>
-	 <20090112105202.GF10405@elte.hu>
+In-Reply-To: <20090112104447.GG28564@linux-sh.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 4:22 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jiri Kosina <jkosina@suse.cz> wrote:
->
->> Hi,
->>
->> with Linus' tree (ae04d14015) doesn't build for me with
->>
->> arch/x86/kernel/ldt.c: In function 'alloc_ldt':
->> arch/x86/kernel/ldt.c:55: error: implicit declaration of function 'paravirt_alloc_ldt'
->> arch/x86/kernel/ldt.c:79: error: implicit declaration of function 'paravirt_free_ldt'
->>
->> Config on http://www.jikos.cz/jikos/junk/.config
->
-> hm, it builds fine here with your config. Did .28 build fine for you? The
-> only change to this file since .28 has been Jaswinder's "423a540: x86:
-> ldt.c fix style problems".
->
+On Mon, Jan 12, 2009 at 07:44:47PM +0900, Paul Mundt wrote:
+> On Mon, Oct 06, 2008 at 04:20:06PM +1000, Greg Ungerer wrote:
+> > Hi Kosako,
+> > 
+> > KOSAKI Motohiro wrote:
+> > >I guess nobody don't test m68knommu at all last three month.
+> > >Do we still need to maintain this architecture?
+> > 
+> > Yes, we do.
+> > 
+> Any effort to get m68knommu folded in to m68k proper? This might help
+> with some of your bitrot issues.. And likely less work to do in
+> supporting those m68knommu parts that ship with MMUs ;-)
+> 
+> m68knommu is the only one of the mmu/nommu variants left that ships in
+> its own architecture directory rather than being folded in to its parent.
+> It would be good to get rid of it one of these days.
 
-No, it is not because of my patch but I will check for the solution.
+>From the outside it looks like there are indeed a whish to do so
+but both m68k and m68knommu maintainers seems to be busy with other stuff.
 
-Thanks,
---
-JSR
+Not that I can think of what is more important than to merge the two
+architectures ;-)
+
+If I get some spare time one day I have actually planned to try to
+help a little - but that would require an active maintainer..
+
+We just did the exercise with sparc/sparc64 unification and
+if you forget the few times I broke sparc32 then it went well
+with only limited problems.
+
+One key factor why it went well was that patches were reviewed
+and applied within a few days whch is why I stresses that the
+maintainer needs spare time to support the effort.
+
+	Sam
