@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZALDSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZALDeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbZALDSw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Jan 2009 22:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALDSn
+	id S1753231AbZALDeT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Jan 2009 22:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZALDeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Jan 2009 22:18:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40783 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbZALDSn (ORCPT
+	Sun, 11 Jan 2009 22:34:08 -0500
+Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:2467 "EHLO
+	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbZALDeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Jan 2009 22:18:43 -0500
-Date: Sun, 11 Jan 2009 22:18:41 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: rusty@rustcorp.com.au
-Subject: [PATCH] [RFC] remove (more or less) unnecessary cacheline_aligned
-	from module_ref
-Message-ID: <20090112031841.GC21090@bombadil.infradead.org>
+	Sun, 11 Jan 2009 22:34:07 -0500
+X-Greylist: delayed 824 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Jan 2009 22:34:06 EST
+Date: Mon, 12 Jan 2009 04:19:57 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: Warren Turkal <wt@penguintechs.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Diego Elio 'Flameeyes' Petten?" <flameeyes@gmail.com>
+Subject: Re: 2.6.29 -mm merge plans
+In-Reply-To: <e37d376a0901061526s5d571febu2eb9758050506442@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901081255580.17013@localhost.localdomain>
+References: <20090105004300.19ed52d1.akpm@linux-foundation.org> 
+ <20090106225744.GA10553@infradead.org>  <20090106151747.c640dfd4.akpm@linux-foundation.org>
+  <20090106231958.GA30271@infradead.org> <e37d376a0901061526s5d571febu2eb9758050506442@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86_64 systems with CONFIG_MAXSMP set, NR_CPUS is exploded to 4096
-cpus. This cacheline_aligned attribute on the local_t in module_ref
-results in struct module bloating to over 512KB in size on x86_64, which
-tends to, er, add up. This results in insane disk usage on distro
-kernel configs (1GB+ on Fedora.)
+Hi,
 
-Killing cacheline_aligned reduces the size of struct module to somewhat
-more sane levels.
+On Tue, 6 Jan 2009, Warren Turkal wrote:
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
----
-I'll followup with a patch to make mod->ref dynamically allocated, but
-that needs a bit more thinking because module_unload_init currently
-doesn't have a failure path.
+(Sorry for the delay.)
 
-Of course, reducing NR_CPUS to something sane was an easy way to patch
-over the problem.
+> I have a drive at home with the condition. So empirically, it can happen.
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 4f7ea12..32b0bda 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -222,7 +222,7 @@ void *__symbol_get_gpl(const char *symbol);
- struct module_ref
- {
- 	local_t count;
--} ____cacheline_aligned;
-+};
- 
- enum module_state
- {
+One problem is that there is no explanation how it happened.
+The other problem is that in the Apple driver or tools I haven't found an 
+equivalent (unless you disable journaling completely), there is simply no 
+special handling of a zero in this field.
+I find it more likely that some repair tool simply sets this field to 
+zero, so it forces the OS X driver to reinitialize the journal file. It 
+might help to look at the last_mount field to have some idea who accessed 
+the volume last.
+So your first patch is kinda trivial, although most of comment isn't 
+needed and is irrelevant to the patch itself, however I don't see a reason
+to apply the second patch.
+
+bye, Roman
