@@ -1,39 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZALIlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZALIxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZALIlc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZALIlU
+	id S1752919AbZALIxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZALIxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:41:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46525 "EHLO mx2.mail.elte.hu"
+	Mon, 12 Jan 2009 03:53:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60256 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbZALIlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:41:19 -0500
-Date: Mon, 12 Jan 2009 09:40:41 +0100
+	id S1751264AbZALIxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:53:14 -0500
+Date: Mon, 12 Jan 2009 09:53:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090112084041.GA21976@elte.hu>
-References: <alpine.LFD.2.00.0901091347170.6528@localhost.localdomain> <20090109231227.GA25070@elte.hu> <alpine.LFD.2.00.0901091522250.6528@localhost.localdomain> <20090110010125.GA31031@elte.hu> <1231549697.5700.7.camel@brick> <alpine.LFD.2.00.0901091713150.6528@localhost.localdomain> <49682C05.7030407@zytor.com> <alpine.LFD.2.00.0901092119100.6528@localhost.localdomain> <20090111005458.GA5363@elte.hu> <20090112015620.GA6428@shareable.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Christophe Saout <christophe@saout.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]: xen: fix too early kmalloc call
+Message-ID: <20090112085302.GB21976@elte.hu>
+References: <496A4C8F.8070005@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090112015620.GA6428@shareable.org>
+In-Reply-To: <496A4C8F.8070005@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -48,18 +35,78 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jamie Lokier <jamie@shareable.org> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> Ingo Molnar wrote:
-> > If it's used once in a single .c file it should be inlined even if
-> > it's large.
+> Subject: xen: fix too early kmalloc call
 > 
-> As Linus has pointed out, because of GCC not sharing stack among 
-> different inlined functions, the above is surprisingly not true.
+> From: Christophe Saout <christophe@saout.de> 
+> 
+> Impact: fixes bootup of xen.
+> 
+> Christophe reported the following problem:
+> 
+> >  (basically it seems that SLAB is not yet up, with earlyprintk it is
+> >  giving me an Oops in __kmalloc before)
+> 
+> Replace call to kmalloc with alloc_bootmem.
+> 
+> Also from Christophe:
+> > (me)
+> > > Or I could copy the text and submit it as a new patch?
+> >
+> > Yes, I would prefer that.  Also, my commit message was not really
+> > following Kernel standards and it's only a very simple change.
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
 
-Yes, but note that this has no relevance to the specific case of 
-CONFIG_OPTIMIZE_INLINING: GCC can at most decide to inline _less_, not 
-more. I.e. under CONFIG_OPTIMIZE_INLINING we can only end up having less 
-stack sharing trouble.
+i've applied the fix to tip/cpus4096, in the form below.
+
+Please submit clean log messages. Your commit description was confused - 
+the patch is From: Christophe, but the message talks about Christophe in 
+the third person. Also, it included conversational bits that have no 
+value for the Git history.
 
 	Ingo
+
+-------------------->
+>From 28e08861b9afab4168b758fb7b95aa7a4da0f668 Mon Sep 17 00:00:00 2001
+From: Christophe Saout <christophe@saout.de>
+Date: Sun, 11 Jan 2009 11:46:23 -0800
+Subject: [PATCH] xen: fix too early kmalloc call
+
+Impact: fix bootup crash on xen guests
+
+SLAB is not yet up, with earlyprintk it is giving me an Oops in __kmalloc.
+
+Replace call to kmalloc() with alloc_bootmem().
+
+Reported-by: Christophe Saout <christophe@saout.de>
+Signed-off-by: Mike Travis <travis@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/xen/events.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index ed7527b..3141e14 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -26,6 +26,7 @@
+ #include <linux/irq.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
++#include <linux/bootmem.h>
+ 
+ #include <asm/ptrace.h>
+ #include <asm/irq.h>
+@@ -831,8 +832,8 @@ void __init xen_init_IRQ(void)
+ 	int i;
+ 	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+ 
+-	cpu_evtchn_mask_p = kmalloc(size, GFP_KERNEL);
+-	BUG_ON(cpu_evtchn_mask == NULL);
++	cpu_evtchn_mask_p = alloc_bootmem(size);
++	BUG_ON(cpu_evtchn_mask_p == NULL);
+ 
+ 	init_evtchn_cpu_bindings();
+ 
