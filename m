@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbZALQuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZALRAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbZALQuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 11:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZALQuo
+	id S1754285AbZALRAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZALRAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 11:50:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33591 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbZALQum (ORCPT
+	Mon, 12 Jan 2009 12:00:05 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34077 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751300AbZALRAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 11:50:42 -0500
-Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-In-Reply-To: <1231778757.22806.24.camel@think.oraclecorp.com>
-References: <1231774622.4371.96.camel@laptop>
-	 <alpine.LFD.2.00.0901120802430.6528@localhost.localdomain>
-	 <alpine.LFD.2.00.0901120818070.6528@localhost.localdomain>
-	 <1231778757.22806.24.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 17:50:15 +0100
-Message-Id: <1231779015.4371.138.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 12:00:03 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Improve diagnostics for WM8350 ID register probe
+Date: Mon, 12 Jan 2009 16:59:58 +0000
+Message-Id: <1231779598-13146-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 11:45 -0500, Chris Mason wrote:
-> On Mon, 2009-01-12 at 08:20 -0800, Linus Torvalds wrote:
-> > 
-> > On Mon, 12 Jan 2009, Linus Torvalds wrote:
-> > > 
-> > > You made it back into the locked version.
-> > 
-> > Btw, even if you probably had some reason for this, one thing to note is 
-> > that I think Chris' performance testing showed that the version using a 
-> > lock was inferior to his local btrfs hack, while the unlocked version 
-> > actually beat his hack.
-> > 
-> 
-> The spinning hack was faster than everything before v7 (we'll call it
-> the Linus-fix), and the v7 code was much faster than my spin.
-> 
-> This is somewhere in between, with slightly better fairness than v7.
-> 
->              spin         v7         v8
-> dbench 50    580MB/s      789MB/s    421MB/s
-> file creates 152 file/s   162 file/s 195 file/s
-> file stat    3.8s total   2.3s total 5.3s total
-> 
-> (the file stat run is total run time, so lower is better.  The other
-> numbers are files or MB per second, so higher is better)
-> 
-> For the file create run, v8 had much lower system time than v7,
-> averaging 1s of sys time per proc instead of 1.6s.
+Check the return value of the device I/O functions when reading the
+ID registers so we can provide a more useful diagnostic when we're
+having trouble talking to the device.
 
-Right, how about the spread in completion time, because that is the only
-reason I tried this fairness stuff, because you reported massive
-differences there.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-core.c |   23 +++++++++++++++++++----
+ 1 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index f92595c..ff1ec82 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -1297,14 +1297,29 @@ static void wm8350_client_dev_register(struct wm8350 *wm8350,
+ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+ 		       struct wm8350_platform_data *pdata)
+ {
+-	int ret = -EINVAL;
++	int ret;
+ 	u16 id1, id2, mask_rev;
+ 	u16 cust_id, mode, chip_rev;
+ 
+ 	/* get WM8350 revision and config mode */
+-	wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
+-	wm8350->read_dev(wm8350, WM8350_ID, sizeof(id2), &id2);
+-	wm8350->read_dev(wm8350, WM8350_REVISION, sizeof(mask_rev), &mask_rev);
++	ret = wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
++	if (ret != 0) {
++		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
++		goto err;
++	}
++
++	ret = wm8350->read_dev(wm8350, WM8350_ID, sizeof(id2), &id2);
++	if (ret != 0) {
++		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
++		goto err;
++	}
++
++	ret = wm8350->read_dev(wm8350, WM8350_REVISION, sizeof(mask_rev),
++			       &mask_rev);
++	if (ret != 0) {
++		dev_err(wm8350->dev, "Failed to read revision: %d\n", ret);
++		goto err;
++	}
+ 
+ 	id1 = be16_to_cpu(id1);
+ 	id2 = be16_to_cpu(id2);
+-- 
+1.5.6.5
 
