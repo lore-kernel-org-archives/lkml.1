@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbZALIfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZALIht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbZALIfO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 03:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZALIe7
+	id S1753846AbZALIht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 03:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZALIhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 03:34:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33959 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751378AbZALIe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 03:34:59 -0500
-Date: Mon, 12 Jan 2009 09:34:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
-       arndb <arndb@arndb.de>
-Subject: Re: [PATCH] powerpc: Fix cpufreq drivers after cpufreq core changes
-Message-ID: <20090112083412.GB19701@elte.hu>
-References: <20090112104837.69feedec.sfr@canb.auug.org.au> <1231719015.22571.4.camel@pasglop> <1231719721.22571.9.camel@pasglop>
+	Mon, 12 Jan 2009 03:37:40 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:37935 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbZALIhk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 03:37:40 -0500
+Date: Mon, 12 Jan 2009 14:07:34 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
+       sfr@canb.auug.org.au, benh@kernel.crashing.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org, mel@csn.ul.ie
+Subject: Re: [BUG] 2.6.28-git-4 - powerpc - kernel expection 'c01 at
+	.kernel_thread'
+Message-ID: <20090112083734.GB8409@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090102125752.GA5743@linux.vnet.ibm.com> <200901110108.20848.rjw@sisk.pl> <20090112072132.GA8409@linux.vnet.ibm.com> <200901120907.20418.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1231719721.22571.9.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2164]
+In-Reply-To: <200901120907.20418.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Rafael J. Wysocki <rjw@sisk.pl> [2009-01-12 09:07:19]:
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> This updates the cpufreq drivers in arch/powerpc so they build again
-> after the core cpufreq changes that broke them in commit
-> in835481d9bcd65720b473db6b38746a74a3964218.
+> On Monday 12 January 2009, Kamalesh Babulal wrote:
+> > * Rafael J. Wysocki <rjw@sisk.pl> [2009-01-11 01:08:19]:
+> > 
+> > > On Friday 02 January 2009, Kamalesh Babulal wrote:
+> > > > Hi,
+> > > > 
+> > > > 	2.6.28-git4 kernel drops to xmon with kernel expection. Similar kernel
+> > > > expection was seen next-20081230 and next-20081231 and was reported 
+> > > > earlier at http://lkml.org/lkml/2008/12/31/157
+> > > 
+> > > Is this a regression from 2.6.27?
+> > > 
+> > > Rafael
+> > >
+> > 
+> > This is not a regression from 2.6.27, this expection was first seen 
+> > next-20081230 patches and then was introduced into 2.6.28-git4 and is 
+> > reproducible with 2.6.28-rc1 kernel.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> Presumably you meant 2.6.29-rc1 ?  In which case it would be a regression from
+> 2.6.28 .  Please confirm.
 > 
-> Tested on a G5. Olof, Arnd, any chance you can test the cell and pasemi
-> drivers still work ?
+> Thanks,
+> Rafael
 > 
-> Linus, you can probably merge this now to fix the build problems.
+sorry, I meant it was introduced in 2.6.28-git4 and is still reproducible
+with 2.6.29-rc1.
 
-Thanks Ben!
-
-The powerpc defconfig built fine - you might wan to turn on cpufreq in the 
-powerpc defconfig so that cross-build tests can catch problems like this.
-
-	Ingo
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
