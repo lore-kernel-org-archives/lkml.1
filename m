@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZALLPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZALLQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbZALLPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZALLOx
+	id S1754665AbZALLQd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbZALLQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:14:53 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:57242 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754781AbZALLOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:14:50 -0500
-Date: Mon, 12 Jan 2009 20:12:08 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg Ungerer <gerg@snapgear.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
-       linux-m68k@vger.kernel.org, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig can't build
-Message-ID: <20090112111208.GH28564@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@snapgear.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Roman Zippel <zippel@linux-m68k.org>,
-	Greg Ungerer <gerg@uclinux.org>, linux-m68k@lists.linux-m68k.org,
-	stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org> <20090112105942.GA10936@uranus.ravnborg.org>
+	Mon, 12 Jan 2009 06:16:24 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:35638 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbZALLQX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:16:23 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #12415] WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:689
+Date: Mon, 12 Jan 2009 12:15:31 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <oWTznAnH9BI.A.nzH.SHfaJB@chimera>
+In-Reply-To: <oWTznAnH9BI.A.nzH.SHfaJB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090112105942.GA10936@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200901121215.31749.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 11:59:42AM +0100, Sam Ravnborg wrote:
-> On Mon, Jan 12, 2009 at 07:44:47PM +0900, Paul Mundt wrote:
-> > On Mon, Oct 06, 2008 at 04:20:06PM +1000, Greg Ungerer wrote:
-> > > Hi Kosako,
-> > > 
-> > > KOSAKI Motohiro wrote:
-> > > >I guess nobody don't test m68knommu at all last three month.
-> > > >Do we still need to maintain this architecture?
-> > > 
-> > > Yes, we do.
-> > > 
-> > Any effort to get m68knommu folded in to m68k proper? This might help
-> > with some of your bitrot issues.. And likely less work to do in
-> > supporting those m68knommu parts that ship with MMUs ;-)
-> > 
-> > m68knommu is the only one of the mmu/nommu variants left that ships in
-> > its own architecture directory rather than being folded in to its parent.
-> > It would be good to get rid of it one of these days.
+Am Sonntag 11 Januar 2009 schrieb Rafael J. Wysocki:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> From the outside it looks like there are indeed a whish to do so
-> but both m68k and m68knommu maintainers seems to be busy with other stuff.
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Not that I can think of what is more important than to merge the two
-> architectures ;-)
 > 
-> If I get some spare time one day I have actually planned to try to
-> help a little - but that would require an active maintainer..
-> 
-> We just did the exercise with sparc/sparc64 unification and
-> if you forget the few times I broke sparc32 then it went well
-> with only limited problems.
-> 
-> One key factor why it went well was that patches were reviewed
-> and applied within a few days whch is why I stresses that the
-> maintainer needs spare time to support the effort.
-> 
-I have some experience with developing a nommu port within an mmu-only
-one. If you start some of the legwork on this I can try to chip in some
-spare cycles, though ultimately some m68k person will still have to regain
-consciousness at some point :-)
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12415
+> Subject		: WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:689
+> Submitter	: Christian Borntraeger <borntraeger@de.ibm.com>
+> Date		: 2009-01-05 10:36 (7 days old)
+> References	: http://marc.info/?l=linux-wireless&m=123115178019082&w=4
+
+Meanwhile I have updated the device firmware and the kernel level. The 
+problems has disappeared.
+
+Christian
