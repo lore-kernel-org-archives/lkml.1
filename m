@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZALLiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZALLjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZALLiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZALLiq
+	id S1755153AbZALLjm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZALLje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:38:46 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:23423 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbZALLip (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:38:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=XEifsglddUVWNv9qKd0ke1rx0BVP4K3nkOicFn6AVUJMN1LM2L+EH2w1xJYyLyxXPE
-         WXUKyR3ZANPyLnLPtcerm5x/oVyhng01h+XHPegT69Ga4e5SqMiPByDmrdRdT3tWvSkE
-         mUO6SsACWgly65t9MGPYol5DOu9epOqwXSPEM=
+	Mon, 12 Jan 2009 06:39:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44041 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbZALLjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:39:33 -0500
+Date: Mon, 12 Jan 2009 12:39:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: build breakage -- paravirt_{alloc,free}_ldt
+Message-ID: <20090112113923.GC21051@elte.hu>
+References: <alpine.LNX.1.10.0901121121410.5377@jikos.suse.cz> <20090112105202.GF10405@elte.hu> <alpine.LNX.1.10.0901121211000.5377@jikos.suse.cz> <3f9a31f40901120319l4fac84e4me193fb314bdbbcaa@mail.gmail.com> <20090112112458.GA19388@elte.hu> <3f9a31f40901120336p5ef464e8ta4a9eac2b397b5f6@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 12 Jan 2009 17:08:44 +0530
-Message-ID: <5d5443650901120338h5cfbb102k6459938d1a6f110@mail.gmail.com>
-Subject: gpio_keys: request_irq with level triggered flags
-From: Trilok Soni <soni.trilok@gmail.com>
-To: dtor@mail.ru
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f9a31f40901120336p5ef464e8ta4a9eac2b397b5f6@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4478]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
 
->From the gpio_keys.c, I can see that request_irq is assuming all the
-gpio line interrupts to be edge triggered one, but what if we have
-level triggered interrupts? Doesn't this flags need to come from
-platform data hooks too? So, that we can specify either
-(IRQF_TRIGGER_RISING |  IRQF_TRIGGER_FALLING ) or (IRQF_TRIGGER_HIGH |
-IRQF_TRIGGER_LOW) based on the platform data?
+* Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
 
+> On Mon, Jan 12, 2009 at 4:54 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+> >
+> >> On Mon, Jan 12, 2009 at 4:42 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> >> > On Mon, 12 Jan 2009, Ingo Molnar wrote:
+> >> >
+> >> >> > with Linus' tree (ae04d14015) doesn't build for me with
+> >> >> >
+> >> >> > arch/x86/kernel/ldt.c: In function 'alloc_ldt':
+> >> >> > arch/x86/kernel/ldt.c:55: error: implicit declaration of function 'paravirt_alloc_ldt'
+> >> >> > arch/x86/kernel/ldt.c:79: error: implicit declaration of function 'paravirt_free_ldt'
+> >> >> >
+> >> >> > Config on http://www.jikos.cz/jikos/junk/.config
+> >> >>
+> >> >> hm, it builds fine here with your config. Did .28 build fine for you? The
+> >> >> only change to this file since .28 has been Jaswinder's "423a540: x86:
+> >> >> ldt.c fix style problems".
+> >> >
+> >> > Puzzled. On one system, I still get this build error even after make
+> >> > mrpoper (I use this machine to build kernel routinely, so it certainly
+> >> > didn't happen a few days ago).
+> >> >
+> >> > But I just tried on different system, and there is builds flawlessly. It's
+> >> > gcc 4.3.1 vs 4.3.2. I will check a little bit more.
+> >> >
+> >>
+> >> I am using gcc 4.3.2
+> >>
+> >> Please check 'git diff' if by mistake some thing is gone wrong or check
+> >> 'git log'
+> >
+> > That wont show working tree corruption.
+> >
+> 
+> It works for me for my old 166 MHz pentium machine after crashing the 
+> system, 'git diff' tells which files are broken ;-)
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+That's cool from Git :-)
+
+Thinking about it, it might not necessarily detect all corruption patterns 
+though: git diff is sys_lstat() driven - so if a corruption corrupts a 
+single block on the filesystem (in a working tree file), git diff wont 
+know about that.
+
+	Ingo
