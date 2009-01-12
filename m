@@ -1,36 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZALVoB (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 12 Jan 2009 16:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZALVnu
+	id S1758404AbZAMCRV (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 12 Jan 2009 21:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZAMCRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:43:50 -0500
-Received: from mxr3.wow.lk ([202.124.160.46]:40958 "EHLO mxr3.wow.lk"
+	Mon, 12 Jan 2009 21:17:01 -0500
+Received: from epo-int1.asu.edu ([129.219.187.20]:51575 "EHLO epo-int1.asu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZALVnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:43:49 -0500
-X-Greylist: delayed 29148 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 16:43:48 EST
-Message-ID: <ee55cc8a24a2f573955894ec8041bdde.squirrel@webmail.wow.lk>
-Date: Tue, 13 Jan 2009 01:23:22 +0400 (RET)
-Subject: HELLO
-From: "prudent" <prudent_mygirl@yahoo.com>
-Reply-To: prudent_mygirl@yahoo.com
-User-Agent: SquirrelMail/1.4.17
+	id S1752587AbZAMCRA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:17:00 -0500
+X-Greylist: delayed 5986 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 21:17:00 EST
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+Subject: You have exceeded the storage limit for your mailbox
+Date: Mon, 12 Jan 2009 16:12:07 -0700
+Message-ID: <C9D7A1F4BE39A340A7B0DC88752C2BB208E66C59@EX03.asurite.ad.asu.edu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: You have exceeded the storage limit for your mailbox
+Thread-Index: Acl1CyljYkWjSuJdRmucgRkzQO74IA==
+From: Kate Duncan <Kate.Duncan@asu.edu>
+To: Undisclosed recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756793AbZALVoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758404AbZAMCRV@vger.kernel.org>
 
+Your mailbox has exceeded the storage limit set by your administrator. You may not be able to send or receive new mail until your mailbox size is increased by your system administrator. You are required to contact your system administrator through e-mail with your Username:{ } and Password:{ } to increase your storage limit.
 
-Hello,
-How are you doing today hope fine.My name is prudent.I came accross your profile  here
-()and after going through it l found you so intresting hope you don't mind.You can
-contact me with this email addresse so that l can send you my pic mail to
-(prudent_mygirl@yahoo.com) Hope to hear from you soon, Have a nice day & stay blessed.
-prudent
+System Administrator
+E-mail: systemquota@live.com
+
+You will continue to receive this warning message periodically if your inbox size continues to exceed its size limit.
+
+This email is intended only for the use of the individual or entity to which it is addressed and contains information that is privileged and confidential.
 
