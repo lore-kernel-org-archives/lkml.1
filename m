@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZALPEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZALPFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZALPEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 10:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZALPEF
+	id S1754789AbZALPFf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 10:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZALPFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 10:04:05 -0500
-Received: from thunk.org ([69.25.196.29]:59586 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbZALPED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 10:04:03 -0500
-Date: Mon, 12 Jan 2009 10:03:36 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>, Josef Bacik <jbacik@redhat.com>,
-       Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, adilger@sun.com, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext4: fix unhandled ext4_free_data allocation failure
-Message-ID: <20090112150336.GE21793@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>, Josef Bacik <jbacik@redhat.com>,
-	Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, adilger@sun.com,
-	linux-ext4@vger.kernel.org
-References: <20081223104016.GC7217@localhost.localdomain> <20081223142915.GA23303@unused.rdu.redhat.com> <961aa3350812231437x4debaf9byf230a63582561010@mail.gmail.com> <20090111020352.GA4285@localhost.localdomain> <20090111143942.GA28488@unused.rdu.redhat.com> <496A0648.9050100@redhat.com> <20090112035835.GA16898@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112035835.GA16898@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 12 Jan 2009 10:05:25 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:55009 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbZALPFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 10:05:25 -0500
+Date: Mon, 12 Jan 2009 16:05:19 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
+Message-ID: <20090112160519.3ba21848@mjolnir.drzeus.cx>
+In-Reply-To: <1231268198-12556-1-git-send-email-apw@canonical.com>
+References: <1231268198-12556-1-git-send-email-apw@canonical.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 10:58:35PM -0500, Theodore Tso wrote:
-> On Sun, Jan 11, 2009 at 08:46:32AM -0600, Eric Sandeen wrote:
-> > 
-> > Well, this will now force a filesystem error (then remount-ro or panic
-> > (or ignore) if the allocation fails.  I'm not sure that's better...?
-> > 
+On Tue,  6 Jan 2009 18:56:38 +0000
+Andy Whitcroft <apw@canonical.com> wrote:
+
+> Currently we are using an explicit udev rule to trigger loading of the
+> mmc-block module when an MMC or SD card is detected:
 > 
-> Well, our choices basically are:
+>     SUBSYSTEM=="mmc", RUN+="/sbin/modprobe -Qba mmc-block"
 > 
-> 1)  Force a filesystem error
-> 2)  Sleep and retry the allocation
-> 3)  Don't add the freed blocks to the list regions that mballoc should
->     be allowed to allocate from after the transaction commits.  This 
->     results in the blocks getting "leaked" until the filesystem is
->     mounted/unounted.
+> It makes much more sense for the mmc bus driver and the mmc-block module to
+> share MODALIAS information so that they are linked automatically.
+> 
 
-I just thought of another alternative:
+First, I'd just like to state that I agree that the current situation
+is far from optimal. Things should "just work".
 
-4) Mark the buddy cache has being in need of being completely rebuilt
-after the transaction commits. 
+That said, the MMC/SD stuff is a bit of a mess (the entire ecosystem,
+not just the Linux implementation). The classical method of matching
+devices to drivers isn't a perfect fit here. There is simply no nice
+and proper layering.
 
-Someone want to try coding that up?
+So right now I think that udev (or equivalent system) is the cleanest
+solution. If nothing else, it means we don't have to create a kernel
+ABI that might be problematic to maintain in the future. Feel free to
+convince me I'm wrong though. :)
 
-						- Ted
+> Add MODALIAS attributes to the uevents as generated, and add the
+> corresponding MODULE_ALIAS marks to the mmc-block module so that it is
+> automatically loaded by udev.  I have followed the example set by the
+> SCSI subsystem in pushing out numeric typed aliases:
+> 
+> 	mmc:t-0xNN
+> 
+> Where NN is the MMC type as defined in include/linux/mmc/card.h.
+
+Currently the only type that isn't matched is MMC_TYPE_SDIO. But that
+will probably change once we support combo cards. At that point, all
+types will result in mmc_block being loaded and we're basically back to
+always loading mmc_block on card insertion.
+
+There is also the fact that type isn't the primary thing that mmc_block
+uses to determine if it can use the card. The more interesting thing is
+the command classes. But since those aren't defined for pure SDIO
+cards, it's not something we can sensibly use for MODALIAS.
+
+In essence, the crappy design of MMC and SD means there is no decent
+identifier for the card at this level.
+
+Your patch leaves room for adding things in the future, but it
+doesn't seem right adding an ABI with fields that we already know are
+pretty useless at identifying devices.
+
+
+Is the udev method causing practical problems, or is this a matter of
+trying to do things the proper way just for the sake of it?
+
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
