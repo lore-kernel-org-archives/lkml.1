@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZALRAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZALRDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZALRAS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZALRAF
+	id S1754782AbZALRDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZALRDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:00:05 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34077 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751300AbZALRAD (ORCPT
+	Mon, 12 Jan 2009 12:03:43 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:63376 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZALRDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:00:03 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] mfd: Improve diagnostics for WM8350 ID register probe
-Date: Mon, 12 Jan 2009 16:59:58 +0000
-Message-Id: <1231779598-13146-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
+	Mon, 12 Jan 2009 12:03:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=GGVXK/dDN+A38/yULrqS6UqBrJ1Haf4if7K5iZppol666sOhoDWuZLSrOFieewlZ0K
+         1MGgwjsdY8IKHe1yk4JBy+tmjHqI0VzN3MN/xrFZyJFn5KrjWySgE5+ZmrdzazsvetYP
+         pDiT+WbA/7d8oPZH47ij+VJcinYt4gB8kiB3o=
+Message-ID: <3f9a31f40901120903yc6a85e0w4c2fe57352f1f482@mail.gmail.com>
+Date: Mon, 12 Jan 2009 22:33:40 +0530
+From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
+To: "Andy Whitcroft" <apw@canonical.com>, davej@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: scripts/checkpatch.pl: WARNING: patch prefix 'arch' exists, appears to be a -p0 patch
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check the return value of the device I/O functions when reading the
-ID registers so we can provide a more useful diagnostic when we're
-having trouble talking to the device.
+Hello Andy,
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/wm8350-core.c |   23 +++++++++++++++++++----
- 1 files changed, 19 insertions(+), 4 deletions(-)
+How to get rid of this warning:
 
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-index f92595c..ff1ec82 100644
---- a/drivers/mfd/wm8350-core.c
-+++ b/drivers/mfd/wm8350-core.c
-@@ -1297,14 +1297,29 @@ static void wm8350_client_dev_register(struct wm8350 *wm8350,
- int wm8350_device_init(struct wm8350 *wm8350, int irq,
- 		       struct wm8350_platform_data *pdata)
- {
--	int ret = -EINVAL;
-+	int ret;
- 	u16 id1, id2, mask_rev;
- 	u16 cust_id, mode, chip_rev;
- 
- 	/* get WM8350 revision and config mode */
--	wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
--	wm8350->read_dev(wm8350, WM8350_ID, sizeof(id2), &id2);
--	wm8350->read_dev(wm8350, WM8350_REVISION, sizeof(mask_rev), &mask_rev);
-+	ret = wm8350->read_dev(wm8350, WM8350_RESET_ID, sizeof(id1), &id1);
-+	if (ret != 0) {
-+		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
-+		goto err;
-+	}
-+
-+	ret = wm8350->read_dev(wm8350, WM8350_ID, sizeof(id2), &id2);
-+	if (ret != 0) {
-+		dev_err(wm8350->dev, "Failed to read ID: %d\n", ret);
-+		goto err;
-+	}
-+
-+	ret = wm8350->read_dev(wm8350, WM8350_REVISION, sizeof(mask_rev),
-+			       &mask_rev);
-+	if (ret != 0) {
-+		dev_err(wm8350->dev, "Failed to read revision: %d\n", ret);
-+		goto err;
-+	}
- 
- 	id1 = be16_to_cpu(id1);
- 	id2 = be16_to_cpu(id2);
--- 
-1.5.6.5
+ #./scripts/checkpatch.pl --file arch/x86/kernel/module_32.c
+WARNING: patch prefix 'arch' exists, appears to be a -p0 patch
 
+total: 0 errors, 1 warnings, 152 lines checked
+
+arch/x86/kernel/module_32.c has style problems, please review.  If any
+of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+
+Thanks
+--
+JSR
