@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZALKZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZALK2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbZALKZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZALKZj
+	id S1753912AbZALK2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZALK2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:25:39 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37039 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbZALKZi (ORCPT
+	Mon, 12 Jan 2009 05:28:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54516 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751713AbZALK2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:25:38 -0500
-Date: Mon, 12 Jan 2009 11:27:46 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, akpm@osdl.org,
-       paul.clements@steeleye.com, Trivial patch monkey <trivial@kernel.org>
-Subject: nbd: trivial cleanups
-Message-ID: <20090112102745.GA4683@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 12 Jan 2009 05:28:14 -0500
+Date: Mon, 12 Jan 2009 02:21:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+Message-Id: <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
+In-Reply-To: <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	<20090108144538.e5195575.akpm@linux-foundation.org>
+	<1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 12 Jan 2009 09:51:06 +0000 Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Trivial cleanups for nbd: only the return -EIO one really changes
-code, and I've verified all the callers (plus 0 == success, 1 == error
-convention is really ugly).
+> Hi Andrew,
+> 
+> On Thu, 2009-01-08 at 14:45 -0800, Andrew Morton wrote:
+> > On Fri, 19 Dec 2008 18:12:56 +0000
+> > Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > 
+> > > A new kmemleak version is available.
+> > 
+> > Sorry, I'll drop this.  The level of code churn in linux-next (during
+> > the merge window!) means that I've basically lost confidence that my
+> > lameass fixed-up code will still even work.
+> 
+> OK. I noticed some minor conflicts with 2.6.29-rc1 but I'll have a look
+> at linux-next as well. IIRC, is the -mm tree based on top of linux-next?
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-Acked-by: Paul Clements <paul.clements@steeleye.com>
+It actually includes linux-next and Linus's tree.  -mm is based on the
+last-released kernel version (2.6.28, 2.6.29-rc1, etc) and includes
+origin.patch (takes it up to current Linus) and linux-next.patch (takes
+it up to current linux-next).
 
+> > > git://linux-arm.org/linux-2.6.git kmemleak
+> > 
+> > It might be better to add that to linux-next.  If we want to merge
+> > kmemleak.
+> 
+> I would feel a bit more comfortable if kmemleak lived for (at least) a
+> release cycle in the -mm tree so that it may get wider testing. As I
+> said, I mainly tested it on ARM.
+> 
+> If you are OK with this, I'll update the branch and make sure there are
+> as few conflicts as possible (the alternative is patches by e-mail and
+> based on top of linux-next).
 
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 7bcc1d8..670e89d 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -4,7 +4,7 @@
-  * Note that you can not swap over this thing, yet. Seems to work but
-  * deadlocks sometimes - you can not swap over TCP in general.
-  * 
-- * Copyright 1997-2000 Pavel Machek <pavel@ucw.cz>
-+ * Copyright 1997-2000, 2008 Pavel Machek <pavel@suse.cz>
-  * Parts copyright 2001 Steven Whitehouse <steve@chygwyn.com>
-  *
-  * This file is released under GPLv2 or later.
-@@ -276,7 +276,7 @@ static int nbd_send_req(struct nbd_devic
- 	return 0;
- 
- error_out:
--	return 1;
-+	return -EIO;
- }
- 
- static struct request *nbd_find_request(struct nbd_device *lo,
-@@ -465,9 +465,7 @@ static void nbd_handle_req(struct nbd_de
- 		mutex_unlock(&lo->tx_lock);
- 		printk(KERN_ERR "%s: Attempted send on closed socket\n",
- 		       lo->disk->disk_name);
--		req->errors++;
--		nbd_end_request(req);
--		return;
-+		goto error_out;
- 	}
- 
- 	lo->active_req = req;
-@@ -529,7 +527,7 @@ static int nbd_thread(void *data)
-  *   { printk( "Warning: Ignoring result!\n"); nbd_end_request( req ); }
-  */
- 
--static void do_nbd_request(struct request_queue * q)
-+static void do_nbd_request(struct request_queue *q)
- {
- 	struct request *req;
- 	
-@@ -563,7 +561,7 @@ static int nbd_ioctl(struct block_device
- 	struct nbd_device *lo = bdev->bd_disk->private_data;
- 	struct file *file;
- 	int error;
--	struct request sreq ;
-+	struct request sreq;
- 	struct task_struct *thread;
- 
- 	if (!capable(CAP_SYS_ADMIN))
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The many trees in linux-next are actually based on current mainline. 
+So if you can prepare and maintain a tree based on current mainline,
+Stephen could integrate that into linux-next, hopefully.
 
