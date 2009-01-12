@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbZALWuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbZALWvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbZALWuv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:50:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759175AbZALWbd
+	id S932152AbZALWvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbZALWef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:31:33 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57868 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759663AbZALWbd (ORCPT
+	Mon, 12 Jan 2009 17:34:35 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:43873 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760258AbZALWed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:31:33 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 23:25:07 +0100
-Message-Id: <1231799107-20136-62-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
-References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org>
+	Mon, 12 Jan 2009 17:34:33 -0500
+Date: Mon, 12 Jan 2009 14:34:21 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090112223421.GA20594@localdomain>
+References: <20090112213539.GA10720@gambetta>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH] move xtsonic's probe function to .devinit.text
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112213539.GA10720@gambetta>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to xtsonic_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Hi Frederik,
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+On Mon, Jan 12, 2009 at 10:35:42PM +0100, Frederik Deweerdt wrote:
+>
+>Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+>
+>diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+>index f8be6f1..c177a1f 100644
+>--- a/arch/x86/kernel/tlb_64.c
+>+++ b/arch/x86/kernel/tlb_64.c
+>@@ -33,7 +33,7 @@
+>  *	To avoid global state use 8 different call vectors.
+>  *	Each CPU uses a specific vector to trigger flushes on other
+>  *	CPUs. Depending on the received vector the target CPUs look into
+>- *	the right per cpu variable for the flush data.
+>+ *	the right array slot for the flush data.
+>  *
+>  *	With more than 8 CPUs they are hashed to the 8 available
+>  *	vectors. The limited global vector space forces us to this right now.
+>@@ -54,7 +54,7 @@ union smp_flush_state {
+> /* State is put into the per CPU data section, but padded
+>    to a full cache line because other CPUs can access it and we don't
+>    want false sharing in the per cpu data segment. */
+>-static DEFINE_PER_CPU(union smp_flush_state, flush_state);
+>+static union smp_flush_state flush_state[NUM_INVALIDATE_TLB_VECTORS];
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/net/xtsonic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Since flush_state has a spinlock, an array of flush_states would end up
+having multiples spinlocks on the same L1 cacheline.  However, I see that
+the union smp_flush_state is already padded to SMP_CACHE_BYTES.
 
-diff --git a/drivers/net/xtsonic.c b/drivers/net/xtsonic.c
-index 03a3f34..5085aef 100644
---- a/drivers/net/xtsonic.c
-+++ b/drivers/net/xtsonic.c
-@@ -232,7 +232,7 @@ out:
-  * Actually probing is superfluous but we're paranoid.
-  */
- 
--int __init xtsonic_probe(struct platform_device *pdev)
-+int __devinit xtsonic_probe(struct platform_device *pdev)
- {
- 	struct net_device *dev;
- 	struct sonic_local *lp;
--- 
-1.5.6.5
+With per-cpu areas,  locks belonging to different array elements did
+not end up on the same internode cacheline due to per-node allocation of
+per-cpu areas, but with a simple array, two locks could end up on the same
+internode cacheline.
 
+Hence, can you please change the padding in smp_flush_state to
+INTERNODE_CACHE_BYTES (you have to derive this off INTERNODE_CACHE_SHIFT)
+and align it using ____cacheline_internodealigned_in_smp?
