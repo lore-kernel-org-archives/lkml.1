@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZALVgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZALVho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbZALVgJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbZALVfs
+	id S1757457AbZALVho (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZALVhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:35:48 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:64973 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757454AbZALVfr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:35:47 -0500
-Date: Mon, 12 Jan 2009 22:35:42 +0100
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: mingo@elte.hu
-Cc: andi@firstfloor.org, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090112213539.GA10720@gambetta>
+	Mon, 12 Jan 2009 16:37:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45716 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbZALVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 16:37:35 -0500
+Date: Mon, 12 Jan 2009 22:37:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Subject: Re: Can we get warnings from the x86 userspace headers fixed?
+Message-ID: <20090112213719.GC7320@elte.hu>
+References: <20090112212855.GB15185@uranus.ravnborg.org> <1231795863.5405.8.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1231795863.5405.8.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On x86_64 flush tlb data is stored in per_cpu variables. This is
-unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
-are accessed.
-This patch aims at making the code less confusing (there's nothing
-really "per_cpu") by using a plain array. It also would save some memory
-on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Regards,
-Frederik
+> On Mon, 2009-01-12 at 22:28 +0100, Sam Ravnborg wrote:
+> > Hi Ingo.
+> > 
+> > We have recently introduced a lot of new warnings for our
+> > userspace headers.
+> > 
+> > Try to do a "make headers_check" and enjoy...
+> > 
+> > Are there any chance you could ask one of your helpers to
+> > start to look into the x86 specific ones?
+> > 
+> > If we get x86 clean this would create more incentive to
+> > make the generic clean too.
+> > 
+> > I had originally planned to attack the generic headers
+> > (include/linux/*) but I'm faced by reality after my
+> > vacation and has almost no spare time for the time being.
+> > 
+> > I already fixed the sparc headers but that is not 
+> > visible compared to x86 (the fixes was btw easy).
+> > 
+> > I can try to help by doing a few reviews in the
+> > beginning but I need to fix kbuild stuff first where
+> > I have a few serious issues pending. And lacks time...
+> > 
+> 
+> I'll have a go at some of them this afternoon unless someone beats me to 
+> it.
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+thanks Harvey! Please work against tip/master if you do that, there's a 
+few header file changes in the queue already.
 
-diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
-index f8be6f1..c177a1f 100644
---- a/arch/x86/kernel/tlb_64.c
-+++ b/arch/x86/kernel/tlb_64.c
-@@ -33,7 +33,7 @@
-  *	To avoid global state use 8 different call vectors.
-  *	Each CPU uses a specific vector to trigger flushes on other
-  *	CPUs. Depending on the received vector the target CPUs look into
-- *	the right per cpu variable for the flush data.
-+ *	the right array slot for the flush data.
-  *
-  *	With more than 8 CPUs they are hashed to the 8 available
-  *	vectors. The limited global vector space forces us to this right now.
-@@ -54,7 +54,7 @@ union smp_flush_state {
- /* State is put into the per CPU data section, but padded
-    to a full cache line because other CPUs can access it and we don't
-    want false sharing in the per cpu data segment. */
--static DEFINE_PER_CPU(union smp_flush_state, flush_state);
-+static union smp_flush_state flush_state[NUM_INVALIDATE_TLB_VECTORS];
- 
- /*
-  * We cannot call mmdrop() because we are in interrupt context,
-@@ -129,7 +129,7 @@ asmlinkage void smp_invalidate_interrupt(struct pt_regs *regs)
- 	 * Use that to determine where the sender put the data.
- 	 */
- 	sender = ~regs->orig_ax - INVALIDATE_TLB_VECTOR_START;
--	f = &per_cpu(flush_state, sender);
-+	f = &flush_state[sender];
- 
- 	if (!cpu_isset(cpu, f->flush_cpumask))
- 		goto out;
-@@ -169,7 +169,7 @@ void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
- 
- 	/* Caller has disabled preemption */
- 	sender = smp_processor_id() % NUM_INVALIDATE_TLB_VECTORS;
--	f = &per_cpu(flush_state, sender);
-+	f = &flush_state[sender];
- 
- 	/*
- 	 * Could avoid this lock when
-@@ -205,8 +205,8 @@ static int __cpuinit init_smp_flush(void)
- {
- 	int i;
- 
--	for_each_possible_cpu(i)
--		spin_lock_init(&per_cpu(flush_state, i).tlbstate_lock);
-+	for (i = 0; i < ARRAY_SIZE(flush_state); i++)
-+		spin_lock_init(&flush_state[i].tlbstate_lock);
- 
- 	return 0;
- }
+	Ingo
