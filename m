@@ -1,155 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZALQNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZALQP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZALQNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 11:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZALQNX
+	id S1755326AbZALQP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 11:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZALQPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 11:13:23 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:40513 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbZALQNW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 11:13:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=k68Dv1QlzLVDCRoTMsNepTc1oEPODM5zR6R8FcjjylK5jLK+Cnwhlza7fioGMVdMG7
-         1klY5ediEPeGvMCddhgZI0hXlj87URaLdgkDGUWow02PbgDGMHLaCpRBRuXbiMb5yI+X
-         iUcQS3/OVFz244X537GCYerRo11rf9gPfSWaE=
-Message-ID: <e7b7bf130901120813x3e7a178cwbd17435d669b0e78@mail.gmail.com>
-Date: Mon, 12 Jan 2009 21:43:18 +0530
-From: "linux linux" <linux.tina@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: need fusion driver guide
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <e7b7bf130901062124r18d93598jabcd5628f3cdca41@mail.gmail.com>
+	Mon, 12 Jan 2009 11:15:10 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39521 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbZALQPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 11:15:08 -0500
+Message-ID: <496B6C23.8000808@redhat.com>
+Date: Mon, 12 Jan 2009 18:13:23 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
+References: <1231774622.4371.96.camel@laptop>
+In-Reply-To: <1231774622.4371.96.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090106214538.GA18370@uranus.ravnborg.org>
-	 <1231278625.10475.28.camel@localhost.localdomain>
-	 <e7b7bf130901062002ke59c0dkd7ca0ed73352066f@mail.gmail.com>
-	 <1231302074.19352.12.camel@localhost.localdomain>
-	 <e7b7bf130901062124r18d93598jabcd5628f3cdca41@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI James,
-
-I got some idea about fusion driver from this link
-http://bugzilla.kernel.org/show_bug.cgi?id=12195
-
-And i found there is bug in fusion driver (kernel version 2.6.10) from this link
-http://www.nabble.com/MPT-fusion-driver,-better-but-still-buggy-at-errors-handling-under-2.6-td1095505.html
-
-
-
-On Wed, Jan 7, 2009 at 10:54 AM, linux linux <linux.tina@gmail.com> wrote:
-> Hi James,.
-> Now it should be received by all...
-> Many many thanks for the help.
+Peter Zijlstra wrote:
+> Subject: mutex: implement adaptive spinning
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Mon Jan 12 14:01:47 CET 2009
 >
-> I am sending the kernel log.
+> Change mutex contention behaviour such that it will sometimes busy wait on
+> acquisition - moving its behaviour closer to that of spinlocks.
 >
+> This concept got ported to mainline from the -rt tree, where it was originally
+> implemented for rtmutexes by Steven Rostedt, based on work by Gregory Haskins.
 >
-> On Wed, Jan 7, 2009 at 9:51 AM, James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
->>
->> You still need to turn off html email attachments, otherwise your
->> messages won't be accepted by the mailing lists.  It will be an option
->> like recipient wants text/plain only or something.
->>
->> On Wed, 2009-01-07 at 09:32 +0530, linux linux wrote:
->> > Hi,
->> >
->> > Sam many thanks for ur help.
->> >
->> > Hi James,
->> >
->> > I am getting some error on for fusion device driver.
->> > The error message look like this
->> >
->> >
->> >        2F240F4C226078: 19/12/2008 EST 04:42:45, mptscsih: ioc1: >>
->> > Attempting task abort! (sc=e40df080)
->> >        2F240F6E8C2E00: 19/12/2008 EST 04:42:45, mptbase: ioc1:
->> > IOCStatus(0x0048): SCSI Task Terminated
->> >        2F240F6E905A98: 19/12/2008 EST 04:42:45, mptscsih: ioc1: >>
->> > Attempting task abort! (sc=f7e23680)
->> >
->> > 2F24117BDA2438: 19/12/2008 EST 04:42:50, mptscsih: ioc1: >>
->> > Attempting bus reset! (sc=e40df080)
->> >
->> > After then the server has been rebooted.
->> >
->> > I can see the code is written inside /drivers/message/fussion/
->> > mptscsih.c
->> > The responsible function is
->> > mptscsih_host_reset()
->> > i am very new in SCSI fusion device driver. read some help guide from
->> > google but still i do not understand when the mptscsih_host_reset() is
->> > called by kernel. I normal situation i am not able to see this message
->> > in kernel log.
->> > Can any one help me to understand when these type of kernel message
->> > are comming, is it foe SCSI hardware problem ?
->> > when mptscsih_host_reset() will be executed?
->>
->> It looks like a standard error handling escalation sequence.  Why is
->> very hard to tell without the entire kernel log.  Why there wasn't a
->> recovery is also not clear.
->>
-yes its error handler sequence. But as describe into the above
-link(http://www.nabble.com/MPT-fusion-driver,-better-but-still-buggy-at-errors-handling-under-2.6-td1095505.html)
-that
-2.6.xx  xx <= 11, enters an infinit loop attempting to reset the SCSI
-        so the box gets unusable and requires a rough power cycle to recover.
-
-So i think that is  the reason to restart the server(after "Attempting host
-reset! )as a power cycle is required to recover.
-
-when next time server was booting i got  some kernel messages on
-recovery of SCSI. So recovery is done after reboot the server.
-
-Still i do not know how to over come this bug fo infinite loop. If you
-have any suggestion please let me know.
-
-
-
-
-
-
-
+> Testing with Ingo's test-mutex application (http://lkml.org/lkml/2006/1/8/50)
+> gave a 345% boost for VFS scalability on my testbox:
 >
-> Pls let me know when this kind of error handler is happened?
-> is it for SCSI hard ware failure?
+>  # ./test-mutex-shm V 16 10 | grep "^avg ops"
+>  avg ops/sec:               296604
 >
->> > Only one time i show this message in my kernel log, is there any way
->> > to reproduce this message manually?
->> >
->> > where i get much info regarding this issue and SCSI fusion kernel
->> > driver except kernel code itself?
->> >
->> > I am writting this after reading help doc from
->> > http://www.lsi.com/insight_center/tech_trends/advanced_architectures/fusionmpt/index.html
->> >
->> > But still i am very few knowledge to solve it.
->> >
->> > waiting for your help.
->>
->> There's not much else I can do.  If you post the entire kernel log, the
->> fusion people hang out on this list and might see something that
->> indicates what the problem is.
->>
->> James
->>
->>
+>  # ./test-mutex-shm V 16 10 | grep "^avg ops"
+>  avg ops/sec:               85870
 >
+> The key criteria for the busy wait is that the lock owner has to be running on
+> a (different) cpu. The idea is that as long as the owner is running, there is a
+> fair chance it'll release the lock soon, and thus we'll be better off spinning
+> instead of blocking/scheduling.
+>
+> Since regular mutexes (as opposed to rtmutexes) do not atomically track the
+> owner, we add the owner in a non-atomic fashion and deal with the races in
+> the slowpath.
+>
+> Furthermore, to ease the testing of the performance impact of this new code,
+> there is means to disable this behaviour runtime (without having to reboot
+> the system), when scheduler debugging is enabled (CONFIG_SCHED_DEBUG=y),
+> by issuing the following command:
+>
+>  # echo NO_OWNER_SPIN > /debug/sched_features
+>
+> This command re-enables spinning again (this is also the default):
+>
+>  # echo OWNER_SPIN > /debug/sched_features
+>   
 
-Thanks
-Tina
-http://teachmeembedded.blogspot.com/
+One thing that worries me here is that the spinners will spin on a 
+memory location in struct mutex, which means that the cacheline holding 
+the mutex (which is likely to be under write activity from the owner) 
+will be continuously shared by the spinners, slowing the owner down when 
+it needs to unshare it.  One way out of this is to spin on a location in 
+struct mutex_waiter, and have the mutex owner touch it when it schedules 
+out.
+
+So:
+- each task_struct has an array of currently owned mutexes, appended to 
+by mutex_lock()
+- mutex waiters spin on mutex_waiter.wait, which they initialize to zero
+- when switching out of a task, walk the mutex list, and for each mutex, 
+bump each waiter's wait variable, and clear the owner array
+- when unlocking a mutex, bump the nearest waiter's wait variable, and 
+remove from the owner array
+
+Something similar might be done to spinlocks to reduce cacheline 
+contention from spinners and the owner.
+
+-- 
+error compiling committee.c: too many arguments to function
+
