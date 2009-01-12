@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZALTRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZALTTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZALTRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbZALTRj
+	id S1756438AbZALTTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZALTTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:17:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52447 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbZALTRi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:17:38 -0500
-Date: Mon, 12 Jan 2009 20:32:01 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bernd Schmidt <bernds_cb1@t-online.de>, Andi Kleen <andi@firstfloor.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090112193201.GA23848@one.firstfloor.org>
-References: <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain> <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+	Mon, 12 Jan 2009 14:19:23 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60308 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753262AbZALTTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:19:22 -0500
+Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Steve French <smfrench@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org,
+       Greg KH <gregkh@suse.de>
+In-Reply-To: <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com>
+References: <20090112154539.4857f533.sfr@canb.auug.org.au>
+	 <496B899E.7060605@oracle.com>
+	 <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 13:19:18 -0600
+Message-Id: <1231787958.6383.18.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 11:02:17AM -0800, Linus Torvalds wrote:
-> > Something at the back of my mind said "aliasing".
-> > 
-> > $ gcc linus.c -O2 -S ; grep subl linus.s
-> >         subl    $1624, %esp
-> > $ gcc linus.c -O2 -S -fno-strict-aliasing; grep subl linus.s
-> >         subl    $824, %esp
-> > 
-> > That's with 4.3.2.
-> 
-> Interesting. 
-> 
-> Nonsensical, but interesting.
+On Mon, 2009-01-12 at 12:58 -0600, Steve French wrote:
+> There is not just the cifs md5 one (which has been around a long
+> time), but an md5_init (static) in crypto and the new one in rt.  The
+> addition of the new one (rt md5_init) causes the build problem.   It
+> would be nice if we could use the same md5 routines though ... last
+> time we checked the crypto one was not well suited for calculating
+> signatures as a network fs would do though.
 
-What I find nonsensical is that -fno-strict-aliasing generates
-better code here. Normally one would expect the compiler seeing
-more aliases with that option and then be more conservative
-regarding any sharing. But it seems to be the other way round
-here.
+Is that due to the byte-swapping?  Can the cifs and rt* drivers use the
+same code.  rt28[67]0/common/md5.c are identical files.  In fact those
+"common" directories should probably be combined into a single truly
+common directory.
 
--Andi
+> On Mon, Jan 12, 2009 at 12:19 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > Stephen Rothwell wrote:
+> >> Hi all,
+> >>
+> >> Some people took me at my word and so we have the 2.6.30 code starting to
+> >> trickle in already.
+> >
+> >
+> >
+> > When CIFS is built-in (=y) and staging/rt28[67]0 =y, there are multiple
+> > definitions of:
+> >
+> > build-r8250.out:(.text+0x1d8ad0): multiple definition of `MD5Init'
+> > build-r8250.out:(.text+0x1dbb30): multiple definition of `MD5Update'
+> > build-r8250.out:(.text+0x1db9b0): multiple definition of `MD5Final'
+> >
+> > all of which need to have more unique identifiers for their global
+> > symbols (e.g., rt28_md5_init, cifs_md5_init, foo, blah, bar).
+> >
+> >
+> > --
+> > ~Randy
+> >
+> 
+> 
+> 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+David Kleikamp
+IBM Linux Technology Center
+
