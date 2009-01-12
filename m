@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZALVmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZALVoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZALVmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 16:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZALVmd
+	id S1757363AbZALVoo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZALVod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 16:42:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44104 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbZALVmd (ORCPT
+	Mon, 12 Jan 2009 16:44:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:20181 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbZALVoc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 16:42:33 -0500
-Date: Mon, 12 Jan 2009 22:57:02 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Cc: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090112215701.GH23848@one.firstfloor.org>
-References: <20090112213539.GA10720@gambetta>
-Mime-Version: 1.0
+	Mon, 12 Jan 2009 16:44:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qOGzs1nAnvvdX+U5UE1OZPYijddwNNJMGHtRKeSPDEtDtmCjf1F0UJQlI/fFt0K+/o
+         80WZX/J5xOPN4Py8d9urh4L4Ywac2sB93ix5wjWIvdnc5j1ZyyJNG9PSjuVr1xeNcokj
+         Ijgp29Ng9rATZTAw0j61rTwOnDkK7mTSK0Qu4=
+Date: Tue, 13 Jan 2009 00:44:20 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Subject: Re: Can we get warnings from the x86 userspace headers fixed?
+Message-ID: <20090112214420.GE13384@localhost>
+References: <20090112212855.GB15185@uranus.ravnborg.org> <1231795863.5405.8.camel@brick> <20090112213719.GC7320@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090112213539.GA10720@gambetta>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090112213719.GC7320@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 10:35:42PM +0100, Frederik Deweerdt wrote:
-> Hi,
-> 
-> On x86_64 flush tlb data is stored in per_cpu variables. This is
-> unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
-> are accessed.
-> This patch aims at making the code less confusing (there's nothing
-> really "per_cpu") by using a plain array. It also would save some memory
-> on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
+[Ingo Molnar - Mon, Jan 12, 2009 at 10:37:19PM +0100]
+| 
+| * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+| 
+| > On Mon, 2009-01-12 at 22:28 +0100, Sam Ravnborg wrote:
+| > > Hi Ingo.
+| > > 
+| > > We have recently introduced a lot of new warnings for our
+| > > userspace headers.
+| > > 
+| > > Try to do a "make headers_check" and enjoy...
+| > > 
+| > > Are there any chance you could ask one of your helpers to
+| > > start to look into the x86 specific ones?
+| > > 
+| > > If we get x86 clean this would create more incentive to
+| > > make the generic clean too.
+| > > 
+| > > I had originally planned to attack the generic headers
+| > > (include/linux/*) but I'm faced by reality after my
+| > > vacation and has almost no spare time for the time being.
+| > > 
+| > > I already fixed the sparc headers but that is not 
+| > > visible compared to x86 (the fixes was btw easy).
+| > > 
+| > > I can try to help by doing a few reviews in the
+| > > beginning but I need to fix kbuild stuff first where
+| > > I have a few serious issues pending. And lacks time...
+| > > 
+| > 
+| > I'll have a go at some of them this afternoon unless someone beats me to 
+| > it.
+| 
+| thanks Harvey! Please work against tip/master if you do that, there's a 
+| few header file changes in the queue already.
+| 
+| 	Ingo
+| 
 
-Nope it doesn't save memory on most systems because per cpu is only allocated
-based on the CPUs that are actually there. And if you have more than 8
-cores you can likely afford a few bytes per CPU.
+hmm... what I've got:
 
-You would need to cache line pad each entry then, otherwise you risk
-false sharing. That would make the array 1K on 128 bytes cache line 
-system.  This means on small systems this would actually waste
-much more memory.
+---
+cyrill@lenovo linux-2.6.git $ make headers_check
+  CHK     include/linux/version.h
+make[1]: `scripts/unifdef' is up to date.
+cyrill@lenovo linux-2.6.git $ 
+---
 
-per cpu avoids that problem completely.
+I don't know what to think...
 
--Andi
-
+		- Cyrill -
