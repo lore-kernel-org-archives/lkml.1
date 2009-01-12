@@ -1,552 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZALTin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbZALToX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZALTin (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbZALTie
+	id S1756360AbZALToX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbZALToK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:38:34 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:44130 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755060AbZALTic (ORCPT
+	Mon, 12 Jan 2009 14:44:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59563 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752426AbZALToH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:38:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=accs3Uc45mZkO3D/I/BIJeXtUFROu3b2EgMMuhYieZKl2lnMPjjUhKjHcEG18UZmmh
-         zLBnFsWkaQpGPNtCw8/PL+T4gfdAVbgxgIkzpf0bKbVo7J/VzgOJIjosv4JtUNlS7QUQ
-         oQbdnj3wYYHpSneo9vdQkNXEjXqASGqSKNgmw=
-Date: Mon, 12 Jan 2009 20:38:26 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] [RESEND] tracing: Add a new workqueue tracer
-Message-ID: <20090112193825.GB5267@nowhere>
-References: <4968fa12.0aa5660a.32cf.ffff8db2@mx.google.com> <alpine.DEB.1.10.0901121314190.22796@gandalf.stny.rr.com>
+	Mon, 12 Jan 2009 14:44:07 -0500
+Date: Mon, 12 Jan 2009 11:42:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Bernd Schmidt <bernds_cb1@t-online.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+In-Reply-To: <20090112193201.GA23848@one.firstfloor.org>
+Message-ID: <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain>
+References: <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
+ <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+ <20090112193201.GA23848@one.firstfloor.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901121314190.22796@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 01:15:49PM -0500, Steven Rostedt wrote:
-> 
-> 
-> 
-> On Sat, 10 Jan 2009, Frederic Weisbecker wrote:
-> 
-> > Sorry I lost two files in the previous 2/2 patch.
-> > Here is the true version
-> > --
-> > 
-> > The workqueue tracer provides some statistical informations
-> > about each cpu workqueue thread such as the number of the
-> > works inserted and executed since their creation. It can help
-> > to evaluate the amount of work each of them have to perform.
-> > For example it can help a developer to decide whether he should
-> > choose a per cpu workqueue instead of a singlethreaded one.
-> > 
-> > It only traces statistical informations for now but it will probably later
-> > provide event tracing too.
-> > 
-> > Such a tracer could help too, and be improved, to help rt priority sorted
-> > workqueue development.
-> > 
-> > To have a snapshot of the workqueues state at any time, just do
-> > 
-> > cat /debugfs/tracing/trace_stat/workqueues
-> > 
-> > Ie:
-> > 
-> > # CPU  INSERTED  EXECUTED   NAME
-> > # |      |         |          |
-> > 
-> >   1    125        125       reiserfs/1
-> >   1      0          0       scsi_tgtd/1
-> >   1      0          0       aio/1
-> >   1      0          0       ata/1
-> >   1    114        114       kblockd/1
-> >   1      0          0       kintegrityd/1
-> >   1   2144       2147       events/1
-> > 
-> >   0      0          0       kpsmoused
-> >   0    105        105       reiserfs/0
-> >   0      0          0       scsi_tgtd/0
-> >   0      0          0       aio/0
-> >   0      0          0       ata_aux
-> >   0      0          0       ata/0
-> >   0      0          0       cqueue
-> >   0      0          0       kacpi_notify
-> >   0      0          0       kacpid
-> >   0    149        149       kblockd/0
-> >   0      0          0       kintegrityd/0
-> >   0   1000       1000       khelper
-> >   0   2258       2270       events/0
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  include/trace/workqueue.h      |   25 ++++
-> >  kernel/trace/Kconfig           |   11 ++
-> >  kernel/trace/Makefile          |    1 +
-> >  kernel/trace/trace_workqueue.c |  273 ++++++++++++++++++++++++++++++++++++++++
-> >  kernel/workqueue.c             |   16 +++-
-> >  5 files changed, 325 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/trace/workqueue.h b/include/trace/workqueue.h
-> > new file mode 100644
-> > index 0000000..867829d
-> > --- /dev/null
-> > +++ b/include/trace/workqueue.h
-> > @@ -0,0 +1,25 @@
-> > +#ifndef __TRACE_WORKQUEUE_H
-> > +#define __TRACE_WORKQUEUE_H
-> > +
-> > +#include <linux/tracepoint.h>
-> > +#include <linux/workqueue.h>
-> > +#include <linux/sched.h>
-> > +
-> > +DECLARE_TRACE(workqueue_insertion,
-> > +	   TPPROTO(struct task_struct *wq_thread, struct work_struct *work),
-> > +	   TPARGS(wq_thread, work));
-> > +
-> > +DECLARE_TRACE(workqueue_execution,
-> > +	   TPPROTO(struct task_struct *wq_thread, struct work_struct *work),
-> > +	   TPARGS(wq_thread, work));
-> > +
-> > +/* Trace the creation of one workqueue thread on a cpu */
-> > +DECLARE_TRACE(workqueue_creation,
-> > +	   TPPROTO(struct task_struct *wq_thread, int cpu),
-> > +	   TPARGS(wq_thread, cpu));
-> > +
-> > +DECLARE_TRACE(workqueue_destruction,
-> > +	   TPPROTO(struct task_struct *wq_thread),
-> > +	   TPARGS(wq_thread));
-> > +
-> > +#endif /* __TRACE_WORKQUEUE_H */
-> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> > index 1c0b750..9ba1c68 100644
-> > --- a/kernel/trace/Kconfig
-> > +++ b/kernel/trace/Kconfig
-> > @@ -284,6 +284,17 @@ config KMEMTRACE
-> >  
-> >  	  If unsure, say N.
-> >  
-> > +config WORKQUEUE_TRACER
-> > +	bool "Trace workqueues"
-> > +	select TRACING
-> > +	help
-> > +	  The workqueue tracer provides some statistical informations
-> > +          about each cpu workqueue thread such as the number of the
-> > +          works inserted and executed since their creation. It can help
-> > +          to evaluate the amount of work each of them have to perform.
-> > +          For example it can help a developer to decide whether he should
-> > +          choose a per cpu workqueue instead of a singlethreaded one.
-> > + 
-> >  
-> >  config DYNAMIC_FTRACE
-> >  	bool "enable/disable ftrace tracepoints dynamically"
-> > diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> > index 05c9182..f76d48f 100644
-> > --- a/kernel/trace/Makefile
-> > +++ b/kernel/trace/Makefile
-> > @@ -36,5 +36,6 @@ obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
-> >  obj-$(CONFIG_HW_BRANCH_TRACER) += trace_hw_branches.o
-> >  obj-$(CONFIG_POWER_TRACER) += trace_power.o
-> >  obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
-> > +obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
-> >  
-> >  libftrace-y := ftrace.o
-> > diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-> > new file mode 100644
-> > index 0000000..f006135
-> > --- /dev/null
-> > +++ b/kernel/trace/trace_workqueue.c
-> > @@ -0,0 +1,273 @@
-> > +/*
-> > + * Workqueue statistical tracer.
-> > + *
-> > + * Copyright (C) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-> > + *
-> > + */
-> > +
-> > +
-> > +#include <trace/workqueue.h>
-> > +#include <linux/list.h>
-> > +#include "trace_stat.h"
-> > +#include "trace.h"
-> > +
-> > +
-> > +/* A list of cpu workqueue threads on one Cpu */
-> > +struct cpu_workqueue_stats {
-> > +	struct list_head            list;
-> > +/* Useful to know if we print the cpu headers */
-> > +	bool		            first_entry;
-> > +	int		            cpu;
-> > +	pid_t 			    pid;
-> > +/* Can be inserted from interrupt or user context, need to be atomic */
-> > +	atomic_t 	            inserted;
-> > +/*
-> > + *  Don't need to be atomic, works are serialized in a single workqueue thread
-> > + *  on a single CPU.
-> > + */
-> > +	unsigned int 	 	    executed;
-> > +};
-> > +
-> > +
-> > +
-> > +static spinlock_t	cpu_wq_list_lock[NR_CPUS];
-> > +
-> > +/* List of cpu workqueue thread, listed by cpu */
-> > +static struct list_head cpu_wq_list[NR_CPUS];
-> > +
-> > +/* Insertion of a work */
-> > +static void
-> > +probe_workqueue_insertion(struct task_struct *wq_thread,
-> > +			  struct work_struct *work)
-> > +{
-> > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> > +	struct cpu_workqueue_stats *node, *next;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	list_for_each_entry_safe(node, next, &cpu_wq_list[cpu], list) {
-> > +		if (node->pid == wq_thread->pid) {
-> > +			atomic_inc(&node->inserted);
-> > +			goto found;
-> > +		}
-> > +	}
-> > +	pr_debug("trace_workqueue: entry not found\n");
-> > +found:
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +}
-> > +
-> > +/* Execution of a work */
-> > +static void
-> > +probe_workqueue_execution(struct task_struct *wq_thread,
-> > +			  struct work_struct *work)
-> > +{
-> > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> > +	struct cpu_workqueue_stats *node, *next;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	list_for_each_entry_safe(node, next, &cpu_wq_list[cpu], list) {
-> > +		if (node->pid == wq_thread->pid) {
-> > +			node->executed++;
-> > +			goto found;
-> > +		}
-> > +	}
-> > +	pr_debug("trace_workqueue: entry not found\n");
-> > +found:
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +}
-> > +
-> > +/* Creation of a cpu workqueue thread */
-> > +static void probe_workqueue_creation(struct task_struct *wq_thread, int cpu)
-> > +{
-> > +	struct cpu_workqueue_stats *cws;
-> > +	unsigned long flags;
-> > +
-> > +	WARN_ON(cpu < 0 || cpu >= NR_CPUS);
-> > +
-> > +	/* Workqueues are sometimes created in atomic context */
-> > +	cws = kzalloc(sizeof(struct cpu_workqueue_stats), GFP_ATOMIC);
-> > +	if (!cws) {
-> > +		pr_warning("trace_workqueue: not enough memory\n");
-> > +		return;
-> > +	}
-> > +	tracing_record_cmdline(wq_thread);
-> > +
-> > +	INIT_LIST_HEAD(&cws->list);
-> > +	cws->cpu = cpu;
-> > +
-> > +	cws->pid = wq_thread->pid;
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	if (list_empty(&cpu_wq_list[cpu]))
-> > +		cws->first_entry = true;
-> > +	list_add_tail(&cws->list, &cpu_wq_list[cpu]);
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +}
-> > +
-> > +/* Destruction of a cpu workqueue thread */
-> > +static void probe_workqueue_destruction(struct task_struct *wq_thread)
-> > +{
-> > +	/* Workqueue only execute on one cpu */
-> > +	int cpu = cpumask_first(&wq_thread->cpus_allowed);
-> > +	struct cpu_workqueue_stats *node, *next;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	list_for_each_entry_safe(node, next, &cpu_wq_list[cpu], list) {
-> > +		if (node->pid == wq_thread->pid) {
-> > +			list_del(&node->list);
-> > +			kfree(node);
-> > +			goto found;
-> > +		}
-> > +	}
-> > +
-> > +	pr_debug("trace_workqueue: don't find workqueue to destroy\n");
-> > +found:
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +
-> > +}
-> > +
-> > +static struct cpu_workqueue_stats *workqueue_stat_start_cpu(int cpu)
-> > +{
-> > +	unsigned long flags;
-> > +	struct cpu_workqueue_stats *ret = NULL;
-> > +
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +
-> > +	if (!list_empty(&cpu_wq_list[cpu]))
-> > +		ret = list_entry(cpu_wq_list[cpu].next,
-> > +				 struct cpu_workqueue_stats, list);
-> > +
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static void *workqueue_stat_start(void)
-> > +{
-> > +	int i;
-> > +	void *ret = NULL;
-> > +
-> > +	for (i = 0; i < NR_CPUS; i++) {
-> 
-> Hi Frederic,
-> 
-> I'm getting these warnings from checkpatch.pl, and I think they are 
-> correct:
-> 
-> WARNING: usage of NR_CPUS is often wrong - consider using cpu_possible(), 
-> num_possible_cpus(), for_each_possible_cpu(), etc
-> #953: FILE: kernel/trace/trace_workqueue.c:153:
-> +	for (i = 0; i < NR_CPUS; i++) {
-> 
-> We should probably change them to for_each_possible_cpu, or online cpu.
-> 
-> -- Steve
 
 
-I found it very convenient because I didn't have to allocate
-my cpu list array dynamically with it :-)
+On Mon, 12 Jan 2009, Andi Kleen wrote:
+>
+> What I find nonsensical is that -fno-strict-aliasing generates
+> better code here. Normally one would expect the compiler seeing
+> more aliases with that option and then be more conservative
+> regarding any sharing. But it seems to be the other way round
+> here.
 
-I'm preparing a v2...
- 
+No, that's not the surprising part. And in fact, now that you mention it, 
+I can even tell you why gcc does what it does.
 
-> > +
-> > +		ret = workqueue_stat_start_cpu(i);
-> > +		if (ret)
-> > +			return ret;
-> > +	}
-> > +	return NULL;
-> > +}
-> > +
-> > +static void *workqueue_stat_next(void *prev, int idx)
-> > +{
-> > +	struct cpu_workqueue_stats *prev_cws = prev;
-> > +	int cpu = prev_cws->cpu;
-> > +	unsigned long flags;
-> > +	void *ret = NULL;
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	if (list_is_last(&prev_cws->list, &cpu_wq_list[cpu])) {
-> > +		spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +		for (++cpu ; cpu < NR_CPUS; cpu++) {
-> > +			ret = workqueue_stat_start_cpu(cpu);
-> > +			if (ret)
-> > +				return ret;
-> > +		}
-> > +		return NULL;
-> > +	}
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +
-> > +	return list_entry(prev_cws->list.next, struct cpu_workqueue_stats,
-> > +			  list);
-> > +}
-> > +
-> > +static int workqueue_stat_show(struct seq_file *s, void *p)
-> > +{
-> > +	struct cpu_workqueue_stats *cws = p;
-> > +	unsigned long flags;
-> > +	int cpu = cws->cpu;
-> > +
-> > +	seq_printf(s, "%3d %6d     %6u       %s\n", cws->cpu,
-> > +		   atomic_read(&cws->inserted),
-> > +		   cws->executed,
-> > +		   trace_find_cmdline(cws->pid));
-> > +
-> > +	spin_lock_irqsave(&cpu_wq_list_lock[cpu], flags);
-> > +	if (&cws->list == cpu_wq_list[cpu].next)
-> > +		seq_printf(s, "\n");
-> > +	spin_unlock_irqrestore(&cpu_wq_list_lock[cpu], flags);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int workqueue_stat_headers(struct seq_file *s)
-> > +{
-> > +	seq_printf(s, "# CPU  INSERTED  EXECUTED   NAME\n");
-> > +	seq_printf(s, "# |      |         |          |\n\n");
-> > +	return 0;
-> > +}
-> > +
-> > +struct tracer_stat workqueue_stats __read_mostly = {
-> > +	.name = "workqueues",
-> > +	.stat_start = workqueue_stat_start,
-> > +	.stat_next = workqueue_stat_next,
-> > +	.stat_show = workqueue_stat_show,
-> > +	.stat_headers = workqueue_stat_headers
-> > +};
-> > +
-> > +
-> > +int __init stat_workqueue_init(void)
-> > +{
-> > +	if (register_stat_tracer(&workqueue_stats)) {
-> > +		pr_warning("Unable to register workqueue stat tracer\n");
-> > +		return 1;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +fs_initcall(stat_workqueue_init);
-> > +
-> > +/*
-> > + * Workqueues are created very early, just after pre-smp initcalls.
-> > + * So we must register our tracepoints at this stage.
-> > + */
-> > +int __init trace_workqueue_early_init(void)
-> > +{
-> > +	int ret, i;
-> > +
-> > +	ret = register_trace_workqueue_insertion(probe_workqueue_insertion);
-> > +	if (ret)
-> > +		goto out;
-> > +
-> > +	ret = register_trace_workqueue_execution(probe_workqueue_execution);
-> > +	if (ret)
-> > +		goto no_insertion;
-> > +
-> > +	ret = register_trace_workqueue_creation(probe_workqueue_creation);
-> > +	if (ret)
-> > +		goto no_execution;
-> > +
-> > +	ret = register_trace_workqueue_destruction(probe_workqueue_destruction);
-> > +	if (ret)
-> > +		goto no_creation;
-> > +
-> > +	for (i = 0; i < NR_CPUS; i++) {
-> > +		spin_lock_init(&cpu_wq_list_lock[i]);
-> > +		INIT_LIST_HEAD(&cpu_wq_list[i]);
-> > +	}
-> > +
-> > +	return 0;
-> > +
-> > +no_creation:
-> > +	unregister_trace_workqueue_creation(probe_workqueue_creation);
-> > +no_execution:
-> > +	unregister_trace_workqueue_execution(probe_workqueue_execution);
-> > +no_insertion:
-> > +	unregister_trace_workqueue_insertion(probe_workqueue_insertion);
-> > +out:
-> > +	pr_warning("trace_workqueue: unable to trace workqueues\n");
-> > +
-> > +	return 1;
-> > +}
-> > +early_initcall(trace_workqueue_early_init);
-> > diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> > index 2f44583..71145f8 100644
-> > --- a/kernel/workqueue.c
-> > +++ b/kernel/workqueue.c
-> > @@ -33,6 +33,7 @@
-> >  #include <linux/kallsyms.h>
-> >  #include <linux/debug_locks.h>
-> >  #include <linux/lockdep.h>
-> > +#include <trace/workqueue.h>
-> >  
-> >  /*
-> >   * The per-CPU workqueue (if single thread, we always use the first
-> > @@ -138,11 +139,15 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
-> >  	wake_up(&cwq->more_work);
-> >  }
-> >  
-> > +DEFINE_TRACE(workqueue_insertion);
-> > +
-> >  static void __queue_work(struct cpu_workqueue_struct *cwq,
-> >  			 struct work_struct *work)
-> >  {
-> >  	unsigned long flags;
-> >  
-> > +	trace_workqueue_insertion(cwq->thread, work);
-> > +
-> >  	spin_lock_irqsave(&cwq->lock, flags);
-> >  	insert_work(cwq, work, &cwq->worklist);
-> >  	spin_unlock_irqrestore(&cwq->lock, flags);
-> > @@ -259,6 +264,8 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-> >  }
-> >  EXPORT_SYMBOL_GPL(queue_delayed_work_on);
-> >  
-> > +DEFINE_TRACE(workqueue_execution);
-> > +
-> >  static void run_workqueue(struct cpu_workqueue_struct *cwq)
-> >  {
-> >  	spin_lock_irq(&cwq->lock);
-> > @@ -284,7 +291,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
-> >  		 */
-> >  		struct lockdep_map lockdep_map = work->lockdep_map;
-> >  #endif
-> > -
-> > +		trace_workqueue_execution(cwq->thread, work);
-> >  		cwq->current_work = work;
-> >  		list_del_init(cwq->worklist.next);
-> >  		spin_unlock_irq(&cwq->lock);
-> > @@ -765,6 +772,8 @@ init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
-> >  	return cwq;
-> >  }
-> >  
-> > +DEFINE_TRACE(workqueue_creation);
-> > +
-> >  static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
-> >  {
-> >  	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
-> > @@ -787,6 +796,8 @@ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
-> >  		sched_setscheduler_nocheck(p, SCHED_FIFO, &param);
-> >  	cwq->thread = p;
-> >  
-> > +	trace_workqueue_creation(cwq->thread, cpu);
-> > +
-> >  	return 0;
-> >  }
-> >  
-> > @@ -868,6 +879,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
-> >  }
-> >  EXPORT_SYMBOL_GPL(__create_workqueue_key);
-> >  
-> > +DEFINE_TRACE(workqueue_destruction);
-> > +
-> >  static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
-> >  {
-> >  	/*
-> > @@ -891,6 +904,7 @@ static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
-> >  	 * checks list_empty(), and a "normal" queue_work() can't use
-> >  	 * a dead CPU.
-> >  	 */
-> > +	trace_workqueue_destruction(cwq->thread);
-> >  	kthread_stop(cwq->thread);
-> >  	cwq->thread = NULL;
-> >  }
-> > -- 
-> > 1.6.0.4
-> > 
-> > 
-> > 
-> > 
+But you'll need some background to it:
 
+Type-based aliasing is _stupid_. It's so incredibly stupid that it's not 
+even funny. It's broken. And gcc took the broken notion, and made it more 
+so by making it a "by-the-letter-of-the-law" thing that makes no sense.
+
+What happens (well, maybe it's fixed, but this was _literally_ what gcc 
+used to do) is that the type-based aliasing overrode everything else, so 
+if two accesses were to different types (and not in a union, and none of 
+the types were "char"), then gcc "knew" that they clearly could not alias, 
+and could thus wildly re-order accesses.
+
+That's INSANE. It's so incredibly insane that people who do that should 
+just be put out of their misery before they can reproduce. But real gcc 
+developers really thought that it makes sense, because the standard allows 
+it, and it gives the compiler the maximal freedom - because it can now do 
+things that are CLEARLY NONSENSICAL.
+
+And to compiler people, being able to do things that are clearly 
+nonsensical seems to often be seen as a really good thing, because it 
+means that they no longer have to worry about whether the end result works 
+or not - they just got permission to do stupid things in the name of 
+optimization.
+
+So gcc did. I know for a _fact_ that gcc would re-order write accesses 
+that were clearly to (statically) the same address. Gcc would suddenly 
+think that
+
+	unsigned long a;
+
+	a = 5;
+	*(unsigned short *)&a = 4;
+
+could be re-ordered to set it to 4 first (because clearly they don't alias 
+- by reading the standard), and then because now the assignment of 'a=5' 
+was later, the assignment of 4 could be elided entirely! And if somebody 
+complains that the compiler is insane, the compiler people would say 
+"nyaah, nyaah, the standards people said we can do this", with absolutely 
+no introspection to ask whether it made any SENSE.
+
+Anyway, once you start doing stupid things like that, and once you start 
+thinking that the standard makes more sense than a human being using his 
+brain for 5 seconds, suddenly you end up in a situation where you can move 
+stores around wildly, and it's all 'correct'.
+
+Now, take my stupid example, and make "fn1()" do "a.a = 1" and make 
+"fn2()" do "b.b = 2", and think about what a compiler that thinks it can 
+re-order the two writes willy-nilly will do?
+
+Right. It will say "ok, a.a and b.b can not alias EVEN IF THEY HAVE 
+STATICALLY THE SAME ADDFRESS ON THE STACK", because they are in two 
+different structres. So we can then re-order the accesses, and move the 
+stores around.
+
+Guess what happens if you have that kind of insane mentality, and you then 
+try to make sure that they really don't alias, so you allocate extra stack 
+space.
+
+The fact is, Linux uses -fno-strict-aliasing for a damn good reason: 
+because the gcc notion of "strict aliasing" is one huge stinking pile of 
+sh*t. Linux doesn't use that flag because Linux is playing fast and loose, 
+it uses that flag because _not_ using that flag is insane.
+
+Type-based aliasing is unacceptably stupid to begin with, and gcc took 
+that stupidity to totally new heights by making it actually more important 
+than even statically visible aliasing.
+
+		Linus
