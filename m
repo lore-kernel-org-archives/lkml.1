@@ -1,139 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbZALTDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZALTIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbZALTDb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZALTDS
+	id S1755925AbZALTIt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZALTIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:03:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42547 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753972AbZALTDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:03:16 -0500
-Date: Mon, 12 Jan 2009 11:02:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Bernd Schmidt <bernds_cb1@t-online.de>
-cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
- adaptive spinning
-In-Reply-To: <496B86B5.3090707@t-online.de>
-Message-ID: <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
-References: <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org>
- <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain> <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain>
- <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Jan 2009 14:08:40 -0500
+Received: from mga02.intel.com ([134.134.136.20]:29747 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbZALTIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:08:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,254,1231142400"; 
+   d="scan'208";a="481008551"
+Subject: Re: dmaengine: BUG: Unable to handle kernel paging request
+From: Dan Williams <dan.j.williams@intel.com>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "leoli@freescale.com" <leoli@freescale.com>,
+       "zw@zh-kernel.org" <zw@zh-kernel.org>
+In-Reply-To: <20090112180423.GA2364@ovro.caltech.edu>
+References: <20090112180423.GA2364@ovro.caltech.edu>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 12:08:38 -0700
+Message-Id: <1231787318.25777.10.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 12 Jan 2009, Bernd Schmidt wrote:
+On Mon, 2009-01-12 at 11:04 -0700, Ira Snyder wrote:
+> Hello all,
 > 
-> Something at the back of my mind said "aliasing".
+> I'm working on a driver that uses DMAEngine. With the recent changes,
+> the driver doesn't work anymore.
 > 
-> $ gcc linus.c -O2 -S ; grep subl linus.s
->         subl    $1624, %esp
-> $ gcc linus.c -O2 -S -fno-strict-aliasing; grep subl linus.s
->         subl    $824, %esp
+> I believe I have tracked it down to commit
+> 41d5e59c1299f27983977bcfe3b360600996051c, but it could be one of the
+> other DMAEngine commits.
 > 
-> That's with 4.3.2.
+> The code that crashes is in mm/dmapool.c, line 178:
+> if (list_empty(&dev->dma_pools))
+> 
+> I distilled the crash down to the following simple driver, which should
+> just get a reference to dmaengine, in preparation for acquiring a
+> channel to use.
 
-Interesting. 
+I believe the problem is that the driver uses the channel device value
+before it is created.  Prior to this patch the following line in
+fsl_dma_chan_probe:
 
-Nonsensical, but interesting.
+new_fsl_chan->dev = &new_fsl_chan->common.dev
 
-Since they have no overlap in lifetime, confusing this with aliasing is 
-really really broken (if the functions _hadn't_ been inlined, you'd have 
-gotten the same address for the two variables anyway! So anybody who 
-thinks that they need different addresses because they are different types 
-is really really fundmantally confused!).
+...would retrieve a pointer to the uninitialized struct device in
+dma_chan.  The later call to dma_async_device_register in
+of_fsl_dma_probe fixed up this uninitialized data.
 
-But your numbers are unambiguous, and I can see the effect of that 
-compiler flag myself.
+However, the dmaengine sysfs implementation was fixed to support proper
+lifetime rules which means that the current:
 
-The good news is that the kernel obviously already uses 
--fno-strict-aliasing for other reasonds, so we should see this effect 
-already, _despite_ it making no sense. And the stack usage still causes 
-problems.
+new_fsl_chan->dev = &new_fsl_chan->common.dev->device;
 
-Oh, and I see why. This test-case shows it clearly.
+...retrieves a NULL pointer because new_fsl_chan->common.dev has not
+been allocated at this point.
 
-Note how the max stack usage _should_ be "struct b" + "struct c". Note how 
-it isn't (it's "struct a" + "struct b/c").
+The following may fix this up...
 
-So what seems to be going on is that gcc is able to do some per-slot 
-sharing, but if you have one function with a single large entity, and 
-another with a couple of different ones, gcc can't do any smart 
-allocation.
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index ca70a21..748e140 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -822,7 +822,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 	 */
+ 	WARN_ON(fdev->feature != new_fsl_chan->feature);
+ 
+-	new_fsl_chan->dev = &new_fsl_chan->common.dev->device;
++	new_fsl_chan->dev = fdev->dev;
+ 	new_fsl_chan->reg_base = ioremap(new_fsl_chan->reg.start,
+ 			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+ 
 
-Put another way: gcc doesn't create a "union of the set of different stack 
-usages" (which would be optimal given a single frame, and generate the 
-stack layout of just the maximum possible size), it creates a "set of 
-unions of different stack usages" (which can be optimal in the trivial 
-cases, but not nearly optimal in practical cases).
 
-That explains the ioctl behavior - the structure use is usually pretty 
-complicated (ie it's almost never about just _one_ large stack slot, but 
-the ioctl cases tend to do random stuff with multiple slots).
-
-So it doesn't add up to some horrible maximum of all sizes, but it also 
-doesn't end up coalescing stack usage very well.
-
-		Linus
----
-struct a {
-	int a;
-	unsigned long array[200];
-};
-
-struct b {
-	int b;
-	unsigned long array[100];
-};
-
-struct c {
-	int c;
-	unsigned long array[100];
-};
-
-extern int fn3(int, void *);
-extern int fn4(int, void *);
-
-static inline __attribute__ ((always_inline))
-int fn1(int flag)
-{
-	struct a a;
-	return fn3(flag, &a);
-}
-
-static inline __attribute__ ((always_inline))
-int fn2(int flag)
-{
-	struct b b;
-	struct c c;	
-	return fn4(flag, &b) + fn4(flag, &c);
-}
-
-int fn(int flag)
-{
-	fn1(flag);
-	if (flag & 1)
-		return 0;
-	return fn2(flag);
-}
