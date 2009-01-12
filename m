@@ -1,60 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZALTxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZALTyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbZALTxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 14:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZALTxg
+	id S1756993AbZALTyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 14:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbZALTyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 14:53:36 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:65126 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbZALTxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 14:53:35 -0500
-Message-ID: <496B9FC7.3090108@colorfullife.com>
-Date: Mon, 12 Jan 2009 20:53:43 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 12 Jan 2009 14:54:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46365 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752744AbZALTyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 14:54:13 -0500
+Message-ID: <496B9FC3.7080306@kernel.org>
+Date: Mon, 12 Jan 2009 11:53:39 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andrew Morton <akpm@linux-foundation.org>, dcm@acm.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
-References: <1231571060.3538.18.camel@localhost.localdomain> <49686465.70501@s5r6.in-berlin.de> <20090110011557.9d94e111.akpm@linux-foundation.org> <496872E0.9030007@s5r6.in-berlin.de> <1231773620.6365.21.camel@gaara.bos.redhat.com>
-In-Reply-To: <1231773620.6365.21.camel@gaara.bos.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: Mike Travis <travis@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: arch_probe_nr_irqs
+References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu>
+In-Reply-To: <20090112092613.GA1822@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
->   The problem
-> isn't about returning un-zeroed-out objects to the kmem cache, the
-> problem is returning them to the idr free list.
->   
-I think this is wrong:
-The slab allocator assumes that the objects that are given to 
-kmem_cache_free() are properly constructed.
-I.e.: No additional constructor is called prior to returning the object 
-from the next kmem_cache_alloc() call.
 
+Impact: save RAM with large NR_CPUS, get smaller nr_irqs
 
-> Every idr use I've seen could just do the whole thing
-> under a mutex and not worry about the awkward retry idea.
-Unfortunately there are some users that do idr_get_new() within a spinlock.
-e.g. from drivers/gpu/drm/drm_gem.c:
->         if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0)
->                 return -ENOMEM;
->
->         /* do the allocation under our spinlock */
->         spin_lock(&file_priv->table_lock);
->         ret = idr_get_new_above(&file_priv->object_idr, obj, 1, handlep);
->         spin_unlock(&file_priv->table_lock);
-:-(
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
---
-    Manfred
+---
+ arch/x86/include/asm/irq_vectors.h |    7 ++-----
+ arch/x86/kernel/io_apic.c          |   16 ++++++++++++++++
+ include/linux/interrupt.h          |    1 +
+ kernel/irq/handle.c                |    9 ++-------
+ kernel/softirq.c                   |    5 +++++
+ 5 files changed, 26 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
++++ linux-2.6/arch/x86/include/asm/irq_vectors.h
+@@ -120,14 +120,11 @@
+ # endif
+ #else
+ 
+-/* defined as a macro so nr_irqs = max_nr_irqs(nr_cpu_ids) can be used */
+-# define max_nr_irqs(nr_cpus)				\
+-	((8 * nr_cpus) > (32 * MAX_IO_APICS) ?		\
++# define NR_IRQS					\
++	((8 * NR_CPUS) > (32 * MAX_IO_APICS) ?		\
+ 		(NR_VECTORS + (8 * NR_CPUS)) :		\
+ 		(NR_VECTORS + (32 * MAX_IO_APICS)))	\
+ 
+-# define NR_IRQS max_nr_irqs(NR_CPUS)
+-
+ #endif
+ 
+ #elif defined(CONFIG_X86_VOYAGER)
+Index: linux-2.6/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/io_apic.c
++++ linux-2.6/arch/x86/kernel/io_apic.c
+@@ -3851,6 +3851,22 @@ void __init probe_nr_irqs_gsi(void)
+ 		nr_irqs_gsi = nr;
+ }
+ 
++#ifdef CONFIG_SPARSE_IRQ
++int __init arch_probe_nr_irqs(void)
++{
++	int nr;
++
++	nr = ((8 * nr_cpu_ids) > (32 * nr_ioapics) ?
++		(NR_VECTORS + (8 * nr_cpu_ids)) :
++		(NR_VECTORS + (32 * nr_ioapics)));
++
++	if (nr < nr_irqs && nr > nr_irqs_gsi)
++		nr_irqs = nr;
++
++	return 0;
++}
++#endif
++
+ /* --------------------------------------------------------------------------
+                           ACPI-based IOAPIC Configuration
+    -------------------------------------------------------------------------- */
+Index: linux-2.6/include/linux/interrupt.h
+===================================================================
+--- linux-2.6.orig/include/linux/interrupt.h
++++ linux-2.6/include/linux/interrupt.h
+@@ -481,6 +481,7 @@ int show_interrupts(struct seq_file *p,
+ struct irq_desc;
+ 
+ extern int early_irq_init(void);
++extern int arch_probe_nr_irqs(void);
+ extern int arch_early_irq_init(void);
+ extern int arch_init_chip_data(struct irq_desc *desc, int cpu);
+ 
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -59,10 +59,6 @@ EXPORT_SYMBOL_GPL(nr_irqs);
+ 
+ #ifdef CONFIG_SPARSE_IRQ
+ 
+-#ifndef max_nr_irqs
+-#define max_nr_irqs(nr_cpus)	NR_IRQS
+-#endif
+-
+ static struct irq_desc irq_desc_init = {
+ 	.irq	    = -1,
+ 	.status	    = IRQ_DISABLED,
+@@ -137,9 +133,8 @@ int __init early_irq_init(void)
+ 	int legacy_count;
+ 	int i;
+ 
+-	/* initialize nr_irqs based on nr_cpu_ids */
+-	nr_irqs = max_nr_irqs(nr_cpu_ids);
+-
++	 /* initialize nr_irqs based on nr_cpu_ids */
++	arch_probe_nr_irqs();
+ 	printk(KERN_INFO "NR_IRQS:%d nr_irqs:%d\n", NR_IRQS, nr_irqs);
+ 
+ 	desc = irq_desc_legacy;
+Index: linux-2.6/kernel/softirq.c
+===================================================================
+--- linux-2.6.orig/kernel/softirq.c
++++ linux-2.6/kernel/softirq.c
+@@ -806,6 +806,11 @@ int __init __weak early_irq_init(void)
+ 	return 0;
+ }
+ 
++int __init __weak arch_probe_nr_irqs(void)
++{
++	return 0;
++}
++
+ int __init __weak arch_early_irq_init(void)
+ {
+ 	return 0;
