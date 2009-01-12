@@ -1,66 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZALNHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZALNLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZALNHT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 08:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZALNHF
+	id S1753646AbZALNLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 08:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZALNLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 08:07:05 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:49335 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751568AbZALNHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 08:07:03 -0500
-Message-ID: <496B4073.4040108@snapgear.com>
-Date: Mon, 12 Jan 2009 23:06:59 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 12 Jan 2009 08:11:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36130 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751523AbZALNLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 08:11:33 -0500
+Date: Mon, 12 Jan 2009 14:11:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yinghai@kernel.org>
+Cc: paul.s.diefenbaugh@intel.com, jun.nakajima@intel.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, astarikovskiy@suse.de,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PULL -tip] x86: replacing mp_config_X with mpc_X
+Message-ID: <20090112131100.GA670@elte.hu>
+References: <1231764478.10461.5.camel@jaswinder.satnam>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
-       stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig
- can't build
-References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org>
-In-Reply-To: <20090112104447.GG28564@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231764478.10461.5.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Mon, Oct 06, 2008 at 04:20:06PM +1000, Greg Ungerer wrote:
->> Hi Kosako,
->>
->> KOSAKI Motohiro wrote:
->>> I guess nobody don't test m68knommu at all last three month.
->>> Do we still need to maintain this architecture?
->> Yes, we do.
->>
-> Any effort to get m68knommu folded in to m68k proper? This might help
 
-Some :-)
-The header merge is the first step.
+* Jaswinder Singh Rajput <jaswinder@infradead.org> wrote:
 
+> -struct mp_config_ioapic {
+> -	unsigned long mp_apicaddr;
+> -	unsigned int mp_apicid;
+> -	unsigned char mp_type;
+> -	unsigned char mp_apicver;
+> -	unsigned char mp_flags;
+> -};
+> -
+> -struct mp_config_intsrc {
+> -	unsigned int mp_dstapic;
+> -	unsigned char mp_type;
+> -	unsigned char mp_irqtype;
+> -	unsigned short mp_irqflag;
+> -	unsigned char mp_srcbus;
+> -	unsigned char mp_srcbusirq;
+> -	unsigned char mp_dstirq;
+> -};
 
-> with some of your bitrot issues.. And likely less work to do in
-> supporting those m68knommu parts that ship with MMUs ;-)
-> 
-> m68knommu is the only one of the mmu/nommu variants left that ships in
-> its own architecture directory rather than being folded in to its parent.
-> It would be good to get rid of it one of these days.
+So you replaced that with mpc_ioapic and mpc_intsrc uses:
 
-Yep. I think we will likely make some progress on this over
-the next few months...
+ struct mpc_ioapic {
+         unsigned char type;
+         unsigned char apicid;
+         unsigned char apicver;
+         unsigned char flags;
+         unsigned int apicaddr;
+ };
 
+ struct mpc_intsrc {
+         unsigned char type;
+         unsigned char irqtype;
+         unsigned short irqflag;
+         unsigned char srcbus;
+         unsigned char srcbusirq;
+         unsigned char dstapic;
+         unsigned char dstirq;
+ };
 
+And removed the mp_config_ioapic and mp_config_intsrc types.
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+The mp_config_ioapic and mp_config_intsrc types are kernel-internal, while 
+mpc_ioapic and mpc_intsrc is an MP Specification type - the lowlevel 
+structure of these tables as provided in RAM or ROM by the BIOS.
+
+Here's the potential problems that need to be thought through:
+
+- the biggest potential problem is that apicaddr is 32-bit wide while 
+  mp_apicaddr is 64-bit wide, on the 64-bit kernel. Can an apic address be 
+  above 4 GB, in an mptable? I dont think it can be.
+
+- another problem could be that dstapic are all 1-byte entities - while in
+  the in-kernel version (mp_apicid and mp_dstapic) they are 32 bit. The 
+  ACPI code fills in the tables too so maybe there it can be wider than 8 
+  bits?
+
+I've Cc:-ed a few more folks.
+
+The cleanup potential is significant: we can get rid of all the type 
+mixing that we do (assign_to_mp_irq(), assign_to_mpc_intsrc() can go away, 
+etc.) and can standardize the code.
+
+	Ingo
