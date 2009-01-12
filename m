@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbZALWzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbZALW4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761586AbZALWzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 17:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbZALWuy
+	id S1761619AbZALW4G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 17:56:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759831AbZALWvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 17:50:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46625 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Jan 2009 17:51:18 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:55971 "EHLO solo.fdn.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762865AbZALWuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 17:50:52 -0500
-Date: Mon, 12 Jan 2009 23:50:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090112225041.GA18220@elte.hu>
-References: <20090112213539.GA10720@gambetta> <20090112215701.GH23848@one.firstfloor.org> <20090112221023.GB10720@gambetta> <20090112223220.GK23848@one.firstfloor.org>
+	id S932155AbZALWvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 17:51:15 -0500
+Date: Mon, 12 Jan 2009 23:51:12 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Derek Fawcus <dfawcus@cisco.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
+       linux-input@vger.kernel.org
+Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
+Message-ID: <20090112225112.GE5026@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Derek Fawcus <dfawcus@cisco.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
+	linux-input@vger.kernel.org
+References: <20090107005813.GA4987@const.famille.thibault.fr> <20090109212358.GG5073@const.famille.thibault.fr> <20090109213555.7f9275c9@lxorguk.ukuu.org.uk> <20090109214357.GH5073@const.famille.thibault.fr> <20090109220144.6b99ed72@lxorguk.ukuu.org.uk> <20090109222341.GI5073@const.famille.thibault.fr> <20090112223621.GA21489@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090112223220.GK23848@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090112223621.GA21489@cisco.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > It is also slower (or so percpu.h says), and confusing I'd say.
+Derek Fawcus, le Mon 12 Jan 2009 22:36:21 +0000, a écrit :
+> On Fri, Jan 09, 2009 at 11:23:41PM +0100, Samuel Thibault wrote:
+> > Alan Cox, le Fri 09 Jan 2009 22:01:44 +0000, a écrit :
+> > > > > Surely that is just a new keymap ?
+> > > > 
+> > > > No. That would mean a lot of keymapSSS. Doing it the keymap way
+> > > 
+> > > Why - its an  algorithmic question about how to edit them - remember you
+> > > can edit keymaps in programs at runtime and live.
+> > 
+> > Right. I'm still afraid by that: we'd need to know how to remap the
+> > various keycodes (amiga, atari, i386, mc, sun).
 > 
-> Well it's something like 3 instructions versus one. [...]
-
-That's enough - micro-optimizations are done like that, instruction by 
-instruction.
-
-> [...] You would have a hard time benchmarking it unless you run it in a 
-> very tight loop. It will be lost in the noise compared to all the other 
-> costs of the IPI.
+> Err - just use EVIOCSKEYCODE to swap the keycodes around,  this works
+> in terms of the evdev keycodes.  I use it in a small program to swap
+> around a bunch of keys.
 > 
-> Also why i don't like this patch is that on the typical small 
-> single/dual core system running a 128 byte cache line distro kernel you 
-> always pay the 1K cost now, while with per cpu it only needed one/two 
-> entries.
+> A bit more of a challange would be listening to evdev,  and when
+> detecting the 'swap' keycode,  doing the reload with the actual swaps.
 
-4 or 8 cores is the norm these days - by the time this change hits real 
-Linux computers en masse 8 cores will be quite common.
+Yes, that seems a bit unsafe to me.  Another solution is to just grab
+all the keyboard devices, and reemit the wanted evdev keycodes.  Quite
+clumsy.
 
-> Admittedly it could have been better commented.
-> 
-> Not that it matters now unfortunately it's already applied. Sometimes 
-> wonder why I still bother to do patch review...
+> I'm not sure w/o reading the code if the kernel will allow this to be
+> shared between the tty and evdev on the same vt,
 
-Whether patches are already applied or not has no relevance - patches can 
-still be undone or reverted of course, should your review feedback be 
-correct.
+What do you mean by "this"?  The raw keycode -> input keycode
+translation?  My guess is that it is recorded for the device itself, not
+related to things like VTs, and thus is global.
 
-	Ingo
+> but then one could run a controller program talking through a pty and
+> direct to the keyboard.
+
+Ugh.  I'd prefer grabing evdev rather that using a pty.
+
+Samuel
