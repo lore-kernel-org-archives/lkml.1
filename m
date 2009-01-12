@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZALLOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZALLPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZALLOx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 06:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZALLOk
+	id S1755045AbZALLPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 06:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZALLOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 06:14:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35521 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbZALLOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 06:14:40 -0500
-Date: Mon, 12 Jan 2009 06:14:36 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: xfs@oss.sgi.com
-cc: linux-kernel@vger.kernel.org
-Subject: spurious -ENOSPC on XFS
-Message-ID: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com>
+	Mon, 12 Jan 2009 06:14:53 -0500
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:57242 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754781AbZALLOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 06:14:50 -0500
+Date: Mon, 12 Jan 2009 20:12:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Greg Ungerer <gerg@snapgear.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       linux-m68k@vger.kernel.org, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH for 2.6.28 stable] m68knommu: fix m68knommu defconfig can't build
+Message-ID: <20090112111208.GH28564@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@snapgear.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Roman Zippel <zippel@linux-m68k.org>,
+	Greg Ungerer <gerg@uclinux.org>, linux-m68k@lists.linux-m68k.org,
+	stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20081230193943.1281.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48E9AE16.2000002@snapgear.com> <20090112104447.GG28564@linux-sh.org> <20090112105942.GA10936@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112105942.GA10936@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-I discovered a bug in XFS in delayed allocation.
-
-When you take a small partition (52MB in my case) and copy many small 
-files on it (source code) that barely fits there, you get -ENOSPC. Then 
-sync the partition, some free space pops up, click "retry" in MC an the 
-copy continues. They you get again -ENOSPC, you must sync, click "retry" 
-and go on. And so on few times until the source code finally fits on the 
-XFS partition.
-
-This misbehavior is apparently caused by delayed allocation, delayed 
-allocation does not exactly know how much space will be occupied by data, 
-so it makes some upper bound guess. Because free space count is only a 
-guess, not the actual data being consumed, XFS should not return -ENOSPC 
-on behalf of it. When the free space overflows, XFS should sync itself, 
-retry allocation and only return -ENOSPC if it fails the second time, 
-after the sync.
-
-Mikulas
+On Mon, Jan 12, 2009 at 11:59:42AM +0100, Sam Ravnborg wrote:
+> On Mon, Jan 12, 2009 at 07:44:47PM +0900, Paul Mundt wrote:
+> > On Mon, Oct 06, 2008 at 04:20:06PM +1000, Greg Ungerer wrote:
+> > > Hi Kosako,
+> > > 
+> > > KOSAKI Motohiro wrote:
+> > > >I guess nobody don't test m68knommu at all last three month.
+> > > >Do we still need to maintain this architecture?
+> > > 
+> > > Yes, we do.
+> > > 
+> > Any effort to get m68knommu folded in to m68k proper? This might help
+> > with some of your bitrot issues.. And likely less work to do in
+> > supporting those m68knommu parts that ship with MMUs ;-)
+> > 
+> > m68knommu is the only one of the mmu/nommu variants left that ships in
+> > its own architecture directory rather than being folded in to its parent.
+> > It would be good to get rid of it one of these days.
+> 
+> From the outside it looks like there are indeed a whish to do so
+> but both m68k and m68knommu maintainers seems to be busy with other stuff.
+> 
+> Not that I can think of what is more important than to merge the two
+> architectures ;-)
+> 
+> If I get some spare time one day I have actually planned to try to
+> help a little - but that would require an active maintainer..
+> 
+> We just did the exercise with sparc/sparc64 unification and
+> if you forget the few times I broke sparc32 then it went well
+> with only limited problems.
+> 
+> One key factor why it went well was that patches were reviewed
+> and applied within a few days whch is why I stresses that the
+> maintainer needs spare time to support the effort.
+> 
+I have some experience with developing a nommu port within an mmu-only
+one. If you start some of the legwork on this I can try to chip in some
+spare cycles, though ultimately some m68k person will still have to regain
+consciousness at some point :-)
