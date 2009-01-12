@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZALOmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZALOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZALOmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZALOmi
+	id S1754887AbZALOnk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZALOna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 09:42:38 -0500
-Received: from cmpxchg.org ([85.214.51.133]:42635 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752615AbZALOmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 09:42:37 -0500
-Date: Mon, 12 Jan 2009 15:42:18 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Travis <travis@sgi.com>, Christophe Saout <christophe@saout.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]: xen: fix too early kmalloc call
-Message-ID: <20090112144218.GA18859@cmpxchg.org>
-References: <496A4C8F.8070005@sgi.com> <20090112085302.GB21976@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Jan 2009 09:43:30 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39286 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbZALOn3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 09:43:29 -0500
+Date: Mon, 12 Jan 2009 15:43:27 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: wrong usage of __devexit_p and __exit_p
+Message-ID: <20090112144327.GB29183@pengutronix.de>
+References: <20090112135057.GA10250@pengutronix.de> <20090112141457.GA11777@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090112085302.GB21976@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090112141457.GA11777@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 09:53:02AM +0100, Ingo Molnar wrote:
-> 
-> * Mike Travis <travis@sgi.com> wrote:
-> 
-> > Subject: xen: fix too early kmalloc call
+On Mon, Jan 12, 2009 at 03:14:57PM +0100, Sam Ravnborg wrote:
+> On Mon, Jan 12, 2009 at 02:50:57PM +0100, Uwe Kleine-König wrote:
+> > Hello,
 > > 
-> > From: Christophe Saout <christophe@saout.de> 
+> > I found several drivers that use __devexit_p and __exit_p on functions
+> > that don't live in .devexit.text or .exit.text resp.
 > > 
-> > Impact: fixes bootup of xen.
+> > The impact is either that these functions use memory without being used
+> > or that they don't link.
 > > 
-> > Christophe reported the following problem:
+> > I send 24 patches as a reply to this mail.  I choosed to move the
+> > functions into the respective function instead of using the right
+> > __{dev,}exit_p wrapper because it seems to me to have less impact.
 > > 
-> > >  (basically it seems that SLAB is not yet up, with earlyprintk it is
-> > >  giving me an Oops in __kmalloc before)
-> > 
-> > Replace call to kmalloc with alloc_bootmem.
-> > 
-> > Also from Christophe:
-> > > (me)
-> > > > Or I could copy the text and submit it as a new patch?
-> > >
-> > > Yes, I would prefer that.  Also, my commit message was not really
-> > > following Kernel standards and it's only a very simple change.
-> > 
-> > Signed-off-by: Mike Travis <travis@sgi.com>
+> > I didn't made the effort to find out the right people to Cc: but I hope
+> > that Andrew takes care of that :-)
 > 
-> i've applied the fix to tip/cpus4096, in the form below.
-> 
-> Please submit clean log messages. Your commit description was confused - 
-> the patch is From: Christophe, but the message talks about Christophe in 
-> the third person. Also, it included conversational bits that have no 
-> value for the Git history.
-> 
-> 	Ingo
-> 
-> -------------------->
-> >>From 28e08861b9afab4168b758fb7b95aa7a4da0f668 Mon Sep 17 00:00:00 2001
-> From: Christophe Saout <christophe@saout.de>
-> Date: Sun, 11 Jan 2009 11:46:23 -0800
-> Subject: [PATCH] xen: fix too early kmalloc call
-> 
-> Impact: fix bootup crash on xen guests
-> 
-> SLAB is not yet up, with earlyprintk it is giving me an Oops in __kmalloc.
-> 
-> Replace call to kmalloc() with alloc_bootmem().
-> 
-> Reported-by: Christophe Saout <christophe@saout.de>
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/xen/events.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-> index ed7527b..3141e14 100644
-> --- a/drivers/xen/events.c
-> +++ b/drivers/xen/events.c
-> @@ -26,6 +26,7 @@
->  #include <linux/irq.h>
->  #include <linux/module.h>
->  #include <linux/string.h>
-> +#include <linux/bootmem.h>
->  
->  #include <asm/ptrace.h>
->  #include <asm/irq.h>
-> @@ -831,8 +832,8 @@ void __init xen_init_IRQ(void)
->  	int i;
->  	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
->  
-> -	cpu_evtchn_mask_p = kmalloc(size, GFP_KERNEL);
-> -	BUG_ON(cpu_evtchn_mask == NULL);
-> +	cpu_evtchn_mask_p = alloc_bootmem(size);
-> +	BUG_ON(cpu_evtchn_mask_p == NULL);
+> Did you check that this did not introduce any new Section mismatch warnings?
+> We have seen several __exit annotated functions that was used from __init
+> annotated code or even from normal code.
+> Thus the __exit annotation was wrong in these cases.
+I wrote in the commit logs, that the functions are only used as argument
+to __{dev,}exit_p.  There are no direct calls. (IIRC there was only one
+exception that I checked manually.)
 
-Impossible condition :-) alloc_bootmem() crashes before you could
-catch it here.
+I think the __{dev,}exit_p wrappers are only used to define remove
+callbacks, so there should be no harm.
 
-	Hannes
+Best regards and thanks for your feedback,
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Peiner Strasse 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686              | Fax:   +49-5121-206917-5555 |
