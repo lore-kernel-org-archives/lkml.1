@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbZALPpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZALPqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbZALPpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 10:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZALPpQ
+	id S1754820AbZALPqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 10:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZALPqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 10:45:16 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:55244 "EHLO mail.vyatta.com"
+	Mon, 12 Jan 2009 10:46:45 -0500
+Received: from verein.lst.de ([213.95.11.210]:60994 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbZALPpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 10:45:14 -0500
-Date: Mon, 12 Jan 2009 07:45:14 -0800 (PST)
-From: Stephen Hemminger <stephen.hemminger@vyatta.com>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       corbet@lwn.net, David Miller <davem@davemloft.net>
-Message-ID: <11817189.41801231775114911.JavaMail.root@tahiti.vyatta.com>
-In-Reply-To: <496AA21A.6010905@cn.fujitsu.com>
-Subject: Re: Who wrote 2.6.28
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [96.225.207.155]
-X-Mailer: Zimbra 5.0.11_GA_2696.RHEL4 (ZimbraWebClient - SAF3 (Mac)/5.0.11_GA_2696.RHEL4)
+	id S1752423AbZALPqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 10:46:45 -0500
+Date: Mon, 12 Jan 2009 16:46:34 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: new barrier warnings in 2.6.29-rc1
+Message-ID: <20090112154634.GA15730@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My Linux Foundation mail address still works, and I can still have
-access to old software at my account there. But as of Decemeber 2007,
-I work for Vyatta.  The marketing department would like the attribution
-in statistics to be Vyatta, it is not a big issue for me.
+Whever a filesystem submits a bio with the barrier flag set but
+the underlying hardware doesn't support it we now get errors in
+the form of:
 
------ Original Message -----
-From: "Wang Chen" <wangchen@cn.fujitsu.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: jaswinderlinux@gmail.com, linux-kernel@vger.kernel.org, gregkh@suse.de, corbet@lwn.net, "Stephen Hemminger" <shemminger@vyatta.com>
-Sent: Sunday, January 11, 2009 5:51:22 PM GMT -08:00 US/Canada Pacific
-Subject: Re: Who wrote 2.6.28
+[ 3046.442629] end_request: I/O error, dev vdb, sector 0
 
-David Miller said the following on 2009-1-10 6:11:
-> From: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>
-> Date: Fri, 9 Jan 2009 19:39:17 +0530
-> 
->> In http://remword.com/kps_result/2_6_29_whole_line.html
->> Earlier I was using email address: Jaswinder Singh
->> <jaswinder@infradead.org> (Unknown #25) and now I am using:
->> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
->>
->> If possible can you link above two emails.
-> 
-> This reminds me that I noticed another one that needs linking,
-> shemminger@linux-foundation.org became shemminger@vyatta.com
-> 
+since commit a7384677b2f4cd40948fd7ce024ba5e1821444ba which removed
+the early check on the queue capabilities in __make_request.  I
+think this message is pretty annoying and confusing for the user
+as the filesystems already have more descriptive warnings, e.g. for
+XFS:
 
-Thanks Dave.
-But I wonder that whether Stephen still be LF people.
-If not, I will separate these two addresses to different employers.
+[ 3046.455478] Filesystem "vdb": Disabling barriers, trial barrier write failed
