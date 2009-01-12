@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZALSof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZALSsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbZALSof (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 13:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZALSoX
+	id S1756178AbZALSsz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 13:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZALSsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 13:44:23 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38149 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753367AbZALSoW (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 13:44:22 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Michael Stone <michael@laptop.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: RFC: Network privilege separation.
-In-Reply-To: Your message of "Thu, 08 Jan 2009 10:43:05 GMT."
-             <20090108104305.7b271053@lxorguk.ukuu.org.uk>
-From: Valdis.Kletnieks@vt.edu
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <87mye2yg8a.fsf@basil.nowhere.org> <20090108023111.GJ3164@didacte.laptop.org>
-            <20090108104305.7b271053@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231785850_3124P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 12 Jan 2009 13:48:42 -0500
+Received: from mailout01.t-online.de ([194.25.134.80]:50164 "EHLO
+	mailout01.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbZALSsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 13:48:41 -0500
+X-Greylist: delayed 1003 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 13:48:40 EST
+Message-ID: <496B86B5.3090707@t-online.de>
+Date: Mon, 12 Jan 2009 19:06:45 +0100
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+References: <1231676801.25018.150.camel@macbook.infradead.org> <20090111181307.GM26290@one.firstfloor.org> <alpine.LFD.2.00.0901111114230.6528@localhost.localdomain> <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain> <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org>
+In-Reply-To: <20090112005228.GS26290@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 12 Jan 2009 13:44:10 -0500
-Message-ID: <12821.1231785850@turing-police.cc.vt.edu>
+X-ID: SrOp00ZHohbDhjgpFlG1cYfR+11mi1FpObY3P1APy+a6W+H3YoeVmx09K0Bq7r5Qcd
+X-TOI-MSGID: 425abeeb-39f7-4a5e-96dc-a5d566753528
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231785850_3124P
-Content-Type: text/plain; charset=us-ascii
-
-On Thu, 08 Jan 2009 10:43:05 GMT, Alan Cox said:
-
-> If you have the same uid then you can just use ptrace to drive another
-> task with that uid to do the creations for you. Chances are you can also
-> attack shared executable files (eg that uids .bashrc)
+Andi Kleen wrote:
+> On Sun, Jan 11, 2009 at 04:21:03PM -0800, Linus Torvalds wrote:
+>>
+>> On Mon, 12 Jan 2009, Andi Kleen wrote:
+>>> so at least least for this case it works. Your case also doesn't work 
+>>> for me. So it looks like gcc didn't like something you did in your test 
+>>> program.
+>> I very intentionally used _different_ types.
+>>
+>> If you use the same type, gcc will apparenrly happily say "hey, I can 
+>> combine two variables of the same type with different liveness into the 
+>> same variable".
 > 
-> That to me says controlling network access is only useful as part of a
-> more fine grained and general purpose interface. We already have that
-> interface in the form of things like SELinux. We already have systems
-> actively using it to control stuff like which ports are accessed by some
-> services.
+> Confirmed.
+> 
+>> But that's not the interesting case.
+> 
+> Weird. I wonder where this strange restriction comes from.
 
-Yes, the network access part *is* something that should be part of a more
-general interface.  Having said that, we currently are lacking a way for a
-*general user* program to say "I'm all set up, and would like to disavow any
-other further resource access (except maybe r/o access as "other" to file
-systems)".
+Something at the back of my mind said "aliasing".
 
-It's pretty easy for stuff running as root to play setuid()/capability() games
-to throw away access rights.  It's damned hard for mortal users to do it.
+$ gcc linus.c -O2 -S ; grep subl linus.s
+        subl    $1624, %esp
+$ gcc linus.c -O2 -S -fno-strict-aliasing; grep subl linus.s
+        subl    $824, %esp
+
+That's with 4.3.2.
 
 
-
---==_Exmh_1231785850_3124P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJa496cC3lWbTT17ARAoYqAKCPubCGMYUvOuZpTToyRgK5O+wOXgCeP+Sj
-UYiFyaDZ0OZepAsnHznWBgU=
-=iU3o
------END PGP SIGNATURE-----
-
---==_Exmh_1231785850_3124P--
+Bernd
+-- 
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
