@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZALKE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZALKFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZALKE4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 05:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZALKEr
+	id S1754634AbZALKFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 05:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZALKFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 05:04:47 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:34724 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbZALKEq (ORCPT
+	Mon, 12 Jan 2009 05:05:07 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59967 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752432AbZALKFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 05:04:46 -0500
-To: rjw@sisk.pl
-CC: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       miklos@szeredi.hu
-In-reply-to: <nHCfeC0YLrE.A.kFD.NbfaJB@chimera> (rjw@sisk.pl)
-Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.kFD.NbfaJB@chimera>
-Message-Id: <E1LMJex-0001lB-SE@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 12 Jan 2009 11:04:39 +0100
+	Mon, 12 Jan 2009 05:05:05 -0500
+X-Sasl-enc: xEjuysCV9i62O4ygIrFMg65UDLlGb2xtJIDH+q6bkgEd 1231754704
+Date: Mon, 12 Jan 2009 08:05:01 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net
+Subject: Re: introduce delayed-leds.h to reduce code duplication
+Message-ID: <20090112100500.GA31656@khazad-dum.debian.net>
+References: <20090111224331.GA28010@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090111224331.GA28010@elf.ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Jan 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
+On Sun, 11 Jan 2009, Pavel Machek wrote:
+> What about something like this? 
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
+> [Alternatively, I can add a flag to the leds class, and make delayed
+> leds a built-in functionality...]
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-> Subject		: uml is very slow on 2.6.28 host
-> Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-> Date		: 2008-12-12 9:35 (31 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+> [Attached is driver that uses new infrastructure for hp_accel, but it
+> does a bit more.]
 
-Yes, this still exists on latest -git.
+FWIW, I am looking over the thinkpad-acpi side of this.  I like the idea,
+but I am not completely sure I agree fully with the changes to
+thinkpad-acpi.
 
-Thanks,
-Miklos
+Which isn't a problem, as long as the thinkpad-acpi hunks are NOT merged to
+any tree before my ACK, please.  I will test and comment on the patch before
+the weekend.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
