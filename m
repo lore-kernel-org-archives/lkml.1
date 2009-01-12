@@ -1,82 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZALUvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZALUve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZALUvF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:51:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZALUuw
+	id S1757464AbZALUve (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 15:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZALUvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:50:52 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59332 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754078AbZALUuv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:50:51 -0500
-Message-Id: <1231793450.26049.1294379841@webmail.messagingengine.com>
-X-Sasl-Enc: nbAd8+PfHdxoctpQzEQUVc3bk5V7NE9f2H8aZ0sGV2Dx 1231793450
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
-Content-Disposition: inline
+	Mon, 12 Jan 2009 15:51:24 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44126 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754057AbZALUvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 15:51:23 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18VrhsgqFUVvg4r6vnkyxR86bMv2BQR0mlXTwsk6t
+	5Rn9ymVqYlO9/M
+Subject: Re: [patch take 2] Re: [BUG] How to get real-time priority using
+	idle priority
+From: Mike Galbraith <efault@gmx.de>
+To: Brian Rogers <brian@xyzw.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1231793212.5940.2.camel@marge.simson.net>
+References: <4969D0D7.2060401@xyzw.org>
+	 <1231736941.6003.7.camel@marge.simson.net>
+	 <1231765433.5789.35.camel@marge.simson.net>
+	 <1231793212.5940.2.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 21:50:38 +0100
+Message-Id: <1231793438.5940.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1220990178-29773-15-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-16-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-17-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-18-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-19-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-20-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-21-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-22-git-send-email-heukelum@fastmail.fm> 
- <1220990178-29773-23-git-send-email-heukelum@fastmail.fm> 
- <1231780911.4371.196.camel@laptop> <20090112183904.GC12249@elte.hu> 
- <1231785815.4371.205.camel@laptop>
-Subject: Re: [PATCH 22/24] i386: add TRACE_IRQS_OFF for the nmi
-In-Reply-To: <1231785815.4371.205.camel@laptop>
-Date: Mon, 12 Jan 2009 21:50:50 +0100
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Missing cc added
 
-On Mon, 12 Jan 2009 19:43:35 +0100, "Peter Zijlstra"
-<peterz@infradead.org> said:
-> On Mon, 2009-01-12 at 19:39 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Tue, 2008-09-09 at 21:56 +0200, heukelum@fastmail.fm wrote:
-> > > > From: Alexander van Heukelum <heukelum@fastmail.fm>
-> > > > 
-> > > > At this point interrupts are off, so let's inform the tracing
-> > > > code of that fact before calling into C.
-> > > 
-> > > Sorry but this is an obvious dud, lockdep (and thus the irq state
-> > > tracer) aren't nmi safe.
-> > > 
-> > > Ingo, please revert, as people are already seeing lockdep warnings due
-> > > to this.
-> > 
-> > done - reverted it in tip/x86/urgent, see the commit below. Is that all 
-> > that we need, wasnt there a 64-bit side done too?
+On Mon, 2009-01-12 at 21:46 +0100, Mike Galbraith wrote:
+> On Mon, 2009-01-12 at 14:03 +0100, Mike Galbraith wrote:
 > 
-> I had a _very_ quick peek but couldn't fine one, Alexander, does your
-> memory go back that far? :-)
-
-Git helped a bit, I must admit. The 64-bit version does not include
-TRACE_IRQS_ON/TRACE_IRQS_OFF in the nmi handler. The comment above
-"ENTRY(paranoid_exit)" in entry_64.S should be updated, though. That
-code is not used for NMIs.
-
-The revert is obviously the correct thing to do, but a comment would
-not hurt here either.
-
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - Access your email from home and the web
+> > Would you mind trying the below?
+> 
+> Or better, this more complete version.
+> 
+> Impact: fix latency issues when SCHED_IDLE tasks are queued.
+> 
+> Exclude SCHED_IDLE tasks from wakeup preemption, ensure that same will
+> always be wakeup preempted, and exclude them from being buddies so they
+> will only be selected via their vruntime.  Per a tip from Peter Zijlstra,
+> also scale migration vruntime adjustment to compensate for differences
+> in min_vruntime advance rates.
+> 
+> Reported-by: Brian Rogers <brian@xyzw.org>
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> 
+>  kernel/sched.c      |   19 +++++++++++++++++--
+>  kernel/sched_fair.c |   22 ++++++++++++++++------
+>  2 files changed, 33 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index deb5ac8..bdc0b38 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1888,8 +1888,23 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+>  			schedstat_inc(p, se.nr_forced2_migrations);
+>  	}
+>  #endif
+> -	p->se.vruntime -= old_cfsrq->min_vruntime -
+> -					 new_cfsrq->min_vruntime;
+> +	if (old_cpu != new_cpu) {
+> +		s64 delta = p->se.vruntime - old_cfsrq->min_vruntime;
+> +
+> +		/*
+> +		 * min_vruntimes may be advancing at wildly different
+> +		 * rates, so we must scale the delta accordingly.
+> +		 */
+> +		if (new_cfsrq->load.weight != old_cfsrq->load.weight) {
+> +			int negative = delta < 0;
+> +
+> +			delta = negative ? -delta : delta;
+> +			delta = calc_delta_mine(delta,
+> +				new_cfsrq->load.weight, &old_cfsrq->load);
+> +			delta = negative ? -delta : delta;
+> +		}
+> +		p->se.vruntime = new_cfsrq->min_vruntime + delta;
+> +	}
+>  
+>  	__set_task_cpu(p, new_cpu);
+>  }
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 8e1352c..500ed14 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1340,14 +1340,18 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
+>  
+>  static void set_last_buddy(struct sched_entity *se)
+>  {
+> -	for_each_sched_entity(se)
+> -		cfs_rq_of(se)->last = se;
+> +	for_each_sched_entity(se) {
+> +		if (likely(task_of(se)->policy != SCHED_IDLE))
+> +			cfs_rq_of(se)->last = se;
+> +	}
+>  }
+>  
+>  static void set_next_buddy(struct sched_entity *se)
+>  {
+> -	for_each_sched_entity(se)
+> -		cfs_rq_of(se)->next = se;
+> +	for_each_sched_entity(se) {
+> +		if (likely(task_of(se)->policy != SCHED_IDLE))
+> +			cfs_rq_of(se)->next = se;
+> +	}
+>  }
+>  
+>  /*
+> @@ -1393,12 +1397,18 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+>  		return;
+>  
+>  	/*
+> -	 * Batch tasks do not preempt (their preemption is driven by
+> +	 * Batch and idle tasks do not preempt (their preemption is driven by
+>  	 * the tick):
+>  	 */
+> -	if (unlikely(p->policy == SCHED_BATCH))
+> +	if (unlikely(p->policy != SCHED_NORMAL))
+>  		return;
+>  
+> +	/* Idle tasks are by definition preempted by everybody. */
+> +	if (unlikely(curr->policy == SCHED_IDLE)) {
+> +		resched_task(curr);
+> +		return;
+> +	}
+> +
+>  	if (!sched_feat(WAKEUP_PREEMPT))
+>  		return;
+>  
+> 
 
