@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZALUzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZALVET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbZALUzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 15:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZALUzX
+	id S1754799AbZALVET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 16:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZALVEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 15:55:23 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59444 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbZALUzW (ORCPT
+	Mon, 12 Jan 2009 16:04:06 -0500
+Received: from mail-gx0-f12.google.com ([209.85.217.12]:52273 "EHLO
+	mail-gx0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbZALVEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 15:55:22 -0500
-Date: Mon, 12 Jan 2009 21:55:20 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: wrong usage of __devexit_p and __exit_p
-Message-ID: <20090112205520.GA10870@pengutronix.de>
-References: <20090112135057.GA10250@pengutronix.de> <20090112141457.GA11777@uranus.ravnborg.org> <20090112144327.GB29183@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090112144327.GB29183@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 12 Jan 2009 16:04:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=f+jEdY+sIsUmGBOCvVUpGNNToOmsHjUq/7Xaew4etdayYqY7SL9uXJeQiNGGWOb725
+         NMYHXXXzOMKmop7hqsTHhbL5VmvwTbZU8FY/rPtl4oSgsT2Z68NFzPyCsQbwZssqyBhM
+         KT36k3YkxF7LIN7/gAHV9NhpX3ttEZfLu/uSg=
+Subject: Re: [git pull] x86 fixes
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090112205259.GA5303@elte.hu>
+References: <20090111143951.GA6666@elte.hu>
+	 <64bb37e0901110845o2561db4auf68b86d024d210a0@mail.gmail.com>
+	 <7E82351C108FA840AB1866AC776AEC4643BB73C5@orsmsx505.amr.corp.intel.com>
+	 <64bb37e0901121101y73c492fel38a70681f226b526@mail.gmail.com>
+	 <20090112191934.GA28851@linux-os.sc.intel.com>
+	 <20090112192912.GA31650@linux-os.sc.intel.com>
+	 <alpine.LFD.2.00.0901121145220.6528@localhost.localdomain>
+	 <20090112205259.GA5303@elte.hu>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 13:03:49 -0800
+Message-Id: <1231794230.5405.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Sam,
+On Mon, 2009-01-12 at 21:52 +0100, Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> > Did you check that this did not introduce any new Section mismatch warnings?
-> > We have seen several __exit annotated functions that was used from __init
-> > annotated code or even from normal code.
-> > Thus the __exit annotation was wrong in these cases.
-> I wrote in the commit logs, that the functions are only used as argument
-> to __{dev,}exit_p.  There are no direct calls. (IIRC there was only one
-> exception that I checked manually.)
-Actually the case I remembered here isn't part of the series.
- 
-> I think the __{dev,}exit_p wrappers are only used to define remove
-> callbacks, so there should be no harm.
-In the meantime I checked this:
+> +static inline int is_new_memtype_allowed(unsigned long flags,
+> +                                               unsigned long new_flags)
+> +{
+> +       /*
+> +        * Certain new memtypes are not allowed with certain
+> +        * requested memtype:
+> +        * - request is uncached, return cannot be write-back
+> +        * - request is write-combine, return cannot be write-back
+> +        */
+> +       if ((flags == _PAGE_CACHE_UC_MINUS &&
+> +            new_flags == _PAGE_CACHE_WB) ||
+> +           (flags == _PAGE_CACHE_WC &&
+> +            new_flags == _PAGE_CACHE_WB)) {
+> +               return 0;
+> +       }
 
-	~/gsrc/linux-2.6$ git diff-tree -r linus/master expsec-master | cut -f 2 | xargs grep -h -E '__(dev)?exit_p'
-		.remove		= __devexit_p(s3c_adc_remove),
-		.remove		= __devexit_p(s3c_pwm_remove),
-		.remove =	__devexit_p(virtblk_remove),
-		.remove =	__devexit_p(virtrng_remove),
-		.remove = __devexit_p(stli_pciremove)
-		.remove   = __devexit_p(hifn_remove),
-		.remove = __devexit_p(mpc85xx_pci_err_remove),
-		.remove = __devexit_p(mv64x60_pci_err_remove),
-		.remove		= __devexit_p(max7301_remove),
-		.remove		= __devexit_p(bbc_remove),
-		.remove		= __devexit_p(grover_remove),
-		.remove		= __exit_p(pxa_camera_remove),
-		.remove		= __devexit_p(asic3_remove),
-		.remove   = __devexit_p(ilo_remove),
-		.remove = __exit_p(mxcnd_remove),
-		.remove =	__devexit_p(virtnet_remove),
-		.remove		= __devexit_p(atp870u_remove),
-		.remove		= __devexit_p(megaraid_detach_one),
-		.remove		= __devexit_p(stex_remove),
-		.remove		= __devexit_p(jsm_remove_one),
-		.remove	= __devexit_p(sc26xx_driver_remove),
-		.remove =	__devexit_p(spidev_remove),
-		.remove	= __devexit_p(vhci_hcd_remove),
-		.remove =	__devexit_p(virtballoon_remove),
+	if ((flags == _PAGE_CACHE_UC_MINUS || flags == _PAGE_CACHE_WC) &&
+	    (new_flags == _PAGE_CACHE_WB))
 
-So in the patched files __(dev)?exit_p is only used to fill struct
-members.  Provided this is the only usage of the respective
-functions---and I checked that---it doesn't make sense that they don't
-live in .devexit.text (or .exit.text respectively).
+might be a bit neater perhaps.
 
-Does it make sence for you, too?
+Harvey
 
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
-Peiner Strasse 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686              | Fax:   +49-5121-206917-5555 |
