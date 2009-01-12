@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZALJv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZALJ4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbZALJv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 04:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZALJvS
+	id S1753510AbZALJ4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 04:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbZALJz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 04:51:18 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:49046 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbZALJvR (ORCPT
+	Mon, 12 Jan 2009 04:55:58 -0500
+Received: from rankki.sonarnerd.net ([83.145.240.118]:12332 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbZALJz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 04:51:17 -0500
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090108144538.e5195575.akpm@linux-foundation.org>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20090108144538.e5195575.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 12 Jan 2009 09:51:06 +0000
-Message-Id: <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jan 2009 09:51:07.0250 (UTC) FILETIME=[4A535D20:01C9749B]
+	Mon, 12 Jan 2009 04:55:57 -0500
+Message-ID: <496B13AB.3090407@sonarnerd.net>
+Date: Mon, 12 Jan 2009 11:55:55 +0200
+From: Jussi Laako <jussi@sonarnerd.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Multimedia scheduling class
+References: <4959198A.3020209@sonarnerd.net> <1230622925.16718.26.camel@twins> <4959DE51.2020605@sonarnerd.net>
+In-Reply-To: <4959DE51.2020605@sonarnerd.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Jussi Laako wrote:
+> Yes, this is for a soft-realtime usage. Some of the tasks are
+> CPU-intensive while being realtime'ish, like video codecs and some audio
+> processing tasks. These audio processing tasks can have some amount of
+> buffering. The idea behind this patch is to make these tasks overlap
+> with the normal tasks while giving a slightly more responsive scheduling
+> behavior and to favor these multimedia tasks over others.
 
-On Thu, 2009-01-08 at 14:45 -0800, Andrew Morton wrote:
-> On Fri, 19 Dec 2008 18:12:56 +0000
-> Catalin Marinas <catalin.marinas@arm.com> wrote:
-> 
-> > A new kmemleak version is available.
-> 
-> Sorry, I'll drop this.  The level of code churn in linux-next (during
-> the merge window!) means that I've basically lost confidence that my
-> lameass fixed-up code will still even work.
+I've been running a kernel with the scheduler patch on my x86-64 desktop
+since Christmas.
 
-OK. I noticed some minor conflicts with 2.6.29-rc1 but I'll have a look
-at linux-next as well. IIRC, is the -mm tree based on top of linux-next?
+Here are some test results... Workload in these tests is mostly starting
+a browser and rendering a set of reasonably heavy pages which creates
+CPU load spikes. BKL is a bit of a problem too...
 
-> > git://linux-arm.org/linux-2.6.git kmemleak
-> 
-> It might be better to add that to linux-next.  If we want to merge
-> kmemleak.
+I think this is reasonably good result.
 
-I would feel a bit more comfortable if kmemleak lived for (at least) a
-release cycle in the -mm tree so that it may get wider testing. As I
-said, I mainly tested it on ARM.
 
-If you are OK with this, I'll update the branch and make sure there are
-as few conflicts as possible (the alternative is patches by e-mail and
-based on top of linux-next).
+Results for the deskop (x86-64), voluntary preempt enabled (as the
+proprietary ATI display driver behaves badly with full preempt):
 
--- 
-Catalin
+SCHED_OTHER:
+maximum latency: 45098.2 µs
+average latency: 366.2 µs
+missed timer events: 16
 
+SCHED_MM:
+maximum latency: 10051.2 µs
+average latency: 44.7 µs
+missed timer events: 0
+
+SCHED_FIFO:
+maximum latency: 720.3 µs
+average latency: 23.1 µs
+missed timer events: 0
+
+
+Results for an OMAP3-based platform, preempt enabled:
+
+SCHED_OTHER:
+maximum latency: 44.7 ms
+average latency: 1.8 ms
+missed timer events: 227
+
+SCHED_MM:
+maximum latency: 19.2 ms
+average latency: 1.1 ms
+missed timer events: 23
+
+SCHED_FIFO:
+maximum latency: 10.7 ms
+average latency: 0.7 ms
+missed timer events: 1
+
+
+Best regards,
+
+	- Jussi Laako
