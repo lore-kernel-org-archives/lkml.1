@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbZALOqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZALOrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbZALOqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 09:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZALOqD
+	id S1754820AbZALOrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 09:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZALOrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 09:46:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34403 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Jan 2009 09:47:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34841 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbZALOqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 09:46:01 -0500
-Date: Mon, 12 Jan 2009 15:45:48 +0100
+	id S1751602AbZALOrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 09:47:09 -0500
+Date: Mon, 12 Jan 2009 15:46:53 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Mike Travis <travis@sgi.com>, Christophe Saout <christophe@saout.de>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] RT scheduler updates for tip
-Message-ID: <20090112144548.GA14016@elte.hu>
-References: <20081208143228.GF14856@elte.hu> <20081208161246.GB4570@elte.hu> <493E8246.1090309@novell.com> <20081212113415.GH32640@elte.hu> <20081212114952.GA16976@elte.hu> <4958EEB6.5020105@novell.com> <49591331.9080403@novell.com> <20090111040121.GD28520@elte.hu> <20090111095325.GA32409@elte.hu> <496B5789.9040004@novell.com>
+Subject: Re: [PATCH]: xen: fix too early kmalloc call
+Message-ID: <20090112144653.GB14016@elte.hu>
+References: <496A4C8F.8070005@sgi.com> <20090112085302.GB21976@elte.hu> <20090112144218.GA18859@cmpxchg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496B5789.9040004@novell.com>
+In-Reply-To: <20090112144218.GA18859@cmpxchg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,43 +35,87 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-> Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >   
-> >>> Hi Ingo,
-> >>>   I have rebased the series against tip/cpus4096 as of today.  I
-> >>> built/boot this kernel for both SMP/UP on a 4-way x86_64 box, and they
-> >>> look sane.  Let me know if they still look broken to you.
-> >>>       
-> >
-> > yes, i still get build failures:
-> >
-> > kernel/sched_rt.c:574: error: 'struct rq' has no member named 'cpu'
-> > kernel/sched_rt.c:619: error: 'rq' undeclared (first use in this function)
-> > kernel/sched_rt.c:619: error: (Each undeclared identifier is reported only once
-> > kernel/sched_rt.c:619: error: for each function it appears in.)
-> > kernel/sched_rt.c:667: error: 'rq' undeclared (first use in this function)
-> >
-> > so i've excluded tip/sched/rt from tip/master for now.
-> >
+> On Mon, Jan 12, 2009 at 09:53:02AM +0100, Ingo Molnar wrote:
+> > 
+> > * Mike Travis <travis@sgi.com> wrote:
+> > 
+> > > Subject: xen: fix too early kmalloc call
+> > > 
+> > > From: Christophe Saout <christophe@saout.de> 
+> > > 
+> > > Impact: fixes bootup of xen.
+> > > 
+> > > Christophe reported the following problem:
+> > > 
+> > > >  (basically it seems that SLAB is not yet up, with earlyprintk it is
+> > > >  giving me an Oops in __kmalloc before)
+> > > 
+> > > Replace call to kmalloc with alloc_bootmem.
+> > > 
+> > > Also from Christophe:
+> > > > (me)
+> > > > > Or I could copy the text and submit it as a new patch?
+> > > >
+> > > > Yes, I would prefer that.  Also, my commit message was not really
+> > > > following Kernel standards and it's only a very simple change.
+> > > 
+> > > Signed-off-by: Mike Travis <travis@sgi.com>
+> > 
+> > i've applied the fix to tip/cpus4096, in the form below.
+> > 
+> > Please submit clean log messages. Your commit description was confused - 
+> > the patch is From: Christophe, but the message talks about Christophe in 
+> > the third person. Also, it included conversational bits that have no 
+> > value for the Git history.
+> > 
 > > 	Ingo
-> >   
-> Hey Ingo,
->   Sorry for all these problems.  I am not sure what is happening since
-> it seems to build fine for me on this end.
+> > 
+> > -------------------->
+> > >>From 28e08861b9afab4168b758fb7b95aa7a4da0f668 Mon Sep 17 00:00:00 2001
+> > From: Christophe Saout <christophe@saout.de>
+> > Date: Sun, 11 Jan 2009 11:46:23 -0800
+> > Subject: [PATCH] xen: fix too early kmalloc call
+> > 
+> > Impact: fix bootup crash on xen guests
+> > 
+> > SLAB is not yet up, with earlyprintk it is giving me an Oops in __kmalloc.
+> > 
+> > Replace call to kmalloc() with alloc_bootmem().
+> > 
+> > Reported-by: Christophe Saout <christophe@saout.de>
+> > Signed-off-by: Mike Travis <travis@sgi.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  drivers/xen/events.c |    5 +++--
+> >  1 files changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> > index ed7527b..3141e14 100644
+> > --- a/drivers/xen/events.c
+> > +++ b/drivers/xen/events.c
+> > @@ -26,6 +26,7 @@
+> >  #include <linux/irq.h>
+> >  #include <linux/module.h>
+> >  #include <linux/string.h>
+> > +#include <linux/bootmem.h>
+> >  
+> >  #include <asm/ptrace.h>
+> >  #include <asm/irq.h>
+> > @@ -831,8 +832,8 @@ void __init xen_init_IRQ(void)
+> >  	int i;
+> >  	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+> >  
+> > -	cpu_evtchn_mask_p = kmalloc(size, GFP_KERNEL);
+> > -	BUG_ON(cpu_evtchn_mask == NULL);
+> > +	cpu_evtchn_mask_p = alloc_bootmem(size);
+> > +	BUG_ON(cpu_evtchn_mask_p == NULL);
 > 
-> I just pulled down tip/sched/rt (sha 
-> 0a6d4e1dc9154c4376358663d74060d1e33d203e) and built for my x86_64 
-> machine with both SMP and UP (configs attached).  They both completed 
-> without errors.  Could you send me the config you are having trouble 
-> with?
+> Impossible condition :-) alloc_bootmem() crashes before you could catch 
+> it here.
 
-dont have it anymore - but you can look at the build error itself and 
-figure out what config options it needs to trigger such problems - and 
-whether the code could be simplified/streamlined to not run into such 
-issues. If there's no #ifdef in a .c file there's rarely such problems.
+yeah ... but that's just a current behavior of bootmem. It's always 
+prudent to check for allocation errors.
 
 	Ingo
