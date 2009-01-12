@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZALRYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZALRZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZALRYg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 12:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZALRYZ
+	id S1755736AbZALRZS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 12:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZALRZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 12:24:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58126 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752825AbZALRYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 12:24:24 -0500
-Message-ID: <496B7C9A.7030108@redhat.com>
-Date: Mon, 12 Jan 2009 19:23:38 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 12 Jan 2009 12:25:00 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:57900 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbZALRY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 12:24:59 -0500
+Date: Mon, 12 Jan 2009 11:23:27 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, travis@sgi.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
-References: <1231774622.4371.96.camel@laptop>  <496B6C23.8000808@redhat.com> <1231780388.4371.185.camel@laptop>
-In-Reply-To: <1231780388.4371.185.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, steiner@sgi.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: regarding the x86_64 zero-based percpu patches
+In-Reply-To: <200901101716.04220.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0901121120280.30369@quilx.com>
+References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>
+ <49649C65.6000706@kernel.org> <200901101716.04220.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2009-01-12 at 18:13 +0200, Avi Kivity wrote:
+On Sat, 10 Jan 2009, Rusty Russell wrote:
+
+> > As I was trying to do more stuff per-cpu
+> > (not putting a lot of stuff into per-cpu area but even with small
+> > things limited per-cpu area poses scalability problems), cpu_alloc
+> > seems to fit the bill better.
 >
->   
->> One thing that worries me here is that the spinners will spin on a 
->> memory location in struct mutex, which means that the cacheline holding 
->> the mutex (which is likely to be under write activity from the owner) 
->> will be continuously shared by the spinners, slowing the owner down when 
->> it needs to unshare it.  One way out of this is to spin on a location in 
->> struct mutex_waiter, and have the mutex owner touch it when it schedules 
->> out.
->>     
+> Unfortunately cpu_alloc didn't solve this problem either.
 >
-> Yeah, that is what pure MCS locks do -- however I don't think its a
-> feasible strategy for this spin/sleep hybrid.
->   
+> We need to grow the areas, but for NUMA layouts it's non-trivial.  I don't
+> like the idea of remapping: one TLB entry per page per cpu is going to suck.
+> Finding pages which are "congruent" with the original percpu pages is more
+> promising, but it will almost certainly need to elbow pages out the way to
+> have a chance of succeeding on a real system.
 
-Bummer.
+An allocation automatically falls back to the nearest node on NUMA
+cpu_to_node() gives you the current node.
 
->> So:
->> - each task_struct has an array of currently owned mutexes, appended to 
->> by mutex_lock()
->>     
->
-> That's not going to fly I think. Lockdep does this but its very
-> expensive and has some issues. We're currently at 48 max owners, and
-> still some code paths manage to exceed that.
->   
+There are 2M TLB entries on x86_64. If we really get into a high usage
+scenario then the 2M entry makes sense. Average server memory sizes likely
+already are way beyond 10G per box. The higher that goes the more
+reasonable the 2M TLB entry will be.
 
-Might make it per-cpu instead, and set a bit in the mutex when 
-scheduling out so we know not to remove it from the list on unlock.
-
->> - mutex waiters spin on mutex_waiter.wait, which they initialize to zero
->> - when switching out of a task, walk the mutex list, and for each mutex, 
->> bump each waiter's wait variable, and clear the owner array
->>     
->
-> Which is O(n).
->   
-
-It may be better than O(n) cpus banging on the mutex for the lock 
-duration.  Of course we should avoid walking the part of the list where 
-non-spinning owners wait (or maybe have a separate list for spinners).
-
->> - when unlocking a mutex, bump the nearest waiter's wait variable, and 
->> remove from the owner array
->>
->> Something similar might be done to spinlocks to reduce cacheline 
->> contention from spinners and the owner.
->>     
->
-> Spinlocks can use 'pure' MCS locks.
->   
-
-I'll read up on those, thanks.
-
--- 
-error compiling committee.c: too many arguments to function
 
