@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbZAMNxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZAMN4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761323AbZAMNxx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758989AbZAMNws
+	id S1758345AbZAMN4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZAMN4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:52:48 -0500
-Received: from tservice.net.ru ([195.178.208.66]:60538 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760981AbZAMNws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:52:48 -0500
-Date: Tue, 13 Jan 2009 16:52:46 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	Tue, 13 Jan 2009 08:56:05 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44253 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751163AbZAMN4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 08:56:03 -0500
+Date: Tue, 13 Jan 2009 13:55:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
-Message-ID: <20090113135246.GA29251@ioremap.net>
-References: <20090112153304.GA19995@ioremap.net> <20090112154456.GA27269@redhat.com> <20090112154827.GB20743@ioremap.net> <20090112155108.2646b3ae@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112155108.2646b3ae@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [osd-dev] [PATCH 1/9] exofs: osd Swiss army knife
+Message-ID: <20090113135526.28730314@lxorguk.ukuu.org.uk>
+In-Reply-To: <4964CEA4.7080001@panasas.com>
+References: <4947BFAA.4030208@panasas.com>
+	<4947C624.3050602@panasas.com>
+	<4964CEA4.7080001@panasas.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 03:51:08PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > Well, Kenny has to die, but if we still decide to change the world, here
-> > is the fist step.
-> 
-> NAK this entire thing - we have an existing interface that does the job
-> far better.
+> > +#define EXOFS_SUPER_ID	0x10000	/* object ID for on-disk superblock */
 
-Mwahaha, I just checked how scores are calculated, so that userspace
-could adjust them. Let's start with beginning:
+And if an OS failure breaks the super block and you have only one how do
+you recover it ?
 
-	list_for_each_entry(child, &p->children, sibling) {
-		task_lock(child);
-		if (child->mm != mm && child->mm)
-			points += child->mm->total_vm/2 + 1;
-		task_unlock(child);
-	}
+> > +#define EXOFS_BM_ID	0x10001	/* object ID for ID bitmap */
+> > +#define EXOFS_ROOT_ID	0x10002	/* object ID for root directory */
+> > +#define EXOFS_TEST_ID	0x10003	/* object ID for test object */
 
-	/*
-	 * CPU time is in tens of seconds and run time is in thousands
-         * of seconds. There is no particular reason for this other than
-         * that it turned out to work very well in practice.
-	 */
-	cpu_time = (cputime_to_jiffies(p->utime) + cputime_to_jiffies(p->stime))
-		>> (SHIFT_HZ + 3);
+Ditto some of the others
 
-	if (uptime >= p->start_time.tv_sec)
-		run_time = (uptime - p->start_time.tv_sec) >> 10;
-	else
-		run_time = 0;
+> > +	EXOFS_UINT64_MAX = (~0LL),
+> > +	EXOFS_MAX_INO_ID = (sizeof(ino_t) * 8 == 64) ? EXOFS_UINT64_MAX :
+> > +					(1LL << (sizeof(ino_t) * 8 - 1)),
 
-	s = int_sqrt(cpu_time);
-	if (s)
-		points /= s;
-	s = int_sqrt(int_sqrt(run_time));
-	if (s)
-		points /= s;
+Ok so thats quite a big number
 
-Do you _REALLY_ think anyone can calculate it yourself and then properly
-calculate adjustment used to properly select oom-killed process?
+> > +	uint32_t  s_nextid;	/* Highest object ID used */
 
-I can not and will not even try if I would be an admin of the given
-system. So, Alan, until you can calc that numbers in mind and then do
-this for the whole heavy loaded system, please do not spread the idea
-that oom_adj can be used to tune the oom-killer.
-And no, reading data from /proc/.../oom_score is not enough, since
-they change with time, so the same will be needed to be done to tune
-the adjustment?
+but that is a smaller one
 
-So far my patch is the sanest way to deal with the OOM selection, when
-we have to differentiate some processes. I agree, it is not the best
-solution, but it is way ahead of what we have right now for the users
-and not hardcore kernel hackers.
+> > +	uint32_t  s_numfiles;	/* Number of files on fs */
 
--- 
-	Evgeniy Polyakov
+as is this
+
+> > +	uint32_t  i_atime;        	/* Access time */
+> > +	uint32_t  i_ctime;        	/* Creation time */
+> > +	uint32_t  i_mtime;        	/* Modification time */
+
+2038 ? - bits are cheap
+
