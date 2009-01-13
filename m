@@ -1,144 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbZAMXXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbZAMXXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbZAMXXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbZAMXWn
+	id S1759427AbZAMXXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZAMXXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:22:43 -0500
-Received: from relanium.yandex.ru ([77.88.58.132]:7073 "EHLO
-	relanium.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439AbZAMXWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:22:41 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, dst@ioremap.net,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [0/7] Distributed storage for drivers/staging merge request
-Date: Wed, 14 Jan 2009 02:05:26 +0300
-Message-Id: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.6.3
-X-Antivirus: Dr.Web (R) for Mail Servers on relanium.yandex.ru host
-X-Antivirus-Code: 100000
+	Tue, 13 Jan 2009 18:23:40 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:58211 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbZAMXXi (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:23:38 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: David Newall <davidn@davidnewall.com>
+Cc: Daolong Wang <ahlongxp@gmail.com>, David Miller <davem@davemloft.net>,
+       bhutchings@solarflare.com, lizf@cn.fujitsu.com, qhfeng.kernel@gmail.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NET: fix wrong English expression in comments
+In-Reply-To: Your message of "Tue, 13 Jan 2009 19:11:19 +1030."
+             <496C53AF.3080901@davidnewall.com>
+From: Valdis.Kletnieks@vt.edu
+References: <496a3c51.09876e0a.03fe.7e80@mx.google.com> <496A9753.80802@cn.fujitsu.com> <1231724358.2674.13.camel@hashbaz.i.decadent.org.uk> <20090112.215320.197154233.davem@davemloft.net> <dc84318c0901122216s77bae26eo2dd36c4a0ee35177@mail.gmail.com>
+            <496C53AF.3080901@davidnewall.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231888978_3146P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 18:22:58 -0500
+Message-ID: <25981.1231888978@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+--==_Exmh_1231888978_3146P
+Content-Type: text/plain; charset=us-ascii
 
-DST is a network block device storage, which can be used to organize
-exported storages on the remote nodes into the local block device.
+On Tue, 13 Jan 2009 19:11:19 +1030, David Newall said:
+> Daolong Wang wrote:
+> > The patch will make sense for some people. I was puzzled about the
+> > double-negative for quite a while.
+> >   
+> 
+> "Don't add nothing," is not a colloquialism; it's just bad grammar.  The
+> meaning is that you must not add no thing, therefore that you must add
+> something.  It is a common error amongst English speakers, even amongst
+> those who speak good, but.  :-)
 
-Its main goal of the project is to allow creation of the block devices
-on top of different network media and connect physically distributed devices
-into the single storage using existing network infrastructure and not
-introducing new limitations into the protocol and network usage model.
+Those of us who have worked with weakly-typed languages who have coded
+stuff like 'X + 0.0' to cast X from string to floating point know all
+too well that sometimes, adding nothing is in fact what you want to do.
 
-DST works on top of any network media and protocol, it is just a matter
-of configuration utility to understand the correct addresses. The most
-common example is TCP over IP allows to pass through firewalls and
-created remote backup storage in the different datacenter. DST requires
-single port to be enabled on the exporting node and outgoing connections
-on the local node.
+--==_Exmh_1231888978_3146P
+Content-Type: application/pgp-signature
 
-DST works with in-kernel client and server, which improves the performance
-eliminating unneded data copies and allows not to depend on the version
-of the external IO components. It requires userspace configuration utility
-though.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-DST uses transaction model, when each store has to be explicitly acked
-from the remote node to be considered as successfully written. There
-may be lots of in-flight transactions. When remote host does not ack
-the transaction it will be resent predefined number of times with specified
-timeouts between them. All those parameters are configurable. Transactions
-are marked as failed after all resends completed unsuccessfully, having
-long enough resend timeout and/or large number of resends allows not to
-return error to the higher (FS usually) layer in case of short network
-problems or remote node outages. In case of network RAID setup this means
-that storage will not degrade until transactions are marked as failed, and
-thus will not force checksum recalculation and data rebuild. In case of
-connection failure DST will try to reconnect to the remote node automatically.
-DST sends ping commands at idle time to detect if remote node is alive.
+iD8DBQFJbSJScC3lWbTT17ARAvNJAKCQBl4shAHDDmr2UGrWcS2oQR/d9wCg1VMw
+HLSBdbZdVRNW8LKW9h2xBEw=
+=Mgx2
+-----END PGP SIGNATURE-----
 
-Because of transactional model it is possible to use zero-copy sending
-without worry of data corruption (which in turn could be detected by the
-strong checksums though).
-
-DST may fully encrypt the data channel in case of untrusted channel and implement
-strong checksum of the transferred data. It is possible to configure algorithms
-and crypto keys, they should match on both sides of the network channel.
-Crypto processing does not introduce noticeble performance overhead, since DST
-uses configurable pool of threads to perform crypto processing.
-Kernel does not yet support pool of threads, so this part is embedded into the DST.
-
-DST utilizes memory pool model of all its transaction allocations (it is the
-only additional allocation on the client) and server allocations (bio pools,
-while pages are allocated from the slab).
-
-At startup DST performs a simple negotiation with the export node to determine
-access permissions and size of the exported storage. It can be extended if
-new parameters should be autonegotiated.
-
-DST carries block IO flags in the protocol, which allows to transparently implement
-barriers and sync/flush operations. Those flags are used in the export node where
-IO against the local storage is performed, which means that sync write will be sync
-on the remote node too, which in turn improves data integrity and improved resistance
-to errors and data corruption during power outages or storage damages.
-
-Patches were split on per-file basis, so tree in the middle of the series will not
-compile, which should not be a problem, since kconfig/makefile changes are introduced
-in the latest patch.
-
-There is an open maillist for DST development and discussion at dst @ ioremap.net
-
-Short list of supported features:
-    * Kernel-side client and server. No need for any special tools for data processing
-    	(like special userspace applications) except for configuration.
-    * Bullet-proof memory allocations via memory pools for all temporary objects
-    	(transaction and so on). All clients structures are allocated as single transaction
-	from the memory pool and except this there is no allocation overhead. Network adds
-	own though. Server uses memory pools too, but number of allocations is higher
-	(bio, transaction and pages for IO).
-    * Zero-copy sending (except header) if supported by device using sendpage().
-    * Failover recovery in case of broken link (reconnection if remote node is down).
-    * Full transaction support (resending of the failed transactions on timeout of after
-    	reconnect to failed node).
-    * Dynamically resizeable pool of threads used for data receiving and crypto processing.
-    * Initial autoconfiguration. Ability to extend it with additional attributes if needed.
-    * Support for barriers and other block io request flags.
-    * Support for any kind of network media (not limited to tcp or inet protocols) higher
-    	MAC layer (socket layer). Out of the box kernel-side IPv6 support (needs to extend
-	configuration utility, check how it was done in POHMELFS).
-    * Security attributes for local export nodes (list of allowed to connect addresses with
-    	permissions). Read-only connections.
-    * Ability to use any supported cryptographically strong checksums.
-    	Ability to encrypt data channel.
-    * Keepalive messages to early detect failed nodes.
-
-1. DST homepage.
-http://www.ioremap.net/projects/dst
-
-2. DST archive.
-http://www.ioremap.net/archive/dst/
-
-3. GIT trees.
-http://www.ioremap.net/cgi-bin/gitweb.cgi
-
-4. DST mail list.
-dst@ioremap.net
-
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-
- drivers/staging/Kconfig           |    2 +
- drivers/staging/Makefile          |    2 +
- drivers/block/dst/Kconfig       |   71 +++
- drivers/block/dst/Makefile      |    3 +
- drivers/block/dst/crypto.c      |  731 +++++++++++++++++++++++++++++
- drivers/block/dst/dcore.c       |  972 +++++++++++++++++++++++++++++++++++++++
- drivers/block/dst/export.c      |  664 ++++++++++++++++++++++++++
- drivers/block/dst/state.c       |  839 +++++++++++++++++++++++++++++++++
- drivers/block/dst/thread_pool.c |  345 ++++++++++++++
- drivers/block/dst/trans.c       |  335 ++++++++++++++
- include/linux/connector.h       |    4 +-
- include/linux/dst.h             |  587 +++++++++++++++++++++++
- 12 files changed, 4554 insertions(+), 1 deletions(-)
+--==_Exmh_1231888978_3146P--
