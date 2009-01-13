@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZAMAxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbZAMBFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbZAMAxy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZAMAxn
+	id S1757356AbZAMBFx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZAMBFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:53:43 -0500
-Received: from r00tworld.com ([212.85.137.21]:45764 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZAMAxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:53:43 -0500
-X-Greylist: delayed 2012 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 19:53:42 EST
-From: pageexec@freemail.hu
-To: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>
-Date: Tue, 13 Jan 2009 01:19:09 +0200
+	Mon, 12 Jan 2009 20:05:43 -0500
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:39790 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752583AbZAMBFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:05:42 -0500
+Message-ID: <496BE8F6.1040308@xyzw.org>
+Date: Mon, 12 Jan 2009 17:05:58 -0800
+From: Brian Rogers <brian@xyzw.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Subject: Re: [patch] x86: fix PTE corruption issue while mapping RAM using /dev/mem
-Reply-to: pageexec@freemail.hu
-CC: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, Daniel.Beschorner@facton.com,
-       stable@kernel.org
-Message-ID: <496BDDFD.27997.A74B06@pageexec.freemail.hu>
-In-reply-to: <20090112235135.GA22722@elte.hu>
-References: <20090112203114.GA13157@linux-os.sc.intel.com>, <20090112235135.GA22722@elte.hu>
-X-mailer: Pegasus Mail for Windows (4.50 PB1)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Tue, 13 Jan 2009 01:19:15 +0100 (CET)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] How to get real-time priority using idle priority
+References: <4969D0D7.2060401@xyzw.org> <1231736941.6003.7.camel@marge.simson.net> <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
+In-Reply-To: <20090112131406.GB670@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13 Jan 2009 at 0:51, Ingo Molnar wrote:
+Ingo Molnar wrote:
+> i've applied your fix to tip/sched/urgent and merged it into tip/master.
+> Brian, you might want to test tip/master, as per:
+>
+>  http://people.redhat.com/mingo/tip.git/README
+>
+> which now has this fix included. Can you make it break?
+>   
+Yeah, I was able to trigger the same freeze again once on my desktop, 
+but it appears to be harder to trigger now. I couldn't get my program to 
+freeze the system, but one of the times I suspended then resumed BOINC, 
+it happened.
 
-> applied to tip/x86/urgent, thanks Suresh!
-> 
-> note that the patch caused some conflicts (there were other changes in 
-> pat.c) - i merged it up manually but could you please check the final 
-> commit in tip/master whether it's all OK?
+While experimenting on my laptop, things got into a funny state where 
+konsole froze, then gnome-terminal froze, so I just started launching 
+xterms. pgrep and pidof would freeze and never terminate. ps axl froze 
+after listing process 23681, which was a BOINC process. The next 
+process, 23682, was another BOINC process. Going into /proc/23682 and 
+running ls -l as root froze the shell. I figured out that ls -l exe was 
+enough to freeze it. I couldn't shut down BOINC because process 23682 
+wouldn't close, and kill -9 did nothing to it. top, which actually did 
+work, showed that process just continuing to run with around 100% CPU 
+time. I had to power cycle the system.
 
-i don't think that it got applied properly:
-
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 85cbd3c..ea36ed7 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -347,9 +347,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
-        new->end        = end;
-        new->type       = actual_type;
-
--       if (new_type)
--               *new_type = actual_type;
--
-        spin_lock(&memtype_lock);
-
-        if (cached_entry && start >= cached_start)
-@@ -437,6 +434,9 @@ int free_memtype(u64 start, u64 end)
-        if (is_ISA_range(start, end - 1))
-                return 0;
-
-+       if (new_type)
-+               *new_type = actual_type;
-+
-        is_range_ram = pagerange_is_ram(start, end);
-        if (is_range_ram == 1)
-                return free_ram_pages_type(start, end);
-
-free_memtype doesn't even have a new_type argument for starters ;), patch
-must have applied it at the wrong place...
+I'll try Mike's "more complete" patch on top of 2.6.29-rc1 and see what 
+that does.
 
