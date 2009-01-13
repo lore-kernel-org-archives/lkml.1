@@ -1,98 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbZAMNcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbZAMNdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760378AbZAMNcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbZAMNcl
+	id S1760625AbZAMNdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbZAMNdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:32:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:24869 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757154AbZAMNck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:32:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Bbb4HMg4+87LNj2LqX0DlsYEKul5lSch8q/bAhIjpeCSw56n8Zo+yjnkGzweePSRn9
-         Nl5OKLu+peQc6ZPt+0gnPQvrEwczYD91AwQVQUrDNGNXgTV0cqAeOfaKpxkNSELV/GF/
-         n90wrBddsnoBWEB/b43YgcrH9H2OksL2x7YAo=
-Message-ID: <496C97F1.9000502@panasas.com>
-Date: Tue, 13 Jan 2009 15:32:33 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Tue, 13 Jan 2009 08:33:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43738 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757605AbZAMNc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 08:32:59 -0500
+Message-ID: <496C9807.1010109@suse.de>
+Date: Tue, 13 Jan 2009 14:32:55 +0100
+From: Stefan Assmann <sassmann@suse.de>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-scsi <linux-scsi@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Avishay Traeger <avishay@gmail.com>,
-       open-osd development <osd-dev@open-osd.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
-References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com>	<1230739053.3408.74.camel@localhost.localdomain>	<4960D3CA.2000202@panasas.com>	<1231783926.3256.29.camel@localhost.localdomain>	<496B989F.7050907@garzik.org>	<1231790190.15161.29.camel@localhost.localdomain>	<496BA671.3070900@garzik.org>	<1231802758.27151.18.camel@localhost.localdomain>	<496C9109.5040803@panasas.com> <496C9617.80701@garzik.org>
-In-Reply-To: <496C9617.80701@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jon Masters <jcm@redhat.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
+ interrupt equivalent
+References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain>	 <496B24E5.1070804@suse.de>  <200901121151.53195.bjorn.helgaas@hp.com> <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
+In-Reply-To: <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan. 13, 2009, 15:24 +0200, Jeff Garzik <jeff@garzik.org> wrote:
-> Benny Halevy wrote:
->> IMO the main advantage of moving block allocation down to the OSD target
->> is more apparent with distributed file systems a-la pNFS over objects
->> where paralleling that task is a key for scalable performance.
->>
->> The thing is that the target needs to implement its own mapping from
->> object logical offsets into disk blocks and this is usually done
->> using some kind of a (possibly trimmed down) local file system.
->> Therefore the I/O performance of a single OSD is likely to be similar
->> to a single file server's.
-> 
-> Well, modern SATA devices are already mini-filesystems internally, when 
-> you consider logical block remapping etc.
-> 
-> And the claim by drive research guys at the filesystem/storage summit 
-> was that OSD offered the potential to better optimize storage based on 
-> access/usage patterns.
-> 
-> (of course, whether or not reality bears out this guess is another question)
+Hi Jon,
 
-That's true for multi-user access where knowing the context for each I/O
-request - i.e. the object that holds it provides a crucial hint for
-read-ahead and write allocation, where for a dumb device that doesn't
-know anything about the filesystem's internals, it's much harder to
-associate different blocks with their respective containers, or "streams"
-(in case the container is typically accessed in a sequential pattern).
+Jon Masters wrote:
+> On Mon, 2009-01-12 at 11:51 -0700, Bjorn Helgaas wrote:
+>> (I added Eric, Maciej, and Jon because they participated in
+>> previous discussion here: http://lkml.org/lkml/2008/6/2/269)
+> 
+> Thanks. You know what I'd really like even more than being on the CC?
+> I'd *love* someone to post a link to documentation on how this actually
+> is supposed to work. We had to guess last time because none of the
+> public documentation actually explains this. The guys at SuSE likely
+> received some docs, but I'm not sure where from or the title thereof.
 
-> 
-> 
->> I can understand representing a single object as a block device (although I
->> think that using a file for that should be good enough and easier) but
->> why representing the whole OSD as a block device?  The OSD holds partitions
->> and objects each with attributes and OSD security related support.  Hence
->> representing that in a namespace using a filesystem seems straight forward.
-> 
-> I am actually considering writing a simple "osdblk" driver, that would 
-> represent a single object as a block device.
-> 
-> This would NOT replace exofs or other OSD filesystems, but it would be 
-> nice to have, and it will give me more experience with OSDs.
+Actually, most of the Boot Interrupt patches resulted from reading the
+intel specs and observing the behavior of failing machines. We're trying
+to wrap up all the information gathered in a paper, which is pretty time
+consuming and a few steps away from being ready to publish.
 
-That's awesome!
-It be really interesting to benchmark one against the other.
+> If we all knew how this was supposed to work then we might have a much
+> better likelihood of fixing this behavior. It's only going to get worse
+> over time - we want to get threaded IRQs upstream (I'm about to be
+> poking at that again over here) and that'll mean mainline has to learn
+> to deal with these boot interrupts just as much as RT does today.
 
-Benny
+At the moment I'm uploading the slides we showed at the 10th
+Real-Time Linux Workshop, which are a small, stripped down excerpt of
+our upcoming paper.
+
+It should be available soon at:
+ftp://ftp.suse.com/pub/people/sassmann/publication/boot_irq_quirks_rtlws10.pdf
+
+Meanwhile I'd suggest to have a look at United States Patent 6466998.
+That is intels patent for this interrupt routing mechanism.
+
+Hope this is helpful, we'll try to make more information available asap.
 
 > 
-> 	Jeff
+> Jon.
 > 
-> 
-> _______________________________________________
-> osd-dev mailing list
-> osd-dev@open-osd.org
-> http://mailman.open-osd.org/mailman/listinfo/osd-dev
 
+  Stefan
+
+-- 
+Stefan Assmann          | SUSE LINUX Products GmbH
+Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
+Mail: sassmann@suse.de  | GF: Markus Rex, HRB 16746 (AG Nuernberg)
