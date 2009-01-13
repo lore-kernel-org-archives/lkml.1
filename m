@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZAMRV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbZAMRW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbZAMRV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 12:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZAMRVn
+	id S1757155AbZAMRW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 12:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbZAMRVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 12:21:43 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:27640 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753267AbZAMRVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 12:21:42 -0500
-Message-ID: <496CCD9F.2000401@panasas.com>
-Date: Tue, 13 Jan 2009 19:21:35 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Tue, 13 Jan 2009 12:21:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35826 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753796AbZAMRVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 12:21:48 -0500
+Message-ID: <496CCD9B.7070308@redhat.com>
+Date: Tue, 13 Jan 2009 11:21:31 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Wilcox <matthew@wil.cx>, Benny Halevy <bhalevy@panasas.com>,
+To: Jan Kara <jack@suse.cz>
+CC: Arthur Jones <ajones@riverbed.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
-       open-osd development <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 7/9] exofs: mkexofs
-References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com>	<1230739053.3408.74.camel@localhost.localdomain>	<4960D3CA.2000202@panasas.com>	<1231783926.3256.29.camel@localhost.localdomain>	<496B989F.7050907@garzik.org>	<1231790190.15161.29.camel@localhost.localdomain>	<496BA671.3070900@garzik.org>	<1231802758.27151.18.camel@localhost.localdomain>	<496C9ABE.8060300@garzik.org>	<20090113140328.3aab5a35@lxorguk.ukuu.org.uk>	<496CA26E.1080708@garzik.org> <20090113161450.2fdd1d5d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090113161450.2fdd1d5d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com> <20090112222834.GA25494@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090112222834.GA25494@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jan 2009 17:21:40.0419 (UTC) FILETIME=[65C35930:01C975A3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> Now in my experience that is a *dumb* question because the answer is
->>> obvious...
->> The choice is between "new magic OSD fs" and "new fs that used to be 
->> ext4, before we hacked it up".
+Jan Kara wrote:
+>   Hi Eric,
+> 
+>> Jan Kara wrote:
+>>>   Hello,
+>>>
+>>>   I'm sorry I'm replying late but I got time to react to this only now...
+>>>
+>>>> I tried this and it too fixes the problem.  FWIW I agree it
+>>>> looks better...
+>>>   Well, shouldn't we rather fix what journal_start_commit() returns?
+>>> The interface which returns 1 when a transaction is already committing or
+>>> a transaction commit has just been started but 0 when we race with
+>>> somebody staring the commit is fairly unusable. Moreover
+>>> ext3_force_commit() will unnecessarily create new sync transaction and
+>>> commit it if there's no transaction running which is quite expensive
+>>> (even merging empty sync handle is not for free because of sync
+>>> transaction batching). But this is minor problem since we probably
+>>> don't care too much about sync() performance - BTW this is probably a
+>>> cause for bug 12224, isn't it?
+>> Yep, it is!  :)
 >>
->> "existing one you trust" is not an option...
+>>>   BTW: ocfs2 would need fixing as well if done your way since it's
+>>> sync_fs function has been copied over from ext3.
+>>>   To summarized I'd rather see a patch like below (untested) going in
+>>> and your patch reverted... Opinions? I can cookup a JBD2 version of
+>>> the patch in case we agree to go this way.
+>> Thanks, I'll look that over.
+>   Any chance you've looked over that patch? Thanks.
 > 
-> No it isn't. The choice is existing technology followed by a "thank you
-> goodbye Mr OSD salesman".
-> 
-> I'm not saying we shouldn't work on an OSD file system and I'm glad IBM
-> folks are but that it can be done slowly. 
+> 								Honza
 
-IBM is not working on OSD for a long time now. We at open-osd are.
-That is me and Benny (abit) and other people that hang on the mailing-list
-So it is mostly Panasas these days.
+Sorry, kind of slipped through the cracks.  I'll do that and run it
+through the testcase today.
 
-On git.open-osd.org we are hosting various OSD projects mainly the submitted
-work plus inherited code from OSC, which is not active anymore. as of Q3 2008.
-
-Also for most fs folks an OSD
-> emulator testing might not be a bad idea - say one stacked on ext3 8)
-> 
-
-One of the projects on open-osd.org is the OSC's osd-target which is based
-on scsi tgt framework and implements an OSD in user-mode over any local
-filesystem. It supports any SCSI transport supported by tgt that is: iscsi,
-fcoe, iser, kernel-tgt. This is what we test against. I have just been porting
-that project to freebsd. It as a very small foot print compared to, lets say NFS.
-
-Thanks
-Boaz
+-Eric
