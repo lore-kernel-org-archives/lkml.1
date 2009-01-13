@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZAMMXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZAMMYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZAMMXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZAMMXf
+	id S1757706AbZAMMYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZAMMYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:23:35 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39472 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753202AbZAMMXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:23:35 -0500
-Date: Tue, 13 Jan 2009 12:23:38 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [tty bug] kernel BUG at drivers/char/tty_ldisc.c:359!
-Message-ID: <20090113122338.13a155a0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090113121039.GA22155@elte.hu>
-References: <20090113121039.GA22155@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 07:24:01 -0500
+Received: from corega.com.ru ([195.178.208.66]:60857 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753152AbZAMMYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:24:01 -0500
+Date: Tue, 13 Jan 2009 15:23:56 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>,
+       greg@kroah.com
+Subject: Re: ANDROID low memory killer register (was Linux killed Kenny, bastard!)
+Message-ID: <20090113122356.GB25011@ioremap.net>
+References: <496C73DE.3030600@wpkg.org> <20090113121038.3410de28@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113121038.3410de28@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 13:10:39 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-
+On Tue, Jan 13, 2009 at 12:10:38PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> I believe they are related in the sense that both of them are
+> unneccessary and should not make the final kernel...
 > 
-> FYI, -tip testing found a new warning in drivers/char/tty_ldisc.c:
+> The /proc../oom_adj interface is again sufficient for this.
 
-Thanks - yes there is a real bug that is exposed by the BKL drop if you
-manage to hit the flush ioctl as the ldisc changes 
+Besides the fact that it will unlikely to work the way you expect, since
+oom adjustment is racy and may be too late, or not happend at all...
 
-Change the 
-	ld = tty_ldisc_ref(tty)
+Alan, please try to apply this to practice and then you will suddenly
+find that it would be really great to have a different method, which
+will just work.
 
-to
-	ld = tty_ldisc_ref_wait(tty);
-
+-- 
+	Evgeniy Polyakov
