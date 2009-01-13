@@ -1,130 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZAMSAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZAMSB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZAMSAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 13:00:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZAMSAF
+	id S1754547AbZAMSB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 13:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZAMSBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:00:05 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59822 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbZAMSAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:00:04 -0500
-Date: Tue, 13 Jan 2009 17:59:24 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mike Waychison <mikew@google.com>, yinghan@google.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, rohitseth@google.com
-Subject: Re: [PATCH]Fix: 32bit binary has 64bit address of stack vma
-In-Reply-To: <20090112151029.9e810ade.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0901131728340.32621@blonde.anvils>
-References: <604427e00901051539x52ab85bcua94cd8036e5b619a@mail.gmail.com>
- <20090112145939.5ae28ada.akpm@linux-foundation.org> <496BCCCF.70202@google.com>
- <20090112151029.9e810ade.akpm@linux-foundation.org>
+	Tue, 13 Jan 2009 13:01:48 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:38197 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbZAMSBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 13:01:47 -0500
+Message-ID: <496CD735.9040102@us.ibm.com>
+Date: Tue, 13 Jan 2009 12:02:29 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Richter <robert.richter@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [PATCH 02/18] oprofile: rename cpu buffer functions
+References: <1231366655-17837-1-git-send-email-robert.richter@amd.com> <1231366655-17837-3-git-send-email-robert.richter@amd.com>
+In-Reply-To: <1231366655-17837-3-git-send-email-robert.richter@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009, Andrew Morton wrote:
-> On Mon, 12 Jan 2009 15:05:51 -0800
-> Mike Waychison <mikew@google.com> wrote:
+Robert Richter wrote:
+> This patch renames cpu buffer functions to something more oprofile
+> specific names. Functions will be moved to the global name space.
+I'm not seeing where these functions are moved to the global name space, either in this set of 18 patches or the next set of 9 patches.  Is that in some patch set that is yet to be posted?
 > 
-> > > Subject: fs/exec.c: fix value of vma->vm_pgoff for the stack VMA of 32-bit processes
-> > > From: Ying Han <yinghan@google.com>
-> > > 
-> > > With a 32 bit binary running on a 64 bit system, the /proc/pid/maps for
-> > > the [stack] VMA displays a 64-bit address:
-> > > 
-> > > ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
-> > > 
-> > > This is because vma->vm_pgoff for that VMA is incorrectly being stored in
-> > > units of offset-in-bytes.  It should be stored in units of offset-in-pages.
-> > > 
-> > 
-> > The problem is that the offset was stored without taking into account 
-> > the shift.
-> 
-> Sigh.  Is it efficient to have me sitting here reverse-engineering the
-> code, writing your changelog?
-> 
-> 
-> 
-> From: Ying Han <yinghan@google.com>
-> 
-> With a 32 bit binary running on a 64 bit system, the /proc/pid/maps for
-> the [stack] VMA displays a 64-bit address:
-> 
-> ff96c000-ff981000 rwxp 7ffffffea000 00:00 0 [stack]
-> 
-> This is because vma->vm_pgoff for that VMA is not being updated for the
-> shift of the stack VMA.
-> 
-> Signed-off-by: Ying Han <yinghan@google.com>
-> Cc: Mike Waychison <mikew@google.com>
-> Cc: Hugh Dickins <hugh@veritas.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
 > ---
-
-Sorry for all the waste of your time, but
-I'm afraid this is entirely bogus, as Kamezawa-san has kindly
-discovered for us (in: Re: mmotm 2009-01-12-16-53 uploaded thread).
-
-The code was correct before, there was no shifting issue, and you
-cannot muck around with the vm_pgoff of a vma like this patch does.
-Thank Nick for the CONFIG_DEBUG_VM BUG_ON which warns that this
-patch has inadvertently made these stack pages unreclaimable
-(because their indexes no longer match up with vm_pgoff).
-
-All there is here is a cosmetic issue: we're used to seeing 8-hex-
-digit offsets in the /proc/pid/maps of a 32-bit process.  Though it
-could perfectly well mmap() a large file from a very high offset and
-show more hex digits there, couldn't it?
-
-Because this 32-bit process has been started by a 64-bit kernel, it
-started off working with the 64-bit stack position before moving into
-place, and that happens to get reflected in the final vm_pgoff.
-
-You prefer only to see 8-hex-digit offsets for anonymous vmas of 32-bit
-processes?  If so, then perhaps Ying Han could supply a cosmetic patch
-for /proc/pid/maps to mask off the upper bits in that case.
-
-Hugh
-
+>  drivers/oprofile/buffer_sync.c |   10 +++++-----
+>  drivers/oprofile/cpu_buffer.c  |    4 ++--
+>  drivers/oprofile/cpu_buffer.h  |   10 +++++-----
+>  3 files changed, 12 insertions(+), 12 deletions(-)
 > 
->  fs/exec.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+> diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
+> index 737bd94..d295d92 100644
+> --- a/drivers/oprofile/buffer_sync.c
+> +++ b/drivers/oprofile/buffer_sync.c
+> @@ -331,7 +331,7 @@ static void add_ibs_begin(int cpu, int code, struct mm_struct *mm)
+>  	off_t offset;
+>  	struct op_sample *sample;
 > 
-> diff -puN fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes fs/exec.c
-> --- a/fs/exec.c~fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes
-> +++ a/fs/exec.c
-> @@ -509,6 +509,7 @@ static int shift_arg_pages(struct vm_are
->  	unsigned long length = old_end - old_start;
->  	unsigned long new_start = old_start - shift;
->  	unsigned long new_end = old_end - shift;
-> +	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
->  	struct mmu_gather *tlb;
->  
->  	BUG_ON(new_start > new_end);
-> @@ -523,7 +524,7 @@ static int shift_arg_pages(struct vm_are
->  	/*
->  	 * cover the whole range: [new_start, old_end)
->  	 */
-> -	vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL);
-> +	vma_adjust(vma, new_start, old_end, new_pgoff, NULL);
->  
->  	/*
->  	 * move the page tables downwards, on failure we rely on
-> @@ -556,7 +557,7 @@ static int shift_arg_pages(struct vm_are
->  	/*
->  	 * shrink the vma to just the new range.
->  	 */
-> -	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-> +	vma_adjust(vma, new_start, new_end, new_pgoff, NULL);
->  
+> -	sample = cpu_buffer_read_entry(cpu);
+> +	sample = op_cpu_buffer_read_entry(cpu);
+>  	if (!sample)
+>  		goto Error;
+>  	rip = sample->eip;
+> @@ -370,7 +370,7 @@ static void add_ibs_begin(int cpu, int code, struct mm_struct *mm)
+>  		count = IBS_OP_CODE_SIZE;	/*IBS OP is 5 int64s*/
+> 
+>  	for (i = 0; i < count; i++) {
+> -		sample = cpu_buffer_read_entry(cpu);
+> +		sample = op_cpu_buffer_read_entry(cpu);
+>  		if (!sample)
+>  			goto Error;
+>  		add_event_entry(sample->eip);
+> @@ -537,11 +537,11 @@ void sync_buffer(int cpu)
+> 
+>  	add_cpu_switch(cpu);
+> 
+> -	cpu_buffer_reset(cpu);
+> -	available = cpu_buffer_entries(cpu);
+> +	op_cpu_buffer_reset(cpu);
+> +	available = op_cpu_buffer_entries(cpu);
+> 
+>  	for (i = 0; i < available; ++i) {
+> -		struct op_sample *s = cpu_buffer_read_entry(cpu);
+> +		struct op_sample *s = op_cpu_buffer_read_entry(cpu);
+>  		if (!s)
+>  			break;
+> 
+> diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+> index fcf96f6..e52c085 100644
+> --- a/drivers/oprofile/cpu_buffer.c
+> +++ b/drivers/oprofile/cpu_buffer.c
+> @@ -152,14 +152,14 @@ add_sample(struct oprofile_cpu_buffer *cpu_buf,
+>  	struct op_entry entry;
+>  	int ret;
+> 
+> -	ret = cpu_buffer_write_entry(&entry);
+> +	ret = op_cpu_buffer_write_entry(&entry);
+>  	if (ret)
+>  		return ret;
+> 
+>  	entry.sample->eip = pc;
+>  	entry.sample->event = event;
+> 
+> -	ret = cpu_buffer_write_commit(&entry);
+> +	ret = op_cpu_buffer_write_commit(&entry);
+>  	if (ret)
+>  		return ret;
+> 
+> diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+> index aacb0f0..83d491e 100644
+> --- a/drivers/oprofile/cpu_buffer.h
+> +++ b/drivers/oprofile/cpu_buffer.h
+> @@ -64,7 +64,7 @@ DECLARE_PER_CPU(struct oprofile_cpu_buffer, cpu_buffer);
+>   * reset these to invalid values; the next sample collected will
+>   * populate the buffer with proper values to initialize the buffer
+>   */
+> -static inline void cpu_buffer_reset(int cpu)
+> +static inline void op_cpu_buffer_reset(int cpu)
+>  {
+>  	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
+> 
+> @@ -72,7 +72,7 @@ static inline void cpu_buffer_reset(int cpu)
+>  	cpu_buf->last_task = NULL;
+>  }
+> 
+> -static inline int cpu_buffer_write_entry(struct op_entry *entry)
+> +static inline int op_cpu_buffer_write_entry(struct op_entry *entry)
+>  {
+>  	entry->event = ring_buffer_lock_reserve(op_ring_buffer_write,
+>  						sizeof(struct op_sample),
+> @@ -88,13 +88,13 @@ static inline int cpu_buffer_write_entry(struct op_entry *entry)
 >  	return 0;
 >  }
-> _
+> 
+> -static inline int cpu_buffer_write_commit(struct op_entry *entry)
+> +static inline int op_cpu_buffer_write_commit(struct op_entry *entry)
+>  {
+>  	return ring_buffer_unlock_commit(op_ring_buffer_write, entry->event,
+>  					 entry->irq_flags);
+>  }
+> 
+> -static inline struct op_sample *cpu_buffer_read_entry(int cpu)
+> +static inline struct op_sample *op_cpu_buffer_read_entry(int cpu)
+>  {
+>  	struct ring_buffer_event *e;
+>  	e = ring_buffer_consume(op_ring_buffer_read, cpu, NULL);
+> @@ -111,7 +111,7 @@ static inline struct op_sample *cpu_buffer_read_entry(int cpu)
+>  }
+> 
+>  /* "acquire" as many cpu buffer slots as we can */
+> -static inline unsigned long cpu_buffer_entries(int cpu)
+> +static inline unsigned long op_cpu_buffer_entries(int cpu)
+>  {
+>  	return ring_buffer_entries_cpu(op_ring_buffer_read, cpu)
+>  		+ ring_buffer_entries_cpu(op_ring_buffer_write, cpu);
+
