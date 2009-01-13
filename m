@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZAMBoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZAMBp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbZAMBoX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZAMBn7
+	id S1757905AbZAMBp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZAMBps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:43:59 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:40578 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755499AbZAMBn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:43:58 -0500
-Message-ID: <496BF1DC.2080009@sgi.com>
-Date: Mon, 12 Jan 2009 17:43:56 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 12 Jan 2009 20:45:48 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:53467 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593AbZAMBpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:45:47 -0500
+Date: Tue, 13 Jan 2009 02:45:45 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Derek Fawcus <dfawcus@cisco.com>
+Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-input@vger.kernel.org
+Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
+Message-ID: <20090113014545.GG5026@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Derek Fawcus <dfawcus@cisco.com>, linux-kernel@vger.kernel.org,
+	dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+References: <20090107005813.GA4987@const.famille.thibault.fr> <20090109212358.GG5073@const.famille.thibault.fr> <20090109213555.7f9275c9@lxorguk.ukuu.org.uk> <20090109214357.GH5073@const.famille.thibault.fr> <20090109220144.6b99ed72@lxorguk.ukuu.org.uk> <20090109222341.GI5073@const.famille.thibault.fr> <20090112223621.GA21489@cisco.com> <20090112225112.GE5026@const.famille.thibault.fr> <20090113010613.GA23244@cisco.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PULL]: please pull changes for tip/cpus4096
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090113010613.GA23244@cisco.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Derek Fawcus, le Tue 13 Jan 2009 01:06:13 +0000, a écrit :
+> > Yes, that seems a bit unsafe to me.  Another solution is to just grab
+> > all the keyboard devices, and reemit the wanted evdev keycodes.  Quite
+> > clumsy.
+> 
+> reemit?  as in inject back to the kernel?
 
-Hi Ingo,
+Through uinput, yes.
 
-This is the same as the previous pull request except that I added Yinghai's
-vast improvement to probing for nr_irqs.  Big difference in runtime memory
-allocated.
+> How does one prevent loops?
 
-Thanks,
-Mike
---- 
+By not grabbing the evdev corresponding to your own uinput dev.  IIRC it
+can even work with several daemons doing so, the last being only able to
+grab the last uinput's evdev.  If a daemon hangs, no luck, however.
 
-The following changes since commit 28e08861b9afab4168b758fb7b95aa7a4da0f668:
-  Christophe Saout (1):
-        xen: fix too early kmalloc call
+> > > I'm not sure w/o reading the code if the kernel will allow this to be
+> > > shared between the tty and evdev on the same vt,
+> > 
+> > What do you mean by "this"?
+> 
+> I was referring to being able to read the evdev data from the keyboard
+> while still allowing the vt to consume the data.  Can one filter out
+> just keys of interest,  or will reading the /dev/input/eventX prevent
+> the keys being fed to the vt and hence to /dev/ttyXX?
 
-are available in the git repository at:
+Grabbing does prevent it yes.  But feeding through uinput puts it back
+to the console.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git master
+> > > but then one could run a controller program talking through a pty and
+> > > direct to the keyboard.
+> > 
+> > Ugh.  I'd prefer grabing evdev rather that using a pty.
+> 
+> Well using the pty is not too bad,  and some stuff seems unhappy unless
+> fed from a tty of some form (default line buffering for stdin/stdout,
+> job control with bash).
 
-Mike Travis (1):
-      irq: update all arches for new irq_desc
+The problem with ptys too is that they manipulate letters, not physical
+key position, thus loosing keyboard mapping independence.
 
-Yinghai Lu (1):
-      x86: arch_probe_nr_irqs
+> Anyway,  wouldn't this all be easier with a app running on X and
+> XKEYBOARD/XKB manipulations?  Have the key that does left/right
+> swapping simply be a group toggle action in the definition file.
 
- arch/alpha/kernel/irq.c               |    2 +-
- arch/arm/kernel/irq.c                 |   18 ++++++++++++------
- arch/arm/oprofile/op_model_mpcore.c   |    2 +-
- arch/blackfin/kernel/irqchip.c        |    5 +++++
- arch/ia64/kernel/iosapic.c            |    2 +-
- arch/ia64/kernel/irq.c                |    4 ++--
- arch/ia64/kernel/msi_ia64.c           |    4 ++--
- arch/ia64/sn/kernel/msi_sn.c          |    2 +-
- arch/mips/include/asm/irq.h           |    2 +-
- arch/mips/kernel/irq-gic.c            |    2 +-
- arch/mips/kernel/smtc.c               |    2 +-
- arch/mips/mti-malta/malta-smtc.c      |    5 +++--
- arch/parisc/kernel/irq.c              |    8 ++++----
- arch/powerpc/kernel/irq.c             |    2 +-
- arch/powerpc/platforms/pseries/xics.c |    5 +++--
- arch/powerpc/sysdev/mpic.c            |    3 ++-
- arch/sparc/kernel/irq_64.c            |    5 +++--
- arch/x86/include/asm/irq_vectors.h    |    7 ++-----
- arch/x86/kernel/io_apic.c             |   16 ++++++++++++++++
- include/linux/interrupt.h             |    1 +
- kernel/irq/handle.c                   |    9 ++-------
- kernel/softirq.c                      |    5 +++++
- 22 files changed, 70 insertions(+), 41 deletions(-)
+Sure, but sometimes you're left without X, and that's not a reason for
+suddenly completely loose typing speed.
 
+Samuel
