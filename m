@@ -1,155 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZAMCfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZAMCgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbZAMCfW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZAMCfE
+	id S1758759AbZAMCgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbZAMCgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:35:04 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51990 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755746AbZAMCfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:35:00 -0500
-Message-ID: <496BFDC6.2080807@jp.fujitsu.com>
-Date: Tue, 13 Jan 2009 11:34:46 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-References: <200901042346.42723.rjw@sisk.pl> <200901080813.47650.rjw@sisk.pl> <4965B74E.8000309@jp.fujitsu.com> <200901081753.01637.rjw@sisk.pl>
-In-Reply-To: <200901081753.01637.rjw@sisk.pl>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 12 Jan 2009 21:36:45 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51386 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756170AbZAMCgo (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:36:44 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Steve French <smfrench@gmail.com>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org
+Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
+In-Reply-To: Your message of "Mon, 12 Jan 2009 20:27:49 CST."
+             <1231813669.6868.3.camel@norville.austin.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20090112154539.4857f533.sfr@canb.auug.org.au> <496B899E.7060605@oracle.com> <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com> <20090112191330.GC7111@suse.de> <524f69650901121307v67047946yed2c56efaaa839a1@mail.gmail.com> <37759.1231812066@turing-police.cc.vt.edu>
+            <1231813669.6868.3.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231814132_3124P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 12 Jan 2009 21:35:32 -0500
+Message-ID: <39351.1231814132@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->> Rafael J. Wysocki wrote:
->>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->>>> Rafael J. Wysocki wrote:
->>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>
->>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
->>>>> many vectors are allocated and it is not ensured that the right
->>>>> vectors will be used for various services.  Namely, the PCI Express
->>>>> specification states that both PCI Express native PME and PCI Express
->>>>> hotplug will always use the same MSI or MSI-X message for signalling
->>>>> interrupts, which implies that the same vector will be used by both
->>>>> of them.  Also, the VC service does not use interrupts at all.
->>>>> Moreover, is not clear which of the vectors allocated by
->>>>> pci_enable_msix() will be used for PME and hotplug and which of them
->>>>> will be used for AER if all of these services are configured.
->>>>>
->>>>> For these reasons, rework the allocation of interrupts for PCI
->>>>> Express ports so that at most two vectors are allocated and ensure
->>>>> that the right vector will be used for the right purpose.
->>>>>
->>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->>>>> ---
->>>>>  drivers/pci/pcie/portdrv.h      |    1 
->>>>>  drivers/pci/pcie/portdrv_core.c |  155 +++++++++++++++++++++++++++++-----------
->>>>>  2 files changed, 117 insertions(+), 39 deletions(-)
->>>>>
->>>>> Index: linux-2.6/drivers/pci/pcie/portdrv.h
->>>>> ===================================================================
->>>>> --- linux-2.6.orig/drivers/pci/pcie/portdrv.h
->>>>> +++ linux-2.6/drivers/pci/pcie/portdrv.h
->>>>> @@ -25,6 +25,7 @@
->>>>>  #define PCIE_CAPABILITIES_REG		0x2
->>>>>  #define PCIE_SLOT_CAPABILITIES_REG	0x14
->>>>>  #define PCIE_PORT_DEVICE_MAXSERVICES	4
->>>>> +#define PORT_MSI_VECTOR_MASK		0x1f
->>>>>  
->>>>>  #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
->>>>>  
->>>>> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
->>>>> ===================================================================
->>>>> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
->>>>> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
->>>>> @@ -30,55 +30,120 @@ static void release_pcie_device(struct d
->>>>>  }
->>>>>  
->>>>>  /**
->>>>> + * fix_up_vectors - ensure the right ordering of MSI-X interrupt vectors
->>>>> + * @dev: PCI Express port that is going to use the vectors
->>>>> + * @vectors: Array of interrupt vectors to check (2 entries)
->>>>> + *
->>>>> + * Return value:
->>>>> + * 0 on success, error code if the values read from config registers are not as
->>>>> + * expected
->>>>> + *
->>>>> + * If this function is called, we are going to use two interrupt vectors which
->>>>> + * may be different, but we have to make sure they are in the right order such
->>>>> + * that the vector to be used for PME and hotplug signalling is the first one.
->>>>> + *
->>>>> + * NOTE: The assumption here is that MSI message offset (with respect to the
->>>>> + * base Message Data) equal to N corresponds to index N in the array of vectors
->>>>> + * returned by pci_enable_msix().
->>>>> + */
->>>> I've posted the similar patch recently, which doesn't have this
->>>> assumption.
->>> Actually, this assumption is in agreement with PCI Express Base Specification
->>> 2.0, which very clearly states in Section 7.8.2 that:
->>>
->>> "[...] Interrupt Message Number – This field indicates which
->>> MSI/MSI-X vector is used for the interrupt message generated in
->>> association with any of the status bits of this Capability structure.
->>>
->>> [...]
->>>
->>> For MSI-X, the value in this field indicates which MSI-X Table
->>> entry is used to generate the interrupt message. The entry must
->>> be one of the first 32 entries even if the Function implements
->>> more than 32 entries. For a given MSI-X implementation, the
->>> entry must remain constant."
->>>
->> Though I might be misunderstanding something, my understanding is
->> that this implies that there can be more MSI-X table entries than
->> number of interrupts, and PME/HotPlug or AER interrupts can be
->> mapped to other than first two entries.
-> 
-> We are requesting two vectors with my patch and they will be assigned to the
-> first two entries in the MSI-X table.  If my understanding of the MSI-X code is
-> corrtect, there won't be more MSI-X table entries set up for the port.
-> 
->> If my understanding is correct, your patch would not work if PME/HotPlug or
->> AER interrupts were mapped to other than first two.
-> 
-> In this case it's going to fall back to MSI w/ one vector, because we're going
-> to find that offset > 1 in one of the tests in fix_up_vectors().
-> 
->> Regardless of my understanding is correct or not, I have another
->> concern. I think there are two interrupts for PCIe port service
->> currently as your patch indicates. But new interrupts can be added
->> in the future. With the assumption, PME/HotPlug and/or AER interrupts
->> would not work if the first several entries are mapped to other new
->> interrupts. Therefore, with the assumption, we need to fix MSI-X
->> initialization code whenever new interrupts are defined.
-> 
-> In that case we'll need to allocate more vectors, so we'll need to change the
-> code anyway.  Also, we'll have to add the tests for the new interrupts to
-> the code, because there will have to be new registers defined to read the
-> MSI offsets or MSI-X table indices from.
-> 
+--==_Exmh_1231814132_3124P
+Content-Type: text/plain; charset=us-ascii
 
-I'm sorry for delay. I've just resumed.
+On Mon, 12 Jan 2009 20:27:49 CST, Dave Kleikamp said:
+> On Mon, 2009-01-12 at 21:01 -0500, Valdis.Kletnieks@vt.edu wrote:
+> > On Mon, 12 Jan 2009 15:07:48 CST, Steve French said:
+> > 
+> > > I have changed the names of cifs's md5 functions in the cifs-2.6.git tree
+> > > 
+> > > diff --git a/fs/cifs/md5.h b/fs/cifs/md5.h
+> > > index f7d4f41..6fba8cb 100644
+> > 
+> > I presume there will be another git commit immediately following to fix
+> > up the call sites?
+> 
+> The git tree has the entire fix.  Steve's post just contained a piece of
+> it.
 
-Yes, we need to change the code if we use new port service that
-uses new interrupt. But there would be a delay between hardware
-update and kernel update. I think currently supported MSI-X
-interrupts should keep working with the new hardware even before
-the kernel supports new port service.
+Oh, OK. Thanks for verifying that for those of us playing along at home. ;)
 
-> I very much prefer to keep the code as simple as possible as long as we can.
+--==_Exmh_1231814132_3124P
+Content-Type: application/pgp-signature
 
-I agree with this.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Thanks,
-Kenji Kaneshige
+iD8DBQFJa/30cC3lWbTT17ARAuMZAKDUj28nPKSsiv/uumbllpKyCTxbDgCfQwTz
+KbZ2YCX40r14nxSBk1xJXVk=
+=/UTS
+-----END PGP SIGNATURE-----
 
+--==_Exmh_1231814132_3124P--
