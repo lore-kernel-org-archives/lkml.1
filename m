@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbZAMXc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZAMXcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759646AbZAMXc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZAMXcQ
+	id S1760096AbZAMXcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbZAMXcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:32:16 -0500
-Received: from [200.77.170.6] ([200.77.170.6]:39106 "EHLO
-	delivery-b-02.cablevision.net.mx" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755210AbZAMXcP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:32:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Am4OANmxbEkKAwFr/2dsb2JhbAAIgT8vEIV1hHwBXsElhW+BJA
-X-IronPort-AV: E=Sophos;i="4.37,261,1231135200"; 
-   d="scan'208";a="141740299"
-Date: Tue, 13 Jan 2009 17:29:23 -0600
-From: Curso Sky Running <98064512234@cablevision.net.mx>
-Subject: =?windows-1252?Q?=DAltimos_Lugares._Enero_25._Nevado_de_Toluca?=
-To: dbx <98064512234@cablevision.net.mx>
-Message-id: <419-220091213232923718@user-b01ab84ab0>
-MIME-version: 1.0
-Content-type: text/plain; charset=windows-1252
-Content-transfer-encoding: 8BIT
+	Tue, 13 Jan 2009 18:32:20 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:36390 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758269AbZAMXcT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:32:19 -0500
+Subject: Re: [PATCH] backlight: don't default y
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Valdis.Kletnieks@vt.edu
+Cc: Richard Purdie <rpurdie@openedhand.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <37023.1231889418@turing-police.cc.vt.edu>
+References: <1231856997.3671.38.camel@johannes>
+	 <37023.1231889418@turing-police.cc.vt.edu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ppC3P8G4bkzynbnXmZPq"
+Date: Wed, 14 Jan 2009 00:31:52 +0100
+Message-Id: <1231889512.3728.21.camel@johannes>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Curso Sky Running
 
-Enero 25. Nevado de Toluca
+--=-ppC3P8G4bkzynbnXmZPq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Últimos Lugares
+On Tue, 2009-01-13 at 18:30 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 13 Jan 2009 15:29:57 +0100, Johannes Berg said:
+> > Not all the backlight drivers make sense, especially not the "generic"
+> > one that works on some sharp devices. "default n" is also absolutely
+> > pointless, and not everybody needs LCD backlight support either.
+>=20
+> >  config BACKLIGHT_GENERIC
+> >  	tristate "Generic (aka Sharp Corgi) Backlight Driver"
+> >  	depends on BACKLIGHT_CLASS_DEVICE
+> > -	default y
+> >  	help
+>=20
+> I asked about this one recently - apparently it's planned to be much more
+> generic, but the help text still implies it's Sharp-specific.
 
-Inscripción ONLINE con 20% Descuento, hasta Enero 15.
+Even if, it still shouldn't be default y.
 
-http://www.deporte6am.com
+johannes
 
-Tel. 51350564
+--=-ppC3P8G4bkzynbnXmZPq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-----------------------------------------------------
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
+iQIcBAABAgAGBQJJbSRmAAoJEKVg1VMiehFYjCcP/2ObV9r3r21v5Wfq19HUvJOx
+XMtvJFhzfPm3DCiSvjY09c1e6fQuT8ZdT186Z15m28J65rYNTQdhOpFu/OvkZdjb
+irbIfoNIYOmVVMjXVeTdUnTSDeaMoAjGoQ+pworbF1qIkDmNYE13+tylp0SwmW9y
+RWltJnoyaogcFRUpVjMpsx1ZGCfnowtvJEi+ltX/ZwmTXLXuANUlgmCPcWM9bl5p
+X4nZuxPTLAnZqG6r/fPC8U9R+7dVIZ6jTroTpVCYs2kteFasp5HbcwU4q7A40Esp
+/MJ1k7oueUousRa8LMn+B8lpdpOfe96spXSycNBnYg1TRIfPqEOle71OV4oh4wPq
+UVAXiZxpd7mobDvIw2VqDHVbaFz9Ix5wJ136oljeAJ9LXQ6coi77dZ+98HcrK+fM
+6ySIxLz1eu1i7S7yj8VHeoAc7Ut9a7zAuEZ5TbZ3b/QWMkH+2EkjmYayaqvoEFI1
+8ZF3WntwAc97ejSmPv3rGvBm2MfrB0w1neqUmooRW22EKwHzn9CZmoEYpVpIBTAu
+xLVLnyc1YvO+UNUirjPxLYkK5QXAeK5i6UCvIdJwAWyCrfUn5Gmn0mqe6C7N58ft
+KVkitvBVcdUgNAN98vsokvg3fdJONGmvYvLEsRnfiBcBZH7abaNd8G9tDCOFsN02
+1I+J513J/OcyOTZbeLd3
+=d8oD
+-----END PGP SIGNATURE-----
 
-CLASIFICADOS GRATIS
-
-Por Deportistas, para Deportistas.
-
-http://www.deporte6am.com/clasificados
-
-INSTRUCCIOINES
-1. Dar click en POST AD.
-2. Revisar su bandeja de entrada de e-mails.
-3. Activar clasificado en el e-mail que le llegará automaticamente.
-
-
--------------------------------------
-
-
-Atentamente
-Deporte6am.com
-Tel. 51350564
-Mexico DF
-
-
-
-remover de lista
-nuevomtb100k@yahoo.com
-
-
+--=-ppC3P8G4bkzynbnXmZPq--
 
