@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZAMHEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZAMHNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZAMHEQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 02:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZAMHEA
+	id S1756030AbZAMHNo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 02:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZAMHNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 02:04:00 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:60198 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbZAMHEA (ORCPT
+	Tue, 13 Jan 2009 02:13:35 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:40145 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbZAMHNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 02:04:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=d2Ot8Pp1+gWLgN+kYPediOaO6UeTb7X+9JlUvLCxdBJf+zh2aZsEix6X1Vj2v2WNSF
-         xbtTalJwlybJ5HSm3HG1hVzKf8wB+0dWYBN5HNHhI3xLBoDs/iaf4oZ4q2WObETDC/RD
-         ZZ6LcwX+vslRUgsUiD9GWvQdqSkei230J1NZU=
-MIME-Version: 1.0
-In-Reply-To: <20090112213719.GC7320@elte.hu>
-References: <20090112212855.GB15185@uranus.ravnborg.org>
-	 <1231795863.5405.8.camel@brick> <20090112213719.GC7320@elte.hu>
-Date: Tue, 13 Jan 2009 12:33:59 +0530
-Message-ID: <3f9a31f40901122303m4e37c33ag5b308eb538d4e60b@mail.gmail.com>
-Subject: Re: Can we get warnings from the x86 userspace headers fixed?
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 02:13:34 -0500
+Date: Tue, 13 Jan 2009 08:15:13 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaswinder Singh Rajput <jaswinder@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, harvey.harrison@gmail.com, gorcunov@gmail.com,
+       roque@di.fc.ul.pt, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH -tip] in6.h: extern's make no sense in userspace
+Message-ID: <20090113071513.GB20036@uranus.ravnborg.org>
+References: <1231829859.3212.19.camel@jaswinder.satnam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231829859.3212.19.camel@jaswinder.satnam>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 3:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
->
->> On Mon, 2009-01-12 at 22:28 +0100, Sam Ravnborg wrote:
->> > Hi Ingo.
->> >
->> > We have recently introduced a lot of new warnings for our
->> > userspace headers.
->> >
->> > Try to do a "make headers_check" and enjoy...
->> >
->> > Are there any chance you could ask one of your helpers to
->> > start to look into the x86 specific ones?
->> >
->> > If we get x86 clean this would create more incentive to
->> > make the generic clean too.
->> >
->> > I had originally planned to attack the generic headers
->> > (include/linux/*) but I'm faced by reality after my
->> > vacation and has almost no spare time for the time being.
->> >
->> > I already fixed the sparc headers but that is not
->> > visible compared to x86 (the fixes was btw easy).
->> >
->> > I can try to help by doing a few reviews in the
->> > beginning but I need to fix kbuild stuff first where
->> > I have a few serious issues pending. And lacks time...
->> >
->>
->> I'll have a go at some of them this afternoon unless someone beats me to
->> it.
->
-> thanks Harvey! Please work against tip/master if you do that, there's a
-> few header file changes in the queue already.
->
+On Tue, Jan 13, 2009 at 12:27:39PM +0530, Jaswinder Singh Rajput wrote:
+> Impact: fix 2 make headers_check warnings:
+> 
+>  usr/include/linux/in6.h:47: extern's make no sense in userspace
+>  usr/include/linux/in6.h:49: extern's make no sense in userspace
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  include/linux/in6.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/in6.h b/include/linux/in6.h
+> index bc49204..718bf21 100644
+> --- a/include/linux/in6.h
+> +++ b/include/linux/in6.h
+> @@ -44,11 +44,11 @@ struct in6_addr
+>   * NOTE: Be aware the IN6ADDR_* constants and in6addr_* externals are defined
+>   * in network byte order, not in host byte order as are the IPv4 equivalents
+>   */
+> +#ifdef __KERNEL__
+>  extern const struct in6_addr in6addr_any;
+>  #define IN6ADDR_ANY_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
+>  extern const struct in6_addr in6addr_loopback;
+>  #define IN6ADDR_LOOPBACK_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 } } }
+> -#ifdef __KERNEL__
 
-Some patches are also available in:
+It looks wrong what IN6ADDR_ANY_INIT should be a kernel only symbol.
+At least google had some hits on that symbol.
 
-http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tiptop.git;a=summary
+netdev people should know....
 
-Thanks
---
-JSR
+	Sam
