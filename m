@@ -1,137 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbZAMWeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZAMWhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbZAMWeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZAMWeB
+	id S1756223AbZAMWhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZAMWgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:34:01 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:15542 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbZAMWeA (ORCPT
+	Tue, 13 Jan 2009 17:36:52 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:39359 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbZAMWgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:34:00 -0500
+	Tue, 13 Jan 2009 17:36:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=dtHfjXpMFaC3/F7CRRRbbNEbhve9yxnKAEI4TV/wN7aU+X05IMqgwrlNmZxG0+OF/S
-         5rCh1CtCM9mgpJQwJMmnSyAnP4hfbWhFmyrlgEBArEGyctVbvQmszxRo9oRAVIfh0hVm
-         /FrzfjnrAQdx0EzoP/Pn6QQggyqMKwiJRM5K8=
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=EGmo8sQfDJj85AcP+dfcY01R8LHqLjzGzALX+e2HHCQeuEx5hxJD2/aOqHxpcdJHXB
+         f8F05RoFfLiz2pYLTIdN2uvAWFu3D7/aD6pU7PDornCE1S/07CIi5z/ynuCasaoQkczf
+         edzlfKNAR3Cvt8q6YrXc0Zhf1h9EX2U3tQynY=
+Message-ID: <c4e36d110901131436y79beaf40h2da44e5925d574b5@mail.gmail.com>
+Date: Tue, 13 Jan 2009 23:36:49 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
+Cc: "Maciej Rutecki" <maciej.rutecki@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       dbrownell@users.sourceforge.net
+In-Reply-To: <200901121819.01042.rjw@sisk.pl>
 MIME-Version: 1.0
-In-Reply-To: <20090110161137.GA20526@Krystal>
-References: <20090109235449.GA21999@Krystal> <20090110161137.GA20526@Krystal>
-Date: Wed, 14 Jan 2009 07:33:58 +0900
-X-Google-Sender-Auth: 7c22ed099d6a4a8d
-Message-ID: <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com>
-Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com>
+	 <200901121340.21009.rjw@sisk.pl>
+	 <c4e36d110901120450q10278979j5cf726a5175cc3f1@mail.gmail.com>
+	 <200901121819.01042.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu
+2009/1/12 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Monday 12 January 2009, Zdenek Kabelac wrote:
 
-2009/1/11 Mathieu Desnoyers <compudj@krystal.dyndns.org>:
-> Hi,
+> Sure, good idea.  I've been running with this reverted recently.
 >
-> LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
-> It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+>> PS: I'll do the above 'echo' trace later (being busy right now).
+>
+> That shouldn't be necessary if you can suspend-resume with
+> 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted and the USB controller
+> modules unloaded.
+>
+> Instead, with 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted, please write
+> 'disabled' to the /sys/devices/.../power/wakeup files of all USB controllers
+> and see if suspend-resume works in this configuration.
+>
 
--ECANTBUILD
+Hi
 
-fs/jbd2/commit.c:27:24: error: trace/jbd2.h: No such file or directory
-fs/jbd2/commit.c:29: warning: data definition has no type or storage class
-fs/jbd2/commit.c:29: warning: type defaults to 'int' in declaration of
-'DEFINE_TRACE'
-fs/jbd2/commit.c:29: warning: parameter names (without types) in
-function declaration
-fs/jbd2/commit.c:30: warning: data definition has no type or storage class
-fs/jbd2/commit.c:30: warning: type defaults to 'int' in declaration of
-'DEFINE_TRACE'
-fs/jbd2/commit.c:30: warning: parameter names (without types) in
-function declaration
-fs/jbd2/commit.c: In function 'jbd2_journal_commit_transaction':
-fs/jbd2/commit.c:374: error: implicit declaration of function
-'trace_jbd2_start_commit'
-fs/jbd2/commit.c:1003: error: implicit declaration of function
-'trace_jbd2_end_commit'
-make[2]: *** [fs/jbd2/commit.o] Error 1
+So I've check some   find /sys/device | grep usb | grep power/wakeup
+and there was no difference.
+I've updated to latest git to be in sync
+(e0b325d310a6b11f1538413fd557d2eb98f2fae5)
+I'm still keeping reverted commit: 6fd9086a518d4f14213a32fe6c9ac17fabebbc1e.
 
+And I've figured out - the only  'modprobe -r ehci_hcd' is enough to
+keep my suspend/resume sequence working. (Though I would have say,
+that now it takes fairly noticable time to get keyboard and synaptics
+usable - but it might be connected with my move to evdev and hal... :)
+)
 
-because
+So I'm adding cc: to David - maybe he has some suspected patches for
+ehci_hcd ? (as doing a bisect in such a broken merge window is going
+to give me probably a lot of unsable kernels nowdays....)
 
-jbd2-instrumentation-move-to-tracepoints patch only change following two files.
-it didn't create trace/jbd2.h
-
-  fs/jbd2/checkpoint.c 		
-  fs/jbd2/commit.c 		
-
-
-
-
-
->
-> A new version including ext4 probe module should be available shortly.
->
-> Installation QUICKSTART :
-> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
->
-> git url :
->
-> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28-lttng-0.74
->
-> tarball :
->
-> http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.74.tar.gz
->
-> jbd2/ext4 patches within the tarball :
->
-> ext4-instrumentation-add-tracepoints.patch
-> jbd2-instrumentation-move-to-tracepoints.patch
-> lttng-instrumentation-jbd2-probes.patch
->
-> Mathieu
->
-> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
->> Hi everyone,
->>
->> I just ported LTTng to 2.6.28. Enjoy !
->>
->> You may also want to upgrade to lttv 0.12.5 which puts back the syscall
->> and softirq names in the event list.
->>
->> For newcomers, instructions to install LTTng can be found at :
->> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
->>
->> (I just updated the QUICKSTART guide. Please feel free to try it and
->> report inconsistencies.)
->>
->> Mathieu
->>
->>
->> --
->> Mathieu Desnoyers
->> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
->>
->> _______________________________________________
->> ltt-dev mailing list
->> ltt-dev@lists.casi.polymtl.ca
->> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
->>
->
-> --
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Zdenek
