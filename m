@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZAMTAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbZAMTAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755594AbZAMTAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 14:00:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZAMS76
+	id S1757621AbZAMTAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 14:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZAMTAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:59:58 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33363 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751511AbZAMS76 (ORCPT
+	Tue, 13 Jan 2009 14:00:10 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:51552 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbZAMTAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:59:58 -0500
-Date: Tue, 13 Jan 2009 10:59:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: handygewinnspiel@gmx.de
-Cc: mchehab@infradead.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       HWerner4@gmx.de, rjw@sisk.pl
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-Message-Id: <20090113105947.9e774b69.akpm@linux-foundation.org>
-In-Reply-To: <20090113184755.87720@gmx.net>
-References: <20090112190420.51f75853@pedra.chehab.org>
-	<20090112132130.6c932b85.akpm@linux-foundation.org>
-	<20090112220624.4fbfee34@pedra.chehab.org>
-	<20090112162337.318dd61d.akpm@linux-foundation.org>
-	<20090113184755.87720@gmx.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 14:00:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=bNyICZMuKurTV20ibOY6skeUULIrQ701s+P3eZjeDL+SSu2arOASLDPtxHzG3adLpm
+         18h1LqyJfJrBYYjqChpEB+tlFyVbPjXztT7PMmuBkN9vO0fhdEawTVNpJVxRLACwtVlK
+         bSyaC/N8135ujEG9nktXfGZUv9vckpYHp7rDk=
+Date: Tue, 13 Jan 2009 22:00:07 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: [PATCH -tip] x86: headers - fix export private data to
+	userspace
+Message-ID: <20090113190007.GA16663@localhost>
+References: <20090113183456.GA14470@localhost> <1231871832.16221.1.camel@brick> <496CE234.2070900@zytor.com> <20090113185239.GC14470@localhost> <496CE3A2.4060605@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496CE3A2.4060605@zytor.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 19:47:55 +0100 handygewinnspiel@gmx.de wrote:
+[H. Peter Anvin - Tue, Jan 13, 2009 at 10:55:30AM -0800]
+| Cyrill Gorcunov wrote:
+| > | > 
+| > | >> 4) setup.h - COMMAND_LINE_SIZE saved for userspace, bootloaders
+| > | >>    could use it.
+| > | > 
+| > | > Doesn't this need to be (at least) _COMMAND_LINE_SIZE to avoid
+| > | > polluting the namespace, not sure it can be changed though as the
+| > | > horse is already out of the barn.
+| > | 
+| > | No, this is not one of those cases, but it's worth explaining why.
+| > | 
+| > | You can introduce symbols into the general namespace if *and only if*
+| > | they are in a header file that is invoked directly by the user.  In
+| > | other words, such a header file is unusable by libc, but setup.h doesn't
+| > | contain anything needed by libc in the first place.
+| > | 
+| > | 	-hpa
+| > | 
+| > 
+| > So we could just fence it by __KERNEL__?
+| > 
+| 
+| We might, as userspace shouldn't need COMMAND_LINE_SIZE anyway (see
+| other post), but I'm rather confused as how you got that from what I
+| wrote above.
+| 
+| 	-hpa
+| 
+| -- 
+| H. Peter Anvin, Intel Open Source Technology Center
+| I work for Intel.  I don't speak on their behalf.
+| 
 
-> Dear all,
-> 
-> i was kindly asked to provide some bug report about findutils-4.1.20 in conjunction with linux-2.6.28, so here we are..
-> 
-> > On Mon, 12 Jan 2009 22:06:24 -0200
-> > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > 
-> > > On Mon, 12 Jan 2009 13:21:30 -0800
-> > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > (cc's added)
-> > > > 
-> > > > On Mon, 12 Jan 2009 19:04:20 -0200
-> > > > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > > > 
-> > > > > Do you know is there were any FS changes on 2.6.28 that could break
-> > the find
-> > > > > command? Maybe we have a regression here. At least, this user i
-> > complaining
-> > > > > that booting with findutils-4.1.20 and kernel 2.6.28 broke the
-> > result of the
-> > > > > find command.
-> > > > 
-> > > > Not known to me.
-> > > > 
-> > > > Please prepare a bug report and send it to
-> > > > 
-> > > > Andrew Morton <akpm@linux-foundation.org>
-> > > > Al Viro <viro@zeniv.linux.org.uk>
-> > > > linux-kernel@vger.kernel.org
-> > > > linux-fsdevel@vger.kernel.org
-> > > > 
-> > > > Thanks.
-> > > 
-> > > OK. I'll ask the reporter for him to open a bugzilla.
-> > > 
-> > 
-> > An emailed report would be preferred, please.  Some people handle bugzilla
-> > OK.  Linux VFS developers are not amongst them ;)
-> 
-> 
-> With kernel 2.6.28 and findutils-4.1.20 the "find" utility from this package fails with the error message
->  "Der Wert ist zu gro__ f__r den definierten Datentyp". It randomly fails on different folders, it works on some folders and fails on others.
-> [code]
-> find ../ -name *.c
-> find: ../: Der Wert ist zu gro__ f__r den definierten Datentyp
-> [/code]
-> translation to English: "The value is too big for defined data type."
-> 
-> If i boot from any other kernel the find utility works again as expected. I tried the following kernels
-> - 2.6.22.4 = OK
-> - 2.6.23.1 = OK
-> - 2.6.26.3 = OK
-> - 2.6.27.9 = OK
-> - 2.6.28 = Error
-> 
-> 2.6.27.9 and 2.6.28 used the same .config (copy and paste, make oldconfig, make menuconfig to be shure..)
-> 
-> root file system is xfs, system is 32Bit LinuxFromScratch, if this matters. By compiling findutils-4.4.0 i could solve the problem. But still there is the question what happens here and why older ones are broken.
-> 
-> btw: unfortunally i overwrote the old "find" while installing new findutils, but today i tried to re-compile it from old sources and retry and i see exactly the same error behaviour.
-> 
-> Is that something already known?
-> 
+The thing is that kernel headers are not only touched by libc.
+Someone could write a program and include setup.h there.
+Or I translated you wrong :)
 
-It's the first such report I've seen.
-
-Could you please generate the strace output for the failing command so
-we can see which syscall is failing?
-
+		- Cyrill -
