@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZAMBHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZAMBMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZAMBHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZAMBG6
+	id S1757523AbZAMBMo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbZAMBMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:06:58 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:41915 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757236AbZAMBG5 (ORCPT
+	Mon, 12 Jan 2009 20:12:35 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:51489 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753521AbZAMBMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:06:57 -0500
-Date: Tue, 13 Jan 2009 01:06:55 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Is 386 processor still supported?
-In-Reply-To: <20090108151046.GK18120@elte.hu>
-Message-ID: <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org>
-References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <1231424025.11687.447.camel@twins> <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz> <1231424833.11687.452.camel@twins> <20090108150448.2393aeb0@lxorguk.ukuu.org.uk>
- <20090108151046.GK18120@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Jan 2009 20:12:34 -0500
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alex Murray <murray.alex@gmail.com>, Nicolas Boichat <nicolas@boichat.ch>,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH] hwmon: applesmc: Fix light sensor readings on newer MacBooks
+Date: Tue, 13 Jan 2009 02:11:22 +0100
+Message-Id: <1231809082-11165-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1LMXpU-0007KP-7R.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1LMXpU-0007KP-7R 0bec4dbe4feee9adc02c8ae16fb6e3a5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Jan 2009, Ingo Molnar wrote:
+From: Alex Murray <murray.alex@gmail.com>
 
-> > So our minimal spec for SMP is probably 486DX + external Intel APIC.
-> > 
-> > In practice I doubt there is a single Intel APIC type 486 SMP box on the 
-> > planet running Linux (or quite possibly running at all)
-> 
-> yeah, that's very likely true. I think we could eliminate some of the SMP 
-> complications by requiring cmpxchg presence for CONFIG_SMP, agreed?
+The light sensors ALV0 and ALV1 on newer MacBooks (early 2008 and
+later) changed to report 10 bytes instead the earlier 6, and the
+sensor encoding subsequently changed. As a result, the reported light
+sensors readings are much too low.
 
- I failed to track down a single 486 SMP system that would adhere to the 
-MP spec.  There were and possibly still are APIC-based 486 SMP systems out 
-there, but most likely they are not Intel MPS-compliant, by not providing 
-the MP header at the very least.  Thus Linux would have to be ported and I 
-gather the interest in doing so is epsilon.
+>From experiments leading up to this patch, it seems only the ALV0 is
+reporting data, and the most useful value therein is a 10-bit
+big-endian value at offset 6. This suggests that a new protocol was
+added as a backward-compatible replacement on top of the old one.
 
- Myself, I could not resist trying an APIC-based 486 SMP box and possibly 
-fixing issues if I found one and it was MPS-compliant, but nothing beyond 
-that I would say.  Life's too short.
+This patch makes applesmc report the improved light sensor reading for
+the new machines, on a scale in conformance with earlier ones.
 
-  Maciej
+Signed-off-by: Alex Murray <murray.alex@gmail.com>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/hwmon/applesmc.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index dca47a5..e301862 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -590,6 +590,11 @@ static ssize_t applesmc_light_show(struct device *dev,
+ 	}
+ 
+ 	ret = applesmc_read_key(LIGHT_SENSOR_LEFT_KEY, buffer, data_length);
++	/* newer macbooks report a single 10-bit bigendian value */
++	if (data_length == 10) {
++		left = be16_to_cpu(*(__be16 *)(buffer + 6)) >> 2;
++		goto out;
++	}
+ 	left = buffer[2];
+ 	if (ret)
+ 		goto out;
+-- 
+1.5.6.3
+
