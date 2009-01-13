@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbZAMWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbZAMWic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbZAMWha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbZAMWhK
+	id S1757508AbZAMWic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZAMWiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:37:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:40973 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756519AbZAMWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:37:06 -0500
-Date: Tue, 13 Jan 2009 23:36:34 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michal Suchanek <hramrach@centrum.cz>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: vm86: fix preemption bug
-In-Reply-To: <nHCfeC0YLrE.A.WKC.qafaJB@chimera>
-Message-ID: <alpine.LFD.2.00.0901132117270.3549@localhost.localdomain>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.WKC.qafaJB@chimera>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 13 Jan 2009 17:38:22 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:25008 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZAMWiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 17:38:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=gfszGMZv5qqOe1XLTJyD5YbpGBEKNZBBw7niGitmzNXIRzy0jaVIQhp7LkqLpLG/lj
+         jc/PgmiHd0pzl4OHQcyxlgAySLHCyc3fmOvVnuaJZHpPD8vagzYQuwlRWaS1q7pGZ6MZ
+         px7+UA/fivyifYkZAzEqg+xZHV7D6H8tufiNQ=
+Message-ID: <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
+Date: Wed, 14 Jan 2009 11:38:18 +1300
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Roland McGrath" <roland@redhat.com>
+Subject: waitid() return value strangeness when infop is NULL
+Cc: "kernel list" <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
+In-Reply-To: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix scheduling while atomic bug
+[Resend with right LKML address.]
 
-commit 3d2a71a596bd9c761c8487a2178e95f8a61da083 (x86, traps: converge
-do_debug handlers) changed the preemption disable logic of do_debug()
-so vm86_handle_trap() is called with preemption disabled resulting in:
+Hello Roland,
 
-BUG: sleeping function called from invalid context at include/linux/kernel.h:155
-in_atomic(): 1, irqs_disabled(): 0, pid: 3005, name: dosemu.bin
-Pid: 3005, comm: dosemu.bin Tainted: G        W  2.6.29-rc1 #51
-Call Trace:
- [<c050d669>] copy_to_user+0x33/0x108
- [<c04181f4>] save_v86_state+0x65/0x149
- [<c0418531>] handle_vm86_trap+0x20/0x8f
- [<c064e345>] do_debug+0x15b/0x1a4
- [<c064df1f>] debug_stack_correct+0x27/0x2c
- [<c040365b>] sysenter_do_call+0x12/0x2f
-BUG: scheduling while atomic: dosemu.bin/3005/0x10000001
+Vegard sent me a report of a possible bug in the waitid(2) man page,
+but on closer examination, the issue seems to be in the waitid()
+system call.
 
-Restore the original calling convention and reenable preemption before
-calling handle_vm86_trap().
+POSIX.1 says of waitid():
 
-Reported-by: Michal Suchanek <hramrach@centrum.cz>
-Cc: stable@kernel.org
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/kernel/traps.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+  RETURN VALUE
+      If WNOHANG was specified and there are no children to wait for,
+      0 shall be returned. If waitid() returns due to the  change  of
+      state  of  one of its children, 0 shall be returned. Otherwise,
+      -1 shall be returned and errno set to indicate the error.
 
-Index: linux-2.6/arch/x86/kernel/traps.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/traps.c
-+++ linux-2.6/arch/x86/kernel/traps.c
-@@ -99,6 +99,12 @@ static inline void preempt_conditional_s
- 		local_irq_enable();
- }
- 
-+static inline void conditional_cli(struct pt_regs *regs)
-+{
-+	if (regs->flags & X86_EFLAGS_IF)
-+		local_irq_disable();
-+}
-+
- static inline void preempt_conditional_cli(struct pt_regs *regs)
- {
- 	if (regs->flags & X86_EFLAGS_IF)
-@@ -626,8 +632,10 @@ clear_dr7:
- 
- #ifdef CONFIG_X86_32
- debug_vm86:
-+	/* reenable preemption: handle_vm86_trap() might sleep */
-+	dec_preempt_count();
- 	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	preempt_conditional_cli(regs);
-+	conditional_cli(regs);
- 	return;
- #endif
- 
+The Linux waitid() follows this behavior, as long as infop is not
+NULL, which is what POSIX requires:
+
+      The  application shall ensure that the infop argument points to
+      a siginfo_t structure.
+
+However, Linux's waitid() does permit infop to be NULL.  But in this
+case, a successful call returns the PID of the waited-for child.
+Thinking about it, I suppose there is a rationale for doing this,
+since otherwise the caller of waitid() has no way of obtaining the PID
+of the waited-for child.  Anyway, this behavior should either be
+documented, or "fixed" (i.e., change waitid() to return 0 on success
+even if infop is NULL).  So, some questions:
+
+a) Is it intentional to support the infop==NULL case for waitid() --
+rather than simply giving an error return?
+
+b) If so, what is the rationale for supporting this feature?
+
+c) If the the answer a) is "yes", is it intentional for
+waitid(idtype,id,NULL,options) to return the PID of the child, rather
+than returning 0?
+
+I'll post a test program in a follow-up message.
+
+Cheers,
+
+Michael
+
+
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
