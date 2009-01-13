@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZAMSuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbZAMSum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZAMSuP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 13:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbZAMSto
+	id S1759435AbZAMSum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 13:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbZAMSt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:49:44 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:16197 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754316AbZAMStn (ORCPT
+	Tue, 13 Jan 2009 13:49:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37319 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759301AbZAMSt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:49:43 -0500
-From: David Daney <ddaney@caviumnetworks.com>
-To: rusty@rustcorp.com.au, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, travis@sgi.com,
-       David Daney <ddaney@caviumnetworks.com>
-Subject: [PATCH 1/2] Make irq_*_affinity depend on CONFIG_GENERIC_HARDIRQS too.
-Date: Tue, 13 Jan 2009 10:47:37 -0800
-Message-Id: <1231872458-21218-1-git-send-email-ddaney@caviumnetworks.com>
-X-Mailer: git-send-email 1.5.6.6
-In-Reply-To: <496CE153.5010802@caviumnetworks.com>
-References: <496CE153.5010802@caviumnetworks.com>
-X-OriginalArrivalTime: 13 Jan 2009 18:47:43.0949 (UTC) FILETIME=[6B777FD0:01C975AF]
+	Tue, 13 Jan 2009 13:49:58 -0500
+Message-ID: <496CE234.2070900@zytor.com>
+Date: Tue, 13 Jan 2009 10:49:24 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: [PATCH -tip] x86: headers - fix export private data to userspace
+References: <20090113183456.GA14470@localhost> <1231871832.16221.1.camel@brick>
+In-Reply-To: <1231871832.16221.1.camel@brick>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In interrupt.h these functions are declared only if
-CONFIG_GENERIC_HARDIRQS is set.  We should define them under identical
-conditions.
+Harvey Harrison wrote:
+> On Tue, 2009-01-13 at 21:34 +0300, Cyrill Gorcunov wrote:
+>> Impact: cleanup
+> 
+>> 4) setup.h - COMMAND_LINE_SIZE saved for userspace, bootloaders
+>>    could use it.
+> 
+> Doesn't this need to be (at least) _COMMAND_LINE_SIZE to avoid
+> polluting the namespace, not sure it can be changed though as the
+> horse is already out of the barn.
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
----
- kernel/irq/manage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+No, this is not one of those cases, but it's worth explaining why.
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index cd0cd8d..618a64f 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -15,7 +15,7 @@
- 
- #include "internals.h"
- 
--#ifdef CONFIG_SMP
-+#if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
- cpumask_var_t irq_default_affinity;
- 
- static int init_irq_default_affinity(void)
+You can introduce symbols into the general namespace if *and only if*
+they are in a header file that is invoked directly by the user.  In
+other words, such a header file is unusable by libc, but setup.h doesn't
+contain anything needed by libc in the first place.
+
+	-hpa
+
 -- 
-1.5.6.6
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
