@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZAMX2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbZAMXai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbZAMX2Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZAMX17
+	id S1759261AbZAMXai (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZAMXa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:27:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46676
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755798AbZAMX16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:27:58 -0500
-Date: Tue, 13 Jan 2009 15:27:59 -0800 (PST)
-Message-Id: <20090113.152759.29875009.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: w@1wt.eu, ben@zeus.com, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4966FC89.8040006@cosmosbay.com>
-References: <4966F2F4.9080901@cosmosbay.com>
-	<20090109070415.GA27758@1wt.eu>
-	<4966FC89.8040006@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 Jan 2009 18:30:29 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50302 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753414AbZAMXa2 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:30:28 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Richard Purdie <rpurdie@openedhand.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] backlight: don't default y
+In-Reply-To: Your message of "Tue, 13 Jan 2009 15:29:57 +0100."
+             <1231856997.3671.38.camel@johannes>
+From: Valdis.Kletnieks@vt.edu
+References: <1231856997.3671.38.camel@johannes>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1231889418_3146P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 18:30:18 -0500
+Message-ID: <37023.1231889418@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Fri, 09 Jan 2009 08:28:09 +0100
+--==_Exmh_1231889418_3146P
+Content-Type: text/plain; charset=us-ascii
 
-> If the application uses setsockopt(sock, SOL_SOCKET, SO_RCVLOWAT,
-> [32768], 4), it would be good if kernel was smart enough and could
-> reduce number of wakeups.
+On Tue, 13 Jan 2009 15:29:57 +0100, Johannes Berg said:
+> Not all the backlight drivers make sense, especially not the "generic"
+> one that works on some sharp devices. "default n" is also absolutely
+> pointless, and not everybody needs LCD backlight support either.
 
-Right, and as I pointed out in previous replies the problem is
-that splice() receive in TCP doesn't check the low water mark
-at all.
+>  config BACKLIGHT_GENERIC
+>  	tristate "Generic (aka Sharp Corgi) Backlight Driver"
+>  	depends on BACKLIGHT_CLASS_DEVICE
+> -	default y
+>  	help
+
+I asked about this one recently - apparently it's planned to be much more
+generic, but the help text still implies it's Sharp-specific.
+
+--==_Exmh_1231889418_3146P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJbSQKcC3lWbTT17ARAgrrAKC+g+j5lAiNzpfUGPuRX1k4OzT/YQCgmpiA
+sO0OIu5gMhcntPxp+UIjaUE=
+=yg9w
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1231889418_3146P--
