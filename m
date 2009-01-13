@@ -1,101 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZAMIZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZAMIZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbZAMIZa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZAMIZS
+	id S1759218AbZAMIZz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbZAMIZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:25:18 -0500
-Received: from mga01.intel.com ([192.55.52.88]:50627 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755240AbZAMIZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:25:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,258,1231142400"; 
-   d="scan'208";a="421901130"
-Date: Tue, 13 Jan 2009 16:25:13 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Stefan Assmann <sassmann@suse.de>
-Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Sven Dietrich <sdietrich@novell.com>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
-	interrupt equivalent
-Message-ID: <20090113082513.GA18449@sli10-desk.sh.intel.com>
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <496B24E5.1070804@suse.de>
+	Tue, 13 Jan 2009 03:25:39 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51961 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758915AbZAMIZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 03:25:37 -0500
+Date: Tue, 13 Jan 2009 09:27:45 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Paul Clements <paul.clements@steeleye.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: do not allow two nbd-clients at same time
+Message-ID: <20090113082745.GA2098@elf.ucw.cz>
+References: <20081208213542.GA10134@elf.ucw.cz> <20081208225758.GA2872@elf.ucw.cz> <20090112110322.GA2001@elf.ucw.cz> <496B4BBE.5040701@steeleye.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496B24E5.1070804@suse.de>
+In-Reply-To: <496B4BBE.5040701@steeleye.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 07:09:25PM +0800, Stefan Assmann wrote:
-> Hi Len,
-> 
-> Len Brown wrote:
-> > Stefan,
-> > I had to exclude your changes to drivers/acpi/pci_irq.c from
-> > e1d3a90846b40ad3160bf4b648d36c6badad39ac
-> > in order to get some other changes to that file upstream in the
-> > 2.6.29 merge window.
-> > 
-> > I left the other parts of the quirk intact - so at the moment
-> > on one of the quirked machines, you'll see
-> > 
-> > PCI quirk: reroute interrupts for...
-> > 
-> > but will not see
-> > 
-> > pci irq %d -> rerouted to legacy
-> > 
-> > as the quirk is effectively disabled.
-> > 
-> > I had difficulty trying to port this patch to the new pci_irq.c
-> > because fundamentally I don't understand what it is trying
-> > to do, and why.
-> 
-> Let me try to give you a short overview of what's happening there.
-> 
-> If an IRQ arrives at line X of a non-primary IO-APIC and that line is
-> masked a new IRQ will be generated on the primary IO-APIC/PIC. This is
-> called a "Boot Interrupt" by Intel. It's purpose is, as the name
-> suggests, to ensure that the IRQ is handled at boot time (when the
-> non-primary) IO-APIC is still disabled.
-> 
-> Condition to be met for "Boot Interrupts":
-> - line X on non-primary IO-APIC interrupt line is masked
-> - line X is asserted
-> 
-> This behavior is not necessary during normal operation as the IRQ is
-> handled by the non-primary IO-APIC itself. Now imagine what happens if
-> these Boot Interrupts would occur during normal operation. You'd see
-> spurious IRQs on your primary IO-APIC which, in the worst case, will
-> bring down the interrupt line they occur on! Every device that shares this
-> interrupt line will fail when this happens.
-> 
-> Why can these IRQ lines be brought down by Boot Interrupts? Because
-> there's no handler installed on the primary IO-APIC IRQ line that can
-> take care of them and after too many unhandled IRQs the line will be shut
-> down by the kernel.
-> 
-> What this quirk does:
-> It installs the interrupt handler on the primary IO-APICs interrupt line
-> instead of the (original) non-primary IO-APICs interrupt line, keeping
-> the original interrupt line masked. This guarantees that for every IRQ
-> arriving at the non-primary IO-APIC a Boot Interrupt is generated _and_
-> handled properly.
-> 
-> Note: You need this quirk if you mask your interrupts during handling.
-So a device can generate interrupt from two irqs. And we can get the irq
-number for the routing table. Can we extend the irq mechanism and
-automatically register the interrupt handler for the two irqs?
+On Mon 2009-01-12 08:55:10, Paul Clements wrote:
+> Pavel Machek wrote:
+>> Two nbd-clients at same time are bad idea, and cause WARN_ON from nbd
+>> in 2.6.28-rc7 from sysfs_add_one. This simply prevents that from
+>> happening.
+>
+> Thanks for this. But I think we also need the following:
+>
+> --- drivers/block/nbd.c        2008-12-24 18:26:37.000000000 -0500
+> +++ drivers/block/nbd.c 2009-01-12 08:50:17.000000000 -0500
+> @@ -406,6 +406,7 @@ static int nbd_do_it(struct nbd_device *
+>         ret = sysfs_create_file(&disk_to_dev(lo->disk)->kobj,  
+> &pid_attr.attr);
+>         if (ret) {
+>                 printk(KERN_ERR "nbd: sysfs_create_file failed!");
+> +               lo->pid = 0;
+>                 return ret;
+>         }
+>
+>
 
-Thanks,
-Shaohua
+Yep, thanks.
+
+> To zero out pid in the error case. Otherwise, it looks good.
+
+Ok, new patch below.
+								Pavel
+
+--- 
+Two nbd-clients at same time are bad idea, and cause WARN_ON from nbd
+in 2.6.28-rc7 from sysfs_add_one. This simply prevents that from
+happening.
+
+To reproduce:
+
+ cat /dev/zero | head -c 10000000 > /tmp/delme.fstest.fs
+ nbd-server 9100 -l /anyone.can.connect > /tmp/delme.fstest.fs &
+ sleep 1
+ nbd-client localhost 9100 /dev/nd0 &
+ nbd-client localhost 9100 /dev/nd0 &
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Paul Clements <paul.clements@steeleye.com>
+
+---
+commit 831d1b7c7c5b16b1115d7e08ddf9038704653a03
+tree 1ae30466acfb40b88cb7c20613f327c3871274ee
+parent 66d8f12491f52e259e42148af099a3fc83425a7b
+author Pavel <pavel@amd.ucw.cz> Tue, 13 Jan 2009 09:26:22 +0100
+committer Pavel <pavel@amd.ucw.cz> Tue, 13 Jan 2009 09:26:22 +0100
+
+ drivers/block/nbd.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index 670e89d..caf6458 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -406,6 +406,7 @@ static int nbd_do_it(struct nbd_device *
+ 	ret = sysfs_create_file(&disk_to_dev(lo->disk)->kobj, &pid_attr.attr);
+ 	if (ret) {
+ 		printk(KERN_ERR "nbd: sysfs_create_file failed!");
++		lo->pid = 0;
+ 		return ret;
+ 	}
+ 
+@@ -413,6 +414,7 @@ static int nbd_do_it(struct nbd_device *
+ 		nbd_end_request(req);
+ 
+ 	sysfs_remove_file(&disk_to_dev(lo->disk)->kobj, &pid_attr.attr);
++	lo->pid = 0;
+ 	return 0;
+ }
+ 
+@@ -646,6 +648,8 @@ static int nbd_ioctl(struct block_device
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
+ 	case NBD_DO_IT:
++		if (lo->pid)
++			return -EBUSY;
+ 		if (!lo->file)
+ 			return -EINVAL;
+ 		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
