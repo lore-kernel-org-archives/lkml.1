@@ -1,125 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZAMQ1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbZAMQbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZAMQ1l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:27:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZAMQ1c
+	id S1755039AbZAMQbm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZAMQbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:27:32 -0500
-Received: from mail.konftel.com ([83.68.233.85]:19182 "EHLO mail.konftel.com"
+	Tue, 13 Jan 2009 11:31:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54293 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752659AbZAMQ1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 11:27:31 -0500
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Jan 2009 11:27:31 EST
-Subject: [PATCH] macb: RLE and BNA handling
-From: Erik Waling <erik.waling@konftel.se>
-To: <hskinnemoen@atmel.com>
-CC: <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 17:21:53 +0100
-Message-ID: <1231863713.10152.11.camel@konftel>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1027-16398.007
-X-TM-AS-Result: No--3.083700-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+	id S1752732AbZAMQbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 11:31:32 -0500
+Date: Wed, 14 Jan 2009 03:31:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-next@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: linux-next: origin tree build failure
+Message-Id: <20090114033120.0333b392.sfr@canb.auug.org.au>
+In-Reply-To: <20090112093214.GA6798@elte.hu>
+References: <20090112104837.69feedec.sfr@canb.auug.org.au>
+	<1231719015.22571.4.camel@pasglop>
+	<20090112090552.GD26750@elte.hu>
+	<20090112202427.3b918490.sfr@canb.auug.org.au>
+	<20090112093214.GA6798@elte.hu>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__14_Jan_2009_03_31_20_+1100_x2xlRncLGCorQ0+P"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (against 2.6.28) solves two issues we have been experiencing
-when connecting the EMAC module on our AT91SAM9260 board to an ethernet
-repeater hub. When transfering large amounts of data we sometimes
-experienced that the Retry Limit Exceeded (RLE) bit got set in TSR
-during transmission attempts. When this happened the driver would stall
-in a state that prevented any more data from being sent.
+--Signature=_Wed__14_Jan_2009_03_31_20_+1100_x2xlRncLGCorQ0+P
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The other issue experienced was in the RX part of the driver. Sometimes
-the driver runs out of unused slots in the RX ring buffer. All slots
-will be filled with data but the driver is not able to extract a
-complete frame from the fragments in the buffer. When this happens the
-Buffer Not Available (BNA) bit is set in RSR.
+Hi Ingo,
 
-This patch adds handling for RLE and BNA.
+On Mon, 12 Jan 2009 10:32:14 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > > It slipped through because it didnt get caught in build tests because=
+=20
+> > > cpufreq isnt enabled in the powerpc defconfig.
+> >=20
+> > Which is one of the reasons we have linux-next: "integration testing".
+>=20
+> Build bugs slipped through that net too in the past.
 
-Signed-off-by: Erik Waling <erik.waling@konftel.com>
+Of course they have.
 
----
+> And we dont really want developers and maintainers to rely on an external=
+=20
+> middle man facility to be able to submit patches. So the best method is t=
+o=20
+> make the defconfigs good enough to catch everyday build bugs. Random=20
+> testing and linux-next can then catch the weird special cases as well.
 
-diff -urpN linux-2.6.28.orig/drivers/net/macb.c linux-2.6.28.rle_and_bna_fix/drivers/net/macb.c
---- linux-2.6.28.orig/drivers/net/macb.c        2009-01-13 10:36:13.000000000 +0100
-+++ linux-2.6.28.rle_and_bna_fix/drivers/net/macb.c     2009-01-13 16:50:34.000000000 +0100
-@@ -2,6 +2,7 @@
-  * Atmel MACB Ethernet Controller driver
-  *
-  * Copyright (C) 2004-2006 Atmel Corporation
-+ * Copyright (C) 2008-2009 Konftel AB
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -316,10 +317,11 @@ static void macb_tx(struct macb *bp)
-        dev_dbg(&bp->pdev->dev, "macb_tx status = %02lx\n",
-                (unsigned long)status);
+linux-next is merely a tool - it can't catch anything if you don't use it.
 
--       if (status & MACB_BIT(UND)) {
-+       if (status & (MACB_BIT(UND) | MACB_BIT(TSR_RLE))) {
-                int i;
--               printk(KERN_ERR "%s: TX underrun, resetting buffers\n",
--                       bp->dev->name);
-+               printk(KERN_ERR "%s: TX %s, resetting buffers\n",
-+                       bp->dev->name, status & MACB_BIT(UND) ?
-+                       "underrun" : "retry limit exceeded");
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-                head = bp->tx_head;
+--Signature=_Wed__14_Jan_2009_03_31_20_+1100_x2xlRncLGCorQ0+P
+Content-Type: application/pgp-signature
 
-@@ -527,18 +529,31 @@ static int macb_poll(struct napi_struct
-        dev_dbg(&bp->pdev->dev, "poll: status = %08lx, budget = %d\n",
-                (unsigned long)status, budget);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--       if (!(status & MACB_BIT(REC))) {
-+       if (status & MACB_BIT(REC)) {
-+               work_done = macb_rx(bp, budget);
-+               if (work_done < budget)
-+                       netif_rx_complete(dev, napi);
-+       } else if (status & MACB_BIT(BNA)) {
-+               /* No slots available in RX ring. Mark all slots
-+                * as unused.
-+                */
-+               int i;
-+
-+               dev_warn(&bp->pdev->dev,
-+                               "No free RX buffers. Marking all as unused.\n");
-+
-+               for (i = 0; i < RX_RING_SIZE; i++)
-+                       bp->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
-+
-+               wmb();
-+               netif_rx_complete(dev, napi);
-+       } else if (!(status & MACB_BIT(REC))) {
-                dev_warn(&bp->pdev->dev,
-                         "No RX buffers complete, status = %02lx\n",
-                         (unsigned long)status);
-                netif_rx_complete(dev, napi);
--               goto out;
-        }
+iEYEARECAAYFAklswdgACgkQjjKRsyhoI8yMbQCePksZa7PGK1uX5+gy2kGELckw
+ORoAoKGyNUvR9gFiT10dOcdHj6Llo479
+=1XlA
+-----END PGP SIGNATURE-----
 
--       work_done = macb_rx(bp, budget);
--       if (work_done < budget)
--               netif_rx_complete(dev, napi);
--
-        /*
-         * We've done what we can to clean the buffers. Make sure we
-         * get notified when new packets arrive.
-@@ -584,7 +599,8 @@ static irqreturn_t macb_interrupt(int ir
-                        }
-                }
-
--               if (status & (MACB_BIT(TCOMP) | MACB_BIT(ISR_TUND)))
-+               if (status & (MACB_BIT(TCOMP) | MACB_BIT(ISR_TUND) |
-+                            MACB_BIT(ISR_RLE)))
-                        macb_tx(bp);
-
-                /*
-
-
+--Signature=_Wed__14_Jan_2009_03_31_20_+1100_x2xlRncLGCorQ0+P--
