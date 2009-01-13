@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZAMMhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZAMMmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbZAMMhb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZAMMhW
+	id S1758130AbZAMMmT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZAMMmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:37:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51103 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753728AbZAMMhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:37:21 -0500
-Date: Tue, 13 Jan 2009 13:37:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [tty bug] kernel BUG at drivers/char/tty_ldisc.c:359!
-Message-ID: <20090113123717.GA30298@elte.hu>
-References: <20090113121039.GA22155@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113121039.GA22155@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 13 Jan 2009 07:42:05 -0500
+Received: from styx.suse.cz ([82.119.242.94]:58005 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754007AbZAMMmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:42:03 -0500
+From: Jan Kara <jack@suse.cz>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jan Kara <jack@suse.cz>, Pavel Machek <pavel@suse.cz>
+Subject: [PATCH] ext2: Update also inode on disk when dir is IS_DIRSYNC
+Date: Tue, 13 Jan 2009 13:42:02 +0100
+Message-Id: <1231850522-11074-1-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We used to just write changed page for IS_DIRSYNC inodes. But we also have to
+update directory inode itself just for the case that we've allocated a new
+block and changed i_size.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: Pavel Machek <pavel@suse.cz>
+---
+ fs/ext2/dir.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-> FYI, -tip testing found a new warning in drivers/char/tty_ldisc.c:
-> 
-> [   37.725942] device: 'vcsa6': device_add
-> [   37.725970] PM: Adding info for No Bus:vcsa6
-> [   37.732059] ------------[ cut here ]------------
-> [   37.732063] kernel BUG at drivers/char/tty_ldisc.c:359!
-> [   37.732066] invalid opcode: 0000 [#1] SMP 
+  Andrew, would you please merge the patch? Ext3 and ext4 don't have this
+problem BTW.
 
-s/warning/crash
+diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+index 9a0fc40..7fba549 100644
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -94,11 +94,10 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
+ 		i_size_write(dir, pos+len);
+ 		mark_inode_dirty(dir);
+ 	}
++	unlock_page(page);
+ 
+ 	if (IS_DIRSYNC(dir))
+-		err = write_one_page(page, 1);
+-	else
+-		unlock_page(page);
++		err = ext2_sync_inode(dir);
+ 
+ 	return err;
+ }
+-- 
+1.6.0.4
 
-	Ingo
