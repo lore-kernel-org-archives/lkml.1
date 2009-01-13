@@ -1,148 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZAMSB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZAMSFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZAMSB5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 13:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZAMSBs
+	id S1756199AbZAMSFY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 13:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZAMSFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:01:48 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:38197 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751099AbZAMSBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:01:47 -0500
-Message-ID: <496CD735.9040102@us.ibm.com>
-Date: Tue, 13 Jan 2009 12:02:29 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 02/18] oprofile: rename cpu buffer functions
-References: <1231366655-17837-1-git-send-email-robert.richter@amd.com> <1231366655-17837-3-git-send-email-robert.richter@amd.com>
-In-Reply-To: <1231366655-17837-3-git-send-email-robert.richter@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 Jan 2009 13:05:10 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37487 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbZAMSFJ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 13:05:09 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
+In-Reply-To: Your message of "Tue, 13 Jan 2009 18:21:06 +0300."
+             <20090113152106.GA1134@ioremap.net>
+From: Valdis.Kletnieks@vt.edu
+References: <20090112153304.GA19995@ioremap.net> <20090112154456.GA27269@redhat.com> <20090112154827.GB20743@ioremap.net> <20090112155108.2646b3ae@lxorguk.ukuu.org.uk> <20090113135246.GA29251@ioremap.net> <20090113140627.507f15e1@lxorguk.ukuu.org.uk> <20090113142423.GA30710@ioremap.net> <661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com>
+            <20090113152106.GA1134@ioremap.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231869877_4143P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 13:04:37 -0500
+Message-ID: <24551.1231869877@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> This patch renames cpu buffer functions to something more oprofile
-> specific names. Functions will be moved to the global name space.
-I'm not seeing where these functions are moved to the global name space, either in this set of 18 patches or the next set of 9 patches.  Is that in some patch set that is yet to be posted?
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> ---
->  drivers/oprofile/buffer_sync.c |   10 +++++-----
->  drivers/oprofile/cpu_buffer.c  |    4 ++--
->  drivers/oprofile/cpu_buffer.h  |   10 +++++-----
->  3 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-> index 737bd94..d295d92 100644
-> --- a/drivers/oprofile/buffer_sync.c
-> +++ b/drivers/oprofile/buffer_sync.c
-> @@ -331,7 +331,7 @@ static void add_ibs_begin(int cpu, int code, struct mm_struct *mm)
->  	off_t offset;
->  	struct op_sample *sample;
-> 
-> -	sample = cpu_buffer_read_entry(cpu);
-> +	sample = op_cpu_buffer_read_entry(cpu);
->  	if (!sample)
->  		goto Error;
->  	rip = sample->eip;
-> @@ -370,7 +370,7 @@ static void add_ibs_begin(int cpu, int code, struct mm_struct *mm)
->  		count = IBS_OP_CODE_SIZE;	/*IBS OP is 5 int64s*/
-> 
->  	for (i = 0; i < count; i++) {
-> -		sample = cpu_buffer_read_entry(cpu);
-> +		sample = op_cpu_buffer_read_entry(cpu);
->  		if (!sample)
->  			goto Error;
->  		add_event_entry(sample->eip);
-> @@ -537,11 +537,11 @@ void sync_buffer(int cpu)
-> 
->  	add_cpu_switch(cpu);
-> 
-> -	cpu_buffer_reset(cpu);
-> -	available = cpu_buffer_entries(cpu);
-> +	op_cpu_buffer_reset(cpu);
-> +	available = op_cpu_buffer_entries(cpu);
-> 
->  	for (i = 0; i < available; ++i) {
-> -		struct op_sample *s = cpu_buffer_read_entry(cpu);
-> +		struct op_sample *s = op_cpu_buffer_read_entry(cpu);
->  		if (!s)
->  			break;
-> 
-> diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-> index fcf96f6..e52c085 100644
-> --- a/drivers/oprofile/cpu_buffer.c
-> +++ b/drivers/oprofile/cpu_buffer.c
-> @@ -152,14 +152,14 @@ add_sample(struct oprofile_cpu_buffer *cpu_buf,
->  	struct op_entry entry;
->  	int ret;
-> 
-> -	ret = cpu_buffer_write_entry(&entry);
-> +	ret = op_cpu_buffer_write_entry(&entry);
->  	if (ret)
->  		return ret;
-> 
->  	entry.sample->eip = pc;
->  	entry.sample->event = event;
-> 
-> -	ret = cpu_buffer_write_commit(&entry);
-> +	ret = op_cpu_buffer_write_commit(&entry);
->  	if (ret)
->  		return ret;
-> 
-> diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
-> index aacb0f0..83d491e 100644
-> --- a/drivers/oprofile/cpu_buffer.h
-> +++ b/drivers/oprofile/cpu_buffer.h
-> @@ -64,7 +64,7 @@ DECLARE_PER_CPU(struct oprofile_cpu_buffer, cpu_buffer);
->   * reset these to invalid values; the next sample collected will
->   * populate the buffer with proper values to initialize the buffer
->   */
-> -static inline void cpu_buffer_reset(int cpu)
-> +static inline void op_cpu_buffer_reset(int cpu)
->  {
->  	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
-> 
-> @@ -72,7 +72,7 @@ static inline void cpu_buffer_reset(int cpu)
->  	cpu_buf->last_task = NULL;
->  }
-> 
-> -static inline int cpu_buffer_write_entry(struct op_entry *entry)
-> +static inline int op_cpu_buffer_write_entry(struct op_entry *entry)
->  {
->  	entry->event = ring_buffer_lock_reserve(op_ring_buffer_write,
->  						sizeof(struct op_sample),
-> @@ -88,13 +88,13 @@ static inline int cpu_buffer_write_entry(struct op_entry *entry)
->  	return 0;
->  }
-> 
-> -static inline int cpu_buffer_write_commit(struct op_entry *entry)
-> +static inline int op_cpu_buffer_write_commit(struct op_entry *entry)
->  {
->  	return ring_buffer_unlock_commit(op_ring_buffer_write, entry->event,
->  					 entry->irq_flags);
->  }
-> 
-> -static inline struct op_sample *cpu_buffer_read_entry(int cpu)
-> +static inline struct op_sample *op_cpu_buffer_read_entry(int cpu)
->  {
->  	struct ring_buffer_event *e;
->  	e = ring_buffer_consume(op_ring_buffer_read, cpu, NULL);
-> @@ -111,7 +111,7 @@ static inline struct op_sample *cpu_buffer_read_entry(int cpu)
->  }
-> 
->  /* "acquire" as many cpu buffer slots as we can */
-> -static inline unsigned long cpu_buffer_entries(int cpu)
-> +static inline unsigned long op_cpu_buffer_entries(int cpu)
->  {
->  	return ring_buffer_entries_cpu(op_ring_buffer_read, cpu)
->  		+ ring_buffer_entries_cpu(op_ring_buffer_write, cpu);
+--==_Exmh_1231869877_4143P
+Content-Type: text/plain; charset=us-ascii
 
+On Tue, 13 Jan 2009 18:21:06 +0300, Evgeniy Polyakov said:
+
+> Using oom_adj? Because there is no way I can determine which number to
+> put there. It is not even documented for those who do not read kernel
+> sources. Even after that: oom_score changes with time, and having 1/2 or
+> 8 oom_adj is correct right now, it will not be in a few moments.
+
+In that case, the *real* problem to be fixed is a lack of documentation.
+It should be possible to add a blurb somewhere in Documentation/* that
+says:
+
+"echo 10000 > oom_adjust" is guaranteed to make this process the first one
+up against the wall when the revolution comes (for some value of 10000, of
+course).
+
+--==_Exmh_1231869877_4143P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJbNe1cC3lWbTT17ARArFsAKC1vODBC8GQJwjFlkmgCxMo8Lw5GgCfW+eh
+VjhTWGsBCR9RaLukdql9BbA=
+=4xCm
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1231869877_4143P--
