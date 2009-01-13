@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZAMQ5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZAMRGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756393AbZAMQ5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZAMQ50
+	id S1756039AbZAMRGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 12:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZAMRGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:57:26 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:51312 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752515AbZAMQ5Z (ORCPT
+	Tue, 13 Jan 2009 12:06:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:25409 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbZAMRGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 11:57:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NQ4dj+vQ/mEBbVvL5FoLa69asUIiWqKPxw/kb3hjzyAgMyG9vvPb4zGBFmDbnXrHnS
-         Ar4myDIEysZvRqroQtvJTl6oMdnRiysUUvAe8gN+f+bSY+h6rF9hVY3m7sezB/jfQ4x2
-         ght3G1dqohVGVHOggyG9rzT+RZoqSdvtJoG8A=
+	Tue, 13 Jan 2009 12:06:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=uuNRgefa6be947KvATe4nOHwf2CVhT6Ww0tB7xH00yMQuCbOvAcZ2p9qvph4e59LC
+	2YejT9ewbLZRxR6p0FBWg==
+Message-ID: <496CC9D8.6040909@google.com>
+Date: Tue, 13 Jan 2009 09:05:28 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-In-Reply-To: <496AA191.5060703@cn.fujitsu.com>
-References: <496224D7.2030109@cn.fujitsu.com>
-	 <3f9a31f40901090609n29b4e36dwe6fff7fdfc705c7e@mail.gmail.com>
-	 <496AA191.5060703@cn.fujitsu.com>
-Date: Tue, 13 Jan 2009 22:27:24 +0530
-Message-ID: <3f9a31f40901130857g19b2a18anf9b63d9166eef888@mail.gmail.com>
-Subject: Re: Who wrote 2.6.28
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, corbet@lwn.net
-Content-Type: text/plain; charset=ISO-8859-1
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, yinghan@google.com,
+       hugh@veritas.com
+Subject: Re: mmotm 2009-01-12-16-53 uploaded
+References: <200901130053.n0D0rhev023334@imap1.linux-foundation.org> <20090113181317.48e910af.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090113181317.48e910af.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.69
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 7:19 AM, Wang Chen <wangchen@cn.fujitsu.com> wrote:
-> Jaswinder Singh Rajput said the following on 2009-1-9 22:09:
->> On Mon, Jan 5, 2009 at 8:48 PM, Wang Chen <wangchen@cn.fujitsu.com> wrote:
->>> As Jonathon and Greg did, I also made a statistic about who wrote the Linux kernel.
->>> The following data is for 2.6.28 development. (http://www.remword.com/kps_result/)
->>>
->>> 1. The attachment graph "commit.png" shows the change of commit amount of patches and changed lines.
->>>   It seems that 2.6.28 has less commits than 2.6.27 of both patch set and changed lines.
->>>
->>> 2. The attachment graph "who.png" shows the involved developers and employers in each version of kernel.
->>>   It seems that 2.6.28 has more developers and companies involved than previous two versions, but
->>>   less than that of 2.6.25. From a long vision, more and more developers and companies join to the
->>>   development of Linux kernel, but the increase speed is not so fast.
->>>
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 12 Jan 2009 16:53:43 -0800
+> akpm@linux-foundation.org wrote:
+> 
+>> The mm-of-the-moment snapshot 2009-01-12-16-53 has been uploaded to
 >>
->> In http://remword.com/kps_result/2_6_29_whole_line.html
->> Earlier I was using email address: Jaswinder Singh
->> <jaswinder@infradead.org> (Unknown #25) and now I am using:
->> Jaswinder Singh Rajput <jaswinderrajput@gmail.com> (Unknown #25)
+>>    http://userweb.kernel.org/~akpm/mmotm/
 >>
->> If possible can you link above two emails.
+>> and will soon be available at
 >>
->
-> Sure. Will fix.
+>>    git://git.zen-sources.org/zen/mmotm.git
+>>
+> 
+> After rtc compile fix, the kernel boots.
+> 
+> But with CONFIG_DEBUG_VM, I saw BUG_ON() at 
+> 
+> fork() -> ...
+> 	-> copy_page_range() ...
+> 		-> copy_one_pte()
+> 			->page_dup_rmap()
+> 				-> __page_check_anon_rmap().
+> 
+> BUG_ON(page->index != linear_page_index(vma, address)); 
+> fires. (from above, the page is ANON.)
+> 
+> It seems page->index == 0x7FFFFFFE here and the page seems to be
+> the highest address of stack.
+> 
+> This is caused by
+>  fs-execc-fix-value-of-vma-vm_pgoff-for-the-stack-vma-of-32-bit-processes.patch 
+> 
+> 
+> This is a fix.
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> pgoff is *not* vma->vm_start >> PAGE_SHIFT.
+> And no adjustment is necessary (when it maps the same start
+> before/after adjust vma.)
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+> Index: mmotm-2.6.29-Jan12/fs/exec.c
+> ===================================================================
+> --- mmotm-2.6.29-Jan12.orig/fs/exec.c
+> +++ mmotm-2.6.29-Jan12/fs/exec.c
+> @@ -509,7 +509,7 @@ static int shift_arg_pages(struct vm_are
+>  	unsigned long length = old_end - old_start;
+>  	unsigned long new_start = old_start - shift;
+>  	unsigned long new_end = old_end - shift;
+> -	unsigned long new_pgoff = new_start >> PAGE_SHIFT;
+> +	unsigned long new_pgoff = vma->vm_pgoff;
+>  	struct mmu_gather *tlb;
+>  
+>  	BUG_ON(new_start > new_end);
+> 
 
-Now it is showing 3 names for Jaswinder.
+This patch is just reverting the behaviour back to having a 64bit pgoff. 
+  Best just reverting the patch for the time being.
 
-Can you please also fix this:
-
-1. Jaswinder Singh Rajput <jaswinderlinux@gmail.com>  --> Jaswinder
-Singh Rajput <jaswinderrajput@gmail.com>
-2. Jaswinder Singh <jaswinderrajput@gmail.com>  --> Jaswinder Singh
-Rajput <jaswinderrajput@gmail.com>
-
-Thanks
---
-JSR
