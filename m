@@ -1,58 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbZAMP6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZAMQAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbZAMP6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 10:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZAMP5z
+	id S1755509AbZAMQAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZAMP7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 10:57:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:49508 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756205AbZAMP5x (ORCPT
+	Tue, 13 Jan 2009 10:59:53 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:47633 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752327AbZAMP7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 10:57:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=s3Jq/64Le7oWqAMww5uPaGxGVQl6HLUF7Bq+itkhhhKpKVV29N4ANnaDLGaras2pm5
-         k2VlfKbMUNmBFRkXc/RdaN4gvZAkXPvuJasAM0+6sK7HXRNP00DOkTfkg6bwA7UxJXNH
-         ndEbbCCuiWp8K7S57ng61bzVqmSd16mFIdHw0=
-Message-ID: <337eb86f0901130757k7d31ec5p82d6405e69549fef@mail.gmail.com>
-Date: Tue, 13 Jan 2009 23:57:52 +0800
-From: zhp <zhpsub@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Is there a 'radix_tree_destroy()' interface in radix-tree?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 13 Jan 2009 10:59:52 -0500
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH] crypto: testmgr - Add support for the pcomp interface
+Date: Tue, 13 Jan 2009 16:59:41 +0100
+Message-Id: <1231862386-11128-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all,
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ crypto/testmgr.c |  181 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ crypto/testmgr.h |    9 +++
+ 2 files changed, 190 insertions(+), 0 deletions(-)
 
-I am now writing a kernel module for Linux, and need to use the
-radix-tree implementation in kernel. (include/linux/radix-tree.h &
-lib/radix-tree.c). However, I do not find any interface for me to
-destroy the tree, i.e. remove all non-root nodes in the tree, and free
-all of my elements inserted in the tree before (of course, the free_fn
-should be passed in by the user).
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index a75f11f..aad718f 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -72,6 +72,13 @@ struct comp_test_suite {
+ 	} comp, decomp;
+ };
+ 
++struct pcomp_test_suite {
++	struct {
++		struct pcomp_testvec *vecs;
++		unsigned int count;
++	} comp, decomp;
++};
++
+ struct hash_test_suite {
+ 	struct hash_testvec *vecs;
+ 	unsigned int count;
+@@ -86,6 +93,7 @@ struct alg_test_desc {
+ 		struct aead_test_suite aead;
+ 		struct cipher_test_suite cipher;
+ 		struct comp_test_suite comp;
++		struct pcomp_test_suite pcomp;
+ 		struct hash_test_suite hash;
+ 	} suite;
+ };
+@@ -898,6 +906,157 @@ out:
+ 	return ret;
+ }
+ 
++static int test_pcomp(struct crypto_pcomp *tfm,
++		      struct pcomp_testvec *ctemplate,
++		      struct pcomp_testvec *dtemplate, int ctcount,
++		      int dtcount)
++{
++	const char *algo = crypto_tfm_alg_driver_name(crypto_pcomp_tfm(tfm));
++	unsigned int i;
++	char result[COMP_BUF_SIZE];
++	int error;
++
++	for (i = 0; i < ctcount; i++) {
++		struct comp_request req;
++
++		error = crypto_pcomp_setup(tfm, ctemplate[i].params);
++		if (error) {
++			pr_err("alg: pcomp: compression setup failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		error = crypto_pcomp_compress_init(tfm);
++		if (error) {
++			pr_err("alg: pcomp: compression init failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		memset(result, 0, sizeof(result));
++
++		req.next_in = ctemplate[i].input;
++		req.avail_in = ctemplate[i].inlen / 2;
++		req.next_out = result;
++		req.avail_out = ctemplate[i].outlen / 2;
++
++		error = crypto_pcomp_compress_update(tfm, &req);
++		if (error && (error != -EAGAIN || req.avail_in)) {
++			pr_err("alg: pcomp: compression update failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		/* Add remaining input data */
++		req.avail_in += (ctemplate[i].inlen + 1) / 2;
++
++		error = crypto_pcomp_compress_update(tfm, &req);
++		if (error && (error != -EAGAIN || req.avail_in)) {
++			pr_err("alg: pcomp: compression update failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		/* Provide remaining output space */
++		req.avail_out += COMP_BUF_SIZE - ctemplate[i].outlen / 2;
++
++		error = crypto_pcomp_compress_final(tfm, &req);
++		if (error) {
++			pr_err("alg: pcomp: compression final failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		if (COMP_BUF_SIZE - req.avail_out != ctemplate[i].outlen) {
++			pr_err("alg: comp: Compression test %d failed for %s: "
++			       "output len = %d (expected %d)\n", i + 1, algo,
++			       COMP_BUF_SIZE - req.avail_out,
++			       ctemplate[i].outlen);
++			return -EINVAL;
++		}
++
++		if (memcmp(result, ctemplate[i].output, ctemplate[i].outlen)) {
++			pr_err("alg: pcomp: Compression test %d failed for "
++			       "%s\n", i + 1, algo);
++			hexdump(result, ctemplate[i].outlen);
++			return -EINVAL;
++		}
++	}
++
++	for (i = 0; i < dtcount; i++) {
++		struct comp_request req;
++
++		error = crypto_pcomp_setup(tfm, dtemplate[i].params);
++		if (error) {
++			pr_err("alg: pcomp: decompression setup failed on "
++			       "test %d for %s: error=%d\n", i + 1, algo,
++			       error);
++			return error;
++		}
++
++		error = crypto_pcomp_decompress_init(tfm);
++		if (error) {
++			pr_err("alg: pcomp: decompression init failed on test "
++			       "%d for %s: error=%d\n", i + 1, algo, error);
++			return error;
++		}
++
++		memset(result, 0, sizeof(result));
++
++		req.next_in = dtemplate[i].input;
++		req.avail_in = dtemplate[i].inlen / 2;
++		req.next_out = result;
++		req.avail_out = dtemplate[i].outlen / 2;
++
++		error = crypto_pcomp_decompress_update(tfm, &req);
++		if (error  && (error != -EAGAIN || req.avail_in)) {
++			pr_err("alg: pcomp: decompression update failed on "
++			       "test %d for %s: error=%d\n", i + 1, algo,
++			       error);
++			return error;
++		}
++
++		/* Add remaining input data */
++		req.avail_in += (dtemplate[i].inlen + 1) / 2;
++
++		error = crypto_pcomp_decompress_update(tfm, &req);
++		if (error  && (error != -EAGAIN || req.avail_in)) {
++			pr_err("alg: pcomp: decompression update failed on "
++			       "test %d for %s: error=%d\n", i + 1, algo,
++			       error);
++			return error;
++		}
++
++		/* Provide remaining output space */
++		req.avail_out += COMP_BUF_SIZE - dtemplate[i].outlen / 2;
++
++		error = crypto_pcomp_decompress_final(tfm, &req);
++		if (error  && (error != -EAGAIN || req.avail_in)) {
++			pr_err("alg: pcomp: decompression final failed on "
++			       "test %d for %s: error=%d\n", i + 1, algo,
++			       error);
++			return error;
++		}
++
++		if (COMP_BUF_SIZE - req.avail_out != dtemplate[i].outlen) {
++			pr_err("alg: comp: Decompression test %d failed for "
++			       "%s: output len = %d (expected %d)\n", i + 1,
++			       algo, COMP_BUF_SIZE - req.avail_out,
++			       dtemplate[i].outlen);
++			return -EINVAL;
++		}
++
++		if (memcmp(result, dtemplate[i].output, dtemplate[i].outlen)) {
++			pr_err("alg: pcomp: Decompression test %d failed for "
++			       "%s\n", i + 1, algo);
++			hexdump(result, dtemplate[i].outlen);
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
+ static int alg_test_aead(const struct alg_test_desc *desc, const char *driver,
+ 			 u32 type, u32 mask)
+ {
+@@ -1007,6 +1166,28 @@ static int alg_test_comp(const struct alg_test_desc *desc, const char *driver,
+ 	return err;
+ }
+ 
++static int alg_test_pcomp(const struct alg_test_desc *desc, const char *driver,
++			  u32 type, u32 mask)
++{
++	struct crypto_pcomp *tfm;
++	int err;
++
++	tfm = crypto_alloc_pcomp(driver, type, mask);
++	if (IS_ERR(tfm)) {
++		pr_err("alg: pcomp: Failed to load transform for %s: %ld\n",
++		       driver, PTR_ERR(tfm));
++		return PTR_ERR(tfm);
++	}
++
++	err = test_pcomp(tfm, desc->suite.pcomp.comp.vecs,
++			 desc->suite.pcomp.decomp.vecs,
++			 desc->suite.pcomp.comp.count,
++			 desc->suite.pcomp.decomp.count);
++
++	crypto_free_pcomp(tfm);
++	return err;
++}
++
+ static int alg_test_hash(const struct alg_test_desc *desc, const char *driver,
+ 			 u32 type, u32 mask)
+ {
+diff --git a/crypto/testmgr.h b/crypto/testmgr.h
+index 132953e..81b7eb0 100644
+--- a/crypto/testmgr.h
++++ b/crypto/testmgr.h
+@@ -15,6 +15,8 @@
+ #ifndef _CRYPTO_TESTMGR_H
+ #define _CRYPTO_TESTMGR_H
+ 
++#include <crypto/compress.h>
++
+ #define MAX_DIGEST_SIZE		64
+ #define MAX_TAP			8
+ 
+@@ -8347,6 +8349,13 @@ struct comp_testvec {
+ 	char output[COMP_BUF_SIZE];
+ };
+ 
++struct pcomp_testvec {
++	const void *params;
++	int inlen, outlen;
++	char input[COMP_BUF_SIZE];
++	char output[COMP_BUF_SIZE];
++};
++
+ /*
+  * Deflate test vectors (null-terminated strings).
+  * Params: winbits=-11, Z_DEFAULT_COMPRESSION, MAX_MEM_LEVEL.
+-- 
+1.6.0.4
 
-Is there such an interface for lib users? If not, who can tell me what
-should I do to perform such a destroy task without dirty work? It is
-almost impossible for me to "lookup an element  to check whether it's
-in the tree, delete it if yes", because all possible keys are very
-very large.
-
-Also, I think it will be very useful for the kernel radix-tree module
-if it provide such an interface:
-
-    radix_tree_destroy(struct radix_tree_root *rtree,
-				rtree_free_node_fn free_fn)
-
-How about adding such an interface as a patch if I finally have to do
-the dirty work?
-
-Thanks.
-zhp
