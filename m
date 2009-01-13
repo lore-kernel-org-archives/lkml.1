@@ -1,66 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZAMP40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZAMP45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbZAMP40 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 10:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZAMP4Q
+	id S1755597AbZAMP45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 10:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZAMP4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 10:56:16 -0500
-Received: from styx.suse.cz ([82.119.242.94]:48918 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752672AbZAMP4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 10:56:15 -0500
-Date: Tue, 13 Jan 2009 16:56:14 +0100
-From: Jan Kara <jack@suse.cz>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 triggers WARN_ON() when media is unplugged.
-Message-ID: <20090113155613.GF10064@duck.suse.cz>
-References: <20090113134203.GA4354@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113134203.GA4354@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 13 Jan 2009 10:56:45 -0500
+Received: from mercury.realtime.net ([205.238.132.86]:45821 "EHLO
+	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752788AbZAMP4o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 10:56:44 -0500
+In-Reply-To: <20090113113545.GB26819@cetus.boeblingen.de.ibm.com>
+References: <hvc-console-29-3-1@bga.com> <200901131004.22609.borntraeger@de.ibm.com> <20090113113545.GB26819@cetus.boeblingen.de.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1998eda55e236b70f63c7fb4b956b487@bga.com>
+Content-Transfer-Encoding: 7bit
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benjiman Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Joe Peterson <joe@skyrush.com>, lkml <linux-kernel@vger.kernel.org>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 1/4] hvc_console: do not set low_latency
+Date: Tue, 13 Jan 2009 10:03:54 -0600
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+X-Mailer: Apple Mail (2.624)
+X-Originating-IP: 205.232.218.100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-01-09 14:42:05, Pavel Machek wrote:
-> 2.6.29-rc1-git, pretty reproducible: mount -osync, start write
-> workload, pull the drive.
-  Looking at the warning more in detail, this is actually a known problem.
-When IO fails, the buffer_uptodate flag gets cleared. When we then try to
-write the buffer again, we call mark_buffer_dirty() and this warning gets
-emitted.
-  Sadly, fixing this correctly does not seem to be trivial...
 
-									Honza
+On Jan 13, 2009, at 5:35 AM, Hendrik Brueckner wrote:
 
-> ------------[ cut here ]------------
-> WARNING: at /data/l/linux/fs/buffer.c:1250 mark_buffer_dirty+0x66/0x80()
-> Hardware name: ANT
-> Modules linked in:
-> Pid: 2970, comm: umount Not tainted 2.6.29-rc1 #263
+> Here is yet another bug trace related to the low_latency issue, that is
+> experienced using the hvc_iucv backend.  The hvc_iucv backend now also 
+> uses irq
+> notifiers.
+> The bug trace below appears if hvc_kick() is called.
+>
+> On Tue, Jan 13, 2009 at 10:04:22AM +0100, Christian Borntraeger wrote:
+>> Am Donnerstag 08 Januar 2009 schrieb Milton Miller:
+>>> hvc_console is setting low_latency unconditionally, but some clients 
+>>> are
+>>> interrupt driven and will call hvc_poll from irq context.  This will 
+>>> cause
+>>> tty_flip_buffer_push to be called from irq context, and it very 
+>>> clearly
+>>> states it must not be called from IRQ when low_latency is specified.
+> It seems that if low_latency is set, tty_flip_buffer_push() should 
+> also not be
+> called within an atomic context, because echo_char_raw() and other 
+> echo* calls
+> might sleep.
+>
+> Christian's patch solves this problem for irq driven backends.
+> However, there might be still a problem with polled backends since the 
+> khvcd()
+> thread calls hvc_poll() while hvc_structs_lock is held.
+>
+> I think the hvc_udbg backend is based on polling.
+> David, could you check if you experience any problems with your 
+> hvc_udbg
+> backend on latest git.
+>
+
+
+So the simplest is to never set it.
+
+milton
+
+> BUG: sleeping function called from invalid context at 
+> /root/cvs/linux-2.6.git/kernel/mutex.c:207
+> in_atomic(): 1, irqs_disabled(): 0, pid: 748, name: khvcd
+> 1 lock held by khvcd/748:
+>  #0:  (hvc_structs_lock){--..}, at: [<00000000002ceb50>] 
+> khvcd+0x58/0x12c
+> CPU: 0 Not tainted 2.6.29-rc1git #29
+> Process khvcd (pid: 748, task: 000000002fb9a480, ksp: 000000002f66bd78)
+> 070000000000000a 000000002f66ba00 0000000000000002 (null)
+>        000000002f66baa0 000000002f66ba18 000000002f66ba18 
+> 0000000000104f08
+>        ffffffffffffc000 000000002f66bd78 (null) (null)
+>        000000002f66ba00 000000000000000c 000000002f66ba00 
+> 000000002f66ba70
+>        0000000000466af8 0000000000104f08 000000002f66ba00 
+> 000000002f66ba50
 > Call Trace:
->  [<ffffffff8023da92>] warn_slowpath+0xf2/0x130
->  [<ffffffff80273502>] find_get_pages+0x32/0xd0
->  [<ffffffff8027ac67>] pagevec_lookup+0x17/0x20
->  [<ffffffff8027b378>] truncate_inode_pages_range+0x188/0x360
->  [<ffffffff80297833>] cache_free_debugcheck+0x103/0x230
->  [<ffffffff802bcd56>] mark_buffer_dirty+0x66/0x80
->  [<ffffffff80331249>] ext2_sync_super+0x39/0x60
->  [<ffffffff803320bc>] ext2_put_super+0xdc/0x100
->  [<ffffffff8029dfbb>] generic_shutdown_super+0x6b/0x110
->  [<ffffffff8029e089>] kill_block_super+0x29/0x50
->  [<ffffffff8029e16f>] deactivate_super+0x5f/0x80
->  [<ffffffff802b2746>] sys_umount+0x76/0x380
->  [<ffffffff8022bb72>] ia32_sysret+0x0/0xa
-> ---[ end trace 1a98d19d85775109 ]---
-> scsi 1:0:0:0: rejecting I/O to dead device
-> 
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> ([<0000000000104e7c>] show_trace+0x138/0x158)
+>  [<0000000000104f62>] show_stack+0xc6/0xf8
+>  [<0000000000105740>] dump_stack+0xb0/0xc0
+>  [<000000000013144a>] __might_sleep+0x14e/0x17c
+>  [<000000000045e226>] mutex_lock_nested+0x42/0x3b4
+>  [<00000000002c443e>] echo_char_raw+0x3a/0x9c
+>  [<00000000002c688c>] n_tty_receive_buf+0x1154/0x1208
+>  [<00000000002ca0a2>] flush_to_ldisc+0x152/0x220
+>  [<00000000002ca1da>] tty_flip_buffer_push+0x6a/0x90
+>  [<00000000002cea74>] hvc_poll+0x244/0x2c8
+>  [<00000000002ceb68>] khvcd+0x70/0x12c
+>  [<000000000015bbd0>] kthread+0x68/0xa0
+>  [<0000000000109d5a>] kernel_thread_starter+0x6/0xc
+>  [<0000000000109d54>] kernel_thread_starter+0x0/0xc
+> 1 lock held by khvcd/748:
+>  #0:  (hvc_structs_lock){--..}, at: [<00000000002ceb50>] 
+> khvcd+0x58/0x12c
+>
+>> This wont work, since the call to notifier_add is done later:
+>> What about:
+>> ---
+>>  drivers/char/hvc_console.c |    5 +++--
+>>  1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-2.6/drivers/char/hvc_console.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/char/hvc_console.c
+>> +++ linux-2.6/drivers/char/hvc_console.c
+>> @@ -318,8 +318,6 @@ static int hvc_open(struct tty_struct *t
+>>  	} /* else count == 0 */
+>>
+>>  	tty->driver_data = hp;
+>> -	tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
+>> -
+>>  	hp->tty = tty;
+>>
+>>  	spin_unlock_irqrestore(&hp->lock, flags);
+>> @@ -327,6 +325,9 @@ static int hvc_open(struct tty_struct *t
+>>  	if (hp->ops->notifier_add)
+>>  		rc = hp->ops->notifier_add(hp, hp->data);
+>>
+>> +	if (!hp->irq_requested)
+>> +		tty->low_latency = 1; /* Makes flushes to ldisc synchronous. */
+>> +
+>>  	/*
+>>  	 * If the notifier fails we return an error.  The tty layer
+>>  	 * will call hvc_close() after a failed open but we don't want to 
+>> clean
+>
+> Acked-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+>
+
