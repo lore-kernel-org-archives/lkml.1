@@ -1,559 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbZAMQCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbZAMQC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759263AbZAMQCj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZAMQAK
+	id S1759572AbZAMQC6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZAMQAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:00:10 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:47647 "EHLO
+	Tue, 13 Jan 2009 11:00:13 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:47649 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753554AbZAMP77 (ORCPT
+	by vger.kernel.org with ESMTP id S1753339AbZAMP77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 13 Jan 2009 10:59:59 -0500
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
        Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       James Morris <jmorris@namei.org>
-Subject: [PATCH] crypto: deflate - switch to pcomp
-Date: Tue, 13 Jan 2009 16:59:44 +0100
-Message-Id: <1231862386-11128-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+       Phillip Lougher <phillip@lougher.demon.co.uk>
+Subject: [PATCH] squashfs: Make SquashFS 4 use the new pcomp crypto interface
+Date: Tue, 13 Jan 2009 16:59:46 +0100
+Message-Id: <1231862386-11128-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1231862386-11128-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1231862386-11128-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1231862386-11128-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1231862386-11128-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1231862386-11128-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1231862386-11128-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1231862386-11128-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the "deflate" crypto module from the "comp" to the "pcomp" interface.
+Modify SquashFS 4 to use the new "pcomp" crypto interface for decompression,
+instead of calling the underlying zlib library directly. This simplifies e.g.
+the addition of support for hardware decompression and different decompression
+algorithms.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: James Morris <jmorris@namei.org>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- crypto/Kconfig            |    2 +-
- crypto/deflate.c          |  350 ++++++++++++++++++++++++++++++++------------
- include/crypto/compress.h |   12 ++
- 3 files changed, 267 insertions(+), 97 deletions(-)
+ fs/Kconfig                   |    3 +-
+ fs/squashfs/block.c          |   81 ++++++++++++++++++++++++------------------
+ fs/squashfs/squashfs_fs_sb.h |    2 +-
+ fs/squashfs/super.c          |   36 ++++++++++++++----
+ 4 files changed, 77 insertions(+), 45 deletions(-)
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 740e3bc..36547fc 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -709,7 +709,7 @@ comment "Compression"
- 
- config CRYPTO_DEFLATE
- 	tristate "Deflate compression algorithm"
--	select CRYPTO_ALGAPI
-+	select CRYPTO_PCOMP
- 	select ZLIB_INFLATE
- 	select ZLIB_DEFLATE
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 51307b0..6636018 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -935,7 +935,8 @@ config CRAMFS
+ config SQUASHFS
+ 	tristate "SquashFS 4.0 - Squashed file system support"
+ 	depends on BLOCK
+-	select ZLIB_INFLATE
++	select CRYPTO
++	select CRYPTO_DEFLATE
  	help
-diff --git a/crypto/deflate.c b/crypto/deflate.c
-index 9128da4..0bb2619 100644
---- a/crypto/deflate.c
-+++ b/crypto/deflate.c
-@@ -1,14 +1,15 @@
--/* 
-+/*
-  * Cryptographic API.
-  *
-- * Deflate algorithm (RFC 1951), implemented here primarily for use
-- * by IPCOMP (RFC 3173 & RFC 2394).
-+ * Deflate algorithm (RFC 1951), implemented here for use
-+ * by e.g. IPCOMP (RFC 3173 & RFC 2394).
-  *
-  * Copyright (c) 2003 James Morris <jmorris@intercode.com.au>
-- * 
-+ * Copyright 2008 Sony Corporation
-+ *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-- * Software Foundation; either version 2 of the License, or (at your option) 
-+ * Software Foundation; either version 2 of the License, or (at your option)
-  * any later version.
-  *
-  * FIXME: deflate transforms will require up to a total of about 436k of kernel
-@@ -16,17 +17,10 @@
-  * current zlib kernel code uses a worst case pre-allocation system by default.
-  * This needs to be fixed so that the amount of memory required is properly
-  * related to the  winbits and memlevel parameters.
-- *
-- * The default winbits of 11 should suit most packets, and it may be something
-- * to configure on a per-tfm basis in the future.
-- *
-- * Currently, compression history is not maintained between tfm calls, as
-- * it is not needed for IPCOMP and keeps the code simpler.  It can be
-- * implemented if someone wants it.
-  */
+ 	  Saying Y here includes support for SquashFS 4.0 (a Compressed
+ 	  Read-Only File System).  Squashfs is a highly compressed read-only
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index c837dfc..959e993 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -32,7 +32,8 @@
+ #include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/buffer_head.h>
+-#include <linux/zlib.h>
 +
- #include <linux/init.h>
++#include <crypto/compress.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+@@ -153,7 +154,9 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	}
+ 
+ 	if (compressed) {
+-		int zlib_err = 0, zlib_init = 0;
++		int error = 0, decomp_init = 0;
++		struct comp_request req;
++		unsigned int produced = 0;
+ 
+ 		/*
+ 		 * Uncompress block.
+@@ -161,12 +164,13 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 
+ 		mutex_lock(&msblk->read_data_mutex);
+ 
+-		msblk->stream.avail_out = 0;
+-		msblk->stream.avail_in = 0;
++		req.avail_out = 0;
++		req.avail_in = 0;
+ 
+ 		bytes = length;
++		length = 0;
+ 		do {
+-			if (msblk->stream.avail_in == 0 && k < b) {
++			if (req.avail_in == 0 && k < b) {
+ 				avail = min(bytes, msblk->devblksize - offset);
+ 				bytes -= avail;
+ 				wait_on_buffer(bh[k]);
+@@ -179,50 +183,57 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 					continue;
+ 				}
+ 
+-				msblk->stream.next_in = bh[k]->b_data + offset;
+-				msblk->stream.avail_in = avail;
++				req.next_in = bh[k]->b_data + offset;
++				req.avail_in = avail;
+ 				offset = 0;
+ 			}
+ 
+-			if (msblk->stream.avail_out == 0) {
+-				msblk->stream.next_out = buffer[page++];
+-				msblk->stream.avail_out = PAGE_CACHE_SIZE;
++			if (req.avail_out == 0) {
++				req.next_out = buffer[page++];
++				req.avail_out = PAGE_CACHE_SIZE;
+ 			}
+ 
+-			if (!zlib_init) {
+-				zlib_err = zlib_inflateInit(&msblk->stream);
+-				if (zlib_err != Z_OK) {
+-					ERROR("zlib_inflateInit returned"
+-						" unexpected result 0x%x,"
+-						" srclength %d\n", zlib_err,
+-						srclength);
++			if (!decomp_init) {
++				error = crypto_pcomp_decompress_init(msblk->tfm);
++				if (error) {
++					ERROR("crypto_pcomp_decompress_init "
++						"returned %d, srclength %d\n",
++						error, srclength);
+ 					goto release_mutex;
+ 				}
+-				zlib_init = 1;
++				decomp_init = 1;
++			}
++
++			produced = req.avail_out;
++			error = crypto_pcomp_decompress_update(msblk->tfm,
++							       &req);
++			if (error) {
++				ERROR("crypto_pcomp_decompress_update "
++					"returned %d, srclength %d, avail_in "
++					"%d, avail_out %d\n", error, srclength,
++					req.avail_in, req.avail_out);
++				goto release_mutex;
+ 			}
++			produced -= req.avail_out;
+ 
+-			zlib_err = zlib_inflate(&msblk->stream, Z_NO_FLUSH);
++			length += produced;
+ 
+-			if (msblk->stream.avail_in == 0 && k < b)
++			if (req.avail_in == 0 && k < b)
+ 				put_bh(bh[k++]);
+-		} while (zlib_err == Z_OK);
+-
+-		if (zlib_err != Z_STREAM_END) {
+-			ERROR("zlib_inflate returned unexpected result"
+-				" 0x%x, srclength %d, avail_in %d,"
+-				" avail_out %d\n", zlib_err, srclength,
+-				msblk->stream.avail_in,
+-				msblk->stream.avail_out);
+-			goto release_mutex;
+-		}
+ 
+-		zlib_err = zlib_inflateEnd(&msblk->stream);
+-		if (zlib_err != Z_OK) {
+-			ERROR("zlib_inflateEnd returned unexpected result 0x%x,"
+-				" srclength %d\n", zlib_err, srclength);
++		} while (bytes || produced);
++
++		produced = req.avail_out;
++		error = crypto_pcomp_decompress_final(msblk->tfm, &req);
++		if (error) {
++			ERROR("crypto_pcomp_decompress_final returned %d, "
++				"srclength %d\n", error, srclength);
+ 			goto release_mutex;
+ 		}
+-		length = msblk->stream.total_out;
++		produced -= req.avail_out;
++
++		length += produced;
++
+ 		mutex_unlock(&msblk->read_data_mutex);
+ 	} else {
+ 		/*
+diff --git a/fs/squashfs/squashfs_fs_sb.h b/fs/squashfs/squashfs_fs_sb.h
+index c8c6561..4eae75b 100644
+--- a/fs/squashfs/squashfs_fs_sb.h
++++ b/fs/squashfs/squashfs_fs_sb.h
+@@ -64,7 +64,7 @@ struct squashfs_sb_info {
+ 	struct mutex		read_data_mutex;
+ 	struct mutex		meta_index_mutex;
+ 	struct meta_index	*meta_index;
+-	z_stream		stream;
++	struct crypto_pcomp	*tfm;
+ 	__le64			*inode_lookup_table;
+ 	u64			inode_table;
+ 	u64			directory_table;
+diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+index a0466d7..e6c4a1b 100644
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -36,11 +36,17 @@
  #include <linux/module.h>
--#include <linux/crypto.h>
  #include <linux/zlib.h>
- #include <linux/vmalloc.h>
- #include <linux/interrupt.h>
-@@ -34,11 +28,14 @@
- #include <linux/net.h>
- #include <linux/slab.h>
  
-+#include <crypto/internal/compress.h>
++#include <crypto/compress.h>
 +
- #define DEFLATE_DEF_LEVEL		Z_DEFAULT_COMPRESSION
- #define DEFLATE_DEF_WINBITS		11
- #define DEFLATE_DEF_MEMLEVEL		MAX_MEM_LEVEL
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+ #include "squashfs_fs_i.h"
+ #include "squashfs.h"
  
- struct deflate_ctx {
++
++#define SQUASHFS_CRYPTO_ALG	"deflate"
++
++
+ static struct file_system_type squashfs_fs_type;
+ static struct super_operations squashfs_super_ops;
+ 
+@@ -74,6 +80,7 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	unsigned short flags;
+ 	unsigned int fragments;
+ 	u64 lookup_table_start;
 +	struct deflate_comp_params params;
- 	struct z_stream_s comp_stream;
- 	struct z_stream_s decomp_stream;
- };
-@@ -47,24 +44,27 @@ static int deflate_comp_init(struct deflate_ctx *ctx)
- {
- 	int ret = 0;
- 	struct z_stream_s *stream = &ctx->comp_stream;
-+	size_t workspacesize;
+ 	int err;
  
--	stream->workspace = vmalloc(zlib_deflate_workspacesize());
--	if (!stream->workspace ) {
-+	workspacesize = zlib_deflate_workspacesize();
-+	stream->workspace = vmalloc(workspacesize);
-+	if (!stream->workspace) {
- 		ret = -ENOMEM;
- 		goto out;
+ 	TRACE("Entered squashfs_fill_superblock\n");
+@@ -85,16 +92,29 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
  	}
--	memset(stream->workspace, 0, zlib_deflate_workspacesize());
--	ret = zlib_deflateInit2(stream, DEFLATE_DEF_LEVEL, Z_DEFLATED,
--	                        -DEFLATE_DEF_WINBITS, DEFLATE_DEF_MEMLEVEL,
--	                        Z_DEFAULT_STRATEGY);
-+	memset(stream->workspace, 0, workspacesize);
-+	ret = zlib_deflateInit2(stream, ctx->params.level, ctx->params.method,
-+				ctx->params.windowBits, ctx->params.memLevel,
-+				ctx->params.strategy);
- 	if (ret != Z_OK) {
- 		ret = -EINVAL;
- 		goto out_free;
- 	}
--out:	
-+out:
- 	return ret;
- out_free:
- 	vfree(stream->workspace);
-+	stream->workspace = NULL;
- 	goto out;
- }
+ 	msblk = sb->s_fs_info;
  
-@@ -74,11 +74,11 @@ static int deflate_decomp_init(struct deflate_ctx *ctx)
- 	struct z_stream_s *stream = &ctx->decomp_stream;
- 
- 	stream->workspace = kzalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
--	if (!stream->workspace ) {
-+	if (!stream->workspace) {
- 		ret = -ENOMEM;
- 		goto out;
- 	}
--	ret = zlib_inflateInit2(stream, -DEFLATE_DEF_WINBITS);
-+	ret = zlib_inflateInit2(stream, ctx->params.windowBits);
- 	if (ret != Z_OK) {
- 		ret = -EINVAL;
- 		goto out_free;
-@@ -87,34 +87,35 @@ out:
- 	return ret;
- out_free:
- 	kfree(stream->workspace);
-+	stream->workspace = NULL;
- 	goto out;
- }
- 
- static void deflate_comp_exit(struct deflate_ctx *ctx)
- {
--	zlib_deflateEnd(&ctx->comp_stream);
--	vfree(ctx->comp_stream.workspace);
-+	struct z_stream_s *stream = &ctx->comp_stream;
-+
-+	if (stream->workspace) {
-+		zlib_deflateEnd(stream);
-+		vfree(stream->workspace);
-+		stream->workspace = NULL;
-+	}
- }
- 
- static void deflate_decomp_exit(struct deflate_ctx *ctx)
- {
--	zlib_inflateEnd(&ctx->decomp_stream);
--	kfree(ctx->decomp_stream.workspace);
-+	struct z_stream_s *stream = &ctx->decomp_stream;
-+
-+	if (stream->workspace) {
-+		zlib_inflateEnd(stream);
-+		kfree(stream->workspace);
-+		stream->workspace = NULL;
-+	}
- }
- 
- static int deflate_init(struct crypto_tfm *tfm)
- {
--	struct deflate_ctx *ctx = crypto_tfm_ctx(tfm);
--	int ret;
--	
--	ret = deflate_comp_init(ctx);
--	if (ret)
--		goto out;
--	ret = deflate_decomp_init(ctx);
--	if (ret)
--		deflate_comp_exit(ctx);
--out:
--	return ret;
-+	return 0;
- }
- 
- static void deflate_exit(struct crypto_tfm *tfm)
-@@ -125,103 +126,260 @@ static void deflate_exit(struct crypto_tfm *tfm)
- 	deflate_decomp_exit(ctx);
- }
- 
--static int deflate_compress(struct crypto_tfm *tfm, const u8 *src,
--			    unsigned int slen, u8 *dst, unsigned int *dlen)
-+static int deflate_setup(struct crypto_tfm *tfm, const void *params)
- {
--	int ret = 0;
-+	struct deflate_ctx *ctx = crypto_tfm_ctx(tfm);
-+	const struct deflate_comp_params *zparams = params;
-+	int ret;
-+
-+	deflate_comp_exit(ctx);
-+	deflate_decomp_exit(ctx);
-+
-+	ctx->params = *zparams;
-+
-+	if (zparams->enable_comp) {
-+		ret = deflate_comp_init(ctx);
-+		if (ret)
-+			return ret;
+-	msblk->stream.workspace = kmalloc(zlib_inflate_workspacesize(),
+-		GFP_KERNEL);
+-	if (msblk->stream.workspace == NULL) {
+-		ERROR("Failed to allocate zlib workspace\n");
++	msblk->tfm = crypto_alloc_pcomp(SQUASHFS_CRYPTO_ALG, 0,
++					CRYPTO_ALG_ASYNC);
++	if (IS_ERR(msblk->tfm)) {
++		ERROR("Failed to load %s crypto module\n",
++		      SQUASHFS_CRYPTO_ALG);
++		msblk->tfm = NULL;
++		err = -ENOMEM;
++		goto failure;
 +	}
 +
-+	if (zparams->enable_decomp) {
-+		ret = deflate_decomp_init(ctx);
-+		if (ret) {
-+			deflate_comp_exit(ctx);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+
-+static int deflate_compress_init(struct crypto_tfm *tfm)
-+{
-+	int ret;
- 	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
- 	struct z_stream_s *stream = &dctx->comp_stream;
- 
- 	ret = zlib_deflateReset(stream);
--	if (ret != Z_OK) {
--		ret = -EINVAL;
--		goto out;
-+	if (ret != Z_OK)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int deflate_compress_update(struct crypto_tfm *tfm,
-+				   struct comp_request *req)
-+{
-+	int ret;
-+	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
-+	struct z_stream_s *stream = &dctx->comp_stream;
-+
-+	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
-+	stream->next_in = req->next_in;
-+	stream->avail_in = req->avail_in;
-+	stream->next_out = req->next_out;
-+	stream->avail_out = req->avail_out;
-+
-+	ret = zlib_deflate(stream, Z_NO_FLUSH);
-+	switch (ret) {
-+	case Z_OK:
-+		break;
-+
-+	case Z_BUF_ERROR:
-+		pr_debug("zlib_deflate could not make progress\n");
-+		return -EAGAIN;
-+
-+	default:
-+		pr_debug("zlib_deflate failed %d\n", ret);
-+		return -EINVAL;
++	params.enable_comp = 0;
++	params.enable_decomp = 1;
++	params.windowBits = DEF_WBITS;
++	err = crypto_pcomp_setup(msblk->tfm, &params);
++	if (err) {
++		ERROR("Failed to set up decompression parameters\n");
+ 		goto failure;
  	}
  
--	stream->next_in = (u8 *)src;
--	stream->avail_in = slen;
--	stream->next_out = (u8 *)dst;
--	stream->avail_out = *dlen;
-+	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
-+		 stream->avail_in, stream->avail_out,
-+		 req->avail_in - stream->avail_in,
-+		 req->avail_out - stream->avail_out);
-+	req->next_in = stream->next_in;
-+	req->avail_in = stream->avail_in;
-+	req->next_out = stream->next_out;
-+	req->avail_out = stream->avail_out;
-+	return 0;
-+}
-+
-+static int deflate_compress_final(struct crypto_tfm *tfm,
-+				  struct comp_request *req)
-+{
-+	int ret;
-+	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
-+	struct z_stream_s *stream = &dctx->comp_stream;
-+
-+	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
-+	stream->next_in = req->next_in;
-+	stream->avail_in = req->avail_in;
-+	stream->next_out = req->next_out;
-+	stream->avail_out = req->avail_out;
- 
- 	ret = zlib_deflate(stream, Z_FINISH);
- 	if (ret != Z_STREAM_END) {
--		ret = -EINVAL;
--		goto out;
-+		pr_debug("zlib_deflate failed %d\n", ret);
-+		return -EINVAL;
+ 	sblk = kzalloc(sizeof(*sblk), GFP_KERNEL);
+ 	if (sblk == NULL) {
+ 		ERROR("Failed to allocate squashfs_super_block\n");
++		err = -ENOMEM;
+ 		goto failure;
  	}
--	ret = 0;
--	*dlen = stream->total_out;
--out:
--	return ret;
-+
-+	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
-+		 stream->avail_in, stream->avail_out,
-+		 req->avail_in - stream->avail_in,
-+		 req->avail_out - stream->avail_out);
-+	req->next_in = stream->next_in;
-+	req->avail_in = stream->avail_in;
-+	req->next_out = stream->next_out;
-+	req->avail_out = stream->avail_out;
-+	return 0;
+ 
+@@ -283,17 +303,17 @@ failed_mount:
+ 	kfree(msblk->inode_lookup_table);
+ 	kfree(msblk->fragment_index);
+ 	kfree(msblk->id_table);
+-	kfree(msblk->stream.workspace);
++	crypto_free_pcomp(msblk->tfm);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+ 	kfree(sblk);
+ 	return err;
+ 
+ failure:
+-	kfree(msblk->stream.workspace);
++	crypto_free_pcomp(msblk->tfm);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+-	return -ENOMEM;
++	return err;
  }
-- 
--static int deflate_decompress(struct crypto_tfm *tfm, const u8 *src,
--			      unsigned int slen, u8 *dst, unsigned int *dlen)
-+
-+static int deflate_decompress_init(struct crypto_tfm *tfm)
- {
--	
--	int ret = 0;
-+	int ret;
- 	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
- 	struct z_stream_s *stream = &dctx->decomp_stream;
  
- 	ret = zlib_inflateReset(stream);
--	if (ret != Z_OK) {
--		ret = -EINVAL;
--		goto out;
--	}
-+	if (ret != Z_OK)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int deflate_decompress_update(struct crypto_tfm *tfm,
-+				     struct comp_request *req)
-+{
-+	int ret;
-+	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
-+	struct z_stream_s *stream = &dctx->decomp_stream;
  
--	stream->next_in = (u8 *)src;
--	stream->avail_in = slen;
--	stream->next_out = (u8 *)dst;
--	stream->avail_out = *dlen;
-+	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
-+	stream->next_in = req->next_in;
-+	stream->avail_in = req->avail_in;
-+	stream->next_out = req->next_out;
-+	stream->avail_out = req->avail_out;
- 
- 	ret = zlib_inflate(stream, Z_SYNC_FLUSH);
--	/*
--	 * Work around a bug in zlib, which sometimes wants to taste an extra
--	 * byte when being used in the (undocumented) raw deflate mode.
--	 * (From USAGI).
--	 */
--	if (ret == Z_OK && !stream->avail_in && stream->avail_out) {
--		u8 zerostuff = 0;
--		stream->next_in = &zerostuff;
--		stream->avail_in = 1; 
--		ret = zlib_inflate(stream, Z_FINISH);
-+	switch (ret) {
-+	case Z_OK:
-+	case Z_STREAM_END:
-+		break;
-+
-+	case Z_BUF_ERROR:
-+		pr_debug("zlib_inflate could not make progress\n");
-+		return -EAGAIN;
-+
-+	default:
-+		pr_debug("zlib_inflate failed %d\n", ret);
-+		return -EINVAL;
+@@ -332,7 +352,7 @@ static void squashfs_put_super(struct super_block *sb)
+ 		kfree(sbi->id_table);
+ 		kfree(sbi->fragment_index);
+ 		kfree(sbi->meta_index);
+-		kfree(sbi->stream.workspace);
++		crypto_free_pcomp(sbi->tfm);
+ 		kfree(sb->s_fs_info);
+ 		sb->s_fs_info = NULL;
  	}
-+
-+	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
-+		 stream->avail_in, stream->avail_out,
-+		 req->avail_in - stream->avail_in,
-+		 req->avail_out - stream->avail_out);
-+	req->next_in = stream->next_in;
-+	req->avail_in = stream->avail_in;
-+	req->next_out = stream->next_out;
-+	req->avail_out = stream->avail_out;
-+	return 0;
-+}
-+
-+static int deflate_decompress_final(struct crypto_tfm *tfm,
-+				    struct comp_request *req)
-+{
-+	int ret;
-+	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
-+	struct z_stream_s *stream = &dctx->decomp_stream;
-+
-+	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
-+	stream->next_in = req->next_in;
-+	stream->avail_in = req->avail_in;
-+	stream->next_out = req->next_out;
-+	stream->avail_out = req->avail_out;
-+
-+	if (dctx->params.windowBits < 0) {
-+		ret = zlib_inflate(stream, Z_SYNC_FLUSH);
-+		/*
-+		 * Work around a bug in zlib, which sometimes wants to taste an
-+		 * extra byte when being used in the (undocumented) raw deflate
-+		 * mode. (From USAGI).
-+		 */
-+		if (ret == Z_OK && !stream->avail_in && stream->avail_out) {
-+			const void *saved_next_in = stream->next_in;
-+			u8 zerostuff = 0;
-+
-+			stream->next_in = &zerostuff;
-+			stream->avail_in = 1;
-+			ret = zlib_inflate(stream, Z_FINISH);
-+			stream->next_in = saved_next_in;
-+			stream->avail_in = 0;
-+		}
-+	} else
-+		ret = zlib_inflate(stream, Z_FINISH);
- 	if (ret != Z_STREAM_END) {
--		ret = -EINVAL;
--		goto out;
-+		pr_debug("zlib_inflate failed %d\n", ret);
-+		return -EINVAL;
- 	}
--	ret = 0;
--	*dlen = stream->total_out;
--out:
--	return ret;
-+
-+	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
-+		 stream->avail_in, stream->avail_out,
-+		 req->avail_in - stream->avail_in,
-+		 req->avail_out - stream->avail_out);
-+	req->next_in = stream->next_in;
-+	req->avail_in = stream->avail_in;
-+	req->next_out = stream->next_out;
-+	req->avail_out = stream->avail_out;
-+	return 0;
- }
- 
--static struct crypto_alg alg = {
--	.cra_name		= "deflate",
--	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
--	.cra_ctxsize		= sizeof(struct deflate_ctx),
--	.cra_module		= THIS_MODULE,
--	.cra_list		= LIST_HEAD_INIT(alg.cra_list),
--	.cra_init		= deflate_init,
--	.cra_exit		= deflate_exit,
--	.cra_u			= { .compress = {
--	.coa_compress 		= deflate_compress,
--	.coa_decompress  	= deflate_decompress } }
-+
-+static const struct deflate_comp_params deflate_default_params = {
-+	.enable_comp		= 1,
-+	.enable_decomp		= 1,
-+	.windowBits		= -DEFLATE_DEF_WINBITS,
-+	.level			= DEFLATE_DEF_LEVEL,
-+	.method			= Z_DEFLATED,
-+	.memLevel		= DEFLATE_DEF_MEMLEVEL,
-+	.strategy		= Z_DEFAULT_STRATEGY
-+};
-+
-+static struct pcomp_alg alg = {
-+	.setup			= deflate_setup,
-+	.compress_init		= deflate_compress_init,
-+	.compress_update	= deflate_compress_update,
-+	.compress_final		= deflate_compress_final,
-+	.decompress_init	= deflate_decompress_init,
-+	.decompress_update	= deflate_decompress_update,
-+	.decompress_final	= deflate_decompress_final,
-+
-+	.default_params		= &deflate_default_params,
-+	.base			= {
-+		.cra_name	= "deflate",
-+		.cra_flags	= CRYPTO_ALG_TYPE_PCOMPRESS,
-+		.cra_ctxsize	= sizeof(struct deflate_ctx),
-+		.cra_init	= deflate_init,
-+		.cra_exit	= deflate_exit,
-+	}
- };
- 
- static int __init deflate_mod_init(void)
- {
--	return crypto_register_alg(&alg);
-+	return crypto_register_pcomp(&alg);
- }
- 
- static void __exit deflate_mod_fini(void)
- {
--	crypto_unregister_alg(&alg);
-+	crypto_unregister_pcomp(&alg);
- }
- 
- module_init(deflate_mod_init);
- module_exit(deflate_mod_fini);
- 
- MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("Deflate Compression Algorithm for IPCOMP");
-+MODULE_DESCRIPTION("Deflate Compression Algorithm");
- MODULE_AUTHOR("James Morris <jmorris@intercode.com.au>");
- 
-diff --git a/include/crypto/compress.h b/include/crypto/compress.h
-index 8b3e816..c4798fe 100644
---- a/include/crypto/compress.h
-+++ b/include/crypto/compress.h
-@@ -30,6 +30,18 @@ struct comp_request {
- 	unsigned int avail_out;		/* bytes available at next_out */
- };
- 
-+struct deflate_comp_params {
-+	unsigned int enable_comp:1;
-+	unsigned int enable_decomp:1;
-+	/* common (de)compression (deflate and inflate) parameters */
-+	int windowBits;		/* e.g. MAX_WBITS or DEF_WBITS */
-+	/* compression only (deflate) parameters */
-+	int level;		/* e.g. Z_DEFAULT_COMPRESSION */
-+	int method;		/* e.g. Z_DEFLATED */
-+	int memLevel;		/* e.g. DEF_MEM_LEVEL */
-+	int strategy		/* e.g. Z_DEFAULT_STRATEGY */;
-+};
-+
- struct pcomp_alg {
- 	int (*setup)(struct crypto_tfm *tfm, const void *params);
- 	int (*compress_init)(struct crypto_tfm *tfm);
 -- 
 1.6.0.4
 
