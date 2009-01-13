@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZAMCJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbZAMCPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbZAMCJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZAMCJg
+	id S1757845AbZAMCPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZAMCPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:09:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52848 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754057AbZAMCJf (ORCPT
+	Mon, 12 Jan 2009 21:15:06 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:51741 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbZAMCPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:09:35 -0500
-Date: Mon, 12 Jan 2009 18:08:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Daniel Drake <dsd@gentoo.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
-In-Reply-To: <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0901121807070.6528@localhost.localdomain>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>  <b6a2187b0901110813s5429573cm7d78f39e288f70a3@mail.gmail.com>  <20090111162949.GA15338@elte.hu>  <200901111736.24350.borntraeger@de.ibm.com>  <20090111163904.GA21806@elte.hu>  <b6a2187b0901110856j3f2ff6fepc19a816178e38a95@mail.gmail.com>
-  <20090111180714.GB15326@elte.hu> <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 12 Jan 2009 21:15:05 -0500
+Date: Mon, 12 Jan 2009 18:14:59 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090113021459.GB20594@localdomain>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112230052.GB18771@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 13 Jan 2009, Jeff Chua wrote:
+On Tue, Jan 13, 2009 at 12:00:52AM +0100, Ingo Molnar wrote:
 >
-> I was trying to bisect further, but ended up with this strange behavior...
-> 
-> # git bisect good a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2
-> Bisecting: 579 revisions left to test after this
-> [079899c2384023cd8efcd3806680b4f1d2abbd54] Btrfs: Change
-> find_extent_buffer to use TestSetPageLocked
-> 
-> # ls
-> .  ..  .git  fs
-> 
-> Is this a bug or a feature?
+>
+>> With per-cpu areas, locks belonging to different array elements did not 
+>> end up on the same internode cacheline due to per-node allocation of 
+>> per-cpu areas, but with a simple array, two locks could end up on the 
+>> same internode cacheline.
+>> 
+>> Hence, can you please change the padding in smp_flush_state to 
+>> INTERNODE_CACHE_BYTES (you have to derive this off 
+>> INTERNODE_CACHE_SHIFT) and align it using 
+>> ____cacheline_internodealigned_in_smp?
+>
+>Yes, that matters to vsmp, which has ... 4K node cache-lines.
+>
+>Note that there's already CONFIG_X86_INTERNODE_CACHE_BYTES which is set 
+>properly on vsmp.
+>
+>So ... something like the commit below?
+>
 
-You bisected into the btrfs development chain. Just say "git bisect good" 
-when this happens, and you'll be ok.
+Yep.  Looks good!
 
-[ Unless, of course, you were to be actually trying to bisect a btrfs bug. 
-  If so, you'd need to compile btrfs as a module and insert it and do the 
-  bisection based on that ]
+Acked-by: Ravikiran Thirumalai <kiran@scalex86.org>
 
-			Linus
+Thanks,
+Kiran
