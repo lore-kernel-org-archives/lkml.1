@@ -1,149 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbZAMOWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbZAMOYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759534AbZAMOWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZAMOVw
+	id S1759595AbZAMOYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZAMOY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:21:52 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40089 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751658AbZAMOVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:21:51 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/xZzYT1hHxq2uw/1Cxcw18w9+6S5f+Ec9hK5iaGr
-	LWyfVYhWGORbjh
-Date: Tue, 13 Jan 2009 15:21:47 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-btrfs@vger.kernel.org
-Subject: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090113142147.GE16333@alice>
+	Tue, 13 Jan 2009 09:24:28 -0500
+Received: from genesysrack.ru ([195.178.208.66]:47504 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752120AbZAMOY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:24:27 -0500
+Date: Tue, 13 Jan 2009 17:24:23 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
+Message-ID: <20090113142423.GA30710@ioremap.net>
+References: <20090112153304.GA19995@ioremap.net> <20090112154456.GA27269@redhat.com> <20090112154827.GB20743@ioremap.net> <20090112155108.2646b3ae@lxorguk.ukuu.org.uk> <20090113135246.GA29251@ioremap.net> <20090113140627.507f15e1@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 15:14:26 up  6:08, 11 users,  load average: 0.12, 0.34, 0.43
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+In-Reply-To: <20090113140627.507f15e1@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 13, 2009 at 02:06:27PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > Do you _REALLY_ think anyone can calculate it yourself and then properly
+> > calculate adjustment used to properly select oom-killed process?
+> 
+> Its always a heuristic.
 
-Hi,
+For the system which knows what it is. User does not and really can not
+work with it, since there is no sane way to implement that heuristic in
+the applications or even in (theoretically possible) monitor daemon.
 
-when mounting an intentionally corrupted btrfs filesystem i get the
-following warning and bug message. The image can be found here
-www.cccmz.de/~snakebyte/btrfs.2.img.bck.bz2
+So, effectively, oom adjustment does not work.
 
-[  297.406152] device fsid e14cf01de423381a-4bd40b603870018a <6>devid
-2147483649 transid 9 /dev/loop0
-[  297.411937] ------------[ cut here ]------------
-[  297.412207] WARNING: at fs/btrfs/disk-io.c:805
-read_tree_block+0x4c/0x58()
-[  297.412348] Hardware name: System Name
-[  297.412485] Modules linked in:
-[  297.412684] Pid: 5144, comm: mount Tainted: G        W
-2.6.29-rc1-00195-g1df11ad #200
-[  297.412872] Call Trace:
-[  297.413027]  [<c0123a8d>] warn_slowpath+0x79/0x8f
-[  297.413251]  [<c013413d>] ? wake_bit_function+0x0/0x48
-[  297.413395]  [<c013f692>] ? print_lock_contention_bug+0x11/0xb2
-[  297.413575]  [<c04ad9b6>] ? btrfs_num_copies+0x20/0xba
-[  297.413716]  [<c07c6b0e>] ? _spin_unlock+0x2c/0x41
-[  297.413869]  [<c04ada46>] ? btrfs_num_copies+0xb0/0xba
-[  297.414007]  [<c048f4b5>] ? btree_read_extent_buffer_pages+0x7f/0x95
-[  297.414204]  [<c048f7f8>] read_tree_block+0x4c/0x58
-[  297.414339]  [<c049264a>] open_ctree+0xa51/0xeff
-[  297.414493]  [<c01cc814>] ? disk_name+0x2a/0x6c
-[  297.414624]  [<c050d6e7>] ? strlcpy+0x17/0x48
-[  297.414770]  [<c047b7e5>] btrfs_get_sb+0x20c/0x3d3
-[  297.414913]  [<c017888e>] ? kstrdup+0x2f/0x51
-[  297.415110]  [<c0191558>] vfs_kern_mount+0x40/0x7b
-[  297.415242]  [<c01915e1>] do_kern_mount+0x37/0xbf
-[  297.415401]  [<c01a2c78>] do_mount+0x5cc/0x609
-[  297.415533]  [<c07c6db3>] ? lock_kernel+0x19/0x8c
-[  297.415679]  [<c01a2d0b>] ? sys_mount+0x56/0xa0
-[  297.415809]  [<c01a2d1e>] sys_mount+0x69/0xa0
-[  297.415961]  [<c0102ea1>] sysenter_do_call+0x12/0x31
-[  297.416145] ---[ end trace 4eaa2a86a8e2da24 ]---
-[  297.416621] BUG: unable to handle kernel NULL pointer dereference at
-000001f4
-[  297.416915] IP: [<c01addd2>] bio_get_nr_vecs+0xf/0x3f
-[  297.417199] *pde = 00000000 
-[  297.417398] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-[  297.417706] last sysfs file: /sys/block/ram9/range
-[  297.417908] Modules linked in:
-[  297.418086] 
-[  297.418161] Pid: 5144, comm: mount Tainted: G        W
-(2.6.29-rc1-00195-g1df11ad #200) System Name
-[  297.418161] EIP: 0060:[<c01addd2>] EFLAGS: 00010246 CPU: 0
-[  297.418161] EIP is at bio_get_nr_vecs+0xf/0x3f
-[  297.418161] EAX: 00000000 EBX: 00000000 ECX: c12fe0c0 EDX: c48b8040
-[  297.418161] ESI: 00000100 EDI: 00000000 EBP: cb38bc68 ESP: cb38bc44
-[  297.418161]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[  297.418161] Process mount (pid: 5144, ti=cb38b000 task=c14e0000
-task.ti=cb38b000)
-[  297.418161] Stack:
-[  297.418161]  c04a7ed6 00000001 c12fe0c0 c48b8040 00000000 00001000
-cb38bda4 00000000
-[  297.418161]  c82f31c0 cb38bd40 c04a9af4 0000e028 00000000 00001000
-00000000 c807c3e0
-[  297.418161]  cb38bda8 ffffe3fb c04aaf4a 00000000 00000000 00000000
-cf53c3f0 00000fff
-[  297.418161] Call Trace:
-[  297.418161]  [<c04a7ed6>] ? submit_extent_page+0xea/0x190
-[  297.418161]  [<c04a9af4>] ? __extent_read_full_page+0x61d/0x6a0
-[  297.418161]  [<c04aaf4a>] ? end_bio_extent_readpage+0x0/0x205
-[  297.418161]  [<c0491123>] ? btree_get_extent+0x0/0x16c
-[  297.418161]  [<c04a8467>] ? test_range_bit+0xd5/0xdf
-[  297.418161]  [<c04aa4c7>] ? read_extent_buffer_pages+0x274/0x3aa
-[  297.418161]  [<c07c6b0e>] ? _spin_unlock+0x2c/0x41
-[  297.418161]  [<c04acda8>] ? alloc_extent_buffer+0x296/0x348
-[  297.418161]  [<c048f477>] ? btree_read_extent_buffer_pages+0x41/0x95
-[  297.418161]  [<c0491123>] ? btree_get_extent+0x0/0x16c
-[  297.418161]  [<c048f7da>] ? read_tree_block+0x2e/0x58
-[  297.418161]  [<c0492712>] ? open_ctree+0xb19/0xeff
-[  297.418161]  [<c050d6e7>] ? strlcpy+0x17/0x48
-[  297.418161]  [<c047b7e5>] ? btrfs_get_sb+0x20c/0x3d3
-[  297.418161]  [<c017888e>] ? kstrdup+0x2f/0x51
-[  297.418161]  [<c0191558>] ? vfs_kern_mount+0x40/0x7b
-[  297.418161]  [<c01915e1>] ? do_kern_mount+0x37/0xbf
-[  297.418161]  [<c01a2c78>] ? do_mount+0x5cc/0x609
-[  297.418161]  [<c07c6db3>] ? lock_kernel+0x19/0x8c
-[  297.418161]  [<c01a2d0b>] ? sys_mount+0x56/0xa0
-[  297.418161]  [<c01a2d1e>] ? sys_mount+0x69/0xa0
-[  297.418161]  [<c0102ea1>] ? sysenter_do_call+0x12/0x31
-[  297.418161] Code: 39 45 e8 7c a4 8b 45 e4 e8 81 ec ff ff 89 f8 e8 c8
-ec ff ff 83 c4 20 5b 5e 5f 5d c3 55 89 e5 0f 1f 44 00 00 8b 80 bc 00 00
-00 5d <8b> 88 f4 01 00 00 8b 81 fc 01 00 00 0f b7 91 06 02 00 00 0f b7 
-[  297.418161] EIP: [<c01addd2>] bio_get_nr_vecs+0xf/0x3f SS:ESP
-0068:cb38bc44
-[  297.432666] ---[ end trace 4eaa2a86a8e2da25 ]---
+> > So far my patch is the sanest way to deal with the OOM selection
+> 
+> No. You keep maintaining this but your crude hack is useless in a non
+> co-operative environment, has lots of issue with name aliasing and
+> doesn't deal with real needs.
 
+It is created because of real needs. Because people need to control the
+behaviour of the system and they want to control which application will
+be killed to free the memory. Attached patch is not the best solution,
+but it works for the all cases I can think about.
 
-The BUG occurs here:
+Let's take you 'name aliasing' claim: if there are several processes
+with the same name, system will select the one with the worst score
+according to the own magical algorithm. So it will not kill random
+process just because it happend to have ricky name.
 
-(gdb) l *(bio_get_nr_vecs+0xf)
-0xc01addd2 is in bio_get_nr_vecs (include/linux/blkdev.h:785).
-780					  struct request *, int,
-rq_end_io_fn *);
-781	extern void blk_unplug(struct request_queue *q);
-782	
-783	static inline struct request_queue *bdev_get_queue(struct
-block_device *bdev)
-784	{
-785		return bdev->bd_disk->queue;
-786	}
-787	
-788	static inline void blk_run_backing_dev(struct backing_dev_info
-*bdi,
-789					       struct page *page)
+And the same applies to the other issues. It just helps system to select
+the process to be killed according to userspace expectation of what
+should be killed to free the memory.
 
+> We have container interfaces that can do this and far more and do them
+> right. In fact the very start of all the OpenVZ and container work years
+> ago was the beancounter patches which were addressed at exactly this
+> problem (although more specifically 'making sure undergraduates processes
+> get killed first')
 
-Greetings, Eric
+Are the beancounters used to limit amount of virtual ram and not the
+physical one? It really does not work to limit for example some java
+machine which will ate all virtual space swapping out different node.
+It works for some (and likely the most, I do not argue this) cases and
+has overhead. But we are talking not about how to limit the processes,
+but what to do when we happend to have out-of-memory condition. And it
+happens all the time even if you put the processes into the separate
+container, since there are situations (that's why it was started at
+first), when you have a huge process which should not be killed and set
+of either its children or external processes, which should be checked
+and some of them (administrator would like to specify the less
+important) should be killed without much harm to the system.
 
-ps: seems the btrfs entry in MAINTAINERS is missing
+And patch I presented allows to do it. It introduces a hint for the
+killer on what processes should be checked first. It works exactly the
+way people work with their system: they run different application and
+expect some of them to be higher or lower priority when things come to
+the oom condition. No one ever proposes to kill exactly the process we
+select (although that may be a good idea in some cases), but instead to
+show that oom-killer should check given group first. The group
+administrator knows to be potentially harmless.
+
+-- 
+	Evgeniy Polyakov
