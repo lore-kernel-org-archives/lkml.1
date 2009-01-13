@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZAMB2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbZAMB3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbZAMB2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbZAMB20
+	id S1757748AbZAMB3O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbZAMB2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:28:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45714 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbZAMB2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:28:25 -0500
-Date: Tue, 13 Jan 2009 02:28:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Daniel Drake <dsd@gentoo.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
-Message-ID: <20090113012800.GA15492@elte.hu>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <b6a2187b0901110813s5429573cm7d78f39e288f70a3@mail.gmail.com> <20090111162949.GA15338@elte.hu> <200901111736.24350.borntraeger@de.ibm.com> <20090111163904.GA21806@elte.hu> <b6a2187b0901110856j3f2ff6fepc19a816178e38a95@mail.gmail.com> <20090111180714.GB15326@elte.hu> <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
+	Mon, 12 Jan 2009 20:28:54 -0500
+Received: from kroah.org ([198.145.64.141]:35851 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755699AbZAMB2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:28:52 -0500
+Date: Mon, 12 Jan 2009 17:26:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/21] 2.6.27-stable review
+Message-ID: <20090113012633.GA4512@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.27.11 release.
 
-* Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+It basically flushes out all of the 2.6.27 patches that went into the
+2.6.28 release.  Almost none of the patches marked for the stable series
+that have gone in after 2.6.28 came out has gone into this tree yet.
+That will come in the next releases, this is just to get these older
+fixes out to those who need them now.
 
-> On Mon, Jan 12, 2009 at 2:07 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> Everything in-between should have
-> >> a0e280e0f33f6c859a235fb69a875ed8f3420388 applied?
-> > not necessarily - if an intermediate tree that is checked happened to have
-> > been based on some earlier -rc, it might have that bug included. Safest is
-> > to always cherry-pick that commit. (if it has no dependencies)
-> 
-> Thanks for pointing this out. My bisect was thrown off course because
-> I didn't "cherry-pick" that commit.
-> 
-> After cherry picking, I ended up with the same commit as was reported by
-> Christian Borntraeger -- "Regression 2.6.28-git: suspend/resume
-> failure. git bisected to usb suspend/resume patch".
-> 
-> I was trying to bisect further, but ended up with this strange behavior...
-> 
-> # start with a "fresh linux git download".
-> # ls
-> .               ..             .git     .gitignore   .mailmap  COPYING
-> CREDITS         Documentation  Kbuild   MAINTAINERS  Makefile  README
-> REPORTING-BUGS  arch           block    crypto       drivers   firmware
-> fs              include        init     ipc          kernel    lib
-> mm              net            samples  scripts      security  sound
-> usr             virt
-> 
-> # git bisect bad ae04d1401577bb63151480a053057de58b8e10bb
-> # git bisect good a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2
-> Bisecting: 579 revisions left to test after this
-> [079899c2384023cd8efcd3806680b4f1d2abbd54] Btrfs: Change
-> find_extent_buffer to use TestSetPageLocked
-> 
-> # ls
-> .  ..  .git  fs
-> 
-> Is this a bug or a feature?
+There are 21 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-that's a feature - the btrfs history looks like this. You can mark get out 
-of that bisection set by doing this:
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-        git bisect good 34353029534a08e41cfb8be647d734b9ce9ebff8
+Responses should be made by Thursday, January 15, 2009, 00:00:00 UTC.
+Anything received after that time might be too late.
 
-	Ingo
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.11-rc1.gz
+and the diffstat can be found below.
+
+
+thanks,
+greg k-h
+
+------------
+
+ Makefile                              |    2 +-
+ arch/powerpc/lib/rheap.c              |    1 +
+ arch/x86/kernel/amd_iommu.c           |    4 ++--
+ arch/x86/kernel/amd_iommu_init.c      |    7 ++++++-
+ crypto/async_tx/async_xor.c           |   11 +++++++++--
+ drivers/block/cciss.c                 |    5 +++++
+ drivers/dma/dmaengine.c               |    3 +++
+ drivers/dma/ioat_dma.c                |    5 ++++-
+ drivers/dma/iop-adma.c                |   16 +++++++++++++---
+ drivers/dma/mv_xor.c                  |   15 ++++++++++++---
+ drivers/md/bitmap.c                   |   22 +++++++++++++++++-----
+ drivers/net/starfire.c                |    5 +++++
+ drivers/net/wireless/iwlwifi/iwl-tx.c |    7 +++----
+ drivers/scsi/aacraid/linit.c          |    4 ++--
+ drivers/scsi/ibmvscsi/ibmvstgt.c      |   16 +++++++++-------
+ drivers/usb/gadget/f_rndis.c          |    4 ++++
+ drivers/usb/storage/unusual_devs.h    |   16 +++++++++++++++-
+ include/asm-parisc/tlbflush.h         |    5 ++++-
+ sound/pci/hda/patch_sigmatel.c        |    1 +
+ sound/soc/omap/omap-pcm.c             |    2 +-
+ 20 files changed, 117 insertions(+), 34 deletions(-)
