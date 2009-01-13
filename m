@@ -1,121 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZAMS56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZAMTAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZAMS56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 13:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZAMS5t
+	id S1755594AbZAMTAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 14:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZAMS76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:57:49 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:37272 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbZAMS5r (ORCPT
+	Tue, 13 Jan 2009 13:59:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33363 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751511AbZAMS76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:57:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uRdtZb0SUaIN4x8rl+z1zFO3bCwOSofiO3ZjikyPlP4+4l5tHGUGmisQR6OOqD6o4b
-         0GRrS92xlRKSKwuvqG1owYmW24Nu0q5/XNvoZJrVbq7wBjUhz1WfG7by+g5JWR87zfpX
-         JGj8ixzbQPbhAgf/+BgBCsieTAv2hKQMsAVG4=
-MIME-Version: 1.0
-In-Reply-To: <20090113174522.GA26965@elte.hu>
-References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
-	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
-Date: Tue, 13 Jan 2009 10:57:46 -0800
-Message-ID: <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-From: Tim Hockin <thockin@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
-       priyankag@google.com
-Content-Type: text/plain; charset=UTF-8
+	Tue, 13 Jan 2009 13:59:58 -0500
+Date: Tue, 13 Jan 2009 10:59:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: handygewinnspiel@gmx.de
+Cc: mchehab@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       HWerner4@gmx.de, rjw@sisk.pl
+Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
+Message-Id: <20090113105947.9e774b69.akpm@linux-foundation.org>
+In-Reply-To: <20090113184755.87720@gmx.net>
+References: <20090112190420.51f75853@pedra.chehab.org>
+	<20090112132130.6c932b85.akpm@linux-foundation.org>
+	<20090112220624.4fbfee34@pedra.chehab.org>
+	<20090112162337.318dd61d.akpm@linux-foundation.org>
+	<20090113184755.87720@gmx.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 9:45 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Andi Kleen <ak@linux.intel.com> wrote:
->
->> Ingo Molnar wrote:
->>
->>>>> A far more useful design for handling MCE events would be to feed
->>>>> them into printk logging.
->>>> If there's ASCII logging it should be separate from normal printk.
->>>
->>> Well, why?
->>
->> Mostly because the problem is not a kernel issue. Especially large
->> systems with a lot of memory can generate a lot of corrected events (one
->> bit flips in DIMMs are not that uncommon) and it's not good to mix that
->> all up into other kernel messages. It also makes it more clear that it's
->> not a kernel problem, but a hardware problem. I've got feedback over the
->> years that confirm this sight.
->
-> Is your argument that syslog is not suitable for the logging of hw events?
+On Tue, 13 Jan 2009 19:47:55 +0100 handygewinnspiel@gmx.de wrote:
 
-I will argue that, yes.
+> Dear all,
+> 
+> i was kindly asked to provide some bug report about findutils-4.1.20 in conjunction with linux-2.6.28, so here we are..
+> 
+> > On Mon, 12 Jan 2009 22:06:24 -0200
+> > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > 
+> > > On Mon, 12 Jan 2009 13:21:30 -0800
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > (cc's added)
+> > > > 
+> > > > On Mon, 12 Jan 2009 19:04:20 -0200
+> > > > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > > > 
+> > > > > Do you know is there were any FS changes on 2.6.28 that could break
+> > the find
+> > > > > command? Maybe we have a regression here. At least, this user i
+> > complaining
+> > > > > that booting with findutils-4.1.20 and kernel 2.6.28 broke the
+> > result of the
+> > > > > find command.
+> > > > 
+> > > > Not known to me.
+> > > > 
+> > > > Please prepare a bug report and send it to
+> > > > 
+> > > > Andrew Morton <akpm@linux-foundation.org>
+> > > > Al Viro <viro@zeniv.linux.org.uk>
+> > > > linux-kernel@vger.kernel.org
+> > > > linux-fsdevel@vger.kernel.org
+> > > > 
+> > > > Thanks.
+> > > 
+> > > OK. I'll ask the reporter for him to open a bugzilla.
+> > > 
+> > 
+> > An emailed report would be preferred, please.  Some people handle bugzilla
+> > OK.  Linux VFS developers are not amongst them ;)
+> 
+> 
+> With kernel 2.6.28 and findutils-4.1.20 the "find" utility from this package fails with the error message
+>  "Der Wert ist zu gro__ f__r den definierten Datentyp". It randomly fails on different folders, it works on some folders and fails on others.
+> [code]
+> find ../ -name *.c
+> find: ../: Der Wert ist zu gro__ f__r den definierten Datentyp
+> [/code]
+> translation to English: "The value is too big for defined data type."
+> 
+> If i boot from any other kernel the find utility works again as expected. I tried the following kernels
+> - 2.6.22.4 = OK
+> - 2.6.23.1 = OK
+> - 2.6.26.3 = OK
+> - 2.6.27.9 = OK
+> - 2.6.28 = Error
+> 
+> 2.6.27.9 and 2.6.28 used the same .config (copy and paste, make oldconfig, make menuconfig to be shure..)
+> 
+> root file system is xfs, system is 32Bit LinuxFromScratch, if this matters. By compiling findutils-4.4.0 i could solve the problem. But still there is the question what happens here and why older ones are broken.
+> 
+> btw: unfortunally i overwrote the old "find" while installing new findutils, but today i tried to re-compile it from old sources and retry and i see exactly the same error behaviour.
+> 
+> Is that something already known?
+> 
 
-> If that is your argument then the answer is to extend syslog with those
-> aspects, instead of widening the quirky /dev based mce ABIs to achieve
-> something similar.
+It's the first such report I've seen.
 
-I don't like "extend" in this context.  I'd prefer to think of it as a
-side-band solution that we need.  And yes, such a solution COULD
-obsolete mcelog.  Do you have such a solution done?  Specced?
+Could you please generate the strace output for the failing command so
+we can see which syscall is failing?
 
-> If you think that it's suitable then that contradicts your point above.
->
->> [...]
->>
->> None of the points above are real show stoppers for an ASCII interface,
->> but I think with all of this above together considered it's not really
->> an attractive change.
->>
->> I think what could be done is:
->>
->> - Investigate how to make the panic message more information without
->>   adding full decoders.
->>
->> - Implement the default panic timeout method
->>   described above to get automatic on disk logging in common cases.
->>
->> Would that address your concerns?
->
-> For me the main blocking point is that mcelog uses a quirky, binary
-> side-channel instead of using our main ASCII based logging abstraction
-> that we have in Linux: printk + syslog.
-
-It's not particularly quirky - it's a fixed-size ringbuffer.  You're
-trying to spin it as some eccentric interface designed by tripped-out
-hippies, but it's not really.  It's just a simple piece of plumbing
-for a very specific purpose, which exists because there was no better
-answer at the time (is there one now?)
-
-> That is a high level argument, while most of your arguments are low level.
-> I dont think you can understand my argument if you concentrate on the low
-> level only.
->
-> We need to resolve this instead of expanding the broken /dev/mcelog
-> interface. If we expand the broken interface first then that removes all
-> the incentives to enhance the primary logging facility of Linux in this
-> area.
-
-I'm 100% on board with that and will even help staff the effort.  This
-is something that is VERY HIGHLY desired here.  I already have a
-couple peopel looking at this and other HW-error reporting issues.
-
-> Anyway, this merge window has been very crowded in the x86 space already,
-> and the MCE topic is not particularly super-important to have right now
-> either, so lets skip it for this cycle so that we have more time to
-> cleanly work out these details.
-
-Thanks!
-
-> Let me know if there are must-have fixes in it and we can cherry-pick it
-> over into x86/urgent.
-
-Tim
