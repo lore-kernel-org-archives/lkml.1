@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZAMOit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbZAMOkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbZAMOit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZAMOik
+	id S1758469AbZAMOkk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZAMOkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:38:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:43512 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZAMOij (ORCPT
+	Tue, 13 Jan 2009 09:40:32 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52084 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbZAMOkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:38:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=WA46sZHYyeM7muxiI0gUyqc+yWox7FXYQGXHjlqr5OuBdl9hTDi52u+2IeG944Pek8
-         wTrHUqCbynUh1S4fHhXe0j6wiidTniBFs5qzDXt4avLJcn9k2upftcrchk+H0YHrNn4t
-         08N9yaE93cP6BIc9dQ3VOBUe5kg6hErcFOYUs=
-Date: Tue, 13 Jan 2009 17:38:35 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] oom_kill -- don't call for int_sqrt(0)
-Message-ID: <20090113143835.GI7682@localhost>
+	Tue, 13 Jan 2009 09:40:31 -0500
+Date: Tue, 13 Jan 2009 15:42:33 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: kernel list <linux-kernel@vger.kernel.org>, jack@suse.cz, tytso@mit.edu
+Subject: Re: ext2 + -osync: not as easy as it seems
+Message-ID: <20090113144233.GC1983@elf.ucw.cz>
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090113134503.41318144@lxorguk.ukuu.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no need to call for int_sqrt if argument is 0.
+On Tue 2009-01-13 13:45:03, Alan Cox wrote:
+> > Plus it has a nasty behaviour where it reverts to -W1 if disk
+> > connection is momentarily lost. (If you unplug/replug SATA disk, linux
+> > will happily rediscover and use it, but -W0 was already forgotten at
+> > that point, right?)
+> 
+> If you momentarily lose power your disk state isn't defined anyway. If
+> you do that with the SATA code it should treat it the same as a scsi disk
+> swap so it'll get a new device and the old fs will go down.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
-
-Please review.
-
- mm/oom_kill.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.git/mm/oom_kill.c
-===================================================================
---- linux-2.6.git.orig/mm/oom_kill.c
-+++ linux-2.6.git/mm/oom_kill.c
-@@ -55,7 +55,7 @@ static DEFINE_SPINLOCK(zone_scan_lock);
- 
- unsigned long badness(struct task_struct *p, unsigned long uptime)
- {
--	unsigned long points, cpu_time, run_time, s;
-+	unsigned long points, cpu_time, run_time;
- 	struct mm_struct *mm;
- 	struct task_struct *child;
- 
-@@ -110,12 +110,10 @@ unsigned long badness(struct task_struct
- 	else
- 		run_time = 0;
- 
--	s = int_sqrt(cpu_time);
--	if (s)
--		points /= s;
--	s = int_sqrt(int_sqrt(run_time));
--	if (s)
--		points /= s;
-+	if (cpu_time)
-+		points /= int_sqrt(cpu_time);
-+	if (run_time)
-+		points /= int_sqrt(int_sqrt(run_time));
- 
- 	/*
- 	 * Niced processes are most likely less important, so double
+No, that is not what happened :-(. If I replug disk within 10 seconds,
+it just behaves as if nothing happened, and continues operating on the
+disk. AMD machine... but I don't think that matters.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
