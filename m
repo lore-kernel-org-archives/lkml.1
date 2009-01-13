@@ -1,100 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbZAMLyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZAMMA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbZAMLyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 06:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZAMLyL
+	id S1756172AbZAMMA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZAMMAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 06:54:11 -0500
-Received: from broadrack.ru ([195.178.208.66]:55551 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbZAMLyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 06:54:10 -0500
-Date: Tue, 13 Jan 2009 14:54:08 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: David Rientjes <rientjes@google.com>
-Cc: Bill Davidsen <davidsen@tmr.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-Message-ID: <20090113115408.GA22289@ioremap.net>
-References: <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112161931.6203f96e@lxorguk.ukuu.org.uk> <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Jan 2009 07:00:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47505 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbZAMMAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:00:14 -0500
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20090112230052.GB18771@elte.hu>
+References: <20090112213539.GA10720@gambetta>
+	 <20090112223421.GA20594@localdomain>  <20090112230052.GB18771@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 13:00:16 +0100
+Message-Id: <1231848016.442.112.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 01:54:02AM -0800, David Rientjes (rientjes@google.com) wrote:
-> > It is a theory, not a practice. OOM-killer most of time starts from ssh,
-> > database and lighttpd on the tested machines, when it could start in
-> > the reverse order and do not touch ssh at all. Better not from daemon
-> > itself, but its fastcgi spawned processes.
+On Tue, 2009-01-13 at 00:00 +0100, Ingo Molnar wrote:
+
+> From 23d9dc8bffc759c131b09a48b5215cc2b37a5ac3 Mon Sep 17 00:00:00 2001
+> From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> Date: Mon, 12 Jan 2009 22:35:42 +0100
+> Subject: [PATCH] x86, tlb flush_data: replace per_cpu with an array
 > 
-> In the unconstrained system-wide oom case, it scans each task on the 
-> system (which can take very long, ask SGI) and rates its badness scoring.  
-> When a memory-hogging task is identified, which you have complete control 
-> over in userspace by tuning /proc/pid/oom_adj, it attempts to kill a child 
-> first if it will allow for memory freeing without killing the parent.
-
-Should this explain why ssh is killed?
-
-> > I agree, that there are ways to tune the way oom-killer selects the
-> > victim, and likely after hours of games this subtly will work for the
-> > specified workload.
+> Impact: micro-optimization, memory reduction
 > 
-> It doesn't involve "hours of games," it is a very simple heuristic that 
-> you can easily tune to specify your preferences.
+> On x86_64 flush tlb data is stored in per_cpu variables. This is
+> unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
+> are accessed.
 > 
-> What you're looking for with your patch is simply a way to specify an oom 
-> preference before the task has been forked, but that's simple to do with 
-> the current logic since oom_adj scores are inherited and preference is 
-> given to killing a child before parent.
-
-It is very subtle approach. Consider the case when you have a pool of
-threads/processes which are created and released on demand, there are
-several such pools for different servers and you do know which one
-will very likely being guilty.
-
-Who should adjust the scores for newly created processes? Who should
-check that processes in the first group have negative oom ajustment and
-in the second group a positive value? Who determines when its time to
-ajust the scores?
-
-> > What I propose is the simplest way for the most
-> > commonly used case.
+> This patch aims at making the code less confusing (there's nothing
+> really "per_cpu") by using a plain array. It also would save some memory
+> on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
 > 
-> No, procfs is the correct interface for tuning oom kill preferences and 
-> not by name parsing.
+> [ Ravikiran G Thirumalai also pointed out that the correct alignment
+>   is ____cacheline_internodealigned_in_smp, so that there's no
+>   bouncing on vsmp. ]
 > 
-> With oom_adj scores, you have the ability to specify oom kill preferences 
-> within a cpuset or memory controller as well, whereas oom_victim_name is 
-> global and very costly when not found in select_bad_process().
->
-> > It is a help for the admin and not the force to
-> > invent complex machinery which will be error-prone and hard to debug
-> > when eventually oom happens.
+> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/tlb_64.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
 > 
-> It's very simple to debug the oom killer's decisions, which is why I 
-> introduced /proc/sys/vm/oom_dump_tasks.
-> 
-> It also requires two expensive scans of the entire tasklist (I introduced 
-> /proc/sys/vm/oom_kill_allocating_task specifically to avoid _one_ 
-> expensive scan) when oom_victim_name isn't found.
+> diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+> index f8be6f1..c5a6c6f 100644
+> --- a/arch/x86/kernel/tlb_64.c
+> +++ b/arch/x86/kernel/tlb_64.c
+> @@ -33,7 +33,7 @@
+>   *	To avoid global state use 8 different call vectors.
+>   *	Each CPU uses a specific vector to trigger flushes on other
+>   *	CPUs. Depending on the received vector the target CPUs look into
+> - *	the right per cpu variable for the flush data.
+> + *	the right array slot for the flush data.
+>   *
+>   *	With more than 8 CPUs they are hashed to the 8 available
+>   *	vectors. The limited global vector space forces us to this right now.
+> @@ -48,13 +48,13 @@ union smp_flush_state {
+>  		unsigned long flush_va;
+>  		spinlock_t tlbstate_lock;
+>  	};
+> -	char pad[SMP_CACHE_BYTES];
+> -} ____cacheline_aligned;
+> +	char pad[X86_INTERNODE_CACHE_BYTES];
+> +} ____cacheline_internodealigned_in_smp;
 
-It is not really costly, since most of the time we skip an entry and do
-not lock the task and do not calculate its badness value. No one scares
-that 'ps ax' is costly because it has to run through all the processes.
+That will make the below array 8*4096 bytes for VSMP, which pushes the
+limit for memory savings up to 256 cpus.
 
-Messing with the scores is actually more expensive since we have to lock
-the task and perform a calculus. I do not say it is wrong, but it is
-much more complex task to being stable compared to simple task selection
-by its name. It is what is used and what people expect to have (that's
-actually why it was implemented :) and not to write some daemons to
-monitor the clients and appropriate processes or change the code of the
-servers.
+I'm really dubious this patch is really worth it.
 
--- 
-	Evgeniy Polyakov
+>  /* State is put into the per CPU data section, but padded
+>     to a full cache line because other CPUs can access it and we don't
+>     want false sharing in the per cpu data segment. */
+> -static DEFINE_PER_CPU(union smp_flush_state, flush_state);
+> +static union smp_flush_state flush_state[NUM_INVALIDATE_TLB_VECTORS];
+>  
+>  /*
+>   * We cannot call mmdrop() because we are in interrupt context,
+> @@ -129,7 +129,7 @@ asmlinkage void smp_invalidate_interrupt(struct pt_regs *regs)
+>  	 * Use that to determine where the sender put the data.
+>  	 */
+>  	sender = ~regs->orig_ax - INVALIDATE_TLB_VECTOR_START;
+> -	f = &per_cpu(flush_state, sender);
+> +	f = &flush_state[sender];
+>  
+>  	if (!cpu_isset(cpu, f->flush_cpumask))
+>  		goto out;
+> @@ -169,7 +169,7 @@ void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
+>  
+>  	/* Caller has disabled preemption */
+>  	sender = smp_processor_id() % NUM_INVALIDATE_TLB_VECTORS;
+> -	f = &per_cpu(flush_state, sender);
+> +	f = &flush_state[sender];
+>  
+>  	/*
+>  	 * Could avoid this lock when
+> @@ -205,8 +205,8 @@ static int __cpuinit init_smp_flush(void)
+>  {
+>  	int i;
+>  
+> -	for_each_possible_cpu(i)
+> -		spin_lock_init(&per_cpu(flush_state, i).tlbstate_lock);
+> +	for (i = 0; i < ARRAY_SIZE(flush_state); i++)
+> +		spin_lock_init(&flush_state[i].tlbstate_lock);
+>  
+>  	return 0;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
