@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbZAMOps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZAMOqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761249AbZAMOps (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760664AbZAMOpb
+	id S1760948AbZAMOqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZAMOqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:45:31 -0500
-Received: from cmpxchg.org ([85.214.51.133]:39350 "EHLO cmpxchg.org"
+	Tue, 13 Jan 2009 09:46:46 -0500
+Received: from thunk.org ([69.25.196.29]:38788 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760558AbZAMOpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:45:30 -0500
-Date: Tue, 13 Jan 2009 15:45:15 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: checkpatch warning of struct indentation
-Message-ID: <20090113144515.GA5547@cmpxchg.org>
-References: <alpine.DEB.1.10.0901121253350.22796@gandalf.stny.rr.com> <c62985530901121009h372c805dj14c748c8f266235d@mail.gmail.com> <alpine.DEB.1.10.0901121323000.22796@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	id S1754928AbZAMOqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:46:46 -0500
+Date: Tue, 13 Jan 2009 09:46:40 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: ext2 + -osync: not as easy as it seems
+Message-ID: <20090113144640.GE17664@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901121323000.22796@gandalf.stny.rr.com>
+In-Reply-To: <20090113143011.GB10064@duck.suse.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 01:35:43PM -0500, Steven Rostedt wrote:
-
-> In a lot of cases, (for Germans) "seit" can correctly be translated into
-> "since" but there are times that it just sounds funny.
-
-It can only be translated to `since' when you mean a single point in
-the past and you have to use `for' when you refer to a whole period.
-
-`since 29th august' vs. `for three years'
-
-No?
-
-> A common phrase from Germans are:
+On Tue, Jan 13, 2009 at 03:30:12PM +0100, Jan Kara wrote:
 > 
->   I've been doing this since three years.
+>   But it's not the whole story. Strictly speaking we should also call
+> blkdev_issue_flush() whenever we write things because of O_SYNC or
+> O_DIRSYNC flags. My patch does also that (it's based on the previous ext2
+> patch I've sent a while before).
 
-They slept in school :-)
+Looks good to me.
 
-	Hannes
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
+
+						- Ted
