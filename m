@@ -1,144 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbZAMXjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbZAMXj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbZAMXjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZAMXiz
+	id S1760255AbZAMXj4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZAMXjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:38:55 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:54600 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752722AbZAMXiy convert rfc822-to-8bit (ORCPT
+	Tue, 13 Jan 2009 18:39:45 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:54036 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbZAMXjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:38:54 -0500
-Message-ID: <496D25F8.2080505@cosmosbay.com>
-Date: Wed, 14 Jan 2009 00:38:32 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Tue, 13 Jan 2009 18:39:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:subject:to:cc:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding;
+        b=TqZzEZFooqk0nVageYSQcBxvEoikWJMsA5oZPEVj04CewSkysu1lJnAOa0za3F0j87
+         qvfMsZim5aVgiM7TRofYReXtOtPdybwAHc2UWbnwjogDpOpkOd/ekXyHb79moZ5rEjr0
+         MYHneJCbiBBe1ouFGcerXju9DdT3kMPykYmf4=
+From: Nelson Castillo <arhuaco@freaks-unidos.net>
+Subject: [PATCH 0/5][RFC] Touchscreen filters
+To: linux-kernel@vger.kernel.org
+Cc: linux-input@vger.kernel.org, andy@openmoko.com
+Date: Tue, 13 Jan 2009 18:39:30 -0500
+Message-ID: <20090113233743.26361.14313.stgit@fugue.noexisteestedominiotanlargo.biz>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Volker.Lendecke@SerNet.DE, linux-kernel@vger.kernel.org,
-       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com>
-In-Reply-To: <496D2078.9080302@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 14 Jan 2009 00:38:33 +0100 (CET)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Andrew Morton a écrit :
->> (cc's added)
->>
->> On Thu, 8 Jan 2009 11:13:51 +0100
->> Volker Lendecke <Volker.Lendecke@SerNet.DE> wrote:
->>
->>> Hi!
->>>
->>> While implementing splice support in Samba for better
->>> performance I found it blocking when trying to pull data off
->>> tcp into a pipe when the recvq was full. Attached find a
->>> test program that shows this behaviour, on another host I
->>> started
->>>
->>> netcat 192.168.19.10 4711 < /dev/zero
->>>
->>> vlendec@lenny:~$ uname -a
->>> Linux lenny 2.6.28-06857-g5cbd04a #7 Wed Jan 7 10:10:42 CET 2009 x86_64 = GNU/Linux
->>> vlendec@lenny:~$ gcc -o splicetest /host/home/vlendec/splicetest.c -O3 -Wall
->>> vlendec@lenny:~$ ./splicetest out 65536 &
->>> [1] 697
->>> vlendec@lenny:~$ strace -p 697
->>> Process 697 attached - interrupt to quit
->>> splice(0x3, 0, 0x5, 0, 0x56a0, 0x1)     = 22176
->>> splice(0x7, 0, 0x4, 0, 0x10000, 0x1^C <unfinished ...>
-> 
-> Volker, your splice() is a blocking one, from tcp socket to a pipe ?
-> 
-> If no other thread is reading the pipe, then you might block forever
-> in splice_to_pipe() as soon pipe is full (16 pages).
-> 
-> As pages are not necessarly full (each skb will use at least one page, even if 
-> its length is small), it is not really possible to use splice() like this.
-> 
-> In your case, only safe way with current kernel would be to call splice()
-> asking for no more than 16 bytes, that would be really insane for your needs.
-> 
-> You may prefer a non blocking mode, at least when calling splice_to_pipe()
-> 
-> Maybe SPLICE_F_NONBLOCK splice() flag should only apply on pipe side.
-> tcp_splice_read() should not use this flag to select a blocking/nonbloking
-> mode on the source socket, but underlying file flag.
-> 
-> This way, your program could let socket in blocking mode, yet call splice()
-> with SPLICE_F_NONBLOCK flag to not block on pipe.
-> 
+The following series implements a solution for a problem
+we have: lots of noise in the touchscreen of the Openmoko
+Neo1973/FreeRunner. This is the result of teamwork.
 
-This patch, coupled with the previous one from Willy Tarreau 
-(tcp: splice as many packets as possible at once)
-gives expected result.
+We are using a small touchscreen filtering framework
+in kernel space for the S3C2410/S3C2442 touchscreen
+controllers. The filters can be used by other drivers as
+well (we have noticed a few drivers include averaging and some
+other custom filters).
 
-[PATCH] net: splice() from tcp to socket should take into account O_NONBLOCK
+We do not want to port tslib to kernel space. The big
+difference is that in tslib you cannot give feedback to an
+interrupt handler. tslib does what it can, but we have the
+power in kernel space to do better.
 
-Instead of using SPLICE_F_NONBLOCK to select a non blocking mode both on
-source tcp socket and pipe destination, we use the underlying file flag (O_NONBLOCK)
-for selecting a non blocking socket.
+With the current implementation we try to get as many points
+as we need to in order to provide a clean input event that
+does not need further user-space mangling. If we fail to get
+a valid point after some time we just ignore the event. In
+our tests this approach has been performing very well. Some
+of us think it would be nice if a program can gather clean
+touchscreen data from /dev/inputX.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Here is a document that explains the filters with links to
+source code that lives in our GIT repository and some videos
+The videos are not polished but they illustrate what we
+wish to show.
 
-diff --git a/include/linux/net.h b/include/linux/net.h
-index 4515efa..10e38d1 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -185,7 +185,7 @@ struct proto_ops {
- 				      struct vm_area_struct * vma);
- 	ssize_t		(*sendpage)  (struct socket *sock, struct page *page,
- 				      int offset, size_t size, int flags);
--	ssize_t 	(*splice_read)(struct socket *sock,  loff_t *ppos,
-+	ssize_t 	(*splice_read)(struct file *file,  loff_t *ppos,
- 				       struct pipe_inode_info *pipe, size_t len, unsigned int flags);
- };
- 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 218235d..e8e7f80 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -309,7 +309,7 @@ extern int			tcp_twsk_unique(struct sock *sk,
- 
- extern void			tcp_twsk_destructor(struct sock *sk);
- 
--extern ssize_t			tcp_splice_read(struct socket *sk, loff_t *ppos,
-+extern ssize_t			tcp_splice_read(struct file *file, loff_t *ppos,
- 					        struct pipe_inode_info *pipe, size_t len, unsigned int flags);
- 
- static inline void tcp_dec_quickack_mode(struct sock *sk,
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index ce572f9..c777d88 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -548,10 +548,11 @@ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
-  *    Will read pages from given socket and fill them into a pipe.
-  *
-  **/
--ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
-+ssize_t tcp_splice_read(struct file *file, loff_t *ppos,
- 			struct pipe_inode_info *pipe, size_t len,
- 			unsigned int flags)
- {
-+	struct socket *sock = file->private_data;
- 	struct sock *sk = sock->sk;
- 	struct tcp_splice_state tss = {
- 		.pipe = pipe,
-@@ -572,7 +573,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
- 
- 	lock_sock(sk);
- 
--	timeo = sock_rcvtimeo(sk, flags & SPLICE_F_NONBLOCK);
-+	timeo = sock_rcvtimeo(sk, file->f_flags & O_NONBLOCK);
- 	while (tss.len) {
- 		ret = __tcp_splice_read(sk, &tss);
- 		if (ret < 0)
+  https://wiki.openmoko.org/wiki/Touchscreen_Filters
+
+We hope this work is suitable for mainline inclusion.
+
+We will be waiting for your comments.
+
+Thanks,
+Nelson, on behalf of all who contributed to what is proposed in this email.
+
+ drivers/input/touchscreen/Kconfig            |   44 +++++
+ drivers/input/touchscreen/Makefile           |    5 +
+ drivers/input/touchscreen/ts_filter.c        |   64 ++++++++
+ drivers/input/touchscreen/ts_filter_group.c  |  221 ++++++++++++++++++++++++++
+ drivers/input/touchscreen/ts_filter_linear.c |  178 +++++++++++++++++++++
+ drivers/input/touchscreen/ts_filter_mean.c   |  172 ++++++++++++++++++++
+ drivers/input/touchscreen/ts_filter_median.c |  215 +++++++++++++++++++++++++
+ include/linux/ts_filter.h                    |   56 +++++++
+ include/linux/ts_filter_group.h              |   39 +++++
+ include/linux/ts_filter_linear.h             |   64 ++++++++
+ include/linux/ts_filter_mean.h               |   34 ++++
+ include/linux/ts_filter_median.h             |   36 ++++
+ 12 files changed, 1128 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/ts_filter.c
+ create mode 100644 drivers/input/touchscreen/ts_filter_group.c
+ create mode 100644 drivers/input/touchscreen/ts_filter_linear.c
+ create mode 100644 drivers/input/touchscreen/ts_filter_mean.c
+ create mode 100644 drivers/input/touchscreen/ts_filter_median.c
+ create mode 100644 include/linux/ts_filter.h
+ create mode 100644 include/linux/ts_filter_group.h
+ create mode 100644 include/linux/ts_filter_linear.h
+ create mode 100644 include/linux/ts_filter_mean.h
+ create mode 100644 include/linux/ts_filter_median.h
 
