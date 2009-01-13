@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbZAMVzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbZAMV5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758019AbZAMVzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 16:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZAMVzj
+	id S1757382AbZAMV5z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 16:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZAMV5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 16:55:39 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47591 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbZAMVzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 16:55:38 -0500
-Date: Tue, 13 Jan 2009 16:55:26 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Helge Deller <deller@gmx.de>
-Cc: David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-serial@vger.kernel.org, "Rafael J. Wysocky" <rjw@sisk.pl>,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] fix early_serial_setup() regression
-Message-ID: <20090113215526.GG25103@bombadil.infradead.org>
-References: <496D0CCB.1020706@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496D0CCB.1020706@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Jan 2009 16:57:46 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:60961 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754127AbZAMV5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 16:57:45 -0500
+Subject: checkpatch confused by pre-existing #endif
+From: Pavel Roskin <proski@gnu.org>
+To: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 16:57:43 -0500
+Message-Id: <1231883863.21706.17.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 10:51:07PM +0100, Helge Deller wrote:
-> commit b430428a188e8a434325e251d0704af4b88b4711,
-> 	"8250: Don't clobber spinlocks."
-> introduced a regression on the parisc architecture, which
-> broke the handover to the serial port at boottime.
-> 
-> early_serial_setup() was changed to only copy a subset of the
-> uart_port fields, and sadly the "type" and "line" fields
-> were forgotten and thus the serial port was not initialized
-> and could not be used for a handover.
-> This patch fixes this by copying the missing fields.
-> 
-> As this change to early_serial_setup() doesn't need an 
-> initialized spinlock in the uart_port struct any longer, we
-> can drop the spinlock initialization in the superio driver.
-> 
-> CC: David Daney <ddaney@caviumnetworks.com>
-> CC: Tomaso Paoletti <tpaoletti@caviumnetworks.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> CC: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: Kyle McMartin <kyle@mcmartin.ca>
-> CC: linux-parisc@vger.kernel.org
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> 
+Hello!
 
-Acked-by: Kyle McMartin <kyle@mcmartin.ca>
+This patch confuses checkpatch.pl from Linux 2.6.29-rc1:
 
-Linus, please apply.
+====================
+--- foo.h.old	2009-01-13 16:48:22.000000000 -0500
++++ foo.h	2009-01-13 16:48:18.000000000 -0500
+@@ -3,4 +3,8 @@
+ 
+ 
+ 
++#ifdef FOOBAR
++#define foo
++#endif
++
+ #endif /* FOO_H */
+====================
+
+$ scripts/checkpatch.pl foo.diff 
+Can't use an undefined value as an ARRAY reference at
+scripts/checkpatch.pl line 453.
+
+Apparently, the last #endif causes some data to be popped from the stack
+for preprocessor directives.  However, the corresponding #ifdef is
+outside the patch, so this fails.
+
+-- 
+Regards,
+Pavel Roskin
