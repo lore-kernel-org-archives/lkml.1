@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZAMXSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZAMXSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZAMXSF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZAMXRb
+	id S1758905AbZAMXSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbZAMXRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:17:31 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:42349 "EHLO lll.lu"
+	Tue, 13 Jan 2009 18:17:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53061 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbZAMXR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:17:29 -0500
-Message-ID: <496D20FB.5010307@knaff.lu>
-Date: Wed, 14 Jan 2009 00:17:15 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1757884AbZAMXRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:17:42 -0500
+Date: Tue, 13 Jan 2009 18:16:17 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] ftrace: show ftrace_bprintk()'s formats
+Message-ID: <20090113231617.GD3210@redhat.com>
+References: <495ADF57.8030008@cn.fujitsu.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: The policy on initramfs decompression failure
-References: <496D17F9.8080605@zytor.com>
-In-Reply-To: <496D17F9.8080605@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495ADF57.8030008@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> As part of the multi-compression-formats patch, the issue has come up as 
-> to what is the preferred policy is on initramfs decompression failure, 
-> due to either corruption or due to the use of a compression format which 
-> the kernel does not support.
+On Wed, Dec 31, 2008 at 10:56:23AM +0800, Lai Jiangshan wrote:
 > 
-> I had personally assumed the proper policy would be to panic, since it 
-> is unlikely to mean the system can be booted.  However, Ingo brought up 
-> the case where the initramfs is auxilliary to being able to boot the 
-> full system, for example the initramfs supplied is primarily a data 
-> carrier, and either the builtin initramfs or the kernel itself is 
-> sufficient to boot.
+> Impact: let user knows the format
 > 
-> By this argument, we should change initramfs decoding failure to a 
-> KERN_CRIT message, and in the (presumably most common) case that it does 
-> not suffice to boot the system, we will get a panic in short order as 
-> the system is unable to find init.
+> Create a file on <debugfs-dir>/tracing/ to show ftrace_bprintk()'s formats.
 > 
-> This argument seems to mostly hold water, but it does implement a policy 
-> change over the current code.  Furthermore, it does make me concerned 
-> that a *partial* decoding failure (such as can be caused by a corrupt 
-> image, or, say, a gzipped image concatenated to a bzip2 image, with the 
-> kernel only supporting bzip2) could cause a booted-but-dysfunctional 
-> system, which is in many configurations a worse failure mode than a panic.
+> This formats will help for these condition:
+> 1) User get binary data from core file.(formats are backup before coredump)
+> 2) User splice ring_buffer to a file.
+> User can use formats for parsing the binary data in userspace.
 > 
-> Hence I would like to solicit opinions about what the policy should be.
-> 
-> 	-hpa
 
-There is also the additional issue that continuing to boot might hide
-the original error message. Indeed, the kernel might panic eventually
-(as you said, for example due to missing init), but in the meantime the
-original "junk in compressed archive" might have scrolled off the
-screen. And after a panic, shift+pageup does not work to inspect past
-messages.
+When I 'cat' trace_bprintk_formats on my system the file is empty. This
+seems to be b/c 'ftrace_bprintk' is not being used in this patchset. It
+can't be used in patch #5 during marker register b/c the format wouldn't
+be known at runtime. Thus, as it currently stands this patch, patch 4/5,
+isn't adding much?
 
-Regards,
+A thought on how this might be resolved would be to have the core marker
+code pass us its address so this could be recorded in the trace buffer.
+Then, also add some debug file that displays the markers and maps marker
+addresses with format strings.
 
-Alain
+thanks,
+
+-Jason
+
 
