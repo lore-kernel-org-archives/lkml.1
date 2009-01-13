@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZAMJ1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbZAMJh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbZAMJ1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 04:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZAMJ1g
+	id S1758769AbZAMJh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 04:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZAMJht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 04:27:36 -0500
-Received: from websrv.werbeagentur-aufwind.de ([88.198.253.206]:52370 "EHLO
-	websrv.werbeagentur-aufwind.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755200AbZAMJ1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 04:27:33 -0500
-Subject: Re: [Xen-devel] Re: OOPS and panic on 2.6.29-rc1 on xen-x86
-From: Christophe Saout <christophe@saout.de>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       linux-mm@kvack.org, xen-devel@lists.xensource.com
-In-Reply-To: <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
-References: <20090112172613.GA8746@shion.is.fushizen.net>
-	 <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 10:25:31 +0100
-Message-Id: <1231838731.4823.2.camel@leto.intern.saout.de>
+	Tue, 13 Jan 2009 04:37:49 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44799 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751312AbZAMJhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 04:37:48 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+UOSRenMiU+evb9UrroLale/mTyZa1y2AkX1kFjT
+	BskNUZ3FCGvsyH
+Subject: Re: Performance regression of specjbb2005/aim7 with 2.6.29-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ming.m.lin@intel.com,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1231837036.11429.27.camel@ymzhang>
+References: <1231837036.11429.27.camel@ymzhang>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 13 Jan 2009 10:37:44 +0100
+Message-Id: <1231839464.14655.12.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan,
-
-> I've bisected the bug in question, and the faulty commit appears to be:
-> commit e97a630eb0f5b8b380fd67504de6cedebb489003
-> Author: Nick Piggin <npiggin@suse.de>
-> Date:   Tue Jan 6 14:39:19 2009 -0800
+On Tue, 2009-01-13 at 16:57 +0800, Zhang, Yanmin wrote:
+> Comparing with 2.6.28's results, specjbb2005 has about 7% regression with 2.6.29-rc1
+> on my a couple of x86_64 machines. aim7 has about 1.7% regression.
 > 
->     mm: vmalloc use mutex for purge
+> Ming did a quick bisect with aim7 and located below patch.
 > 
->     The vmalloc purge lock can be a mutex so we can sleep while a purge is
->     going on (purge involves a global kernel TLB invalidate, so it can take
->     quite a while).
+> ﻿commit 0a582440ff546e2c6610d1acec325e91b4efd313
+> Author: Mike Galbraith <efault@gmx.de>
+> Date:   Fri Jan 2 12:16:42 2009 +0100
 > 
->     Signed-off-by: Nick Piggin <npiggin@suse.de>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+>     sched: fix sched_slice()
+>     
+>     Impact: fix bad-interactivity buglet
+>     
+>     Fix sched_slice() to emit a sane result whether a task is currently
+>     enqueued or not.
+>     
+>     Signed-off-by: Mike Galbraith <efault@gmx.de>
+>     Tested-by: Jayson King <dev@jaysonking.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> The bug is easily reproducable by a kernel build on -j4 - it will
-> generally OOPS and panic before the build completes.
-> Also, I've tested it with ext3, and it still occurs, so it seems
-> unrelated to btrfs at least :)
+> 
+> After we revert the patch, aim7 regression disappeared. specjbb2005 regression becomes
+> less than 1.5% on 8-core stokley and disappears on 16-core tigerton. I don't know what
+> causes the last 1.5% regression.
+> 
+> As tbench has about 5% improvement and oltp(mysql+sysbench) has 5% improvement, we also tested
+> to make sure such improvement isn't related to above patch. volanoMark's improvement is also not
+> related to the patch. So it seems safe to revert it.
 
-Nice!
+No, it's not safe to just revert.  You can replace it with something
+else, but as long as sched_slice() is called for unqueued tasks, it must
+emit sane slices, otherwise you can experience a latency-hit-from-hell.
 
-Reverting this also fixes the BUG() I was seeing when testing the Dom0
-patches on 2.6.29-rc1+tip.  It just ran stable for an hour compiling
-gimp and playing music on my notebook (and then I had to leave).
+See thread: problem with "sched: revert back to per-rq vruntime"?
 
-Thanks,
-	Christophe
-
+	-Mike
 
