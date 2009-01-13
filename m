@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbZAMMeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbZAMMfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbZAMMeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZAMMeh
+	id S1758684AbZAMMfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZAMMfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:34:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46980 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753214AbZAMMeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:34:36 -0500
-Date: Tue, 13 Jan 2009 13:34:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Michal Hocko <mhocko@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
-Message-ID: <20090113123425.GB29926@elte.hu>
-References: <20090113122455.GA24824@dhcp35.suse.cz>
+	Tue, 13 Jan 2009 07:35:43 -0500
+Received: from proxy3.bredband.net ([195.54.101.73]:50041 "EHLO
+	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbZAMMfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:35:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvoXAIMZbEnVcsfHPGdsb2JhbAAIiQuKfAEBAQE1AbtjhW8
+Message-ID: <496C8A98.90309@sundmangroup.com>
+Date: Tue, 13 Jan 2009 13:35:36 +0100
+From: Matias <linux@sundmangroup.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113122455.GA24824@dhcp35.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Intel x86 Dual Core & Linux AMP
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+Is there a way to boot a normal standard home x86 dual core PC with two 
+different Linux Kernels without a hypervisor?
+The idea is of course to give the Kernels their own address space and 
+their own rootfile systems, the devices would be unique for each kernel etc.
 
-* Michal Hocko <mhocko@suse.cz> wrote:
+Can this be done with a standard BIOS and GRUB/LILO?
 
-> Hi,
-> I am not sure whether someone has already reported this, but 
-> I can see the following early boot WARNING with the 2.6.29-rc1 kernel in
-> the serial console output:
-> 
-> ------------[ cut here ]------------
-> WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
+Cheers // Matias
 
-That one should be fixed in tip/master and it is in the to-Linus queue of 
-fixes:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-it's this commit:
-
-  01e3eb8: Revert "sched: improve preempt debugging"
-
-if you want to cherry-pick the fix.
-
-	Ingo
