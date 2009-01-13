@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZAMVhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbZAMVkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbZAMVhX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 16:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbZAMVhF
+	id S1757376AbZAMVkf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 16:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZAMVk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 16:37:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44494 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754412AbZAMVhD (ORCPT
+	Tue, 13 Jan 2009 16:40:27 -0500
+Received: from smtprelay08.ispgateway.de ([80.67.29.8]:53363 "EHLO
+	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578AbZAMVk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 16:37:03 -0500
-Date: Tue, 13 Jan 2009 13:35:44 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Connor Behan <connor.behan@gmail.com>
-cc: Grant Grundler <grundler@parisc-linux.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Linux PCI <linux-pci@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
-Subject: Re: Can't allocate resources for PCI video card behind bridge
-In-Reply-To: <496D0653.3040709@gmail.com>
-Message-ID: <alpine.LFD.2.00.0901131331330.6528@localhost.localdomain>
-References: <49665493.4070808@gmail.com> <200901082057.00170.rjw@sisk.pl> <200901081226.38909.jbarnes@virtuousgeek.org> <200901091530.58694.bjorn.helgaas@hp.com> <20090110200902.GA14664@colo.lackof.org> <496BFFAA.3000707@gmail.com>
- <alpine.LFD.2.00.0901121856150.6528@localhost.localdomain> <496D0653.3040709@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 13 Jan 2009 16:40:26 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Chris Mason <chris.mason@oracle.com>
+Subject: [RFC][PATCH] btrfs: missing initialization while adding extent
+Date: Tue, 13 Jan 2009 22:41:48 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901132241.49268.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If we race while adding an extent and successful look it
+of afterwards, we don't set the em->bdev. Now we do :-)
 
 
-On Tue, 13 Jan 2009, Connor Behan wrote:
->
-> I was about to say that the kernel where this worked once doesn't allow this
-> to work again. I downgraded to 2.6.27 and got the same problem. But then I
-> also downgraded udev, mkinitcpio, lilo, device-mapper, pciutils and hwdetect
-> and reset the defaults on my BIOS and took out pci=assign-busses and then the
-> card started working.
+Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
+---
+ fs/btrfs/disk-io.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Ok, can you now try to upgrade just the kernel? IOW, it would be good to 
-try to figure out what it is that triggers this problem.
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 81a3138..25a0d15 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -118,6 +118,7 @@ static struct extent_map *btree_get_extent(struct inode *inode,
+ 		free_extent_map(em);
+ 		em = lookup_extent_mapping(em_tree, start, len);
+ 		if (em) {
++			em->bdev = BTRFS_I(inode)->root->fs_info->fs_devices->latest_bdev;
+ 			ret = 0;
+ 		} else {
+ 			em = lookup_extent_mapping(em_tree, failed_start,
+-- 
+1.5.6.3
 
-> dmesg: http://pastebin.com/m68dd0ce
-> lspci: http://pastebin.com/m4c01d354
-
-Yes, now I see a new bridge:
-
-	08:00.0 PCI bridge: PLX Technology, Inc. PEX8112 x1 Lane PCI Express-to-PCI Bridge (rev aa) (prog-if 00 [Normal decode])
-
-and behind this bridge is this:
-
-	09:00.0 VGA compatible controller: ATI Technologies Inc RV505 [Radeon X1550 Series] (prog-if 00 [VGA controller])
-	09:00.1 Display controller: ATI Technologies Inc RV505 [Radeon X1550 Series] (Secondary)
-
-> It's quite a bit different from when I remember it working the other time. The
-> errors on BARs 7, 8 and 9 still show up and the card is on bus 09.
-
-Yup. It's all ok. 
-
-> However after I did this I updated all those packages to the newest 
-> versions except I did so one at a time not all at once. Now I'm up to 
-> date and still have this card working. So I'm sorry to bother you with 
-> this, the kernel does not need to be patched for this at all. It's 
-> either a BIOS problem or a distro problem caused by updating too many 
-> packages at once. Either way it's fixed now. Thanks alot.
-
-Well, your dmesg is now from a 2.6.27 kernel, so I'd like to double-check 
-and verify that upgrading the kernel really works now. It does sound like 
-some non-kernel-related issue, but still..
-
-		Linus
