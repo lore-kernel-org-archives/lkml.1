@@ -1,70 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZAMWdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbZAMWeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbZAMWdV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZAMWdK
+	id S1756932AbZAMWeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZAMWeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:33:10 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60608 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbZAMWdJ (ORCPT
+	Tue, 13 Jan 2009 17:34:01 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:15542 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbZAMWeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:33:09 -0500
-Date: Tue, 13 Jan 2009 23:33:00 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net
-Subject: Re: hp_accel: do not call ACPI from invalid context
-Message-ID: <20090113223300.GB7770@elf.ucw.cz>
-References: <20090112103155.GA6652@elf.ucw.cz> <20090113141116.6faeada9.akpm@linux-foundation.org>
+	Tue, 13 Jan 2009 17:34:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=dtHfjXpMFaC3/F7CRRRbbNEbhve9yxnKAEI4TV/wN7aU+X05IMqgwrlNmZxG0+OF/S
+         5rCh1CtCM9mgpJQwJMmnSyAnP4hfbWhFmyrlgEBArEGyctVbvQmszxRo9oRAVIfh0hVm
+         /FrzfjnrAQdx0EzoP/Pn6QQggyqMKwiJRM5K8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113141116.6faeada9.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090110161137.GA20526@Krystal>
+References: <20090109235449.GA21999@Krystal> <20090110161137.GA20526@Krystal>
+Date: Wed, 14 Jan 2009 07:33:58 +0900
+X-Google-Sender-Auth: 7c22ed099d6a4a8d
+Message-ID: <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com>
+Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-01-13 14:11:16, Andrew Morton wrote:
-> On Mon, 12 Jan 2009 11:31:55 +0100
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > 
-> > LED on HP notebooks is connected through ACPI. That unfortunately
-> > means that it needs to be delayed by using schedule_work() to avoid
-> > calling ACPI interpretter in invalid context. This patch fixes that.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+Hi Mathieu
+
+2009/1/11 Mathieu Desnoyers <compudj@krystal.dyndns.org>:
+> Hi,
+>
+> LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
+> It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+
+-ECANTBUILD
+
+fs/jbd2/commit.c:27:24: error: trace/jbd2.h: No such file or directory
+fs/jbd2/commit.c:29: warning: data definition has no type or storage class
+fs/jbd2/commit.c:29: warning: type defaults to 'int' in declaration of
+'DEFINE_TRACE'
+fs/jbd2/commit.c:29: warning: parameter names (without types) in
+function declaration
+fs/jbd2/commit.c:30: warning: data definition has no type or storage class
+fs/jbd2/commit.c:30: warning: type defaults to 'int' in declaration of
+'DEFINE_TRACE'
+fs/jbd2/commit.c:30: warning: parameter names (without types) in
+function declaration
+fs/jbd2/commit.c: In function 'jbd2_journal_commit_transaction':
+fs/jbd2/commit.c:374: error: implicit declaration of function
+'trace_jbd2_start_commit'
+fs/jbd2/commit.c:1003: error: implicit declaration of function
+'trace_jbd2_end_commit'
+make[2]: *** [fs/jbd2/commit.o] Error 1
 
 
-> > -static void hpled_set(struct led_classdev *led_cdev,
-> > -			       enum led_brightness value)
-> > -{
-> > -	hpled_acpi_write(adev.device->handle, !!value);
-> > -}
-> > -
-> > -static struct led_classdev hpled_led = {
-> > -	.name			= "hp:red:hddprotection",
-> > -	.default_trigger	= "heartbeat",
-> 
-> Current mainline+lis3lv02d-merge-with-leds-hp-disk.patch has "none"
-> here, so the patch didn't apply.
+because
 
-Oops, sorry about that. I was hand-editing patches a bit too much :-(.
+jbd2-instrumentation-move-to-tracepoints patch only change following two files.
+it didn't create trace/jbd2.h
 
-> > -	.brightness_set		= hpled_set,
-> > +static struct delayed_led_classdev hpled_led = {
-> > +	.led_classdev = {
-> > +		.name			= "hp::hddprotect",
-> > +		.default_trigger	= "none",
-> 
-> But I assume we wanted "none" here anyway, so that's what I'll do.
+  fs/jbd2/checkpoint.c 		
+  fs/jbd2/commit.c 		
 
-Thanks!
-									Pavel
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+
+
+>
+> A new version including ext4 probe module should be available shortly.
+>
+> Installation QUICKSTART :
+> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
+>
+> git url :
+>
+> http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28-lttng-0.74
+>
+> tarball :
+>
+> http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.74.tar.gz
+>
+> jbd2/ext4 patches within the tarball :
+>
+> ext4-instrumentation-add-tracepoints.patch
+> jbd2-instrumentation-move-to-tracepoints.patch
+> lttng-instrumentation-jbd2-probes.patch
+>
+> Mathieu
+>
+> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+>> Hi everyone,
+>>
+>> I just ported LTTng to 2.6.28. Enjoy !
+>>
+>> You may also want to upgrade to lttv 0.12.5 which puts back the syscall
+>> and softirq names in the event list.
+>>
+>> For newcomers, instructions to install LTTng can be found at :
+>> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
+>>
+>> (I just updated the QUICKSTART guide. Please feel free to try it and
+>> report inconsistencies.)
+>>
+>> Mathieu
+>>
+>>
+>> --
+>> Mathieu Desnoyers
+>> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>>
+>> _______________________________________________
+>> ltt-dev mailing list
+>> ltt-dev@lists.casi.polymtl.ca
+>> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+>>
+>
+> --
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
