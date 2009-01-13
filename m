@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZAMP57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbZAMP6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbZAMP57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 10:57:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZAMP5s
+	id S1757059AbZAMP6b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 10:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZAMP5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 10:57:48 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:54245 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZAMP5q (ORCPT
+	Tue, 13 Jan 2009 10:57:55 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:49508 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756205AbZAMP5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 10:57:46 -0500
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: :IWUQZkOgW+3CqJDygERk+CxWRHhOt44/ODBTDQK7pLSymoIa1YEVchgk7u1gmgw=
-Subject: Re: "Artem Onair Comcard 11": Variation found!
-From: Michael Jarosch <mitsch@riotmusic.de>
+	Tue, 13 Jan 2009 10:57:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=s3Jq/64Le7oWqAMww5uPaGxGVQl6HLUF7Bq+itkhhhKpKVV29N4ANnaDLGaras2pm5
+         k2VlfKbMUNmBFRkXc/RdaN4gvZAkXPvuJasAM0+6sK7HXRNP00DOkTfkg6bwA7UxJXNH
+         ndEbbCCuiWp8K7S57ng61bzVqmSd16mFIdHw0=
+Message-ID: <337eb86f0901130757k7d31ec5p82d6405e69549fef@mail.gmail.com>
+Date: Tue, 13 Jan 2009 23:57:52 +0800
+From: zhp <zhpsub@gmail.com>
 To: linux-kernel@vger.kernel.org
-In-Reply-To: <1229506383.8040.2.camel@cat>
-References: <1228304996.8921.93.camel@cat>
-	 <20081205113001.GA1452@ports.donpac.ru>  <1229506383.8040.2.camel@cat>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-8+9NlCmj39avzg5SXvJd"
-Organization: Riot-Music
-Date: Tue, 13 Jan 2009 16:57:40 +0100
-Message-Id: <1231862260.10639.281.camel@cat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Subject: Is there a 'radix_tree_destroy()' interface in radix-tree?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, all,
 
---=-8+9NlCmj39avzg5SXvJd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I am now writing a kernel module for Linux, and need to use the
+radix-tree implementation in kernel. (include/linux/radix-tree.h &
+lib/radix-tree.c). However, I do not find any interface for me to
+destroy the tree, i.e. remove all non-root nodes in the tree, and free
+all of my elements inserted in the tree before (of course, the free_fn
+should be passed in by the user).
 
-Hi there!
+Is there such an interface for lib users? If not, who can tell me what
+should I do to perform such a destroy task without dirty work? It is
+almost impossible for me to "lookup an element  to check whether it's
+in the tree, delete it if yes", because all possible keys are very
+very large.
 
-A month has passed and so I'm writing you the latest news...
+Also, I think it will be very useful for the kernel radix-tree module
+if it provide such an interface:
 
-First a summary:
+    radix_tree_destroy(struct radix_tree_root *rtree,
+				rtree_free_node_fn free_fn)
 
-1) Bought an "Artem Onair Comcard 11". Label on the back says:
-"CC-W11-EMB" "PC-ETS-128"
-"2,4 GHz 11 Mb/s DSSS WEP 128"
+How about adding such an interface as a patch if I finally have to do
+the dirty work?
 
-2) Plug the card to three laptops.
-	Laptop #1: Toshiba Satellite Pro 4820/Debian Lenny/Kernel 2.6.26
-	Laptop #2: IBM Thinkpad A21p/Debian Lenny/Kernel 2.6.26
-	Laptop #3: Toshiba Satellite 1110/Ubuntu 8.10/Kernel 2.6.27
-no reaction on all laptops.
-
-3) Found out, that there's no matching modalias for this card in no
-module.
-
-4) Found out, that the module for this card should be "orinoco_cs".
-
-5) Asked Pavel Roskin to add the missing modalias. He sent a patch to
-kernel.org. It's not included, yet.
-
-6) With a little trick (echo a modalias to .../orinoco_cs/new_id) I can
-use the driver with this card.
-
-
-
-O.k., this was a brief summary. Now to my problem: On all laptops, it is
-not possible to change the channel with iwconfig. I'm stuck to channel
-3. Error message is:
-
-
-Error for wireless request "Set Frequency" (8B04) :
-	SET failed on device eth1: Device or ressource busy.
-
-
-(It's also not possible to use wpa_supplicant. At least I didn't find
-the right driver and I read in
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/66696 that there
-isn't any. But I guess this is not a kernel issue.)
-
-Conclusion: The driver itself works, scanning works and that means that
-the driver is sending and receiving packages. But it's not possible to
-change the channel and to use wpa_supplicant and therefore it's really
-hard to connect to an AP.
-
-I'm still ready to support you! ;)
-
-Mitsch
-
---=-8+9NlCmj39avzg5SXvJd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklsufQACgkQNFzJVOwishkkIACg7SrAlZ1TiCzeIgKTe80lDLR/
-BVkAoM9USZMDZo4g8Thx90ydYWN7X1zz
-=ePqo
------END PGP SIGNATURE-----
-
---=-8+9NlCmj39avzg5SXvJd--
-
+Thanks.
+zhp
