@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbZAMGMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbZAMGMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbZAMGMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbZAMGLt
+	id S1759593AbZAMGMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbZAMGLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:11:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:44421 "EHLO
+	Tue, 13 Jan 2009 01:11:51 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60665 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755508AbZAMGLs (ORCPT
+	with ESMTP id S1755449AbZAMGLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 13 Jan 2009 01:11:48 -0500
-Message-Id: <20090113061110.856268617@goodmis.org>
+Message-Id: <20090113061147.147906400@goodmis.org>
+References: <20090113061110.856268617@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Jan 2009 01:11:10 -0500
+Date: Tue, 13 Jan 2009 01:11:11 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Shaohua Li <shaohua.li@intel.com>, ia64 <linux-ia64@vger.kernel.org>,
        Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
-       u.kleine-koenig@pengutronix.de
-Subject: [PATCH 0/9] ftrace: updates for tip
+       u.kleine-koenig@pengutronix.de, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/9] ftrace, ia64: make recordmcount destinct module compile
+Content-Disposition: inline; filename=0001-ftrace-ia64-make-recordmcount-destinct-module-comp.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Shaohua Li <shaohua.li@intel.com>
 
-The following patches are in:
+In IA64, module build and kernel build use different option.
+Make recordmcount.pl differentiate the two cases.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/Makefile.build  |   13 +++++++------
+ scripts/recordmcount.pl |    6 +++---
+ 2 files changed, 10 insertions(+), 9 deletions(-)
 
-    branch: tip/devel
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 5d90030..b5efa98 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -112,13 +112,13 @@ endif
+ # ---------------------------------------------------------------------------
+ 
+ # Default is built-in, unless we know otherwise
+-modkern_cflags := $(CFLAGS_KERNEL)
++modkern_cflags = $(if $(part-of-module), $(CFLAGS_MODULE), $(CFLAGS_KERNEL))
+ quiet_modtag := $(empty)   $(empty)
+ 
+-$(real-objs-m)        : modkern_cflags := $(CFLAGS_MODULE)
+-$(real-objs-m:.o=.i)  : modkern_cflags := $(CFLAGS_MODULE)
+-$(real-objs-m:.o=.s)  : modkern_cflags := $(CFLAGS_MODULE)
+-$(real-objs-m:.o=.lst): modkern_cflags := $(CFLAGS_MODULE)
++$(real-objs-m)        : part-of-module := y
++$(real-objs-m:.o=.i)  : part-of-module := y
++$(real-objs-m:.o=.s)  : part-of-module := y
++$(real-objs-m:.o=.lst): part-of-module := y
+ 
+ $(real-objs-m)        : quiet_modtag := [M]
+ $(real-objs-m:.o=.i)  : quiet_modtag := [M]
+@@ -215,7 +215,8 @@ endif
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+ 	"$(if $(CONFIG_64BIT),64,32)" \
+-	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" "$(@)";
++	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
++	"$(if $(part-of-module),1,0)" "$(@)";
+ endif
+ 
+ define rule_cc_o_c
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index fe83141..282485a 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -100,14 +100,14 @@ $P =~ s@.*/@@g;
+ 
+ my $V = '0.1';
+ 
+-if ($#ARGV < 6) {
+-	print "usage: $P arch objdump objcopy cc ld nm rm mv inputfile\n";
++if ($#ARGV < 7) {
++	print "usage: $P arch objdump objcopy cc ld nm rm mv is_module inputfile\n";
+ 	print "version: $V\n";
+ 	exit(1);
+ }
+ 
+ my ($arch, $bits, $objdump, $objcopy, $cc,
+-    $ld, $nm, $rm, $mv, $inputfile) = @ARGV;
++    $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
+ 
+ # Acceptable sections to record.
+ my %text_sections = (
+-- 
+1.5.6.5
 
-
-Frederic Weisbecker (2):
-      tracing/ftrace: separate events tracing and stats tracing engine
-      tracing: add a new workqueue tracer
-
-Shaohua Li (6):
-      ftrace, ia64: make recordmcount destinct module compile
-      ftrace, ia64: explictly ignore a file in recordmcount.pl
-      ftrace, ia64: Add macro for ftrace_caller
-      ftrace, ia64: Add recordmcount for ia64
-      ftrace, ia64: IA64 static ftrace support
-      ftrace, ia64: IA64 dynamic ftrace support
-
-Uwe Kleine-K?nig (1):
-      ftrace, trivial: fix typo "resgister" -> "register"
-
-----
- arch/ia64/Kconfig              |    3 +
- arch/ia64/include/asm/ftrace.h |   28 ++++
- arch/ia64/kernel/Makefile      |    5 +
- arch/ia64/kernel/entry.S       |  100 ++++++++++++++
- arch/ia64/kernel/ftrace.c      |  206 ++++++++++++++++++++++++++++
- arch/ia64/kernel/ia64_ksyms.c  |    6 +
- include/linux/ftrace.h         |    4 +
- include/trace/workqueue.h      |   25 ++++
- kernel/trace/Kconfig           |   11 ++
- kernel/trace/Makefile          |    1 +
- kernel/trace/ftrace.c          |   14 +--
- kernel/trace/trace.c           |    2 -
- kernel/trace/trace.h           |   20 ---
- kernel/trace/trace_branch.c    |  108 +++++++++-------
- kernel/trace/trace_stat.c      |  191 +++++++++++---------------
- kernel/trace/trace_stat.h      |   31 +++++
- kernel/trace/trace_workqueue.c |  287 ++++++++++++++++++++++++++++++++++++++++
- kernel/workqueue.c             |   16 ++-
- scripts/Makefile.build         |   13 +-
- scripts/recordmcount.pl        |   18 ++-
- 20 files changed, 888 insertions(+), 201 deletions(-)
 -- 
