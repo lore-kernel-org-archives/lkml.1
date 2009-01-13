@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbZAMXXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbZAMXYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbZAMXXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZAMXXk
+	id S1759309AbZAMXYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZAMXYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:23:40 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:58211 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbZAMXXi (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:23:38 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Newall <davidn@davidnewall.com>
-Cc: Daolong Wang <ahlongxp@gmail.com>, David Miller <davem@davemloft.net>,
-       bhutchings@solarflare.com, lizf@cn.fujitsu.com, qhfeng.kernel@gmail.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: fix wrong English expression in comments
-In-Reply-To: Your message of "Tue, 13 Jan 2009 19:11:19 +1030."
-             <496C53AF.3080901@davidnewall.com>
-From: Valdis.Kletnieks@vt.edu
-References: <496a3c51.09876e0a.03fe.7e80@mx.google.com> <496A9753.80802@cn.fujitsu.com> <1231724358.2674.13.camel@hashbaz.i.decadent.org.uk> <20090112.215320.197154233.davem@davemloft.net> <dc84318c0901122216s77bae26eo2dd36c4a0ee35177@mail.gmail.com>
-            <496C53AF.3080901@davidnewall.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231888978_3146P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 13 Jan 2009 18:22:58 -0500
-Message-ID: <25981.1231888978@turing-police.cc.vt.edu>
+	Tue, 13 Jan 2009 18:24:23 -0500
+Received: from mx1.suse.de ([195.135.220.2]:37946 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbZAMXYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:24:22 -0500
+Date: Tue, 13 Jan 2009 14:47:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: ds@schleef.org, fmhess@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       erik@kryo.se, randy.dunlap@oracle.com, sfr@canb.auug.org.au
+Subject: Re: [BUILD-FAILURE] 2.6.29-rc1-git2 - staging/comedi_unmap driver
+	fails to build
+Message-ID: <20090113224748.GD24682@suse.de>
+References: <20090113090305.GA2364@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113090305.GA2364@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231888978_3146P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 13 Jan 2009 19:11:19 +1030, David Newall said:
-> Daolong Wang wrote:
-> > The patch will make sense for some people. I was puzzled about the
-> > double-negative for quite a while.
-> >   
+On Tue, Jan 13, 2009 at 02:33:05PM +0530, Kamalesh Babulal wrote:
+> Hi David,
 > 
-> "Don't add nothing," is not a colloquialism; it's just bad grammar.  The
-> meaning is that you must not add no thing, therefore that you must add
-> something.  It is a common error amongst English speakers, even amongst
-> those who speak good, but.  :-)
+> 	comedi driver randconfig build fails on the 2.6.29-rc1 kernel,
+> 
+> drivers/staging/comedi/kcomedilib/built-in.o: In function `comedi_unmap':
+> (.text+0x489): multiple definition of `comedi_unmap'
+> drivers/staging/comedi/comedi.o:(.text+0xcf): first defined here
+> ld: Warning: size of symbol `comedi_unmap' changed from 48 in drivers/staging/comedi/comedi.o to 41 in drivers/staging/comedi/kcomedilib/built-in.o
+> make[3]: *** [drivers/staging/comedi/built-in.o] Error 1
 
-Those of us who have worked with weakly-typed languages who have coded
-stuff like 'X + 0.0' to cast X from string to floating point know all
-too well that sometimes, adding nothing is in fact what you want to do.
+Yeah, comedi doesn't like to be built into the kernel, I'll work on
+resolving this...
 
---==_Exmh_1231888978_3146P
-Content-Type: application/pgp-signature
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJbSJScC3lWbTT17ARAvNJAKCQBl4shAHDDmr2UGrWcS2oQR/d9wCg1VMw
-HLSBdbZdVRNW8LKW9h2xBEw=
-=Mgx2
------END PGP SIGNATURE-----
-
---==_Exmh_1231888978_3146P--
+greg k-h
