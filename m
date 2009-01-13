@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZAMAeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZAMAhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbZAMAeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZAMAeA
+	id S1754743AbZAMAhr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 19:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbZAMAhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:34:00 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46627 "EHLO hera.kernel.org"
+	Mon, 12 Jan 2009 19:37:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46804 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbZAMAd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:33:59 -0500
-Message-ID: <496BE157.2000009@kernel.org>
-Date: Tue, 13 Jan 2009 09:33:27 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751677AbZAMAhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 19:37:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 2/2] resume: wait for device probing to finish
+Date: Tue, 13 Jan 2009 01:36:58 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com, Len Brown <lenb@kernel.org>
+References: <20090109211346.3ccc36e3@infradead.org> <20090109211457.6b1d37ed@infradead.org>
+In-Reply-To: <20090109211457.6b1d37ed@infradead.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       travis@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: regarding the x86_64 zero-based percpu patches
-References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>	<49649C65.6000706@kernel.org>	<200901101716.04220.rusty@rustcorp.com.au>	<Pine.LNX.4.64.0901121120280.30369@quilx.com> <m1mydwxvtx.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1mydwxvtx.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 00:33:32 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200901130136.59293.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Eric.
-
-Eric W. Biederman wrote:
->> There are 2M TLB entries on x86_64. If we really get into a high usage
->> scenario then the 2M entry makes sense. Average server memory sizes likely
->> already are way beyond 10G per box. The higher that goes the more
->> reasonable the 2M TLB entry will be.
+On Saturday 10 January 2009, Arjan van de Ven wrote:
+> (this patch needs testing on a few different machines; compile tested only)
 > 
-> 2M of per cpu data doesn't make sense, and likely indicates a design
-> flaw somewhere.  It just doesn't make sense to have large amounts of
-> data allocated per cpu.
-
-Why?  On almost all large machines I've seen or heard of, memory size
-scales way better than the number of cpus.  Whether certain usage
-makes sense or not surely is debatable but I can't imagine all use
-cases where 2MB percpu TLB entry could be useful would be senseless.
-
-> The most common user of per cpu data I am aware of is allocating one
-> word per cpu for counters.
 > 
-> What would be better is simply to: 
-> - Require a lock to access another cpus per cpu data.
-> - Do large page allocations for the per cpu data.
+> From 10b3e25671c817933e232498a56640fd48964345 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Fri, 9 Jan 2009 21:11:23 -0800
+> Subject: [PATCH] resume: wait for device probing to finish
 > 
-> At which point we could grow the per cpu data by simply reallocating it on
-> each cpu and updating the register that holds the base pointer.
+> the resume code does not currently wait for device probing to finish.
+> Even without async function calls this is dicey and not correct,
+> but with async function calls during the boot sequence this is going
+> to get hit more...
+> 
+> This patch adds the synchronization using the newly introduced helper.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-I don't think moving live objects is such a good idea for the
-following reasons.
+Sorry for the delay, but I only could do the testing today.
 
-1. Programming convenience is usually much more important than people
-   think it is.  Even in the kernel.  I think it's very likely that
-   we'll have unending stream of small feature requirements which
-   would step just outside the supported bounds and ever smart
-   workaround until the restriction is finally removed years later.
+It appears that 2.6.29-rc1 with the two patches in this series applied resumes
+from hibernation correctly.
 
-2. Moving live objects is inherently dangerous + it won't happen
-   often.  Thinking about possible subtle bugs is scary.
+Please push the second one to Len with my ack.
 
-Thanks.
+Thanks,
+Rafael
 
--- 
-tejun
+
+> ---
+>  kernel/power/disk.c |   11 +++++++++++
+>  1 files changed, 11 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+> index 45e8541..d2d24b7 100644
+> --- a/kernel/power/disk.c
+> +++ b/kernel/power/disk.c
+> @@ -585,6 +585,12 @@ static int software_resume(void)
+>  	unsigned int flags;
+>  
+>  	/*
+> +	 * If the user said "noresume".. bail out early.
+> +	 */
+> +	if (noresume)
+> +		return 0;
+> +
+> +	/*
+>  	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
+>  	 * is configured into the kernel. Since the regular hibernate
+>  	 * trigger path is via sysfs which takes a buffer mutex before
+> @@ -600,6 +606,11 @@ static int software_resume(void)
+>  			mutex_unlock(&pm_mutex);
+>  			return -ENOENT;
+>  		}
+> +		/*
+> +		 * Some device discovery might still be in progress; we need
+> +		 * to wait for this to finish.
+> +		 */
+> +		wait_for_device_probe();
+>  		swsusp_resume_device = name_to_dev_t(resume_file);
+>  		pr_debug("PM: Resume from partition %s\n", resume_file);
+>  	} else {
+> -- 
+> 1.6.0.6
