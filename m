@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZAMQui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZAMQve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZAMQui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZAMQu0
+	id S1757491AbZAMQve (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZAMQvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:50:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40350 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752935AbZAMQuZ (ORCPT
+	Tue, 13 Jan 2009 11:51:25 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:35933 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754008AbZAMQvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 11:50:25 -0500
-Date: Tue, 13 Jan 2009 08:49:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-In-Reply-To: <1231864854.7141.8.camel@twins>
-Message-ID: <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-References: <1231774622.4371.96.camel@laptop>  <1231859742.442.128.camel@twins>  <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>  <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 13 Jan 2009 11:51:24 -0500
+Date: Tue, 13 Jan 2009 16:51:15 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] async: Handle kthread_run() return codes.
+Message-ID: <20090113165115.GR12431@fluff.org.uk>
+References: <20090113174304.2186532c@gondolin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113174304.2186532c@gondolin>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 13 Jan 2009, Peter Zijlstra wrote:
+On Tue, Jan 13, 2009 at 05:43:04PM +0100, Cornelia Huck wrote:
+> If we fail to create the manager thread, fall back to non-fastboot.
+> If we fail to create an async thread, try again when the manager
+> thread runs again.
 > 
-> Ok, tested only 1, but that was the one I remember lockups from -- and
-> that seems to be good with the cmpxchg.
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 > 
-> Do you fancy me sending v10 or will you make that change locally?
+> ---
+>  kernel/async.c |   11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> --- linux-2.6.orig/kernel/async.c
+> +++ linux-2.6/kernel/async.c
+> @@ -315,11 +315,14 @@ static int async_manager_thread(void *un
+>  		ec = atomic_read(&entry_count);
+>  
+>  		while (tc < ec && tc < MAX_THREADS) {
 
-I'd like to get this in, but I'm not going to apply it in any case without 
-way more testing.
+why not add the following to stop the wrapping of kthread_run:
 
-It missed the merge window, but I'm potentially willing to let it slip in 
-- but only if there are a fair number of people willing to do numbers and 
-some harsh testing. Preferably people who did see problems earlier, ie at 
-a minimum Chris and Ingo under the loads they used before and saw issues 
-with.
++   	    		struct task_struct *kt;
+			kt = kthread_run(async_thread, NULL, "async/%i", tc);
+			if (IS_ERR(kt))
+				goto schedule;
 
-So do a v10, and ask people to test.
+also, I belive the goto isn't necessary, just break out of the while
 
-			Linus
+			if (IS_ERR(kt))
+				break;
+				
+> -			kthread_run(async_thread, NULL, "async/%i", tc);
+> +			if (IS_ERR(kthread_run(async_thread, NULL, "async/%i",
+> +					       tc)))
+> +				/* Try again later. */
+> +				goto schedule;
+>  			atomic_inc(&thread_count);
+>  			tc++;
+>  		}
+> -
+> +schedule:
+>  		schedule();
+>  	}
+>  	remove_wait_queue(&async_new, &wq);
+> @@ -330,7 +333,9 @@ static int async_manager_thread(void *un
+>  static int __init async_init(void)
+>  {
+>  	if (async_enabled)
+> -		kthread_run(async_manager_thread, NULL, "async/mgr");
+> +		if (IS_ERR(kthread_run(async_manager_thread, NULL,
+> +				       "async/mgr")))
+> +			async_enabled = 0;
+>  	return 0;
+>  }
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
