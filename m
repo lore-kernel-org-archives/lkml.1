@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbZAMBiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZAMBie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbZAMBiN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:38:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZAMBaL
+	id S1757262AbZAMBie (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759815AbZAMBen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:30:11 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50370 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758265AbZAMBaI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:30:08 -0500
-Date: Mon, 12 Jan 2009 20:30:04 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Bernd Schmidt <bernds_cb1@t-online.de>, Andi Kleen <andi@firstfloor.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
- adaptive spinning
-In-Reply-To: <alpine.LFD.2.00.0901121602230.6528@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901122027450.28952@gandalf.stny.rr.com>
-References: <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
- <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
- <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <alpine.LFD.2.00.0901121602230.6528@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 12 Jan 2009 20:34:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50406 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759810AbZAMBem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:34:42 -0500
+Message-ID: <496BEF9E.9070405@redhat.com>
+Date: Mon, 12 Jan 2009 20:34:22 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: ananth@in.ibm.com, jkenisto@us.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
+Subject: Re: [PATCH][bugfix] kprobes: fix module compilation error with CONFIG_KPROBES=n
+References: <49628849.1000706@redhat.com>	<4963894B.6000705@redhat.com> <20090112145119.3e556b78.akpm@linux-foundation.org>
+In-Reply-To: <20090112145119.3e556b78.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Tue, 06 Jan 2009 11:39:39 -0500
+> Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Masami Hiramatsu wrote:
+>>
+>>> Define kprobes related data structures even if CONFIG_KPROBES is not set.
+>>> This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
+>>> kprobe using modules.
+>>>
+>> Oops, this patch was actually for -mm tree.
+>>
+> 
+> I assume it's needed in mainline now.
 
-<comic relief>
+Agreed.
 
-On Mon, 12 Jan 2009, Linus Torvalds wrote:
+Thank you,
 
->   code tends to get a lot more I$ and D$ misses. Deep call-chains _will_ 
+-- 
+Masami Hiramatsu
 
-I feel like an idiot that I never realized that "I$" meant
-"instruction cache" until now :-p
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-</comic relief>
-
--- Steve
-
+e-mail: mhiramat@redhat.com
 
