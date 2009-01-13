@@ -1,59 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZAMATk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbZAMAW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZAMATk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZAMAT3
+	id S1756622AbZAMAW1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 19:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZAMAWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:19:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46740 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbZAMAT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:19:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Justin Madru <jdm64@gawab.com>
-Subject: Re: [Bug #12263] Sata soft reset filling log
-Date: Tue, 13 Jan 2009 01:18:50 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux IDE <linux-ide@vger.kernel.org>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.tiC.4afaJB@chimera> <496BD7ED.1010909@gawab.com>
-In-Reply-To: <496BD7ED.1010909@gawab.com>
+	Mon, 12 Jan 2009 19:22:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48625 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751023AbZAMAWO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 19:22:14 -0500
+Date: Mon, 12 Jan 2009 16:21:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+cc: Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+In-Reply-To: <496BBE27.2020206@t-online.de>
+Message-ID: <alpine.LFD.2.00.0901121602230.6528@localhost.localdomain>
+References: <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
+ <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+ <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901130118.50674.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 January 2009, Justin Madru wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.27 and 2.6.28.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12263
-> > Subject		: Sata soft reset filling log
-> > Submitter	: Justin Madru <bevicm@dslextreme.com>
-> > Date		: 2008-12-13 2:07 (30 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=122913412608533&w=4
-> >
-> >
-> >
-> >   
-> Yes, I'm still seeing this on .28 and even on .29-rc1.
-> I checked again and couldn't trigger the regression on a .27 kernel (at 
-> least with my hardware and config).
-> So, I'm fairly confident that it's a regression, not just a bug that's 
-> always been there.
 
-Thanks for the update.
 
-Rafael
+On Mon, 12 Jan 2009, Bernd Schmidt wrote:
+>
+> Too lazy to construct one myself, I googled for examples, and here's a 
+> trivial one that shows how it affects the ability of the compiler to 
+> eliminate memory references:
+
+Do you really think this is realistic or even relevant?
+
+The fact is
+
+ (a) most people use similar types, so your example of "short" vs "int" is 
+     actually not very common. Type-based alias analysis is wonderful for 
+     finding specific examples of something you can optimize, but it's not 
+     actually all that wonderful in general. It _particularly_ isn't 
+     wonderful once you start looking at the downsides.
+
+     When you're adding arrays of integers, you're usually adding 
+     integers. Not "short"s. The shorts may be a great example of a 
+     special case, but it's a special case!
+
+ (b) instructions with memory accesses aren't the problem - instructions 
+     that take cache misses are. Your example is an excellent example of 
+     that - eliding the simple load out of the loop makes just about 
+     absolutely _zero_ difference in any somewhat more realistic scenario, 
+     because that one isn't the one that is going to make any real 
+     difference anyway.
+
+The thing is, the way to optimize for modern CPU's isn't to worry 
+over-much about instruction scheduling. Yes, it matters for the broken 
+ones, but it matters in the embedded world where you still find in-order 
+CPU's, and there the size of code etc matters even more.
+
+> I'll grant you that if you're writing a kernel or maybe a malloc
+> library, you have reason to be unhappy about it.  But that's what
+> compiler switches are for: -fno-strict-aliasing allows you to write code
+> in a superset of C.
+
+Oh, I'd use that flag regardless yes. But what you didn't seem to react to 
+was that gcc - for no valid reason what-so-ever - actually trusts (or at 
+least trusted: I haven't looked at that code for years) provably true 
+static alias information _less_ than the idiotic weaker type-based one.
+
+You make all this noise about how type-based alias analysis improves code, 
+but then you can't seem to just look at the example I gave you. Type-based 
+alias analysis didn't improve code. It just made things worse, for no 
+actual gain. Moving those accesses to the stack around just causes worse 
+behavior, and a bigger stack frame, which causes more cache misses.
+
+[ Again, I do admit that kernel code is "different": we tend to have a 
+  cold stack, in ways that many other code sequences do not have. System 
+  code tends to get a lot more I$ and D$ misses. Deep call-chains _will_ 
+  take cache misses on the stack, simply because the user will do things 
+  between system calls or page faults that almost guarantees that things 
+  are not in L1, and often not in L2 either.
+
+  Also, sadly, microbenchmarks often hide this, since they are often 
+  exactly the unrealistic kinds of back-to-back system calls that almost 
+  no real program ever has, since real programs actually _do_ something 
+  with the data. ]
+
+My point is, you're making all these arguments and avoiding looking at the 
+downsides of what you are arguing for.
+
+So we use -Os - because it generally generates better (and simpler) code. 
+We use -fno-strict-alias for the same reason. 
+
+			Linus
