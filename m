@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbZAMBey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbZAMBcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbZAMBey (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZAMB3L
+	id S1759193AbZAMBcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZAMB3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:29:11 -0500
-Received: from kroah.org ([198.145.64.141]:36062 "EHLO coco.kroah.org"
+	Mon, 12 Jan 2009 20:29:04 -0500
+Received: from kroah.org ([198.145.64.141]:35971 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758171AbZAMB3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:29:08 -0500
-Date: Mon, 12 Jan 2009 17:27:21 -0800
+	id S1758101AbZAMB3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:29:00 -0500
+Date: Mon, 12 Jan 2009 17:27:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 15/21] ALSA: hda - Add missing terminators in
-	patch_sigmatel.c
-Message-ID: <20090113012721.GP4512@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 08/21] dmaengine: protect id from concurrent registrations
+Message-ID: <20090113012704.GI4512@kroah.com>
 References: <20090113012006.063755472@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-missing-terminators-in-patch_sigmatel.c.patch"
+Content-Disposition: inline; filename="dmaengine-protect-id-from-concurrent-registrations.patch"
 In-Reply-To: <20090113012633.GA4512@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,26 +40,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+From: Dan Williams <dan.j.williams@intel.com>
 
-commit 574f3c4f5c55e99ea60f71fd98cc54931d4b2eae upstream.
+commit b0b42b16ff2b90f17bc1a4308366c9beba4b276e upstream.
 
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+There is a possibility to have two devices registered with the same id.
+
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_sigmatel.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/dma/dmaengine.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -638,6 +638,7 @@ static struct hda_verb stac92hd71bxx_cor
- 	{ 0x0a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
- 	{ 0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
- 	{ 0x0f, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
-+	{}
- };
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -388,7 +388,10 @@ int dma_async_device_register(struct dma
  
- #define HD_DISABLE_PORTF 3
+ 	init_completion(&device->done);
+ 	kref_init(&device->refcount);
++
++	mutex_lock(&dma_list_mutex);
+ 	device->dev_id = id++;
++	mutex_unlock(&dma_list_mutex);
+ 
+ 	/* represent channels in sysfs. Probably want devs too */
+ 	list_for_each_entry(chan, &device->channels, device_node) {
 
