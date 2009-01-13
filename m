@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbZAMNEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZAMNFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759297AbZAMNEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZAMNEK
+	id S1759133AbZAMNFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbZAMNFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:04:10 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48486 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753936AbZAMNEJ (ORCPT
+	Tue, 13 Jan 2009 08:05:38 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39201 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756089AbZAMNFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:04:09 -0500
-Date: Tue, 13 Jan 2009 08:04:05 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Shaohua Li <shaohua.li@intel.com>, ia64 <linux-ia64@vger.kernel.org>,
-       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
-       trivial@kernel.org, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 9/9] ftrace, trivial: fix typo "resgister" ->
- "register"
-In-Reply-To: <20090113080352.GB23381@pengutronix.de>
-Message-ID: <alpine.DEB.1.10.0901130802440.31098@gandalf.stny.rr.com>
-References: <20090113061110.856268617@goodmis.org> <20090113061148.807298761@goodmis.org> <20090113080352.GB23381@pengutronix.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 13 Jan 2009 08:05:37 -0500
+Date: Tue, 13 Jan 2009 14:05:36 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel list <linux-kernel@vger.kernel.org>, harvey.harrison@gmail.com
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Message-ID: <20090113130536.GB30352@atrey.karlin.mff.cuni.cz>
+References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901131239.21995.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 13 Jan 2009, Uwe Kleine-K?nig wrote:
-
-> On Tue, Jan 13, 2009 at 01:11:19AM -0500, Steven Rostedt wrote:
-> > From: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+> On Tuesday 13 January 2009, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Signed-off-by: Uwe Kleine-K?nig <ukleinek@strlen.de>
-> who ever will apply this patch, can you please take care that the '?' is
-> substituted by '?' or if that is too hard, by 'oe'?
+> > Just when I thought long merge window means less problems...
+> > 
+> > ...suspend seemed to work until last tuesday or so. Now it hanged two
+> > times; once so hard that power button powercycle did not result in
+> > booting machine. (thinkpad x60)
+> > 
+> > I'll do some more tests...
+> 
+> There are a couple of things you may want to revert, like
+> 7503bfbae89eba07b46441a5d1594647f6b8ab7d and
+> a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
+> 
+> Please let me know if that helped.
 
-Ouch, that looks bad. I just used git am to apply it and ran it through a 
-compile and boot up (never know when a comment change will break the build 
-;-)
+Harwey told me they are already reverted in latest -git, so I tried
+that but no luck. I'll try disabling CONFIG_SMP now.
 
-I did not look at how git checked it in.
-
-Ingo, if you did not pull this, and since it is the last patch, I'll fix 
-it in my tree.
-
--- Steve
+Actually, in one case I seen some oopses scroll by... looked
+timekeeping related, but certainly went too fast.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
