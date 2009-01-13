@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZAMIGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZAMIHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbZAMIGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZAMIGl
+	id S1756146AbZAMIHc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZAMIHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:06:41 -0500
-Received: from yop.chewa.net ([91.121.105.214]:49920 "EHLO yop.chewa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753991AbZAMIGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:06:41 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: RFC: Network privilege separation.
+	Tue, 13 Jan 2009 03:07:18 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:44316 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbZAMIHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 03:07:16 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Regression 2.6.28-git: suspend/resume failure. git bisected to usb suspend/resume patch
+Date: Tue, 13 Jan 2009 09:07:13 +0100
+User-Agent: KMail/1.9.9
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org
+References: <200901111348.46216.borntraeger@de.ibm.com> <200901120103.53390.rjw@sisk.pl> <200901121341.51674.rjw@sisk.pl>
+In-Reply-To: <200901121341.51674.rjw@sisk.pl>
 MIME-Version: 1.0
-Date: Tue, 13 Jan 2009 09:06:39 +0100
-From: =?UTF-8?Q?R=C3=A9mi_Denis-Courmont?= <rdenis@simphalempin.com>
-Cc: Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org
-Organization: Remlab.net
-In-Reply-To: <20090112215001.GG23848@one.firstfloor.org>
-References: <1231307334-9542-1-git-send-email-michael@laptop.org> <200901122230.25976.rdenis@simphalempin.com> <20090112205547.GE23848@one.firstfloor.org> <200901122247.22059.rdenis@simphalempin.com> <20090112215001.GG23848@one.firstfloor.org>
-Message-ID: <e81d9c0cbc85262051b2246783bb193b@chewa.net>
-User-Agent: RoundCube Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901130907.13820.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-   Hello,
-
-On Mon, 12 Jan 2009 22:50:01 +0100, Andi Kleen <andi@firstfloor.org> wrote:
->> Fair enough. It's just way too much interface/adaptation work compared
->> to the benefit. Especially considering that it would be much easier, and
->> almost as secure, with a "relaxed" SECCOMP.
+Am Montag 12 Januar 2009 schrieb Rafael J. Wysocki:
+> > Please try if suspend-resume works for you if you make commit
+> > fa58d305d9925b01830e535896a7227a868a9e15
+> > (PCI PM: Add suspend counterpart of pci_reenable_device) the head of your
+> > tree ('git checkout -b test-branch 
+fa58d305d9925b01830e535896a7227a868a9e15').
+> > 
+> > If it does, please check the same for commit
+> > 571ff7584bb9e05fca0eb79752ae55a46faf3a98
+> > (PCI PM: Power-manage devices without drivers during suspend-resume).
 > 
-> What system calls would you want in a relaxed SECCOMP?
+> Ah, please do the above with the USB commit
+> a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 reverted.
 
-I already listed them on a high level. At the very very least, brk(),
-sbrk(), mmap(), mremap(), getpagesize() and munmap() so that we can re-use
-the libc memory allocator. If one wants to limit memory usage, there is
-always setrlimit() before enabling SECCOMP.
+Will do.
 
-Also readv() and writev() could not hurt; I suppose neither could
-vmsplice().
+In the meantime I have bisected another problem: 
+commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
+Author: Mike Travis <travis@sgi.com>
+Date:   Sun Jan 4 05:18:09 2009 -0800
 
-I don't know what are the security implications of inter-process futex(). I
-assume it's possible to freeze, and perhaps busy loop other task that would
-use the same futexes. That is OK to me. But it's not clear to me if
-something really bad, like arbitrary memory access could be achieved.
-Notably, with futex() allowable, we can also grant clone(), gettid() and
-then we can run parallelized codecs on SMP.
+    cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
 
->> And on top of that, it's causing
->> unnecessary overhead (we're also interested in those small Linux-based
-> 
-> Would be interesting to try that out -- just adding two memcpyies to
-> the existing code and see how much slower it gets. My guess
-> would be not very, even e.g. on a Atom system (which are really
-> not all that slow).
-> 
-> Presumably you could always #ifdef it if it's really a problem
-> on some specific system. That would be needed anyways for
-> non linux systems.
+but I just see that this is already known.
+O dear. How many patches do we know that broke S2R in this merge window? 4? 5?
 
-In practice, I suspect the most work would come from reworking the build
-system such that codecs are executable rather than libraries. I suspect a
-plain fork() with _no_ exec() would leave to many unused anonymous pages
-from the main media player process, not to mention information leakage.
 
-I'd like to point out that, from my personnal experience, we've had more
-problem this far with file format parsers than codecs. I don't know why. It
-might be because they are easier for pirates to talk to, as they're one
-step closer to the data than codecs. Or it is that the VideoLAN project is
-writing overall more buggy code than, say, FFMPEG :-( ?
-
-To sandbox parsers, we might need a whole lot more stuff, especially timers
-and events handling stuff.
-
--- 
-Rémi Denis-Courmont
-
+Christian
