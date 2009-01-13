@@ -1,151 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbZAMCeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZAMCfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbZAMCeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbZAMCeT
+	id S1758978AbZAMCfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZAMCfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:34:19 -0500
-Received: from mga01.intel.com ([192.55.52.88]:43128 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757975AbZAMCeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:34:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,256,1231142400"; 
-   d="asc'?scan'208";a="656592191"
-Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090112104335.GA4942@gondor.apana.org.au>
-References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
-	 <20090109070144.GA7358@gondor.apana.org.au>
-	 <1231743310.5937.107.camel@yhuang-dev.sh.intel.com>
-	 <20090112104335.GA4942@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-y08IVnfpimQiUQZFICtj"
-Date: Tue, 13 Jan 2009 10:34:13 +0800
-Message-Id: <1231814053.5937.120.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 12 Jan 2009 21:35:04 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51990 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755746AbZAMCfA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:35:00 -0500
+Message-ID: <496BFDC6.2080807@jp.fujitsu.com>
+Date: Tue, 13 Jan 2009 11:34:46 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+References: <200901042346.42723.rjw@sisk.pl> <200901080813.47650.rjw@sisk.pl> <4965B74E.8000309@jp.fujitsu.com> <200901081753.01637.rjw@sisk.pl>
+In-Reply-To: <200901081753.01637.rjw@sisk.pl>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> On Thursday 08 January 2009, Kenji Kaneshige wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
+>>>> Rafael J. Wysocki wrote:
+>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>
+>>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
+>>>>> many vectors are allocated and it is not ensured that the right
+>>>>> vectors will be used for various services.  Namely, the PCI Express
+>>>>> specification states that both PCI Express native PME and PCI Express
+>>>>> hotplug will always use the same MSI or MSI-X message for signalling
+>>>>> interrupts, which implies that the same vector will be used by both
+>>>>> of them.  Also, the VC service does not use interrupts at all.
+>>>>> Moreover, is not clear which of the vectors allocated by
+>>>>> pci_enable_msix() will be used for PME and hotplug and which of them
+>>>>> will be used for AER if all of these services are configured.
+>>>>>
+>>>>> For these reasons, rework the allocation of interrupts for PCI
+>>>>> Express ports so that at most two vectors are allocated and ensure
+>>>>> that the right vector will be used for the right purpose.
+>>>>>
+>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> ---
+>>>>>  drivers/pci/pcie/portdrv.h      |    1 
+>>>>>  drivers/pci/pcie/portdrv_core.c |  155 +++++++++++++++++++++++++++++-----------
+>>>>>  2 files changed, 117 insertions(+), 39 deletions(-)
+>>>>>
+>>>>> Index: linux-2.6/drivers/pci/pcie/portdrv.h
+>>>>> ===================================================================
+>>>>> --- linux-2.6.orig/drivers/pci/pcie/portdrv.h
+>>>>> +++ linux-2.6/drivers/pci/pcie/portdrv.h
+>>>>> @@ -25,6 +25,7 @@
+>>>>>  #define PCIE_CAPABILITIES_REG		0x2
+>>>>>  #define PCIE_SLOT_CAPABILITIES_REG	0x14
+>>>>>  #define PCIE_PORT_DEVICE_MAXSERVICES	4
+>>>>> +#define PORT_MSI_VECTOR_MASK		0x1f
+>>>>>  
+>>>>>  #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+>>>>>  
+>>>>> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+>>>>> ===================================================================
+>>>>> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
+>>>>> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+>>>>> @@ -30,55 +30,120 @@ static void release_pcie_device(struct d
+>>>>>  }
+>>>>>  
+>>>>>  /**
+>>>>> + * fix_up_vectors - ensure the right ordering of MSI-X interrupt vectors
+>>>>> + * @dev: PCI Express port that is going to use the vectors
+>>>>> + * @vectors: Array of interrupt vectors to check (2 entries)
+>>>>> + *
+>>>>> + * Return value:
+>>>>> + * 0 on success, error code if the values read from config registers are not as
+>>>>> + * expected
+>>>>> + *
+>>>>> + * If this function is called, we are going to use two interrupt vectors which
+>>>>> + * may be different, but we have to make sure they are in the right order such
+>>>>> + * that the vector to be used for PME and hotplug signalling is the first one.
+>>>>> + *
+>>>>> + * NOTE: The assumption here is that MSI message offset (with respect to the
+>>>>> + * base Message Data) equal to N corresponds to index N in the array of vectors
+>>>>> + * returned by pci_enable_msix().
+>>>>> + */
+>>>> I've posted the similar patch recently, which doesn't have this
+>>>> assumption.
+>>> Actually, this assumption is in agreement with PCI Express Base Specification
+>>> 2.0, which very clearly states in Section 7.8.2 that:
+>>>
+>>> "[...] Interrupt Message Number – This field indicates which
+>>> MSI/MSI-X vector is used for the interrupt message generated in
+>>> association with any of the status bits of this Capability structure.
+>>>
+>>> [...]
+>>>
+>>> For MSI-X, the value in this field indicates which MSI-X Table
+>>> entry is used to generate the interrupt message. The entry must
+>>> be one of the first 32 entries even if the Function implements
+>>> more than 32 entries. For a given MSI-X implementation, the
+>>> entry must remain constant."
+>>>
+>> Though I might be misunderstanding something, my understanding is
+>> that this implies that there can be more MSI-X table entries than
+>> number of interrupts, and PME/HotPlug or AER interrupts can be
+>> mapped to other than first two entries.
+> 
+> We are requesting two vectors with my patch and they will be assigned to the
+> first two entries in the MSI-X table.  If my understanding of the MSI-X code is
+> corrtect, there won't be more MSI-X table entries set up for the port.
+> 
+>> If my understanding is correct, your patch would not work if PME/HotPlug or
+>> AER interrupts were mapped to other than first two.
+> 
+> In this case it's going to fall back to MSI w/ one vector, because we're going
+> to find that offset > 1 in one of the tests in fix_up_vectors().
+> 
+>> Regardless of my understanding is correct or not, I have another
+>> concern. I think there are two interrupts for PCIe port service
+>> currently as your patch indicates. But new interrupts can be added
+>> in the future. With the assumption, PME/HotPlug and/or AER interrupts
+>> would not work if the first several entries are mapped to other new
+>> interrupts. Therefore, with the assumption, we need to fix MSI-X
+>> initialization code whenever new interrupts are defined.
+> 
+> In that case we'll need to allocate more vectors, so we'll need to change the
+> code anyway.  Also, we'll have to add the tests for the new interrupts to
+> the code, because there will have to be new registers defined to read the
+> MSI offsets or MSI-X table indices from.
+> 
 
---=-y08IVnfpimQiUQZFICtj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I'm sorry for delay. I've just resumed.
 
-On Mon, 2009-01-12 at 18:43 +0800, Herbert Xu wrote:
-> On Mon, Jan 12, 2009 at 02:55:10PM +0800, Huang Ying wrote:
-> >
-> > I use a "shell" cbc(aes) algorithm which chooses between
-> > cryptd(__cbc-aes-aesni) and __cbc-aes-aesni according to context. But
-> > the struct ablkcipher_request passed in can not be used for cryptd(*).
-> > This can be resolved by allocating another struct ablkcipher_request fo=
-r
-> > cryptd(*) for each incoming struct ablkcipher_request. But is there any
-> > better solution?
->=20
-> You should include that other ablkcipher_request as part of the
-> context of your ablkcipher_request.
->=20
-> See for example how aead embeds it.
+Yes, we need to change the code if we use new port service that
+uses new interrupt. But there would be a delay between hardware
+update and kernel update. I think currently supported MSI-X
+interrupts should keep working with the new hardware even before
+the kernel supports new port service.
 
-Thank you! I take a look at gcm.c, and know how to implement it.
+> I very much prefer to keep the code as simple as possible as long as we can.
 
-I have another idea, the sample code is as follow. In short, just relay
-the request to cryptd_tfm, and change tfm before/after.
+I agree with this.
 
-struct async_aes_ctx {
-        struct crypto_ablkcipher *cryptd_tfm;
-};
-
-struct async_aes_req_ctx {
-        struct crypto_ablkcipher *ablk_tfm;
-        crypto_completion_t complete;
-};
-
-static inline struct async_aes_req_ctx *ablk_aes_req_ctx(
-        struct ablkcipher_request *req,
-        struct crypto_ablkcipher *ablk_tfm) {
-        return ablkcipher_request_ctx(req) +
-                ablk_tfm->base.crt_ablkcipher.reqsize;
-}
-
-static void ablk_complete(struct crypto_async_request *req, int err)
-{
-        struct ablkcipher_request *ablk_req =3D ablkcipher_request_cast(req=
-);
-        struct async_aes_req_ctx *req_ctx =3D
-                ablk_aes_req_ctx(ablk_req, crypto_ablkcipher_reqtfm(ablk_re=
-q));
-        ablkcipher_request_set_tfm(ablk_req, req_ctx->ablk_tfm);
-        req_ctx->complete(req, err);
-}
-
-static int ablk_encrypt(struct ablkcipher_request *req)
-{
-        struct crypto_ablkcipher *tfm =3D crypto_ablkcipher_reqtfm(req);
-        struct async_aes_ctx *ctx =3D crypto_ablkcipher_ctx(tfm);
-
-        if (kernel_fpu_using()) {
-                struct async_aes_req_ctx *req_ctx =3D
-                        ablk_aes_req_ctx(req, ctx->cryptd_tfm);
-                req_ctx->ablk_tfm =3D tfm;
-                ablkcipher_request_set_tfm(req, ctx->cryptd_tfm);
-                req_ctx->complete =3D req->base.complete;
-                req->base.complete =3D ablk_complete;
-                return crypto_ablkcipher_encrypt(req);
-        } else {
-                struct blkcipher_desc desc;
-                desc.tfm =3D cryptd_ablkcipher_child(ctx->cryptd_tfm);
-                desc.info =3D req->info;
-                desc.flags =3D 0;
-                return crypto_blkcipher_encrypt(&desc, req->dst, req->src,
-                                                req->nbytes);
-        }
-}
-
-static void ablk_init_common(struct crypto_tfm *tfm,
-                             struct crypto_ablkcipher *cryptd_tfm)
-{
-        struct async_aes_ctx *ctx =3D crypto_tfm_ctx(tfm);
-
-        ctx->cryptd_tfm =3D cryptd_tfm;
-        tfm->crt_ablkcipher.reqsize =3D cryptd_tfm->base.crt_ablkcipher.req=
-size +
-                sizeof(struct async_aes_req_ctx);
-}
-
-static int ablk_ecb_init(struct crypto_tfm *tfm)
-{
-        struct crypto_ablkcipher *cryptd_tfm;
-
-        cryptd_tfm =3D cryptd_alloc_ablkcipher("__ecb-aes-aesni", 0, 0);
-        if (IS_ERR(cryptd_tfm))
-                return PTR_ERR(cryptd_tfm);
-        ablk_init_common(tfm, cryptd_tfm);
-        return 0;
-}
-
-Best Regards,
-Huang Ying
-
-
---=-y08IVnfpimQiUQZFICtj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklr/aIACgkQKhFGF+eHlpiOJgCgjY7U5Vj5O3dTtYTdO63lg1xV
-z9AAnir5MhLtiKrXJirPG7TCdKf7PZdH
-=gRsG
------END PGP SIGNATURE-----
-
---=-y08IVnfpimQiUQZFICtj--
+Thanks,
+Kenji Kaneshige
 
