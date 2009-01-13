@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbZAMPYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZAMP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757226AbZAMPYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 10:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZAMPYB
+	id S1754762AbZAMP2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 10:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZAMP2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 10:24:01 -0500
-Received: from cmpxchg.org ([85.214.51.133]:46997 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbZAMPYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 10:24:00 -0500
-Date: Tue, 13 Jan 2009 16:23:46 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: checkpatch warning of struct indentation
-Message-ID: <20090113152346.GA5892@cmpxchg.org>
-References: <alpine.DEB.1.10.0901121253350.22796@gandalf.stny.rr.com> <c62985530901121009h372c805dj14c748c8f266235d@mail.gmail.com> <alpine.DEB.1.10.0901121323000.22796@gandalf.stny.rr.com> <20090113144515.GA5547@cmpxchg.org> <alpine.DEB.1.10.0901130952210.31098@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901130952210.31098@gandalf.stny.rr.com>
+	Tue, 13 Jan 2009 10:28:40 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:14345 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751215AbZAMP2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 10:28:38 -0500
+Message-ID: <496CB322.8010202@panasas.com>
+Date: Tue, 13 Jan 2009 17:28:34 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>, Jamie Lokier <jamie@shareable.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Boaz Harrosh <bharrosh@panasas.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       Avishay Traeger <avishay@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [osd-dev] [PATCH 1/9] exofs: osd Swiss army knife
+References: <4947BFAA.4030208@panasas.com> <4947C624.3050602@panasas.com> <4964CEA4.7080001@panasas.com> <20090113135526.28730314@lxorguk.ukuu.org.uk> <20090113150955.GA9636@shareable.org> <496CB076.8080002@garzik.org>
+In-Reply-To: <496CB076.8080002@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Jan 2009 15:28:37.0364 (UTC) FILETIME=[9ABF4B40:01C97593]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 09:54:13AM -0500, Steven Rostedt wrote:
-> > > A common phrase from Germans are:
-> > > 
-> > >   I've been doing this since three years.
-> > 
-> > They slept in school :-)
+On Jan. 13, 2009, 17:17 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+> Jamie Lokier wrote:
+>> Having one super block would be silly.
 > 
-> Perhaps they asked, "May I lend an English grammar book?" when they meant 
-> to say "May I borrow an English grammar book?" :-)
+> Yep.
+> 
+> 
+>> But aren't most kinds of replication better done behind the OSD level,
+>> on the storage fabric?  OSD is all about letting the fabric decide
+>> things like allocation and durability strategies after all.
+> 
+> Probably, but one cannot _assume_ that.  The OSD device might just be a 
+> dumb, non-replicated OSD simulator, or in the future, a singleton SATA 
+> drive.
+> 
+> 	Jeff
+> 
+> 
+> 
 
-More likely they asked `may I become an English grammar book'.
+Alan asked about an _os_ failure.  I consider it different than a disk
+level failure which is typically handled by RAID.  At the OS level I'd
+care more about the self consistency of the metadata and its corruption
+due to the OS (or the OSD) failing to update it atomically.
+In exofs's case the metadata in superblock is unexpensive to recover.
+It holds the last object ID created.  If, when using it, the filesystem
+finds an already existing object it can detect the last object created
+using a logarithmic search (or even a linear one assuming the sb is
+synced frequently enough).  Therefore I wouldn't spend cycles on
+replicating it.
 
-German `etw. bekommen' translates to `to get sth'
+Benny
 
-> -- Steve
-
-	Hannes
 
