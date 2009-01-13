@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbZAMBht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbZAMBiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760250AbZAMBht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbZAMB3t
+	id S1760341AbZAMBiN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZAMBaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:29:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35803 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758556AbZAMB3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:29:48 -0500
-Date: Tue, 13 Jan 2009 02:29:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Robert Richter <robert.richter@amd.com>,
-       Steven Rostedt <rostedt@redhat.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_buffer: NUMA aware page allocations
-Message-ID: <20090113012937.GB15492@elte.hu>
-References: <496B97F1.70200@cosmosbay.com>
+	Mon, 12 Jan 2009 20:30:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50370 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758265AbZAMBaI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:30:08 -0500
+Date: Mon, 12 Jan 2009 20:30:04 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Bernd Schmidt <bernds_cb1@t-online.de>, Andi Kleen <andi@firstfloor.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
+ adaptive spinning
+In-Reply-To: <alpine.LFD.2.00.0901121602230.6528@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901122027450.28952@gandalf.stny.rr.com>
+References: <20090111201427.GP26290@one.firstfloor.org> <1231704939.25018.548.camel@macbook.infradead.org> <20090111203441.GQ26290@one.firstfloor.org> <alpine.LFD.2.00.0901111248060.6528@localhost.localdomain> <alpine.LFD.2.00.0901111458290.6528@localhost.localdomain>
+ <20090112001255.GR26290@one.firstfloor.org> <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+ <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <alpine.LFD.2.00.0901121602230.6528@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496B97F1.70200@cosmosbay.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4999]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+<comic relief>
 
-> Hi Robert & Steven
-> 
-> While browsing oprofile code in current tree, I discovered 
-> drivers/oprofile/cpu_buffer.c was using new ring_buffer code.
-> 
-> Apparently we lost in the conversion NUMA allocations, unless
-> I am mistaken, since rb_allocate_pages() uses plain
-> __get_free_page(GFP_KERNEL) calls to allocate pages.
-> 
-> All "buffer_page" structs are allocated with kzalloc_node(),
-> but not the pages themselves.
-> 
-> Thank you
-> 
-> [PATCH] ring_buffer: NUMA aware page allocations
-> 
-> rb_allocate_pages() & ring_buffer_resize() should use alloc_pages_node()
-> instead of __get_free_page() to allocate pages.
+On Mon, 12 Jan 2009, Linus Torvalds wrote:
 
-nice improvement!
+>   code tends to get a lot more I$ and D$ misses. Deep call-chains _will_ 
 
-	Ingo
+I feel like an idiot that I never realized that "I$" meant
+"instruction cache" until now :-p
+
+</comic relief>
+
+-- Steve
+
+
