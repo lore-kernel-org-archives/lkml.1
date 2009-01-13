@@ -1,81 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbZAMLXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZAML2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbZAMLXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 06:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZAMLXj
+	id S1755728AbZAML2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 06:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZAML2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 06:23:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49452 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbZAMLXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 06:23:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: 2.6.29-rc1: Reported regressions from 2.6.28
-Date: Tue, 13 Jan 2009 12:23:01 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <200901112001.00394.rjw@sisk.pl> <3f9a31f40901121924v86b528er652b27e670c5fe0@mail.gmail.com>
-In-Reply-To: <3f9a31f40901121924v86b528er652b27e670c5fe0@mail.gmail.com>
+	Tue, 13 Jan 2009 06:28:07 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:55780 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752848AbZAML2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 06:28:05 -0500
+Message-ID: <496C7AC9.3040303@pardus.org.tr>
+Date: Tue, 13 Jan 2009 13:28:09 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901131223.02813.rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: A really interesting mass-storage BUG introduced after 2.6.18
+References: <Pine.LNX.4.44L0.0901121717520.13021-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0901121717520.13021-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 January 2009, Jaswinder Singh Rajput wrote:
-> Hello Rafael,
-> 
-> On Mon, Jan 12, 2009 at 12:30 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 11 January 2009, Ingo Molnar wrote:
-> >>
-> >> * Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
-> >>
-> >> > On Sun, Jan 11, 2009 at 4:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > >
-> >> > > Regressions with patches
-> >> > > ------------------------
-> >> > >
-> >> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12428
-> >> > > Subject         : Build error on latest git
-> >> > > Submitter       : Petr Titera <P.Titera@century.cz>
-> >> > > Date            : 2009-01-11 9:49 (1 days old)
-> >> > > References      : http://marc.info/?l=linux-kernel&m=123166856318712&w=4
-> >> > > Handled-By      : Petr Titera <P.Titera@century.cz>
-> >> > > Patch           : http://marc.info/?l=linux-kernel&m=123167509024996&w=4
-> >> >
-> >> > This is a wrong fix, asm/smp.h should only be included when CONFIG_SMP
-> >> > is defined.
-> >> >
-> >> > I am still in the process of cleaning non-smp data from asm/smp.h for
-> >> > x86
-> >> >
-> >> > Attach patch is the solution for the time being
-> >> >
-> >> > Ingo, can you please put this in urgent queue.
-> >>
-> >> yes, it already is - see below.
-> >
-> > Link to this patch was added to the bug entry.  Pleaes let me know or close the
-> > bug when it's merged.
-> >
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4884d8e6a05026ec906355436cea9dc1acb1d09e
+Alan Stern wrote On 13-01-2009 00:19:
 
-Thanks, the bug has been closed.
+> 
+> Please ask Antoon to collect a usbmon log during a hotplug test.  The 
+> instructions are in Documentation/usb/usbmon.txt.
+> 
+> Alan Stern
+>
 
-Rafael
+Here's the usbmon log:
+
+ee5f0100 2494136602 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
+ee5f0100 2494136621 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136627 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
+ee5f0100 2494136629 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136631 S Ci:1:001:0 s a3 00 0000 0003 0004 4 <
+ee5f0100 2494136633 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136635 S Ci:1:001:0 s a3 00 0000 0004 0004 4 <
+ee5f0100 2494136637 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136639 S Ci:1:001:0 s a3 00 0000 0005 0004 4 <
+ee5f0100 2494136641 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136643 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494136644 C Ci:1:001:0 0 4 = 01050100
+ee5f0100 2494136646 S Ci:1:001:0 s a3 00 0000 0007 0004 4 <
+ee5f0100 2494136648 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136650 S Ci:1:001:0 s a3 00 0000 0008 0004 4 <
+ee5f0100 2494136652 C Ci:1:001:0 0 4 = 00010000
+f7738700 2494136654 S Ii:1:001:1 -115:2048 4 <
+ee5f0100 2494136668 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
+ee5f0100 2494136670 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136672 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
+ee5f0100 2494136674 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136676 S Ci:1:001:0 s a3 00 0000 0003 0004 4 <
+ee5f0100 2494136678 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136679 S Ci:1:001:0 s a3 00 0000 0004 0004 4 <
+ee5f0100 2494136681 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136683 S Ci:1:001:0 s a3 00 0000 0005 0004 4 <
+ee5f0100 2494136685 C Ci:1:001:0 0 4 = 00010000
+ee5f0100 2494136693 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494136695 C Ci:1:001:0 0 4 = 01050100
+ee5f0100 2494136697 S Co:1:001:0 s 23 01 0010 0006 0000 0
+ee5f0100 2494136699 C Co:1:001:0 0 0
+ee5f0100 2494136701 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494136703 C Ci:1:001:0 0 4 = 01050000
+ee5f0100 2494162597 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494162601 C Ci:1:001:0 0 4 = 01050000
+ee5f0100 2494188595 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494188599 C Ci:1:001:0 0 4 = 01050000
+ee5f0100 2494214603 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494214611 C Ci:1:001:0 0 4 = 01050000
+ee5f0100 2494240596 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494240599 C Ci:1:001:0 0 4 = 01050000
+ee5f0100 2494240609 S Co:1:001:0 s 23 03 0004 0006 0000 0
+ee5f0100 2494240613 C Co:1:001:0 0 0
+ee5f0100 2494291596 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494291832 C Ci:1:001:0 0 4 = 03051000
+ee5f0100 2494342598 S Co:1:001:0 s 23 01 0014 0006 0000 0
+ee5f0100 2494342604 C Co:1:001:0 0 0
+ee5f0100 2494342618 S Ci:1:000:0 s 80 06 0100 0000 0040 64 <
+ee5f0100 2494344842 C Ci:1:000:0 0 18 = 12010002 09000140 e0131525 00010103 0001
+ee5f0100 2494344857 S Co:1:001:0 s 23 03 0004 0006 0000 0
+ee5f0100 2494344860 C Co:1:001:0 0 0
+ee5f0100 2494395600 S Ci:1:001:0 s a3 00 0000 0006 0004 4 <
+ee5f0100 2494395841 C Ci:1:001:0 0 4 = 03051000
+ee5f0100 2494446595 S Co:1:001:0 s 23 01 0014 0006 0000 0
+ee5f0100 2494446600 C Co:1:001:0 0 0
+ee5f0100 2494446605 S Co:1:000:0 s 00 05 000a 0000 0000 0
+ee5f0100 2494446723 C Co:1:000:0 0 0
+ee5f0100 2494458594 S Ci:1:010:0 s 80 06 0100 0000 0012 18 <
+ee5f0100 2494460849 C Ci:1:010:0 0 18 = 12010002 09000140 e0131525 00010103 0001
+ee5f0100 2494460864 S Ci:1:010:0 s 80 06 0200 0000 0009 9 <
+ee5f0100 2494462974 C Ci:1:010:0 0 9 = 09022200 010100c0 32
+ee5f0100 2494462983 S Ci:1:010:0 s 80 06 0200 0000 0022 34 <
+ee5f0100 2494465224 C Ci:1:010:0 0 34 = 09022200 010100c0 32090400 00010900 00000705 81030100 0c092901 0d003264
+ee5f0100 2494465238 S Ci:1:010:0 s 80 06 0300 0000 00ff 255 <
+ee5f0100 2494467349 C Ci:1:010:0 0 4 = 04030904
+ee5f0100 2494467358 S Ci:1:010:0 s 80 06 0303 0409 00ff 255 <
+ee5f0100 2494469599 C Ci:1:010:0 0 34 = 22035500 53004200 20004500 6d006200 65006400 64006500 64002000 48007500
+ee5f0100 2494469609 S Ci:1:010:0 s 80 06 0301 0409 00ff 255 <
+ee5f0100 2494471724 C Ci:1:010:0 0 18 = 12035400 53004500 20004900 6e006300 2e00
+ee5f0100 2494472677 S Co:1:010:0 s 00 09 0001 0000 0000 0
+ee5f0100 2494472853 C Co:1:010:0 0 0
+ee5f0100 2494474632 S Ci:1:010:0 s a0 06 2900 0000 000f 15 <
+ee5f0100 2494474851 C Ci:1:010:0 0 9 = 0929010d 00326402 ff
+ee5f0100 2494474867 S Ci:1:010:0 s 80 00 0000 0000 0002 2 <
+ee5f0100 2494474974 C Ci:1:010:0 0 2 = 0100
+ee5f0100 2494474986 S Ci:1:010:0 s a0 00 0000 0000 0004 4 <
+ee5f0100 2494475100 C Ci:1:010:0 0 4 = 01000000
+ee5f0180 2494475111 S Co:1:010:0 s 23 03 0008 0001 0000 0
+ee5f0180 2494475224 C Co:1:010:0 0 0
+ee5f0100 2494575599 S Ii:1:010:1 -115:2048 1 <
+ee5f0400 2494576161 S Ci:1:001:0 s a3 00 0000 0007 0004 4 <
+ee5f0400 2494576170 C Ci:1:001:0 0 4 = 00010000
+ee5f0400 2494576175 S Ci:1:001:0 s a3 00 0000 0008 0004 4 <
+ee5f0400 2494576177 C Ci:1:001:0 0 4 = 00010000
+ee5f0400 2494576181 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494576361 C Ci:1:010:0 0 4 = 01050100
+ee5f0400 2494576411 S Co:1:010:0 s 23 01 0010 0001 0000 0
+ee5f0400 2494576610 C Co:1:010:0 0 0
+ee5f0400 2494576630 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494576733 C Ci:1:010:0 0 4 = 01050000
+ee5f0400 2494602603 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494602737 C Ci:1:010:0 0 4 = 01050000
+ee5f0400 2494628595 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494628736 C Ci:1:010:0 0 4 = 01050000
+ee5f0400 2494654595 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494654739 C Ci:1:010:0 0 4 = 01050000
+ee5f0400 2494680601 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494680742 C Ci:1:010:0 0 4 = 01050000
+ee5f0400 2494680766 S Co:1:010:0 s 23 03 0004 0001 0000 0
+ee5f0400 2494680990 C Co:1:010:0 0 0
+ee5f0400 2494691594 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494691741 C Ci:1:010:0 0 4 = 03051000
+ee5f0400 2494742596 S Co:1:010:0 s 23 01 0014 0001 0000 0
+ee5f0400 2494742744 C Co:1:010:0 0 0
+ee5f0400 2494742773 S Ci:1:000:0 s 80 06 0100 0000 0040 64 <
+ee5f0400 2494744995 C Ci:1:000:0 0 18 = 12010002 00000040 e0131725 00010104 0001
+ee5f0400 2494745009 S Co:1:010:0 s 23 03 0004 0001 0000 0
+ee5f0400 2494745245 C Co:1:010:0 0 0
+ee5f0400 2494755595 S Ci:1:010:0 s a3 00 0000 0001 0004 4 <
+ee5f0400 2494755746 C Ci:1:010:0 0 4 = 03051000
+ee5f0400 2494806599 S Co:1:010:0 s 23 01 0014 0001 0000 0
+ee5f0400 2494806751 C Co:1:010:0 0 0
+ee5f0400 2494806776 S Co:1:000:0 s 00 05 000b 0000 0000 0
+ee5f0400 2494807000 C Co:1:000:0 0 0
+ee5f0400 2494818596 S Ci:1:011:0 s 80 06 0100 0000 0012 18 <
+ee5f0400 2494820750 C Ci:1:011:0 0 18 = 12010002 00000040 e0131725 00010104 0001
+ee5f0400 2494820767 S Ci:1:011:0 s 80 06 0200 0000 0009 9 <
+ee5f0400 2494822875 C Ci:1:011:0 0 9 = 09022000 010100c0 00
+ee5f0400 2494822887 S Ci:1:011:0 s 80 06 0200 0000 0020 32 <
+ee5f0400 2494825126 C Ci:1:011:0 0 32 = 09022000 010100c0 00090400 00020806 50000705 01020002 00070582 02000200
+ee5f0400 2494825143 S Ci:1:011:0 s 80 06 0300 0000 00ff 255 <
+ee5f0400 2494827251 C Ci:1:011:0 0 4 = 04030904
+ee5f0400 2494827263 S Ci:1:011:0 s 80 06 0304 0409 00ff 255 <
+ee5f0400 2494829501 C Ci:1:011:0 0 48 = 30035500 53004200 20004d00 61007300 73002000 53007400 6f007200 61006700
+ee5f0400 2494829513 S Ci:1:011:0 s 80 06 0301 0409 00ff 255 <
+ee5f0400 2494831751 C Ci:1:011:0 0 18 = 12035400 53004500 20004900 6e006300 2e00
+ee5f0400 2494837439 S Co:1:011:0 s 00 09 0001 0000 0000 0
+ee5f0400 2494837629 C Co:1:011:0 0 0
+ee5f0e80 2495843600 S Ci:1:011:0 s a1 fe 0000 0000 0001 1 <
+ee5f0e80 2495843829 C Ci:1:011:0 0 1 = 00
+ee5f0e80 2495843950 S Bo:1:011:1 -115 31 = 55534243 01000000 24000000 80000612 00000024 00000000 00000000 000000
+ee5f0e80 2495844077 C Bo:1:011:1 0 31 >
+ee4d7280 2495844088 S Bi:1:011:2 -115 36 <
+ee4d7280 2495844577 C Bi:1:011:2 0 36 = 00000000 00000000 55534220 20202020 322e3020 466c6173 68204472 69766500
+ee5f0e80 2495844585 S Bi:1:011:2 -115 13 <
+ee5f0e80 2495844702 C Bi:1:011:2 0 13 = 55534253 01000000 00000000 00
+ee5f0e80 2495844993 S Bo:1:011:1 -115 31 = 55534243 02000000 00000000 00000600 00000000 00000000 00000000 000000
+ee5f0e80 2495845078 C Bo:1:011:1 0 31 >
+ee5f0e80 2495845112 S Bi:1:011:2 -115 13 <
+ee5f0e80 2495845327 C Bi:1:011:2 0 13 = 55534253 02000000 00000000 01
+ee5f0e80 2495845338 S Bo:1:011:1 -115 31 = 55534243 03000000 12000000 80000603 00000012 00000000 00000000 000000
+ee5f0e80 2495845579 C Bo:1:011:1 0 31 >
+ee4d7280 2495845595 S Bi:1:011:2 -115 18 <
+ee4d7280 2495845829 C Bi:1:011:2 0 18 = 70000600 0000000a 00000000 3a000000 0000
+ee5f0e80 2495845850 S Bi:1:011:2 -115 13 <
+ee5f0e80 2495845955 C Bi:1:011:2 0 13 = 55534253 03000000 00000000 00
+
+
+
+-- 
+Ozan Çağlayan
+
