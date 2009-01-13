@@ -1,479 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbZAMCeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbZAMCeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbZAMCeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZAMCeL
+	id S1758907AbZAMCeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbZAMCeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:34:11 -0500
-Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:49859
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754789AbZAMCeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:34:09 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v2] sched: fix build error in kernel/sched_rt.c when
-	RT_GROUP_SCHED && !SMP
-To: mingo@elte.hu
-Cc: rostedt@home.goodmis.org, peterz@infradead.org, ghaskins@novell.com,
-       linux-kernel@vger.kernel.org
-Date: Mon, 12 Jan 2009 21:37:16 -0500
-Message-ID: <20090113023345.32433.28954.stgit@dev.haskins.net>
-In-Reply-To: <20090113014333.GA23448@elte.hu>
-References: <20090113014333.GA23448@elte.hu>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 21:34:19 -0500
+Received: from mga01.intel.com ([192.55.52.88]:43128 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757975AbZAMCeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:34:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,256,1231142400"; 
+   d="asc'?scan'208";a="656592191"
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090112104335.GA4942@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
+	 <20090109070144.GA7358@gondor.apana.org.au>
+	 <1231743310.5937.107.camel@yhuang-dev.sh.intel.com>
+	 <20090112104335.GA4942@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-y08IVnfpimQiUQZFICtj"
+Date: Tue, 13 Jan 2009 10:34:13 +0800
+Message-Id: <1231814053.5937.120.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
 
-Ingo Molnar wrote:
-> * Gregory Haskins <ghaskins@novell.com> wrote:
->
->> +#ifdef CONFIG_SMP
->> +	if (prio < prev_prio) {
->> +		struct rq *rq = rq_of_rt_rq(rt_rq);
->>  
->>  		/*
->>  		 * If the new task is higher in priority than anything on the
->> -		 * run-queue, we have a new high that must be published to
->> -		 * the world.  We also know that the previous high becomes
->> -		 * our next-highest.
->> +		 * run-queue, we know that the previous high becomes our
->> +		 * next-highest.
->>  		 */
->> +		rt_rq->highest_prio.next = prev_prio;
->> +
->>  		if (rq->online)
->>  			cpupri_set(&rq->rd->cpupri, rq->cpu, prio);
->
-> nice cleanups.
->
-> couldnt this portion too be moved into a helper function?
->
+--=-y08IVnfpimQiUQZFICtj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-<snip>
+On Mon, 2009-01-12 at 18:43 +0800, Herbert Xu wrote:
+> On Mon, Jan 12, 2009 at 02:55:10PM +0800, Huang Ying wrote:
+> >
+> > I use a "shell" cbc(aes) algorithm which chooses between
+> > cryptd(__cbc-aes-aesni) and __cbc-aes-aesni according to context. But
+> > the struct ablkcipher_request passed in can not be used for cryptd(*).
+> > This can be resolved by allocating another struct ablkcipher_request fo=
+r
+> > cryptd(*) for each incoming struct ablkcipher_request. But is there any
+> > better solution?
+>=20
+> You should include that other ablkcipher_request as part of the
+> context of your ablkcipher_request.
+>=20
+> See for example how aead embeds it.
 
-Yeah, good ideas.  Here's a v2 (also pushed to my sched/latest branch on
-kernel.org)
+Thank you! I take a look at gcm.c, and know how to implement it.
 
--Greg
+I have another idea, the sample code is as follow. In short, just relay
+the request to cryptd_tfm, and change tfm before/after.
 
-----------------------------------
+struct async_aes_ctx {
+        struct crypto_ablkcipher *cryptd_tfm;
+};
 
-sched: fix build error in kernel/sched_rt.c when RT_GROUP_SCHED && !SMP
+struct async_aes_req_ctx {
+        struct crypto_ablkcipher *ablk_tfm;
+        crypto_completion_t complete;
+};
 
-Ingo found a build error in the scheduler when RT_GROUP_SCHED was
-enabled, but SMP was not.  This patch rearranges the code such
-that it is a little more streamlined and compiles under all permutations
-of SMP, UP and RT_GROUP_SCHED.  It was boot tested on my 4-way x86_64
-and it still passes preempt-test.
+static inline struct async_aes_req_ctx *ablk_aes_req_ctx(
+        struct ablkcipher_request *req,
+        struct crypto_ablkcipher *ablk_tfm) {
+        return ablkcipher_request_ctx(req) +
+                ablk_tfm->base.crt_ablkcipher.reqsize;
+}
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+static void ablk_complete(struct crypto_async_request *req, int err)
+{
+        struct ablkcipher_request *ablk_req =3D ablkcipher_request_cast(req=
+);
+        struct async_aes_req_ctx *req_ctx =3D
+                ablk_aes_req_ctx(ablk_req, crypto_ablkcipher_reqtfm(ablk_re=
+q));
+        ablkcipher_request_set_tfm(ablk_req, req_ctx->ablk_tfm);
+        req_ctx->complete(req, err);
+}
 
- kernel/sched.c    |    4 +
- kernel/sched_rt.c |  261 ++++++++++++++++++++++++++++++++++-------------------
- 2 files changed, 170 insertions(+), 95 deletions(-)
+static int ablk_encrypt(struct ablkcipher_request *req)
+{
+        struct crypto_ablkcipher *tfm =3D crypto_ablkcipher_reqtfm(req);
+        struct async_aes_ctx *ctx =3D crypto_ablkcipher_ctx(tfm);
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index dd1a146..2b703f1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -466,7 +466,9 @@ struct rt_rq {
- #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
- 	struct {
- 		int curr; /* highest queued rt task prio */
-+#ifdef CONFIG_SMP
- 		int next; /* next highest */
-+#endif
- 	} highest_prio;
- #endif
- #ifdef CONFIG_SMP
-@@ -8267,8 +8269,10 @@ static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
- 
- #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
- 	rt_rq->highest_prio.curr = MAX_RT_PRIO;
-+#ifdef CONFIG_SMP
- 	rt_rq->highest_prio.next = MAX_RT_PRIO;
- #endif
-+#endif
- #ifdef CONFIG_SMP
- 	rt_rq->rt_nr_migratory = 0;
- 	rt_rq->overloaded = 0;
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 18c7b5b..b0f3184 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -3,6 +3,40 @@
-  * policies)
-  */
- 
-+static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
-+{
-+	return container_of(rt_se, struct task_struct, rt);
-+}
-+
-+#ifdef CONFIG_RT_GROUP_SCHED
-+
-+static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-+{
-+	return rt_rq->rq;
-+}
-+
-+static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-+{
-+	return rt_se->rt_rq;
-+}
-+
-+#else /* CONFIG_RT_GROUP_SCHED */
-+
-+static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
-+{
-+	return container_of(rt_rq, struct rq, rt);
-+}
-+
-+static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
-+{
-+	struct task_struct *p = rt_task_of(rt_se);
-+	struct rq *rq = task_rq(p);
-+
-+	return &rq->rt;
-+}
-+
-+#endif /* CONFIG_RT_GROUP_SCHED */
-+
- #ifdef CONFIG_SMP
- 
- static inline int rt_overloaded(struct rq *rq)
-@@ -37,19 +71,35 @@ static inline void rt_clear_overload(struct rq *rq)
- 	cpumask_clear_cpu(rq->cpu, rq->rd->rto_mask);
- }
- 
--static void update_rt_migration(struct rq *rq)
-+static void update_rt_migration(struct rt_rq *rt_rq)
- {
--	if (rq->rt.rt_nr_migratory && (rq->rt.rt_nr_running > 1)) {
--		if (!rq->rt.overloaded) {
--			rt_set_overload(rq);
--			rq->rt.overloaded = 1;
-+	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
-+		if (!rt_rq->overloaded) {
-+			rt_set_overload(rq_of_rt_rq(rt_rq));
-+			rt_rq->overloaded = 1;
- 		}
--	} else if (rq->rt.overloaded) {
--		rt_clear_overload(rq);
--		rq->rt.overloaded = 0;
-+	} else if (rt_rq->overloaded) {
-+		rt_clear_overload(rq_of_rt_rq(rt_rq));
-+		rt_rq->overloaded = 0;
- 	}
- }
- 
-+static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	if (rt_se->nr_cpus_allowed > 1)
-+		rt_rq->rt_nr_migratory++;
-+
-+	update_rt_migration(rt_rq);
-+}
-+
-+static void dec_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	if (rt_se->nr_cpus_allowed > 1)
-+		rt_rq->rt_nr_migratory--;
-+
-+	update_rt_migration(rt_rq);
-+}
-+
- static void enqueue_pushable_task(struct rq *rq, struct task_struct *p)
- {
- 	plist_del(&p->pushable_tasks, &rq->rt.pushable_tasks);
-@@ -66,14 +116,11 @@ static void dequeue_pushable_task(struct rq *rq, struct task_struct *p)
- 
- #define enqueue_pushable_task(rq, p) do { } while (0)
- #define dequeue_pushable_task(rq, p) do { } while (0)
-+#define inc_rt_migration(se, rq) do { } while (0)
-+#define dec_rt_migration(se, rq) do { } while (0)
- 
- #endif /* CONFIG_SMP */
- 
--static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
--{
--	return container_of(rt_se, struct task_struct, rt);
--}
--
- static inline int on_rt_rq(struct sched_rt_entity *rt_se)
- {
- 	return !list_empty(&rt_se->run_list);
-@@ -97,16 +144,6 @@ static inline u64 sched_rt_period(struct rt_rq *rt_rq)
- #define for_each_leaf_rt_rq(rt_rq, rq) \
- 	list_for_each_entry_rcu(rt_rq, &rq->leaf_rt_rq_list, leaf_rt_rq_list)
- 
--static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
--{
--	return rt_rq->rq;
--}
--
--static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
--{
--	return rt_se->rt_rq;
--}
--
- #define for_each_sched_rt_entity(rt_se) \
- 	for (; rt_se; rt_se = rt_se->parent)
- 
-@@ -194,19 +231,6 @@ static inline u64 sched_rt_period(struct rt_rq *rt_rq)
- #define for_each_leaf_rt_rq(rt_rq, rq) \
- 	for (rt_rq = &rq->rt; rt_rq; rt_rq = NULL)
- 
--static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
--{
--	return container_of(rt_rq, struct rq, rt);
--}
--
--static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
--{
--	struct task_struct *p = rt_task_of(rt_se);
--	struct rq *rq = task_rq(p);
--
--	return &rq->rt;
--}
--
- #define for_each_sched_rt_entity(rt_se) \
- 	for (; rt_se; rt_se = NULL)
- 
-@@ -565,7 +589,7 @@ static void update_curr_rt(struct rq *rq)
- 	}
- }
- 
--#if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
-+#if defined CONFIG_SMP
- 
- static struct task_struct *pick_next_highest_task_rt(struct rq *rq, int cpu);
- 
-@@ -578,33 +602,24 @@ static inline int next_prio(struct rq *rq)
- 	else
- 		return MAX_RT_PRIO;
- }
--#endif
- 
--static inline
--void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+static void
-+inc_rt_prio_smp(struct rt_rq *rt_rq, int prio, int prev_prio)
- {
--	int prio = rt_se_prio(rt_se);
--#ifdef CONFIG_SMP
- 	struct rq *rq = rq_of_rt_rq(rt_rq);
--#endif
- 
--	WARN_ON(!rt_prio(prio));
--	rt_rq->rt_nr_running++;
--#if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
--	if (prio < rt_rq->highest_prio.curr) {
-+	if (prio < prev_prio) {
- 
- 		/*
- 		 * If the new task is higher in priority than anything on the
--		 * run-queue, we have a new high that must be published to
--		 * the world.  We also know that the previous high becomes
--		 * our next-highest.
-+		 * run-queue, we know that the previous high becomes our
-+		 * next-highest.
- 		 */
--		rt_rq->highest_prio.next = rt_rq->highest_prio.curr;
--		rt_rq->highest_prio.curr = prio;
--#ifdef CONFIG_SMP
-+		rt_rq->highest_prio.next = prev_prio;
-+
- 		if (rq->online)
- 			cpupri_set(&rq->rd->cpupri, rq->cpu, prio);
--#endif
-+
- 	} else if (prio == rt_rq->highest_prio.curr)
- 		/*
- 		 * If the next task is equal in priority to the highest on
-@@ -617,72 +632,128 @@ void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- 		 * Otherwise, we need to recompute next-highest
- 		 */
- 		rt_rq->highest_prio.next = next_prio(rq);
--#endif
--#ifdef CONFIG_SMP
--	if (rt_se->nr_cpus_allowed > 1)
--		rq->rt.rt_nr_migratory++;
--
--	update_rt_migration(rq);
--#endif
--#ifdef CONFIG_RT_GROUP_SCHED
--	if (rt_se_boosted(rt_se))
--		rt_rq->rt_nr_boosted++;
--
--	if (rt_rq->tg)
--		start_rt_bandwidth(&rt_rq->tg->rt_bandwidth);
--#else
--	start_rt_bandwidth(&def_rt_bandwidth);
--#endif
- }
- 
--static inline
--void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+static void
-+dec_rt_prio_smp(struct rt_rq *rt_rq, int prio, int prev_prio)
- {
--#ifdef CONFIG_SMP
- 	struct rq *rq = rq_of_rt_rq(rt_rq);
--	int highest_prio = rt_rq->highest_prio.curr;
--#endif
- 
--	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
--	WARN_ON(!rt_rq->rt_nr_running);
--	rt_rq->rt_nr_running--;
-+	if (rt_rq->rt_nr_running && (prio <= rt_rq->highest_prio.next))
-+		rt_rq->highest_prio.next = next_prio(rq);
-+
-+	if (rq->online && rt_rq->highest_prio.curr != prev_prio)
-+		cpupri_set(&rq->rd->cpupri, rq->cpu, rt_rq->highest_prio.curr);
-+}
-+
-+#else /* CONFIG_SMP */
-+
-+#define inc_rt_prio_smp(rt_rq, prio, prev_prio) do { } while (0)
-+#define dec_rt_prio_smp(rt_rq, prio, prev_prio) do { } while (0)
-+
-+#endif /* CONFIG_SMP */
-+
- #if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
-+static void
-+inc_rt_prio(struct rt_rq *rt_rq, int prio)
-+{
-+	int prev_prio = rt_rq->highest_prio.curr;
-+
-+	if (prio < prev_prio)
-+		rt_rq->highest_prio.curr = prio;
-+
-+	inc_rt_prio_smp(rt_rq, prio, prev_prio);
-+}
-+
-+static void
-+dec_rt_prio(struct rt_rq *rt_rq, int prio)
-+{
-+	int prev_prio = rt_rq->highest_prio.curr;
-+
- 	if (rt_rq->rt_nr_running) {
--		int prio = rt_se_prio(rt_se);
- 
--		WARN_ON(prio < rt_rq->highest_prio.curr);
-+		WARN_ON(prio < prev_prio);
- 
- 		/*
--		 * This may have been our highest or next-highest priority
--		 * task and therefore we may have some recomputation to do
-+		 * This may have been our highest task, and therefore
-+		 * we may have some recomputation to do
- 		 */
--		if (prio == rt_rq->highest_prio.curr) {
-+		if (prio == prev_prio) {
- 			struct rt_prio_array *array = &rt_rq->active;
- 
- 			rt_rq->highest_prio.curr =
- 				sched_find_first_bit(array->bitmap);
- 		}
- 
--		if (prio <= rt_rq->highest_prio.next)
--			rt_rq->highest_prio.next = next_prio(rq);
- 	} else
- 		rt_rq->highest_prio.curr = MAX_RT_PRIO;
--#endif
--#ifdef CONFIG_SMP
--	if (rt_se->nr_cpus_allowed > 1)
--		rq->rt.rt_nr_migratory--;
- 
--	if (rq->online && rt_rq->highest_prio.curr != highest_prio)
--		cpupri_set(&rq->rd->cpupri, rq->cpu, rt_rq->highest_prio.curr);
-+	dec_rt_prio_smp(rt_rq, prio, prev_prio);
-+}
-+
-+#else
-+
-+#define inc_rt_prio(rt_rq, prio) do { } while (0)
-+#define dec_rt_prio(rt_rq, prio) do { } while (0)
-+
-+#endif /* CONFIG_SMP || CONFIG_RT_GROUP_SCHED */
- 
--	update_rt_migration(rq);
--#endif /* CONFIG_SMP */
- #ifdef CONFIG_RT_GROUP_SCHED
-+
-+static void
-+inc_rt_group(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	if (rt_se_boosted(rt_se))
-+		rt_rq->rt_nr_boosted++;
-+
-+	if (rt_rq->tg)
-+		start_rt_bandwidth(&rt_rq->tg->rt_bandwidth);
-+}
-+
-+static void
-+dec_rt_group(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
- 	if (rt_se_boosted(rt_se))
- 		rt_rq->rt_nr_boosted--;
- 
- 	WARN_ON(!rt_rq->rt_nr_running && rt_rq->rt_nr_boosted);
--#endif
-+}
-+
-+#else /* CONFIG_RT_GROUP_SCHED */
-+
-+static void
-+inc_rt_group(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	start_rt_bandwidth(&def_rt_bandwidth);
-+}
-+
-+#define dec_rt_group(rt_se, rt_rq) do { } while (0)
-+
-+#endif /* CONFIG_RT_GROUP_SCHED */
-+
-+static inline
-+void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	int prio = rt_se_prio(rt_se);
-+
-+	WARN_ON(!rt_prio(prio));
-+	rt_rq->rt_nr_running++;
-+
-+	inc_rt_prio(rt_rq, prio);
-+	inc_rt_migration(rt_se, rt_rq);
-+	inc_rt_group(rt_se, rt_rq);
-+}
-+
-+static inline
-+void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
-+{
-+	WARN_ON(!rt_prio(rt_se_prio(rt_se)));
-+	WARN_ON(!rt_rq->rt_nr_running);
-+	rt_rq->rt_nr_running--;
-+
-+	dec_rt_prio(rt_rq, rt_se_prio(rt_se));
-+	dec_rt_migration(rt_se, rt_rq);
-+	dec_rt_group(rt_se, rt_rq);
- }
- 
- static void __enqueue_rt_entity(struct sched_rt_entity *rt_se)
-@@ -1451,7 +1522,7 @@ static void set_cpus_allowed_rt(struct task_struct *p,
- 			rq->rt.rt_nr_migratory--;
- 		}
- 
--		update_rt_migration(rq);
-+		update_rt_migration(&rq->rt);
- 	}
- 
- 	cpumask_copy(&p->cpus_allowed, new_mask);
+        if (kernel_fpu_using()) {
+                struct async_aes_req_ctx *req_ctx =3D
+                        ablk_aes_req_ctx(req, ctx->cryptd_tfm);
+                req_ctx->ablk_tfm =3D tfm;
+                ablkcipher_request_set_tfm(req, ctx->cryptd_tfm);
+                req_ctx->complete =3D req->base.complete;
+                req->base.complete =3D ablk_complete;
+                return crypto_ablkcipher_encrypt(req);
+        } else {
+                struct blkcipher_desc desc;
+                desc.tfm =3D cryptd_ablkcipher_child(ctx->cryptd_tfm);
+                desc.info =3D req->info;
+                desc.flags =3D 0;
+                return crypto_blkcipher_encrypt(&desc, req->dst, req->src,
+                                                req->nbytes);
+        }
+}
+
+static void ablk_init_common(struct crypto_tfm *tfm,
+                             struct crypto_ablkcipher *cryptd_tfm)
+{
+        struct async_aes_ctx *ctx =3D crypto_tfm_ctx(tfm);
+
+        ctx->cryptd_tfm =3D cryptd_tfm;
+        tfm->crt_ablkcipher.reqsize =3D cryptd_tfm->base.crt_ablkcipher.req=
+size +
+                sizeof(struct async_aes_req_ctx);
+}
+
+static int ablk_ecb_init(struct crypto_tfm *tfm)
+{
+        struct crypto_ablkcipher *cryptd_tfm;
+
+        cryptd_tfm =3D cryptd_alloc_ablkcipher("__ecb-aes-aesni", 0, 0);
+        if (IS_ERR(cryptd_tfm))
+                return PTR_ERR(cryptd_tfm);
+        ablk_init_common(tfm, cryptd_tfm);
+        return 0;
+}
+
+Best Regards,
+Huang Ying
+
+
+--=-y08IVnfpimQiUQZFICtj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklr/aIACgkQKhFGF+eHlpiOJgCgjY7U5Vj5O3dTtYTdO63lg1xV
+z9AAnir5MhLtiKrXJirPG7TCdKf7PZdH
+=gRsG
+-----END PGP SIGNATURE-----
+
+--=-y08IVnfpimQiUQZFICtj--
 
