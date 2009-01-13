@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZAMQn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbZAMQqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbZAMQn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZAMQnK
+	id S1757227AbZAMQqN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:46:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZAMQpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:43:10 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:39838 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757059AbZAMQnJ (ORCPT
+	Tue, 13 Jan 2009 11:45:44 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:47910 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbZAMQpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 11:43:09 -0500
-Date: Tue, 13 Jan 2009 17:43:06 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] async: Add some documentation.
-Message-ID: <20090113174306.0f620476@gondolin>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 11:45:43 -0500
+Date: Tue, 13 Jan 2009 11:34:55 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-01-12
+Message-ID: <20090113163455.GC3623@tuxdriver.com>
+References: <20090112201302.GB3786@tuxdriver.com> <20090112.212345.259792227.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112.212345.259792227.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some kerneldoc to the async interface.
+On Mon, Jan 12, 2009 at 09:23:45PM -0800, David Miller wrote:
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Mon, 12 Jan 2009 15:13:02 -0500
+> 
+> > Please let me know if there are problems!
+> 
+> There's something funny in this tree.   In changeset
+> 19f0a391bf9d88307e52557ff3125b24e2519bd4 there is
+> a removal of arch/arm/mach-integrator/clock.h
+> 
+> I think when you installed that commit something
+> automatically deleted zero length files it found,
+> but that's just a guess.
+> 
+> Please fix this up so I can pull from you.
+> 
+> Otherwise all of those changes looked fine.
+ 
+Hmmm...dirty tree I suppose.  Sorry about that!  I should have noticed
+that in the changelog.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+I'll post a new pull request immediately.
 
----
- kernel/async.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
-
---- linux-2.6.orig/kernel/async.c
-+++ linux-2.6/kernel/async.c
-@@ -205,18 +205,43 @@ static async_cookie_t __async_schedule(a
- 	return newcookie;
- }
- 
-+/**
-+ * async_schedule - schedule a function for asynchronous execution
-+ * @ptr: function to execute asynchronously
-+ * @data: data pointer to pass to the function
-+ *
-+ * Returns an async_cookie_t that may be used for checkpointing later.
-+ * Note: This function may be called from atomic or non-atomic contexts.
-+ */
- async_cookie_t async_schedule(async_func_ptr *ptr, void *data)
- {
- 	return __async_schedule(ptr, data, &async_pending);
- }
- EXPORT_SYMBOL_GPL(async_schedule);
- 
-+/**
-+ * async_schedule_special - schedule a function for asynchronous execution with a special running queue
-+ * @ptr: function to execute asynchronously
-+ * @data: data pointer to pass to the function
-+ * @running: list head to add to while running
-+ *
-+ * Returns an async_cookie_t that may be used for checkpointing later.
-+ * @running may be used in the async_synchronize_*_special() functions
-+ * to wait on a special running queue rather than on the global running
-+ * queue.
-+ * Note: This function may be called from atomic or non-atomic contexts.
-+ */
- async_cookie_t async_schedule_special(async_func_ptr *ptr, void *data, struct list_head *running)
- {
- 	return __async_schedule(ptr, data, running);
- }
- EXPORT_SYMBOL_GPL(async_schedule_special);
- 
-+/**
-+ * async_synchronize_full - synchronize all asynchronous function calls
-+ *
-+ * This function waits until all asynchronous function calls have been done.
-+ */
- void async_synchronize_full(void)
- {
- 	do {
-@@ -225,12 +250,27 @@ void async_synchronize_full(void)
- }
- EXPORT_SYMBOL_GPL(async_synchronize_full);
- 
-+/**
-+ * async_synchronize_full_special - synchronize all asynchronous function calls for a running list
-+ * @list: running list to synchronize on
-+ *
-+ * This function waits until all asynchronous function calls for the running
-+ * list @list have been done.
-+ */
- void async_synchronize_full_special(struct list_head *list)
- {
- 	async_synchronize_cookie_special(next_cookie, list);
- }
- EXPORT_SYMBOL_GPL(async_synchronize_full_special);
- 
-+/**
-+ * async_synchronize_cookie_special - synchronize asynchronous function calls on a running list with cookie checkpointing
-+ * @cookie: async_cookie_t to use as checkpoint
-+ * @running: running list to synchronize on
-+ *
-+ * This function waits until all asynchronous function calls for the running
-+ * list @list submitted prior to @cookie have been done.
-+ */
- void async_synchronize_cookie_special(async_cookie_t cookie, struct list_head *running)
- {
- 	ktime_t starttime, delta, endtime;
-@@ -252,6 +292,13 @@ void async_synchronize_cookie_special(as
- }
- EXPORT_SYMBOL_GPL(async_synchronize_cookie_special);
- 
-+/**
-+ * async_synchronize_cookie - synchronize asynchronous function calls with cookie checkpointing
-+ * @cookie: async_cookie_t to use as checkpoint
-+ *
-+ * This function waits until all asynchronous function calls prior to @cookie
-+ * have been done.
-+ */
- void async_synchronize_cookie(async_cookie_t cookie)
- {
- 	async_synchronize_cookie_special(cookie, &async_running);
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
