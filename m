@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbZAMXty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbZAMXwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbZAMXty (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbZAMXtn
+	id S1758851AbZAMXwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZAMXwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:49:43 -0500
-Received: from kroah.org ([198.145.64.141]:60823 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753919AbZAMXtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:49:42 -0500
-Date: Tue, 13 Jan 2009 15:46:33 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?iso-8859-1?B?SmlfX+0=?= Burda <jburda@email.cz>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: Nokia 5310 mass-storage not mounting in kernel
-	2.6.28
-Message-ID: <20090113234633.GA28105@kroah.com>
-References: <496CD114.7060802@email.cz> <20090113153704.2ca5174d.akpm@linux-foundation.org>
+	Tue, 13 Jan 2009 18:52:15 -0500
+Received: from gw.goop.org ([64.81.55.164]:49290 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752109AbZAMXwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:52:14 -0500
+Message-ID: <496D292B.20007@goop.org>
+Date: Tue, 13 Jan 2009 15:52:11 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113153704.2ca5174d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@xensource.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: remove byte locks
+References: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz> <20090112120743.GC24266@elte.hu> <alpine.LNX.1.10.0901121334510.5377@jikos.suse.cz> <20090112124401.GA31939@elte.hu> <496D1F54.7070104@goop.org> <alpine.LNX.1.10.0901140016520.5377@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0901140016520.5377@jikos.suse.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 03:37:04PM -0800, Andrew Morton wrote:
-> On Tue, 13 Jan 2009 18:36:20 +0100
-> Ji____ Burda <jburda@email.cz> wrote:
-> 
-> > From: Jiri Burda <jburda@email.cz>	
-> > 
-> > Nokia 5310 mobile with firmware revision 8.32 does not mount as usb mass-storage in kernel 2.6.28 and previous.
-> > This patch solves this problem by increasing firmware revision in drivers/usb/storage/unusual_device.h from 0x0701 to 0x0832.
-> > This bug is recorded in kernel bugzilla as 12367.
-> > Signed-off-by: Jiri Burda <jburda@email.cz>
-> > ---
-> > --- linux-2.6.28/drivers/usb/storage/unusual_devs.h.orig	2009-01-13 17:21:24.000000000 +0100
-> > +++ linux-2.6.28/drivers/usb/storage/unusual_devs.h	2009-01-13 19:24:16.000000000 +0100
-> > @@ -182,7 +182,7 @@ UNUSUAL_DEV(  0x0421, 0x0063, 0x0001, 0x
-> >  		US_FL_FIX_CAPACITY ),
-> >  
-> >  /* Patch for Nokia 5310 capacity */
-> > -UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
-> > +UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0832,
-> >  		"Nokia",
-> >  		"5310",
-> >  		US_SC_DEVICE, US_PR_DEVICE, NULL,
-> > 
-> 
-> akpm:/usr/src/25> grep 5310 drivers/usb/storage/unusual_devs.h
-> akpm:/usr/src/25> 
-> 
-> The 5310 entry seems to have been removed in 2.6.29-rc1.
+Jiri Kosina wrote:
+> Why can't this just be somewhere in documentation? (possibly even with the 
+> byte locks code as a reference).
+>   
 
-Yes, we are handling all Nokia devices in a generic way now in 2.6.29,
-so patches like this should no longer be needed.
+Because Ingo's compil-o-matic will never fail on a documentation error.
 
-thanks,
+> It is IMHO just totally confusing to have a spinlock implementation that 
+> is not used at all in the tree. It took me quite some time to go through 
+> this until I finally figured out that this code is actually never used. 
+> Currently, on first sight it might seem that byte locks are used whenever 
+> CONFIG_PARAVIRT is set, which is not true.
+>   
 
-greg k-h
+Well, a comment next to the code explaining the rationale probably 
+wouldn't go astray.
+
+> And apparently even Linus got confused by this, which also tells us 
+> something by itself, see [1].
+>
+> [1] http://marc.info/?l=linux-kernel&m=123144211719754&w=2
+>   
+
+It tells us that Linus couldn't give a rat's arse about virtualization, 
+which is just something we have to cope with ;)
+
+    J
