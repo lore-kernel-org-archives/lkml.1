@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbZAMJAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbZAMJAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759127AbZAMJAF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 04:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZAMI7u
+	id S1759736AbZAMJAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 04:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZAMJAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:59:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54808 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZAMI7t (ORCPT
+	Tue, 13 Jan 2009 04:00:20 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:38144 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752695AbZAMJAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:59:49 -0500
-Subject: Re: [PATCH 03/16] dma-debug: add hash functions for
- dma_debug_entries
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-In-Reply-To: <20090113005118.82f5037b.akpm@linux-foundation.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-	 <1231517970-20288-4-git-send-email-joerg.roedel@amd.com>
-	 <20090113005118.82f5037b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 08:59:39 +0000
-Message-Id: <1231837179.25018.2816.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-2.fc10) 
+	Tue, 13 Jan 2009 04:00:18 -0500
+Message-ID: <496C5846.3050809@lougher.demon.co.uk>
+Date: Tue, 13 Jan 2009 09:00:54 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Woody Suwalski <woodys@xandros.com>
+CC: Matthias Kaehlcke <matthias@kaehlcke.net>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] SQUASHFS error: Major/Minor mismatch
+References: <20090112140822.GB23365@traven> <496BC02A.2020402@xandros.com>
+In-Reply-To: <496BC02A.2020402@xandros.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-13 at 00:51 -0800, Andrew Morton wrote:
-> This all looks like an exotically large amount of code for a debug
-> thingy?
+Woody Suwalski wrote:
+> Phillip Lougher wrote:
+>>
+>> You have to use the latest version of Mksquashfs in CVS available
+>> from http://squashfs.org.
+>>
+>> git-cvsimport -v -d 
+>> :pserver:anonymous@squashfs.cvs.sourceforge.net:/cvsroot/squashfs 
+>> squashfs
+>>
+>> Phillip
+>>
+> Does not look good! I have squashfs images which work OK in 3.3 and 3.4, 
+> but now I try to boot 2.6.29-rc1 and it can not mount my squashfs root 
+> partition!
+> Does it mean that squashfs4 is not backward-compatible? If so - I can 
+> not use it - all my images are generated on 3.3 .. 3.4...
+> 
 
-Perhaps so, but it's a useful debug thingy which lets us debug _very_
-common problems in drivers, which many people are unlikely to notice
-without this 'assistance'. 
+Backwards compatibility was dropped as part of the original review
+complaints against mainlining.  The new 4.0 layout was necessary to address
+some issues again relating to the original review complaints.  The 4.0
+layout is designed to hopefully not require any further modification in the
+future.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Ultimately this does mean the Squashfs mainline code will never be able to
+read older filesystems.  But, unsquashfs will always be able to read all
+filesystem versions, and I'll maintain out-of-tree patches that add
+backwards compatibility to the kernel code for those that need it.  This
+should be finished in the near future.
 
+Philllip
