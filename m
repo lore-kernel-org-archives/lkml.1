@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZAMTDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbZAMTF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbZAMTDm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 14:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZAMTDd
+	id S1758057AbZAMTF0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 14:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZAMTFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 14:03:33 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52724 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbZAMTDc (ORCPT
+	Tue, 13 Jan 2009 14:05:12 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:44009 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbZAMTFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 14:03:32 -0500
-Message-ID: <496CE567.1040808@zytor.com>
-Date: Tue, 13 Jan 2009 11:03:03 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Tue, 13 Jan 2009 14:05:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=jpfZxXzuvJi+UX+R75TsybFAUP+XrLmhyY5BIx/YtnlIZc1sdeFT5myBvz91ALjC4u
+         7faO2+r3JjkdIOLhkmseKLm3mTTolMfSTcIgjQpyTxmUhx9V7n/9STaUdTe0u3fLuvLh
+         Hm00SDPCDRzuqCEglY6Y3El7WvuQ7W9DitotU=
+Subject: Re: [PATCH -tip] x86: headers - fix export private data to
+ userspace
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [PATCH -tip] x86: headers - fix export private data to	userspace
-References: <20090113183456.GA14470@localhost> <1231871832.16221.1.camel@brick> <496CE234.2070900@zytor.com> <20090113185239.GC14470@localhost> <496CE3A2.4060605@zytor.com> <20090113190007.GA16663@localhost>
-In-Reply-To: <20090113190007.GA16663@localhost>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <496CE234.2070900@zytor.com>
+References: <20090113183456.GA14470@localhost>
+	 <1231871832.16221.1.camel@brick>  <496CE234.2070900@zytor.com>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 11:05:07 -0800
+Message-Id: <1231873507.16221.4.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> | > | 
-> | > | You can introduce symbols into the general namespace if *and only if*
-> | > | they are in a header file that is invoked directly by the user.  In
-> | > | other words, such a header file is unusable by libc, but setup.h doesn't
-> | > | contain anything needed by libc in the first place.
-> | > | 
-> | > | 	-hpa
-> | > | 
-> | > 
-> | > So we could just fence it by __KERNEL__?
-> | > 
-> | 
-> | We might, as userspace shouldn't need COMMAND_LINE_SIZE anyway (see
-> | other post), but I'm rather confused as how you got that from what I
-> | wrote above.
-> | 
+On Tue, 2009-01-13 at 10:49 -0800, H. Peter Anvin wrote:
+> Harvey Harrison wrote:
+> > On Tue, 2009-01-13 at 21:34 +0300, Cyrill Gorcunov wrote:
+> >> Impact: cleanup
+> > 
+> >> 4) setup.h - COMMAND_LINE_SIZE saved for userspace, bootloaders
+> >>    could use it.
+> > 
+> > Doesn't this need to be (at least) _COMMAND_LINE_SIZE to avoid
+> > polluting the namespace, not sure it can be changed though as the
+> > horse is already out of the barn.
 > 
-> The thing is that kernel headers are not only touched by libc.
-> Someone could write a program and include setup.h there.
-> Or I translated you wrong :)
+> No, this is not one of those cases, but it's worth explaining why.
+> 
+> You can introduce symbols into the general namespace if *and only if*
+> they are in a header file that is invoked directly by the user.  In
+> other words, such a header file is unusable by libc, but setup.h doesn't
+> contain anything needed by libc in the first place.
 > 
 
-My whole point was that there are classes of symbols which may be
-legitimately used by userspace *applications*, but not by libc.  Those
-can live in the general namespace since they are included by explicit
-user command.
+Thanks for the explanation, while I was aware of that, I hadn't actually
+looked if libc pulled this in...thinking a bit more it should have been
+obvious libc wouldn't be interested in this header.
 
-	-hpa
+Thanks.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Harvey
+
 
