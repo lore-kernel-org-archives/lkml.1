@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbZAMOHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZAMOHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759982AbZAMOHU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbZAMOGu
+	id S1761177AbZAMOHp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760957AbZAMOGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 13 Jan 2009 09:06:51 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50742 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760953AbZAMOGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 13 Jan 2009 09:06:50 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38186 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760938AbZAMOGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:06:48 -0500
-Date: Tue, 13 Jan 2009 14:06:27 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
-Message-ID: <20090113140627.507f15e1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090113135246.GA29251@ioremap.net>
-References: <20090112153304.GA19995@ioremap.net>
-	<20090112154456.GA27269@redhat.com>
-	<20090112154827.GB20743@ioremap.net>
-	<20090112155108.2646b3ae@lxorguk.ukuu.org.uk>
-	<20090113135246.GA29251@ioremap.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Date: Tue, 13 Jan 2009 15:06:01 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>, harvey.harrison@gmail.com
+References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl> <20090113130536.GB30352@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090113130536.GB30352@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901131506.01602.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do you _REALLY_ think anyone can calculate it yourself and then properly
-> calculate adjustment used to properly select oom-killed process?
+On Tuesday 13 January 2009, Pavel Machek wrote:
+> 
+> > On Tuesday 13 January 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > Just when I thought long merge window means less problems...
+> > > 
+> > > ...suspend seemed to work until last tuesday or so. Now it hanged two
+> > > times; once so hard that power button powercycle did not result in
+> > > booting machine. (thinkpad x60)
+> > > 
+> > > I'll do some more tests...
+> > 
+> > There are a couple of things you may want to revert, like
+> > 7503bfbae89eba07b46441a5d1594647f6b8ab7d and
+> > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
+> > 
+> > Please let me know if that helped.
+> 
+> Harwey told me they are already reverted in latest -git, so I tried
+> that but no luck. I'll try disabling CONFIG_SMP now.
+> 
+> Actually, in one case I seen some oopses scroll by... looked
+> timekeeping related, but certainly went too fast.
 
-Its always a heuristic.
+Hm, I'm unable to reproduce this on my test boxes.
 
-> So far my patch is the sanest way to deal with the OOM selection
+What hardware is there in your machine?
 
-No. You keep maintaining this but your crude hack is useless in a non
-co-operative environment, has lots of issue with name aliasing and
-doesn't deal with real needs.
-
-We have container interfaces that can do this and far more and do them
-right. In fact the very start of all the OpenVZ and container work years
-ago was the beancounter patches which were addressed at exactly this
-problem (although more specifically 'making sure undergraduates processes
-get killed first')
-
-Alan
+Rafael
