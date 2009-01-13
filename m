@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758448AbZAMH61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZAMIAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758448AbZAMH61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 02:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZAMH6N
+	id S1757345AbZAMIAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZAMIAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 02:58:13 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:41019 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbZAMH6M convert rfc822-to-8bit (ORCPT
+	Tue, 13 Jan 2009 03:00:24 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:59561 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753557AbZAMIAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 02:58:12 -0500
-Message-ID: <496C4987.8040803@cosmosbay.com>
-Date: Tue, 13 Jan 2009 08:57:59 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Tue, 13 Jan 2009 03:00:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=F7b9GjG5BsrG2kpRvVN99MMo7fWgihxPgHq4EVS0EvoDrnTrcF0aV5dYDLXiHIanTB
+         SbvgUwb1xEek2ObvBhgn+WB4OMkxucdY0UzgOUCs73ud4WQu92hBSrxvZAnv9PUgJFEw
+         1J9/8hzoLUTQaZKZ50vxOis3UjCO01uD2vfLM=
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: joe.tian.kernel@gmail.com, lizf@cn.fujitsu.com, qhfeng.kernel@gmail.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: fix wrong English expression in comments
-References: <496a3c51.09876e0a.03fe.7e80@mx.google.com>	<496A9753.80802@cn.fujitsu.com>	<6b1ba94c0901122336r511fa316o5f520a8d2d9d6e0@mail.gmail.com> <20090112.234441.131571840.davem@davemloft.net>
-In-Reply-To: <20090112.234441.131571840.davem@davemloft.net>
+In-Reply-To: <20090112162044.2bc12cef@mjolnir.drzeus.cx>
+References: <a0e7fce50901081953h7ae152a7y557794c07fbb843b@mail.gmail.com>
+	 <20090112162044.2bc12cef@mjolnir.drzeus.cx>
+Date: Tue, 13 Jan 2009 16:00:21 +0800
+Message-ID: <a0e7fce50901130000u36528132jc3a9ecbd9084b043@mail.gmail.com>
+Subject: Re: [BUG] MMC/SD: SDHC card capacity not correct
+From: yi li <liyi.dev@gmail.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 13 Jan 2009 08:58:00 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: joe tian <joe.tian.kernel@gmail.com>
-> Date: Tue, 13 Jan 2009 15:36:51 +0800
-> 
->> 2009/1/12 Li Zefan <lizf@cn.fujitsu.com>:
->>>> @@ -103,7 +103,7 @@ struct inet_bind_bucket;
->>>>  struct inet_timewait_sock {
->>>>       /*
->>>>        * Now struct sock also uses sock_common, so please just
->>>> -      * don't add nothing before this first member (__tw_common) --acme
->>>> +      * don't add anything before this first member (__tw_common) --acme
->>> They are the same meaning...
->>>
->> I don't think they are the same meaning.
->> I think "don't add anything" means "do add nothing" but not means "don't add
->> nothing"
-> 
-> No offense to anyone, but the only people arguing for "correctness"
-> seem to be non-native speakers of English.  Is this correct? :-)
-> 
-> As Ben tries to explain, "don't add nothing" is a colloquialism of
-> English that in fact can mean "do not add"
-> 
-> It sounds amusing when read, and I'm not killing the character and
-> personality of this comment just for some language lawyering.
-> 
-> No way.
+On Mon, Jan 12, 2009 at 11:20 PM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+>
+> Odd. Is the entire device accessible? (I.e. is it just a printk
+> problem?)
+>
 
-Oh my God... time for me to check what is a colloquialism :)
+It is a printk problem.
 
+> Could you give me a dmesg dump with MMC_DEBUG turned on in Kconfig?
+>
 
-According to wikipedia :
+I did debug on my side (I think it is more easy to reproduce here :-)
+).  The issue is in mmc/card/block.c: mmc_block_probe().
 
-A colloquialism is an expression not used in formal speech, 
-writing or paralinguistics. Colloquialisms are also sometimes 
-referred to collectively as "colloquial language". [1] Colloquialisms
-or colloquial language is considered to be characteristic of or only
-appropriate for casual, ordinary, familiar, or informal conversation
-rather than formal speech or writing.[2] Dictionaries often display
-colloquial words and phrases with the abbreviation colloq. as an identifier.
+"string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
+ 			cap_str, sizeof(cap_str));
+"
+get_capacity() returns a type "sector_t" value, since I am working on
+a 32-bit processor (Analog Devices BF537),
+and I did not enable CONFIG_LBD, "sector_t" is actually a 32-bit
+"unsigned long".  So  "get_capacity(md->disk) << 9" loses the MSB.
 
+I can think of two fixes:
 
-Ouch... back to coding :)
+1. Set CONFIG_LBD
+2. Fix like this:
+--- card/block.c	2009-01-13 15:56:05.000000000 +0800
++++ card/block.c.new	2009-01-13 15:53:45.000000000 +0800
+@@ -514,7 +514,7 @@ static int mmc_blk_probe(struct mmc_card
+ 	if (err)
+ 		goto out;
 
+-	string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
++	string_get_size((u64)get_capacity(md->disk) << 9, STRING_UNITS_2,
+ 			cap_str, sizeof(cap_str));
+ 	printk(KERN_INFO "%s: %s %s %s %s\n",
+ 		md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
+
+I prefer the second fix, what do you think?
+
+Regards,
+
+-Li Yi
