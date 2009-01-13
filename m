@@ -1,119 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZAMKg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbZAMKjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZAMKg7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 05:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZAMKgv
+	id S1755974AbZAMKjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 05:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbZAMKjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 05:36:51 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59417 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbZAMKgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 05:36:50 -0500
-Date: Tue, 13 Jan 2009 18:48:54 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: [PATCH 2/4] memcg: fix error path of mem_cgroup_move_parent
-Message-Id: <20090113184854.87a37a88.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 05:39:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51095 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbZAMKi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 05:38:59 -0500
+From: Tejun Heo <tj@kernel.org>
+To: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
+       hugh@veritas.com
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 10/13] x86_64: make pda a percpu variable
+Date: Tue, 13 Jan 2009 19:38:14 +0900
+Message-Id: <1231843097-18003-11-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1231843097-18003-1-git-send-email-tj@kernel.org>
+References: <1231843097-18003-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 10:38:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a bug in error path of mem_cgroup_move_parent.
+As pda is now allocated in percpu area, it can easily be made a proper
+percpu variable.  Make it so by defining per cpu symbol from linker
+script and declaring it in C code for SMP and simply defining it for
+UP.  This change cleans up code and brings SMP and UP closer a bit.
 
-Extra refcnt got from try_charge should be dropped, and usages incremented
-by try_charge should be decremented in both error paths:
+A lot of this patch is taken from Mike Travis' "x86_64: Fold pda into
+per cpu area" and "x86_64: Reference zero-based percpu variables
+offset from gs" patches.
 
-    A: failure at get_page_unless_zero
-    B: failure at isolate_lru_page
-
-This bug makes this parent directory unremovable.
-
-In case of A, rmdir doesn't return, because res.usage doesn't go
-down to 0 at mem_cgroup_force_empty even after all the pc in
-lru are removed.
-In case of B, rmdir fails and returns -EBUSY, because it has
-extra ref counts even after res.usage goes down to 0.
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Mike Travis <travis@sgi.com>
 ---
- mm/memcontrol.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/pda.h       |    5 +++--
+ arch/x86/kernel/cpu/common.c     |    3 ---
+ arch/x86/kernel/head64.c         |   10 ----------
+ arch/x86/kernel/head_64.S        |    5 +++--
+ arch/x86/kernel/setup_percpu.c   |   16 ++++++++++++++--
+ arch/x86/kernel/vmlinux_64.lds.S |    4 +++-
+ 6 files changed, 23 insertions(+), 20 deletions(-)
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index b665127..7be9b35 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -994,14 +994,15 @@ static int mem_cgroup_move_account(struct page_cgroup *pc,
- 	if (pc->mem_cgroup != from)
- 		goto out;
+diff --git a/arch/x86/include/asm/pda.h b/arch/x86/include/asm/pda.h
+index e91558e..66ae104 100644
+--- a/arch/x86/include/asm/pda.h
++++ b/arch/x86/include/asm/pda.h
+@@ -7,6 +7,7 @@
+ #include <linux/cache.h>
+ #include <linux/threads.h>
+ #include <asm/page.h>
++#include <asm/percpu.h>
  
--	css_put(&from->css);
- 	res_counter_uncharge(&from->res, PAGE_SIZE);
- 	mem_cgroup_charge_statistics(from, pc, false);
- 	if (do_swap_account)
- 		res_counter_uncharge(&from->memsw, PAGE_SIZE);
-+	css_put(&from->css);
-+
-+	css_get(&to->css);
- 	pc->mem_cgroup = to;
- 	mem_cgroup_charge_statistics(to, pc, true);
--	css_get(&to->css);
- 	ret = 0;
- out:
- 	unlock_page_cgroup(pc);
-@@ -1034,8 +1035,10 @@ static int mem_cgroup_move_parent(struct page_cgroup *pc,
- 	if (ret || !parent)
- 		return ret;
+ /* Per processor datastructure. %gs points to it while the kernel runs */
+ struct x8664_pda {
+@@ -39,10 +40,10 @@ struct x8664_pda {
+ 	unsigned irq_spurious_count;
+ } ____cacheline_aligned_in_smp;
  
--	if (!get_page_unless_zero(page))
--		return -EBUSY;
-+	if (!get_page_unless_zero(page)) {
-+		ret = -EBUSY;
-+		goto uncharge;
-+	}
+-extern struct x8664_pda *_cpu_pda[NR_CPUS];
++DECLARE_PER_CPU(struct x8664_pda, __pda);
+ extern void pda_init(int);
  
- 	ret = isolate_lru_page(page);
+-#define cpu_pda(i) (_cpu_pda[i])
++#define cpu_pda(cpu)		(&per_cpu(__pda, cpu))
  
-@@ -1044,19 +1047,23 @@ static int mem_cgroup_move_parent(struct page_cgroup *pc,
+ /*
+  * There is no fast way to get the base address of the PDA, all the accesses
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index cdd419a..bd38a0f 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -859,9 +859,6 @@ __setup("clearcpuid=", setup_disablecpuid);
+ cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
  
- 	ret = mem_cgroup_move_account(pc, child, parent);
+ #ifdef CONFIG_X86_64
+-struct x8664_pda *_cpu_pda[NR_CPUS] __read_mostly;
+-EXPORT_SYMBOL(_cpu_pda);
+-
+ struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
  
--	/* drop extra refcnt by try_charge() (move_account increment one) */
--	css_put(&parent->css);
- 	putback_lru_page(page);
- 	if (!ret) {
- 		put_page(page);
-+		/* drop extra refcnt by try_charge() */
-+		css_put(&parent->css);
- 		return 0;
- 	}
--	/* uncharge if move fails */
-+
- cancel:
-+	put_page(page);
-+uncharge:
-+	/* drop extra refcnt by try_charge() */
-+	css_put(&parent->css);
-+	/* uncharge if move fails */
- 	res_counter_uncharge(&parent->res, PAGE_SIZE);
- 	if (do_swap_account)
- 		res_counter_uncharge(&parent->memsw, PAGE_SIZE);
--	put_page(page);
- 	return ret;
+ static char boot_cpu_stack[IRQSTACKSIZE] __page_aligned_bss;
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 9194074..71b6f6e 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -26,18 +26,8 @@
+ #include <asm/bios_ebda.h>
+ #include <asm/trampoline.h>
+ 
+-#ifndef CONFIG_SMP
+-/* boot cpu pda, referenced by head_64.S to initialize %gs on UP */
+-struct x8664_pda _boot_cpu_pda __read_mostly;
+-#endif
+-
+ void __init x86_64_init_pda(void)
+ {
+-#ifdef CONFIG_SMP
+-	cpu_pda(0) = (void *)__per_cpu_load;
+-#else
+-	cpu_pda(0) = &_boot_cpu_pda;
+-#endif
+ 	pda_init(0);
  }
  
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 519185f..ce5975c 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -19,6 +19,7 @@
+ #include <asm/msr.h>
+ #include <asm/cache.h>
+ #include <asm/processor-flags.h>
++#include <asm/percpu.h>
+ 
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/asm-offsets.h>
+@@ -250,7 +251,7 @@ ENTRY(secondary_startup_64)
+ 	 * secondary CPU,initial_gs should be set to its pda address
+ 	 * before the CPU runs this code.
+ 	 *
+-	 * On UP, initial_gs points to _boot_cpu_pda and doesn't
++	 * On UP, initial_gs points to PER_CPU_VAR(__pda) and doesn't
+ 	 * change.
+ 	 */
+ 	movl	$MSR_GS_BASE,%ecx
+@@ -284,7 +285,7 @@ ENTRY(secondary_startup_64)
+ #ifdef CONFIG_SMP
+ 	.quad	__per_cpu_load
+ #else
+-	.quad	_boot_cpu_pda
++	.quad	PER_CPU_VAR(__pda)
+ #endif
+ 	__FINITDATA
+ 
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 76a2498..9edc081 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -66,6 +66,16 @@ static void __init setup_node_to_cpumask_map(void);
+ static inline void setup_node_to_cpumask_map(void) { }
+ #endif
+ 
++/*
++ * Define load_pda_offset() and per-cpu __pda for x86_64.
++ * load_pda_offset() is responsible for loading the offset of pda into
++ * %gs.
++ *
++ * On SMP, pda offset also duals as percpu base address and thus it
++ * should be at the start of per-cpu area.  To achieve this, it's
++ * preallocated in vmlinux_64.lds.S directly instead of using
++ * DEFINE_PER_CPU().
++ */
+ #ifdef CONFIG_X86_64
+ void __cpuinit load_pda_offset(int cpu)
+ {
+@@ -74,6 +84,10 @@ void __cpuinit load_pda_offset(int cpu)
+ 	wrmsrl(MSR_GS_BASE, cpu_pda(cpu));
+ 	mb();
+ }
++#ifndef CONFIG_SMP
++DEFINE_PER_CPU(struct x8664_pda, __pda);
++#endif
++EXPORT_PER_CPU_SYMBOL(__pda);
+ #endif
+ 
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+@@ -161,8 +175,6 @@ void __init setup_per_cpu_areas(void)
+ 		memcpy(ptr, __per_cpu_load, __per_cpu_end - __per_cpu_start);
+ 		per_cpu_offset(cpu) = ptr - __per_cpu_start;
+ #ifdef CONFIG_X86_64
+-		cpu_pda(cpu) = (void *)ptr;
+-
+ 		/*
+ 		 * CPU0 modified pda in the init data area, reload pda
+ 		 * offset for CPU0 and clear the area for others.
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index 962f21f..d2a0baa 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -217,10 +217,12 @@ SECTIONS
+    * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
+    * output PHDR, so the next output section - __data_nosave - should
+    * switch it back to data.init.  Also, pda should be at the head of
+-   * percpu area.  Preallocate it.
++   * percpu area.  Preallocate it and define the percpu offset symbol
++   * so that it can be accessed as a percpu variable.
+    */
+   . = ALIGN(PAGE_SIZE);
+   PERCPU_VADDR_PREALLOC(0, :percpu, pda_size)
++  per_cpu____pda = __per_cpu_start;
+ #else
+   PERCPU(PAGE_SIZE)
+ #endif
+-- 
+1.5.6
+
