@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbZAMBaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZAMBbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758743AbZAMBaw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:30:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbZAMB26
+	id S1758913AbZAMBbh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbZAMB3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:28:58 -0500
-Received: from kroah.org ([198.145.64.141]:35927 "EHLO coco.kroah.org"
+	Mon, 12 Jan 2009 20:29:00 -0500
+Received: from kroah.org ([198.145.64.141]:35947 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757073AbZAMB24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 20:28:56 -0500
-Date: Mon, 12 Jan 2009 17:26:56 -0800
+	id S1757073AbZAMB26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 20:28:58 -0500
+Date: Mon, 12 Jan 2009 17:27:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 04/21] USB: Unusual devs patch for Nokia 3500c
-Message-ID: <20090113012656.GE4512@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       =?iso-8859-1?B?RnJhbsOnb2lz?= Valenduc 
+	<francois.valenduc@tvcablenet.be>
+Subject: [patch 06/21] iwlagn: downgrade BUG_ON in interrupt
+Message-ID: <20090113012700.GG4512@kroah.com>
 References: <20090113012006.063755472@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-unusual-devs-patch-for-nokia-3500c.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="iwlagn-downgrade-bug_on-in-interrupt.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090113012633.GA4512@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,42 +43,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ozan Sener <themgzzy@gmail.com>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-commit 48e1a540e1e9ea62a2b3088a69ecf934f3172b14 upstream.
+commit 55d6a3cd0cc85ed90c39cf32e16f622bd003117b upstream.
 
-T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  3 Spd=12  MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-P:  Vendor=0421 ProdID=0060 Rev= 5.51
-S:  Manufacturer=Nokia
-S:  Product=Nokia 3500c
-S:  SerialNumber=357687010280751
-C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=100mA
-I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-E:  Ad=01(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+This BUG_ON really shouldn't trigger, but if it does, as on my machine,
+it leaves you wondering what happened because you won't see it. Let's
+instead leak a bit of state and memory and at least make it possible to
+report it to the kerneloops project to track it.
 
-From: Ozan Sener <themgzzy@gmail.com>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Cc: François Valenduc <francois.valenduc@tvcablenet.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/wireless/iwlwifi/iwl-tx.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -253,6 +253,13 @@ UNUSUAL_DEV(  0x0421, 0x04fa, 0x0550, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -1192,10 +1192,9 @@ void iwl_tx_cmd_complete(struct iwl_priv
+ 	/* If a Tx command is being handled and it isn't in the actual
+ 	 * command queue then there a command routing bug has been introduced
+ 	 * in the queue management code. */
+-	if (txq_id != IWL_CMD_QUEUE_NUM)
+-		IWL_ERROR("Error wrong command queue %d command id 0x%X\n",
+-			  txq_id, pkt->hdr.cmd);
+-	BUG_ON(txq_id != IWL_CMD_QUEUE_NUM);
++	if (WARN(txq_id != IWL_CMD_QUEUE_NUM,
++		 "wrong command queue %d, command id 0x%X\n", txq_id, pkt->hdr.cmd))
++		return;
  
-+/* Reported by Ozan Sener <themgzzy@gmail.com> */
-+UNUSUAL_DEV(  0x0421, 0x0060, 0x0551, 0x0551,
-+		"Nokia",
-+		"3500c",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY ),
-+
- /* Reported by CSECSY Laszlo <boobaa@frugalware.org> */
- UNUSUAL_DEV(  0x0421, 0x0063, 0x0001, 0x0601,
- 		"Nokia",
+ 	cmd_index = get_cmd_index(&priv->txq[IWL_CMD_QUEUE_NUM].q, index, huge);
+ 	cmd = priv->txq[IWL_CMD_QUEUE_NUM].cmd[cmd_index];
 
