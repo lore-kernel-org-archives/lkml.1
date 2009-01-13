@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbZAMX0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZAMX0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200AbZAMX0N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:26:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbZAMXZ4
+	id S1753291AbZAMX0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZAMX0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:25:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58175 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754910AbZAMXZz (ORCPT
+	Tue, 13 Jan 2009 18:26:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38258
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755127AbZAMX0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:25:55 -0500
-Date: Tue, 13 Jan 2009 15:24:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: mtk.manpages@gmail.com
-Cc: mtk.manpages@googlemail.com, roland@redhat.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       drepper@redhat.com, vegard.nossum@gmail.com, linux-man@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
-Message-Id: <20090113152457.0d7685ad.akpm@linux-foundation.org>
-In-Reply-To: <cfd18e0f0901131514i2f7be7f1t2c6275c26dbb6874@mail.gmail.com>
-References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
-	<cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
-	<20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
-	<20090113224941.36F19FC3DD@magilla.sf.frob.com>
-	<cfd18e0f0901131514i2f7be7f1t2c6275c26dbb6874@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 13 Jan 2009 18:26:35 -0500
+Date: Tue, 13 Jan 2009 15:26:36 -0800 (PST)
+Message-Id: <20090113.152636.07760819.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4966F2F4.9080901@cosmosbay.com>
+References: <49667534.5060501@zeus.com>
+	<20090108.135515.85489589.davem@davemloft.net>
+	<4966F2F4.9080901@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 12:14:20 +1300
-"Michael Kerrisk" <mtk.manpages@googlemail.com> wrote:
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Fri, 09 Jan 2009 07:47:16 +0100
 
-> On Wed, Jan 14, 2009 at 11:49 AM, Roland McGrath <roland@redhat.com> wrote:
-> > It's always been invalid to call waitid() with a NULL pointer.  It was an
-> > oversight that it was allowed (and acts like a wait4() call instead).
-> >
-> > Signed-off-by: Roland McGrath <roland@redhat.com>
-> 
-> Modulo the observation that this change will break any Linux-specific
-> application that violate POSIX.1's requirement that infop not be NULL
-> (*), and rely on the existing Linux behavior for
-> waitd(idtype,id,NULL,options):
-> 
+> I found this patch usefull in my testings, but had a feeling something
+> was not complete. If the goal is to reduce number of splice() calls,
+> we also should reduce number of wakeups. If splice() is used in non
+> blocking mode, nothing we can do here of course, since the application
+> will use a poll()/select()/epoll() event before calling splice(). A
+> good setting of SO_RCVLOWAT to (16*PAGE_SIZE)/2 might improve things.
 
-Well yes.  waitid() has been in there since 2.6.9.  I assume that it
-has had this wait4-emulation mode for that amount of time as well?
+Spice read does not handle SO_RCVLOWAT like tcp_recvmsg() does.
 
-> 
-> (*) It seems unlikely that such applications exist, and we really
-> should make this change for POSIX.1 conformance.
+We should probably add a:
 
-Well, we might get away with it.  But formally speaking, we should live
-with our Linux-specific screwup.
+	target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
 
-If we _are_ going to make this change then we should merge it as far
-back in -stable as we can, to reduce the risk that people will develop
-applications on kernel version A only to have then behave differently
-on version B.
+and check 'target' against 'spliced' in the main loop of
+tcp_splice_read().
 
+> About tcp_recvmsg(), we might also remove the "!timeo" test as well,
+> more testings are needed. But remind that if an application provides
+> a large buffer to tcp_recvmsg() call, removing the test will reduce
+> the number of syscalls but might use more DCACHE. It could reduce
+> performance on old cpus. With splice() call, we expect to not
+> copy memory and trash DCACHE, and pipe buffers being limited to 16,
+> we cope with a limited working set. 
+
+I sometimes have a suspicion we can remove this test too, but it's
+not really that clear.
+
+If an application is doing non-blocking reads and they care about
+latency, they shouldn't be providing huge buffers.  This much I
+agree with, but...
+
+If you look at where this check is placed in the recvmsg() case, it is
+done after we have verified that there is no socket backlog.
+
+		if (copied >= target && !sk->sk_backlog.tail)
+			break;
+
+		if (copied) {
+			if (sk->sk_err ||
+			    sk->sk_state == TCP_CLOSE ||
+			    (sk->sk_shutdown & RCV_SHUTDOWN) ||
+			    !timeo ||
+			    signal_pending(current))
+				break;
+		} else {
+
+So either:
+
+1) We haven't met the target.  And note that target is one unless
+   the user makes an explicit receive low-water setting.
+
+2) Or there is no backlog.
+
+When we get to the 'if (copied)' check.
+
+You can view this "!timeo" check as meaning "non-blocking".  When
+we get to it, we are guarenteed that we haven't met the target
+and we have no backlog.  So it is absolutely appropriate to break
+out of recvmsg() processing here if non-blocking.
+
+There is a lot of logic and feature handling in tcp_splice_read() and
+that's why the semantics of "!timeo" cases are not being handled
+properly here.
