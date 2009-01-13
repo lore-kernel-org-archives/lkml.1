@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760451AbZAMGVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbZAMGYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760451AbZAMGVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759705AbZAMGV1
+	id S1759918AbZAMGYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:24:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZAMGYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:21:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42319 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754675AbZAMGVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 01:21:25 -0500
-Subject: [PATCH] capability.h: extern's make no sense in userspace
-From: Jaswinder Singh Rajput <jaswinder@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>, sam@ravnborg.org, harvey.harrison@gmail.com,
-       gorcunov@gmail.com, morgan@kernel.org, astor@guardian.no,
+	Tue, 13 Jan 2009 01:24:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:52428 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662AbZAMGY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 01:24:29 -0500
+Date: Tue, 13 Jan 2009 17:24:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: Samuel Ortiz <sameo@openedhand.com>, linux-next@vger.kernel.org,
+       Balaji Rao <balajirrao@openmoko.org>,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 11:49:05 +0530
-Message-Id: <1231827545.3212.12.camel@jaswinder.satnam>
+Subject: Re: linux-next: mfd tree build failure
+Message-Id: <20090113172422.fdde0d69.sfr@canb.auug.org.au>
+In-Reply-To: <20090112100753.GA21301@fedora.yogi>
+References: <20090112140318.e25cd2bf.sfr@canb.auug.org.au>
+	<20090112100753.GA21301@fedora.yogi>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix 2 make headers_check warnings:
+Hi Linus,
 
- usr/include/linux/capability.h:72: leaks CONFIG_SECURITY to userspace where it is not valid
- usr/include/linux/capability.h:73: extern's make no sense in userspace
+On Mon, 12 Jan 2009 15:37:55 +0530 Balaji Rao <balajirrao@openmoko.org> wrote:
+>
+> On Mon, Jan 12, 2009 at 02:03:18PM +1100, Stephen Rothwell wrote:
+> > 
+> > Today's linux-next build (x86_64 allmodconfig) failed like this:
+> > 
+> > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+> > 
+> > Immediate cause is clearly commit
+> > f52046b14b1e1a8a02ae48d0c69d39c5e204644f ("mfd: PCF50633 core driver")
+> > which introduces this code.  The above functions don't appear to be
+> > exported to modules.
+> > 
+> > I have dropped the mfd tree for today.
+> 
+> Oh, sorry about this. I can actually do without this. Here's the patch.
+> Sameo, can you please apply it ?
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- include/linux/capability.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+This is now in the upstream kernel tree ...
 
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 02bdb76..1b98725 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -69,10 +69,6 @@ typedef struct __user_cap_data_struct {
- #define VFS_CAP_U32             VFS_CAP_U32_2
- #define VFS_CAP_REVISION	VFS_CAP_REVISION_2
+---------------------------------------------------------------------------
+From: Balaji Rao <balajirrao@openmoko.org>
+
+    pcf50633: Remove references to non-exported functions
+    
+    Remove references to set_irq_type and handle_level_irq which are not
+    exported to modules.
+    
+    Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+
+diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+index 24508e2..ea9488e 100644
+--- a/drivers/mfd/pcf50633-core.c
++++ b/drivers/mfd/pcf50633-core.c
+@@ -626,7 +626,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 	}
  
--#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
--extern int file_caps_enabled;
--#endif
--
- struct vfs_cap_data {
- 	__le32 magic_etc;            /* Little endian */
- 	struct {
-@@ -96,6 +92,10 @@ struct vfs_cap_data {
- #define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
- #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
+ 	if (client->irq) {
+-		set_irq_handler(client->irq, handle_level_irq);
+ 		ret = request_irq(client->irq, pcf50633_irq,
+ 				IRQF_TRIGGER_LOW, "pcf50633", pcf);
  
-+#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-+extern int file_caps_enabled;
-+#endif
-+
- typedef struct kernel_cap_struct {
- 	__u32 cap[_KERNEL_CAPABILITY_U32S];
- } kernel_cap_t;
+
 -- 
-1.5.6.6
-
-
-
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
