@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZAMQkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbZAMQla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497AbZAMQkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 11:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZAMQkN
+	id S1756716AbZAMQla (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 11:41:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZAMQlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 11:40:13 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:56543 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092AbZAMQkL (ORCPT
+	Tue, 13 Jan 2009 11:41:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49460 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZAMQlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 11:40:11 -0500
-Date: Tue, 13 Jan 2009 08:40:08 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       shemminger@vyatta.com, netdev@vger.kernel.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090113164007.GA7434@ovro.caltech.edu>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
-	netdev@vger.kernel.org
-References: <20090107195052.GA24981@ovro.caltech.edu> <200901131302.52754.rusty@rustcorp.com.au> <20090113033420.GA11065@ovro.caltech.edu> <200901131733.04341.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901131733.04341.arnd@arndb.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 13 Jan 2009 08:40:09 -0800 (PST)
+	Tue, 13 Jan 2009 11:41:13 -0500
+Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <1231863710.7141.3.camel@twins>
+References: <1231774622.4371.96.camel@laptop>
+	 <1231859742.442.128.camel@twins>
+	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
+	 <1231863710.7141.3.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 17:40:54 +0100
+Message-Id: <1231864854.7141.8.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 05:33:03PM +0100, Arnd Bergmann wrote:
-> On Tuesday 13 January 2009, Ira Snyder wrote:
-> > On Tue, Jan 13, 2009 at 01:02:52PM +1030, Rusty Russell wrote:
-> > > 
-> > >    Interesting system: the guest being able to access the
-> > >    host's memory but not (fully) vice-versa makes this a
-> > >    little different from the current implementations where
-> > >    that was assumed.  virtio assumes that the guest will
-> > >    publish buffers and someone else (ie. the host) will access them.    
+On Tue, 2009-01-13 at 17:21 +0100, Peter Zijlstra wrote:
+> On Tue, 2009-01-13 at 08:16 -0800, Linus Torvalds wrote:
 > > 
-> > The guest system /could/ publish all of its RAM, but with 256MB per
-> > board, 19 boards per cPCI crate, that's way too much for a 32-bit PC to
-> > map into it's memory space. That's the real reason I use the 1MB
-> > windows. I could make them bigger (16MB would be fine, I think), but I
-> > doubt it would make much of a difference to the implementation.
+> > On Tue, 13 Jan 2009, Peter Zijlstra wrote:
+> > > 
+> > > Change mutex contention behaviour such that it will sometimes busy wait on
+> > > acquisition - moving its behaviour closer to that of spinlocks.
+> > 
+> > Okey, dokey. Looks reasonable, but I wonder if this part came from v8 and 
+> > wasn't intentional:
+> > 
+> > > +		if (atomic_xchg(&lock->count, -1) == 1) {
+> > > +			lock_acquired(&lock->dep_map, ip);
+> > > +			mutex_set_owner(lock);
+> > > +			preempt_enable();
+> > > +			return 0;
+> > > +		}
+> > 
+> > Now you're forcing the slow-path on unlock. Maybe it was intentional, 
+> > maybe it wasn't. Did you perhaps mean
+> > 
+> > 	if (atomic_cmpxchg(&lock->count, 1, 0) == 1) {
+> > 
+> > here? I thought we agreed it was safe, if only because it should be 
+> > equivalent to just having done "mutex_trylock()" instead of a "real" lock 
+> > sequence.
 > 
-> The way we do it in the existing driver for cell, both sides export
-> just a little part of their memory to the other side, and they
-> also both get access to one channel of the DMA engine, which is
-> enough to transfer larger data sections, as the DMA engine has
-> access to all the memory on both sides.
+> Yes, that was an 'accident' from -v8, yes we did think the cmpxchg was
+> good, however I did get some spurious lockups on -v7, and I only noticed
+> the thing after I'd done most of the testing, so I decided to let it be
+> for now.
+> 
+> Let me put the cmpxchg back in and see if this is all still good (only
+> 3*2*2 configs to test :-).
 
-So do you program one channel of the DMA engine from the host side and
-another channel from the guest side?
+Ok, tested only 1, but that was the one I remember lockups from -- and
+that seems to be good with the cmpxchg.
 
-I tried to avoid having the host program the DMA controller at all.
-Using the DMAEngine API on the guest did better than I could achieve by
-programming the registers manually. I didn't use chaining or any of the
-fancier features in my tests, though.
-
-Ira
+Do you fancy me sending v10 or will you make that change locally?
