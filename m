@@ -1,95 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZAMPfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZAMPjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbZAMPfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 10:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZAMPeq
+	id S1755087AbZAMPjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 10:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZAMPjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 10:34:46 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:54490 "EHLO smtp.mba.ocn.ne.jp"
+	Tue, 13 Jan 2009 10:39:36 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:56110 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbZAMPep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 10:34:45 -0500
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: haavard.skinnemoen@atmel.com, dan.j.williams@intel.com,
-       maciej.sosnowski@intel.com
-Subject: [PATCH] dmatest: Use custom map/unmap for destination buffer
-Date: Wed, 14 Jan 2009 00:34:40 +0900
-Message-Id: <1231860880-6277-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.3
+	id S1751531AbZAMPjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 10:39:35 -0500
+Date: Tue, 13 Jan 2009 10:39:34 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20090113153934.GA24208@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dmatest driver should use DMA_BIDIRECTIONAL on the destination buffer
-to ensure that the poison values are written to RAM and not just written
-to cache and discarded.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/dma/dmatest.c |   35 +++++++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 4 deletions(-)
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index ed9636b..02c171f 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -218,6 +218,10 @@ static int dmatest_func(void *data)
- 	dma_chan_get(chan);
- 
- 	while (!kthread_should_stop()) {
-+		struct dma_device *dev = chan->device;
-+		struct dma_async_tx_descriptor *tx;
-+		dma_addr_t dma_src, dma_dest;
-+
- 		total_tests++;
- 
- 		len = dmatest_random() % test_buf_size + 1;
-@@ -227,10 +231,30 @@ static int dmatest_func(void *data)
- 		dmatest_init_srcbuf(thread->srcbuf, src_off, len);
- 		dmatest_init_dstbuf(thread->dstbuf, dst_off, len);
- 
--		cookie = dma_async_memcpy_buf_to_buf(chan,
--				thread->dstbuf + dst_off,
--				thread->srcbuf + src_off,
--				len);
-+		dma_src = dma_map_single(dev->dev, thread->srcbuf + src_off,
-+				len, DMA_TO_DEVICE);
-+		/* map with DMA_BIDIRECTIONAL to force writeback/invalidate */
-+		dma_dest = dma_map_single(dev->dev, thread->dstbuf,
-+				test_buf_size, DMA_BIDIRECTIONAL);
-+
-+		tx = dev->device_prep_dma_memcpy(chan, dma_dest + dst_off,
-+				dma_src, len,
-+				DMA_CTRL_ACK | DMA_COMPL_SKIP_DEST_UNMAP);
-+		if (!tx) {
-+			dma_unmap_single(dev->dev, dma_src, len, DMA_TO_DEVICE);
-+			dma_unmap_single(dev->dev, dma_dest,
-+					test_buf_size, DMA_BIDIRECTIONAL);
-+			pr_warning("%s: #%u: prep error with src_off=0x%x "
-+					"dst_off=0x%x len=0x%x\n",
-+					thread_name, total_tests - 1,
-+					src_off, dst_off, len);
-+			msleep(100);
-+			failed_tests++;
-+			continue;
-+		}
-+		tx->callback = NULL;
-+		cookie = tx->tx_submit(tx);
-+
- 		if (dma_submit_error(cookie)) {
- 			pr_warning("%s: #%u: submit error %d with src_off=0x%x "
- 					"dst_off=0x%x len=0x%x\n",
-@@ -254,6 +278,9 @@ static int dmatest_func(void *data)
- 			failed_tests++;
- 			continue;
- 		}
-+		/* Unmap by myself (see DMA_COMPL_SKIP_DEST_UNMAP above) */
-+		dma_unmap_single(dev->dev, dma_dest,
-+				test_buf_size, DMA_BIDIRECTIONAL);
- 
- 		error_count = 0;
- 
--- 
-1.5.6.3
+to receive the following updates:
 
+ drivers/ata/libata-sff.c  |    9 ++++++---
+ drivers/ata/pata_it821x.c |   17 +++++++++++++----
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+Alan Cox (1):
+      pata_it821x: Update RDC UDMA handling
+
+Christian Borntraeger (1):
+      ata: fix wrong WARN_ON_ONCE
+
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 0eae9b4..5a4aad1 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1013,9 +1013,12 @@ next_sg:
+ 		qc->cursg_ofs = 0;
+ 	}
+ 
+-	/* consumed can be larger than count only for the last transfer */
+-	WARN_ON_ONCE(qc->cursg && count != consumed);
+-
++	/*
++	 * There used to be a  WARN_ON_ONCE(qc->cursg && count != consumed);
++	 * Unfortunately __atapi_pio_bytes doesn't know enough to do the WARN
++	 * check correctly as it doesn't know if it is the last request being
++	 * made. Somebody should implement a proper sanity check.
++	 */
+ 	if (bytes)
+ 		goto next_sg;
+ 	return 0;
+diff --git a/drivers/ata/pata_it821x.c b/drivers/ata/pata_it821x.c
+index f828a29..f1bb2f9 100644
+--- a/drivers/ata/pata_it821x.c
++++ b/drivers/ata/pata_it821x.c
+@@ -80,7 +80,7 @@
+ 
+ 
+ #define DRV_NAME "pata_it821x"
+-#define DRV_VERSION "0.4.0"
++#define DRV_VERSION "0.4.2"
+ 
+ struct it821x_dev
+ {
+@@ -494,8 +494,6 @@ static int it821x_smart_set_mode(struct ata_link *link, struct ata_device **unus
+  *	special. In our case we need to lock the sector count to avoid
+  *	blowing the brains out of the firmware with large LBA48 requests
+  *
+- *	FIXME: When FUA appears we need to block FUA too. And SMART and
+- *	basically we need to filter commands for this chip.
+  */
+ 
+ static void it821x_dev_config(struct ata_device *adev)
+@@ -890,6 +888,13 @@ static int it821x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
++		.udma_mask = ATA_UDMA6,
++		.port_ops = &it821x_rdc_port_ops
++	};
++	static const struct ata_port_info info_rdc_11 = {
++		.flags = ATA_FLAG_SLAVE_POSS,
++		.pio_mask = 0x1f,
++		.mwdma_mask = 0x07,
+ 		/* No UDMA */
+ 		.port_ops = &it821x_rdc_port_ops
+ 	};
+@@ -903,7 +908,11 @@ static int it821x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		return rc;
+ 		
+ 	if (pdev->vendor == PCI_VENDOR_ID_RDC) {
+-		ppi[0] = &info_rdc;
++		/* Deal with Vortex86SX */
++		if (pdev->revision == 0x11)
++			ppi[0] = &info_rdc_11;
++		else
++			ppi[0] = &info_rdc;
+ 	} else {
+ 		/* Force the card into bypass mode if so requested */
+ 		if (it8212_noraid) {
