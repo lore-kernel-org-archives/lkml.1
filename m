@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbZAMOe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZAMOiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761026AbZAMOe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760769AbZAMOes
+	id S1760681AbZAMOiV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZAMOiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:34:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54572 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755311AbZAMOer (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:34:47 -0500
-Date: Tue, 13 Jan 2009 15:36:46 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc1: thinkpad problems during resume
-Message-ID: <20090113143646.GB1983@elf.ucw.cz>
-References: <20090113081316.GA2292@elf.ucw.cz>
+	Tue, 13 Jan 2009 09:38:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56413 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753745AbZAMOiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:38:07 -0500
+Message-ID: <496CA71E.4050809@kernel.org>
+Date: Tue, 13 Jan 2009 23:37:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113081316.GA2292@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Brian Gerst <brgerst@gmail.com>
+CC: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
+       hugh@veritas.com
+Subject: Re: [PATCHSET linux-2.6-x86:tip] x86: make percpu offsets zero-based
+ on SMP
+References: <1231843097-18003-1-git-send-email-tj@kernel.org>	 <496C717F.70204@kernel.org>	 <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com>	 <496C9FB7.9050907@kernel.org> <73c1f2160901130626w5b808968vbc821bbf3f284424@mail.gmail.com>
+In-Reply-To: <73c1f2160901130626w5b808968vbc821bbf3f284424@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 14:37:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-01-13 09:13:16, Pavel Machek wrote:
-> Hi!
+Brian Gerst wrote:
+>> Any chance you can rebase those patches on top of mine?  If you don't
+>> have time, just send them to me, I'll try to integrate them this week.
 > 
-> Just when I thought long merge window means less problems...
-> 
-> ...suspend seemed to work until last tuesday or so. Now it hanged two
-> times; once so hard that power button powercycle did not result in
-> booting machine. (thinkpad x60)
-> 
-> I'll do some more tests...
+> Are your patches available via git by chance?
 
-It resumes fine with CONFIG_SMP unset.
-									Pavel
+Sure,
+
+  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=x86-percpu-zerobased
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git x86-percpu-zerobased
+
+Thanks.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+tejun
