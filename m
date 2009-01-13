@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbZAMFjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbZAMFjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbZAMFjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 00:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZAMFjN
+	id S1758857AbZAMFjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 00:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZAMFjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 00:39:13 -0500
+	Tue, 13 Jan 2009 00:39:35 -0500
 Received: from yw-out-2324.google.com ([74.125.46.31]:47929 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753441AbZAMFjM (ORCPT
+	with ESMTP id S1752301AbZAMFje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 00:39:12 -0500
+	Tue, 13 Jan 2009 00:39:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:mime-version:content-type
          :content-transfer-encoding:content-disposition;
-        b=I6Gz80cdItq7CWxKijAzN7noEW5Aye1ZEci7FrZFaSPCKSodwvKkQ1GTkUVCKM5MgU
-         hNqVzLgzi6COCNv7ND7RHbu9PrWIGIgUl2WQ/u4/WsWca9cXcn3yhb7H459ikt1EBRQA
-         bxAFtNlqfRDr7pc0xYOHGcqNRCRgTaqXsb7Po=
-Message-ID: <b9df5fa10901122139t5176104ep640342718d2f1666@mail.gmail.com>
-Date: Tue, 13 Jan 2009 11:39:11 +0600
+        b=rkEkmaPSsWApRSPe29zD4pvUvT0QQpM0sCWfljR4b59wBw+bNJIx1f4etOLAVO7avH
+         PYfByjSYvAN4Cm1TkDtBWGXQ5qo60lwKHvYGca7mhjE/eWNzD5qIQzkyf3BSoIS1W0Y5
+         LRRzD22dOuFXZupdBfSUU7PqxBPm1sI3LVmrM=
+Message-ID: <b9df5fa10901122139h4bfb727i64f864ec185c731d@mail.gmail.com>
+Date: Tue, 13 Jan 2009 11:39:33 +0600
 From: "Rakib Mullick" <rakib.mullick@gmail.com>
 To: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
 Subject: [PATCH] mm: Fix section mismatch in memcontrol.c
@@ -36,7 +36,7 @@ Impact: Fix section mismatch warning.
 The annotation for __init in enable_swap_cgroup() and __initdata for
 really_do_swap_account produces the following warning. Which is not
 right, since this function is called from non-init section. This patch
-fixes it.
+fixes it. If anything else please notice.
 
   LD      mm/built-in.o
 WARNING: mm/built-in.o(.text+0x277d9): Section mismatch in reference
