@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZAMXcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbZAMXfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZAMXcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:32:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbZAMXcU
+	id S1759440AbZAMXfE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:35:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbZAMXew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:32:20 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:36390 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758269AbZAMXcT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:32:19 -0500
-Subject: Re: [PATCH] backlight: don't default y
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Valdis.Kletnieks@vt.edu
-Cc: Richard Purdie <rpurdie@openedhand.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <37023.1231889418@turing-police.cc.vt.edu>
-References: <1231856997.3671.38.camel@johannes>
-	 <37023.1231889418@turing-police.cc.vt.edu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ppC3P8G4bkzynbnXmZPq"
-Date: Wed, 14 Jan 2009 00:31:52 +0100
-Message-Id: <1231889512.3728.21.camel@johannes>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 13 Jan 2009 18:34:52 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38404 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756251AbZAMXew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:34:52 -0500
+Date: Tue, 13 Jan 2009 15:34:50 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Kaibin Li <kaibinlee@gmail.com>, trivial@kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] Remove a duplicated option of RCU_CPU_STALL_DETECTOR
+Message-ID: <20090113233450.GD6756@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090113140636.1515e11f@zenwalk.fortinet.com> <alpine.LNX.1.10.0901132346150.5377@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0901132346150.5377@jikos.suse.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 13, 2009 at 11:48:44PM +0100, Jiri Kosina wrote:
+> On Tue, 13 Jan 2009, Kaibin Li wrote:
+> 
+> > There is a duplicated option of "Check for stalled CPUs delaying RCU
+> > grace periods" in Kernel hacking.
 
---=-ppC3P8G4bkzynbnXmZPq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-On Tue, 2009-01-13 at 18:30 -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 13 Jan 2009 15:29:57 +0100, Johannes Berg said:
-> > Not all the backlight drivers make sense, especially not the "generic"
-> > one that works on some sharp devices. "default n" is also absolutely
-> > pointless, and not everybody needs LCD backlight support either.
->=20
-> >  config BACKLIGHT_GENERIC
-> >  	tristate "Generic (aka Sharp Corgi) Backlight Driver"
-> >  	depends on BACKLIGHT_CLASS_DEVICE
-> > -	default y
-> >  	help
->=20
-> I asked about this one recently - apparently it's planned to be much more
-> generic, but the help text still implies it's Sharp-specific.
+> > Signed-off-by: Kaibin Li <kaibinlee@gmail.com>
+> > ---
+> >  lib/Kconfig.debug |   13 -------------
+> >  1 files changed, 0 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > index 4c9ae60..e770e85 100644
+> > --- a/lib/Kconfig.debug
+> > +++ b/lib/Kconfig.debug
+> > @@ -633,19 +633,6 @@ config RCU_TORTURE_TEST_RUNNABLE
+> >  
+> >  config RCU_CPU_STALL_DETECTOR
+> >     bool "Check for stalled CPUs delaying RCU grace periods"
+> > -   depends on CLASSIC_RCU
+> > -   default n
+> > -   help
+> > -     This option causes RCU to printk information on which
+> > -     CPUs are delaying the current grace period, but only when
+> > -     the grace period extends for excessive time periods.
+> > -
+> > -     Say Y if you want RCU to perform such checks.
+> > -
+> > -     Say N if you are unsure.
+> > -
+> > -config RCU_CPU_STALL_DETECTOR
+> > -   bool "Check for stalled CPUs delaying RCU grace periods"
+> >     depends on CLASSIC_RCU || TREE_RCU
+> >     default n
+> >     help
+> 
+> The RCU_CPU_STALL_DETECTOR indeed is duplicate, but the entries themselves 
+> are not identical, as they have different dependencies.
+> 
+> Paul -- does Kaibin's patch remove the correct one? If so, I can take it 
+> through trivial tree.
 
-Even if, it still shouldn't be default y.
+Indeed it is:  http://lkml.org/lkml/2008/12/23/167  ;-)
 
-johannes
+CCing Ingo in case he has it queued up.
 
---=-ppC3P8G4bkzynbnXmZPq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJbSRmAAoJEKVg1VMiehFYjCcP/2ObV9r3r21v5Wfq19HUvJOx
-XMtvJFhzfPm3DCiSvjY09c1e6fQuT8ZdT186Z15m28J65rYNTQdhOpFu/OvkZdjb
-irbIfoNIYOmVVMjXVeTdUnTSDeaMoAjGoQ+pworbF1qIkDmNYE13+tylp0SwmW9y
-RWltJnoyaogcFRUpVjMpsx1ZGCfnowtvJEi+ltX/ZwmTXLXuANUlgmCPcWM9bl5p
-X4nZuxPTLAnZqG6r/fPC8U9R+7dVIZ6jTroTpVCYs2kteFasp5HbcwU4q7A40Esp
-/MJ1k7oueUousRa8LMn+B8lpdpOfe96spXSycNBnYg1TRIfPqEOle71OV4oh4wPq
-UVAXiZxpd7mobDvIw2VqDHVbaFz9Ix5wJ136oljeAJ9LXQ6coi77dZ+98HcrK+fM
-6ySIxLz1eu1i7S7yj8VHeoAc7Ut9a7zAuEZ5TbZ3b/QWMkH+2EkjmYayaqvoEFI1
-8ZF3WntwAc97ejSmPv3rGvBm2MfrB0w1neqUmooRW22EKwHzn9CZmoEYpVpIBTAu
-xLVLnyc1YvO+UNUirjPxLYkK5QXAeK5i6UCvIdJwAWyCrfUn5Gmn0mqe6C7N58ft
-KVkitvBVcdUgNAN98vsokvg3fdJONGmvYvLEsRnfiBcBZH7abaNd8G9tDCOFsN02
-1I+J513J/OcyOTZbeLd3
-=d8oD
------END PGP SIGNATURE-----
-
---=-ppC3P8G4bkzynbnXmZPq--
-
+							Thanx, Paul
