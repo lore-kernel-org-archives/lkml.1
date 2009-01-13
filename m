@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZAMDUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZAMDVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbZAMDUs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 22:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZAMDUj
+	id S1757979AbZAMDVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 22:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZAMDVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 22:20:39 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59798 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbZAMDUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 22:20:38 -0500
-Message-ID: <496C0850.8010103@cn.fujitsu.com>
-Date: Tue, 13 Jan 2009 11:19:44 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] rcu: convert rcupreempt trace to seq file
-References: <496852DE.7080802@cn.fujitsu.com> <20090110223151.GD7061@linux.vnet.ibm.com> <20090111013940.GL12885@elte.hu> <20090111050129.GA6131@nowhere>
-In-Reply-To: <20090111050129.GA6131@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 22:21:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48138 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZAMDVh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 22:21:37 -0500
+Date: Tue, 13 Jan 2009 04:36:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Travis <travis@sgi.com>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090113033608.GN23848@one.firstfloor.org>
+References: <20090112213539.GA10720@gambetta> <496BCA21.2010709@sgi.com> <20090112235156.GC10720@gambetta> <496BD8FB.1050101@sgi.com> <20090113000112.GA10368@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113000112.GA10368@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Indeed!
+> > (And was it determined yet, that a cacheline has to be tossed around as 
+> > well?)
 > 
-> The debugfs and seqfile handling and handled in the statistical
-> tracing engine.
-> 
-> You just have to provide an iterator for your stat entries through two callbacks:
-> 
-> _ stat_start() -> gives the first entry
-> _ stat_next() -> iterates over the next entry
-> 
-> And an output callback
-> 
-> _ stat_show() -> print one entry from your stat list
-> 
-> And two optional things:
-> 
-> _ stat_cmp() -> compare two entries, useful if you want your stats to be sorted
-> _ stat_headers() -> provide the first line in your stat file, typically to describe your columns
-> 
-> The last thing you need is to give a name to your trace file.
-> You will retrieve it into /debugfs/tracing/trace_stat/your_file_name as a current snapshot
-> of your stats.
-> 
-> It is currently used by the branch tracer, and by a pending patch for a new workqueue
-> tracer which will provide you a simple example.
-> 
-> If you have any question about how to use it, don't hesitate to ask.
-> 
+> No, that assertion of Andi is wrong.
 
-Hi Frederic,
+For the IPI you always have to toss one cache line around to pass
+the information.
 
-I've converted rcupreempt to use trace points, but I don't see much advantage to use
-trace stat instead of using seq_file directly.. And can you add support to allow
-me to provide stat_show() only ? I think it's common that the stat file has only
-one entry.
+Anyways the padding is just to avoid false sharing.
 
-
-Regards
-Li Zefan
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
