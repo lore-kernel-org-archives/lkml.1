@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZAMGgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZAMGjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZAMGgV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZAMGgM
+	id S1755465AbZAMGjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZAMGjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:36:12 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:38526 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750825AbZAMGgL (ORCPT
+	Tue, 13 Jan 2009 01:39:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52555 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbZAMGjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 01:36:11 -0500
-Date: Tue, 13 Jan 2009 17:35:53 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: smfrench@gmail.com
-Cc: randy.dunlap@oracle.com, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sfrench@samba.org, gregkh@suse.de
-Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
-Message-ID: <20090113063553.GA26096@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Jan 2009 01:39:16 -0500
+Subject: [PATCH -tip] coda_psdev.h: extern's make no sense in userspace
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       sam@ravnborg.org, harvey.harrison@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, gorcunov@gmail.com
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 12:06:54 +0530
+Message-Id: <1231828614.3212.15.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French <smfrench@gmail.com> wrote:
-> There is not just the cifs md5 one (which has been around a long
-> time), but an md5_init (static) in crypto and the new one in rt.  The
-> addition of the new one (rt md5_init) causes the build problem.   It
-> would be nice if we could use the same md5 routines though ... last
-> time we checked the crypto one was not well suited for calculating
-> signatures as a network fs would do though.
+Impact: fix make headers_check warning:
 
-There is no longer any reason to have a custom md5 now that we
-have the new crypto_shash interface.
+ usr/include/linux/coda_psdev.h:90: extern's make no sense in userspace
 
-Cheers,
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/coda_psdev.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/coda_psdev.h b/include/linux/coda_psdev.h
+index 07ae8f8..c620958 100644
+--- a/include/linux/coda_psdev.h
++++ b/include/linux/coda_psdev.h
+@@ -87,6 +87,8 @@ struct upc_req {
+  * Statistics
+  */
+ 
++#ifdef __KERNEL__
+ extern struct venus_comm coda_comms[];
++#endif /* __KERNEL__ */
+ 
+ #endif
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.5.6.6
+
+
+
