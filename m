@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbZAMABh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZAMAFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbZAMABh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZAMAB2
+	id S1756096AbZAMAFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 19:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZAMAFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:01:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41103 "EHLO mx2.mail.elte.hu"
+	Mon, 12 Jan 2009 19:05:15 -0500
+Received: from mga02.intel.com ([134.134.136.20]:37395 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbZAMAB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:01:28 -0500
-Date: Tue, 13 Jan 2009 01:01:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090113000112.GA10368@elte.hu>
-References: <20090112213539.GA10720@gambetta> <496BCA21.2010709@sgi.com> <20090112235156.GC10720@gambetta> <496BD8FB.1050101@sgi.com>
+	id S1752263AbZAMAFN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 19:05:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,255,1231142400"; 
+   d="scan'208";a="481089168"
+From: "Love, Robert W" <robert.w.love@intel.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 12 Jan 2009 17:05:00 -0700
+Subject: RE: [PATCH -next] libfc: needs CRC32
+Thread-Topic: [PATCH -next] libfc: needs CRC32
+Thread-Index: Acl05tXnal+L2OrASZe0zzXqVZ3zTAAK5WQA
+Message-ID: <273D38FBE7C6FE46A1689FCD014A0B8B28A124F4@azsmsx505.amr.corp.intel.com>
+References: <20090112154539.4857f533.sfr@canb.auug.org.au>
+ <496B9112.8070908@oracle.com>
+In-Reply-To: <496B9112.8070908@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496BD8FB.1050101@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Travis <travis@sgi.com> wrote:
-
-> Frederik Deweerdt wrote:
-> > On Mon, Jan 12, 2009 at 02:54:25PM -0800, Mike Travis wrote:
-> >> Frederik Deweerdt wrote:
-> >>> Hi,
-> >>>
-> >>> On x86_64 flush tlb data is stored in per_cpu variables. This is
-> >>> unnecessary because only the first NUM_INVALIDATE_TLB_VECTORS entries
-> >>> are accessed.
-> >>> This patch aims at making the code less confusing (there's nothing
-> >>> really "per_cpu") by using a plain array. It also would save some memory
-> >>> on most distros out there (Ubuntu x86_64 has NR_CPUS=64 by default).
-> >>>
-> >>> Regards,
-> >>> Frederik
-> >>>
-> >>> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-> >> Here is the net change in memory usage with this patch on a allyesconfig
-> >> with NR_CPUS=4096.
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> > Yes, this point wrt. memory was based on my flawed understanding of how
-> > per_cpu actually allocates the data. There is however 1) a confusing use
-> > of per_cpu removed, 2) faster access to the flush data.
+> libfc uses crc32 functions, so cause it to be built
+> via select:
 > 
-> Is this true?  On a widely separated NUMA system, requiring all CPU's to 
-> access memory on NODE 0 for every tlb flush would seem expensive.  
-> That's another benefit of per_cpu data, it's local to the node's cpus.
+> drivers/built-in.o: In function `fc_frame_crc_check':
+> (.text+0x75dae): undefined reference to `crc32_le'
+> drivers/built-in.o: In function `fc_fcp_recv':
+> fc_fcp.c:(.text+0x7b919): undefined reference to `crc32_le'
+> fc_fcp.c:(.text+0x7b9d5): undefined reference to `crc32_le'
+> fc_fcp.c:(.text+0x7ba54): undefined reference to `crc32_le'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Robert Love <robert.w.love@intel.com>
 
-That's irrelevant here: we only have 8 IPI slots for the TLB flush, so 
-we'll use the first 8 per_cpu areas (note how all access is cpu-nr modulo 
-8 in essence). That is going to be node 0 anyway in most NUMA setups.
+> ---
+>  drivers/scsi/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20090112.orig/drivers/scsi/Kconfig
+> +++ linux-next-20090112/drivers/scsi/Kconfig
+> @@ -608,6 +608,7 @@ config SCSI_FLASHPOINT
+>  config LIBFC
+>  	tristate "LibFC module"
+>  	select SCSI_FC_ATTRS
+> +	select CRC32
+>  	---help---
+>  	  Fibre Channel library module
+> 
+> 
+> --
+> ~Randy
 
-> (And was it determined yet, that a cacheline has to be tossed around as 
-> well?)
-
-No, that assertion of Andi is wrong.
-
-	Ingo
