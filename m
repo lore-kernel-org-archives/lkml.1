@@ -1,118 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbZAMWtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZAMWuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923AbZAMWtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZAMWs5
+	id S1756728AbZAMWuF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZAMWtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:48:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36071 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757283AbZAMWsz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:48:55 -0500
-Date: Tue, 13 Jan 2009 14:48:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: krh@redhat.com, stefanr@s5r6.in-berlin.de, dcm@acm.org,
-       Nadia.Derbey@bull.net, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, paulmck@us.ibm.com
-Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
-Message-Id: <20090113144802.39dc4c23.akpm@linux-foundation.org>
-In-Reply-To: <496BAD1C.5060201@colorfullife.com>
-References: <1231571060.3538.18.camel@localhost.localdomain>
-	<49686465.70501@s5r6.in-berlin.de>
-	<20090110011557.9d94e111.akpm@linux-foundation.org>
-	<496872E0.9030007@s5r6.in-berlin.de>
-	<1231773620.6365.21.camel@gaara.bos.redhat.com>
-	<496B9FC7.3090108@colorfullife.com>
-	<1231792712.6365.31.camel@gaara.bos.redhat.com>
-	<496BAD1C.5060201@colorfullife.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 17:49:51 -0500
+Received: from THUNK.ORG ([69.25.196.29]:34028 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752265AbZAMWtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 17:49:49 -0500
+Date: Tue, 13 Jan 2009 17:49:41 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090113224941.GA14730@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Evgeniy Polyakov <zbr@ioremap.net>,
+	David Rientjes <rientjes@google.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113214627.GC27227@ioremap.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009 21:50:36 +0100
-Manfred Spraul <manfred@colorfullife.com> wrote:
+On Wed, Jan 14, 2009 at 12:46:27AM +0300, Evgeniy Polyakov wrote:
+> User does not work with the some magically calculated scores, he just
+> starts the processes and knows only their names. User can specify pid,
+> but in the case of short-living connections it is not possible. Changing
+> parent oom score opens a huge possibility to kill it, while in case of
+> some application server (or database) it should never be killed, and
+> only some of its clients (which work for the users and not for the
+> calculating backend for example) have to be killed.
 
-> Kristian H__gsberg wrote:
-> > On Mon, 2009-01-12 at 20:53 +0100, Manfred Spraul wrote:
-> >   
-> >> Kristian H__gsberg wrote:
-> >>     
-> >>>   The problem
-> >>> isn't about returning un-zeroed-out objects to the kmem cache, the
-> >>> problem is returning them to the idr free list.
-> >>>   
-> >>>       
-> >> I think this is wrong:
-> >> The slab allocator assumes that the objects that are given to 
-> >> kmem_cache_free() are properly constructed.
-> >> I.e.: No additional constructor is called prior to returning the object 
-> >> from the next kmem_cache_alloc() call.
-> >>     
-> >
-> > That's fine, the ctor associated with the kmem cache is called, and in
-> > the case of idr, it does a memset().
-> >   
-> No.
-> As I said, the construtor is not called.
-> An object that is given to kmem_cache_free() must be properly constructed.
-> kmem_cache_free() just adds the obj pointer to a list, the next 
-> kmem_cache_alloc returns the pointer.
-> 
-> This is also documented in mm/slab.c:
->  * The memory is organized in caches, one cache for each object type.
->  * (e.g. inode_cache, dentry_cache, buffer_head, vm_area_struct)
->  * Each cache consists out of many slabs (they are small (usually one
->  * page long) and always contiguous), and each slab contains multiple
->  * initialized objects.
->  *
->  * This means, that your constructor is used only for newly allocated
->  * slabs and you must pass objects with the same initializations to
->  * kmem_cache_free.
->  *
-> 
-> If the idr code passes uninitialized objects to kmem_cache_free(), then 
-> the next kmem_cache_alloc will return a bad object.
-> 
+The standard way this gets handled for resource limits is very simple:
 
-None of this got us much closer to fixing the bug ;)
+1)  parent forks the child process
+2)  in the child process we set up resource limits, adjust oom
+3)  exec the child's program.
 
-What do we think of just removing the constructor and using
-kmem_cache_zalloc()?
+As Alan has already pointed out to you:
 
---- a/lib/idr.c~a
-+++ a/lib/idr.c
-@@ -121,7 +121,7 @@ int idr_pre_get(struct idr *idp, gfp_t g
- {
- 	while (idp->id_free_cnt < IDR_FREE_MAX) {
- 		struct idr_layer *new;
--		new = kmem_cache_alloc(idr_layer_cache, gfp_mask);
-+		new = kmem_cache_zalloc(idr_layer_cache, gfp_mask);
- 		if (new == NULL)
- 			return (0);
- 		move_to_free_list(idp, new);
-@@ -623,16 +623,10 @@ void *idr_replace(struct idr *idp, void 
- }
- EXPORT_SYMBOL(idr_replace);
- 
--static void idr_cache_ctor(void *idr_layer)
--{
--	memset(idr_layer, 0, sizeof(struct idr_layer));
--}
--
- void __init idr_init_cache(void)
- {
- 	idr_layer_cache = kmem_cache_create("idr_layer_cache",
--				sizeof(struct idr_layer), 0, SLAB_PANIC,
--				idr_cache_ctor);
-+				sizeof(struct idr_layer), 0, SLAB_PANIC, NULL);
- }
- 
- /**
-_
+   (echo XXXX > /proc/self/oom_adj ; exec /usr/bin/program)
 
+There are two problems; one is whether or not the OOM protection is
+inherited or not, and how one sets OOM protection --- and I think you
+will find a huge resistance to using names as a way of expressing
+policy.
+
+The second problem is that oom_adj scoring is a hueristic which is
+hard for system administrators to understand --- and these are
+separable problems.  Don't try to conflate them, and try using the
+fact that a random score echo'ed into /proc/pid/oom_adj is hard to
+tune as a justification for using process executable names.
+
+If you want to argue that using containers is too hard, and there out
+to be a simpler tuning parameter where (for the sake of argument) all
+processes are given a number from 0 to 10, where 5 is the default, and
+higher numbers will be picked unconditionally over lower numbers, and
+the existing OOM score is used to distinguish between two process with
+the same OOM protection, that's fine.
+
+How we set that OOM protection class, whether it is via setrlimit() or
+echoing into a magic /proc/pid/oom_protection file, and whether it
+inherits across fork and exec calls, are a separate question.
+
+	 	     	      	     	   - Ted
