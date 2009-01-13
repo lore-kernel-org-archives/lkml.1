@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbZAMXOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbZAMXOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbZAMXOF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZAMXLi
+	id S1758965AbZAMXOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758487AbZAMXNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:11:38 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61934 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757579AbZAMXLg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:11:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=KdNmMLl3gvvP1Bl5s5wA0kMgUlZzfcGmkcpOMjlw/Ve513nVKBm5CNzgzrOkyIzPp
-	ilJqPDR8gRHtjgJouVmnA==
-Date: Tue, 13 Jan 2009 15:10:50 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-In-Reply-To: <20090113214627.GC27227@ioremap.net>
-Message-ID: <alpine.DEB.2.00.0901131459001.22290@chino.kir.corp.google.com>
-References: <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
- <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.24.198.65
-X-GMailtapped: rientjes
+	Tue, 13 Jan 2009 18:13:33 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59149 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757884AbZAMXNc (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:13:32 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: linux-kernel@vger.kernel.org
+Cc: mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-01-13-01-23 uploaded
+In-Reply-To: Your message of "Tue, 13 Jan 2009 01:24:37 PST."
+             <200901130924.n0D9Obvf006707@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200901130924.n0D9Obvf006707@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231888411_3146P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 18:13:31 -0500
+Message-ID: <14657.1231888411@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009, Evgeniy Polyakov wrote:
+--==_Exmh_1231888411_3146P
+Content-Type: text/plain; charset=us-ascii
 
-> > Your patch simply allows users to specify a task by name that will always 
-> > be killed first when the oom killer is invoked.  That's terribly 
-> > insufficient if another task uses an excessive amount of memory that you 
-> > didn't expect; a rogue task may be leaking memory and the task you've 
-> > identified by name with your patch is repeatedly forked and killed when 
-> > the rogue task goes untouched.
+On Tue, 13 Jan 2009 01:24:37 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-01-13-01-23 has been uploaded to
 > 
-> It is up to user to decide, exactly the same will happen if you tune the
-> oom_adj for the task.
-> 
+>    http://userweb.kernel.org/~akpm/mmotm/
 
-It is up to the user to decide, using oom_adj scores as influence, how to 
-define when a task should be selected by the oom killer.  Your 
-name-parsing hack can do that for a single global task, but oom_adj scores 
-are actually much more powerful.
+'quilt push -a' fails with:
 
-> No, you can not. Did you try that? The only sane way to use oom_adj is
-> to disable oom killer for the task or make its score very small or very
-> big, there is really no way to make a finegrained tuning, since score
-> changes and userspace does not know the algorithm.
-> 
+Applying patch synclink_gt-enable-ri-interrupt.patch
+patching file drivers/char/synclink_gt.c
+Hunk #1 FAILED at 1.
+Hunk #2 FAILED at 89.
+2 out of 7 hunks FAILED -- rejects in file drivers/char/synclink_gt.c
+Patch synclink_gt-enable-ri-interrupt.patch does not apply (enforce with -f)
 
-We finely tune oom_adj scores so that we get the desired results, yes.  
-What you're complaining about here is purely a documentation issue.
+Handing that one line in the series file a '#' made quilt happy.
 
-> > Additionally, your patch completely breaks cpuset oom killing since 
-> > candidacy is determined in badness() because a task may have allocated 
-> > non-migrated memory elsewhere before being moved to a different cpuset.  
-> > Your oom_victim_name task may exist globally, but will always be 
-> > identified for oom kill even when the oom exists exclusively in a disjoint 
-> > cpuset.  That does _not_ lead to future memory freeing that current can 
-> > use, and if the parent of the killed task decides to immediately fork 
-> > another instance, this cpuset will be completely livelocked. 
-> 
-> Please check the patch first. It selects process according to the
-> badness, check memory group first and fallbacks to scan other processes
-> if process with the given name was not found or name is null.
-> 
 
-Again, your patch _completely_ breaks cpuset oom killing.  That is a 
-completely separate issue than the memory controller, and it's 
-disappointing you still don't see it.
+--==_Exmh_1231888411_3146P
+Content-Type: application/pgp-signature
 
-In a cpuset constrained oom condition, we do not explicitly exclude all 
-tasks that are in a disjoint, exclusive cpuset since it's quite possible 
-that a task has allocated memory outside its cpuset (either because its 
-cpuset assignment has changed or because its cpuset's mems has changed) 
-and killing it would free memory in current's cpuset.  We do, however, 
-prefer to kill a task within the same cpuset; that preference is 
-implemented in the badness() scoring.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-If a task exists on the system in a disjoint, exclusive cpuset that 
-matches oom_victim_name, your patch will cause it to be killed even though 
-badness() has penalized it for not sharing a cpuset (dividing its score by 
-eight).  That probably needlessly killed oom_victim_name since it won't 
-allow for future memory freeing in the oom-triggering cpuset and the 
-original oom condition persists.
+iD8DBQFJbSAbcC3lWbTT17ARAiWqAKCEQInvvjop9DVk0zXwNAz1B1FMQwCfeuv/
+I0dYCsP/JacLBg+mXsWO8c0=
+=rCZg
+-----END PGP SIGNATURE-----
 
-Now if the parent of that task or another system task forks 
-oom_victim_name again, the same thing will happen on the next iteration of 
-the oom killer.  This will not free any memory in current's cpuset and it 
-will effectively be livelocked.
+--==_Exmh_1231888411_3146P--
