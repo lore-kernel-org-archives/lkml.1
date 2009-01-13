@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbZAMN2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760666AbZAMN2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbZAMN2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758038AbZAMN15
+	id S1760666AbZAMN2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760171AbZAMN2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:27:57 -0500
-Received: from mail-gx0-f13.google.com ([209.85.217.13]:42737 "EHLO
-	mail-gx0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758099AbZAMN1z (ORCPT
+	Tue, 13 Jan 2009 08:28:08 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48326 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760159AbZAMN2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:27:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ekCoCAlZdLL/wOEKoZHCElaj0IC55WMrD/O9Vk+1nANO2tCb+KSM/XYolpC4ruETt9
-         TTYCPTnx6+PkW2/itpAUBZxdK3oNuxIktXBnmmQLfKoCW3q9X9w6TyTk3X31J2OH1ijJ
-         +HKLyttJQPRNvwdjt9sOVZqz+8mX22Saf6I3w=
-Message-ID: <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com>
-Date: Tue, 13 Jan 2009 08:27:52 -0500
-From: "Brian Gerst" <brgerst@gmail.com>
-To: "Tejun Heo" <tj@kernel.org>
-Subject: Re: [PATCHSET linux-2.6-x86:tip] x86: make percpu offsets zero-based on SMP
-Cc: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
-       hugh@veritas.com
-In-Reply-To: <496C717F.70204@kernel.org>
+	Tue, 13 Jan 2009 08:28:06 -0500
+Date: Tue, 13 Jan 2009 14:28:05 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Message-ID: <20090113132805.GE30352@atrey.karlin.mff.cuni.cz>
+References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl> <200901131342.44562.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1231843097-18003-1-git-send-email-tj@kernel.org>
-	 <496C717F.70204@kernel.org>
+In-Reply-To: <200901131342.44562.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 5:48 AM, Tejun Heo <tj@kernel.org> wrote:
-> Tejun Heo wrote:
->> Each step was tested with gcc-4.1.3, 4.2.3 and 4.3.1 on x86_64, 4.3.1
->> on i386 for both SMP and UP configurations.  The final state is
->> currently being tested using 4.2.3 on both x86_64 and 32.
->
-> Aieee.. two sentences mixed up in my head.  Correction:
->
-> Each step was tested with gcc-4.3.1 for both x86_64 and 32.  The final
-> step for x86_64 has been tested with gcc-4.1.3, 4.2.3 and 4.3.1.
-> Currently, I'm burn-testing both x86_64 and 32 using gcc-4.2.3 with
-> all patches applied.
->
-> Thanks.
+> Am Dienstag 13 Januar 2009 schrieb Rafael J. Wysocki:
+> > On Tuesday 13 January 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > Just when I thought long merge window means less problems...
+> > > 
+> > > ...suspend seemed to work until last tuesday or so. Now it hanged two
+> > > times; once so hard that power button powercycle did not result in
+> > > booting machine. (thinkpad x60)
+> > > 
+> > > I'll do some more tests...
+> > 
+> > There are a couple of things you may want to revert, like
+> > 7503bfbae89eba07b46441a5d1594647f6b8ab7d and
+> > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
+> > 
+> > Please let me know if that helped.
+> 
+> I tested rc1+ these two reverts yesterday on my T61p. Doesnt work. There must 
+> be at least one more patch that broke S2R on my thinkpad. In fact, it is cpu 
+> hotplug that is broken (unplug works).
 
-I've been working on a patchset that does something similar, but
-eliminating the PDA completely.  The start is already in tip/x86/pda.
-The plan is to change all PDA variables to be normal per-cpu
-variables, merging with 32-bit where possible.  Once the PDA is empty,
-I'll base %gs at the start of the per-cpu area.  I've been working out
-the bugs with the last patch (zero-basing the percpu area) before
-submitting, but I probably won't have the time until this weekend to
-polish it off.  I could submit all but the last patch if you'd like.
-They are functionally correct, but because the per-cpu area isn't
-zero-based yet the generated code is a bit bloated due to having to
-calculate the delta for the %gs offset.
-
---
-Brian Gerst
+I reproduced that: echo 0 > online works, echo 1 > online hangs. Will
+compile SMP-less kernel to verify that there are no more problems...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
