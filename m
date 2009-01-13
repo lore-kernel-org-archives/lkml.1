@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbZAMXhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbZAMXiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbZAMXhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757594AbZAMXhU
+	id S1760278AbZAMXiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760207AbZAMXhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:37:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756205AbZAMXhR (ORCPT
+	Tue, 13 Jan 2009 18:37:53 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:54590 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760196AbZAMXhv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:37:17 -0500
-Date: Tue, 13 Jan 2009 15:37:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Ji=5F=5F=ED?= Burda <jburda@email.cz>
-Cc: linux-usb@vger.kernel.org, greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: Nokia 5310 mass-storage not mounting in kernel
- 2.6.28
-Message-Id: <20090113153704.2ca5174d.akpm@linux-foundation.org>
-In-Reply-To: <496CD114.7060802@email.cz>
-References: <496CD114.7060802@email.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 18:37:51 -0500
+Message-ID: <496D255E.2050804@cosmosbay.com>
+Date: Wed, 14 Jan 2009 00:35:58 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: w@1wt.eu, ben@zeus.com, jarkao2@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+References: <4966F2F4.9080901@cosmosbay.com>	<20090109070415.GA27758@1wt.eu>	<4966FC89.8040006@cosmosbay.com> <20090113.152759.29875009.davem@davemloft.net>
+In-Reply-To: <20090113.152759.29875009.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 14 Jan 2009 00:35:59 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 18:36:20 +0100
-Ji____ Burda <jburda@email.cz> wrote:
-
-> From: Jiri Burda <jburda@email.cz>	
+David Miller a écrit :
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Fri, 09 Jan 2009 08:28:09 +0100
 > 
-> Nokia 5310 mobile with firmware revision 8.32 does not mount as usb mass-storage in kernel 2.6.28 and previous.
-> This patch solves this problem by increasing firmware revision in drivers/usb/storage/unusual_device.h from 0x0701 to 0x0832.
-> This bug is recorded in kernel bugzilla as 12367.
-> Signed-off-by: Jiri Burda <jburda@email.cz>
-> ---
-> --- linux-2.6.28/drivers/usb/storage/unusual_devs.h.orig	2009-01-13 17:21:24.000000000 +0100
-> +++ linux-2.6.28/drivers/usb/storage/unusual_devs.h	2009-01-13 19:24:16.000000000 +0100
-> @@ -182,7 +182,7 @@ UNUSUAL_DEV(  0x0421, 0x0063, 0x0001, 0x
->  		US_FL_FIX_CAPACITY ),
->  
->  /* Patch for Nokia 5310 capacity */
-> -UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
-> +UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0832,
->  		"Nokia",
->  		"5310",
->  		US_SC_DEVICE, US_PR_DEVICE, NULL,
+>> If the application uses setsockopt(sock, SOL_SOCKET, SO_RCVLOWAT,
+>> [32768], 4), it would be good if kernel was smart enough and could
+>> reduce number of wakeups.
+> 
+> Right, and as I pointed out in previous replies the problem is
+> that splice() receive in TCP doesn't check the low water mark
+> at all.
+> 
 > 
 
-akpm:/usr/src/25> grep 5310 drivers/usb/storage/unusual_devs.h
-akpm:/usr/src/25> 
+Yes I understand, but if splice() is running, wakeup occured, and
+no need to check if the wakeup was good or not... just proceed and
+consume some skb, since we already were awaken.
 
-The 5310 entry seems to have been removed in 2.6.29-rc1.
+Then, an application might setup a high SO_RCVLOWAT, but want to splice()
+only few bytes, so RCVLOWAT is only a hint for the thing that perform the
+wakeup, not for the consumer.
+
+
