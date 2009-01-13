@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZAMCx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZAMC65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZAMCx5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZAMCxr
+	id S1754807AbZAMC65 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZAMC6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:53:47 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:50661 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751677AbZAMCxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:53:46 -0500
-Date: Tue, 13 Jan 2009 13:53:41 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-Message-ID: <20090113025341.GA14718@gondor.apana.org.au>
-References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com> <20090109070144.GA7358@gondor.apana.org.au> <1231743310.5937.107.camel@yhuang-dev.sh.intel.com> <20090112104335.GA4942@gondor.apana.org.au> <1231814053.5937.120.camel@yhuang-dev.sh.intel.com> <20090113023937.GA14460@gondor.apana.org.au> <1231814947.5937.124.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231814947.5937.124.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 12 Jan 2009 21:58:48 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47225 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751749AbZAMC6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:58:47 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18xe0wSSLoxC8T1SBWtSJC/oRa8zFPt9PXojXNCcd
+	Dbpuo1CDSQmGAA
+Subject: Re: [BUG] How to get real-time priority using idle priority
+From: Mike Galbraith <efault@gmx.de>
+To: Brian Rogers <brian@xyzw.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <496BE8F6.1040308@xyzw.org>
+References: <4969D0D7.2060401@xyzw.org>
+	 <1231736941.6003.7.camel@marge.simson.net>
+	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
+	 <496BE8F6.1040308@xyzw.org>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 03:58:43 +0100
+Message-Id: <1231815523.5899.7.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 10:49:07AM +0800, Huang Ying wrote:
->
-> I can set req->data in xx_encrypt() to my original request to solve this
-> issue. Except that, does this solution work?
+On Mon, 2009-01-12 at 17:05 -0800, Brian Rogers wrote:
+> Ingo Molnar wrote:
+> > i've applied your fix to tip/sched/urgent and merged it into tip/master.
+> > Brian, you might want to test tip/master, as per:
+> >
+> >  http://people.redhat.com/mingo/tip.git/README
+> >
+> > which now has this fix included. Can you make it break?
+> >   
+> Yeah, I was able to trigger the same freeze again once on my desktop, 
+> but it appears to be harder to trigger now. I couldn't get my program to 
+> freeze the system, but one of the times I suspended then resumed BOINC, 
+> it happened.
 
-Yes it would work provided that you save the original data somewhere
-in your context (and then restore it of course).
+Drat.
 
-But it'd be much simpler if you just nested the request structures
-(they aren't that big too start with) which means that you wouldn't
-need this extra completion handler at all.
+> While experimenting on my laptop, things got into a funny state where 
+> konsole froze, then gnome-terminal froze, so I just started launching 
+> xterms. pgrep and pidof would freeze and never terminate. ps axl froze 
+> after listing process 23681, which was a BOINC process. The next 
+> process, 23682, was another BOINC process. Going into /proc/23682 and 
+> running ls -l as root froze the shell. I figured out that ls -l exe was 
+> enough to freeze it. I couldn't shut down BOINC because process 23682 
+> wouldn't close, and kill -9 did nothing to it. top, which actually did 
+> work, showed that process just continuing to run with around 100% CPU 
+> time. I had to power cycle the system.
+> 
+> I'll try Mike's "more complete" patch on top of 2.6.29-rc1 and see what 
+> that does.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Don't bother.  I just tried a SCHED_IDLE make -j8 and had character
+repeats while typing.  Must be another spot.
+
+	-Mike
+
