@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbZAMIxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbZAMI53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759873AbZAMIxo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:53:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759400AbZAMIxH
+	id S1759404AbZAMI53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbZAMI5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:53:07 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:63910 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755580AbZAMIxF (ORCPT
+	Tue, 13 Jan 2009 03:57:19 -0500
+Received: from mga05.intel.com ([192.55.52.89]:41211 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752527AbZAMI5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:53:05 -0500
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUNIjI/PLwx
-Message-ID: <496C5669.4040407@hartkopp.net>
-Date: Tue, 13 Jan 2009 09:52:57 +0100
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: David Miller <davem@davemloft.net>, joe.tian.kernel@gmail.com,
-       lizf@cn.fujitsu.com, qhfeng.kernel@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: fix wrong English expression in comments
-References: <496a3c51.09876e0a.03fe.7e80@mx.google.com>	<496A9753.80802@cn.fujitsu.com>	<6b1ba94c0901122336r511fa316o5f520a8d2d9d6e0@mail.gmail.com> <20090112.234441.131571840.davem@davemloft.net> <496C4987.8040803@cosmosbay.com>
-In-Reply-To: <496C4987.8040803@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Jan 2009 03:57:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,258,1231142400"; 
+   d="scan'208";a="421907680"
+Subject: Performance regression of specjbb2005/aim7 with 2.6.29-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, ming.m.lin@intel.com,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 13 Jan 2009 16:57:16 +0800
+Message-Id: <1231837036.11429.27.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> David Miller a écrit :
->   
->> From: joe tian <joe.tian.kernel@gmail.com>
->> Date: Tue, 13 Jan 2009 15:36:51 +0800
->>
->>     
->>> 2009/1/12 Li Zefan <lizf@cn.fujitsu.com>:
->>>       
->>>>> @@ -103,7 +103,7 @@ struct inet_bind_bucket;
->>>>>  struct inet_timewait_sock {
->>>>>       /*
->>>>>        * Now struct sock also uses sock_common, so please just
->>>>> -      * don't add nothing before this first member (__tw_common) --acme
->>>>> +      * don't add anything before this first member (__tw_common) --acme
->>>>>           
->>>> They are the same meaning...
->>>>
->>>>         
->>> I don't think they are the same meaning.
->>> I think "don't add anything" means "do add nothing" but not means "don't add
->>> nothing"
->>>       
->> No offense to anyone, but the only people arguing for "correctness"
->> seem to be non-native speakers of English.  Is this correct? :-)
->>
->> As Ben tries to explain, "don't add nothing" is a colloquialism of
->> English that in fact can mean "do not add"
->>
->> It sounds amusing when read, and I'm not killing the character and
->> personality of this comment just for some language lawyering.
->>
->> No way.
->>     
->
-> Oh my God... time for me to check what is a colloquialism :)
->
->
-> According to wikipedia :
->
-> A colloquialism is an expression not used in formal speech, 
-> writing or paralinguistics. Colloquialisms are also sometimes 
-> referred to collectively as "colloquial language". [1] Colloquialisms
-> or colloquial language is considered to be characteristic of or only
-> appropriate for casual, ordinary, familiar, or informal conversation
-> rather than formal speech or writing.
+Comparing with 2.6.28's results, specjbb2005 has about 7% regression with 2.6.29-rc1
+on my a couple of x86_64 machines. aim7 has about 1.7% regression.
 
-So the Linux Kernels comments are only for native speakers of English 
-that are familiar with these colloquialisms?
+Ming did a quick bisect with aim7 and located below patch.
 
-I also would have to think longer about the current comment than i would 
-have to on the patched one.
+ï»¿commit 0a582440ff546e2c6610d1acec325e91b4efd313
+Author: Mike Galbraith <efault@gmx.de>
+Date:   Fri Jan 2 12:16:42 2009 +0100
 
-When we reduce parentheses and have coding style definitions to make the 
-reading of source code easy and fast - why don't we fix these 
-colloquialisms that are confusing non-native English speakers?
+    sched: fix sched_slice()
+    
+    Impact: fix bad-interactivity buglet
+    
+    Fix sched_slice() to emit a sane result whether a task is currently
+    enqueued or not.
+    
+    Signed-off-by: Mike Galbraith <efault@gmx.de>
+    Tested-by: Jayson King <dev@jaysonking.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-I personally would vote for this particular patch - but i assume 
-thousands of these patches might jam the mailing lists then :-(
 
-Regards,
-Oliver
+After we revert the patch, aim7 regression disappeared. specjbb2005 regression becomes
+less than 1.5% on 8-core stokley and disappears on 16-core tigerton. I don't know what
+causes the last 1.5% regression.
+
+As tbench has about 5% improvement and oltp(mysql+sysbench) has 5% improvement, we also tested
+to make sure such improvement isn't related to above patch. volanoMark's improvement is also not
+related to the patch. So it seems safe to revert it.
+
+yanmin
+
+
 
