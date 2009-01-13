@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZAMB3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbZAMB3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbZAMB3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 20:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbZAMB2z
+	id S1758440AbZAMB3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 20:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbZAMB24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 20:28:55 -0500
-Received: from kroah.org ([198.145.64.141]:35878 "EHLO coco.kroah.org"
+	Mon, 12 Jan 2009 20:28:56 -0500
+Received: from kroah.org ([198.145.64.141]:35891 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757041AbZAMB2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757073AbZAMB2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Jan 2009 20:28:54 -0500
-Date: Mon, 12 Jan 2009 17:26:49 -0800
+Date: Mon, 12 Jan 2009 17:26:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 01/21] USB: gadget: fix rndis working at high speed
-Message-ID: <20090113012649.GB4512@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 02/21] usb-storage: update unusual_devs entry for Nokia 5310
+Message-ID: <20090113012651.GC4512@kroah.com>
 References: <20090113012006.063755472@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-gadget-fix-rndis-working-at-high-speed.patch"
+Content-Disposition: inline; filename="usb-storage-update-unusual_devs-entry-for-nokia-5310.patch"
 In-Reply-To: <20090113012633.GA4512@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,40 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 7c12414955e9b44a3e33d54e578bf008caa4475d upstream.
+commit a4b188095912eee83d065f000dfe06f25919750b upstream.
 
-Fix a bug specific to highspeed mode in the recently updated RNDIS
-support:  it wasn't setting up the high speed notification endpoint,
-which prevented high speed RNDIS links from working.
+This patch (as1179) updates the unusual_devs entry for Nokia's 5310
+phone to include a more recent firmware revision.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Tested-by: Anand Gadiyar <gadiyar@ti.com>
+This fixes Bugzilla #12099.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Robson Roberto Souza Peixoto <robsonpeixoto@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/gadget/f_rndis.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/usb/storage/unusual_devs.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/gadget/f_rndis.c
-+++ b/drivers/usb/gadget/f_rndis.c
-@@ -651,6 +651,8 @@ rndis_bind(struct usb_configuration *c, 
- 				fs_in_desc.bEndpointAddress;
- 		hs_out_desc.bEndpointAddress =
- 				fs_out_desc.bEndpointAddress;
-+		hs_notify_desc.bEndpointAddress =
-+				fs_notify_desc.bEndpointAddress;
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -168,7 +168,7 @@ UNUSUAL_DEV(  0x0421, 0x005d, 0x0001, 0x
+ 		US_FL_FIX_CAPACITY ),
  
- 		/* copy descriptors, and track endpoint copies */
- 		f->hs_descriptors = usb_copy_descriptors(eth_hs_function);
-@@ -662,6 +664,8 @@ rndis_bind(struct usb_configuration *c, 
- 				f->hs_descriptors, &hs_in_desc);
- 		rndis->hs.out = usb_find_endpoint(eth_hs_function,
- 				f->hs_descriptors, &hs_out_desc);
-+		rndis->hs.notify = usb_find_endpoint(eth_hs_function,
-+				f->hs_descriptors, &hs_notify_desc);
- 	}
- 
- 	rndis->port.open = rndis_open;
+ /* Patch for Nokia 5310 capacity */
+-UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0591,
++UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
+ 		"Nokia",
+ 		"5310",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
 
