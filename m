@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZAMDVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbZAMDXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbZAMDVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 22:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZAMDVi
+	id S1757949AbZAMDXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 22:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZAMDXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 22:21:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48138 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801AbZAMDVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 22:21:37 -0500
-Date: Tue, 13 Jan 2009 04:36:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Travis <travis@sgi.com>,
-       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090113033608.GN23848@one.firstfloor.org>
-References: <20090112213539.GA10720@gambetta> <496BCA21.2010709@sgi.com> <20090112235156.GC10720@gambetta> <496BD8FB.1050101@sgi.com> <20090113000112.GA10368@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113000112.GA10368@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 12 Jan 2009 22:23:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33036 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751523AbZAMDXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 22:23:33 -0500
+Message-ID: <496C0915.6000107@kernel.org>
+Date: Tue, 13 Jan 2009 12:23:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: new barrier warnings in 2.6.29-rc1
+References: <20090112154634.GA15730@lst.de>
+In-Reply-To: <20090112154634.GA15730@lst.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 03:23:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > (And was it determined yet, that a cacheline has to be tossed around as 
-> > well?)
+(cc'ing Jens)
+Hello,
+
+Christoph Hellwig wrote:
+> Whever a filesystem submits a bio with the barrier flag set but
+> the underlying hardware doesn't support it we now get errors in
+> the form of:
 > 
-> No, that assertion of Andi is wrong.
+> [ 3046.442629] end_request: I/O error, dev vdb, sector 0
+> 
+> since commit a7384677b2f4cd40948fd7ce024ba5e1821444ba which removed
+> the early check on the queue capabilities in __make_request.  I
+> think this message is pretty annoying and confusing for the user
+> as the filesystems already have more descriptive warnings, e.g. for
+> XFS:
+> 
+> [ 3046.455478] Filesystem "vdb": Disabling barriers, trial barrier write failed
 
-For the IPI you always have to toss one cache line around to pass
-the information.
+I think the right thing to do is setting REQ_QUIET on the trial
+barrier request.
 
-Anyways the padding is just to avoid false sharing.
+Thanks.
 
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
