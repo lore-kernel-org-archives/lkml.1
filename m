@@ -1,260 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZAMGwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbZAMGw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbZAMGwI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZAMGvz
+	id S1757291AbZAMGw2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZAMGwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:51:55 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55271 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbZAMGvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 01:51:53 -0500
-Date: Tue, 13 Jan 2009 17:51:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 13
-Message-Id: <20090113175145.cdfa9c6a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_Jan_2009_17_51_45_+1100_.oC.Oa/TdcyUlsi5"
+	Tue, 13 Jan 2009 01:52:05 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:58073 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbZAMGwC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 01:52:02 -0500
+Subject: ALLANC: Proposal to add progress records to process accounting
+To: linux-kernel@vger.kernel.org
+X-Mailer: Lotus Notes Release 7.0 August 18, 2005
+Message-ID: <OFEF944F55.A27961D6-ONC825753D.001C91E6-C825753D.00252053@au1.ibm.com>
+From: Allan Chandler <allachan@au1.ibm.com>
+Date: Tue, 13 Jan 2009 15:54:50 +0900
+X-MIMETrack: Serialize by Router on d23ml003/23/M/IBM(Release 7.0.2FP3HF80 | July 14, 2008) at
+ 13/01/2009 17:54:51
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_Jan_2009_17_51_45_+1100_.oC.Oa/TdcyUlsi5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+I wanted to float an idea to get the community view before trying to
+implement something in the kernel for possible submission. I've structured
+this post into short description, long description and initial technical
+analysis so you can just stop reading when you get bored. Any suggestions
+on the value of this proposal, or improvements to the analysis, would be
+greatly appreciated. I'd say "be gentle" since this is my first foray onto
+LKML, but I'm willing to wear whatever scorn is heaped upon me :-).
 
-Today, I merged the updates to Linus' and the powerpc trees that happened
-during the day.
+Short description:
+==================
 
-Changes since 20090112:
+Change process accounting to output 'progress' records for long-lived
+processes (in addition to current records on process termination).
 
-Undropped tree:
-	rr
-	drm
+Longer description:
+===================
 
-Dropped trees (temporarily):
-	mfd (build problem)
-	cpu_alloc (build problem)
-	audit (difficult conflicts)
+We (more specifically, the customers of our product) have been using
+process accounting for chargeback (departments are charged based on their
+usage) and performance (capacity planning) purposes.  A heavily used
+application, IBM Websphere Application Server [bless their little hearts
+:-( ], recently changed its behaviour from "JVM processes exit regularly to
+be replaced by others" to "JVM processes hang around for weeks without
+exiting". So now the process accounting records aren't being written
+frequently. I realize this is our problem, not yours, but bear with me, the
+solution may be beneficial for others.
 
-Linus' tree inherited the build failure from the mfd tree for which I
-applied a supplied patch and also has an m68k build problem (according to
-the tip tree commit I cherry-picked).
+We currently suggest the workaround that customers periodically restart WAS
+itself so that records are written more frequently.  One customer has even
+taken to monitoring /proc/PID/stat but that's a bit of a kludge.
 
-The driver-core tree lost its conflict.
+This proposal is a suggestion to add a new type of record to process
+accounting that gives periodic updates of a process while it's still
+active, rather than waiting for process exit (the exit record is still
+written).  It appears to me that there must be many long-lived processes
+that could benefit from this change, inasmuch as they could be monitored
+during their lifetime rather than only at exit.
 
-The rr tree lost its conflicts.
+Technical analysis:
+===================
 
-The drm tree lost its build problem.
+The BSD process accounting within Linux writes type-3 records to the
+process accounting file when a process exits (this is done via a call to
+kernel/acct.c/acct_process() in kernel/exit.c/do_exit()).
 
-----------------------------------------------------------------------------
+The proposal is to add another type (type-6 since 1-5 are taken, I believe)
+which is a incremental view of the process statistics, i.e, what's been
+added since the last incremental view (or process startup if this is the
+first increment). These records are exactly the same format as type-3 and
+will be written for any process that hasn't written a record in a while
+(for our purposes, 24 hours is fine but it may be better to make this
+configurable).
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+There are two types of fields in the record, snapshot (such as ac_uid,
+ac_gid, ac_tty, ac_btime, ac_mem) and cumulative (such as ac_stime,
+ac_etime). The cumulative fields would only have the difference between the
+last type-6 and current values, so that you're not reliant on working out
+the values by referring to the previous type-6.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
+So, let's say we have a process that runs for an 45 minutes and we have our
+configurable time set to 20 minutes. Further say process accounting only
+output PID and user/system/elapsed time (to make this next bit easier to
+understand):
 
-Below is a summary of the state of the merge.
+At time t, process 42 starts.
+At time t+20min, process 42 has used 4 seconds system time, 12 seconds user
+time and outputs:
+      rectype=6,pid=42, etime=1200, stime=4, utime=12
+At time t+40min, process 42 has used 19 seconds system time (since start),
+38 seconds user time (since start) and outputs:
+      rectype=6,pid=42, etime=1200, stime=15, utime=26
+At time t+45min, process 42 exits, having used 20 seconds system time
+(since start), 40 seconds user time (since start) and outputs:
+      rectype=6,pid=42, etime=300, stime=1, utime=2
+      rectype=3,pid=42, etime=2700, stime=20, utime=40
 
-We are up to 129 trees (counting Linus' and 15 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+So, as you can see, the type-3 is still output on process exit, not
+breaking any programs (such as dump_acct) that expect them. However,
+programs which want a more timely view of the process activity can look at
+the type-6 records.
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+How to implement it, that's the tricky bit. My first thought is to do
+checks on process context switch. Any process that becomes inactive and
+hasn't written a type-6 for too long will immediately write its type-6
+before the next process starts running. We'd need to ensure we don't add
+too much overhead to the context switch (that's putting it mildly).  I
+assume this would be somewhere in kernel/sched.c/context_switch() or
+kernel/sched.c/prepare_task_switch() although I haven't yet looked in great
+detail.
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
+The code that currently outputs the type-3 (kernel/acct.c/acct_process())
+would also output a type-6 first so the type-6 information is up to date
+with the type-3.
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+>From what I can see, the process accounting information can be reached from
+the process descriptor stored with the process kernel stack
+(current->signal->pacct) so there may have to be some more space allocated
+there for incremental information.  Quite a bit of the type-3 record is
+calculated from different structures under current, so that may be another
+performance issue although hopefully not since, in the vast majority of
+context switches, we're just adding a simple check to see if too much time
+has elapsed since the last type-6. Only every N hours would more of a load
+be put on the switch.
 
---=20
+Anyway, that's where I'm at for now. I'd appreciate any comments from those
+almost certainly more knowledgable than I.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Pax.
+==========
+Two strings walk into a bar. The first one says: "Hello, I'd like some
+Vodka please.ytewsr@)W$(#*$&!^Y@)^&30@#!".
+"You'll have to excuse my friend," the second one says, "he's not
+null-terminated".
+==========
+Allan Chandler (Pax), Senior IT Specialist, Australia Development
+Laboratory (ADL), Perth, IBM Corporation
+Internet: allachan@au1.ibm.com, Phone: +61 8 926 13019, Fax: +61 8 921
+89201
+Location code MP25, 77 St George's Terrace (Allendale Square), Level 25,
+Perth WA 6000
+_______________________________________________
 
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-$ git cherry-pick 9d0793370987b98708d2f75ee3bba7c1008d8512
-Created commit 69c55d3: sparc64: Fix cpumask related build failure
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
-CONFLICT (content): Merge conflict in kernel/auditsc.c
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
-CONFLICT (content): Merge conflict in kernel/rcuclassic.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-CONFLICT (content): Merge conflict in kernel/time/tick-common.c
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-$ git reset --hard HEAD^
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging squashfs/master
-Merging quilt/staging
-Merging scsi-post-merge/master
-Merging master_tmp
-Applying: linux-next: mfd tree build failure
-$ git cherry-pick 6e96281412f2f757abe623e08a9577e2bbd3402f
-Created commit a0e1122: smp_call_function_single(): be slightly less stupid=
-, fix #2
-Merging powerpc_next
-
---Signature=_Tue__13_Jan_2009_17_51_45_+1100_.oC.Oa/TdcyUlsi5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklsOgEACgkQjjKRsyhoI8wiCgCgu2AUn4sWGJZ/Fd3b4T/8mjSn
-+2oAoKJEZ+HSSI0KU/O7PyAlz71NQSZP
-=FLZf
------END PGP SIGNATURE-----
-
---Signature=_Tue__13_Jan_2009_17_51_45_+1100_.oC.Oa/TdcyUlsi5--
