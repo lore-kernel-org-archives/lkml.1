@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbZAMNhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbZAMNkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760569AbZAMNhS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZAMNhE
+	id S1758709AbZAMNkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZAMNj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:37:04 -0500
-Received: from mailout.artfiles.de ([80.252.97.80]:59968 "EHLO
-	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbZAMNhD convert rfc822-to-8bit (ORCPT
+	Tue, 13 Jan 2009 08:39:58 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36190 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbZAMNj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:37:03 -0500
-X-Greylist: delayed 2028 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Jan 2009 08:37:03 EST
-Subject: AW: 2.6.29-rc1: thinkpad problems during resume
-Date: Tue, 13 Jan 2009 14:03:10 +0100
+	Tue, 13 Jan 2009 08:39:57 -0500
+Date: Tue, 13 Jan 2009 14:42:05 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, jack@suse.cz
+Subject: ext2 triggers WARN_ON() when media is unplugged.
+Message-ID: <20090113134203.GA4354@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <B4ED8DE8E195E84A872496A085BC07822EF5@exchange01.corp.win-professional.com>
-In-Reply-To: <200901131342.44562.borntraeger@de.ibm.com>
-Content-class: urn:content-classes:message
-X-MS-Has-Attach: 
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.29-rc1: thinkpad problems during resume
-Thread-Index: Acl1fN6dpSByTzkzTQmWTzb2F/PsUgAAOWiQ
-References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl> <200901131342.44562.borntraeger@de.ibm.com>
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: "Christian Borntraeger" <borntraeger@de.ibm.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 13 Jan 2009 13:03:11.0648 (UTC) FILETIME=[49D0B200:01C9757F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2.6.29-rc1-git, pretty reproducible: mount -osync, start write
+workload, pull the drive.
+									Pavel
 
-i´ve got the same problem with 2.6.29-rc1 and a thinkpad T61p. But there is something very strange with 2.6.29-rc1-git3 it works perfectly.
 
------Ursprüngliche Nachricht-----
-Von: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] Im Auftrag von Christian Borntraeger
-Gesendet: Dienstag, 13. Januar 2009 13:43
-An: Rafael J. Wysocki
-Cc: Pavel Machek; kernel list
-Betreff: Re: 2.6.29-rc1: thinkpad problems during resume
+...
+scsi 1:0:0:0: Direct-Access     ATA      Hitachi HTS54168 SB2O PQ: 0 ANSI: 5
+sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 1:0:0:0: [sdb] Write Protect is off
+sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 1:0:0:0: [sdb] Write Protect is off
+sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+ sdb: sdb1 sdb2 sdb3
+sd 1:0:0:0: [sdb] Attached SCSI disk
+sd 1:0:0:0: Attached scsi generic sg1 type 0
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sdb1, internal journal
+EXT3-fs: recovery complete.
+EXT3-fs: mounted filesystem with writeback data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sdb1, internal journal
+EXT3-fs: mounted filesystem with writeback data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sdb1, internal journal
+EXT3-fs: mounted filesystem with writeback data mode.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sdb1, internal journal
+EXT3-fs: mounted filesystem with writeback data mode.
+ata2.00: configured for UDMA/100
+ata2: EH complete
+sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
+sd 1:0:0:0: [sdb] Write Protect is off
+sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 1:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+ata2: exception Emask 0x10 SAct 0x0 SErr 0x90200 action 0xe frozen
+ata2: irq_stat 0x00400000, PHY RDY changed
+ata2: SError: { Persist PHYRdyChg 10B8B }
+ata2: hard resetting link
+ata2: SATA link down (SStatus 0 SControl 300)
+ata2: hard resetting link
+ata2: SATA link down (SStatus 0 SControl 300)
+ata2: hard resetting link
+ata2: SATA link down (SStatus 0 SControl 300)
+ata2.00: disabled
+ata2: EH complete
+sd 1:0:0:0: rejecting I/O to offline device
+sd 1:0:0:0: [sdb] Unhandled error code
+sd 1:0:0:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
+end_request: I/O error, dev sdb, sector 4991
+Buffer I/O error on device sdb1, logical block 616
+lost page write due to I/O error on sdb1
+ata2.00: detaching (SCSI 1:0:0:0)
+ahci: autosuspend disabled
+sd 1:0:0:0: [sdb] Stopping disk
+sd 1:0:0:0: [sdb] START_STOP FAILED
+sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
+------------[ cut here ]------------
+WARNING: at /data/l/linux/fs/buffer.c:1250 mark_buffer_dirty+0x66/0x80()
+Hardware name: ANT
+Modules linked in:
+Pid: 2970, comm: umount Not tainted 2.6.29-rc1 #263
+Call Trace:
+ [<ffffffff8023da92>] warn_slowpath+0xf2/0x130
+ [<ffffffff80273502>] find_get_pages+0x32/0xd0
+ [<ffffffff8027ac67>] pagevec_lookup+0x17/0x20
+ [<ffffffff8027b378>] truncate_inode_pages_range+0x188/0x360
+ [<ffffffff80297833>] cache_free_debugcheck+0x103/0x230
+ [<ffffffff802bcd56>] mark_buffer_dirty+0x66/0x80
+ [<ffffffff80331249>] ext2_sync_super+0x39/0x60
+ [<ffffffff803320bc>] ext2_put_super+0xdc/0x100
+ [<ffffffff8029dfbb>] generic_shutdown_super+0x6b/0x110
+ [<ffffffff8029e089>] kill_block_super+0x29/0x50
+ [<ffffffff8029e16f>] deactivate_super+0x5f/0x80
+ [<ffffffff802b2746>] sys_umount+0x76/0x380
+ [<ffffffff8022bb72>] ia32_sysret+0x0/0xa
+---[ end trace 1a98d19d85775109 ]---
+scsi 1:0:0:0: rejecting I/O to dead device
 
-Am Dienstag 13 Januar 2009 schrieb Rafael J. Wysocki:
-> On Tuesday 13 January 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > Just when I thought long merge window means less problems...
-> > 
-> > ...suspend seemed to work until last tuesday or so. Now it hanged two
-> > times; once so hard that power button powercycle did not result in
-> > booting machine. (thinkpad x60)
-> > 
-> > I'll do some more tests...
-> 
-> There are a couple of things you may want to revert, like
-> 7503bfbae89eba07b46441a5d1594647f6b8ab7d and
-> a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
-> 
-> Please let me know if that helped.
-
-I tested rc1+ these two reverts yesterday on my T61p. Doesnt work. There must 
-be at least one more patch that broke S2R on my thinkpad. In fact, it is cpu 
-hotplug that is broken (unplug works).
-
-I will try to bisect that as well, but currently I am busy trying to find a 
-virtio regression....
-
-Christian
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
