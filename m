@@ -1,102 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZAMRpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZAMRq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZAMRpx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 12:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZAMRpm
+	id S1757889AbZAMRq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 12:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZAMRqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 12:45:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42095 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZAMRpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 12:45:41 -0500
-Date: Tue, 13 Jan 2009 18:45:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, ying.huang@intel.com
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-Message-ID: <20090113174522.GA26965@elte.hu>
-References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu> <49594411.60000@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49594411.60000@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 13 Jan 2009 12:46:47 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:59177 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbZAMRqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 12:46:46 -0500
+Date: Tue, 13 Jan 2009 18:46:43 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] async: Handle kthread_run() return codes.
+Message-ID: <20090113184643.0614470d@gondolin>
+In-Reply-To: <20090113165115.GR12431@fluff.org.uk>
+References: <20090113174304.2186532c@gondolin>
+	<20090113165115.GR12431@fluff.org.uk>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Jan 2009 16:51:15 +0000,
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-* Andi Kleen <ak@linux.intel.com> wrote:
+> > @@ -315,11 +315,14 @@ static int async_manager_thread(void *un
+> >  		ec = atomic_read(&entry_count);
+> >  
+> >  		while (tc < ec && tc < MAX_THREADS) {
+> 
+> why not add the following to stop the wrapping of kthread_run:
+> 
+> +   	    		struct task_struct *kt;
+> 			kt = kthread_run(async_thread, NULL, "async/%i", tc);
 
-> Ingo Molnar wrote:
->
->>>> A far more useful design for handling MCE events would be to feed 
->>>> them into printk logging.
->>> If there's ASCII logging it should be separate from normal printk.
->>
->> Well, why? 
->
-> Mostly because the problem is not a kernel issue. Especially large 
-> systems with a lot of memory can generate a lot of corrected events (one 
-> bit flips in DIMMs are not that uncommon) and it's not good to mix that 
-> all up into other kernel messages. It also makes it more clear that it's 
-> not a kernel problem, but a hardware problem. I've got feedback over the 
-> years that confirm this sight.
+Hm, I don't think avoiding wrapping is worth adding another variable.
 
-Is your argument that syslog is not suitable for the logging of hw events?
+> 			if (IS_ERR(kt))
+> 				goto schedule;
+> 
+> also, I belive the goto isn't necessary, just break out of the while
+> 
+> 			if (IS_ERR(kt))
+> 				break;
 
-If that is your argument then the answer is to extend syslog with those 
-aspects, instead of widening the quirky /dev based mce ABIs to achieve 
-something similar.
+OK, that's a bit nicer. Updated patch follows.
 
-If you think that it's suitable then that contradicts your point above.
 
-> [...]
->
-> None of the points above are real show stoppers for an ASCII interface, 
-> but I think with all of this above together considered it's not really 
-> an attractive change.
->
-> I think what could be done is:
->
-> - Investigate how to make the panic message more information without 
->   adding full decoders.
->
-> - Implement the default panic timeout method 
->   described above to get automatic on disk logging in common cases.
->
-> Would that address your concerns?
+If we fail to create the manager thread, fall back to non-fastboot.
+If we fail to create an async thread, try again when the manager
+thread runs again.
 
-For me the main blocking point is that mcelog uses a quirky, binary 
-side-channel instead of using our main ASCII based logging abstraction 
-that we have in Linux: printk + syslog.
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-That is a high level argument, while most of your arguments are low level. 
-I dont think you can understand my argument if you concentrate on the low 
-level only.
+---
+ kernel/async.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-We need to resolve this instead of expanding the broken /dev/mcelog 
-interface. If we expand the broken interface first then that removes all 
-the incentives to enhance the primary logging facility of Linux in this 
-area.
+--- linux-2.6.orig/kernel/async.c
++++ linux-2.6/kernel/async.c
+@@ -315,7 +315,10 @@ static int async_manager_thread(void *un
+ 		ec = atomic_read(&entry_count);
+ 
+ 		while (tc < ec && tc < MAX_THREADS) {
+-			kthread_run(async_thread, NULL, "async/%i", tc);
++			if (IS_ERR(kthread_run(async_thread, NULL, "async/%i",
++					       tc)))
++				/* Try again later. */
++				break;
+ 			atomic_inc(&thread_count);
+ 			tc++;
+ 		}
+@@ -330,7 +333,9 @@ static int async_manager_thread(void *un
+ static int __init async_init(void)
+ {
+ 	if (async_enabled)
+-		kthread_run(async_manager_thread, NULL, "async/mgr");
++		if (IS_ERR(kthread_run(async_manager_thread, NULL,
++				       "async/mgr")))
++			async_enabled = 0;
+ 	return 0;
+ }
+ 
 
-Anyway, this merge window has been very crowded in the x86 space already, 
-and the MCE topic is not particularly super-important to have right now 
-either, so lets skip it for this cycle so that we have more time to 
-cleanly work out these details.
-
-Let me know if there are must-have fixes in it and we can cherry-pick it 
-over into x86/urgent.
-
-Thanks,
-
-	Ingo
