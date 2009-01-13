@@ -1,59 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZAMWNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZAMWOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZAMWNb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZAMWNW
+	id S1755935AbZAMWOe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZAMWOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:13:22 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:51644 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753825AbZAMWNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:13:21 -0500
-Date: Tue, 13 Jan 2009 23:12:35 +0100
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: David Miller <davem@davemloft.net>
-Cc: "tj@kernel.org" <tj@kernel.org>, "gregkh@suse.de" <gregkh@suse.de>,
-       "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
-Message-ID: <20090113221235.GD19262@axis.com>
-References: <20090113151406.GC19262@axis.com> <20090113.131030.207355839.davem@davemloft.net>
+	Tue, 13 Jan 2009 17:14:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35926 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753879AbZAMWOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 17:14:22 -0500
+Message-ID: <496D1233.2060905@redhat.com>
+Date: Tue, 13 Jan 2009 16:14:11 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113.131030.207355839.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Kara <jack@suse.cz>
+CC: Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 10:10:30PM +0100, David Miller wrote:
-> From: Jesper Nilsson <jesper.nilsson@axis.com>
-> Date: Tue, 13 Jan 2009 16:14:06 +0100
+Jan Kara wrote:
+
+> From 0a578ba1b56fe655570ee6dad41748863a120dbc Mon Sep 17 00:00:00 2001
+> From: Jan Kara <jack@suse.cz>
+> Date: Fri, 19 Dec 2008 00:05:34 +0100
+> Subject: [PATCH] jbd: Fix return value of journal_start_commit()
 > 
-> > The commit a1ed5b0cffe4b16a93a6a3390e8cee0fbef94f86
-> > (klist: don't iterate over deleted entries) introduces use of the
-> > low bit in a pointer to indicate if the knode is dead or not,
-> > assuming that this bit is always free.
-> > 
-> > This is not true for all architectures, CRIS for example may align data
-> > on byte borders.
+> journal_start_commit() returns 1 if either a transaction is committing or the
+> function has queued a transaction commit. But it returns 0 if we raced with
+> somebody queueing the transaction commit as well. This resulted in
+> ext3_sync_fs() not functioning correctly (description from Arthur Jones):
+> In the case of a data=ordered umount with pending long symlinks which are
+> delayed due to a long list of other I/O on the backing block device, this
+> causes the buffer associated with the long symlinks to not be moved to the
+> inode dirty list in the second phase of fsync_super.  Then, before they can be
+> dirtied again, kjournald exits, seeing the UMOUNT flag and the dirty pages are
+> never written to the backing block device, causing long symlink corruption and
+> exposing new or previously freed block data to userspace.
+
+This looks sane to me, and it does fix the below testcase.
+
+Care to formally propose it?
+
+Thanks,
+-Eric
+
+> This can be reproduced with a script created by Eric Sandeen
+> <sandeen@redhat.com>:
 > 
-> There are many other spots in the kernel where the low bits of a
-> pointer are hijacked as status bits.  Lots of other things cannot
-> possible be working on CRIS because of this.
+>         #!/bin/bash
+> 
+>         umount /mnt/test2
+>         mount /dev/sdb4 /mnt/test2
+>         rm -f /mnt/test2/*
+>         dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
+>         touch /mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
+>         ln -s /mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
+>         /mnt/test2/link
+>         umount /mnt/test2
+>         mount /dev/sdb4 /mnt/test2
+>         ls /mnt/test2/
+> 
+> This patch fixes journal_start_commit() to always return 1 when there's
+> a transaction committing or queued for commit.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/jbd/journal.c |   17 +++++++++++------
+>  1 files changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+> index 9e4fa52..e79c078 100644
+> --- a/fs/jbd/journal.c
+> +++ b/fs/jbd/journal.c
+> @@ -427,7 +427,7 @@ int __log_space_left(journal_t *journal)
+>  }
+>  
+>  /*
+> - * Called under j_state_lock.  Returns true if a transaction was started.
+> + * Called under j_state_lock.  Returns true if a transaction commit was started.
+>   */
+>  int __log_start_commit(journal_t *journal, tid_t target)
+>  {
+> @@ -495,7 +495,8 @@ int journal_force_commit_nested(journal_t *journal)
+>  
+>  /*
+>   * Start a commit of the current running transaction (if any).  Returns true
+> - * if a transaction was started, and fills its tid in at *ptid
+> + * if a transaction is going to be committed (or is currently already
+> + * committing), and fills its tid in at *ptid
+>   */
+>  int journal_start_commit(journal_t *journal, tid_t *ptid)
+>  {
+> @@ -505,15 +506,19 @@ int journal_start_commit(journal_t *journal, tid_t *ptid)
+>  	if (journal->j_running_transaction) {
+>  		tid_t tid = journal->j_running_transaction->t_tid;
+>  
+> -		ret = __log_start_commit(journal, tid);
+> -		if (ret && ptid)
+> +		__log_start_commit(journal, tid);
+> +		/* There's a running transaction and we've just made sure
+> +		 * it's commit has been scheduled. */
+> +		if (ptid)
+>  			*ptid = tid;
+> -	} else if (journal->j_committing_transaction && ptid) {
+> +		ret = 1;
+> +	} else if (journal->j_committing_transaction) {
+>  		/*
+>  		 * If ext3_write_super() recently started a commit, then we
+>  		 * have to wait for completion of that transaction
+>  		 */
+> -		*ptid = journal->j_committing_transaction->t_tid;
+> +		if (ptid)
+> +			*ptid = journal->j_committing_transaction->t_tid;
+>  		ret = 1;
+>  	}
+>  	spin_unlock(&journal->j_state_lock);
 
-It may be that we've worked around the other spots, although I haven't
-seen anything like that, we might just have been lucky until now.
-
-Can you recall another place where this trick is used?
-
-It seems that rt_mutex uses the same trick (with the lowest 2bits)
-but AFAICT that's something we don't use on CRIS.
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
