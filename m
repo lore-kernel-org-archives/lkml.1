@@ -1,176 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZAMVQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZAMVTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbZAMVQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 16:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZAMVQd
+	id S1755876AbZAMVTd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 16:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZAMVTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 16:16:33 -0500
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:33280 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753587AbZAMVQc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 16:16:32 -0500
-X-YMail-OSG: IEgMndoVM1nkgH_bCNkdylfQFhv5midbZQhWWWbujiwT0zbsBbhwt5.RsF7.631u8WKHOSboQrTuSLIwn8cw.TeYAnDIBkgjD7dXAJS9aFh8zn4gIhVj3tCc640Zd6yKO_JQbhI6Xxi..W7A81QpODsYAomMrrfoxtocAMESZp8QPlBKXrKGKLueRye5g4ptoz7pAqXgikf_kAh_MMZCSqC0dya1cs8-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [LIO-Target]: Remove legacy special cases for
-	REPORT_LUNS support
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 13:16:06 -0800
-Message-Id: <1231881366.1274.45.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 16:19:24 -0500
+Received: from lucidpixels.com ([75.144.35.66]:33230 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbZAMVTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 16:19:23 -0500
+Date: Tue, 13 Jan 2009 16:19:22 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: 2.6.28: r8169: NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+Message-ID: <alpine.DEB.1.10.0901131617550.6193@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+Most likely disabling this (onboard-nic) and using Intel PCI-Express 1 
+Gbps card but FYI:
 
-This patch is made against lio-core-2.6.git/master
-and tested on v2.6.28.  The lio-core-2.6.git tree can be found at:
+[505628.695393] ------------[ cut here ]------------
+[505628.695398] WARNING: at net/sched/sch_generic.c:226 dev_watchdog+0x22e/0x240()
+[505628.695400] NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+[505628.695403] Pid: 0, comm: swapper Not tainted 2.6.28 #1
+[505628.695405] Call Trace:
+[505628.695407]  <IRQ>  [<ffffffff8024f628>] warn_slowpath+0xc8/0x110
+[505628.695416]  [<ffffffff805b9310>] ip_finish_output+0x0/0x2b0
+[505628.695419]  [<ffffffff8059e3e4>] eth_header+0x34/0xd0
+[505628.695423]  [<ffffffff804078c9>] __next_cpu+0x19/0x30
+[505628.695427]  [<ffffffff802472dc>] find_busiest_group+0x1dc/0x970
+[505628.695432]  [<ffffffff802308b9>] read_tsc+0x9/0x20
+[505628.695436]  [<ffffffff802599c4>] lock_timer_base+0x34/0x70
+[505628.695440]  [<ffffffff8026aa98>] getnstimeofday+0x48/0xc0
+[505628.695443]  [<ffffffff8040d601>] strlcpy+0x41/0x50
+[505628.695447]  [<ffffffff8059e9fe>] dev_watchdog+0x22e/0x240
+[505628.695449]  [<ffffffff802308b9>] read_tsc+0x9/0x20
+[505628.695453]  [<ffffffff8059e7d0>] dev_watchdog+0x0/0x240
+[505628.695456]  [<ffffffff802594be>] run_timer_softirq+0x12e/0x200
+[505628.695460]  [<ffffffff80238c35>] lapic_next_event+0x15/0x20
+[505628.695463]  [<ffffffff80254e13>] __do_softirq+0x93/0x160
+[505628.695467]  [<ffffffff802684c2>] hrtimer_interrupt+0x152/0x1c0
+[505628.695471]  [<ffffffff8022aabc>] call_softirq+0x1c/0x30
+[505628.695474]  [<ffffffff8022c455>] do_softirq+0x35/0x70
+[505628.695477]  [<ffffffff802394f6>] smp_apic_timer_interrupt+0x86/0xd0
+[505628.695480]  [<ffffffff8022a50b>] apic_timer_interrupt+0x6b/0x70
+[505628.695482]  <EOI>  [<ffffffff805f0320>] unix_poll+0x0/0xb0
+[505628.695489]  [<ffffffff8023147c>] mwait_idle+0x3c/0x50
+[505628.695493]  [<ffffffff80228a1c>] cpu_idle+0x5c/0x90
+[505628.695495] ---[ end trace eddb8da7fddd6198 ]---
+[505628.700048] r8169: eth0: link up
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+I believe this occured when trying to burn a DVD via Nero over a 1gbps 
+connection.
 
-Thanks,
-
---nab
-
->From 1971743706e8ec835c135863119de47c97c81439 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Tue, 13 Jan 2009 13:08:04 -0800
-Subject: [PATCH 2/2] [LIO-Target]: Remove legacy special cases for REPORT_LUNS support
-
-Now that target_core_mod/ConfigFS v3.0 supports generic REPORT_LUNS functionality,
-this patch removes the handful of special cases in LIO-Target that checked cdb[0]
-for REPORT_LUNS and did special handing and are no longer required.
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/iscsi_target.c        |    8 ------
- drivers/lio-core/iscsi_target_device.c |    8 +-----
- drivers/lio-core/iscsi_target_erl1.c   |   39 ++++++++-----------------------
- 3 files changed, 11 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/lio-core/iscsi_target.c b/drivers/lio-core/iscsi_target.c
-index 8f572af..fc9b6c9 100644
---- a/drivers/lio-core/iscsi_target.c
-+++ b/drivers/lio-core/iscsi_target.c
-@@ -102,8 +102,6 @@ struct kmem_cache *lio_dr_cache = NULL;
- struct kmem_cache *lio_ooo_cache = NULL;
- struct kmem_cache *lio_r2t_cache = NULL;
- 
--extern int se_allocate_rl_cmd (se_cmd_t *, unsigned char *, u64);
--extern int iscsi_build_report_luns_response (iscsi_cmd_t *);
- static void iscsi_rx_thread_wait_for_TCP (iscsi_conn_t *);
- 
- static int iscsi_target_detect (void);
-@@ -1665,12 +1663,6 @@ done:
- 		goto attach_cmd;
- 	}
- 	/*
--	 * REPORT_LUNS never actually goes to the transport layer
--	 */
--	if (ret == 1)
--		goto build_list;
--
--	/*
- 	 * The Initiator Node has access to the LUN (the addressing method
- 	 * is handled inside of iscsi_get_lun_for_cmd()).  Now it's time to
- 	 * allocate 1->N transport tasks (depending on sector count and
-diff --git a/drivers/lio-core/iscsi_target_device.c b/drivers/lio-core/iscsi_target_device.c
-index f646fd7..1b4b256 100644
---- a/drivers/lio-core/iscsi_target_device.c
-+++ b/drivers/lio-core/iscsi_target_device.c
-@@ -110,7 +110,6 @@ extern se_lun_t *iscsi_get_lun (
- /*	iscsi_get_lun_for_cmd():
-  *	
-  *	Returns (0) on success
-- * 	Returns (1) on REPORT_LUN cdb
-  * 	Returns (< 0) on failure
-  */
- extern int iscsi_get_lun_for_cmd (
-@@ -131,12 +130,7 @@ extern int iscsi_get_lun_for_cmd (
- 		return(-1);
- 	}
- 
--	if ((ret = transport_get_lun_for_cmd(SE_CMD(cmd), cdb, unpacked_lun)) < 0)
--		return(ret);
--	if (ret > 0) /* For cdb[0] == REPORT_LUNS */
--		return(ret);
--
--	return(0);
-+	return(transport_get_lun_for_cmd(SE_CMD(cmd), cdb, unpacked_lun));
- }
- 
- /*	iscsi_determine_maxcmdsn():
-diff --git a/drivers/lio-core/iscsi_target_erl1.c b/drivers/lio-core/iscsi_target_erl1.c
-index 6a30e64..9cb0f31 100644
---- a/drivers/lio-core/iscsi_target_erl1.c
-+++ b/drivers/lio-core/iscsi_target_erl1.c
-@@ -64,7 +64,6 @@ extern struct kmem_cache *lio_ooo_cache;
- 
- extern int iscsi_add_reject_from_cmd (u8, int, int, unsigned char *, iscsi_cmd_t *);
- extern int iscsi_build_r2ts_for_cmd (iscsi_cmd_t *, iscsi_conn_t *, int);
--extern int iscsi_build_report_luns_response (iscsi_cmd_t *);
- extern int iscsi_logout_closesession (iscsi_cmd_t *, iscsi_conn_t *);
- extern int iscsi_logout_closeconnection (iscsi_cmd_t *, iscsi_conn_t *);
- extern int iscsi_logout_removeconnforrecovery (iscsi_cmd_t *, iscsi_conn_t *);
-@@ -1044,38 +1043,20 @@ extern int iscsi_execute_cmd (iscsi_cmd_t *cmd, int ooo)
- 			}
- 			return(0);
- 		}
--
- 		/*
--		 * Special case for REPORT_LUNs.
-+		 * The default handler.
- 		 */
--#warning FIXME: ICF_REPORT_LUNS in iscsi_execute_cmd() is broken!!!
--#if 0
--		if (cmd->cmd_flags & ICF_REPORT_LUNS) {
--			spin_unlock_bh(&cmd->istate_lock);
--			if (iscsi_build_report_luns_response(cmd) < 0)
--				return(-1);
--	
--			return(0);
--		} else {
--#endif
--		{
--			/*
--			 * The default handler.
--			 */
--			spin_unlock_bh(&cmd->istate_lock);
-+		spin_unlock_bh(&cmd->istate_lock);
- 
--			if ((cmd->data_direction == ISCSI_WRITE) &&
--			    !(cmd->cmd_flags & ICF_NON_IMMEDIATE_UNSOLICITED_DATA)) {
--				iscsi_set_dataout_sequence_values(cmd);
--				spin_lock_bh(&cmd->dataout_timeout_lock);
--				iscsi_start_dataout_timer(cmd, CONN(cmd));
--				spin_unlock_bh(&cmd->dataout_timeout_lock);
--			}
--			
--			transport_generic_handle_cdb(cmd->se_cmd);
--			return(0);
-+		if ((cmd->data_direction == ISCSI_WRITE) &&
-+		    !(cmd->cmd_flags & ICF_NON_IMMEDIATE_UNSOLICITED_DATA)) {
-+			iscsi_set_dataout_sequence_values(cmd);
-+			spin_lock_bh(&cmd->dataout_timeout_lock);
-+			iscsi_start_dataout_timer(cmd, CONN(cmd));
-+			spin_unlock_bh(&cmd->dataout_timeout_lock);
- 		}
--		break;
-+		return(transport_generic_handle_cdb(cmd->se_cmd));
-+
- 	case ISCSI_INIT_NOP_OUT:
- 	case ISCSI_INIT_TEXT_CMND:
- 		spin_unlock_bh(&cmd->istate_lock);
--- 
-1.5.4.1
-
-
-
+Justin.
