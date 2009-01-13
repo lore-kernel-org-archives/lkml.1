@@ -1,416 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbZAMGOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbZAMGO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760108AbZAMGOg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbZAMGL7
+	id S1760185AbZAMGO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:14:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbZAMGMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:11:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44436 "EHLO
+	Tue, 13 Jan 2009 01:12:00 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52477 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbZAMGLu (ORCPT
+	with ESMTP id S1756848AbZAMGLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 13 Jan 2009 01:11:50 -0500
-Message-Id: <20090113061148.220095283@goodmis.org>
+Message-Id: <20090113061148.807298761@goodmis.org>
 References: <20090113061110.856268617@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 13 Jan 2009 01:11:16 -0500
+Date: Tue, 13 Jan 2009 01:11:19 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Shaohua Li <shaohua.li@intel.com>, ia64 <linux-ia64@vger.kernel.org>,
        Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
-       u.kleine-koenig@pengutronix.de, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 6/9] ftrace, ia64: IA64 dynamic ftrace support
-Content-Disposition: inline; filename=0006-ftrace-ia64-IA64-dynamic-ftrace-support.patch
+       u.kleine-koenig@pengutronix.de, Uwe Kleine-K?nig <ukleinek@strlen.de>,
+       trivial@kernel.org, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 9/9] ftrace, trivial: fix typo "resgister" -> "register"
+Content-Disposition: inline; filename=0009-ftrace-trivial-fix-typo-resgister-register.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 
-IA64 dynamic ftrace support.
-The original _mcount stub for each function is like:
-	alloc r40=ar.pfs,12,8,0
-	mov r43=r0;;
-	mov r42=b0
-	mov r41=r1
-	nop.i 0x0
-	br.call.sptk.many b0 = _mcount;;
-
-The patch convert it to below for nop:
-	[MII] nop.m 0x0
-	mov r3=ip
-	nop.i 0x0
-	[MLX] nop.m 0x0
-	nop.x 0x0;;
-This isn't completely nop, as there is one instuction 'mov r3=ip', but
-it should be light and harmless for code follow it.
-
-And below is for call
-	[MII] nop.m 0x0
-	mov r3=ip
-	nop.i 0x0
-	[MLX] nop.m 0x0
-	brl.many .;;
-In this way, only one instruction is changed to convert code between nop
-and call. This should meet dyn-ftrace's requirement.
-But this requires CPU support brl instruction, so dyn-ftrace isn't
-supported for old Itanium system. Assume there are quite few such old
-system running.
-
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Uwe Kleine-K?nig <ukleinek@strlen.de>
+Cc: trivial@kernel.org
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/ia64/Kconfig              |    2 +
- arch/ia64/include/asm/ftrace.h |   13 +++
- arch/ia64/kernel/Makefile      |    5 +
- arch/ia64/kernel/entry.S       |   51 ++++++++++
- arch/ia64/kernel/ftrace.c      |  206 ++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 277 insertions(+), 0 deletions(-)
- create mode 100644 arch/ia64/kernel/ftrace.c
+ kernel/trace/ftrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index b992ba4..e20c1d4 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -21,6 +21,8 @@ config IA64
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
- 	select HAVE_KRETPROBES
-+	select HAVE_FTRACE_MCOUNT_RECORD
-+	select HAVE_DYNAMIC_FTRACE if (!ITANIUM)
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_DMA_ATTRS
- 	select HAVE_KVM
-diff --git a/arch/ia64/include/asm/ftrace.h b/arch/ia64/include/asm/ftrace.h
-index 48694b3..d20db3c 100644
---- a/arch/ia64/include/asm/ftrace.h
-+++ b/arch/ia64/include/asm/ftrace.h
-@@ -8,6 +8,19 @@
- extern void _mcount(unsigned long pfs, unsigned long r1, unsigned long b0, unsigned long r0);
- #define mcount _mcount
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 9f53610..8c1c9c0 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1894,7 +1894,7 @@ int register_ftrace_function(struct ftrace_ops *ops)
+ }
  
-+#include <asm/kprobes.h>
-+/* In IA64, MCOUNT_ADDR is set in link time, so it's not a constant at compile time */
-+#define MCOUNT_ADDR (((struct fnptr *)mcount)->ip)
-+#define FTRACE_ADDR (((struct fnptr *)ftrace_caller)->ip)
-+
-+static inline unsigned long ftrace_call_adjust(unsigned long addr)
-+{
-+	/* second bundle, insn 2 */
-+	return addr - 0x12;
-+}
-+
-+struct dyn_arch_ftrace {
-+};
- #endif
- 
- #endif /* CONFIG_FUNCTION_TRACER */
-diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
-index f2778f2..dc62df0 100644
---- a/arch/ia64/kernel/Makefile
-+++ b/arch/ia64/kernel/Makefile
-@@ -2,6 +2,10 @@
- # Makefile for the linux kernel.
- #
- 
-+ifdef CONFIG_DYNAMIC_FTRACE
-+CFLAGS_REMOVE_ftrace.o = -pg
-+endif
-+
- extra-y	:= head.o init_task.o vmlinux.lds
- 
- obj-y := acpi.o entry.o efi.o efi_stub.o gate-data.o fsys.o ia64_ksyms.o irq.o irq_ia64.o	\
-@@ -28,6 +32,7 @@ obj-$(CONFIG_IA64_CYCLONE)	+= cyclone.o
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_IA64_MCA_RECOVERY)	+= mca_recovery.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o jprobes.o
-+obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o crash.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_IA64_UNCACHED_ALLOCATOR)	+= uncached.o
-diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
-index c2f7d79..e0be92a 100644
---- a/arch/ia64/kernel/entry.S
-+++ b/arch/ia64/kernel/entry.S
-@@ -1406,6 +1406,56 @@ GLOBAL_ENTRY(unw_init_running)
- END(unw_init_running)
- 
- #ifdef CONFIG_FUNCTION_TRACER
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+GLOBAL_ENTRY(_mcount)
-+	br ftrace_stub
-+END(_mcount)
-+
-+.here:
-+	br.ret.sptk.many b0
-+
-+GLOBAL_ENTRY(ftrace_caller)
-+	alloc out0 = ar.pfs, 8, 0, 4, 0
-+	mov out3 = r0
-+	;;
-+	mov out2 = b0
-+	add r3 = 0x20, r3
-+	mov out1 = r1;
-+	br.call.sptk.many b0 = ftrace_patch_gp
-+	//this might be called from module, so we must patch gp
-+ftrace_patch_gp:
-+	movl gp=__gp
-+	mov b0 = r3
-+	;;
-+.global ftrace_call;
-+ftrace_call:
-+{
-+	.mlx
-+	nop.m 0x0
-+	movl r3 = .here;;
-+}
-+	alloc loc0 = ar.pfs, 4, 4, 2, 0
-+	;;
-+	mov loc1 = b0
-+	mov out0 = b0
-+	mov loc2 = r8
-+	mov loc3 = r15
-+	;;
-+	adds out0 = -MCOUNT_INSN_SIZE, out0
-+	mov out1 = in2
-+	mov b6 = r3
-+
-+	br.call.sptk.many b0 = b6
-+	;;
-+	mov ar.pfs = loc0
-+	mov b0 = loc1
-+	mov r8 = loc2
-+	mov r15 = loc3
-+	br ftrace_stub
-+	;;
-+END(ftrace_caller)
-+
-+#else
- GLOBAL_ENTRY(_mcount)
- 	movl r2 = ftrace_stub
- 	movl r3 = ftrace_trace_function;;
-@@ -1435,6 +1485,7 @@ GLOBAL_ENTRY(_mcount)
- 	br ftrace_stub
- 	;;
- END(_mcount)
-+#endif
- 
- GLOBAL_ENTRY(ftrace_stub)
- 	mov r3 = b0
-diff --git a/arch/ia64/kernel/ftrace.c b/arch/ia64/kernel/ftrace.c
-new file mode 100644
-index 0000000..7fc8c96
---- /dev/null
-+++ b/arch/ia64/kernel/ftrace.c
-@@ -0,0 +1,206 @@
-+/*
-+ * Dynamic function tracing support.
-+ *
-+ * Copyright (C) 2008 Shaohua Li <shaohua.li@intel.com>
-+ *
-+ * For licencing details, see COPYING.
-+ *
-+ * Defines low-level handling of mcount calls when the kernel
-+ * is compiled with the -pg flag. When using dynamic ftrace, the
-+ * mcount call-sites get patched lazily with NOP till they are
-+ * enabled. All code mutation routines here take effect atomically.
-+ */
-+
-+#include <linux/uaccess.h>
-+#include <linux/ftrace.h>
-+
-+#include <asm/cacheflush.h>
-+#include <asm/patch.h>
-+
-+/* In IA64, each function will be added below two bundles with -pg option */
-+static unsigned char __attribute__((aligned(8)))
-+ftrace_orig_code[MCOUNT_INSN_SIZE] = {
-+	0x02, 0x40, 0x31, 0x10, 0x80, 0x05, /* alloc r40=ar.pfs,12,8,0 */
-+	0xb0, 0x02, 0x00, 0x00, 0x42, 0x40, /* mov r43=r0;; */
-+	0x05, 0x00, 0xc4, 0x00,             /* mov r42=b0 */
-+	0x11, 0x48, 0x01, 0x02, 0x00, 0x21, /* mov r41=r1 */
-+	0x00, 0x00, 0x00, 0x02, 0x00, 0x00, /* nop.i 0x0 */
-+	0x08, 0x00, 0x00, 0x50              /* br.call.sptk.many b0 = _mcount;; */
-+};
-+
-+struct ftrace_orig_insn {
-+	u64 dummy1, dummy2, dummy3;
-+	u64 dummy4:64-41+13;
-+	u64 imm20:20;
-+	u64 dummy5:3;
-+	u64 sign:1;
-+	u64 dummy6:4;
-+};
-+
-+/* mcount stub will be converted below for nop */
-+static unsigned char ftrace_nop_code[MCOUNT_INSN_SIZE] = {
-+	0x00, 0x00, 0x00, 0x00, 0x01, 0x00, /* [MII] nop.m 0x0 */
-+	0x30, 0x00, 0x00, 0x60, 0x00, 0x00, /* mov r3=ip */
-+	0x00, 0x00, 0x04, 0x00,             /* nop.i 0x0 */
-+	0x05, 0x00, 0x00, 0x00, 0x01, 0x00, /* [MLX] nop.m 0x0 */
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* nop.x 0x0;; */
-+	0x00, 0x00, 0x04, 0x00
-+};
-+
-+static unsigned char *ftrace_nop_replace(void)
-+{
-+	return ftrace_nop_code;
-+}
-+
-+/*
-+ * mcount stub will be converted below for call
-+ * Note: Just the last instruction is changed against nop
-+ * */
-+static unsigned char __attribute__((aligned(8)))
-+ftrace_call_code[MCOUNT_INSN_SIZE] = {
-+	0x00, 0x00, 0x00, 0x00, 0x01, 0x00, /* [MII] nop.m 0x0 */
-+	0x30, 0x00, 0x00, 0x60, 0x00, 0x00, /* mov r3=ip */
-+	0x00, 0x00, 0x04, 0x00,             /* nop.i 0x0 */
-+	0x05, 0x00, 0x00, 0x00, 0x01, 0x00, /* [MLX] nop.m 0x0 */
-+	0xff, 0xff, 0xff, 0xff, 0x7f, 0x00, /* brl.many .;;*/
-+	0xf8, 0xff, 0xff, 0xc8
-+};
-+
-+struct ftrace_call_insn {
-+	u64 dummy1, dummy2;
-+	u64 dummy3:48;
-+	u64 imm39_l:16;
-+	u64 imm39_h:23;
-+	u64 dummy4:13;
-+	u64 imm20:20;
-+	u64 dummy5:3;
-+	u64 i:1;
-+	u64 dummy6:4;
-+};
-+
-+static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-+{
-+	struct ftrace_call_insn *code = (void *)ftrace_call_code;
-+	unsigned long offset = addr - (ip + 0x10);
-+
-+	code->imm39_l = offset >> 24;
-+	code->imm39_h = offset >> 40;
-+	code->imm20 = offset >> 4;
-+	code->i = offset >> 63;
-+	return ftrace_call_code;
-+}
-+
-+static int
-+ftrace_modify_code(unsigned long ip, unsigned char *old_code,
-+		   unsigned char *new_code, int do_check)
-+{
-+	unsigned char replaced[MCOUNT_INSN_SIZE];
-+
-+	/*
-+	 * Note: Due to modules and __init, code can
-+	 *  disappear and change, we need to protect against faulting
-+	 *  as well as code changing. We do this by using the
-+	 *  probe_kernel_* functions.
-+	 *
-+	 * No real locking needed, this code is run through
-+	 * kstop_machine, or before SMP starts.
-+	 */
-+
-+	if (!do_check)
-+		goto skip_check;
-+
-+	/* read the text we want to modify */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* Make sure it is what we expect it to be */
-+	if (memcmp(replaced, old_code, MCOUNT_INSN_SIZE) != 0)
-+		return -EINVAL;
-+
-+skip_check:
-+	/* replace the text with the new text */
-+	if (probe_kernel_write(((void *)ip), new_code, MCOUNT_INSN_SIZE))
-+		return -EPERM;
-+	flush_icache_range(ip, ip + MCOUNT_INSN_SIZE);
-+
-+	return 0;
-+}
-+
-+static int ftrace_make_nop_check(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char __attribute__((aligned(8))) replaced[MCOUNT_INSN_SIZE];
-+	unsigned long ip = rec->ip;
-+
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+	if (rec->flags & FTRACE_FL_CONVERTED) {
-+		struct ftrace_call_insn *call_insn, *tmp_call;
-+
-+		call_insn = (void *)ftrace_call_code;
-+		tmp_call = (void *)replaced;
-+		call_insn->imm39_l = tmp_call->imm39_l;
-+		call_insn->imm39_h = tmp_call->imm39_h;
-+		call_insn->imm20 = tmp_call->imm20;
-+		call_insn->i = tmp_call->i;
-+		if (memcmp(replaced, ftrace_call_code, MCOUNT_INSN_SIZE) != 0)
-+			return -EINVAL;
-+		return 0;
-+	} else {
-+		struct ftrace_orig_insn *call_insn, *tmp_call;
-+
-+		call_insn = (void *)ftrace_orig_code;
-+		tmp_call = (void *)replaced;
-+		call_insn->sign = tmp_call->sign;
-+		call_insn->imm20 = tmp_call->imm20;
-+		if (memcmp(replaced, ftrace_orig_code, MCOUNT_INSN_SIZE) != 0)
-+			return -EINVAL;
-+		return 0;
-+	}
-+}
-+
-+int ftrace_make_nop(struct module *mod,
-+		    struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	int ret;
-+	char *new;
-+
-+	ret = ftrace_make_nop_check(rec, addr);
-+	if (ret)
-+		return ret;
-+	new = ftrace_nop_replace();
-+	return ftrace_modify_code(rec->ip, NULL, new, 0);
-+}
-+
-+int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned long ip = rec->ip;
-+	unsigned char *old, *new;
-+
-+	old=  ftrace_nop_replace();
-+	new = ftrace_call_replace(ip, addr);
-+	return ftrace_modify_code(ip, old, new, 1);
-+}
-+
-+/* in IA64, _mcount can't directly call ftrace_stub. Only jump is ok */
-+int ftrace_update_ftrace_func(ftrace_func_t func)
-+{
-+	unsigned long ip;
-+	unsigned long addr = ((struct fnptr *)ftrace_call)->ip;
-+
-+	if (func == ftrace_stub)
-+		return 0;
-+	ip = ((struct fnptr *)func)->ip;
-+
-+	ia64_patch_imm64(addr + 2, ip);
-+
-+	flush_icache_range(addr, addr + 16);
-+	return 0;
-+}
-+
-+/* run from kstop_machine */
-+int __init ftrace_dyn_arch_init(void *data)
-+{
-+	*(unsigned long *)data = 0;
-+
-+	return 0;
-+}
+ /**
+- * unregister_ftrace_function - unresgister a function for profiling.
++ * unregister_ftrace_function - unregister a function for profiling.
+  * @ops - ops structure that holds the function to unregister
+  *
+  * Unregister a function that was added to be called by ftrace profiling.
 -- 
 1.5.6.5
 
