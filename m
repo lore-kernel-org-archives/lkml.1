@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZAMCIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZAMCJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757834AbZAMCIi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:08:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbZAMCI3
+	id S1758470AbZAMCJp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZAMCJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:08:29 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:48953 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754772AbZAMCI2 (ORCPT
+	Mon, 12 Jan 2009 21:09:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52848 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754057AbZAMCJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:08:28 -0500
-X-Greylist: delayed 861 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Jan 2009 21:08:28 EST
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=Ay95HXBRRiiOTTznAv9k5meRqWHc8dlJDZysU3qONCxDG0+yRO3DaHOix9qMls10k
-	VoHhniGfZr3+UR2t3jEhQ==
-Date: Mon, 12 Jan 2009 17:53:47 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Bill Davidsen <davidsen@tmr.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-In-Reply-To: <20090112231728.GA23803@ioremap.net>
-Message-ID: <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com>
-References: <20090112153304.GA19995@ioremap.net> <20090112154922.6003750b@lxorguk.ukuu.org.uk> <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112161931.6203f96e@lxorguk.ukuu.org.uk>
- <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 12 Jan 2009 21:09:35 -0500
+Date: Mon, 12 Jan 2009 18:08:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Daniel Drake <dsd@gentoo.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Phil Dibowitz <phil@ipom.com>
+Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
+In-Reply-To: <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0901121807070.6528@localhost.localdomain>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>  <b6a2187b0901110813s5429573cm7d78f39e288f70a3@mail.gmail.com>  <20090111162949.GA15338@elte.hu>  <200901111736.24350.borntraeger@de.ibm.com>  <20090111163904.GA21806@elte.hu>  <b6a2187b0901110856j3f2ff6fepc19a816178e38a95@mail.gmail.com>
+  <20090111180714.GB15326@elte.hu> <b6a2187b0901121720s1f9b12ednb76a90dcc7eddc81@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.24.198.85
-X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009, Evgeniy Polyakov wrote:
 
-> Like anything that spawns a thread or process per request/client, or
-> preallocates set of them which connect to the huge object like database.
-> Most of the time database/server is killed first instead of comparably
-> small clients.
 
-No, the reverse is true: when a task is chosen for oom kill based on the 
-badness heuristic, the oom killer first attempts to kill any child task 
-that isn't attached to the same mm.  If the child shares an mm, both tasks 
-must die before memory freeing can occur.
-
-> In some cases it is possible to tune the environment, in
-> others it is not that simple. This patch works for such situatons
-> perfectly and does not require additional administrative burden, since
-> it does not make thinge worse as a whole, but only better for the very
-> commonly used cases, that's why I propose it for inclusion.
+On Tue, 13 Jan 2009, Jeff Chua wrote:
+>
+> I was trying to bisect further, but ended up with this strange behavior...
 > 
+> # git bisect good a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2
+> Bisecting: 579 revisions left to test after this
+> [079899c2384023cd8efcd3806680b4f1d2abbd54] Btrfs: Change
+> find_extent_buffer to use TestSetPageLocked
+> 
+> # ls
+> .  ..  .git  fs
+> 
+> Is this a bug or a feature?
 
-It's an inappropriate addition since /proc/pid/oom_adj scores exist which 
-can prefer or protect certain tasks over others when the oom killer 
-chooses a target, including oom kill immunity.  These scores are inherited 
-from parent tasks and can be tuned after the fork to your oom kill target 
-preference.
+You bisected into the btrfs development chain. Just say "git bisect good" 
+when this happens, and you'll be ok.
+
+[ Unless, of course, you were to be actually trying to bisect a btrfs bug. 
+  If so, you'd need to compile btrfs as a module and insert it and do the 
+  bisection based on that ]
+
+			Linus
