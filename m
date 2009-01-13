@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbZAMDQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZAMDRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757634AbZAMDQT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 22:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZAMDP6
+	id S1757496AbZAMDRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 22:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZAMDR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 22:15:58 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:3673 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757329AbZAMDP5 (ORCPT
+	Mon, 12 Jan 2009 22:17:28 -0500
+Received: from rcsinet14.oracle.com ([148.87.113.126]:61985 "EHLO
+	rgminet14.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbZAMDR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 22:15:57 -0500
-Date: Mon, 12 Jan 2009 22:15:57 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <gregkh@suse.de>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       <stable@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       <jburda@email.cz>
-Subject: Re: [patch 02/21] usb-storage: update unusual_devs entry for Nokia
- 5310
-In-Reply-To: <20090113012651.GC4512@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0901122213180.18052-100000@netrider.rowland.org>
+	Mon, 12 Jan 2009 22:17:27 -0500
+Message-ID: <496C06D0.3060903@oracle.com>
+Date: Tue, 13 Jan 2009 11:13:20 +0800
+From: Wenji Huang <wenji.huang@oracle.com>
+Reply-To: wenji.huang@oracle.com
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kbuild@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kbuild: generate debug info in building
+References: <4922238C.40807@oracle.com> <20081122114329.GB24848@uranus.ravnborg.org>
+In-Reply-To: <20081122114329.GB24848@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.496C0792.001B:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Jan 2009, Greg KH wrote:
+Hi,
+I got the following building error for 2.6.29-rc1.
 
-> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Alan Stern <stern@rowland.harvard.edu>
-> 
-> commit a4b188095912eee83d065f000dfe06f25919750b upstream.
-> 
-> This patch (as1179) updates the unusual_devs entry for Nokia's 5310
-> phone to include a more recent firmware revision.
-> 
-> This fixes Bugzilla #12099.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Tested-by: Robson Roberto Souza Peixoto <robsonpeixoto@gmail.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/usb/storage/unusual_devs.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/drivers/usb/storage/unusual_devs.h
-> +++ b/drivers/usb/storage/unusual_devs.h
-> @@ -168,7 +168,7 @@ UNUSUAL_DEV(  0x0421, 0x005d, 0x0001, 0x
->  		US_FL_FIX_CAPACITY ),
->  
->  /* Patch for Nokia 5310 capacity */
-> -UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0591,
-> +UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
->  		"Nokia",
->  		"5310",
->  		US_SC_DEVICE, US_PR_DEVICE, NULL,
+# make
+   CHK     include/linux/version.h
+   CHK     include/linux/utsrelease.h
+   SYMLINK include/asm -> include/asm-x86
+   CALL    scripts/checksyscalls.sh
+   CHK     include/linux/compile.h
+   IHEX    firmware/e100/d101m_ucode.bin
+   AS      firmware/e100/d101m_ucode.bin.gen.o
+   IHEX    firmware/e100/d101s_ucode.bin
+   AS      firmware/e100/d101s_ucode.bin.gen.o
+   IHEX    firmware/e100/d102e_ucode.bin
+   AS      firmware/e100/d102e_ucode.bin.gen.o
+   LD      firmware/built-in.o
+   LD      vmlinux.o
+   MODPOST vmlinux.o
+   GEN     .version
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   LD      init/built-in.o
+   LD      .tmp_vmlinux1
+   STRIP   .tmp_vmlinux1.stripped
+objcopy: unrecognized option `--strip-unneeded-symbols'
 
-Ironically, Bugzilla #12367 (just filed) requires that the 0x0701 above
-be increased to 0x0832.
+# objcopy --version
+GNU objcopy 2.15.92.0.2 20040927
+Copyright 2004 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms 
+of the GNU General Public License.  This program has absolutely no warranty.
 
-Alan Stern
 
+The option --strip-unneeded-symbols is only available on higher version, 
+but not exists on binutils-2.15.
+
+Seems to keep Makefile compatible on all kinds of circumstances. Like,
+
+quiet_cmd_kstrip = STRIP   $@
+       cmd_kstrip = $(OBJCOPY) --wildcard $(addprefix --strip-symbols 
+,$(filter %/scripts/strip-symbols,$^)) $< $@
+
+
+Regards,
+Wenji
