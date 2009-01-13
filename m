@@ -1,214 +1,475 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZAMKjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZAMKkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZAMKjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 05:39:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZAMKjF
+	id S1753220AbZAMKkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 05:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZAMKjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 05:39:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51099 "EHLO hera.kernel.org"
+	Tue, 13 Jan 2009 05:39:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51104 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbZAMKjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 05:39:01 -0500
+	id S1752695AbZAMKjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 05:39:02 -0500
 From: Tejun Heo <tj@kernel.org>
 To: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
        mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
        hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
        hugh@veritas.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 13/13] x86_32: make percpu symbols zerobased on SMP
-Date: Tue, 13 Jan 2009 19:38:17 +0900
-Message-Id: <1231843097-18003-14-git-send-email-tj@kernel.org>
+Subject: [PATCH 08/13] x86_64: fold pda into percpu area on SMP
+Date: Tue, 13 Jan 2009 19:38:12 +0900
+Message-Id: <1231843097-18003-9-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1231843097-18003-1-git-send-email-tj@kernel.org>
 References: <1231843097-18003-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 10:38:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 10:38:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes percpu symbols zerobased on x86_32 SMP by using
-PERCPU_VADDR() with 0 vaddr in vmlinux_32.lds.S.  A new PHDR is added
-as existing ones cannot contain sections near address zero.
+Currently pdas and percpu areas are allocated separately.  %gs points
+to local pda and percpu area can be reached using pda->data_offset.
+This patch folds pda into percpu area.
 
-The following adjustments have been made to accomodate the address
-change.
+Due to strange gcc requirement, pda needs to be at the beginning of
+the percpu area so that pda->stack_canary is at %gs:40.  To achieve
+this, a new percpu output section macro - PERCPU_VADDR_PREALLOC() - is
+added and used to reserve pda sized chunk at the start of the percpu
+area.
 
-* code to locate percpu gdt_page in head_64.S is updated to add the
-  load address to the gdt_page offset.
+After this change, for boot cpu, %gs first points to pda in the
+data.init area and later during setup_per_cpu_areas() gets updated to
+point to the actual pda.  This means that setup_per_cpu_areas() need
+to reload %gs for CPU0 while clearing pda area for other cpus as cpu0
+already has modified it when control reaches setup_per_cpu_areas().
 
-* for boot CPU, we can't use __KERNEL_DS for %fs.  initialize
-  gdt_page.gdt[GDT_ENTRY_PERCPU] with flags and limit and set the base
-  address to __per_cpu_load from head_32.S and load it.  the base
-  address needs to be set manually because linker can't shift bits as
-  required for segment descriptors.
+This patch also removes now unnecessary get_local_pda() and its call
+sites.
 
-* __per_cpu_offset[0] is now initialized to __per_cpu_load like on
-  x86_64.
+A lot of this patch is taken from Mike Travis' "x86_64: Fold pda into
+per cpu area" patch.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/cpu/common.c     |    8 ++++++++
- arch/x86/kernel/head_32.S        |   37 ++++++++++++++++++++++++++++++++++---
- arch/x86/kernel/setup_percpu.c   |    4 ----
- arch/x86/kernel/vmlinux_32.lds.S |   16 +++++++++++++++-
- 4 files changed, 57 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/percpu.h     |    8 ++++
+ arch/x86/include/asm/smp.h        |    2 -
+ arch/x86/kernel/asm-offsets_64.c  |    1 +
+ arch/x86/kernel/cpu/common.c      |    6 +--
+ arch/x86/kernel/head64.c          |    8 ++++-
+ arch/x86/kernel/head_64.S         |   15 ++++++--
+ arch/x86/kernel/setup_percpu.c    |   65 ++++++++++++++----------------------
+ arch/x86/kernel/smpboot.c         |   60 +---------------------------------
+ arch/x86/kernel/vmlinux_64.lds.S  |    6 ++-
+ arch/x86/xen/smp.c                |   10 ------
+ include/asm-generic/vmlinux.lds.h |   25 +++++++++++++-
+ 11 files changed, 83 insertions(+), 123 deletions(-)
 
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index df644f3..0ed77cf 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -1,6 +1,14 @@
+ #ifndef _ASM_X86_PERCPU_H
+ #define _ASM_X86_PERCPU_H
+ 
++#ifndef __ASSEMBLY__
++#ifdef CONFIG_X86_64
++extern void load_pda_offset(int cpu);
++#else
++static inline void load_pda_offset(int cpu) { }
++#endif
++#endif
++
+ #ifdef CONFIG_X86_64
+ #include <linux/compiler.h>
+ 
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index d12811c..288a89e 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -25,8 +25,6 @@ extern cpumask_t cpu_callin_map;
+ extern void (*mtrr_hook)(void);
+ extern void zap_low_mappings(void);
+ 
+-extern int __cpuinit get_local_pda(int cpu);
+-
+ extern int smp_num_siblings;
+ extern unsigned int num_processors;
+ extern cpumask_t cpu_initialized;
+diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
+index 1d41d3f..f8d1b04 100644
+--- a/arch/x86/kernel/asm-offsets_64.c
++++ b/arch/x86/kernel/asm-offsets_64.c
+@@ -56,6 +56,7 @@ int main(void)
+ 	ENTRY(cpunumber);
+ 	ENTRY(irqstackptr);
+ 	ENTRY(data_offset);
++	DEFINE(pda_size, sizeof(struct x8664_pda));
+ 	BLANK();
+ #undef ENTRY
+ #ifdef CONFIG_PARAVIRT
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index bd38a0f..376e142 100644
+index 5c3d6b3..cdd419a 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
-@@ -90,7 +90,15 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- 	[GDT_ENTRY_APMBIOS_BASE+2] = { { { 0x0000ffff, 0x00409200 } } },
- 
- 	[GDT_ENTRY_ESPFIX_SS] = { { { 0x00000000, 0x00c09200 } } },
-+#ifdef CONFIG_SMP
-+	/*
-+	 * Linker can't handle the address bit shifting.  Address will
-+	 * be set in head_32.S for boot CPU and init_gdt for others.
-+	 */
-+	[GDT_ENTRY_PERCPU] = { { { 0x0000ffff, 0x00cf9200 } } },
-+#else
- 	[GDT_ENTRY_PERCPU] = { { { 0x00000000, 0x00000000 } } },
-+#endif
- } };
- #endif
- EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index e835b4e..3284199 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -19,6 +19,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/setup.h>
- #include <asm/processor-flags.h>
-+#include <asm/percpu.h>
- 
- /* Physical address */
- #define pa(X) ((X) - __PAGE_OFFSET)
-@@ -424,12 +425,39 @@ is386:	movl $2,%ecx		# set MP
- 	movl %eax,%cr0
- 
- 	call check_x87
-+#ifdef CONFIG_SMP
-+	/*
-+	 * early_gdt_base should point to the gdt_page in static percpu init
-+	 * data area.  Computing this requires two symbols - __per_cpu_load
-+	 * and per_cpu__gdt_page.  As linker can't do no such relocation, do
-+	 * it by hand.  As early_gdt_descr is manipulated by C code for
-+	 * secondary CPUs, this should be done only once for the boot CPU
-+	 * when early_gdt_descr_base contains zero.
-+	 *
-+	 * Also, manually load __per_cpu_load into address fields of PERCPU
-+	 * segment descriptor for boot CPU.  Linker can't do it.
-+	 */
-+	movl	early_gdt_descr_base, %eax
-+	testl	%eax, %eax
-+	jnz	3f
-+	movl	$__per_cpu_load, %eax
-+	movl	%eax, %ecx
-+	addl	$per_cpu__gdt_page, %eax
-+	movl	%eax, early_gdt_descr_base
+@@ -873,10 +873,8 @@ void __cpuinit pda_init(int cpu)
+ 	/* Setup up data that may be needed in __get_free_pages early */
+ 	loadsegment(fs, 0);
+ 	loadsegment(gs, 0);
+-	/* Memory clobbers used to order PDA accessed */
+-	mb();
+-	wrmsrl(MSR_GS_BASE, pda);
+-	mb();
 +
-+	movw	%cx, 8 * GDT_ENTRY_PERCPU + 2(%eax)
-+	shrl	$16, %ecx
-+	movb	%cl, 8 * GDT_ENTRY_PERCPU + 4(%eax)
-+	movb	%ch, 8 * GDT_ENTRY_PERCPU + 7(%eax)
-+3:
-+#endif /* CONFIG_SMP */
- 	lgdt early_gdt_descr
- 	lidt idt_descr
- 	ljmp $(__KERNEL_CS),$1f
- 1:	movl $(__KERNEL_DS),%eax	# reload all the segment registers
- 	movl %eax,%ss			# after changing gdt.
--	movl %eax,%fs			# gets reset once there's real percpu
-+	movl $(__KERNEL_PERCPU),%eax
-+	movl %eax,%fs			# will be reloaded for boot cpu
++	load_pda_offset(cpu);
  
- 	movl $(__USER_DS),%eax		# DS/ES contains default USER segment
- 	movl %eax,%ds
-@@ -446,8 +474,6 @@ is386:	movl $2,%ecx		# set MP
- 	movb $1, ready
- 	cmpb $0,%cl		# the first CPU calls start_kernel
- 	je   1f
--	movl $(__KERNEL_PERCPU), %eax
--	movl %eax,%fs		# set this cpu's percpu
- 	movl (stack_start), %esp
- 1:
- #endif /* CONFIG_SMP */
-@@ -702,7 +728,12 @@ idt_descr:
- 	.word 0				# 32 bit align gdt_desc.address
- ENTRY(early_gdt_descr)
- 	.word GDT_ENTRIES*8-1
-+#ifdef CONFIG_SMP
-+early_gdt_descr_base:
-+	.long 0x00000000
-+#else
- 	.long per_cpu__gdt_page		/* Overwritten for secondary CPUs */
+ 	pda->cpunumber = cpu;
+ 	pda->irqcount = -1;
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 84b96b9..ff39bdd 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -26,12 +26,18 @@
+ #include <asm/bios_ebda.h>
+ #include <asm/trampoline.h>
+ 
+-/* boot cpu pda, referenced by head_64.S to initialize %gs for boot CPU */
++#ifndef CONFIG_SMP
++/* boot cpu pda, referenced by head_64.S to initialize %gs on UP */
+ struct x8664_pda _boot_cpu_pda __read_mostly;
 +#endif
  
- /*
-  * The boot_gdt must mirror the equivalent in setup.S and is
+ void __init x86_64_init_pda(void)
+ {
++#ifdef CONFIG_SMP
++	cpu_pda(0) = (void *)__per_cpu_load;
++#else
+ 	cpu_pda(0) = &_boot_cpu_pda;
++#endif
+ 	cpu_pda(0)->data_offset =
+ 		(unsigned long)(__per_cpu_load - __per_cpu_start);
+ 	pda_init(0);
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 3f56a8f..519185f 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -245,10 +245,13 @@ ENTRY(secondary_startup_64)
+ 
+ 	/* Set up %gs.
+ 	 *
+-	 * %gs should point to the pda.  For initial boot, make %gs point
+-	 * to the _boot_cpu_pda in data section.  For a secondary CPU,
+-	 * initial_gs should be set to its pda address before the CPU runs
+-	 * this code.
++	 * On SMP, %gs should point to the per-cpu area.  For initial
++	 * boot, make %gs point to the init data section.  For a
++	 * secondary CPU,initial_gs should be set to its pda address
++	 * before the CPU runs this code.
++	 *
++	 * On UP, initial_gs points to _boot_cpu_pda and doesn't
++	 * change.
+ 	 */
+ 	movl	$MSR_GS_BASE,%ecx
+ 	movq	initial_gs(%rip),%rax
+@@ -278,7 +281,11 @@ ENTRY(secondary_startup_64)
+ 	ENTRY(initial_code)
+ 	.quad	x86_64_start_kernel
+ 	ENTRY(initial_gs)
++#ifdef CONFIG_SMP
++	.quad	__per_cpu_load
++#else
+ 	.quad	_boot_cpu_pda
++#endif
+ 	__FINITDATA
+ 
+ 	ENTRY(stack_start)
 diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 9edc081..6f47227 100644
+index bd47bbd..24d3e0d 100644
 --- a/arch/x86/kernel/setup_percpu.c
 +++ b/arch/x86/kernel/setup_percpu.c
-@@ -119,13 +119,9 @@ static void __init setup_per_cpu_maps(void)
+@@ -14,6 +14,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ #include <asm/highmem.h>
++#include <asm/proto.h>
+ 
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+ # define DBG(x...) printk(KERN_DEBUG x)
+@@ -65,6 +66,16 @@ static void __init setup_node_to_cpumask_map(void);
+ static inline void setup_node_to_cpumask_map(void) { }
  #endif
+ 
++#ifdef CONFIG_X86_64
++void __cpuinit load_pda_offset(int cpu)
++{
++	/* Memory clobbers used to order pda/percpu accesses */
++	mb();
++	wrmsrl(MSR_GS_BASE, cpu_pda(cpu));
++	mb();
++}
++#endif
++
+ #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+@@ -101,42 +112,6 @@ static void __init setup_per_cpu_maps(void)
+  */
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+ EXPORT_SYMBOL(__per_cpu_offset);
+-static inline void setup_cpu_pda_map(void) { }
+-
+-#elif !defined(CONFIG_SMP)
+-static inline void setup_cpu_pda_map(void) { }
+-
+-#else /* CONFIG_SMP && CONFIG_X86_64 */
+-
+-/*
+- * Allocate cpu_pda pointer table and array via alloc_bootmem.
+- */
+-static void __init setup_cpu_pda_map(void)
+-{
+-	char *pda;
+-	unsigned long size;
+-	int cpu;
+-
+-	size = roundup(sizeof(struct x8664_pda), cache_line_size());
+-
+-	/* allocate cpu_pda array and pointer table */
+-	{
+-		unsigned long asize = size * (nr_cpu_ids - 1);
+-
+-		pda = alloc_bootmem(asize);
+-	}
+-
+-	/* initialize pointer table to static pda's */
+-	for_each_possible_cpu(cpu) {
+-		if (cpu == 0) {
+-			/* leave boot cpu pda in place */
+-			continue;
+-		}
+-		cpu_pda(cpu) = (struct x8664_pda *)pda;
+-		cpu_pda(cpu)->in_bootmem = 1;
+-		pda += size;
+-	}
+-}
+ #endif
+ 
+ /*
+@@ -151,9 +126,6 @@ void __init setup_per_cpu_areas(void)
+ 	int cpu;
+ 	unsigned long align = 1;
+ 
+-	/* Setup cpu_pda map */
+-	setup_cpu_pda_map();
+-
+ 	/* Copy section for each CPU (we discard the original) */
+ 	old_size = PERCPU_ENOUGH_ROOM;
+ 	align = max_t(unsigned long, PAGE_SIZE, align);
+@@ -185,8 +157,21 @@ void __init setup_per_cpu_areas(void)
+ 					 cpu, node, __pa(ptr));
+ 		}
+ #endif
+-		per_cpu_offset(cpu) = ptr - __per_cpu_start;
++
+ 		memcpy(ptr, __per_cpu_load, __per_cpu_end - __per_cpu_start);
++#ifdef CONFIG_X86_64
++		cpu_pda(cpu) = (void *)ptr;
++
++		/*
++		 * CPU0 modified pda in the init data area, reload pda
++		 * offset for CPU0 and clear the area for others.
++		 */
++		if (cpu == 0)
++			load_pda_offset(0);
++		else
++			memset(cpu_pda(cpu), 0, sizeof(*cpu_pda(cpu)));
++#endif
++		per_cpu_offset(cpu) = ptr - __per_cpu_start;
+ 
+ 		DBG("PERCPU: cpu %4d %p\n", cpu, ptr);
+ 	}
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 7cd97d9..3a0fec6 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -750,52 +750,6 @@ static void __cpuinit do_fork_idle(struct work_struct *work)
+ 	complete(&c_idle->done);
  }
  
 -#ifdef CONFIG_X86_64
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly = {
- 	[0] = (unsigned long)__per_cpu_load,
- };
--#else
--unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--#endif
- EXPORT_SYMBOL(__per_cpu_offset);
- 
+-
+-/* __ref because it's safe to call free_bootmem when after_bootmem == 0. */
+-static void __ref free_bootmem_pda(struct x8664_pda *oldpda)
+-{
+-	if (!after_bootmem)
+-		free_bootmem((unsigned long)oldpda, sizeof(*oldpda));
+-}
+-
+-/*
+- * Allocate node local memory for the AP pda.
+- *
+- * Must be called after the _cpu_pda pointer table is initialized.
+- */
+-int __cpuinit get_local_pda(int cpu)
+-{
+-	struct x8664_pda *oldpda, *newpda;
+-	unsigned long size = sizeof(struct x8664_pda);
+-	int node = cpu_to_node(cpu);
+-
+-	if (cpu_pda(cpu) && !cpu_pda(cpu)->in_bootmem)
+-		return 0;
+-
+-	oldpda = cpu_pda(cpu);
+-	newpda = kmalloc_node(size, GFP_ATOMIC, node);
+-	if (!newpda) {
+-		printk(KERN_ERR "Could not allocate node local PDA "
+-			"for CPU %d on node %d\n", cpu, node);
+-
+-		if (oldpda)
+-			return 0;	/* have a usable pda */
+-		else
+-			return -1;
+-	}
+-
+-	if (oldpda) {
+-		memcpy(newpda, oldpda, size);
+-		free_bootmem_pda(oldpda);
+-	}
+-
+-	newpda->in_bootmem = 0;
+-	cpu_pda(cpu) = newpda;
+-	return 0;
+-}
+-#endif /* CONFIG_X86_64 */
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
  /*
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 3eba7f7..03abadf 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -24,6 +24,9 @@ jiffies = jiffies_64;
- PHDRS {
- 	text PT_LOAD FLAGS(5);	/* R_E */
- 	data PT_LOAD FLAGS(7);	/* RWE */
-+#ifdef CONFIG_SMP
-+	percpu PT_LOAD FLAGS(7);	/* RWE */
-+#endif
- 	note PT_NOTE FLAGS(0);	/* ___ */
- }
- SECTIONS
-@@ -178,7 +181,18 @@ SECTIONS
- 	__initramfs_end = .;
-   }
- #endif
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+@@ -813,16 +767,6 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ 	};
+ 	INIT_WORK(&c_idle.work, do_fork_idle);
+ 
+-#ifdef CONFIG_X86_64
+-	/* Allocate node local memory for AP pdas */
+-	if (cpu > 0) {
+-		boot_error = get_local_pda(cpu);
+-		if (boot_error)
+-			goto restore_state;
+-			/* if can't get pda memory, can't start cpu */
+-	}
+-#endif
+-
+ 	alternatives_smp_switch(1);
+ 
+ 	c_idle.idle = get_idle_for_cpu(cpu);
+@@ -937,9 +881,7 @@ do_rest:
+ 				inquire_remote_apic(apicid);
+ 		}
+ 	}
+-#ifdef CONFIG_X86_64
+-restore_state:
+-#endif
 +
-+#ifdef CONFIG_SMP
-+  /*
-+   * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
-+   * output PHDR, so the next output section - bss - should switch it
-+   * back to data.
-+   */
-+  . = ALIGN(PAGE_SIZE);
-+  PERCPU_VADDR(0, :percpu)
-+#else
-   PERCPU(PAGE_SIZE)
-+#endif
+ 	if (boot_error) {
+ 		/* Try to put things back the way they were before ... */
+ 		numa_remove_cpu(cpu); /* was set by numa_add_cpu */
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index f50280d..962f21f 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -5,6 +5,7 @@
+ #define LOAD_OFFSET __START_KERNEL_map
+ 
+ #include <asm-generic/vmlinux.lds.h>
++#include <asm/asm-offsets.h>
+ #include <asm/page.h>
+ 
+ #undef i386	/* in case the preprocessor is a 32bit one */
+@@ -215,10 +216,11 @@ SECTIONS
+   /*
+    * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
+    * output PHDR, so the next output section - __data_nosave - should
+-   * switch it back to data.init.
++   * switch it back to data.init.  Also, pda should be at the head of
++   * percpu area.  Preallocate it.
+    */
    . = ALIGN(PAGE_SIZE);
-   /* freed after init ends here */
+-  PERCPU_VADDR(0, :percpu)
++  PERCPU_VADDR_PREALLOC(0, :percpu, pda_size)
+ #else
+   PERCPU(PAGE_SIZE)
+ #endif
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index acd9b67..ae22284 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -280,16 +280,6 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
+ 	struct task_struct *idle = idle_task(cpu);
+ 	int rc;
  
-@@ -193,7 +207,7 @@ SECTIONS
- 	/* This is where the kernel creates the early boot page tables */
- 	. = ALIGN(PAGE_SIZE);
- 	pg0 = . ;
--  }
-+  } :data	/* switch back to data, see PERCPU_VADDR() above */
+-#ifdef CONFIG_X86_64
+-	/* Allocate node local memory for AP pdas */
+-	WARN_ON(cpu == 0);
+-	if (cpu > 0) {
+-		rc = get_local_pda(cpu);
+-		if (rc)
+-			return rc;
+-	}
+-#endif
+-
+ #ifdef CONFIG_X86_32
+ 	init_gdt(cpu);
+ 	per_cpu(current_task, cpu) = idle;
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index fc2f55f..e53319c 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -441,9 +441,10 @@
+ 	. = __per_cpu_load + SIZEOF(.data.percpu);
  
-   /* Sections to be discarded */
-   /DISCARD/ : {
+ /**
+- * PERCPU_VADDR - define output section for percpu area
++ * PERCPU_VADDR_PREALLOC - define output section for percpu area with prealloc
+  * @vaddr: explicit base address (optional)
+  * @phdr: destination PHDR (optional)
++ * @prealloc: the size of prealloc area
+  *
+  * Macro which expands to output section for percpu area.  If @vaddr
+  * is not blank, it specifies explicit base address and all percpu
+@@ -455,11 +456,33 @@
+  * section in the linker script will go there too.  @phdr should have
+  * a leading colon.
+  *
++ * If @prealloc is non-zero, the specified number of bytes will be
++ * reserved at the start of percpu area.  As the prealloc area is
++ * likely to break alignment, this macro puts areas in increasing
++ * alignment order.
++ *
+  * This macro defines three symbols, __per_cpu_load, __per_cpu_start
+  * and __per_cpu_end.  The first one is the vaddr of loaded percpu
+  * init data.  __per_cpu_start equals @vaddr and __per_cpu_end is the
+  * end offset.
+  */
++#define PERCPU_VADDR_PREALLOC(vaddr, segment, prealloc)			\
++	PERCPU_PROLOG(vaddr)						\
++		. += prealloc;						\
++		*(.data.percpu)						\
++		*(.data.percpu.shared_aligned)				\
++		*(.data.percpu.page_aligned)				\
++	PERCPU_EPILOG(segment)
++
++/**
++ * PERCPU_VADDR - define output section for percpu area
++ * @vaddr: explicit base address (optional)
++ * @phdr: destination PHDR (optional)
++ *
++ * Macro which expands to output section for percpu area.  Mostly
++ * identical to PERCPU_VADDR_PREALLOC(@vaddr, @phdr, 0) other than
++ * using slighly different layout.
++ */
+ #define PERCPU_VADDR(vaddr, phdr)					\
+ 	PERCPU_PROLOG(vaddr)						\
+ 		*(.data.percpu.page_aligned)				\
 -- 
 1.5.6
 
