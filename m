@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZAMUhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZAMUjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbZAMUhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 15:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZAMUh3
+	id S1758603AbZAMUjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 15:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZAMUjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 15:37:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40337 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752434AbZAMUh2 (ORCPT
+	Tue, 13 Jan 2009 15:39:01 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:56168 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbZAMUjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 15:37:28 -0500
-Date: Tue, 13 Jan 2009 12:37:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Volker.Lendecke@SerNet.DE
-Cc: linux-kernel@vger.kernel.org, Steven French <sfrench@us.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-Message-Id: <20090113123702.ad29cd13.akpm@linux-foundation.org>
-In-Reply-To: <E1LKrp3-004Tub-IR@intern.SerNet.DE>
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 15:39:00 -0500
+Date: Tue, 13 Jan 2009 13:38:43 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: handygewinnspiel@gmx.de, rjw@sisk.pl, HWerner4@gmx.de,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
+Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
+Message-ID: <20090113203843.GJ29283@parisc-linux.org>
+References: <20090112190420.51f75853@pedra.chehab.org> <20090112132130.6c932b85.akpm@linux-foundation.org> <20090112220624.4fbfee34@pedra.chehab.org> <20090112162337.318dd61d.akpm@linux-foundation.org> <20090113184755.87720@gmx.net> <20090113105947.9e774b69.akpm@linux-foundation.org> <20090113191757.74290@gmx.net> <20090113113700.776a94b5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113113700.776a94b5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+On Tue, Jan 13, 2009 at 11:37:00AM -0800, Andrew Morton wrote:
+> I'd have expected to see stat() returning -EOVERFLOW, but it isn't there.
+> 
+> googling around a bit seems to indcate that this might be a glibc issue:
+> 
+> http://sourceware.org/bugzilla/show_bug.cgi?id=1864
+> http://bugs.gentoo.org/show_bug.cgi?id=146951
+> 
+> But the traces are all using stat64() and fstat64().  And why would it
+> just start occurring now?
 
-On Thu, 8 Jan 2009 11:13:51 +0100
-Volker Lendecke <Volker.Lendecke@SerNet.DE> wrote:
+Maybe glibc is using the 64-bit stat calls and returning -EOVERFLOW to
+the application when the results from the kernel turn out to be > 32-bit
+in size?
 
-> Hi!
-> 
-> While implementing splice support in Samba for better
-> performance I found it blocking when trying to pull data off
-> tcp into a pipe when the recvq was full. Attached find a
-> test program that shows this behaviour, on another host I
-> started
-> 
-> netcat 192.168.19.10 4711 < /dev/zero
-> 
-> vlendec@lenny:~$ uname -a
-> Linux lenny 2.6.28-06857-g5cbd04a #7 Wed Jan 7 10:10:42 CET 2009 x86_64 = GNU/Linux
-> vlendec@lenny:~$ gcc -o splicetest /host/home/vlendec/splicetest.c -O3 -Wall
-> vlendec@lenny:~$ ./splicetest out 65536 &
-> [1] 697
-> vlendec@lenny:~$ strace -p 697
-> Process 697 attached - interrupt to quit
-> splice(0x3, 0, 0x5, 0, 0x56a0, 0x1)     = 22176
-> splice(0x7, 0, 0x4, 0, 0x10000, 0x1^C <unfinished ...>
-> Process 697 detached
-> vlendec@lenny:~$ netstat -nt | grep 4711
-> tcp    69272      0 192.168.19.10:4711 192.168.19.1:33773 ESTABLISHED
-> vlendec@lenny:~$
-> 
-> Interestingly, whenever I start the strace, it gets another
-> chunk of data and then blocks in the next splice call.
-> 
-> If I start splicetest with a buffer size of 16384 instead of
-> 65536, it does not block. I could not find a way to ask the
-> kernel for the tipping point below which it does not block.
-> 
-> What is a safe buffer size to use with splice?
-> 
-> BTW, this kernel is from Steve French's linux-cifs.git repo.
-> 
-> Thanks,
-> 
-> Volker Lendecke
-> 
-> Samba Team
-> 
-> P.S: I'm not subscribed to linux-kernel, so if possible
-> please CC me directly. If this is inappropriate behaviour,
-> please give me a quick hint :-)
-> 
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
