@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZAMC2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZAMC3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZAMC2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZAMC1z
+	id S1758107AbZAMC3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZAMC3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:27:55 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40953 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbZAMC1y (ORCPT
+	Mon, 12 Jan 2009 21:29:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49914 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbZAMC3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:27:54 -0500
-Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Steve French <smfrench@gmail.com>, Greg KH <gregkh@suse.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org
-In-Reply-To: <37759.1231812066@turing-police.cc.vt.edu>
-References: <20090112154539.4857f533.sfr@canb.auug.org.au>
-	 <496B899E.7060605@oracle.com>
-	 <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com>
-	 <20090112191330.GC7111@suse.de>
-	 <524f69650901121307v67047946yed2c56efaaa839a1@mail.gmail.com>
-	 <37759.1231812066@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Mon, 12 Jan 2009 20:27:49 -0600
-Message-Id: <1231813669.6868.3.camel@norville.austin.ibm.com>
+	Mon, 12 Jan 2009 21:29:07 -0500
+Date: Tue, 13 Jan 2009 03:43:37 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090113024337.GL23848@one.firstfloor.org>
+References: <20090112213539.GA10720@gambetta> <20090112215701.GH23848@one.firstfloor.org> <20090112224037.GA16585@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112224037.GA16585@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 21:01 -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 12 Jan 2009 15:07:48 CST, Steve French said:
-> 
-> > I have changed the names of cifs's md5 functions in the cifs-2.6.git tree
-> > 
-> > diff --git a/fs/cifs/md5.h b/fs/cifs/md5.h
-> > index f7d4f41..6fba8cb 100644
-> 
-> I presume there will be another git commit immediately following to fix
-> up the call sites?
+> No distro kernel will build with less than 8 CPUs anyway so this point is 
+> moot.
 
-The git tree has the entire fix.  Steve's post just contained a piece of
-it.
+It has nothing to do with what the distro kernel builds with. As I stated
+clearly in my review the per cpu data is sized based on the possible map, 
+which is discovered from the BIOS at runtime.  So if your system has two cores 
+only you will only have two copies of per cpu data. 
 
-Shaggy
+With this patch on the other hand you will always have 8 copies
+of this data; aka 1K no matter how many CPUs you have.
+
+So the description that it saves memory is flat out 
+wrong on any system with less than 8 threads (which
+is by far the biggest majority of systems currently
+and in the forseeable future) 
+
+> > You would need to cache line pad each entry then, otherwise you risk 
+> > false sharing. [...]
+> 
+> They are already cache line padded.
+
+Yes that's the problem here. 
+
+> 
+> > [...] That would make the array 1K on 128 bytes cache line system.
+> 
+> 512 bytes.
+
+8 * 128 = 1024 
+
+Ok the real waste is a little less because you need at least one copy,
+but still considerable. (896 bytes on UP, 768 bytes on 2C)
+
+
+> 
+> > [...]  This means on small systems this would actually waste much more 
+> > memory.
+> 
+> Really small systems will be UP and wont do cross-CPU TLB flushes, so if 
+> they are a worry the flush code can be UP optimized. (Nobody bothered so 
+> far.)
+
+The SMP flush code shouldn't be called at all on UP because the "other cpu"
+mask is always empty.
+
+Just talking about the memory. Sure it's only 1K (or 896 bytes), but if you 
+add up a lot of little 896byte wastes you eventually get a lot of waste all over.
+
+Anyways if you wanted to do this without using per cpu data you
+could use alloc_percpu(), but that would be much more complicated
+code.
+
+-Andi
+
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+ak@linux.intel.com -- Speaking for myself only.
