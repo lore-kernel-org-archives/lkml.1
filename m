@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZAMHWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZAMHXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZAMHWm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 02:22:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbZAMHWJ
+	id S1754641AbZAMHXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 02:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZAMHXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 02:22:09 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:62857 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752179AbZAMHWH (ORCPT
+	Tue, 13 Jan 2009 02:23:11 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52918 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757550AbZAMHXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 02:22:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=E1SN9kLLvwPEMqo/55E8pXDUSN/a743LTkxMMaGjEAnEu6nKlc3YSReHWBTsMJkhkm
-         76D0F1lGmf2hYUq1m0vHS7okIqW3OwaQekScLKE5+u+L2YWtpGWdv9GL1RfO1Ko7Ska+
-         e3zedSTKWxjE56oBtlO8G7sVOgG69ks0ttnzg=
-Subject: Re: [PATCH -tip] coda_psdev.h: extern's make no sense in userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       sam@ravnborg.org, LKML <linux-kernel@vger.kernel.org>,
-       gorcunov@gmail.com
-In-Reply-To: <1231828614.3212.15.camel@jaswinder.satnam>
-References: <1231828614.3212.15.camel@jaswinder.satnam>
+	Tue, 13 Jan 2009 02:23:09 -0500
+Subject: Re: [PATCH -tip] in6.h: extern's make no sense in userspace
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, harvey.harrison@gmail.com, gorcunov@gmail.com,
+       roque@di.fc.ul.pt, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <20090113071513.GB20036@uranus.ravnborg.org>
+References: <1231829859.3212.19.camel@jaswinder.satnam>
+	 <20090113071513.GB20036@uranus.ravnborg.org>
 Content-Type: text/plain
-Date: Mon, 12 Jan 2009 23:22:03 -0800
-Message-Id: <1231831324.5405.25.camel@brick>
+Date: Tue, 13 Jan 2009 12:50:03 +0530
+Message-Id: <1231831203.3212.21.camel@jaswinder.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-13 at 12:06 +0530, Jaswinder Singh Rajput wrote:
-> Impact: fix make headers_check warning:
+On Tue, 2009-01-13 at 08:15 +0100, Sam Ravnborg wrote:
+> On Tue, Jan 13, 2009 at 12:27:39PM +0530, Jaswinder Singh Rajput wrote:
+> > Impact: fix 2 make headers_check warnings:
+> > 
+> >  usr/include/linux/in6.h:47: extern's make no sense in userspace
+> >  usr/include/linux/in6.h:49: extern's make no sense in userspace
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  include/linux/in6.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/in6.h b/include/linux/in6.h
+> > index bc49204..718bf21 100644
+> > --- a/include/linux/in6.h
+> > +++ b/include/linux/in6.h
+> > @@ -44,11 +44,11 @@ struct in6_addr
+> >   * NOTE: Be aware the IN6ADDR_* constants and in6addr_* externals are defined
+> >   * in network byte order, not in host byte order as are the IPv4 equivalents
+> >   */
+> > +#ifdef __KERNEL__
+> >  extern const struct in6_addr in6addr_any;
+> >  #define IN6ADDR_ANY_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
+> >  extern const struct in6_addr in6addr_loopback;
+> >  #define IN6ADDR_LOOPBACK_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 } } }
+> > -#ifdef __KERNEL__
 > 
->  usr/include/linux/coda_psdev.h:90: extern's make no sense in userspace
+> It looks wrong what IN6ADDR_ANY_INIT should be a kernel only symbol.
+> At least google had some hits on that symbol.
 > 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  include/linux/coda_psdev.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> netdev people should know....
 > 
-> diff --git a/include/linux/coda_psdev.h b/include/linux/coda_psdev.h
-> index 07ae8f8..c620958 100644
-> --- a/include/linux/coda_psdev.h
-> +++ b/include/linux/coda_psdev.h
-> @@ -87,6 +87,8 @@ struct upc_req {
->   * Statistics
->   */
->  
-> +#ifdef __KERNEL__
->  extern struct venus_comm coda_comms[];
-> +#endif /* __KERNEL__ */
 
-As this only gets used in code/inode.c, coda/psdev.c it would be nice if
-a code-internal header could be found that could hold this.
+OK, I do not want any conflicts and I want to stay in safe side ;-)
 
-This is only here due to the one use outside of psdev.c in inode.c
+Subject: [PATCH] in6.h: extern's make no sense in userspace
 
-Harvey
+Impact: fix 2 make headers_check warnings:
+
+ usr/include/linux/in6.h:47: extern's make no sense in userspace
+ usr/include/linux/in6.h:49: extern's make no sense in userspace
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/in6.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/in6.h b/include/linux/in6.h
+index bc49204..44d921c 100644
+--- a/include/linux/in6.h
++++ b/include/linux/in6.h
+@@ -44,11 +44,11 @@ struct in6_addr
+  * NOTE: Be aware the IN6ADDR_* constants and in6addr_* externals are defined
+  * in network byte order, not in host byte order as are the IPv4 equivalents
+  */
+-extern const struct in6_addr in6addr_any;
+ #define IN6ADDR_ANY_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } }
+-extern const struct in6_addr in6addr_loopback;
+ #define IN6ADDR_LOOPBACK_INIT { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 } } }
+ #ifdef __KERNEL__
++extern const struct in6_addr in6addr_any;
++extern const struct in6_addr in6addr_loopback;
+ extern const struct in6_addr in6addr_linklocal_allnodes;
+ #define IN6ADDR_LINKLOCAL_ALLNODES_INIT	\
+ 		{ { { 0xff,2,0,0,0,0,0,0,0,0,0,0,0,0,0,1 } } }
+-- 
+1.5.6.6
+
+
 
