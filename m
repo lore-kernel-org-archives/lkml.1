@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZAMGQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZAMGQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759983AbZAMGQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 01:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZAMGMY
+	id S1759925AbZAMGQq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 01:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZAMGOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 01:12:24 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41664
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759519AbZAMGMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 01:12:23 -0500
-Date: Mon, 12 Jan 2009 22:12:24 -0800 (PST)
-Message-Id: <20090112.221224.170349434.davem@davemloft.net>
-To: gorcunov@gmail.com
-Cc: paulus@samba.org, akpm@linux-foundation.org, jchapman@katalix.com,
+	Tue, 13 Jan 2009 01:14:11 -0500
+Received: from 1wt.eu ([62.212.114.60]:1438 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759652AbZAMGOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 01:14:09 -0500
+Date: Tue, 13 Jan 2009 07:13:23 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Miller <davem@davemloft.net>, Valdis.Kletnieks@vt.edu,
+       alessandro.suardi@gmail.com, jaswinderlinux@gmail.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: ppp_generic - fix broken userspace
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090111114553.GA19261@localhost>
-References: <20090110.233503.222465267.davem@davemloft.net>
-	<18793.51741.28374.460500@cargo.ozlabs.ibm.com>
-	<20090111114553.GA19261@localhost>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: 2.6.28-git8: tg3 doesn't work due to firmware not loading (-git7 is ok)
+Message-ID: <20090113061322.GJ5038@1wt.eu>
+References: <1231676698.25018.147.camel@macbook.infradead.org> <20090111.133929.57600645.davem@davemloft.net> <1231711347.25018.658.camel@macbook.infradead.org> <20090111.140559.126980927.davem@davemloft.net> <1231713698.25018.700.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231713698.25018.700.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Date: Sun, 11 Jan 2009 14:45:53 +0300
+On Sun, Jan 11, 2009 at 10:41:38PM +0000, David Woodhouse wrote:
+> On Sun, 2009-01-11 at 14:05 -0800, David Miller wrote:
+> > So what used to work out of the box by typing make now
+> > will have all kinds of strange depencies, right?
+> > 
+> > This is a regression, no matter how you spin it, in my
+> > book.
+> 
+> I know you think that, but I disagree. Yes, it's slightly less
+> convenient for a small handful of older drivers,
 
-> David, if you pick this patch could you rename
-> the subject then as Paul proposed? Or I should
-> resend the patch with new title?
+We're speaking about the driver for the on-board NIC which is present on
+almost 100% of the servers built since the last 5 years. There are an
+awful lot of users of this driver playing with PXE, nfsroot and other
+non-legacy boot methods. So "small handful" or not, we must ensure not
+to annoy a lot of users with strange bugs and awkward configurations.
 
-Done, here is the commit message I used:
+> but in the general case
+> it's a massive improvement -- because now we can have a single canonical
+> location to collect _all_ the firmware that is redistributable, for use
+> with the kernel. And we've already started adding a whole bunch of new
+> firmwares to that repository.
 
-    net: ppp_generic - fix regressions caused by IDR conversion
-    
-    The commits:
-    
-    	7a95d267fb62cd6b80ef73be0592bbbe1dbd5df7
-    	("net: ppp_generic - use idr technique instead of cardmaps")
-    
-    	ab5024ab23b78c86a0a1425defcdde48710fe449
-    	("net: ppp_generic - use DEFINE_IDR for static initialization")
-    
-    introduced usage of IDR functionality but broke userspace side.
-    
-    Before this commits it was possible to allocate new ppp interface with
-    specified number. Now it fails with EINVAL.  Fix it by trying to
-    allocate interface with specified unit number and return EEXIST if
-    fail which allow pppd to ask us to allocate new unit number.
-    
-    And fix messages on memory allocation fails - add details that it's
-    PPP module who is complaining.
-    
-    Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+In the past, the firmware distributed with the driver was always the
+one known to work with that version of the driver. Now you'll have to
+know what version of the firmware to use with what kernel version,
+this is adding a new dimension to troubleshooting complexity.
+
+I still think that these firmware hacks are a solution looking for
+a problem to solve. We had something which has worked well for 15
+years and now it's easy to see a machine hang at boot time for 60
+seconds because a firmware file is missing or invalid.
+
+Regression IMO, I agree with Davem.
+
+Willy
+
