@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZAMWhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbZAMWha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZAMWhB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZAMWgw
+	id S1757885AbZAMWha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 17:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbZAMWhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:36:52 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:39359 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbZAMWgv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:36:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EGmo8sQfDJj85AcP+dfcY01R8LHqLjzGzALX+e2HHCQeuEx5hxJD2/aOqHxpcdJHXB
-         f8F05RoFfLiz2pYLTIdN2uvAWFu3D7/aD6pU7PDornCE1S/07CIi5z/ynuCasaoQkczf
-         edzlfKNAR3Cvt8q6YrXc0Zhf1h9EX2U3tQynY=
-Message-ID: <c4e36d110901131436y79beaf40h2da44e5925d574b5@mail.gmail.com>
-Date: Tue, 13 Jan 2009 23:36:49 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+	Tue, 13 Jan 2009 17:37:10 -0500
+Received: from www.tglx.de ([62.245.132.106]:40973 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756519AbZAMWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 17:37:06 -0500
+Date: Tue, 13 Jan 2009 23:36:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
-Cc: "Maciej Rutecki" <maciej.rutecki@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       dbrownell@users.sourceforge.net
-In-Reply-To: <200901121819.01042.rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michal Suchanek <hramrach@centrum.cz>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86: vm86: fix preemption bug
+In-Reply-To: <nHCfeC0YLrE.A.WKC.qafaJB@chimera>
+Message-ID: <alpine.LFD.2.00.0901132117270.3549@localhost.localdomain>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.WKC.qafaJB@chimera>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com>
-	 <200901121340.21009.rjw@sisk.pl>
-	 <c4e36d110901120450q10278979j5cf726a5175cc3f1@mail.gmail.com>
-	 <200901121819.01042.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Monday 12 January 2009, Zdenek Kabelac wrote:
+Impact: fix scheduling while atomic bug
 
-> Sure, good idea.  I've been running with this reverted recently.
->
->> PS: I'll do the above 'echo' trace later (being busy right now).
->
-> That shouldn't be necessary if you can suspend-resume with
-> 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted and the USB controller
-> modules unloaded.
->
-> Instead, with 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted, please write
-> 'disabled' to the /sys/devices/.../power/wakeup files of all USB controllers
-> and see if suspend-resume works in this configuration.
->
+commit 3d2a71a596bd9c761c8487a2178e95f8a61da083 (x86, traps: converge
+do_debug handlers) changed the preemption disable logic of do_debug()
+so vm86_handle_trap() is called with preemption disabled resulting in:
 
-Hi
+BUG: sleeping function called from invalid context at include/linux/kernel.h:155
+in_atomic(): 1, irqs_disabled(): 0, pid: 3005, name: dosemu.bin
+Pid: 3005, comm: dosemu.bin Tainted: G        W  2.6.29-rc1 #51
+Call Trace:
+ [<c050d669>] copy_to_user+0x33/0x108
+ [<c04181f4>] save_v86_state+0x65/0x149
+ [<c0418531>] handle_vm86_trap+0x20/0x8f
+ [<c064e345>] do_debug+0x15b/0x1a4
+ [<c064df1f>] debug_stack_correct+0x27/0x2c
+ [<c040365b>] sysenter_do_call+0x12/0x2f
+BUG: scheduling while atomic: dosemu.bin/3005/0x10000001
 
-So I've check some   find /sys/device | grep usb | grep power/wakeup
-and there was no difference.
-I've updated to latest git to be in sync
-(e0b325d310a6b11f1538413fd557d2eb98f2fae5)
-I'm still keeping reverted commit: 6fd9086a518d4f14213a32fe6c9ac17fabebbc1e.
+Restore the original calling convention and reenable preemption before
+calling handle_vm86_trap().
 
-And I've figured out - the only  'modprobe -r ehci_hcd' is enough to
-keep my suspend/resume sequence working. (Though I would have say,
-that now it takes fairly noticable time to get keyboard and synaptics
-usable - but it might be connected with my move to evdev and hal... :)
-)
+Reported-by: Michal Suchanek <hramrach@centrum.cz>
+Cc: stable@kernel.org
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/traps.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-So I'm adding cc: to David - maybe he has some suspected patches for
-ehci_hcd ? (as doing a bisect in such a broken merge window is going
-to give me probably a lot of unsable kernels nowdays....)
-
-Zdenek
+Index: linux-2.6/arch/x86/kernel/traps.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/traps.c
++++ linux-2.6/arch/x86/kernel/traps.c
+@@ -99,6 +99,12 @@ static inline void preempt_conditional_s
+ 		local_irq_enable();
+ }
+ 
++static inline void conditional_cli(struct pt_regs *regs)
++{
++	if (regs->flags & X86_EFLAGS_IF)
++		local_irq_disable();
++}
++
+ static inline void preempt_conditional_cli(struct pt_regs *regs)
+ {
+ 	if (regs->flags & X86_EFLAGS_IF)
+@@ -626,8 +632,10 @@ clear_dr7:
+ 
+ #ifdef CONFIG_X86_32
+ debug_vm86:
++	/* reenable preemption: handle_vm86_trap() might sleep */
++	dec_preempt_count();
+ 	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
+-	preempt_conditional_cli(regs);
++	conditional_cli(regs);
+ 	return;
+ #endif
+ 
