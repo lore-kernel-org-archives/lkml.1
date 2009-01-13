@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZAMMmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZAMMn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130AbZAMMmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZAMMmF
+	id S1758760AbZAMMn5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZAMMnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:42:05 -0500
-Received: from styx.suse.cz ([82.119.242.94]:58005 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754007AbZAMMmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:42:03 -0500
-From: Jan Kara <jack@suse.cz>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kara <jack@suse.cz>, Pavel Machek <pavel@suse.cz>
-Subject: [PATCH] ext2: Update also inode on disk when dir is IS_DIRSYNC
-Date: Tue, 13 Jan 2009 13:42:02 +0100
-Message-Id: <1231850522-11074-1-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
+	Tue, 13 Jan 2009 07:43:49 -0500
+Received: from tservice.net.ru ([195.178.208.66]:34383 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753356AbZAMMns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:43:48 -0500
+Date: Tue, 13 Jan 2009 15:43:46 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Add two VFS exports used by POHMELFS
+Message-ID: <20090113124346.GA26101@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used to just write changed page for IS_DIRSYNC inodes. But we also have to
-update directory inode itself just for the case that we've allocated a new
-block and changed i_size.
+Hi.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-CC: Pavel Machek <pavel@suse.cz>
----
- fs/ext2/dir.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+POHMELFS is a very high-performance parallel network filesystem with
+coherent local cache of data and metadata. It entered maintenance mode
+and is being prepared for the next submission cycle.
+I decided first to push it into the drivers/staging which was acked
+by Greg for the wider testing and review and move into the vanilla tree
+in the next merge window.
 
-  Andrew, would you please merge the patch? Ext3 and ext4 don't have this
-problem BTW.
+POHMELFS needs two exports from the core VFS: add_to_page_cache_lru and
+__lock_page_killable.
 
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index 9a0fc40..7fba549 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -94,11 +94,10 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
- 		i_size_write(dir, pos+len);
- 		mark_inode_dirty(dir);
+Please apply given patch to the current tree.
+
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -513,6 +513,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
  	}
-+	unlock_page(page);
- 
- 	if (IS_DIRSYNC(dir))
--		err = write_one_page(page, 1);
--	else
--		unlock_page(page);
-+		err = ext2_sync_inode(dir);
- 
- 	return err;
+ 	return ret;
  }
--- 
-1.6.0.4
++EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
+ 
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+@@ -627,6 +628,7 @@ int __lock_page_killable(struct page *page)
+ 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+ 					sync_page_killable, TASK_KILLABLE);
+ }
++EXPORT_SYMBOL_GPL(__lock_page_killable);
+ 
+ /**
+  * __lock_page_nosync - get a lock on the page, without calling sync_page()
 
+
+-- 
+	Evgeniy Polyakov
