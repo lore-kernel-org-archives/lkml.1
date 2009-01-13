@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbZAMNa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbZAMNcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbZAMNa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbZAMNaO
+	id S1760378AbZAMNcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbZAMNcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:30:14 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:31395 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755655AbZAMNaM (ORCPT
+	Tue, 13 Jan 2009 08:32:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:24869 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757154AbZAMNck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:30:12 -0500
+	Tue, 13 Jan 2009 08:32:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PF25NCgQ+Fn3auf+4TDLOWa26lL/NXU/xoLTSmlI/yQhW+SvYK1jEL+r+4xcFjsuwH
-         7n/1Ti+bHxJwSezbaFQRxemKracZpc1KrYY8vOn1UZhLfyiOtVAZdNNTiKsd6dTAF+6H
-         FAI9QsmfaIsPV/+0i5pTIwQUJmG9+M5VuPhg4=
-Message-ID: <b6a2187b0901130530y346f2526l220ea410dd95ea91@mail.gmail.com>
-Date: Tue, 13 Jan 2009 21:30:10 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Christian Borntraeger" <borntraeger@de.ibm.com>,
-       "Daniel Drake" <dsd@gentoo.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Phil Dibowitz" <phil@ipom.com>,
-       "Alan Stern" <stern@rowland.harvard.edu>
-In-Reply-To: <200901131232.17941.rjw@sisk.pl>
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Bbb4HMg4+87LNj2LqX0DlsYEKul5lSch8q/bAhIjpeCSw56n8Zo+yjnkGzweePSRn9
+         Nl5OKLu+peQc6ZPt+0gnPQvrEwczYD91AwQVQUrDNGNXgTV0cqAeOfaKpxkNSELV/GF/
+         n90wrBddsnoBWEB/b43YgcrH9H2OksL2x7YAo=
+Message-ID: <496C97F1.9000502@panasas.com>
+Date: Tue, 13 Jan 2009 15:32:33 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-scsi <linux-scsi@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [osd-dev] [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com>	<1230739053.3408.74.camel@localhost.localdomain>	<4960D3CA.2000202@panasas.com>	<1231783926.3256.29.camel@localhost.localdomain>	<496B989F.7050907@garzik.org>	<1231790190.15161.29.camel@localhost.localdomain>	<496BA671.3070900@garzik.org>	<1231802758.27151.18.camel@localhost.localdomain>	<496C9109.5040803@panasas.com> <496C9617.80701@garzik.org>
+In-Reply-To: <496C9617.80701@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera>
-	 <b6a2187b0901122028w3f85fc9aj41d7c8ac44adb2ed@mail.gmail.com>
-	 <b6a2187b0901122147o45890cd4lfb6ba7b2908e6ae7@mail.gmail.com>
-	 <200901131232.17941.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 7:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 13 January 2009, Jeff Chua wrote:
->> On Sun, Jan 11, 2009 at 7:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Jan. 13, 2009, 15:24 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+> Benny Halevy wrote:
+>> IMO the main advantage of moving block allocation down to the OSD target
+>> is more apparent with distributed file systems a-la pNFS over objects
+>> where paralleling that task is a key for scalable performance.
 >>
->> > The following bug entry is on the current list of known regressions
->> > from 2.6.28.  Please verify if it still should be listed and let me know
->> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12422
->> > Subject         : 2.6.28-git can't resume from str
->> > Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
->> > Date            : 2009-01-10 1:39 (2 days old)
->> > References      : http://marc.info/?l=linux-kernel&m=123155157909282&w=4
->>
->> Fixed by reverting a0d4922da2e4ccb0973095d8d29f36f6b1b5f703.
->> 7503bfbae89eba07b46441a5d1594647f6b8ab7d has already been reverted in
->> the Linus's latest git tree.
->
-> Can you please check if the issue goes away ...
-> instead of reverting commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+>> The thing is that the target needs to implement its own mapping from
+>> object logical offsets into disk blocks and this is usually done
+>> using some kind of a (possibly trimmed down) local file system.
+>> Therefore the I/O performance of a single OSD is likely to be similar
+>> to a single file server's.
+> 
+> Well, modern SATA devices are already mini-filesystems internally, when 
+> you consider logical block remapping etc.
+> 
+> And the claim by drive research guys at the filesystem/storage summit 
+> was that OSD offered the potential to better optimize storage based on 
+> access/usage patterns.
+> 
+> (of course, whether or not reality bears out this guess is another question)
 
-Confirmed. This commit works. STR still ok.
+That's true for multi-user access where knowing the context for each I/O
+request - i.e. the object that holds it provides a crucial hint for
+read-ahead and write allocation, where for a dumb device that doesn't
+know anything about the filesystem's internals, it's much harder to
+associate different blocks with their respective containers, or "streams"
+(in case the container is typically accessed in a sequential pattern).
 
-But now, a different problem. STD "almost" ok. Suspend-to-disk hangs
-after counting to 100%. Power-cycle and boot ok able to resume. ...
-Again, this is another problem with/without your latest patch. Another
-issue is with iwl4965 not able to attach to my hidden AP. Will try to
-bisect soon.
+> 
+> 
+>> I can understand representing a single object as a block device (although I
+>> think that using a file for that should be good enough and easier) but
+>> why representing the whole OSD as a block device?  The OSD holds partitions
+>> and objects each with attributes and OSD security related support.  Hence
+>> representing that in a namespace using a filesystem seems straight forward.
+> 
+> I am actually considering writing a simple "osdblk" driver, that would 
+> represent a single object as a block device.
+> 
+> This would NOT replace exofs or other OSD filesystems, but it would be 
+> nice to have, and it will give me more experience with OSDs.
 
-Thanks for the patch.
+That's awesome!
+It be really interesting to benchmark one against the other.
 
-Jeff.
+Benny
+
+> 
+> 	Jeff
+> 
+> 
+> _______________________________________________
+> osd-dev mailing list
+> osd-dev@open-osd.org
+> http://mailman.open-osd.org/mailman/listinfo/osd-dev
+
