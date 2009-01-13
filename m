@@ -1,86 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZAMIeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZAMIki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbZAMIeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZAMIeK
+	id S1758640AbZAMIki (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZAMIk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:34:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64020 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752833AbZAMIeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:34:08 -0500
-Message-ID: <496C51C8.5040900@cn.fujitsu.com>
-Date: Tue, 13 Jan 2009 16:33:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [RFC][PATCH 3/4] memcg: fix OOM KILL under hierarchy
-References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com> <20090108183207.26d88794.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090108183207.26d88794.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 13 Jan 2009 03:40:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52387 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754111AbZAMIkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 03:40:25 -0500
+Date: Tue, 13 Jan 2009 00:39:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dann frazier <dannf@dannf.org>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stephane eranian <eranian@googlemail.com>
+Subject: Re: [PATCH] add rtc platform driver for EFI
+Message-Id: <20090113003934.0a7da676.akpm@linux-foundation.org>
+In-Reply-To: <20090109213615.GD31548@ldl.fc.hp.com>
+References: <20090109005644.GH32403@ldl.fc.hp.com>
+	<20090109032729.6e4cd5fd@i1501.lan.towertech.it>
+	<20090109213615.GD31548@ldl.fc.hp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
-> +static int
-> +mm_match_cgroup_hierarchy(struct mm_struct *mm, struct mem_cgroup *mem)
+On Fri, 9 Jan 2009 14:36:16 -0700 dann frazier <dannf@dannf.org> wrote:
+
+> Munge Stephane Eranian's efirtc.c code into an rtc platform driver
+>
+> 
+> ...
+>
+> index f0ebb34..9ed5ba0 100644
+> --- a/arch/ia64/kernel/time.c
+> +++ b/arch/ia64/kernel/time.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/efi.h>
+>  #include <linux/timex.h>
+>  #include <linux/clocksource.h>
+> +#include <linux/platform_device.h>
+>  
+>  #include <asm/machvec.h>
+>  #include <asm/delay.h>
+> @@ -405,6 +406,23 @@ static struct irqaction timer_irqaction = {
+>  	.name =		"timer"
+>  };
+>  
+> +struct platform_device rtc_efi_dev = {
+
+static, please.
+
+> +	.name = "rtc-efi",
+> +	.id = -1,
+> +};
+> +
+> +static int __init rtc_init(void)
 > +{
-> +	struct mem_cgroup *curr;
 > +	int ret;
-> +
-> +	if (!mm)
-> +		return 0;
-> +	rcu_read_lock();
-> +	curr = mem_cgroup_from_task(mm->owner);
+> +	ret = platform_device_register(&rtc_efi_dev);
+> +	if (ret < 0)
+> +		printk(KERN_ERR "unable to register rtc device...\n");
 
-curr can be NULL ?
+we don't really need `ret'...
 
-> +	if (mem->use_hierarchy)
-> +		ret = css_is_ancestor(&curr->css, &mem->css);
-> +	else
-> +		ret = (curr == mem);
-> +	rcu_read_unlock();
-> +	return ret;
+> +	/* not necessarily an error */
+> +	return 0;
 > +}
+> +module_init(rtc_init);
 > +
+>  void __init
+>  time_init (void)
+>  {
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 4ad831d..2cc8a9d 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -434,6 +434,16 @@ config RTC_DRV_DS1742
+>  	  This driver can also be built as a module. If so, the module
+>  	  will be called rtc-ds1742.
+>  
+> +config RTC_DRV_EFI
+> +	tristate "EFI RTC"
+> +	depends on IA64
+> +	help
+> +	  If you say yes here you will get support for the EFI
+> +	  Real Time Clock.
+> +
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called rtc-efi.
+> +
+>  config RTC_DRV_STK17TA8
+>  	tristate "Simtek STK17TA8"
+>  	depends on RTC_CLASS
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index 9a4340d..09ae207 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -35,6 +35,7 @@ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
+>  obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
+>  obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
+>  obj-$(CONFIG_RTC_DRV_DS3234)	+= rtc-ds3234.o
+> +obj-$(CONFIG_RTC_DRV_EFI)	+= rtc-efi.o
+>  obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
+>  obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
+>  obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
+> diff --git a/drivers/rtc/rtc-efi.c b/drivers/rtc/rtc-efi.c
+> new file mode 100644
+> index 0000000..1e9607b
+> --- /dev/null
+> +++ b/drivers/rtc/rtc-efi.c
+> @@ -0,0 +1,275 @@
+> +/*
+> + * rtc-efi: RTC Class Driver for EFI-based systems
+> + *
+> + * Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
+> + *
+> + * Author: dann frazier <dannf@hp.com>
+> + * Based on efirtc.c by Stephane Eranian
+> + *
+> + *  This program is free software; you can redistribute  it and/or modify it
+> + *  under  the terms of  the GNU General  Public License as published by the
+> + *  Free Software Foundation;  either version 2 of the  License, or (at your
+> + *  option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/time.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <linux/efi.h>
+> +
+> +#define EFI_ISDST (EFI_TIME_ADJUST_DAYLIGHT|EFI_TIME_IN_DAYLIGHT)
+> +/*
+> + * EFI Epoch is 1/1/1998
+> + */
+> +#define EFI_RTC_EPOCH		1998
+> +
+> +#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
+> +
+> +struct efi_rtc {
+> +	struct rtc_device *rtc;
+> +	spinlock_t lock;
+> +};
 
-...
+This never gets used?
 
-> +void mem_cgroup_update_oom_jiffies(struct mem_cgroup *mem)
+> +static const unsigned short int __mon_yday[2][13] =
 > +{
-> +	struct mem_cgroup *cur;
-> +	struct cgroup_subsys_state *css;
-> +	int id, found;
-> +
-> +	if (!mem->use_hierarchy) {
-> +		mem->last_oom_jiffies = jiffies;
-> +		return;
-> +	}
-> +
-> +	id = 0;
-> +	rcu_read_lock();
-> +	while (1) {
-> +		css = css_get_next(&mem_cgroup_subsys, id, &mem->css, &found);
-> +		if (!css)
-> +			break;
-> +		if (css_tryget(css)) {
-> +			cur = container_of(css, struct mem_cgroup, css);
-> +			cur->last_oom_jiffies = jiffies;
-> +			css_put(css);
-> +		}
-> +		id = found + 1;
-> +	}
-> +	rcu_read_unlock();
-> +	return;
 
-redundant "return"
+static const unsigned short __mon_yday[2][13] = {
 
+please.
+
+> +	/* Normal years.  */
+> +	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+> +	/* Leap years.  */
+> +	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+> +};
+
+hm, I bet there are other places in the kernel where we use (or need)
+that table. 
+
+> +
+> +/*
+> + * returns day of the year [0-365]
+> + */
+> +static inline int
+> +compute_yday(efi_time_t *eft)
+> +{
+> +	/* efi_time_t.month is in the [1-12] so, we need -1 */
+> +	return rtc_year_days(eft->day - 1, eft->month - 1, eft->year);
 > +}
+> +/*
+> + * returns day of the week [0-6] 0=Sunday
+> + *
+> + * Don't try to provide a year that's before 1998, please !
+> + */
+> +static int
+> +compute_wday(efi_time_t *eft)
+> +{
+> +	int y;
+> +	int ndays = 0;
+> +
+> +	if (eft->year < 1998) {
+> +		printk(KERN_ERR "efirtc: EFI year < 1998, invalid date\n");
+> +		return -1;
+> +	}
+> +
+> +	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
+> +		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
+> +
+> +	ndays += compute_yday(eft);
+> +
+> +	/*
+> +	 * 4=1/1/1998 was a Thursday
+> +	 */
+> +	return (ndays + 4) % 7;
+> +}
+> +
+> +static void
+> +convert_to_efi_time(struct rtc_time *wtime, efi_time_t *eft)
+> +{
+> +
+
+dd
+
+> +	eft->year	= wtime->tm_year + 1900;
+> +	eft->month	= wtime->tm_mon + 1;
+> +	eft->day	= wtime->tm_mday;
+> +	eft->hour	= wtime->tm_hour;
+> +	eft->minute	= wtime->tm_min;
+> +	eft->second 	= wtime->tm_sec;
+> +	eft->nanosecond = 0;
+> +	eft->daylight	= wtime->tm_isdst ? EFI_ISDST : 0;
+> +	eft->timezone	= EFI_UNSPECIFIED_TIMEZONE;
+> +}
+> +
+> +static void
+> +convert_from_efi_time(efi_time_t *eft, struct rtc_time *wtime)
+> +{
+> +	memset(wtime, 0, sizeof(*wtime));
+> +	wtime->tm_sec  = eft->second;
+> +	wtime->tm_min  = eft->minute;
+> +	wtime->tm_hour = eft->hour;
+> +	wtime->tm_mday = eft->day;
+> +	wtime->tm_mon  = eft->month - 1;
+> +	wtime->tm_year = eft->year - 1900;
+> +
+> +	/* day of the week [0-6], Sunday=0 */
+> +	wtime->tm_wday = compute_wday(eft);
+> +
+> +	/* day in the year [1-365]*/
+> +	wtime->tm_yday = compute_yday(eft);
+> +
+> +
+> +	switch (eft->daylight & EFI_ISDST) {
+> +	case EFI_ISDST:
+> +		wtime->tm_isdst = 1;
+> +		break;
+> +	case EFI_TIME_ADJUST_DAYLIGHT:
+> +		wtime->tm_isdst = 0;
+> +		break;
+> +	default:
+> +		wtime->tm_isdst = -1;
+> +	}
+> +}
+> +
+> +static int efi_read_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
+> +{
+> +	efi_time_t eft;
+> +	efi_status_t status;
+> +
+> +	lock_kernel();
+> +
+> +	/*
+> +	 * As of EFI v1.10, this call always returns an unsupported status
+> +	 */
+> +	status = efi.get_wakeup_time((efi_bool_t *)&wkalrm->enabled,
+> +				     (efi_bool_t *)&wkalrm->pending, &eft);
+> +
+> +	unlock_kernel();
+
+eek.  The patch adds a great pile of lock_kernel() calls.  Everyone
+else is busily deleting them.
+
+Can we not do this?
+
+> +	if (status != EFI_SUCCESS)
+> +		return -EINVAL;
+> +
+> +	convert_from_efi_time(&eft, &wkalrm->time);
+> +
+> +	return rtc_valid_tm(&wkalrm->time);
+> +}
+> +
+>
+> ...
+>
