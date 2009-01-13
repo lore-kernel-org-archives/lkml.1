@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbZAMNdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZAMNdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbZAMNdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbZAMNdA
+	id S1759983AbZAMNdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbZAMNdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:33:00 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43738 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757605AbZAMNc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:32:59 -0500
-Message-ID: <496C9807.1010109@suse.de>
-Date: Tue, 13 Jan 2009 14:32:55 +0100
-From: Stefan Assmann <sassmann@suse.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Tue, 13 Jan 2009 08:33:25 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:45853 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759642AbZAMNdY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 08:33:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SNJwTeDMswKeoZs1fJ+7jbMzae0DDx9byghQxvAEupFtvfOCNGLIPEL97aSgIQoCDj
+         3XYFSHUnjdbLkznSz2NUVtzlRy20a+uSVXcmtl+wysZOjb27f9+U9YG9A6htUCC/jatq
+         3BK2iFPCIOCErz8IonMcytSyvTbpkC5nGO6Wk=
+Message-ID: <b6a2187b0901130533m118e9401k8a7152d6f5982708@mail.gmail.com>
+Date: Tue, 13 Jan 2009 21:33:23 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Cc: "Christian Borntraeger" <borntraeger@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090113132805.GE30352@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: Jon Masters <jcm@redhat.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
- interrupt equivalent
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain>	 <496B24E5.1070804@suse.de>  <200901121151.53195.bjorn.helgaas@hp.com> <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
-In-Reply-To: <1231788349.4094.21.camel@perihelion.bos.jonmasters.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl>
+	 <200901131342.44562.borntraeger@de.ibm.com>
+	 <20090113132805.GE30352@atrey.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon,
+On Tue, Jan 13, 2009 at 9:28 PM, Pavel Machek <pavel@suse.cz> wrote:
+>> Am Dienstag 13 Januar 2009 schrieb Rafael J. Wysocki:
+>> > On Tuesday 13 January 2009, Pavel Machek wrote:
+>> > > Hi!
+>> > >
+>> > > Just when I thought long merge window means less problems...
+>> > >
+>> > > ...suspend seemed to work until last tuesday or so. Now it hanged two
+>> > > times; once so hard that power button powercycle did not result in
+>> > > booting machine. (thinkpad x60)
+>> > >
+>> > > I'll do some more tests...
+>> >
+>> > There are a couple of things you may want to revert, like
+>> > 7503bfbae89eba07b46441a5d1594647f6b8ab7d and
+>> > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
+>> >
+>> > Please let me know if that helped.
+>>
+>> I tested rc1+ these two reverts yesterday on my T61p. Doesnt work. There must
+>> be at least one more patch that broke S2R on my thinkpad. In fact, it is cpu
+>> hotplug that is broken (unplug works).
+>
+> I reproduced that: echo 0 > online works, echo 1 > online hangs. Will
+> compile SMP-less kernel to verify that there are no more problems...
+>                                                                        Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Jon Masters wrote:
-> On Mon, 2009-01-12 at 11:51 -0700, Bjorn Helgaas wrote:
->> (I added Eric, Maciej, and Jon because they participated in
->> previous discussion here: http://lkml.org/lkml/2008/6/2/269)
-> 
-> Thanks. You know what I'd really like even more than being on the CC?
-> I'd *love* someone to post a link to documentation on how this actually
-> is supposed to work. We had to guess last time because none of the
-> public documentation actually explains this. The guys at SuSE likely
-> received some docs, but I'm not sure where from or the title thereof.
+I've a X61 running 32-bit and it's able to suspend-to-ram.
 
-Actually, most of the Boot Interrupt patches resulted from reading the
-intel specs and observing the behavior of failing machines. We're trying
-to wrap up all the information gathered in a paper, which is pretty time
-consuming and a few steps away from being ready to publish.
+Please see "[Bug #12422] 2.6.28-git can't resume from str" if it's
+fixes your problem. Try to pull Linus' latest tree first and you need
+apply only Rafael's latest patch.
 
-> If we all knew how this was supposed to work then we might have a much
-> better likelihood of fixing this behavior. It's only going to get worse
-> over time - we want to get threaded IRQs upstream (I'm about to be
-> poking at that again over here) and that'll mean mainline has to learn
-> to deal with these boot interrupts just as much as RT does today.
-
-At the moment I'm uploading the slides we showed at the 10th
-Real-Time Linux Workshop, which are a small, stripped down excerpt of
-our upcoming paper.
-
-It should be available soon at:
-ftp://ftp.suse.com/pub/people/sassmann/publication/boot_irq_quirks_rtlws10.pdf
-
-Meanwhile I'd suggest to have a look at United States Patent 6466998.
-That is intels patent for this interrupt routing mechanism.
-
-Hope this is helpful, we'll try to make more information available asap.
-
-> 
-> Jon.
-> 
-
-  Stefan
-
--- 
-Stefan Assmann          | SUSE LINUX Products GmbH
-Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
-Mail: sassmann@suse.de  | GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Thanks,
+Jeff.
