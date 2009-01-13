@@ -1,50 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbZAMOIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZAMOSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761021AbZAMOIl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761221AbZAMOI0
+	id S1759531AbZAMOSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZAMOSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:08:26 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:4470 "EHLO kernel.dk"
+	Tue, 13 Jan 2009 09:18:11 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36279 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761185AbZAMOIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:08:25 -0500
-Date: Tue, 13 Jan 2009 15:07:07 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, jack@suse.cz
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090113140706.GV30821@kernel.dk>
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu>
+	id S1752429AbZAMOSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:18:09 -0500
+Message-ID: <496CA26E.1080708@garzik.org>
+Date: Tue, 13 Jan 2009 09:17:18 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113140347.GD17664@mit.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, Matthew Wilcox <matthew@wil.cx>,
+       Benny Halevy <bhalevy@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com>	<1230739053.3408.74.camel@localhost.localdomain>	<4960D3CA.2000202@panasas.com>	<1231783926.3256.29.camel@localhost.localdomain>	<496B989F.7050907@garzik.org>	<1231790190.15161.29.camel@localhost.localdomain>	<496BA671.3070900@garzik.org>	<1231802758.27151.18.camel@localhost.localdomain>	<496C9ABE.8060300@garzik.org> <20090113140328.3aab5a35@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090113140328.3aab5a35@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13 2009, Theodore Tso wrote:
-> Adding a barrier shouldn't be that hard; just a matter adding a call
-> to blkdev_issue_flush() to ext2_sync_file() before it returns.
+Alan Cox wrote:
+>> It seems unlikely drive manufacturers would get excited about a 
+>> sub-optimal solution that does not even approach using the full 
+>> potential of the product.
 > 
-> BTW, I think there's a stale documentation bug in in
-> block/blk-barrier.c, around line 305:
+> You forgot the more important people
 > 
->   * Description:
->   *    Issue a flush for the block device in question. Caller can supply
->   *    room for storing the error offset in case of a flush error, if they
-> - *    wish to.  Caller must run wait_for_completion() on its own.
-> + *    wish to.
->   */
->  int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
->  {
+> Mr Customer, would you like your data centre to use a new magic OSD fs or
+> the existing one you trust.
 > 
-> Jens, is that right?
+> Now in my experience that is a *dumb* question because the answer is
+> obvious...
 
-Yep, that is indeed stale!
+The choice is between "new magic OSD fs" and "new fs that used to be 
+ext4, before we hacked it up".
 
--- 
-Jens Axboe
+"existing one you trust" is not an option...
+
+
+>> Plus, given the existence of an OSD-specific filesystem (exofs, at the 
+>> very least), it seems unlikely that end users who own OSDs would choose 
+>> the sub-optimal solution when an OSD-specific filesystem exists.
+> 
+> Actually until you can show zillions of users stably using them the
+> people with the money won't buy them in the first place 8)
+
+Yeah, at this point the discussion devolves into talk of carts, horses, 
+chickens and eggs...   :)
+
+
+>>> ready for the consumer market until 2011.  That's not really going to
+>>> convince the disk vendors that OSD based devices should be marketed
+>>> today.
+>> And you have a similar sales job and lag time, when hacking -- read 
+>> destabilizing -- a filesystem to work with OSDs as well as sector-based 
+>> devices.
+> 
+> 2011 sounds optimistic for major OSD adoption in any space except for
+> flash storage where OSD type knowledge means you can do much better jobs
+> on erase management.
+
+His number, not mine...
+
+At this point OSD is a fun and interesting research project.
+
+Overall, I think Linux should have OSD support so that we are ready for 
+whatever the future brings.  Even if OSD goes nowhere, it will still 
+have more users than many of the existing Linux drivers and architectures :)
+
+	Jeff
+
+
 
