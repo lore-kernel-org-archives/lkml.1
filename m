@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbZAMCPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZAMC2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757845AbZAMCPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZAMCPG
+	id S1757362AbZAMC2L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:28:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZAMC1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:15:06 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:51741 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbZAMCPF (ORCPT
+	Mon, 12 Jan 2009 21:27:55 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40953 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984AbZAMC1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:15:05 -0500
-Date: Mon, 12 Jan 2009 18:14:59 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090113021459.GB20594@localdomain>
-References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112230052.GB18771@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+	Mon, 12 Jan 2009 21:27:54 -0500
+Subject: Re: linux-next: Tree for January 12 (cifs vs. staging)
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Steve French <smfrench@gmail.com>, Greg KH <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sfrench@samba.org
+In-Reply-To: <37759.1231812066@turing-police.cc.vt.edu>
+References: <20090112154539.4857f533.sfr@canb.auug.org.au>
+	 <496B899E.7060605@oracle.com>
+	 <524f69650901121058g73c8022eif1d1bcca5c0e01fa@mail.gmail.com>
+	 <20090112191330.GC7111@suse.de>
+	 <524f69650901121307v67047946yed2c56efaaa839a1@mail.gmail.com>
+	 <37759.1231812066@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Mon, 12 Jan 2009 20:27:49 -0600
+Message-Id: <1231813669.6868.3.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 12:00:52AM +0100, Ingo Molnar wrote:
->
->
->> With per-cpu areas, locks belonging to different array elements did not 
->> end up on the same internode cacheline due to per-node allocation of 
->> per-cpu areas, but with a simple array, two locks could end up on the 
->> same internode cacheline.
->> 
->> Hence, can you please change the padding in smp_flush_state to 
->> INTERNODE_CACHE_BYTES (you have to derive this off 
->> INTERNODE_CACHE_SHIFT) and align it using 
->> ____cacheline_internodealigned_in_smp?
->
->Yes, that matters to vsmp, which has ... 4K node cache-lines.
->
->Note that there's already CONFIG_X86_INTERNODE_CACHE_BYTES which is set 
->properly on vsmp.
->
->So ... something like the commit below?
->
+On Mon, 2009-01-12 at 21:01 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 12 Jan 2009 15:07:48 CST, Steve French said:
+> 
+> > I have changed the names of cifs's md5 functions in the cifs-2.6.git tree
+> > 
+> > diff --git a/fs/cifs/md5.h b/fs/cifs/md5.h
+> > index f7d4f41..6fba8cb 100644
+> 
+> I presume there will be another git commit immediately following to fix
+> up the call sites?
 
-Yep.  Looks good!
+The git tree has the entire fix.  Steve's post just contained a piece of
+it.
 
-Acked-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-Thanks,
-Kiran
