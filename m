@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZAMX0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbZAMX1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbZAMX0u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZAMX0h
+	id S1759690AbZAMX1N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbZAMX0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:26:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38258
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755127AbZAMX0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:26:35 -0500
-Date: Tue, 13 Jan 2009 15:26:36 -0800 (PST)
-Message-Id: <20090113.152636.07760819.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4966F2F4.9080901@cosmosbay.com>
-References: <49667534.5060501@zeus.com>
-	<20090108.135515.85489589.davem@davemloft.net>
-	<4966F2F4.9080901@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 Jan 2009 18:26:53 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50295 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759530AbZAMX0w (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:26:52 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Rientjes <rientjes@google.com>, Bill Davidsen <davidsen@tmr.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+In-Reply-To: Your message of "Tue, 13 Jan 2009 14:54:08 +0300."
+             <20090113115408.GA22289@ioremap.net>
+From: Valdis.Kletnieks@vt.edu
+References: <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112161931.6203f96e@lxorguk.ukuu.org.uk> <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
+            <20090113115408.GA22289@ioremap.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1231889165_3146P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Jan 2009 18:26:05 -0500
+Message-ID: <30255.1231889165@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Fri, 09 Jan 2009 07:47:16 +0100
+--==_Exmh_1231889165_3146P
+Content-Type: text/plain; charset=us-ascii
 
-> I found this patch usefull in my testings, but had a feeling something
-> was not complete. If the goal is to reduce number of splice() calls,
-> we also should reduce number of wakeups. If splice() is used in non
-> blocking mode, nothing we can do here of course, since the application
-> will use a poll()/select()/epoll() event before calling splice(). A
-> good setting of SO_RCVLOWAT to (16*PAGE_SIZE)/2 might improve things.
+On Tue, 13 Jan 2009 14:54:08 +0300, Evgeniy Polyakov said:
 
-Spice read does not handle SO_RCVLOWAT like tcp_recvmsg() does.
+> Who should adjust the scores for newly created processes? Who should
+> check that processes in the first group have negative oom ajustment and
+> in the second group a positive value? Who determines when its time to
+> ajust the scores?
 
-We should probably add a:
+Are you saying that you, as the box's administrator, don't know the answers
+to those questions?
 
-	target = sock_rcvlowat(sk, flags & MSG_WAITALL, len);
+Or are you asking what the actual method of implementation is - which process
+is supposed to write to (possibly some other process) oom_adjust, and when?
 
-and check 'target' against 'spliced' in the main loop of
-tcp_splice_read().
+--==_Exmh_1231889165_3146P
+Content-Type: application/pgp-signature
 
-> About tcp_recvmsg(), we might also remove the "!timeo" test as well,
-> more testings are needed. But remind that if an application provides
-> a large buffer to tcp_recvmsg() call, removing the test will reduce
-> the number of syscalls but might use more DCACHE. It could reduce
-> performance on old cpus. With splice() call, we expect to not
-> copy memory and trash DCACHE, and pipe buffers being limited to 16,
-> we cope with a limited working set. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-I sometimes have a suspicion we can remove this test too, but it's
-not really that clear.
+iD8DBQFJbSMNcC3lWbTT17ARAj6DAJ9M/uF2RsFmrJw21Cz7272i5FA9QQCgxMAt
+icU1RDslBGRvR560V5JNTV4=
+=RZgH
+-----END PGP SIGNATURE-----
 
-If an application is doing non-blocking reads and they care about
-latency, they shouldn't be providing huge buffers.  This much I
-agree with, but...
-
-If you look at where this check is placed in the recvmsg() case, it is
-done after we have verified that there is no socket backlog.
-
-		if (copied >= target && !sk->sk_backlog.tail)
-			break;
-
-		if (copied) {
-			if (sk->sk_err ||
-			    sk->sk_state == TCP_CLOSE ||
-			    (sk->sk_shutdown & RCV_SHUTDOWN) ||
-			    !timeo ||
-			    signal_pending(current))
-				break;
-		} else {
-
-So either:
-
-1) We haven't met the target.  And note that target is one unless
-   the user makes an explicit receive low-water setting.
-
-2) Or there is no backlog.
-
-When we get to the 'if (copied)' check.
-
-You can view this "!timeo" check as meaning "non-blocking".  When
-we get to it, we are guarenteed that we haven't met the target
-and we have no backlog.  So it is absolutely appropriate to break
-out of recvmsg() processing here if non-blocking.
-
-There is a lot of logic and feature handling in tcp_splice_read() and
-that's why the semantics of "!timeo" cases are not being handled
-properly here.
+--==_Exmh_1231889165_3146P--
