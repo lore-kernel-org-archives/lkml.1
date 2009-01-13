@@ -1,130 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZAMRp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZAMRpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbZAMRp0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 12:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZAMRpL
+	id S1758169AbZAMRpx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 12:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZAMRpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 12:45:11 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:46975 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbZAMRpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 12:45:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=x-authentication-warning:message-id:in-reply-to:references:date
-         :subject:to:user-agent:mime-version:content-type
-         :content-transfer-encoding:x-priority:importance:from;
-        b=v8qG+30uBGdWsK3B9/fBHlV+0mcXXhcRoo0mnwLnj1DVtKTZLg3kKAEv6zf2WbRZXY
-         THwGZzMcDZL2y4LK/v3Ew8EozPVfm6T7gYZE7HpJ1wjqWkBkElFaw//2mUypXwvjOJCB
-         g1qajcX1qX6RFzxZikS/LRSX9OougKxGIGmt0=
-Message-ID: <1abb5d601cc91bdaa406e206cb92094f.squirrel@localhost>
-In-Reply-To: <20090113123056.GA2464@deprecation.cyrius.com>
-References: <200901121356.46236.elendil@planet.nl>
-    <20090113123056.GA2464@deprecation.cyrius.com>
-Date: Tue, 13 Jan 2009 11:45:01 -0600 (CST)
-Subject: Git as of 13-Jan-2009 build fail on OMAP3
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.16-1.fc10
+	Tue, 13 Jan 2009 12:45:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42095 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbZAMRpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 12:45:41 -0500
+Date: Tue, 13 Jan 2009 18:45:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, ying.huang@intel.com
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+Message-ID: <20090113174522.GA26965@elte.hu>
+References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu> <49594411.60000@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-From: david.hagood@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49594411.60000@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am attempting to build the stock kernel as pulled from the kernel GIT
-server for an OMAP3 platform, and am getting errors.
 
-The version I am working with (as displayed by "git show") is "commit
-e0b325d310a6b11f1538413fd557d2eb98f2fae5".
+* Andi Kleen <ak@linux.intel.com> wrote:
 
-The error is:
+> Ingo Molnar wrote:
+>
+>>>> A far more useful design for handling MCE events would be to feed 
+>>>> them into printk logging.
+>>> If there's ASCII logging it should be separate from normal printk.
+>>
+>> Well, why? 
+>
+> Mostly because the problem is not a kernel issue. Especially large 
+> systems with a lot of memory can generate a lot of corrected events (one 
+> bit flips in DIMMs are not that uncommon) and it's not good to mix that 
+> all up into other kernel messages. It also makes it more clear that it's 
+> not a kernel problem, but a hardware problem. I've got feedback over the 
+> years that confirm this sight.
 
+Is your argument that syslog is not suitable for the logging of hw events?
 
-  CC      arch/arm/mach-omap2/board-omap3beagle.o
-arch/arm/mach-omap2/board-omap3beagle.c: In function ‘beagle_twl_gpio_setup’:
-arch/arm/mach-omap2/board-omap3beagle.c:132: error: ‘TWL4030_GPIO_MAX’
-undeclared (first use in this function)
-arch/arm/mach-omap2/board-omap3beagle.c:132: error: (Each undeclared
-identifier is reported only once
-arch/arm/mach-omap2/board-omap3beagle.c:132: error: for each function it
-appears in.)
-arch/arm/mach-omap2/board-omap3beagle.c: At top level:
-arch/arm/mach-omap2/board-omap3beagle.c:141: error: variable
-‘beagle_gpio_data’ has initializer but incomplete type
-arch/arm/mach-omap2/board-omap3beagle.c:142: error: unknown field
-‘gpio_base’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:142: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:142: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:143: error: unknown field
-‘irq_base’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:143: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:143: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:144: error: unknown field
-‘irq_end’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:144: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:144: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:145: error: unknown field
-‘use_leds’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:145: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:145: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:146: error: unknown field
-‘pullups’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:146: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:146: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:147: error: unknown field
-‘pulldowns’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:148: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:148: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:149: error: unknown field ‘setup’
-specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:149: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:149: warning: (near initialization
-for ‘beagle_gpio_data’)
-arch/arm/mach-omap2/board-omap3beagle.c:152: error: variable
-‘beagle_twldata’ has initializer but incomplete type
-arch/arm/mach-omap2/board-omap3beagle.c:153: error: unknown field
-‘irq_base’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:153: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:153: warning: (near initialization
-for ‘beagle_twldata’)
-arch/arm/mach-omap2/board-omap3beagle.c:154: error: unknown field
-‘irq_end’ specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:154: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:154: warning: (near initialization
-for ‘beagle_twldata’)
-arch/arm/mach-omap2/board-omap3beagle.c:157: error: unknown field ‘gpio’
-specified in initializer
-arch/arm/mach-omap2/board-omap3beagle.c:157: warning: excess elements in
-struct initializer
-arch/arm/mach-omap2/board-omap3beagle.c:157: warning: (near initialization
-for ‘beagle_twldata’)
-arch/arm/mach-omap2/board-omap3beagle.c: In function ‘omap3_beagle_init’:
-arch/arm/mach-omap2/board-omap3beagle.c:308: error: ‘gpio’ undeclared
-(first use in this function)
-make[1]: *** [arch/arm/mach-omap2/board-omap3beagle.o] Error 1
-make: *** [arch/arm/mach-omap2] Error 2
+If that is your argument then the answer is to extend syslog with those 
+aspects, instead of widening the quirky /dev based mce ABIs to achieve 
+something similar.
 
-I do have the TWL4030 enabled in the config.
+If you think that it's suitable then that contradicts your point above.
 
-Has anybody else tried this?
+> [...]
+>
+> None of the points above are real show stoppers for an ASCII interface, 
+> but I think with all of this above together considered it's not really 
+> an attractive change.
+>
+> I think what could be done is:
+>
+> - Investigate how to make the panic message more information without 
+>   adding full decoders.
+>
+> - Implement the default panic timeout method 
+>   described above to get automatic on disk logging in common cases.
+>
+> Would that address your concerns?
 
+For me the main blocking point is that mcelog uses a quirky, binary 
+side-channel instead of using our main ASCII based logging abstraction 
+that we have in Linux: printk + syslog.
+
+That is a high level argument, while most of your arguments are low level. 
+I dont think you can understand my argument if you concentrate on the low 
+level only.
+
+We need to resolve this instead of expanding the broken /dev/mcelog 
+interface. If we expand the broken interface first then that removes all 
+the incentives to enhance the primary logging facility of Linux in this 
+area.
+
+Anyway, this merge window has been very crowded in the x86 space already, 
+and the MCE topic is not particularly super-important to have right now 
+either, so lets skip it for this cycle so that we have more time to 
+cleanly work out these details.
+
+Let me know if there are must-have fixes in it and we can cherry-pick it 
+over into x86/urgent.
+
+Thanks,
+
+	Ingo
