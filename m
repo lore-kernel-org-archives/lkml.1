@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZAMSlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbZAMSmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbZAMSlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 13:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZAMSkz
+	id S1758944AbZAMSmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 13:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZAMSmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 13:40:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38135 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753739AbZAMSky (ORCPT
+	Tue, 13 Jan 2009 13:42:10 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:37091 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754399AbZAMSmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 13:40:54 -0500
-Date: Tue, 13 Jan 2009 10:40:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Tue, 13 Jan 2009 13:42:09 -0500
+Date: Tue, 13 Jan 2009 10:42:02 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
 To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-In-Reply-To: <20090113183310.GA10065@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901131038260.6528@localhost.localdomain>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
- <1231867314.7141.16.camel@twins> <20090113183310.GA10065@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090113184202.GB8075@localdomain>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu> <1231848016.442.112.camel@twins> <20090113123317.GA29926@elte.hu> <20090113181311.GA8075@localdomain> <20090113183420.GB10065@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113183420.GB10065@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 13, 2009 at 07:34:20PM +0100, Ingo Molnar wrote:
+>
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> On Tue, Jan 13, 2009 at 01:33:17PM +0100, Ingo Molnar wrote:
+>> >
+>> >
+>> >VSMP is a clustering solution (default-disabled)
+>> 
+>> Small correction :)
+>> Well, it is a virtualization solution creating single VM across multiple
+>> systems.  Since it is shared memory, we would rather refer to it as SMP or
+>> Virtual SMP rather than a clustering solution.
+>
+>You do have hardware help too to do efficient cross-node memory traffic, 
+>dont you?
+>
 
-
-On Tue, 13 Jan 2009, Ingo Molnar wrote:
-> 
-> below is the v8 -> v10 delta patch - for all who'd like to review the 
-> changes.
-
-Hmm. This does seem to indicate that v10 lost many of the preempt changes. 
-Probably because Peter went back to v7 to create it.
-
-I also wonder about the timing numbers - the numbers were probably done 
-with some random version and then not re-done, so the commit message is 
-not necessarily "sane" in that respect - the timings quoted don't 
-necessarily match the code committed.
-
-		Linus
+Of course.  A fast backplane interconnect.
