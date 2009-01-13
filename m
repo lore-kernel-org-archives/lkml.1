@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZAMTNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZAMTQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbZAMTNM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 14:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZAMTM4
+	id S1754941AbZAMTQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 14:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZAMTQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 14:12:56 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:40957 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751602AbZAMTMz (ORCPT
+	Tue, 13 Jan 2009 14:16:15 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:39751 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZAMTQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 14:12:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vQx0EKrolFIo7p658gfmtgcU3UGJ/VJngeSZ/s5nUtL/PQcNQ0sd6HALomP5MJXe9q
-         Sql2LB2JSJt8f3b3D6Jlkr10Rq7nhaDgEVXwoDJxijiE/PGiAtjmZEY8UxSBzQ6HzJV9
-         nnx/3c6GTiom7tl3LvhwWs8cju67oPWDEsjVw=
-Date: Tue, 13 Jan 2009 22:12:53 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [PATCH -tip] x86: headers - fix export private data to
-	userspace
-Message-ID: <20090113191253.GB16663@localhost>
-References: <20090113183456.GA14470@localhost> <1231871832.16221.1.camel@brick> <496CE234.2070900@zytor.com> <20090113185239.GC14470@localhost> <496CE3A2.4060605@zytor.com> <20090113190007.GA16663@localhost> <496CE567.1040808@zytor.com>
+	Tue, 13 Jan 2009 14:16:14 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=yfDFbIw5xFHlN4oo6U3OueInNGnelM+duKLM3GNppVE+dNrDHGITTf4Ez8hpaiiFM
+	I0g86h0ia/ogEJ93n84AA==
+Date: Tue, 13 Jan 2009 11:15:26 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Evgeniy Polyakov <zbr@ioremap.net>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+In-Reply-To: <20090113115408.GA22289@ioremap.net>
+Message-ID: <alpine.DEB.2.00.0901131104420.8522@chino.kir.corp.google.com>
+References: <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112161931.6203f96e@lxorguk.ukuu.org.uk> <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com>
+ <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496CE567.1040808@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.24.198.97
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Tue, Jan 13, 2009 at 11:03:03AM -0800]
-| Cyrill Gorcunov wrote:
-| > | > | 
-| > | > | You can introduce symbols into the general namespace if *and only if*
-| > | > | they are in a header file that is invoked directly by the user.  In
-| > | > | other words, such a header file is unusable by libc, but setup.h doesn't
-| > | > | contain anything needed by libc in the first place.
-| > | > | 
-| > | > | 	-hpa
-| > | > | 
-| > | > 
-| > | > So we could just fence it by __KERNEL__?
-| > | > 
-| > | 
-| > | We might, as userspace shouldn't need COMMAND_LINE_SIZE anyway (see
-| > | other post), but I'm rather confused as how you got that from what I
-| > | wrote above.
-| > | 
-| > 
-| > The thing is that kernel headers are not only touched by libc.
-| > Someone could write a program and include setup.h there.
-| > Or I translated you wrong :)
-| > 
-| 
-| My whole point was that there are classes of symbols which may be
-| legitimately used by userspace *applications*, but not by libc.  Those
-| can live in the general namespace since they are included by explicit
-| user command.
-| 
-| 	-hpa
-| 
-| -- 
-| H. Peter Anvin, Intel Open Source Technology Center
-| I work for Intel.  I don't speak on their behalf.
-| 
+On Tue, 13 Jan 2009, Evgeniy Polyakov wrote:
 
-That is why I didn't fence COMMAND_LINE_SIZE by __KERNEL__ initialy
-and thought about if LILO could had been using it. Then I found a
-post in old-dated LKML that LILO has its own definition for
-such a symbol, then I asked you about boot protocol. I just
-didn't understand why you're confused but nevermind :)
+> Should this explain why ssh is killed?
+> 
 
-		- Cyrill -
+If you would like to make sshd immune from the oom killer, use
+
+	echo -17 > /proc/$(pidof sshd)/oom_adj
+
+just like any other task.  This score will be inherited by any task that 
+it executes, so you'll probably want to readjust your shell's oom_adj 
+score appropriately in your rc file.
+
+> It is very subtle approach. Consider the case when you have a pool of
+> threads/processes which are created and released on demand, there are
+> several such pools for different servers and you do know which one
+> will very likely being guilty.
+> 
+> Who should adjust the scores for newly created processes? Who should
+> check that processes in the first group have negative oom ajustment and
+> in the second group a positive value? Who determines when its time to
+> ajust the scores?
+> 
+
+It is userspace's responsibility to set the policy, the kernel merely 
+provides the mechanism.
+
+> > With oom_adj scores, you have the ability to specify oom kill preferences 
+> > within a cpuset or memory controller as well, whereas oom_victim_name is 
+> > global and very costly when not found in select_bad_process().
+> >
+
+You chose not to respond to this, which is a major flaw in your approach.  
+
+Your patch makes cpuset and memory controller oom killing much slower 
+because it requires two iterations through the system tasklist when your 
+global oom_victim_name task is either not running or in a disjoint cpuset 
+or memcg.
+
+> It is not really costly, since most of the time we skip an entry and do
+> not lock the task and do not calculate its badness value. No one scares
+> that 'ps ax' is costly because it has to run through all the processes.
+> 
+
+Talk to SGI about oom killer tasklist scans for their large systems; it 
+was a prerequisite for me to provide /proc/sys/vm/oom_kill_allocating_task 
+to avoid a single scan when I made cpuset-constrained ooms go through 
+select_bad_process().
