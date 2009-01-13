@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZAMJi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbZAMJpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbZAMJi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 04:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZAMJip
+	id S1759360AbZAMJpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 04:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZAMJo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 04:38:45 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:35393 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbZAMJio (ORCPT
+	Tue, 13 Jan 2009 04:44:56 -0500
+Received: from rankki.sonarnerd.net ([83.145.240.118]:6910 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755926AbZAMJoy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 04:38:44 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ata: fix wrong WARN_ON_ONCE
-Date: Tue, 13 Jan 2009 10:38:36 +0100
-User-Agent: KMail/1.9.9
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-References: <200901091334.55823.borntraeger@de.ibm.com> <4968BA6F.8050207@ru.mvista.com> <20090110152800.44308491@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090110152800.44308491@lxorguk.ukuu.org.uk>
+	Tue, 13 Jan 2009 04:44:54 -0500
+Message-ID: <496C6294.2040707@sonarnerd.net>
+Date: Tue, 13 Jan 2009 11:44:52 +0200
+From: Jussi Laako <jussi@sonarnerd.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Multimedia scheduling class
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net> <1231756114.19771.6.camel@laptop>
+In-Reply-To: <1231756114.19771.6.camel@laptop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901131038.36593.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff, Alan,
+Peter Zijlstra wrote:
+> 
+> Well, that's not my problem is it ;-), just batter them with a
+> clue-stick, no need to fudge the kernel for that.
 
-this is still not fixed upstream. What about:
+Sure, been doing that already... :)
+There's just sort of a huge gap between rt-schedulers and the normal
+scheduler.
 
-[PATCH] ata: fix wrong WARN_ON_ONCE
+> Right, which is where deadline scheduling would be nice. Once you start
+> running into the budget throttle you know you've got to start dropping
+> frames in order to keep up.
+> 
+> The proposal is for it to start sending SIGXCPU once it starts
+> throttling tasks in order to notify them of missed deadlines etc.
 
-This patch fixes a wrong WARN_ON that was triggered by 32bit PIO support:
-WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+For sure this is nice for certain tasks. I'm not entirely convinced if
+the average media player or Flash-plugin would or should start using these.
 
-__atapi_pio_bytes simply doesnt know enough to decide if there is a bug.
+I believe both approaches could co-exist to address different needs.
+SCHED_MM is for the average software and is in a sense similar to
+SCHED_BATCH and SCHED_IDLE, just targeting different use cases.
+Modification is reasonably small and shouldn't have any impact when not
+used. Deadline scheduler would probably belong to the
+SCHED_RR/SCHED_FIFO family?
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
- drivers/ata/libata-sff.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+> Like said, deadline schedulers can help here. You can even dynamically
+> adjust the parameters -- eg. fall back to half frame rate but double
+> budget or something.
 
-Index: linux-2.6/drivers/ata/libata-sff.c
-===================================================================
---- linux-2.6.orig/drivers/ata/libata-sff.c
-+++ linux-2.6/drivers/ata/libata-sff.c
-@@ -1013,9 +1013,12 @@ next_sg:
- 		qc->cursg_ofs = 0;
- 	}
- 
--	/* consumed can be larger than count only for the last transfer */
--	WARN_ON_ONCE(qc->cursg && count != consumed);
--
-+	/*
-+	 * There used to be a  WARN_ON_ONCE(qc->cursg && count != consumed);
-+	 * Unfortunately __atapi_pio_bytes doesn't know enough to do the WARN
-+	 * check correctly as it doesn't know if it is the last request being
-+	 * made. Somebody should implement a proper sanity check.
-+	 */
- 	if (bytes)
- 		goto next_sg;
- 	return 0;
+Managing the budget in an average system will be painful. In a
+completely embedded environment this is of course rather straightforward.
