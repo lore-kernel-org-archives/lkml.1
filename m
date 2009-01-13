@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbZAMJtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZAMJye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760178AbZAMJtv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 04:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZAMJtm
+	id S1760161AbZAMJye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 04:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbZAMJy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 04:49:42 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57486 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbZAMJtl (ORCPT
+	Tue, 13 Jan 2009 04:54:26 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50235 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755440AbZAMJyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 04:49:41 -0500
-Date: Tue, 13 Jan 2009 10:49:32 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-ID: <20090113094932.GH31787@enneenne.com>
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <20090106225744.GA10553@infradead.org> <20090106151915.df138883.akpm@linux-foundation.org> <20090108191152.GU15123@enneenne.com> <20090112202336.GB27636@infradead.org>
+	Tue, 13 Jan 2009 04:54:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=O2v2s8KIio/JvENO5zBS1KuZbBP+cUzKJctcx0FajBsLgpadEqzNwZRR6JN4HnbQn
+	1x1t4v1HsR+uQ3KgvClWw==
+Date: Tue, 13 Jan 2009 01:54:02 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Evgeniy Polyakov <zbr@ioremap.net>
+cc: Bill Davidsen <davidsen@tmr.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+In-Reply-To: <20090113085244.GA13796@ioremap.net>
+Message-ID: <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
+References: <20090112153304.GA19995@ioremap.net> <20090112154922.6003750b@lxorguk.ukuu.org.uk> <20090112155030.GA21063@ioremap.net> <20090112155239.5f677a17@lxorguk.ukuu.org.uk> <20090112155615.GA21350@ioremap.net> <20090112161931.6203f96e@lxorguk.ukuu.org.uk>
+ <20090112162938.GA22647@ioremap.net> <496BCB7A.2010804@tmr.com> <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090112202336.GB27636@infradead.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: 2.6.29 -mm merge plans
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.24.198.65
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 03:23:36PM -0500, Christoph Hellwig wrote:
-> On Thu, Jan 08, 2009 at 08:11:53PM +0100, Rodolfo Giometti wrote:
-> > With "kernel-doc" do you mean what explained into
-> > Documentation/kernel-doc-nano-HOWTO.txt file?
+On Tue, 13 Jan 2009, Evgeniy Polyakov wrote:
+
+> It is a theory, not a practice. OOM-killer most of time starts from ssh,
+> database and lighttpd on the tested machines, when it could start in
+> the reverse order and do not touch ssh at all. Better not from daemon
+> itself, but its fastcgi spawned processes.
 > 
-> Yes.
 
-Ok, I'll fix it ASAP.
+In the unconstrained system-wide oom case, it scans each task on the 
+system (which can take very long, ask SGI) and rates its badness scoring.  
+When a memory-hogging task is identified, which you have complete control 
+over in userspace by tuning /proc/pid/oom_adj, it attempts to kill a child 
+first if it will allow for memory freeing without killing the parent.
 
-> > > > pps.h shoulkd be split into one header only defining the
-> > > > kernel<->userspace ABI, and a kernel-internal one.  That way
-> > > > also the conditional includes can go away.
-> > 
-> > I don't understand well what I should do here... I supposed __KERNEL__
-> > define was defined to allow mixing kernel and userland code.
-> 
-> Yes, __KERNEL__ works, but it's still better to just keep things
-> entirely separate.
+> I agree, that there are ways to tune the way oom-killer selects the
+> victim, and likely after hours of games this subtly will work for the
+> specified workload.
 
-Ok, I'll see what I can do considering the userland interface we
-decide to use. I'll ask also to Alan about this topic.
+It doesn't involve "hours of games," it is a very simple heuristic that 
+you can easily tune to specify your preferences.
 
-Thanks for your suggestions,
+What you're looking for with your patch is simply a way to specify an oom 
+preference before the task has been forked, but that's simple to do with 
+the current logic since oom_adj scores are inherited and preference is 
+given to killing a child before parent.
 
-Rodolfo
+> What I propose is the simplest way for the most
+> commonly used case.
 
--- 
+No, procfs is the correct interface for tuning oom kill preferences and 
+not by name parsing.
 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
+With oom_adj scores, you have the ability to specify oom kill preferences 
+within a cpuset or memory controller as well, whereas oom_victim_name is 
+global and very costly when not found in select_bad_process().
+
+> It is a help for the admin and not the force to
+> invent complex machinery which will be error-prone and hard to debug
+> when eventually oom happens.
+
+It's very simple to debug the oom killer's decisions, which is why I 
+introduced /proc/sys/vm/oom_dump_tasks.
+
+It also requires two expensive scans of the entire tasklist (I introduced 
+/proc/sys/vm/oom_kill_allocating_task specifically to avoid _one_ 
+expensive scan) when oom_victim_name isn't found.
