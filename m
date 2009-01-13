@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbZAMMLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZAMMOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbZAMMLj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZAMMLT
+	id S1756940AbZAMMOm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZAMMOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:11:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56007 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757396AbZAMMLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:11:18 -0500
-Date: Tue, 13 Jan 2009 12:11:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jonker M.D.S.X." <nlv14114@e3.nl-htc01.nxp.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       m.d.s.x.jonker@gmail.com
-Subject: Re: [PATCH] serial: pnx8xxx_uart: Fix break signal handling
-Message-ID: <20090113121135.5565b302@lxorguk.ukuu.org.uk>
-In-Reply-To: <200901131109.n0DB9DRJ010712@pc67243907.ddns.nl-htc01.nxp.com>
-References: <200901131109.n0DB9DRJ010712@pc67243907.ddns.nl-htc01.nxp.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 07:14:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46840 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbZAMMOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:14:33 -0500
+Date: Tue, 13 Jan 2009 13:14:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Mike Travis <travis@sgi.com>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090113121426.GA29149@elte.hu>
+References: <20090112213539.GA10720@gambetta> <496BCA21.2010709@sgi.com> <20090112235156.GC10720@gambetta> <496BD8FB.1050101@sgi.com> <20090113000112.GA10368@elte.hu> <20090113033608.GN23848@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113033608.GN23848@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 12:09:13 +0100
-"Jonker M.D.S.X." <nlv14114@e3.nl-htc01.nxp.com> wrote:
 
-> From: Mischa Jonker <mischa.jonker@nxp.com>
-> 
-> When a break signal is detected, the next character should be ignored.
-> This was not implemented correctly for the pnx8xxx_uart driver.
-> 
-> Signed-off-by: Mischa Jonker <mischa.jonker@nxp.com>
-> ---
-> 
-> diff --git a/drivers/serial/pnx8xxx_uart.c b/drivers/serial/pnx8xxx_uart.c
-> index 22e30d2..1bb8f1b 100644
-> --- a/drivers/serial/pnx8xxx_uart.c
-> +++ b/drivers/serial/pnx8xxx_uart.c
-> @@ -187,7 +187,7 @@ static void pnx8xxx_rx_chars(struct pnx8xxx_port *sport)
->  	status = FIFO_TO_SM(serial_in(sport, PNX8XXX_FIFO)) |
->  		 ISTAT_TO_SM(serial_in(sport, PNX8XXX_ISTAT));
->  	while (status & FIFO_TO_SM(PNX8XXX_UART_FIFO_RXFIFO)) {
-> -		ch = serial_in(sport, PNX8XXX_FIFO);
-> +		ch = serial_in(sport, PNX8XXX_FIFO) & 0xff;
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-This appears to be unrelated.
+> > > (And was it determined yet, that a cacheline has to be tossed around 
+> > > as well?)
+> > 
+> > No, that assertion of Andi is wrong.
+> 
+> For the IPI you always have to toss one cache line around to pass the 
+> information.
+> 
+> Anyways the padding is just to avoid false sharing.
+
+Which is a red herring - the padding was there before the patch, and is 
+there after the patch as well.
+
+	Ingo
