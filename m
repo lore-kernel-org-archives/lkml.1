@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZAMITd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbZAMIXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbZAMITd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZAMITY
+	id S1758493AbZAMIXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZAMIXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:19:24 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:45180 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbZAMITX convert rfc822-to-8bit (ORCPT
+	Tue, 13 Jan 2009 03:23:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56168 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbZAMIXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:19:23 -0500
-Message-Id: <496C5CBB.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 13 Jan 2009 08:19:55 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: x86: meaning of nolapic command line option
-References: <496790D1.76E4.0078.0@novell.com>
- <20090111024642.GA7077@elte.hu>
-In-Reply-To: <20090111024642.GA7077@elte.hu>
+	Tue, 13 Jan 2009 03:23:12 -0500
+Subject: [PATCH -tip] socket.h: extern's make no sense in userspace
+From: Jaswinder Singh Rajput <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, netdev <netdev@vger.kernel.org>,
+       sam@ravnborg.org, harvey.harrison@gmail.com, gorcunov@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 13:50:55 +0530
+Message-Id: <1231834855.3212.35.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 11.01.09 03:46 >>>
->
->* Jan Beulich <jbeulich@novell.com> wrote:
->
->> Shouldn't that option imply that all APIC related activity, including 
->> that relating to IO-APICs or PCI MSI, should be circumvented? I'm 
->> finding that MSI must be disabled separately, and while most of the 
->> IO-APIC stuff is indeed not happening, acpi_get_override_irq() only 
->> checks skip_ioapic_setup, but that doesn't normally set without the 
->> noapic command line option.
->> 
->> Is there any reason pci_no_msi() and disable_ioapic_setup() shouldn't be 
->> called when !cpu_has_apic at the end of identify_cpu()?
->
->Yes, both depend on a lapic and they might limp on with whatever the BIOS 
->gave us, you are right that it should be disabled explicitly. Mind sending 
->a patch?
+Impact: fix 2 make headers_check warnings:
 
-I will - just wanted to see whether there's some hidden reason behind the
-current way this is coded. Actually, I meanwhile realized that doing this
-somply based on !cpu_has_apic wouldn't be right, it should (at least for
-32-bits) also depend on APIC_INTEGRATED() - just like e.g. done in
-APIC_init_uniprocessor().
+usr/include/linux/socket.h:27: leaks CONFIG_PROC to userspace where it is not valid
+usr/include/linux/socket.h:29: extern's make no sense in userspace
 
-Jan
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/socket.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 20fc4bb..f5771a2 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -24,11 +24,6 @@ struct __kernel_sockaddr_storage {
+ #include <linux/types.h>		/* pid_t			*/
+ #include <linux/compiler.h>		/* __user			*/
+ 
+-#ifdef CONFIG_PROC_FS
+-struct seq_file;
+-extern void socket_seq_show(struct seq_file *seq);
+-#endif
+-
+ typedef unsigned short	sa_family_t;
+ 
+ /*
+@@ -303,6 +298,11 @@ struct ucred {
+ #define IPX_TYPE	1
+ 
+ #ifdef __KERNEL__
++#ifdef CONFIG_PROC_FS
++struct seq_file;
++extern void socket_seq_show(struct seq_file *seq);
++#endif
++
+ extern int memcpy_fromiovec(unsigned char *kdata, struct iovec *iov, int len);
+ extern int memcpy_fromiovecend(unsigned char *kdata, struct iovec *iov, 
+ 				int offset, int len);
+-- 
+1.5.6.6
+
+
 
