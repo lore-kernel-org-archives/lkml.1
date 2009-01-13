@@ -1,110 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbZAMNkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZAMNo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbZAMNkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 08:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZAMNj6
+	id S1757687AbZAMNo6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 08:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZAMNop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 08:39:58 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36190 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356AbZAMNj5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 08:39:57 -0500
-Date: Tue, 13 Jan 2009 14:42:05 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, jack@suse.cz
-Subject: ext2 triggers WARN_ON() when media is unplugged.
-Message-ID: <20090113134203.GA4354@elf.ucw.cz>
+	Tue, 13 Jan 2009 08:44:45 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33855 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753117AbZAMNoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 08:44:44 -0500
+Message-ID: <496C9ABE.8060300@garzik.org>
+Date: Tue, 13 Jan 2009 08:44:30 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Matthew Wilcox <matthew@wil.cx>,
+       Benny Halevy <bhalevy@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	 <20081229121423.efde9d06.akpm@linux-foundation.org>	 <495B8D90.1090004@panasas.com>	 <1230739053.3408.74.camel@localhost.localdomain>	 <4960D3CA.2000202@panasas.com>	 <1231783926.3256.29.camel@localhost.localdomain>	 <496B989F.7050907@garzik.org>	 <1231790190.15161.29.camel@localhost.localdomain>	 <496BA671.3070900@garzik.org> <1231802758.27151.18.camel@localhost.localdomain>
+In-Reply-To: <1231802758.27151.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.29-rc1-git, pretty reproducible: mount -osync, start write
-workload, pull the drive.
-									Pavel
+James Bottomley wrote:
+> On Mon, 2009-01-12 at 15:22 -0500, Jeff Garzik wrote: 
+>> If Seagate were to release a production OSD device, do you really think 
+>> they would prefer a block-based filesystem hacked to work with OSDs?  I 
+>> don't think so.
+> 
+> Um, speaking with my business hat on, I'd really beg to differ ... you
+> don't release a product into an empty market.  you pick an existing one,
+> or fill a fundamental need that a market nucleates around.  If that
+> means block based filesystems hacked to work with OSDs, I think they'd
+> take it, yes.
+
+It seems unlikely drive manufacturers would get excited about a 
+sub-optimal solution that does not even approach using the full 
+potential of the product.
+
+Plus, given the existence of an OSD-specific filesystem (exofs, at the 
+very least), it seems unlikely that end users who own OSDs would choose 
+the sub-optimal solution when an OSD-specific filesystem exists.
 
 
-...
-scsi 1:0:0:0: Direct-Access     ATA      Hitachi HTS54168 SB2O PQ: 0 ANSI: 5
-sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
- sdb: sdb1 sdb2 sdb3
-sd 1:0:0:0: [sdb] Attached SCSI disk
-sd 1:0:0:0: Attached scsi generic sg1 type 0
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: recovery complete.
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-ata2.00: configured for UDMA/100
-ata2: EH complete
-sd 1:0:0:0: [sdb] 156301488 512-byte hardware sectors: (80.0 GB/74.5 GiB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 1:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
-ata2: exception Emask 0x10 SAct 0x0 SErr 0x90200 action 0xe frozen
-ata2: irq_stat 0x00400000, PHY RDY changed
-ata2: SError: { Persist PHYRdyChg 10B8B }
-ata2: hard resetting link
-ata2: SATA link down (SStatus 0 SControl 300)
-ata2: hard resetting link
-ata2: SATA link down (SStatus 0 SControl 300)
-ata2: hard resetting link
-ata2: SATA link down (SStatus 0 SControl 300)
-ata2.00: disabled
-ata2: EH complete
-sd 1:0:0:0: rejecting I/O to offline device
-sd 1:0:0:0: [sdb] Unhandled error code
-sd 1:0:0:0: [sdb] Result: hostbyte=0x01 driverbyte=0x00
-end_request: I/O error, dev sdb, sector 4991
-Buffer I/O error on device sdb1, logical block 616
-lost page write due to I/O error on sdb1
-ata2.00: detaching (SCSI 1:0:0:0)
-ahci: autosuspend disabled
-sd 1:0:0:0: [sdb] Stopping disk
-sd 1:0:0:0: [sdb] START_STOP FAILED
-sd 1:0:0:0: [sdb] Result: hostbyte=0x04 driverbyte=0x00
-------------[ cut here ]------------
-WARNING: at /data/l/linux/fs/buffer.c:1250 mark_buffer_dirty+0x66/0x80()
-Hardware name: ANT
-Modules linked in:
-Pid: 2970, comm: umount Not tainted 2.6.29-rc1 #263
-Call Trace:
- [<ffffffff8023da92>] warn_slowpath+0xf2/0x130
- [<ffffffff80273502>] find_get_pages+0x32/0xd0
- [<ffffffff8027ac67>] pagevec_lookup+0x17/0x20
- [<ffffffff8027b378>] truncate_inode_pages_range+0x188/0x360
- [<ffffffff80297833>] cache_free_debugcheck+0x103/0x230
- [<ffffffff802bcd56>] mark_buffer_dirty+0x66/0x80
- [<ffffffff80331249>] ext2_sync_super+0x39/0x60
- [<ffffffff803320bc>] ext2_put_super+0xdc/0x100
- [<ffffffff8029dfbb>] generic_shutdown_super+0x6b/0x110
- [<ffffffff8029e089>] kill_block_super+0x29/0x50
- [<ffffffff8029e16f>] deactivate_super+0x5f/0x80
- [<ffffffff802b2746>] sys_umount+0x76/0x380
- [<ffffffff8022bb72>] ia32_sysret+0x0/0xa
----[ end trace 1a98d19d85775109 ]---
-scsi 1:0:0:0: rejecting I/O to dead device
+>>> Note that "providing benefit to" does not equate to "rewriting the
+>>> filesystem for" ... and it shouldn't; the benefit really should be
+>>> incremental.  And that's the crux of my criticism.  While OSD are
+>>> separate things that we have to rewrite whole filesystems for, they're
+>>> never going to set the world on fire.  If they could be used with only
+>>> incremental effort, they might.  The bridge for the incremental effort
+>>> will come from a properly designed kernel API.
+>> Well, hey, if you wanna expend energy creating a kernel API that 
+>> presents a complex OSD as simple block-based storage, go for it.  AFAICS 
+>> it's just extra overhead and complexity when a new filesystem could do 
+>> the job much better.
+> 
+> Because writing a new filesystem is so much easier?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, easier -- both technically and politically -- than hacking XFS or 
+ext4 to support two vastly different storage APIs (linear sector or 
+object-based).
+
+It might be a tad easier to hack btrfs to do objects.
+
+
+>>>> * an in-kernel OSD-based filesystem needs some sort of generic in-kernel 
+>>>> libosd API, so that multiple OSD filesystems do not reinvent the wheel 
+>>>> each time.
+>>>>
+>>>> * OSD was bound to be annoying, because it forces the kernel filesystem 
+>>>> to either (a) talk SCSI or (b) use messages that can be converted to 
+>>>> SCSI OSD commands, like existing drivers convert the block layer's READ 
+>>>> and WRITE to device-specific commands.
+>>> OK, so what you're arguing is that unlike block devices where we can
+>>> produce a useful generic abstraction that is protocol agnostic, for OSD
+>>> we can't?  As I've said before, I think this might be true, but fear it
+>>> dooms OSD to being too difficult to use.
+>> No, a generic abstraction is "(b)" in my quoted paragraph.
+>>
+>> But it's certainly easy to create an OSD block device client, that 
+>> simulates sector-based storage, if you are motivated in that direction.
+>>
+>> But that only makes sense if you want the extra overhead (square peg, 
+>> round hole), which no sane person will want.  Face it, only screwballs 
+>> want to mount ext4 on an OSD.
+> 
+> So what's your proposal for lowering the barrier to adoption then?
+
+Once exofs is in upstream, installers can easily choose that when an OSD 
+device is detected.
+
+
+> Filesystems are complex and difficult beasts to get right.  Btrfs took a
+> year to get to the point of kernel inclusion and will take some little
+> time longer to get enterprises to the point of trusting data to it.  So
+> if we say a two year lead time, that would mean that even if someone
+> started a general purpose OSD based filesystem today, it wouldn't be
+> ready for the consumer market until 2011.  That's not really going to
+> convince the disk vendors that OSD based devices should be marketed
+> today.
+
+And you have a similar sales job and lag time, when hacking -- read 
+destabilizing -- a filesystem to work with OSDs as well as sector-based 
+devices.
+
+	Jeff
+
+
+
