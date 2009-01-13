@@ -1,38 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbZAMDbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbZAMDef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758253AbZAMDbh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 22:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbZAMDb3
+	id S1758319AbZAMDef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 22:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZAMDeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 22:31:29 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:28031 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbZAMDb1 (ORCPT
+	Mon, 12 Jan 2009 22:34:23 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:54465 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbZAMDeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 22:31:27 -0500
-X-IronPort-AV: E=Sophos;i="4.37,256,1231113600"; 
-   d="scan'208";a="59271805"
-From: Roland Dreier <rdreier@cisco.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH mmotm] infiniband: fix iser dependency
-References: <200901122101.n0CL1fnr017411@imap1.linux-foundation.org>
-	<496BCD45.7010005@oracle.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 12 Jan 2009 19:31:26 -0800
-In-Reply-To: <496BCD45.7010005@oracle.com> (Randy Dunlap's message of "Mon, 12
-	Jan 2009 15:07:49 -0800")
-Message-ID: <adar637lw4x.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 12 Jan 2009 22:34:22 -0500
+Date: Mon, 12 Jan 2009 19:34:20 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, shemminger@vyatta.com, arnd@arndb.de,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090113033420.GA11065@ovro.caltech.edu>
+Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, shemminger@vyatta.com, arnd@arndb.de,
+	netdev@vger.kernel.org
+References: <20090107195052.GA24981@ovro.caltech.edu> <20090108192716.GA19863@ovro.caltech.edu> <20090108215127.GA28935@ovro.caltech.edu> <200901131302.52754.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Jan 2009 03:31:26.0403 (UTC) FILETIME=[6A4BB930:01C9752F]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <200901131302.52754.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Mon, 12 Jan 2009 19:34:22 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, I guess we broke this when we added IPv6 support to the rdma_xxx
-stuff (INFINIBAND_ISER can be selected with INET=y but IPV6=n in the
-current tree, which I guess is how you saw this failure).  applied...
+On Tue, Jan 13, 2009 at 01:02:52PM +1030, Rusty Russell wrote:
+> On Friday 09 January 2009 08:21:27 Ira Snyder wrote:
+> > Rusty, since you wrote the virtio code, can you point me at the things I
+> > would need to implement to use virtio over the PCI bus.
+> > 
+> > The guests (PowerPC computers running Linux) are PCI cards in the host
+> > system (an Intel Pentium3-M system). The guest computers can access all
+> > of the host's memory. The guests provide a 1MB (movable) window into
+> > their memory.
+> > 
+> > The PowerPC computers also have a DMA controller, which I've used to get
+> > better throughput from my driver. I have a way to create interrupts to
+> > both the host and guest systems.
+> > 
+> > I've read your paper titled: "virtio: Towards a De-Facto Standard For
+> > Virtual I/O Devices"
+> > 
+> > If I read that correctly, then I should implement all of the functions
+> > in struct virtqueue_ops appropriately, and the existing virtio drivers
+> > should just work. The only concern I have there is how to make guest ->
+> > host transfer use the DMA controller. I've done all programming of it
+> > from the guest kernel, using the Linux DMAEngine API.
+> 
+> Hi Ira,
+> 
+>    Interesting system: the guest being able to access the host's memory but not (fully) vice-versa makes this a little different from the current implementations where that was assumed.  virtio assumes that the guest will publish buffers and someone else (ie. the host) will access them.
+> 
+
+The guest system /could/ publish all of its RAM, but with 256MB per
+board, 19 boards per cPCI crate, that's way too much for a 32-bit PC to
+map into it's memory space. That's the real reason I use the 1MB
+windows. I could make them bigger (16MB would be fine, I think), but I
+doubt it would make much of a difference to the implementation.
+
+>    > Are there any other implementations other than virtio_ring?
+> 
+>    There were some earlier implementations, but they were trivial.  And not particularly helpful in your case.
+> 
+> In summary, yes, it should work quite nicely, but rather than publishing the buffers to the host, the host will need to tell the guest where it wants them transferred (possibly using that 1M window, and a notification mechanism).  That will be the complex part I think.
+> 
+
+I've got a system like that right now in the driver that started this
+thread. I tried to mimic the buffer descriptor rings in a network card.
+The virtio system doesn't seem to be too different. I can probably work
+something out.
+
+What's keeping me from getting started is what to do with the
+virtqueue_ops structure once I've got the functions to fill it in. There
+isn't a register_virtqueue_ops() function. I'm not at all sure when to
+use a struct virtio_driver or a struct virtio_device. I hunch I need one
+of these.
+
+If I've understood this whole thing correctly, then I should be able to
+register a virtio_ops on both sides, and then insmod virtio_net and
+virtio_console, and have them "just work".
+
+I guess what I'm looking for is something trivial, something that'll
+insmod and printk() whenever one of the virtqueue_ops pointers is
+called. Something like a template. That's how I really learned when all
+of the uart functions are called, for example.
+
+Thanks,
+Ira
