@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZAMOqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbZAMOuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbZAMOqz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZAMOqq
+	id S1760659AbZAMOuO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZAMOt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:46:46 -0500
-Received: from thunk.org ([69.25.196.29]:38788 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754928AbZAMOqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:46:46 -0500
-Date: Tue, 13 Jan 2009 09:46:40 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090113144640.GE17664@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz>
+	Tue, 13 Jan 2009 09:49:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:40929 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753511AbZAMOt6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:49:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Qd9BcUesgqU6X0qwf5xffzzuQNTR/whdSntDVr0SIy5dpN2/CmljVKAmqeB74er4Ot
+         InitpWRa2Hh2MCZic2+NudIbdu9L6Dgq/vBFrAKGHNnJfojAgM0Zj2lnjgoMNbZzEEgc
+         YVHKkQJU3MgF93nl0+jcrJNuMchxLjHWZxjts=
+Date: Tue, 13 Jan 2009 17:49:56 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Subject: Re: [PATCH -tip] x86: headers - include linux/types.h instead of
+	asm/types.h
+Message-ID: <20090113144956.GJ7682@localhost>
+References: <20090113120905.GB7682@localhost> <20090113125705.GC7682@localhost> <20090113125928.GA31147@elte.hu> <20090113131020.GD7682@localhost> <20090113144505.GA4488@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090113143011.GB10064@duck.suse.cz>
+In-Reply-To: <20090113144505.GA4488@elte.hu>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 03:30:12PM +0100, Jan Kara wrote:
-> 
->   But it's not the whole story. Strictly speaking we should also call
-> blkdev_issue_flush() whenever we write things because of O_SYNC or
-> O_DIRSYNC flags. My patch does also that (it's based on the previous ext2
-> patch I've sent a while before).
+[Ingo Molnar - Tue, Jan 13, 2009 at 03:45:05PM +0100]
+...
+| > 
+| > Until such a file not passed to some *.S. For example for e820.h we have 
+| > it included to arch/x86/boot/header.S but fortunately we're bound by 
+| > __ASSEMBLY__. So there linux/types.h shouldn't hurt. Will check others 
+| > and report then.
+| 
+| Any reason to not protect types.h with #ifndef __ASSEMBLY__ ?
+| 
+| 	Ingo
+| 
 
-Looks good to me.
+hmm... good question :) letme check
 
-Acked-by: "Theodore Ts'o" <tytso@mit.edu>
-
-						- Ted
+		- Cyrill -
