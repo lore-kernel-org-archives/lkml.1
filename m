@@ -1,107 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZAMLok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZAMLpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZAMLok (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 06:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZAMLoa
+	id S1754921AbZAMLpl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 06:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZAMLpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 06:44:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56728 "EHLO hera.kernel.org"
+	Tue, 13 Jan 2009 06:45:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49583 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZAMLoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 06:44:30 -0500
-Message-ID: <496C7E61.2010201@kernel.org>
-Date: Tue, 13 Jan 2009 20:43:29 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751630AbZAMLpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 06:45:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: Regression 2.6.28-git: suspend/resume failure. git bisected to usb suspend/resume patch
+Date: Tue, 13 Jan 2009 12:44:49 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
+Cc: "Christian Borntraeger" <borntraeger@de.ibm.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>
+References: <200901111348.46216.borntraeger@de.ibm.com> <200901121825.20943.rjw@sisk.pl> <b6a2187b0901122044v1828eeb3lbe1a57367b4862a1@mail.gmail.com>
+In-Reply-To: <b6a2187b0901122044v1828eeb3lbe1a57367b4862a1@mail.gmail.com>
 MIME-Version: 1.0
-To: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
-       hugh@veritas.com
-Subject: [PATCH 02/13 UPDATED] x86: make early_per_cpu() a lvalue and use
- it
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <1231843097-18003-3-git-send-email-tj@kernel.org>
-In-Reply-To: <1231843097-18003-3-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 11:43:33 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200901131244.49960.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make early_per_cpu() a lvalue as per_cpu() is and use it where
-applicable.
+On Tuesday 13 January 2009, Jeff Chua wrote:
+> On Tue, Jan 13, 2009 at 1:25 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Please see if reverting commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
+> > (cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write) in
+> > addition to a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 helps.
+> 
+> I can confirm that with these two commits reverted, my X61 can resume from STD.
+> 
+> > Also, please check if the appended patch fixes the issue with
+> > a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 .
+> 
+> This patch does not apply cleanly to the latest git pull.
 
-Meriusz spotted that early_per_cpu() conversion in topology.h was
-missing @cpu argument.  Fixed.
+I've just sent you a version that should apply to it in another thread.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Mariusz Ceier <mceier@gmail.com>
----
-git tree has been regenerated accordingly.
-
-Thanks.
-
- arch/x86/include/asm/percpu.h   |    6 +++---
- arch/x86/include/asm/topology.h |    5 +----
- arch/x86/kernel/apic.c          |   13 ++-----------
- 3 files changed, 6 insertions(+), 18 deletions(-)
-
-Index: work/arch/x86/include/asm/topology.h
-===================================================================
---- work.orig/arch/x86/include/asm/topology.h
-+++ work/arch/x86/include/asm/topology.h
-@@ -96,10 +96,7 @@ static inline int cpu_to_node(int cpu)
- /* Same function but used if called before per_cpu areas are setup */
- static inline int early_cpu_to_node(int cpu)
- {
--	if (early_per_cpu_ptr(x86_cpu_to_node_map))
--		return early_per_cpu_ptr(x86_cpu_to_node_map)[cpu];
--
--	return per_cpu(x86_cpu_to_node_map, cpu);
-+	return early_per_cpu(x86_cpu_to_node_map, cpu);
- }
- 
- /* Returns a pointer to the cpumask of CPUs on Node 'node'. */
-Index: work/arch/x86/kernel/apic.c
-===================================================================
---- work.orig/arch/x86/kernel/apic.c
-+++ work/arch/x86/kernel/apic.c
-@@ -1865,17 +1865,8 @@ void __cpuinit generic_processor_info(in
- #endif
- 
- #if defined(CONFIG_X86_SMP) || defined(CONFIG_X86_64)
--	/* are we being called early in kernel startup? */
--	if (early_per_cpu_ptr(x86_cpu_to_apicid)) {
--		u16 *cpu_to_apicid = early_per_cpu_ptr(x86_cpu_to_apicid);
--		u16 *bios_cpu_apicid = early_per_cpu_ptr(x86_bios_cpu_apicid);
--
--		cpu_to_apicid[cpu] = apicid;
--		bios_cpu_apicid[cpu] = apicid;
--	} else {
--		per_cpu(x86_cpu_to_apicid, cpu) = apicid;
--		per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
--	}
-+	early_per_cpu(x86_cpu_to_apicid, cpu) = apicid;
-+	early_per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
- #endif
- 
- 	cpu_set(cpu, cpu_possible_map);
-Index: work/arch/x86/include/asm/percpu.h
-===================================================================
---- work.orig/arch/x86/include/asm/percpu.h
-+++ work/arch/x86/include/asm/percpu.h
-@@ -195,9 +195,9 @@ do {							\
- #define	early_per_cpu_ptr(_name) (_name##_early_ptr)
- #define	early_per_cpu_map(_name, _idx) (_name##_early_map[_idx])
- #define	early_per_cpu(_name, _cpu) 				\
--	(early_per_cpu_ptr(_name) ?				\
--		early_per_cpu_ptr(_name)[_cpu] :		\
--		per_cpu(_name, _cpu))
-+	*(early_per_cpu_ptr(_name) ?				\
-+		&early_per_cpu_ptr(_name)[_cpu] :		\
-+		&per_cpu(_name, _cpu))
- 
- #else	/* !CONFIG_SMP */
- #define	DEFINE_EARLY_PER_CPU(_type, _name, _initvalue)		\
+Thanks,
+Rafael
