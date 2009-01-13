@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZAMXLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZAMXM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbZAMXLx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZAMXKm
+	id S1758209AbZAMXM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbZAMXKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:10:42 -0500
+	Tue, 13 Jan 2009 18:10:49 -0500
 Received: from relanium.yandex.ru ([77.88.58.132]:6941 "EHLO
 	relanium.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756350AbZAMXKk (ORCPT
+	with ESMTP id S1756858AbZAMXKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:10:40 -0500
+	Tue, 13 Jan 2009 18:10:45 -0500
 X-Greylist: delayed 349 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Jan 2009 18:10:26 EST
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: Greg KH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org, dst@ioremap.net,
        Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [3/7] dst: export node.
-Date: Wed, 14 Jan 2009 02:05:29 +0300
-Message-Id: <1231887933-17843-4-git-send-email-zbr@ioremap.net>
+Subject: [6/7] dst: crypto processing.
+Date: Wed, 14 Jan 2009 02:05:32 +0300
+Message-Id: <1231887933-17843-7-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1231887933-17843-3-git-send-email-zbr@ioremap.net>
+In-Reply-To: <1231887933-17843-6-git-send-email-zbr@ioremap.net>
 References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
  <1231887933-17843-2-git-send-email-zbr@ioremap.net>
  <1231887933-17843-3-git-send-email-zbr@ioremap.net>
+ <1231887933-17843-4-git-send-email-zbr@ioremap.net>
+ <1231887933-17843-5-git-send-email-zbr@ioremap.net>
+ <1231887933-17843-6-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on relanium.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces remote (export) node machinery: initialization
-address/port (and other socket parameters), export block device (can be
-another DST storage for example or local device like /dev/sda1), local
-IO processing engine (BIO state machines, receiving/submitting logic).
-Network management for the export node like accepting new client, scheduling
-its command processing thread, receiving/sending IO requests, all are placed
-here.
+DST may fully encrypt the data channel in case of untrusted channel and implement
+strong checksum of the transferred data. It is possible to configure algorithms
+and crypto keys, they should match on both sides of the network channel.
+Crypto processing does not introduce noticeble performance overhead, since DST
+uses configurable pool of threads to perform crypto processing.
+
+This patch introduces crypto processing helpers and crypto engine initialization:
+glueing with the crypto layer, allocation and initialization of the crypto
+processing thread pool, allocation of the cached pages, which are used to temporary
+encrypt data into, since it is forbidden to encrypt data in-place, since pages
+are used by the higher layers.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-diff --git a/drivers/staging/dst/export.c b/drivers/staging/dst/export.c
+diff --git a/drivers/staging/dst/crypto.c b/drivers/staging/dst/crypto.c
 new file mode 100644
-index 0000000..122fe75
+index 0000000..7250f90
 --- /dev/null
-+++ b/drivers/staging/dst/export.c
-@@ -0,0 +1,664 @@
++++ b/drivers/staging/dst/crypto.c
+@@ -0,0 +1,731 @@
 +/*
 + * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
 + * All rights reserved.
@@ -60,652 +67,719 @@ index 0000000..122fe75
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/blkdev.h>
 +#include <linux/bio.h>
++#include <linux/crypto.h>
 +#include <linux/dst.h>
-+#include <linux/in.h>
-+#include <linux/in6.h>
-+#include <linux/poll.h>
++#include <linux/kernel.h>
++#include <linux/scatterlist.h>
 +#include <linux/slab.h>
-+#include <linux/socket.h>
-+
-+#include <net/sock.h>
 +
 +/*
-+ * Export bioset is used for server block IO requests.
++ * Tricky bastard, but IV can be more complex with time...
 + */
-+static struct bio_set *dst_bio_set;
-+
-+int __init dst_export_init(void)
++static inline u64 dst_gen_iv(struct dst_trans *t)
 +{
-+	int err = -ENOMEM;
++	return t->gen;
++}
 +
-+	dst_bio_set = bioset_create(32, 32);
-+	if (!dst_bio_set)
++/*
++ * Crypto machinery: hash/cipher support for the given crypto controls.
++ */
++static struct crypto_hash *dst_init_hash(struct dst_crypto_ctl *ctl, u8 *key)
++{
++	int err;
++	struct crypto_hash *hash;
++
++	hash = crypto_alloc_hash(ctl->hash_algo, 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(hash)) {
++		err = PTR_ERR(hash);
++		dprintk("%s: failed to allocate hash '%s', err: %d.\n",
++				__func__, ctl->hash_algo, err);
 +		goto err_out_exit;
++	}
 +
-+	return 0;
++	ctl->crypto_attached_size = crypto_hash_digestsize(hash);
 +
++	if (!ctl->hash_keysize)
++		return hash;
++
++	err = crypto_hash_setkey(hash, key, ctl->hash_keysize);
++	if (err) {
++		dprintk("%s: failed to set key for hash '%s', err: %d.\n",
++				__func__, ctl->hash_algo, err);
++		goto err_out_free;
++	}
++
++	return hash;
++
++err_out_free:
++	crypto_free_hash(hash);
 +err_out_exit:
-+	return err;
++	return ERR_PTR(err);
 +}
 +
-+void dst_export_exit(void)
++static struct crypto_ablkcipher *dst_init_cipher(struct dst_crypto_ctl *ctl, u8 *key)
 +{
-+	bioset_free(dst_bio_set);
-+}
++	int err = -EINVAL;
++	struct crypto_ablkcipher *cipher;
 +
-+/*
-+ * When client connects and autonegotiates with the server node,
-+ * its permissions are checked in a security attributes and sent
-+ * back.
-+ */
-+static unsigned int dst_check_permissions(struct dst_state *main, struct dst_state *st)
-+{
-+	struct dst_node *n = main->node;
-+	struct dst_secure *sentry;
-+	struct dst_secure_user *s;
-+	struct saddr *sa = &st->ctl.addr;
-+	unsigned int perm = 0;
-+
-+	mutex_lock(&n->security_lock);
-+	list_for_each_entry(sentry, &n->security_list, sec_entry) {
-+		s = &sentry->sec;
-+
-+		if (s->addr.sa_family != sa->sa_family)
-+			continue;
-+
-+		if (s->addr.sa_data_len != sa->sa_data_len)
-+			continue;
-+
-+		/*
-+		 * This '2' below is a port field. This may be very wrong to do
-+		 * in atalk for example though. If there will be any need to extent
-+		 * protocol to something else, I can create per-family helpers and
-+		 * use them instead of this memcmp.
-+		 */
-+		if (memcmp(s->addr.sa_data + 2, sa->sa_data + 2,
-+					sa->sa_data_len - 2))
-+			continue;
-+
-+		perm = s->permissions;
-+	}
-+	mutex_unlock(&n->security_lock);
-+
-+	return perm;
-+}
-+
-+/*
-+ * Accept new client: allocate appropriate network state and check permissions.
-+ */
-+static struct dst_state *dst_accept_client(struct dst_state *st)
-+{
-+	unsigned int revents = 0;
-+	unsigned int err_mask = POLLERR | POLLHUP | POLLRDHUP;
-+	unsigned int mask = err_mask | POLLIN;
-+	struct dst_node *n = st->node;
-+	int err = 0;
-+	struct socket *sock = NULL;
-+	struct dst_state *new;
-+
-+	while (!err && !sock) {
-+		revents = dst_state_poll(st);
-+
-+		if (!(revents & mask)) {
-+			DEFINE_WAIT(wait);
-+
-+			for (;;) {
-+				prepare_to_wait(&st->thread_wait,
-+						&wait, TASK_INTERRUPTIBLE);
-+				if (!n->trans_scan_timeout || st->need_exit)
-+					break;
-+
-+				revents = dst_state_poll(st);
-+
-+				if (revents & mask)
-+					break;
-+
-+				if (signal_pending(current))
-+					break;
-+
-+				/*
-+				 * Magic HZ? Polling check above is not safe in
-+				 * all cases (like socket reset in BH context),
-+				 * so it is simpler just to postpone it to the
-+				 * process context instead of implementing special
-+				 * locking there.
-+				 */
-+				schedule_timeout(HZ);
-+			}
-+			finish_wait(&st->thread_wait, &wait);
-+		}
-+
-+		err = -ECONNRESET;
-+		dst_state_lock(st);
-+
-+		dprintk("%s: st: %p, revents: %x [err: %d, in: %d].\n",
-+			__func__, st, revents, revents & err_mask,
-+			revents & POLLIN);
-+
-+		if (revents & err_mask) {
-+			dprintk("%s: revents: %x, socket: %p, err: %d.\n",
-+					__func__, revents, st->socket, err);
-+			err = -ECONNRESET;
-+		}
-+
-+		if (!n->trans_scan_timeout || st->need_exit)
-+			err = -ENODEV;
-+
-+		if (st->socket && (revents & POLLIN))
-+			err = kernel_accept(st->socket, &sock, 0);
-+
-+		dst_state_unlock(st);
-+	}
-+
-+	if (err)
++	if (!ctl->cipher_keysize)
 +		goto err_out_exit;
 +
-+	new = dst_state_alloc(st->node);
-+	if (!new) {
-+		err = -ENOMEM;
-+		goto err_out_release;
-+	}
-+	new->socket = sock;
-+
-+	new->ctl.addr.sa_data_len = sizeof(struct sockaddr);
-+	err = kernel_getpeername(sock, (struct sockaddr *)&new->ctl.addr,
-+			(int *)&new->ctl.addr.sa_data_len);
-+	if (err)
-+		goto err_out_put;
-+
-+	new->permissions = dst_check_permissions(st, new);
-+	if (new->permissions == 0) {
-+		err = -EPERM;
-+		dst_dump_addr(sock, (struct sockaddr *)&new->ctl.addr,
-+				"Client is not allowed to connect");
-+		goto err_out_put;
++	cipher = crypto_alloc_ablkcipher(ctl->cipher_algo, 0, 0);
++	if (IS_ERR(cipher)) {
++		err = PTR_ERR(cipher);
++		dprintk("%s: failed to allocate cipher '%s', err: %d.\n",
++				__func__, ctl->cipher_algo, err);
++		goto err_out_exit;
 +	}
 +
-+	err = dst_poll_init(new);
-+	if (err)
-+		goto err_out_put;
++	crypto_ablkcipher_clear_flags(cipher, ~0);
 +
-+	dst_dump_addr(sock, (struct sockaddr *)&new->ctl.addr,
-+			"Connected client");
++	err = crypto_ablkcipher_setkey(cipher, key, ctl->cipher_keysize);
++	if (err) {
++		dprintk("%s: failed to set key for cipher '%s', err: %d.\n",
++				__func__, ctl->cipher_algo, err);
++		goto err_out_free;
++	}
 +
-+	return new;
++	return cipher;
 +
-+err_out_put:
-+	dst_state_put(new);
-+err_out_release:
-+	sock_release(sock);
++err_out_free:
++	crypto_free_ablkcipher(cipher);
 +err_out_exit:
 +	return ERR_PTR(err);
 +}
 +
 +/*
-+ * Each server's block request sometime finishes.
-+ * Usually it happens in hard irq context of the appropriate controller,
-+ * so to play good with all cases we just queue BIO into the queue
-+ * and wake up processing thread, which gets completed request and
-+ * send (encrypting if needed) it back to the client (if it was a read
-+ * request), or sends back reply that writing succesfully completed.
++ * Crypto engine has a pool of pages to encrypt data into before sending
++ * it over the network. This pool is freed/allocated here.
 + */
-+static int dst_export_process_request_queue(struct dst_state *st)
++static void dst_crypto_pages_free(struct dst_crypto_engine *e)
 +{
-+	unsigned long flags;
-+	struct dst_export_priv *p = NULL;
-+	struct bio *bio;
-+	int err = 0;
++	unsigned int i;
 +
-+	while (!list_empty(&st->request_list)) {
-+		spin_lock_irqsave(&st->request_lock, flags);
-+		if (!list_empty(&st->request_list)) {
-+			p = list_first_entry(&st->request_list,
-+				struct dst_export_priv, request_entry);
-+			list_del(&p->request_entry);
-+		}
-+		spin_unlock_irqrestore(&st->request_lock, flags);
++	for (i=0; i<e->page_num; ++i)
++		__free_page(e->pages[i]);
++	kfree(e->pages);
++}
 +
-+		if (!p)
-+			break;
++static int dst_crypto_pages_alloc(struct dst_crypto_engine *e, int num)
++{
++	int i;
 +
-+		bio = p->bio;
++	e->pages = kmalloc(num * sizeof(struct page **), GFP_KERNEL);
++	if (!e->pages)
++		return -ENOMEM;
 +
-+		if (dst_need_crypto(st->node) && (bio_data_dir(bio) == READ))
-+			err = dst_export_crypto(st->node, bio);
-+		else
-+			err = dst_export_send_bio(bio);
-+
-+		if (err)
-+			break;
++	for (i=0; i<num; ++i) {
++		e->pages[i] = alloc_page(GFP_KERNEL);
++		if (!e->pages[i])
++			goto err_out_free_pages;
 +	}
 +
++	e->page_num = num;
++	return 0;
++
++err_out_free_pages:
++	while (--i >= 0)
++		__free_page(e->pages[i]);
++
++	kfree(e->pages);
++	return -ENOMEM;
++}
++
++/*
++ * Initialize crypto engine for given node.
++ * Setup cipher/hash, keys, pool of threads and private data.
++ */
++static int dst_crypto_engine_init(struct dst_crypto_engine *e, struct dst_node *n)
++{
++	int err;
++	struct dst_crypto_ctl *ctl = &n->crypto;
++
++	err = dst_crypto_pages_alloc(e, n->max_pages);
++	if (err)
++		goto err_out_exit;
++
++	e->size = PAGE_SIZE;
++	e->data = kmalloc(e->size, GFP_KERNEL);
++	if (!e->data) {
++		err = -ENOMEM;
++		goto err_out_free_pages;
++	}
++
++	if (ctl->hash_algo[0]) {
++		e->hash = dst_init_hash(ctl, n->hash_key);
++		if (IS_ERR(e->hash)) {
++			err = PTR_ERR(e->hash);
++			e->hash = NULL;
++			goto err_out_free;
++		}
++	}
++
++	if (ctl->cipher_algo[0]) {
++		e->cipher = dst_init_cipher(ctl, n->cipher_key);
++		if (IS_ERR(e->cipher)) {
++			err = PTR_ERR(e->cipher);
++			e->cipher = NULL;
++			goto err_out_free_hash;
++		}
++	}
++
++	return 0;
++
++err_out_free_hash:
++	crypto_free_hash(e->hash);
++err_out_free:
++	kfree(e->data);
++err_out_free_pages:
++	dst_crypto_pages_free(e);
++err_out_exit:
 +	return err;
 +}
 +
-+/*
-+ * Cleanup export state.
-+ * It has to wait until all requests are finished,
-+ * and then free them all.
-+ */
-+static void dst_state_cleanup_export(struct dst_state *st)
++static void dst_crypto_engine_exit(struct dst_crypto_engine *e)
 +{
-+	struct dst_export_priv *p;
-+	unsigned long flags;
-+
-+	/*
-+	 * This loop waits for all pending bios to be completed and freed.
-+	 */
-+	while (atomic_read(&st->refcnt) > 1) {
-+		dprintk("%s: st: %p, refcnt: %d, list_empty: %d.\n",
-+				__func__, st, atomic_read(&st->refcnt),
-+				list_empty(&st->request_list));
-+		wait_event_timeout(st->thread_wait,
-+				(atomic_read(&st->refcnt) == 1) ||
-+				!list_empty(&st->request_list),
-+				HZ/2);
-+
-+		while (!list_empty(&st->request_list)) {
-+			p = NULL;
-+			spin_lock_irqsave(&st->request_lock, flags);
-+			if (!list_empty(&st->request_list)) {
-+				p = list_first_entry(&st->request_list,
-+					struct dst_export_priv, request_entry);
-+				list_del(&p->request_entry);
-+			}
-+			spin_unlock_irqrestore(&st->request_lock, flags);
-+
-+			if (p)
-+				bio_put(p->bio);
-+
-+			dprintk("%s: st: %p, refcnt: %d, list_empty: %d, p: %p.\n",
-+				__func__, st, atomic_read(&st->refcnt),
-+				list_empty(&st->request_list), p);
-+		}
-+	}
-+
-+	dst_state_put(st);
++	if (e->hash)
++		crypto_free_hash(e->hash);
++	if (e->cipher)
++		crypto_free_ablkcipher(e->cipher);
++	dst_crypto_pages_free(e);
++	kfree(e->data);
 +}
 +
 +/*
-+ * Client accepting thread.
-+ * Not only accepts new connection, but also schedules receiving thread
-+ * and performs request completion described above.
++ * Waiting for cipher processing to be completed.
 + */
-+static int dst_accept(void *init_data, void *schedule_data)
++struct dst_crypto_completion
 +{
-+	struct dst_state *main_st = schedule_data;
-+	struct dst_node *n = init_data;
-+	struct dst_state *st;
++	struct completion		complete;
++	int				error;
++};
++
++static void dst_crypto_complete(struct crypto_async_request *req, int err)
++{
++	struct dst_crypto_completion *c = req->data;
++
++	if (err == -EINPROGRESS)
++		return;
++
++	dprintk("%s: req: %p, err: %d.\n", __func__, req, err);
++	c->error = err;
++	complete(&c->complete);
++}
++
++static int dst_crypto_process(struct ablkcipher_request *req,
++		struct scatterlist *sg_dst, struct scatterlist *sg_src,
++		void *iv, int enc, unsigned long timeout)
++{
++	struct dst_crypto_completion c;
 +	int err;
 +
-+	while (n->trans_scan_timeout && !main_st->need_exit) {
-+		dprintk("%s: main_st: %p, n: %p.\n", __func__, main_st, n);
-+		st = dst_accept_client(main_st);
-+		if (IS_ERR(st))
-+			continue;
++	init_completion(&c.complete);
++	c.error = -EINPROGRESS;
 +
-+		err = dst_state_schedule_receiver(st);
-+		if (!err) {
-+			while (n->trans_scan_timeout) {
-+				err = wait_event_interruptible_timeout(st->thread_wait,
-+						!list_empty(&st->request_list) ||
-+						!n->trans_scan_timeout ||
-+						st->need_exit,
-+					HZ);
++	ablkcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
++					dst_crypto_complete, &c);
 +
-+				if (!n->trans_scan_timeout || st->need_exit)
-+					break;
++	ablkcipher_request_set_crypt(req, sg_src, sg_dst, sg_src->length, iv);
 +
-+				if (list_empty(&st->request_list))
-+					continue;
++	if (enc)
++		err = crypto_ablkcipher_encrypt(req);
++	else
++		err = crypto_ablkcipher_decrypt(req);
 +
-+				err = dst_export_process_request_queue(st);
-+				if (err)
-+					break;
-+			}
-+
-+			st->need_exit = 1;
-+			wake_up(&st->thread_wait);
-+		}
-+
-+		dst_state_cleanup_export(st);
++	switch (err) {
++		case -EINPROGRESS:
++		case -EBUSY:
++			err = wait_for_completion_interruptible_timeout(&c.complete,
++					timeout);
++			if (!err)
++				err = -ETIMEDOUT;
++			else
++				err = c.error;
++			break;
++		default:
++			break;
 +	}
 +
-+	dprintk("%s: freeing listening socket st: %p.\n", __func__, main_st);
-+
-+	dst_state_lock(main_st);
-+	dst_poll_exit(main_st);
-+	dst_state_socket_release(main_st);
-+	dst_state_unlock(main_st);
-+	dst_state_put(main_st);
-+	dprintk("%s: freed listening socket st: %p.\n", __func__, main_st);
-+
-+	return 0;
-+}
-+
-+int dst_start_export(struct dst_node *n)
-+{
-+	if (list_empty(&n->security_list)) {
-+		printk(KERN_ERR "You are trying to export node '%s' without security attributes.\n"
-+				"No clients will be allowed to connect. Exiting.\n", n->name);
-+		return -EINVAL;
-+	}
-+	return dst_node_trans_init(n, sizeof(struct dst_export_priv));
-+}
-+
-+/*
-+ * Initialize listening state and schedule accepting thread.
-+ */
-+int dst_node_init_listened(struct dst_node *n, struct dst_export_ctl *le)
-+{
-+	struct dst_state *st;
-+	int err = -ENOMEM;
-+	struct dst_network_ctl *ctl = &le->ctl;
-+
-+	memcpy(&n->info->net, ctl, sizeof(struct dst_network_ctl));
-+
-+	st = dst_state_alloc(n);
-+	if (IS_ERR(st)) {
-+		err = PTR_ERR(st);
-+		goto err_out_exit;
-+	}
-+	memcpy(&st->ctl, ctl, sizeof(struct dst_network_ctl));
-+
-+	err = dst_state_socket_create(st);
-+	if (err)
-+		goto err_out_put;
-+
-+	st->socket->sk->sk_reuse = 1;
-+
-+	err = kernel_bind(st->socket, (struct sockaddr *)&ctl->addr,
-+			ctl->addr.sa_data_len);
-+	if (err)
-+		goto err_out_socket_release;
-+
-+	err = kernel_listen(st->socket, 1024);
-+	if (err)
-+		goto err_out_socket_release;
-+	n->state = st;
-+
-+	err = dst_poll_init(st);
-+	if (err)
-+		goto err_out_socket_release;
-+
-+	dst_state_get(st);
-+
-+	err = thread_pool_schedule(n->pool, dst_thread_setup,
-+			dst_accept, st, MAX_SCHEDULE_TIMEOUT);
-+	if (err)
-+		goto err_out_poll_exit;
-+
-+	return 0;
-+
-+err_out_poll_exit:
-+	dst_poll_exit(st);
-+err_out_socket_release:
-+	dst_state_socket_release(st);
-+err_out_put:
-+	dst_state_put(st);
-+err_out_exit:
-+	n->state = NULL;
 +	return err;
 +}
 +
 +/*
-+ * Free bio and related private data.
-+ * Also drop a reference counter for appropriate state,
-+ * which waits when there are no more block IOs in-flight.
++ * DST uses generic iteration approach for data crypto processing.
++ * Single block IO request is switched into array of scatterlists,
++ * which are submitted to the crypto processing iterator.
++ *
++ * Input and output iterator initialization are different, since
++ * in output case we can not encrypt data in-place and need a
++ * temporary storage, which is then being sent to the remote peer.
 + */
-+static void dst_bio_destructor(struct bio *bio)
++static int dst_trans_iter_out(struct bio *bio, struct dst_crypto_engine *e,
++		int (* iterator) (struct dst_crypto_engine *e,
++				  struct scatterlist *dst,
++				  struct scatterlist *src))
 +{
 +	struct bio_vec *bv;
-+	struct dst_export_priv *priv = bio->bi_private;
++	int err, i;
++
++	sg_init_table(e->src, bio->bi_vcnt);
++	sg_init_table(e->dst, bio->bi_vcnt);
++
++	bio_for_each_segment(bv, bio, i) {
++		sg_set_page(&e->src[i], bv->bv_page, bv->bv_len, bv->bv_offset);
++		sg_set_page(&e->dst[i], e->pages[i], bv->bv_len, bv->bv_offset);
++
++		err = iterator(e, &e->dst[i], &e->src[i]);
++		if (err)
++			return err;
++	}
++
++	return 0;
++}
++
++static int dst_trans_iter_in(struct bio *bio, struct dst_crypto_engine *e,
++		int (* iterator) (struct dst_crypto_engine *e,
++				  struct scatterlist *dst,
++				  struct scatterlist *src))
++{
++	struct bio_vec *bv;
++	int err, i;
++
++	sg_init_table(e->src, bio->bi_vcnt);
++	sg_init_table(e->dst, bio->bi_vcnt);
++
++	bio_for_each_segment(bv, bio, i) {
++		sg_set_page(&e->src[i], bv->bv_page, bv->bv_len, bv->bv_offset);
++		sg_set_page(&e->dst[i], bv->bv_page, bv->bv_len, bv->bv_offset);
++
++		err = iterator(e, &e->dst[i], &e->src[i]);
++		if (err)
++			return err;
++	}
++
++	return 0;
++}
++
++static int dst_crypt_iterator(struct dst_crypto_engine *e,
++		struct scatterlist *sg_dst, struct scatterlist *sg_src)
++{
++	struct ablkcipher_request *req = e->data;
++	u8 iv[32];
++
++	memset(iv, 0, sizeof(iv));
++
++	memcpy(iv, &e->iv, sizeof(e->iv));
++
++	return dst_crypto_process(req, sg_dst, sg_src, iv, e->enc, e->timeout);
++}
++
++static int dst_crypt(struct dst_crypto_engine *e, struct bio *bio)
++{
++	struct ablkcipher_request *req = e->data;
++
++	memset(req, 0, sizeof(struct ablkcipher_request));
++	ablkcipher_request_set_tfm(req, e->cipher);
++
++	if (e->enc)
++		return dst_trans_iter_out(bio, e, dst_crypt_iterator);
++	else
++		return dst_trans_iter_in(bio, e, dst_crypt_iterator);
++}
++
++static int dst_hash_iterator(struct dst_crypto_engine *e,
++		struct scatterlist *sg_dst, struct scatterlist *sg_src)
++{
++	return crypto_hash_update(e->data, sg_src, sg_src->length);
++}
++
++static int dst_hash(struct dst_crypto_engine *e, struct bio *bio, void *dst)
++{
++	struct hash_desc *desc = e->data;
++	int err;
++
++	desc->tfm = e->hash;
++	desc->flags = 0;
++
++	err = crypto_hash_init(desc);
++	if (err)
++		return err;
++
++	err = dst_trans_iter_in(bio, e, dst_hash_iterator);
++	if (err)
++		return err;
++
++	err = crypto_hash_final(desc, dst);
++	if (err)
++		return err;
++
++	return 0;
++}
++
++/*
++ * Initialize/cleanup a crypto thread. The only thing it should
++ * do is to allocate a pool of pages as temporary storage.
++ * And to setup cipher and/or hash.
++ */
++static void *dst_crypto_thread_init(void *data)
++{
++	struct dst_node *n = data;
++	struct dst_crypto_engine *e;
++	int err = -ENOMEM;
++
++	e = kzalloc(sizeof(struct dst_crypto_engine), GFP_KERNEL);
++	if (!e)
++		goto err_out_exit;
++	e->src = kcalloc(2 * n->max_pages, sizeof(struct scatterlist),
++			GFP_KERNEL);
++	if (!e->src)
++		goto err_out_free;
++
++	e->dst = e->src + n->max_pages;
++
++	err = dst_crypto_engine_init(e, n);
++	if (err)
++		goto err_out_free_all;
++
++	return e;
++
++err_out_free_all:
++	kfree(e->src);
++err_out_free:
++	kfree(e);
++err_out_exit:
++	return ERR_PTR(err);
++}
++
++static void dst_crypto_thread_cleanup(void *private)
++{
++	struct dst_crypto_engine *e = private;
++
++	dst_crypto_engine_exit(e);
++	kfree(e->src);
++	kfree(e);
++}
++
++/*
++ * Initialize crypto engine for given node: store keys, create pool
++ * of threads, initialize each one.
++ *
++ * Each thread has unique ID, but 0 and 1 are reserved for receiving and accepting
++ * threads (if export node), so IDs could start from 2, but starting them
++ * from 10 allows easily understand what this thread is for.
++ */
++int dst_node_crypto_init(struct dst_node *n, struct dst_crypto_ctl *ctl)
++{
++	void *key = (ctl + 1);
++	int err = -ENOMEM, i;
++	char name[32];
++
++	if (ctl->hash_keysize) {
++		n->hash_key = kmalloc(ctl->hash_keysize, GFP_KERNEL);
++		if (!n->hash_key)
++			goto err_out_exit;
++		memcpy(n->hash_key, key, ctl->hash_keysize);
++	}
++
++	if (ctl->cipher_keysize) {
++		n->cipher_key = kmalloc(ctl->cipher_keysize, GFP_KERNEL);
++		if (!n->cipher_key)
++			goto err_out_free_hash;
++		memcpy(n->cipher_key, key, ctl->cipher_keysize);
++	}
++	memcpy(&n->crypto, ctl, sizeof(struct dst_crypto_ctl));
++
++	for (i=0; i<ctl->thread_num; ++i) {
++		snprintf(name, sizeof(name), "%s-crypto-%d", n->name, i);
++		/* Unique ids... */
++		err = thread_pool_add_worker(n->pool, name, i+10,
++			dst_crypto_thread_init, dst_crypto_thread_cleanup, n);
++		if (err)
++			goto err_out_free_threads;
++	}
++
++	return 0;
++
++err_out_free_threads:
++	while (--i >= 0)
++		thread_pool_del_worker_id(n->pool, i+10);
++
++	if (ctl->cipher_keysize)
++		kfree(n->cipher_key);
++	ctl->cipher_keysize = 0;
++err_out_free_hash:
++	if (ctl->hash_keysize)
++		kfree(n->hash_key);
++	ctl->hash_keysize = 0;
++err_out_exit:
++	return err;
++}
++
++void dst_node_crypto_exit(struct dst_node *n)
++{
++	struct dst_crypto_ctl *ctl = &n->crypto;
++
++	if (ctl->cipher_algo[0] || ctl->hash_algo[0]) {
++		kfree(n->hash_key);
++		kfree(n->cipher_key);
++	}
++}
++
++/*
++ * Thrad pool setup callback. Just stores a transaction in private data.
++ */
++static int dst_trans_crypto_setup(void *crypto_engine, void *trans)
++{
++	struct dst_crypto_engine *e = crypto_engine;
++
++	e->private = trans;
++	return 0;
++}
++
++#if 0
++static void dst_dump_bio(struct bio *bio)
++{
++	u8 *p;
++	struct bio_vec *bv;
 +	int i;
 +
 +	bio_for_each_segment(bv, bio, i) {
-+		if (!bv->bv_page)
-+			break;
++		dprintk("%s: %llu/%u: size: %u, offset: %u, data: ",
++				__func__, bio->bi_sector, bio->bi_size,
++				bv->bv_len, bv->bv_offset);
 +
-+		__free_page(bv->bv_page);
++		p = kmap(bv->bv_page) + bv->bv_offset;
++		for (i=0; i<bv->bv_len; ++i)
++			printk("%02x ", p[i]);
++		kunmap(bv->bv_page);
++		printk("\n");
 +	}
-+
-+	if (priv) {
-+		struct dst_node *n = priv->state->node;
-+
-+		dst_state_put(priv->state);
-+		mempool_free(priv, n->trans_pool);
-+	}
-+	bio_free(bio, dst_bio_set);
 +}
++#endif
 +
 +/*
-+ * Block IO completion. Queue request to be sent back to
-+ * the client (or just confirmation).
++ * Encrypt/hash data and send it to the network.
 + */
-+static void dst_bio_end_io(struct bio *bio, int err)
++static int dst_crypto_process_sending(struct dst_crypto_engine *e,
++		struct bio *bio, u8 *hash)
 +{
-+	struct dst_export_priv *p = bio->bi_private;
-+	struct dst_state *st = p->state;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&st->request_lock, flags);
-+	list_add_tail(&p->request_entry, &st->request_list);
-+	spin_unlock_irqrestore(&st->request_lock, flags);
-+
-+	wake_up(&st->thread_wait);
-+}
-+
-+/*
-+ * Allocate read request for the server.
-+ */
-+static int dst_export_read_request(struct bio *bio, unsigned int total_size)
-+{
-+	unsigned int size;
-+	struct page *page;
 +	int err;
 +
-+	while (total_size) {
-+		err = -ENOMEM;
-+		page = alloc_page(GFP_KERNEL);
-+		if (!page)
++	if (e->cipher) {
++		err = dst_crypt(e, bio);
++		if (err)
++			goto err_out_exit;
++	}
++
++	if (e->hash) {
++		err = dst_hash(e, bio, hash);
++		if (err)
 +			goto err_out_exit;
 +
-+		size = min_t(unsigned int, PAGE_SIZE, total_size);
++#ifdef CONFIG_DST_DEBUG
++		{
++			unsigned int i;
 +
-+		err = bio_add_page(bio, page, size, 0);
-+		dprintk("%s: bio: %llu/%u, size: %u, err: %d.\n",
-+				__func__, (u64)bio->bi_sector, bio->bi_size,
-+				size, err);
-+		if (err <= 0)
-+			goto err_out_free_page;
++			/* dst_dump_bio(bio); */
 +
-+		total_size -= size;
++			printk(KERN_DEBUG "%s: bio: %llu/%u, rw: %lu, hash: ",
++				__func__, (u64)bio->bi_sector,
++				bio->bi_size, bio_data_dir(bio));
++			for (i=0; i<crypto_hash_digestsize(e->hash); ++i)
++					printk("%02x ", hash[i]);
++			printk("\n");
++		}
++#endif
 +	}
 +
 +	return 0;
 +
-+err_out_free_page:
-+	__free_page(page);
 +err_out_exit:
 +	return err;
 +}
 +
 +/*
-+ * Allocate write request for the server.
-+ * Should not only get pages, but also read data from the network.
++ * Check if received data is valid. Decipher if it is.
 + */
-+static int dst_export_write_request(struct dst_state *st,
-+		struct bio *bio, unsigned int total_size)
++static int dst_crypto_process_receiving(struct dst_crypto_engine *e,
++		struct bio *bio, u8 *hash, u8 *recv_hash)
 +{
-+	unsigned int size;
-+	struct page *page;
-+	void *data;
 +	int err;
 +
-+	while (total_size) {
-+		err = -ENOMEM;
-+		page = alloc_page(GFP_KERNEL);
-+		if (!page)
++	if (e->hash) {
++		int mismatch;
++
++		err = dst_hash(e, bio, hash);
++		if (err)
 +			goto err_out_exit;
 +
-+		data = kmap(page);
-+		if (!data)
-+			goto err_out_free_page;
++		mismatch = !!memcmp(recv_hash, hash,
++				crypto_hash_digestsize(e->hash));
++#ifdef CONFIG_DST_DEBUG
++		/* dst_dump_bio(bio); */
 +
-+		size = min_t(unsigned int, PAGE_SIZE, total_size);
-+
-+		err = dst_data_recv(st, data, size);
-+		if (err)
-+			goto err_out_unmap_page;
-+
-+		err = bio_add_page(bio, page, size, 0);
-+		if (err <= 0)
-+			goto err_out_unmap_page;
-+
-+		kunmap(page);
-+
-+		total_size -= size;
-+	}
-+
-+	return 0;
-+
-+err_out_unmap_page:
-+	kunmap(page);
-+err_out_free_page:
-+	__free_page(page);
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * Groovy, we've gotten an IO request from the client.
-+ * Allocate BIO from the bioset, private data from the mempool
-+ * and lots of pages for IO.
-+ */
-+int dst_process_io(struct dst_state *st)
-+{
-+	struct dst_node *n = st->node;
-+	struct dst_cmd *cmd = st->data;
-+	struct bio *bio;
-+	struct dst_export_priv *priv;
-+	int err = -ENOMEM;
-+
-+	if (unlikely(!n->bdev)) {
-+		err = -EINVAL;
-+		goto err_out_exit;
-+	}
-+
-+	bio = bio_alloc_bioset(GFP_KERNEL,
-+			PAGE_ALIGN(cmd->size) >> PAGE_SHIFT,
-+			dst_bio_set);
-+	if (!bio)
-+		goto err_out_exit;
-+	bio->bi_private = NULL;
-+
-+	priv = mempool_alloc(st->node->trans_pool, GFP_KERNEL);
-+	if (!priv)
-+		goto err_out_free;
-+
-+	priv->state = dst_state_get(st);
-+	priv->bio = bio;
-+
-+	bio->bi_private = priv;
-+	bio->bi_end_io = dst_bio_end_io;
-+	bio->bi_destructor = dst_bio_destructor;
-+	bio->bi_bdev = n->bdev;
-+
-+	/*
-+	 * Server side is only interested in two low bits:
-+	 * uptodate (set by itself actually) and rw block
-+	 */
-+	bio->bi_flags |= cmd->flags & 3;
-+
-+	bio->bi_rw = cmd->rw;
-+	bio->bi_size = 0;
-+	bio->bi_sector = cmd->sector;
-+
-+	dst_bio_to_cmd(bio, &priv->cmd, DST_IO_RESPONSE, cmd->id);
-+
-+	priv->cmd.flags = 0;
-+	priv->cmd.size = cmd->size;
-+
-+	if (bio_data_dir(bio) == WRITE) {
-+		err = dst_recv_cdata(st, priv->cmd.hash);
-+		if (err)
-+			goto err_out_free;
-+
-+		err = dst_export_write_request(st, bio, cmd->size);
-+		if (err)
-+			goto err_out_free;
-+
-+		if (dst_need_crypto(n))
-+			return dst_export_crypto(n, bio);
-+	} else {
-+		err = dst_export_read_request(bio, cmd->size);
-+		if (err)
-+			goto err_out_free;
-+	}
-+
-+	dprintk("%s: bio: %llu/%u, rw: %lu, dir: %lu, flags: %lx, phys: %d.\n",
++		printk(KERN_DEBUG "%s: bio: %llu/%u, rw: %lu, hash mismatch: %d",
 +			__func__, (u64)bio->bi_sector, bio->bi_size,
-+			bio->bi_rw, bio_data_dir(bio),
-+			bio->bi_flags, bio->bi_phys_segments);
++			bio_data_dir(bio), mismatch);
++		if (mismatch) {
++			unsigned int i;
 +
-+	generic_make_request(bio);
++			printk(", recv/calc: ");
++			for (i=0; i<crypto_hash_digestsize(e->hash); ++i) {
++				printk("%02x/%02x ", recv_hash[i], hash[i]);
++			}
++		}
++		printk("\n");
++#endif
++		err = -1;
++		if (mismatch)
++			goto err_out_exit;
++	}
++
++	if (e->cipher) {
++		err = dst_crypt(e, bio);
++		if (err)
++			goto err_out_exit;
++	}
 +
 +	return 0;
 +
-+err_out_free:
-+	bio_put(bio);
 +err_out_exit:
 +	return err;
 +}
 +
 +/*
-+ * Ok, block IO is ready, let's send it back to the client...
++ * Thread pool callback to encrypt data and send it to the netowork.
 + */
-+int dst_export_send_bio(struct bio *bio)
++static int dst_trans_crypto_action(void *crypto_engine, void *schedule_data)
 +{
-+	struct dst_export_priv *p = bio->bi_private;
-+	struct dst_state *st = p->state;
-+	struct dst_cmd *cmd = &p->cmd;
++	struct dst_crypto_engine *e = crypto_engine;
++	struct dst_trans *t = schedule_data;
++	struct bio *bio = t->bio;
 +	int err;
 +
-+	dprintk("%s: id: %llu, bio: %llu/%u, csize: %u, flags: %lu, rw: %lu.\n",
-+			__func__, cmd->id, (u64)bio->bi_sector, bio->bi_size,
-+			cmd->csize, bio->bi_flags, bio->bi_rw);
++	dprintk("%s: t: %p, gen: %llu, cipher: %p, hash: %p.\n",
++			__func__, t, t->gen, e->cipher, e->hash);
 +
-+	dst_convert_cmd(cmd);
-+
-+	dst_state_lock(st);
-+	if (!st->socket) {
-+		err = -ECONNRESET;
-+		goto err_out_unlock;
-+	}
++	e->enc = t->enc;
++	e->iv = dst_gen_iv(t);
 +
 +	if (bio_data_dir(bio) == WRITE) {
-+		/* ... or just confirmation that writing has completed. */
-+		cmd->size = cmd->csize = 0;
-+		err = dst_data_send_header(st->socket, cmd,
-+				sizeof(struct dst_cmd), 0);
++		err = dst_crypto_process_sending(e, bio, t->cmd.hash);
 +		if (err)
-+			goto err_out_unlock;
++			goto err_out_exit;
++
++		if (e->hash) {
++			t->cmd.csize = crypto_hash_digestsize(e->hash);
++			t->cmd.size += t->cmd.csize;
++		}
++
++		return dst_trans_send(t);
 +	} else {
-+		err = dst_send_bio(st, cmd, bio);
++		u8 *hash = e->data + e->size/2;
++
++		err = dst_crypto_process_receiving(e, bio, hash, t->cmd.hash);
 +		if (err)
-+			goto err_out_unlock;
++			goto err_out_exit;
++
++		dst_trans_remove(t);
++		dst_trans_put(t);
 +	}
 +
-+	dst_state_unlock(st);
-+
-+	bio_put(bio);
 +	return 0;
 +
-+err_out_unlock:
-+	dst_state_unlock(st);
++err_out_exit:
++	t->error = err;
++	dst_trans_put(t);
++	return err;
++}
 +
++/*
++ * Schedule crypto processing for given transaction.
++ */
++int dst_trans_crypto(struct dst_trans *t)
++{
++	struct dst_node *n = t->n;
++	int err;
++
++	err = thread_pool_schedule(n->pool,
++		dst_trans_crypto_setup, dst_trans_crypto_action,
++		t, MAX_SCHEDULE_TIMEOUT);
++	if (err)
++		goto err_out_exit;
++
++	return 0;
++
++err_out_exit:
++	dst_trans_put(t);
++	return err;
++}
++
++/*
++ * Crypto machinery for the export node.
++ */
++static int dst_export_crypto_setup(void *crypto_engine, void *bio)
++{
++	struct dst_crypto_engine *e = crypto_engine;
++
++	e->private = bio;
++	return 0;
++}
++
++static int dst_export_crypto_action(void *crypto_engine, void *schedule_data)
++{
++	struct dst_crypto_engine *e = crypto_engine;
++	struct bio *bio = schedule_data;
++	struct dst_export_priv *p = bio->bi_private;
++	int err;
++
++	dprintk("%s: e: %p, data: %p, bio: %llu/%u, dir: %lu.\n", __func__,
++		e, e->data, (u64)bio->bi_sector, bio->bi_size, bio_data_dir(bio));
++
++	e->enc = (bio_data_dir(bio) == READ);
++	e->iv = p->cmd.id;
++
++	if (bio_data_dir(bio) == WRITE) {
++		u8 *hash = e->data + e->size/2;
++
++		err = dst_crypto_process_receiving(e, bio, hash, p->cmd.hash);
++		if (err)
++			goto err_out_exit;
++
++		generic_make_request(bio);
++	} else {
++		err = dst_crypto_process_sending(e, bio, p->cmd.hash);
++		if (err)
++			goto err_out_exit;
++
++		if (e->hash) {
++			p->cmd.csize = crypto_hash_digestsize(e->hash);
++			p->cmd.size += p->cmd.csize;
++		}
++
++		err = dst_export_send_bio(bio);
++	}
++	return 0;
++
++err_out_exit:
++	bio_put(bio);
++	return err;
++}
++
++int dst_export_crypto(struct dst_node *n, struct bio *bio)
++{
++	int err;
++
++	err = thread_pool_schedule(n->pool,
++		dst_export_crypto_setup, dst_export_crypto_action,
++		bio, MAX_SCHEDULE_TIMEOUT);
++	if (err)
++		goto err_out_exit;
++
++	return 0;
++
++err_out_exit:
 +	bio_put(bio);
 +	return err;
 +}
