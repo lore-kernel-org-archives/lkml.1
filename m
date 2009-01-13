@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZAMOiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZAMOit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbZAMOiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 09:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZAMOiI
+	id S1760959AbZAMOit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 09:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZAMOik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 09:38:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56413 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753745AbZAMOiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 09:38:07 -0500
-Message-ID: <496CA71E.4050809@kernel.org>
-Date: Tue, 13 Jan 2009 23:37:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 13 Jan 2009 09:38:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:43512 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbZAMOij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 09:38:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=WA46sZHYyeM7muxiI0gUyqc+yWox7FXYQGXHjlqr5OuBdl9hTDi52u+2IeG944Pek8
+         wTrHUqCbynUh1S4fHhXe0j6wiidTniBFs5qzDXt4avLJcn9k2upftcrchk+H0YHrNn4t
+         08N9yaE93cP6BIc9dQ3VOBUe5kg6hErcFOYUs=
+Date: Tue, 13 Jan 2009 17:38:35 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] oom_kill -- don't call for int_sqrt(0)
+Message-ID: <20090113143835.GI7682@localhost>
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       mingo@elte.hu, travis@sgi.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, akpm@linux-foundation.org, steiner@sgi.com,
-       hugh@veritas.com
-Subject: Re: [PATCHSET linux-2.6-x86:tip] x86: make percpu offsets zero-based
- on SMP
-References: <1231843097-18003-1-git-send-email-tj@kernel.org>	 <496C717F.70204@kernel.org>	 <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com>	 <496C9FB7.9050907@kernel.org> <73c1f2160901130626w5b808968vbc821bbf3f284424@mail.gmail.com>
-In-Reply-To: <73c1f2160901130626w5b808968vbc821bbf3f284424@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 14:37:21 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
->> Any chance you can rebase those patches on top of mine?  If you don't
->> have time, just send them to me, I'll try to integrate them this week.
-> 
-> Are your patches available via git by chance?
+There is no need to call for int_sqrt if argument is 0.
 
-Sure,
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
 
-  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=x86-percpu-zerobased
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git x86-percpu-zerobased
+Please review.
 
-Thanks.
+ mm/oom_kill.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
--- 
-tejun
+Index: linux-2.6.git/mm/oom_kill.c
+===================================================================
+--- linux-2.6.git.orig/mm/oom_kill.c
++++ linux-2.6.git/mm/oom_kill.c
+@@ -55,7 +55,7 @@ static DEFINE_SPINLOCK(zone_scan_lock);
+ 
+ unsigned long badness(struct task_struct *p, unsigned long uptime)
+ {
+-	unsigned long points, cpu_time, run_time, s;
++	unsigned long points, cpu_time, run_time;
+ 	struct mm_struct *mm;
+ 	struct task_struct *child;
+ 
+@@ -110,12 +110,10 @@ unsigned long badness(struct task_struct
+ 	else
+ 		run_time = 0;
+ 
+-	s = int_sqrt(cpu_time);
+-	if (s)
+-		points /= s;
+-	s = int_sqrt(int_sqrt(run_time));
+-	if (s)
+-		points /= s;
++	if (cpu_time)
++		points /= int_sqrt(cpu_time);
++	if (run_time)
++		points /= int_sqrt(int_sqrt(run_time));
+ 
+ 	/*
+ 	 * Niced processes are most likely less important, so double
