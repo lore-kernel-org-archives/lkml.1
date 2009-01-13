@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZAMAcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZAMAeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755511AbZAMAcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 19:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZAMAcI
+	id S1756216AbZAMAeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 19:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZAMAeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 19:32:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43128 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Jan 2009 19:34:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46627 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752212AbZAMAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 19:32:07 -0500
-Date: Tue, 13 Jan 2009 01:31:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: pageexec@freemail.hu
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, Daniel.Beschorner@facton.com,
-       stable@kernel.org
-Subject: Re: [patch] x86: fix PTE corruption issue while mapping RAM using
-	/dev/mem
-Message-ID: <20090113003147.GA18115@elte.hu>
-References: <20090112235135.GA22722@elte.hu> <496BDDFD.27997.A74B06@pageexec.freemail.hu>
+	id S1751189AbZAMAd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 19:33:59 -0500
+Message-ID: <496BE157.2000009@kernel.org>
+Date: Tue, 13 Jan 2009 09:33:27 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496BDDFD.27997.A74B06@pageexec.freemail.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       travis@sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: regarding the x86_64 zero-based percpu patches
+References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>	<49649C65.6000706@kernel.org>	<200901101716.04220.rusty@rustcorp.com.au>	<Pine.LNX.4.64.0901121120280.30369@quilx.com> <m1mydwxvtx.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1mydwxvtx.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Jan 2009 00:33:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Eric.
 
-* pageexec@freemail.hu <pageexec@freemail.hu> wrote:
+Eric W. Biederman wrote:
+>> There are 2M TLB entries on x86_64. If we really get into a high usage
+>> scenario then the 2M entry makes sense. Average server memory sizes likely
+>> already are way beyond 10G per box. The higher that goes the more
+>> reasonable the 2M TLB entry will be.
+> 
+> 2M of per cpu data doesn't make sense, and likely indicates a design
+> flaw somewhere.  It just doesn't make sense to have large amounts of
+> data allocated per cpu.
 
-> On 13 Jan 2009 at 0:51, Ingo Molnar wrote:
-> 
-> > applied to tip/x86/urgent, thanks Suresh!
-> > 
-> > note that the patch caused some conflicts (there were other changes in 
-> > pat.c) - i merged it up manually but could you please check the final 
-> > commit in tip/master whether it's all OK?
-> 
-> i don't think that it got applied properly:
-> 
-> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-> index 85cbd3c..ea36ed7 100644
-> --- a/arch/x86/mm/pat.c
-> +++ b/arch/x86/mm/pat.c
-> @@ -347,9 +347,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
->         new->end        = end;
->         new->type       = actual_type;
-> 
-> -       if (new_type)
-> -               *new_type = actual_type;
-> -
->         spin_lock(&memtype_lock);
-> 
->         if (cached_entry && start >= cached_start)
-> @@ -437,6 +434,9 @@ int free_memtype(u64 start, u64 end)
->         if (is_ISA_range(start, end - 1))
->                 return 0;
-> 
-> +       if (new_type)
-> +               *new_type = actual_type;
-> +
->         is_range_ram = pagerange_is_ram(start, end);
->         if (is_range_ram == 1)
->                 return free_ram_pages_type(start, end);
-> 
-> free_memtype doesn't even have a new_type argument for starters ;), 
-> patch must have applied it at the wrong place...
+Why?  On almost all large machines I've seen or heard of, memory size
+scales way better than the number of cpus.  Whether certain usage
+makes sense or not surely is debatable but I can't imagine all use
+cases where 2MB percpu TLB entry could be useful would be senseless.
 
-yeah, and Mr. Compiler agrees:
+> The most common user of per cpu data I am aware of is allocating one
+> word per cpu for counters.
+> 
+> What would be better is simply to: 
+> - Require a lock to access another cpus per cpu data.
+> - Do large page allocations for the per cpu data.
+> 
+> At which point we could grow the per cpu data by simply reallocating it on
+> each cpu and updating the register that holds the base pointer.
 
-arch/x86/mm/pat.c: In function 'free_memtype':
-arch/x86/mm/pat.c:437: error: 'new_type' undeclared (first use in this function)
-arch/x86/mm/pat.c:437: error: (Each undeclared identifier is reported only once
-arch/x86/mm/pat.c:437: error: for each function it appears in.)
-arch/x86/mm/pat.c:438: error: 'actual_type' undeclared (first use in this function)
+I don't think moving live objects is such a good idea for the
+following reasons.
 
-Suresh, could you please resend against tip/master? Thanks,
+1. Programming convenience is usually much more important than people
+   think it is.  Even in the kernel.  I think it's very likely that
+   we'll have unending stream of small feature requirements which
+   would step just outside the supported bounds and ever smart
+   workaround until the restriction is finally removed years later.
 
-	Ingo
+2. Moving live objects is inherently dangerous + it won't happen
+   often.  Thinking about possible subtle bugs is scary.
+
+Thanks.
+
+-- 
+tejun
