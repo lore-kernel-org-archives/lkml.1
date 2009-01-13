@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbZAMFfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbZAMFjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbZAMFfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 00:35:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZAMFf2
+	id S1758527AbZAMFjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 00:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZAMFjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 00:35:28 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:46876 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbZAMFf1 (ORCPT
+	Tue, 13 Jan 2009 00:39:13 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:47929 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZAMFjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 00:35:27 -0500
-Date: Tue, 13 Jan 2009 06:37:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: wrong usage of __devexit_p and __exit_p
-Message-ID: <20090113053709.GA19426@uranus.ravnborg.org>
-References: <20090112135057.GA10250@pengutronix.de> <20090112141457.GA11777@uranus.ravnborg.org> <20090112144327.GB29183@pengutronix.de> <20090112205520.GA10870@pengutronix.de> <20090112212109.GA15185@uranus.ravnborg.org> <20090112221500.GA24895@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 13 Jan 2009 00:39:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=I6Gz80cdItq7CWxKijAzN7noEW5Aye1ZEci7FrZFaSPCKSodwvKkQ1GTkUVCKM5MgU
+         hNqVzLgzi6COCNv7ND7RHbu9PrWIGIgUl2WQ/u4/WsWca9cXcn3yhb7H459ikt1EBRQA
+         bxAFtNlqfRDr7pc0xYOHGcqNRCRgTaqXsb7Po=
+Message-ID: <b9df5fa10901122139t5176104ep640342718d2f1666@mail.gmail.com>
+Date: Tue, 13 Jan 2009 11:39:11 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mm: Fix section mismatch in memcontrol.c
+Cc: mingo@elte.hu, "Andrew Morton" <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090112221500.GA24895@pengutronix.de>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 11:15:00PM +0100, Uwe Kleine-König wrote:
-> Hello Sam,
-> 
-> On Mon, Jan 12, 2009 at 10:21:09PM +0100, Sam Ravnborg wrote:
-> > On Mon, Jan 12, 2009 at 09:55:20PM +0100, Uwe Kleine-König wrote:
-> > > Hello Sam,
-> > > 
-> > > > > Did you check that this did not introduce any new Section mismatch warnings?
-> > > > > We have seen several __exit annotated functions that was used from __init
-> > > > > annotated code or even from normal code.
-> > > > > Thus the __exit annotation was wrong in these cases.
-> > > > I wrote in the commit logs, that the functions are only used as argument
-> > > > to __{dev,}exit_p.  There are no direct calls. (IIRC there was only one
-> > > > exception that I checked manually.)
-> > > Actually the case I remembered here isn't part of the series.
-> > >  
-> > > > I think the __{dev,}exit_p wrappers are only used to define remove
-> > > > callbacks, so there should be no harm.
-> > > In the meantime I checked this:
-> > > 
-> > > 	~/gsrc/linux-2.6$ git diff-tree -r linus/master expsec-master | cut -f 2 | xargs grep -h -E '__(dev)?exit_p'
-> > > 		.remove		= __devexit_p(s3c_adc_remove),
-> > > 		.remove		= __devexit_p(s3c_pwm_remove),
-> > > 		.remove =	__devexit_p(virtblk_remove),
-> > > 		.remove =	__devexit_p(virtrng_remove),
-> > > 		.remove = __devexit_p(stli_pciremove)
-> > > 		.remove   = __devexit_p(hifn_remove),
-> > > 		.remove = __devexit_p(mpc85xx_pci_err_remove),
-> > > 		.remove = __devexit_p(mv64x60_pci_err_remove),
-> > > 		.remove		= __devexit_p(max7301_remove),
-> > > 		.remove		= __devexit_p(bbc_remove),
-> > > 		.remove		= __devexit_p(grover_remove),
-> > > 		.remove		= __exit_p(pxa_camera_remove),
-> > > 		.remove		= __devexit_p(asic3_remove),
-> > > 		.remove   = __devexit_p(ilo_remove),
-> > > 		.remove = __exit_p(mxcnd_remove),
-> > > 		.remove =	__devexit_p(virtnet_remove),
-> > > 		.remove		= __devexit_p(atp870u_remove),
-> > > 		.remove		= __devexit_p(megaraid_detach_one),
-> > > 		.remove		= __devexit_p(stex_remove),
-> > > 		.remove		= __devexit_p(jsm_remove_one),
-> > > 		.remove	= __devexit_p(sc26xx_driver_remove),
-> > > 		.remove =	__devexit_p(spidev_remove),
-> > > 		.remove	= __devexit_p(vhci_hcd_remove),
-> > > 		.remove =	__devexit_p(virtballoon_remove),
-> > > 
-> > > So in the patched files __(dev)?exit_p is only used to fill struct
-> > > members.  Provided this is the only usage of the respective
-> > > functions---and I checked that---it doesn't make sense that they don't
-> > > live in .devexit.text (or .exit.text respectively).
-> > > 
-> > > Does it make sence for you, too?
-> > 
-> > Yes - if I understood you correct.
-> > 
-> > You already convinced me with your first mail that you had checked
-> > that the functions was not used for anything else then the exit path.
-> So I can interpret this as a general Acked-by:?
+Impact: Fix section mismatch warning.
 
-Yes.
+The annotation for __init in enable_swap_cgroup() and __initdata for
+really_do_swap_account produces the following warning. Which is not
+right, since this function is called from non-init section. This patch
+fixes it.
 
-	Sam
+  LD      mm/built-in.o
+WARNING: mm/built-in.o(.text+0x277d9): Section mismatch in reference
+from the function mem_cgroup_create() to the function
+.init.text:enable_swap_cgroup()
+The function mem_cgroup_create() references
+the function __init enable_swap_cgroup().
+This is often because mem_cgroup_create lacks a __init
+annotation or the annotation of enable_swap_cgroup is wrong.
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+
+--- linux-2.6-orig/mm/memcontrol.c	2009-01-12 09:53:10.000000000 +0600
++++ linux-2.6/mm/memcontrol.c	2009-01-12 19:40:06.134648480 +0600
+@@ -46,7 +46,7 @@ struct cgroup_subsys mem_cgroup_subsys _
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /* Turned on only when memory cgroup is enabled &&
+really_do_swap_account = 0 */
+ int do_swap_account __read_mostly;
+-static int really_do_swap_account __initdata = 1; /* for remember boot option*/
++static int really_do_swap_account = 1; /* for remember boot option*/
+ #else
+ #define do_swap_account		(0)
+ #endif
+@@ -2170,13 +2170,13 @@ static void mem_cgroup_put(struct mem_cg
+
+
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+-static void __init enable_swap_cgroup(void)
++static void enable_swap_cgroup(void)
+ {
+ 	if (!mem_cgroup_disabled() && really_do_swap_account)
+ 		do_swap_account = 1;
+ }
+ #else
+-static void __init enable_swap_cgroup(void)
++static void enable_swap_cgroup(void)
+ {
+ }
+ #endif
