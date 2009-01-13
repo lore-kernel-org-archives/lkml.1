@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbZAMXba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbZAMXc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759965AbZAMXba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 18:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZAMXbG
+	id S1759646AbZAMXc1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZAMXcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 18:31:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46685
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759858AbZAMXbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 18:31:04 -0500
-Date: Tue, 13 Jan 2009 15:31:04 -0800 (PST)
-Message-Id: <20090113.153104.72134741.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: ben@zeus.com, w@1wt.eu, jarkao2@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49677074.5090802@cosmosbay.com>
-References: <20090108.135515.85489589.davem@davemloft.net>
-	<4966F2F4.9080901@cosmosbay.com>
-	<49677074.5090802@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 18:32:16 -0500
+Received: from [200.77.170.6] ([200.77.170.6]:39106 "EHLO
+	delivery-b-02.cablevision.net.mx" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755210AbZAMXcP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:32:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am4OANmxbEkKAwFr/2dsb2JhbAAIgT8vEIV1hHwBXsElhW+BJA
+X-IronPort-AV: E=Sophos;i="4.37,261,1231135200"; 
+   d="scan'208";a="141740299"
+Date: Tue, 13 Jan 2009 17:29:23 -0600
+From: Curso Sky Running <98064512234@cablevision.net.mx>
+Subject: =?windows-1252?Q?=DAltimos_Lugares._Enero_25._Nevado_de_Toluca?=
+To: dbx <98064512234@cablevision.net.mx>
+Message-id: <419-220091213232923718@user-b01ab84ab0>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1252
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Fri, 09 Jan 2009 16:42:44 +0100
+Curso Sky Running
 
-> David, if you referred to code at line 1374 of net/ipv4/tcp.c, I
-> believe there is no issue with it. We really want to break from this
-> loop if !timeo .
+Enero 25. Nevado de Toluca
 
-Correct, I agree, and I gave some detailed analysis of this in
-another response :-)
+Últimos Lugares
 
-> Willy patch makes splice() behaving like tcp_recvmsg(), but we might call
-> tcp_cleanup_rbuf() several times, with copied=1460 (for each frame processed)
+Inscripción ONLINE con 20% Descuento, hasta Enero 15.
 
-"Like", sure, but not the same since splice() lacks the low-water
-and backlog checks.
+http://www.deporte6am.com
 
-> I wonder if the right fix should be done in tcp_read_sock() : this is the
-> one who should eat several skbs IMHO, if we want optimal ACK generation.
-> 
-> We break out of its loop at line 1246
-> 
-> if (!desc->count) /* this test is always true */
-> 	break;
-> 
-> (__tcp_splice_read() set count to 0, right before calling tcp_read_sock())
-> 
-> So code at line 1246 (tcp_read_sock()) seems wrong, or pessimistic at least.
+Tel. 51350564
 
-Yes, that's very odd.
+----------------------------------------------------
+
+
+CLASIFICADOS GRATIS
+
+Por Deportistas, para Deportistas.
+
+http://www.deporte6am.com/clasificados
+
+INSTRUCCIOINES
+1. Dar click en POST AD.
+2. Revisar su bandeja de entrada de e-mails.
+3. Activar clasificado en el e-mail que le llegará automaticamente.
+
+
+-------------------------------------
+
+
+Atentamente
+Deporte6am.com
+Tel. 51350564
+Mexico DF
+
+
+
+remover de lista
+nuevomtb100k@yahoo.com
+
+
+
