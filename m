@@ -1,158 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZAMW64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZAMXCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZAMW64 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 17:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZAMW6p
+	id S1754476AbZAMXCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 18:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZAMXCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 17:58:45 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:42034 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbZAMW6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 17:58:44 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar8EAOWpbElMQWt2/2dsb2JhbACBbM0KhW8
-Date: Tue, 13 Jan 2009 17:58:27 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
-	(fixed in LTTng 0.78)
-Message-ID: <20090113225827.GA5791@Krystal>
-References: <20090109235449.GA21999@Krystal> <20090110161137.GA20526@Krystal> <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com>
-Mime-Version: 1.0
+	Tue, 13 Jan 2009 18:02:44 -0500
+Received: from matrixpower.ru ([195.178.208.66]:59163 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750752AbZAMXCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 18:02:43 -0500
+Date: Wed, 14 Jan 2009 02:02:40 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Theodore Tso <tytso@mit.edu>, David Rientjes <rientjes@google.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090113230240.GA30192@ioremap.net>
+References: <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net> <20090113224941.GA14730@mit.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:56:48 up 12 days, 22:54,  2 users,  load average: 0.32, 0.32,
-	0.28
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20090113224941.GA14730@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> Hi Mathieu
+On Tue, Jan 13, 2009 at 05:49:41PM -0500, Theodore Tso (tytso@mit.edu) wrote:
+> > User does not work with the some magically calculated scores, he just
+> > starts the processes and knows only their names. User can specify pid,
+> > but in the case of short-living connections it is not possible. Changing
+> > parent oom score opens a huge possibility to kill it, while in case of
+> > some application server (or database) it should never be killed, and
+> > only some of its clients (which work for the users and not for the
+> > calculating backend for example) have to be killed.
 > 
-> 2009/1/11 Mathieu Desnoyers <compudj@krystal.dyndns.org>:
-> > Hi,
-> >
-> > LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
-> > It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+> The standard way this gets handled for resource limits is very simple:
 > 
-> -ECANTBUILD
+> 1)  parent forks the child process
+> 2)  in the child process we set up resource limits, adjust oom
+> 3)  exec the child's program.
 > 
+> As Alan has already pointed out to you:
+> 
+>    (echo XXXX > /proc/self/oom_adj ; exec /usr/bin/program)
 
-Hi Kosaki,
+Yes, I saw that in archive, but did not receive myself, so did not
+answer. This works in the above simple case, but if we dig a little bit
+into the case when there are children, parent has to live and not all
+children should be considered equal by the oom-killer, things change
+dramatially. And we can not change the sources. Well, in particaular my
+case we can, but it is not about the single system :)
 
-Thanks for the report. This should be fixed in LTTng 0.78 now.
+> There are two problems; one is whether or not the OOM protection is
+> inherited or not, and how one sets OOM protection --- and I think you
+> will find a huge resistance to using names as a way of expressing
+> policy.
 
-Best regards,
+Yup, this whole thread shows this resistance quite good :)
 
-Mathieu
+> The second problem is that oom_adj scoring is a hueristic which is
+> hard for system administrators to understand --- and these are
+> separable problems.  Don't try to conflate them, and try using the
+> fact that a random score echo'ed into /proc/pid/oom_adj is hard to
+> tune as a justification for using process executable names.
 
-> fs/jbd2/commit.c:27:24: error: trace/jbd2.h: No such file or directory
-> fs/jbd2/commit.c:29: warning: data definition has no type or storage class
-> fs/jbd2/commit.c:29: warning: type defaults to 'int' in declaration of
-> 'DEFINE_TRACE'
-> fs/jbd2/commit.c:29: warning: parameter names (without types) in
-> function declaration
-> fs/jbd2/commit.c:30: warning: data definition has no type or storage class
-> fs/jbd2/commit.c:30: warning: type defaults to 'int' in declaration of
-> 'DEFINE_TRACE'
-> fs/jbd2/commit.c:30: warning: parameter names (without types) in
-> function declaration
-> fs/jbd2/commit.c: In function 'jbd2_journal_commit_transaction':
-> fs/jbd2/commit.c:374: error: implicit declaration of function
-> 'trace_jbd2_start_commit'
-> fs/jbd2/commit.c:1003: error: implicit declaration of function
-> 'trace_jbd2_end_commit'
-> make[2]: *** [fs/jbd2/commit.o] Error 1
-> 
-> 
-> because
-> 
-> jbd2-instrumentation-move-to-tracepoints patch only change following two files.
-> it didn't create trace/jbd2.h
-> 
->   fs/jbd2/checkpoint.c 		
->   fs/jbd2/commit.c 		
-> 
-> 
-> 
-> 
-> 
-> >
-> > A new version including ext4 probe module should be available shortly.
-> >
-> > Installation QUICKSTART :
-> > http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
-> >
-> > git url :
-> >
-> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28-lttng-0.74
-> >
-> > tarball :
-> >
-> > http://ltt.polymtl.ca/lttng/patch-2.6.28-lttng-0.74.tar.gz
-> >
-> > jbd2/ext4 patches within the tarball :
-> >
-> > ext4-instrumentation-add-tracepoints.patch
-> > jbd2-instrumentation-move-to-tracepoints.patch
-> > lttng-instrumentation-jbd2-probes.patch
-> >
-> > Mathieu
-> >
-> > * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> >> Hi everyone,
-> >>
-> >> I just ported LTTng to 2.6.28. Enjoy !
-> >>
-> >> You may also want to upgrade to lttv 0.12.5 which puts back the syscall
-> >> and softirq names in the event list.
-> >>
-> >> For newcomers, instructions to install LTTng can be found at :
-> >> http://ltt.polymtl.ca/svn/trunk/lttv/QUICKSTART
-> >>
-> >> (I just updated the QUICKSTART guide. Please feel free to try it and
-> >> report inconsistencies.)
-> >>
-> >> Mathieu
-> >>
-> >>
-> >> --
-> >> Mathieu Desnoyers
-> >> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> >>
-> >> _______________________________________________
-> >> ltt-dev mailing list
-> >> ltt-dev@lists.casi.polymtl.ca
-> >> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> >>
-> >
-> > --
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+I tried, and although I do agree on the fact that it can be used to turn
+oom-killer on or off, but not for the tuning. But even this does not
+really work in the case showed, when we can not change the application,
+and having a main goal to save the parent and kill only some subset of
+the short-living children. So we can not really adjust parent oom-score
+and get the same in the children, since this will put parent and
+important children at risk.
+
+> If you want to argue that using containers is too hard, and there out
+> to be a simpler tuning parameter where (for the sake of argument) all
+> processes are given a number from 0 to 10, where 5 is the default, and
+> higher numbers will be picked unconditionally over lower numbers, and
+> the existing OOM score is used to distinguish between two process with
+> the same OOM protection, that's fine.
+
+> How we set that OOM protection class, whether it is via setrlimit() or
+> echoing into a magic /proc/pid/oom_protection file, and whether it
+> inherits across fork and exec calls, are a separate question.
+
+Let's put containers out of the picture. While it may or may not work,
+they are definitely not an issue in the given systems. Having simpler
+tunables would be great, but we can not change them, since it is
+already existing abi, documentation could be extended though, I can
+cook up a patch tomorrow if no one else will do this.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Evgeniy Polyakov
