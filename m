@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZAMCsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZAMCtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZAMCsK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Jan 2009 21:48:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZAMCrz
+	id S1756154AbZAMCtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Jan 2009 21:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZAMCtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Jan 2009 21:47:55 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59221 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZAMCry (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Jan 2009 21:47:54 -0500
-Message-ID: <496C00CD.3070302@jp.fujitsu.com>
-Date: Tue, 13 Jan 2009 11:47:41 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-References: <200901042346.42723.rjw@sisk.pl> <200901082145.39429.rjw@sisk.pl> <200901091533.44460.jbarnes@virtuousgeek.org> <200901100038.56748.rjw@sisk.pl>
-In-Reply-To: <200901100038.56748.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Jan 2009 21:49:10 -0500
+Received: from mga11.intel.com ([192.55.52.93]:25984 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751189AbZAMCtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Jan 2009 21:49:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,256,1231142400"; 
+   d="asc'?scan'208";a="421833798"
+Subject: Re: [RFC PATCH crypto 4/4] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090113023937.GA14460@gondor.apana.org.au>
+References: <1231120947.5937.31.camel@yhuang-dev.sh.intel.com>
+	 <20090109070144.GA7358@gondor.apana.org.au>
+	 <1231743310.5937.107.camel@yhuang-dev.sh.intel.com>
+	 <20090112104335.GA4942@gondor.apana.org.au>
+	 <1231814053.5937.120.camel@yhuang-dev.sh.intel.com>
+	 <20090113023937.GA14460@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+842ud+X4RNHP3dxuXuy"
+Date: Tue, 13 Jan 2009 10:49:07 +0800
+Message-Id: <1231814947.5937.124.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday 10 January 2009, Jesse Barnes wrote:
->> On Thursday, January 8, 2009 12:45 pm Rafael J. Wysocki wrote:
->>> On Thursday 08 January 2009, Rafael J. Wysocki wrote:
->>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->>>>> Rafael J. Wysocki wrote:
->>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->>>>>>> Rafael J. Wysocki wrote:
->>>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>>>
->>>>>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
->>>>>>>> many vectors are allocated and it is not ensured that the right
->>>>>>>> vectors will be used for various services.  Namely, the PCI Express
->>>>>>>> specification states that both PCI Express native PME and PCI
->>>>>>>> Express hotplug will always use the same MSI or MSI-X message for
->>>>>>>> signalling interrupts, which implies that the same vector will be
->>>>>>>> used by both of them.  Also, the VC service does not use interrupts
->>>>>>>> at all. Moreover, is not clear which of the vectors allocated by
->>>>>>>> pci_enable_msix() will be used for PME and hotplug and which of
->>>>>>>> them will be used for AER if all of these services are configured.
->>>>>>>>
->>>>>>>> For these reasons, rework the allocation of interrupts for PCI
->>>>>>>> Express ports so that at most two vectors are allocated and ensure
->>>>>>>> that the right vector will be used for the right purpose.
->>> Appended is a cleaned-up version of the patch that also contains comments
->>> with references to the appropriate sections of the PCI Express spec.
->> We'll need testing here in any case; I'll have to re-read the specs carefully 
->> to see if we can really rely on the vector numbers you have here (at first 
->> glance Kenji-san's approach seems more robust).
-> 
-> It has a catch too.  Namely, is there any warranty that we'll get the same
-> vectors when the second pci_enable_msix() is called and that they will be in
-> the same order?
-> 
 
-In my understanding, the following description of Interrupt Message
-Number in the PCI Express spec explains this.
+--=-+842ud+X4RNHP3dxuXuy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-"[...] For a given MSI-X implementation, the entry must remain constant. [...]"
+On Tue, 2009-01-13 at 10:39 +0800, Herbert Xu wrote:
+> On Tue, Jan 13, 2009 at 10:34:13AM +0800, Huang Ying wrote:
+> >=20
+> > static void ablk_complete(struct crypto_async_request *req, int err)
+> > {
+> >         struct ablkcipher_request *ablk_req =3D ablkcipher_request_cast=
+(req);
+> >         struct async_aes_req_ctx *req_ctx =3D
+> >                 ablk_aes_req_ctx(ablk_req, crypto_ablkcipher_reqtfm(abl=
+k_req));
+>=20
+> This is not guaranteed to work.  Your completion caller may be
+> called with a request pointer other than the one that you passed
+> to it.  The only thing we guarantee is that req->data has the
+> value that you set at the beginning.
 
-Thanks,
-Kenji Kaneshige
+I can set req->data in xx_encrypt() to my original request to solve this
+issue. Except that, does this solution work?
 
+Best Regards,
+Huang Ying
+
+
+--=-+842ud+X4RNHP3dxuXuy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklsAR0ACgkQKhFGF+eHlpizzACfU1EuelmD5xIoqPSy+JX1vhLq
+xBgAniZ1f6NDnDJ70wkTNr2804vuv49k
+=gtbc
+-----END PGP SIGNATURE-----
+
+--=-+842ud+X4RNHP3dxuXuy--
 
