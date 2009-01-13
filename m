@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZAMMOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbZAMMPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756940AbZAMMOm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 07:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZAMMOe
+	id S1756411AbZAMMPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 07:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZAMMPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 07:14:34 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46840 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753270AbZAMMOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 07:14:33 -0500
-Date: Tue, 13 Jan 2009 13:14:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Mike Travis <travis@sgi.com>,
-       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090113121426.GA29149@elte.hu>
-References: <20090112213539.GA10720@gambetta> <496BCA21.2010709@sgi.com> <20090112235156.GC10720@gambetta> <496BD8FB.1050101@sgi.com> <20090113000112.GA10368@elte.hu> <20090113033608.GN23848@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113033608.GN23848@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 13 Jan 2009 07:15:36 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54878 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752595AbZAMMPf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 07:15:35 -0500
+Date: Tue, 13 Jan 2009 12:15:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Rientjes <rientjes@google.com>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090113121510.68a55fe9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090113115408.GA22289@ioremap.net>
+References: <20090112155030.GA21063@ioremap.net>
+	<20090112155239.5f677a17@lxorguk.ukuu.org.uk>
+	<20090112155615.GA21350@ioremap.net>
+	<20090112161931.6203f96e@lxorguk.ukuu.org.uk>
+	<20090112162938.GA22647@ioremap.net>
+	<496BCB7A.2010804@tmr.com>
+	<20090112231728.GA23803@ioremap.net>
+	<alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com>
+	<20090113085244.GA13796@ioremap.net>
+	<alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com>
+	<20090113115408.GA22289@ioremap.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Who should adjust the scores for newly created processes? Who should
+> check that processes in the first group have negative oom ajustment and
+> in the second group a positive value? Who determines when its time to
+> ajust the scores?
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+This is policy. Where does policy go ? User space
 
-> > > (And was it determined yet, that a cacheline has to be tossed around 
-> > > as well?)
-> > 
-> > No, that assertion of Andi is wrong.
-> 
-> For the IPI you always have to toss one cache line around to pass the 
-> information.
-> 
-> Anyways the padding is just to avoid false sharing.
-
-Which is a red herring - the padding was there before the patch, and is 
-there after the patch as well.
-
-	Ingo
