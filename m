@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZAMIHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZAMIIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZAMIHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 03:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZAMIHS
+	id S1756669AbZAMIIk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 03:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZAMIIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 03:07:18 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:44316 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754004AbZAMIHQ (ORCPT
+	Tue, 13 Jan 2009 03:08:31 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56704 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbZAMIIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 03:07:16 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression 2.6.28-git: suspend/resume failure. git bisected to usb suspend/resume patch
-Date: Tue, 13 Jan 2009 09:07:13 +0100
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org
-References: <200901111348.46216.borntraeger@de.ibm.com> <200901120103.53390.rjw@sisk.pl> <200901121341.51674.rjw@sisk.pl>
-In-Reply-To: <200901121341.51674.rjw@sisk.pl>
+	Tue, 13 Jan 2009 03:08:30 -0500
+Date: Tue, 13 Jan 2009 07:42:44 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+Subject: Re: platform_driver's probe functions must not be located in
+	.init.text
+Message-ID: <20090113064244.GA23381@pengutronix.de>
+References: <S1757830AbZALWQu/20090112221650Z+1710@vger.kernel.org> <20090113031554.GA3671@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200901130907.13820.borntraeger@de.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090113031554.GA3671@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 12 Januar 2009 schrieb Rafael J. Wysocki:
-> > Please try if suspend-resume works for you if you make commit
-> > fa58d305d9925b01830e535896a7227a868a9e15
-> > (PCI PM: Add suspend counterpart of pci_reenable_device) the head of your
-> > tree ('git checkout -b test-branch 
-fa58d305d9925b01830e535896a7227a868a9e15').
+On Tue, Jan 13, 2009 at 12:15:55PM +0900, Paul Mundt wrote:
+> On Mon, Jan 12, 2009 at 11:12:02PM +0100, Uwe Kleine-K?nig wrote:
+> > Hello,
 > > 
-> > If it does, please check the same for commit
-> > 571ff7584bb9e05fca0eb79752ae55a46faf3a98
-> > (PCI PM: Power-manage devices without drivers during suspend-resume).
-> 
-> Ah, please do the above with the USB commit
-> a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 reverted.
+> > if the probe function of a platform_driver lives in .init.text (i.e. is
+> > defined using __init) registering a device after the .init sections are
+> > discarded results in an oops.  You can test that by doing
+> > 
+> > 	echo $drivername.$somevalidid > /sys/bus/platform/drivers/$drivername/unbind
+> > 	echo $drivername.$somevalidid > /sys/bus/platform/drivers/$drivername/bind
+> > 
+> > As a reply to this mail I send 62 patches that fix this kind of error by
+> > moving the respective probe functions to .devinit.text.
+> > 
+> None of these patches balance with __devexit, is that intentional?
+For now, yes, it is.  
 
-Will do.
+One reason is that my script to find errors doesn't trigger for that.
 
-In the meantime I have bisected another problem: 
-commit 7503bfbae89eba07b46441a5d1594647f6b8ab7d
-Author: Mike Travis <travis@sgi.com>
-Date:   Sun Jan 4 05:18:09 2009 -0800
+Another is that this is not that critical.  If the probe function is in
+.init.text you can get an oops.  If remove is in .text it just occupies
+RAM without being used (if HOTPLUG=n).  And if remove is in .exit.text
+and is properly wrapped in __exit_p when assigning .remove everything is
+fine, too, you just cannot remove a device.
 
-    cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+Maybe I will address this in later series.
 
-but I just see that this is already known.
-O dear. How many patches do we know that broke S2R in this merge window? 4? 5?
+Best regards
+Uwe
 
-
-Christian
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
