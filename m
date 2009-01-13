@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbZAMTC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZAMTDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757227AbZAMTC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 14:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZAMTCN
+	id S1758021AbZAMTDm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 14:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZAMTDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 14:02:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38913 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZAMTCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 14:02:12 -0500
-Date: Tue, 13 Jan 2009 20:01:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-Message-ID: <20090113190142.GA2508@elte.hu>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <20090113183310.GA10065@elte.hu> <alpine.LFD.2.00.0901131038260.6528@localhost.localdomain>
+	Tue, 13 Jan 2009 14:03:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52724 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZAMTDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 14:03:32 -0500
+Message-ID: <496CE567.1040808@zytor.com>
+Date: Tue, 13 Jan 2009 11:03:03 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901131038260.6528@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: [PATCH -tip] x86: headers - fix export private data to	userspace
+References: <20090113183456.GA14470@localhost> <1231871832.16221.1.camel@brick> <496CE234.2070900@zytor.com> <20090113185239.GC14470@localhost> <496CE3A2.4060605@zytor.com> <20090113190007.GA16663@localhost>
+In-Reply-To: <20090113190007.GA16663@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+Cyrill Gorcunov wrote:
+> | > | 
+> | > | You can introduce symbols into the general namespace if *and only if*
+> | > | they are in a header file that is invoked directly by the user.  In
+> | > | other words, such a header file is unusable by libc, but setup.h doesn't
+> | > | contain anything needed by libc in the first place.
+> | > | 
+> | > | 	-hpa
+> | > | 
+> | > 
+> | > So we could just fence it by __KERNEL__?
+> | > 
+> | 
+> | We might, as userspace shouldn't need COMMAND_LINE_SIZE anyway (see
+> | other post), but I'm rather confused as how you got that from what I
+> | wrote above.
+> | 
 > 
+> The thing is that kernel headers are not only touched by libc.
+> Someone could write a program and include setup.h there.
+> Or I translated you wrong :)
 > 
-> On Tue, 13 Jan 2009, Ingo Molnar wrote:
-> > 
-> > below is the v8 -> v10 delta patch - for all who'd like to review the 
-> > changes.
-> 
-> Hmm. This does seem to indicate that v10 lost many of the preempt 
-> changes. Probably because Peter went back to v7 to create it.
-> 
-> I also wonder about the timing numbers - the numbers were probably done 
-> with some random version and then not re-done, so the commit message is 
-> not necessarily "sane" in that respect - the timings quoted don't 
-> necessarily match the code committed.
 
-yeah - i didnt take care with v10's commit log because it will be redone 
-with a structural splitup anyway, instead of the current time based 
-history.
+My whole point was that there are classes of symbols which may be
+legitimately used by userspace *applications*, but not by libc.  Those
+can live in the general namespace since they are included by explicit
+user command.
 
-	Ingo
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
