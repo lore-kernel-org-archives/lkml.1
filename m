@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759109AbZANHjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZANHk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759109AbZANHjP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 02:39:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZANHi5
+	id S1759679AbZANHk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 02:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZANHkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 02:38:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45229 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754426AbZANHiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 02:38:55 -0500
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX19l88B1ReJlj2vZbZo1hDGdjjAk3dw1t1dhwT/Ky2
-	3uqy09qhULFtNy
-Message-ID: <496D968C.4050405@fisher-privat.net>
-Date: Wed, 14 Jan 2009 08:38:52 +0100
-From: Alexey Fisher <bug-track@fisher-privat.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [Bug #12417] glx performance drop with: "x86: PAT: implement
- track/untrack of pfnmap regions for x86 - v3"
-References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <oWTznAnH9BI.A.dnH.OHfaJB@chimera>
-In-Reply-To: <oWTznAnH9BI.A.dnH.OHfaJB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Wed, 14 Jan 2009 02:40:14 -0500
+Received: from mail1.SerNet.de ([193.175.80.2]:55709 "EHLO mail.SerNet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752265AbZANHkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 02:40:12 -0500
+Date: Wed, 14 Jan 2009 08:40:08 +0100
+From: Volker Lendecke <Volker.Lendecke@SerNet.DE>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
+       netdev@vger.kernel.org
+Subject: Re: maximum buffer size for splice(2) tcp->pipe?
+Reply-To: Volker.Lendecke@SerNet.DE
+References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="wac7ysb48OaltWcw"
+Content-Disposition: inline
+In-Reply-To: <496D2078.9080302@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
+Message-Id: <E1LN0MC-00DaJs-M2@intern.SerNet.DE>
+Organization: SerNet GmbH, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki schrieb:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
-> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
-> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
-> Date		: 2009-01-06 18:46 (6 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
-> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
-> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-There is no more warnings on the xorg start, but x server will completly
-freeze on glxgears.
+--wac7ysb48OaltWcw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jan 14, 2009 at 12:15:04AM +0100, Eric Dumazet wrote:
+> Volker, your splice() is a blocking one, from tcp socket to a pipe ?
+
+Yes, it is.
+
+> If no other thread is reading the pipe, then you might block forever
+> in splice_to_pipe() as soon pipe is full (16 pages).
+
+Why does it block when the pipe is full? Why doesn't it
+return a short read, just like the read(2) call does? We
+need to cope with that behaviour anyway.
+
+> As pages are not necessarly full (each skb will use at least one page, ev=
+en if=20
+> its length is small), it is not really possible to use splice() like this.
+>=20
+> In your case, only safe way with current kernel would be to call splice()
+> asking for no more than 16 bytes, that would be really insane for your ne=
+eds.
+>=20
+> You may prefer a non blocking mode, at least when calling splice_to_pipe()
+
+Which fd do I have to set the nonblocking flag on? The TCP
+socket I read from, or the pipe I write to?
+
+Thanks for the hint anyway :-)
+
+Volker
+
+--wac7ysb48OaltWcw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFJbZbXbsgDfmnSbrYRAsruAJ9LsFBmZe0ujTclxWLT4YJi02RW5QCdHJhH
+z/AdX1fcqLIvALxDMdaPUsI=
+=G6NX
+-----END PGP SIGNATURE-----
+
+--wac7ysb48OaltWcw--
