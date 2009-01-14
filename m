@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZANWek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZANWfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbZANWek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZANWeV
+	id S1757457AbZANWfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZANWe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:34:21 -0500
-Received: from main.gmane.org ([80.91.229.2]:55410 "EHLO ciao.gmane.org"
+	Wed, 14 Jan 2009 17:34:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49472 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755339AbZANWeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:34:19 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: kenneth johansson <ken@kenjo.org>
-Subject: Re: 2.6.27.8 scheduler bug - threads not being scheduled for long
- periods
-Date: Wed, 14 Jan 2009 22:34:08 +0000 (UTC)
-Message-ID: <gklp90$bsi$1@ger.gmane.org>
-References: <20090105175641.GA17055@sgi.com> <49625519.4050902@novell.com>
-	<20090105185111.GA18084@sgi.com> <49625894.3090706@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 1-1-4-20a.ras.sth.bostream.se
-User-Agent: Pan/0.132 (Waxed in Black)
+	id S1753737AbZANWez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 17:34:55 -0500
+Date: Wed, 14 Jan 2009 23:34:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, paulmck@linux.vnet.ibm.com, ghaskins@novell.com,
+       matthew@wil.cx, andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090114223408.GA19173@elte.hu>
+References: <20090114105300.66bd014d.akpm@linux-foundation.org> <20090114190008.GA13203@elte.hu> <20090114113638.c818fcf8.akpm@linux-foundation.org> <20090114201435.GA6519@elte.hu> <20090114123017.9acf42d7.akpm@linux-foundation.org> <20090114205122.GC6519@elte.hu> <20090114130642.cf2b18b2.akpm@linux-foundation.org> <20090114211458.GD6519@elte.hu> <20090114214158.GA9992@elte.hu> <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Jan 2009 13:59:32 -0500, Gregory Haskins wrote:
 
-> Dimitri Sivanich wrote:
->> Hi Greg,
->>
->> On Mon, Jan 05, 2009 at 01:44:41PM -0500, Gregory Haskins wrote:
->>   
->>> Dimitri Sivanich wrote:
->>>     
->>>> I'm wondering if anyone else has run into this problem, and whether
->>>> they've found a resolution for it?
->>>>
->>>>
->>>>   
->>> Hi Dimitri,
->>>   I have observed similar problems on my opensuse 11.0 box (2.6.25
->>> based) when doing kernel builds.  Often times other apps will get
->>> starved (like firefox, etc).  I was talking to peterz about it and he
->>> pointed me at a commit that went into 28-rcx that fixes this (the sha
->>> escapes me at the moment).  I've been meaning to pull the patch into
->>> our 2.6.25 and 2.6.27 trees to verify if it fixes it, but I have
->>> fairly high confidence it will.  Perhaps Peter can point you at the
->>> same patch and you can give it a whirl.  For the time being, can you
->>> see if 28 is fixed?
->>>
->>>
->>>     
->> 2.6.28 appears to be a little bit worse, actually:
->>   
->>   
-> Ugg...ok, well thanks for verifying.  I will defer to Peter and Ingo on
-> this one.
+* Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> On Wed, Jan 14, 2009 at 22:41, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >> > You just disproved your own case :(
+> >>
+> >> how so? 80% is not enough? I also checked Fedora and it has
+> >> SCHED_DEBUG=y in its kernel rpms.
+> >
+> > Ubuntu has CONFIG_SCHED_DEBUG=y as well in their kernels.
 > 
-> Please keep me in the loop on any new findings here, as the problem
-> (assuming its the same bug) has been annoying me for months (but
-> obviously not enough for me to do something about it ;)
+> $ cat /etc/SuSE-release
+> openSUSE 11.1 (x86_64)
+> VERSION = 11.1
 > 
-> -Greg
+> $ uname -a
+> Linux nga 2.6.27.7-9-default #1 SMP 2008-12-04 18:10:04 +0100 x86_64
+> x86_64 x86_64 GNU/Linux
+> 
+> $ zgrep SCHED_DEBUG /proc/config.gz
+> CONFIG_SCHED_DEBUG=y
+> 
+> $ zgrep DEBUG_MUTEX /proc/config.gz
+> # CONFIG_DEBUG_MUTEXES is not set
 
-Could this be the same issue as we have in this bug
+Fedora has mutex debugging disabled too:
 
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/276476
+   # CONFIG_DEBUG_MUTEXES is not set
 
-did anyone have a pointer to the patch ??
+So the 3 main Linux distros, generating ~95% of the kerneloops.org 
+feedback traffic, all have SCHED_DEBUG=y, and at least two have 
+!DEBUG_MUTEXES. (possibly Ubuntu has that disabled it too)
 
-I'm on .28 and it's much much better but still not 100%.
-
+	Ingo
