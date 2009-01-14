@@ -1,50 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbZANQOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763933AbZANQQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764030AbZANQOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763860AbZANQOm
+	id S1763933AbZANQQL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbZANQPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:14:42 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:47867 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763725AbZANQOk (ORCPT
+	Wed, 14 Jan 2009 11:15:55 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:58402 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754286AbZANQPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:14:40 -0500
-X-IronPort-AV: E=Sophos;i="4.37,263,1231113600"; 
-   d="scan'208";a="128875512"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Yinghai Lu" <yinghai@kernel.org>
-Cc: "James Kirin" <james.kirin40@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: memory beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y
-References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
-	<adaeiz6k4o4.fsf@cisco.com>
-	<baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
-	<86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 14 Jan 2009 08:14:35 -0800
-In-Reply-To: <86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
-	(Yinghai Lu's message of "Tue, 13 Jan 2009 22:07:26 -0800")
-Message-ID: <ada63khkgpg.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 14 Jan 2009 11:15:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QJa83uD+4odBTR2mXSHIgD+APEbP2p5md3+WAIr38H5MvgUy9WUI3lf/ln122atxSL
+         heQ2HWM00UJNM34euz8sTQXJEaqhHmfpTAne1403/VseUBjXJXLA3tGWgehHefibd5A9
+         iA6doFpoqfO1KQNPTviDoGG4W+Omj+Vwi1rno=
+Message-ID: <496E0FB2.407@gmail.com>
+Date: Wed, 14 Jan 2009 08:15:46 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Jan 2009 16:14:35.0952 (UTC) FILETIME=[31682B00:01C97663]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Paul Moore <paul.moore@hp.com>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       SE-Linux <selinux@tycho.nsa.gov>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+References: <496D759A.7010401@gmail.com> <200901140957.09722.paul.moore@hp.com>
+In-Reply-To: <200901140957.09722.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > please do
- > 1. boot linux with "disable_mtrr_trim" in grub.conf etc
- > 2. after booting input:
- > echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
+Paul Moore wrote:
+> On Wednesday 14 January 2009 12:18:18 am Justin P. Mattock wrote:
+>   
+>> When using netlabelctl on a dell laptop
+>> I'm able to define the addresses that I want:
+>>
+>> netlabelctl unlbl add interface:wlan0 address:<radiostation>
+>> label:system_u:object_r:netlabel_peer_t:s0
+>> netlabelctl unlbl add interface:wlan0 address:<myaddress>
+>> label:system_u:object_r:netlabel_peer_t:s0
+>> netlabelctl  -p unlbl accept off
+>>
+>> {the above was from http://paulmoore.livejournal.com/1758.html };
+>>     
+>
+> Hey, somebody actually reads that stuff!  I guess I'll need to be 
+> careful what I write from now on :)
+>
+> Hi Justin, on a more serious note, if you are having problems with 
+> labeled networking it's probably a good idea to CC the SELinux, LSM 
+> and/or netdev lists depending on the issue as I often miss mail if it 
+> is only posted to LKML.  When in doubt you can just CC me personally 
+> (paul.moore@hp.com) and I'll add whatever list seems appropriate.
+>
+>   
+>> (I'm able to listen to the radio station allowed, then if I choose
+>> another station; if I haven't defined an address like the above,
+>> mplayer just sits there.denying the unlabeled packet. that is until I
+>> allow the address);
+>>     
+>
+> Good, that is how it should work give the configuration shown above.
+>
+>   
+>> The problem I have is when I do the same on my macbook pro ati
+>> chipset. with the ath9k module, I'm able to listen to any station,
+>> search the web etc..
+>> it seems netlabelctl  -p unlbl accept off makes no difference if it's
+>> on or off.
+>>
+>> Is this built into ath9k yet, or is there something I'm missing?
+>>     
+>
+> That is just plain odd, there isn't really anything that is driver 
+> specific.  Can you share any more details like kernel version, 
+> netlabel_tools verion, distro, etc?  I don't have any ath9k hardware 
+> lying around to test so I would appreciate whatever additional 
+> information you can provide.
+>
+>   
+Hey alright.(I finally got around to  trying netlabelctl out!).
 
-Is there any way we can have the kernel do this automatically if there
-are any free mtrr slots?  I would guess this type of BIOS bug is pretty
-common (desktop boards not validated with > 4GB of RAM), and having the
-kernel throw away 4GB of memory unless the user does some fancy
-scripting is not very friendly (not to mention the fact that things are
-likely to be very slow until the mtrr fixup script runs).
+The two systems I have for this are: Dell latitude x200
+running ubuntu jaunty, kernel is 2.6.29-rc1.
+with netlabel_tools_0.18 which was an rpm packaged
+that I converted to .deb.(can't remember the repository where I grabbed 
+it from);
+The wireless card for the dell is a dell 1350
+using bcmxx(b43-phy0); works great.
 
- - R.
+The results when using netlabelctl with the dell is nice, i.g. like I said
+as soon as I issue netlabelctl unlbl accept off, those addresses not defined
+are simply not allowed.(the problem with the dell is I'm not seeing
+any allow rules being generated: i.g.
+
+allow netlabel_peer_t netif_t:netif ingress;
+allow netlabel_peer_t node_t:node recvfrom;
+allow unlabeled_t netif_t:netif ingress;
+allow unlabeled_t node_t:node recvfrom;
+
+The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
+the o.s. is ubuntu jaunty, the netlabel_tools is the same as above.
+the only results I see out of this is the avc's it's generating
+(the allow rules above are from the macbook);
+some reason the dell doesn't generate any avc's,
+which makes me wonder is this a module issue.
+
+Also I've gone through thinking, well maybe this is avc's driven,
+i.g. each address once added by netlabelctl receives a certain allow rule
+(like the allow rules above),
+if not either no allow rule is given to it,resulting in a denial you 
+can't see in dmesg,
+or a denial that just won't be allowed by checkpolicy.
+So after seeing if this was the case I was left with  an address defined by
+netlabel(allowed) and defined the allow rules that it had created.
+unfortunately after all of that I still was able to turn on another radio
+station  that had  no  address  in netlabelctl's  unlbl database.(and no 
+allow rule
+with SELinux);
+leading me to believe that the netlabel area or driver isn't working
+properly. or just told to not enforce the netlabel accept off option.
+
+As for the list, I have linux-wireless in my address book(not sure which 
+is right);
+
+regards;
+
+Justin P. Mattock
+
+
+
