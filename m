@@ -1,124 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbZANVdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZANVfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759838AbZANVdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbZANVdb
+	id S1758909AbZANVfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZANVfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:33:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:2444 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755414AbZANVda (ORCPT
+	Wed, 14 Jan 2009 16:35:32 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:51222 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbZANVfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:33:30 -0500
+	Wed, 14 Jan 2009 16:35:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:cc:subject;
-        b=HOg8YgbmCCKJWt0dASPWa29jroAlAuuq+bbnmJa6hu8SO0ves0W/ZkMQL4/t1sNPRm
-         wG7TX4lF/YstiO9FfnlCQLDw777hrOVYrp+Zs/ZMp07q3BZFYwMH2WQgHNmvUxHbbVqY
-         aHdK7FqjIN4pGkUw4TP0QMtAN0liRZxQMydTs=
-Message-ID: <496e5a27.1438560a.4923.ffffb67a@mx.google.com>
-Date: Wed, 14 Jan 2009 13:33:27 -0800 (PST)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] tracing/function-graph-tracer: fix a regression while suspend to disk
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=hGslpHUMdK8LJmMiCP3fL1cAnbp9tZAXDneli8mm+pmT4pVdL95bDDPCew1OQaHZOT
+         hqHWr7PwFf5esJwM3EkUZg89xdhh8etyZbxa6nn4ddlcT81db50i+BCPZuw+jV2eB25U
+         +TQG/8oUpykrnJkUtuv/bhuh3vt3rM2MOXbQ4=
+Message-ID: <496E5A9D.3050105@gmail.com>
+Date: Wed, 14 Jan 2009 13:35:25 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Paul Moore <paul.moore@hp.com>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       SE-Linux <selinux@tycho.nsa.gov>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+References: <496D759A.7010401@gmail.com> <496E21B3.3070206@gmail.com> <200901141504.30674.paul.moore@hp.com> <200901141508.58174.paul.moore@hp.com>
+In-Reply-To: <200901141508.58174.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix a crash while kernel image restore
+Paul Moore wrote:
+> On Wednesday 14 January 2009 3:04:30 pm Paul Moore wrote:
+>   
+>> On Wednesday 14 January 2009 12:32:35 pm Justin P. Mattock wrote:
+>>     
+>
+> ...
+>
+>   
+>>>>> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
+>>>>> the o.s. is ubuntu jaunty, the netlabel_tools is the same as
+>>>>> above. the only results I see out of this is the avc's it's
+>>>>> generating (the allow rules above are from the macbook);
+>>>>> some reason the dell doesn't generate any avc's,
+>>>>> which makes me wonder is this a module issue.
+>>>>>           
+>>>> Huh.  Just so I'm clear on this ... on the macbook you see avc
+>>>> denials that correspond to the allow rules you posted above, but
+>>>> on the dell you don't see the same avc denials?  Are you running
+>>>> the same SELinux policy on both systems (version numbers)?  What
+>>>> is the output of the following command on both systems?
+>>>>
+>>>>  # cat /selinux/policy_capabilities/network_peer_controls
+>>>>         
+>>> for both systems I'm running the refpolicy(svn) from tresys.
+>>> the new ubac options, and newrole mechanism etc..
+>>> doing cat /selinux/policy_capabilities_netowork_peer_controls says
+>>> "1" should be for both.
+>>>       
+>> Ahhhh!  How did that happen?!  (see my response to your other email)
+>>     
+>
+> Sorry, just realized your other email was private.  In case anyone else 
+> is following this thread, the SELinux policy for network_peer_controls 
+> policy capability is still a work in progress and is disabled by 
+> default because there are still a few issues remaining.  Disabling the 
+> network_peer_controls (the default configuration) fixed the problem.
+>
+>   
+Cool, that's what I figured when looking at cipsov4.
+As for the namespace term(yeah I don't know the term; ahh different
+domain's or mappings I think);
+Anyways heres what I'm trying to achieve:
 
-When the function graph tracer is running and while suspend to disk, some racy
-and dangerous things happen against this tracer.
+default looks like this:
+Configured NetLabel domain mappings(1)
+domain: DEFAULT
+    protocol: UNLABELED
 
-The current task will save its registers including the stack pointer which
-contains the return address hooked by the tracer. But the current task will
-continue to enter other functions after that to save the memory, and then
-it will store other return addresses, and finally loose the old depth which
-matches the return address saved in the old stack (during the registers saving).
+I want to try and have three of these for the
+different types of media:
+(in theory)
+Configured NetLabel domain mappings(3)
+domain:radio
+   protocol: UNLABELED
+domain:T.V.
+   protocol: UNLABELED
+domain:web
+   protocol: UNLABELED
+(and if possible three different tags(either 1,2,5), but probably can
+only do that with cipsov4);
 
-So on image restore, the code will return to wrong addresses.
-And there are other things: on restore, the task will have it's "current"
-pointer overwritten during registers restoring....switching from one task to
-another... That would be insane to try to trace function graphs at these
-stages.
+heres what I've come up with so far:
 
-This patch makes the function graph tracer listening on power events, making
-it's tracing disabled for the current task (the one that performs the hibernation work)
-while suspend/resume to disk, making the tracing safe during hibernation.
+netlabelctl -p map del default
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/ftrace.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+netlabelctl unlbl add domain:radio interface:wlan0 address:<myadd> 
+label:system_u:object_r:netlabel_peer_t:s0
+netlabelctl unlbl add domain:radio interface:wlan0 address:<radioadd> 
+label:system_u:object_r:netlabel_peer_t:s0
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 8c1c9c0..7e9a20b 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -17,6 +17,7 @@
- #include <linux/clocksource.h>
- #include <linux/kallsyms.h>
- #include <linux/seq_file.h>
-+#include <linux/suspend.h>
- #include <linux/debugfs.h>
- #include <linux/hardirq.h>
- #include <linux/kthread.h>
-@@ -1957,6 +1958,7 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 
- static atomic_t ftrace_graph_active;
-+static struct notifier_block ftrace_suspend_notifier;
- 
- int ftrace_graph_entry_stub(struct ftrace_graph_ent *trace)
- {
-@@ -2035,6 +2037,27 @@ static int start_graph_tracing(void)
- 	return ret;
- }
- 
-+/*
-+ * Hibernation protection.
-+ * The state of the current task is too much unstable during
-+ * suspend/restore to disk. We want to protect against that.
-+ */
-+static int
-+ftrace_suspend_notifier_call(struct notifier_block *bl, unsigned long state,
-+							void *unused)
-+{
-+	switch (state) {
-+	case PM_HIBERNATION_PREPARE:
-+		pause_graph_tracing();
-+		break;
-+
-+	case PM_POST_HIBERNATION:
-+		unpause_graph_tracing();
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
- int register_ftrace_graph(trace_func_graph_ret_t retfunc,
- 			trace_func_graph_ent_t entryfunc)
- {
-@@ -2042,6 +2065,9 @@ int register_ftrace_graph(trace_func_graph_ret_t retfunc,
- 
- 	mutex_lock(&ftrace_sysctl_lock);
- 
-+	ftrace_suspend_notifier.notifier_call = ftrace_suspend_notifier_call;
-+	register_pm_notifier(&ftrace_suspend_notifier);
-+
- 	atomic_inc(&ftrace_graph_active);
- 	ret = start_graph_tracing();
- 	if (ret) {
-@@ -2067,6 +2093,7 @@ void unregister_ftrace_graph(void)
- 	ftrace_graph_return = (trace_func_graph_ret_t)ftrace_stub;
- 	ftrace_graph_entry = ftrace_graph_entry_stub;
- 	ftrace_shutdown(FTRACE_STOP_FUNC_RET);
-+	unregister_pm_notifier(&ftrace_suspend_notifier);
- 
- 	mutex_unlock(&ftrace_sysctl_lock);
- }
--- 
-1.6.0.4
+netlabelctl unlbl add domain:T.V. interface:wlan0 address:<myadd> 
+label:system_u:object_r:netlabel_peer_t:s0
+netlabelctl unlbl add domain:T.V. interface:wlan0 address:<t.v.add> 
+label:system_u:object_r:netlabel_peer_t:s0
+
+As for the new capabilities, I don't mind trying that out when
+the time comes(but first I need to figure the this out before any other 
+ways);
+
+here is what the error looks like:
+
+netlabel_tools-0.19# make
+INFO: creating the version header file
+.: 10: version_info: not found
+make: *** [include/version.h] Error 2
+
+(googling for the missing package results in a bunch of
+hits on "just do a uname -r");
+
+In any case using the default, and then just adding
+addresses is probably fine for the time being.
+
+regards;
+
+Justin P. Mattock
+
 
 
