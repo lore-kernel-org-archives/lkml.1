@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZANCAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbZANCCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbZANCAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZANCAn
+	id S1759300AbZANCCe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZANCCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:00:43 -0500
-Received: from mail.suse.de ([195.135.220.2]:48006 "EHLO mx1.suse.de"
+	Tue, 13 Jan 2009 21:02:25 -0500
+Received: from mga02.intel.com ([134.134.136.20]:6010 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754591AbZANCAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:00:42 -0500
-Date: Wed, 14 Jan 2009 03:00:40 +0100
-From: Nick Piggin <npiggin@suse.de>
+	id S1753726AbZANCCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:02:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,261,1231142400"; 
+   d="asc'?scan'208";a="378238209"
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+From: Huang Ying <ying.huang@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: next-20090107: WARNING: at kernel/sched.c:4435 sub_preempt_count
-Message-ID: <20090114020040.GA19806@wotan.suse.de>
-References: <4966897E.5020302@free.fr> <f19298770901090209m7076f3afyd1e01e0fc9bbca59@mail.gmail.com> <20090111024945.GC7077@elte.hu>
+Cc: Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090113174522.GA26965@elte.hu>
+References: <20081227155019.GA15493@elte.hu>
+	 <20081227225102.GA17822@elte.hu> <49594411.60000@linux.intel.com>
+	 <20090113174522.GA26965@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rKYHO/CVuNE869qZ0+Y5"
+Date: Wed, 14 Jan 2009 10:02:21 +0800
+Message-Id: <1231898541.5937.143.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090111024945.GC7077@elte.hu>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 03:49:45AM +0100, Ingo Molnar wrote:
-> 
-> * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> 
-> > One more instance of http://marc.info/?l=linux-kernel&m=123134586202636&w=2
-> > Added Ingo Molnar to CC.
-> 
-> added Nick on Cc:. Nick, it's about:
-> 
-> > commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> > Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> > Date:   Tue Sep 30 20:50:27 2008 +1000
+
+--=-rKYHO/CVuNE869qZ0+Y5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-01-14 at 01:45 +0800, Ingo Molnar wrote:
+> * Andi Kleen <ak@linux.intel.com> wrote:
+>=20
+> > Ingo Molnar wrote:
 > >
-> >    sched: improve preempt debugging
-> 
-> causing a seemingly spurious warning.
+> >>>> A far more useful design for handling MCE events would be to feed=20
+> >>>> them into printk logging.
+> >>> If there's ASCII logging it should be separate from normal printk.
+> >>
+> >> Well, why?=20
+> >
+> > Mostly because the problem is not a kernel issue. Especially large=20
+> > systems with a lot of memory can generate a lot of corrected events (on=
+e=20
+> > bit flips in DIMMs are not that uncommon) and it's not good to mix that=
+=20
+> > all up into other kernel messages. It also makes it more clear that it'=
+s=20
+> > not a kernel problem, but a hardware problem. I've got feedback over th=
+e=20
+> > years that confirm this sight.
+>=20
+> Is your argument that syslog is not suitable for the logging of hw events=
+?
+>=20
+> If that is your argument then the answer is to extend syslog with those=20
+> aspects, instead of widening the quirky /dev based mce ABIs to achieve=20
+> something similar.
 
-I don't know how it is spurious... Presumably the sequence _would_ have
-caused preempt count to go negative if the bkl were not held...
+In current /dev based mce ABI implementation, syslog is used for logging
+hw events, not though printk, but through /dev/mcelog and /sbin/mcelog.
 
-__do_softirq does a __local_bh_disable on entry, and it seems like the
-_local_bh_enable on exit is what causes this warning. So something is
-unbalanced somehow. Or is it some weird thing we do in early boot that
-I am missing?
+For uncorrected MCE, they should be logged via printk. But for corrected
+MCE, there could be thousands/millions ones (imagining you have a DIMM
+with one data pin corrupted). I don't think it's a good idea to blend
+these hardware events with other kernel software events in printk.
 
-Can you put in some printks around these functions in early boot to
-get an idea of what preempt_count is doing?
+Best Regards,
+Huang Ying
 
 
+--=-rKYHO/CVuNE869qZ0+Y5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkltR6oACgkQKhFGF+eHlphXDgCfWxRpfYcAiGiZi4f24hWRpU4Q
+eqMAnRVeQch8CyHAgNoTVm2LnkSXwws2
+=AlIH
+-----END PGP SIGNATURE-----
+
+--=-rKYHO/CVuNE869qZ0+Y5--
 
