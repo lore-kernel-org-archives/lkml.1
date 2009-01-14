@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761275AbZANKTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbZANKTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761275AbZANKTJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760204AbZANKSu
+	id S1761061AbZANKTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbZANKTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:18:50 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:54281 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZANKSt convert rfc822-to-8bit (ORCPT
+	Wed, 14 Jan 2009 05:19:36 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:40170 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956AbZANKTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:18:49 -0500
-Message-ID: <496DBBD5.7080109@cosmosbay.com>
-Date: Wed, 14 Jan 2009 11:17:57 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 14 Jan 2009 05:19:34 -0500
+Date: Wed, 14 Jan 2009 11:19:08 +0100
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, tj@kernel.org, gregkh@suse.de,
+       stern@rowland.harvard.edu, jens.axboe@oracle.com,
+       hinko.kocevar@cetrtapot.si
+Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
+Message-ID: <20090114101908.GF19262@axis.com>
 MIME-Version: 1.0
-To: Volker.Lendecke@SerNet.DE
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com> <E1LN0MC-00DaJs-M2@intern.SerNet.DE> <496DACBE.3030701@cosmosbay.com> <E1LN2Vu-00DluN-6Z@intern.SerNet.DE>
-In-Reply-To: <E1LN2Vu-00DluN-6Z@intern.SerNet.DE>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 14 Jan 2009 11:18:01 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <195c7a900901131511l7077eebar8396267e3f2b670b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker Lendecke a écrit :
-> On Wed, Jan 14, 2009 at 10:13:34AM +0100, Eric Dumazet wrote:
->> for (;;) {
->> 	struct pollfd pfd;
->> 	pfd.fd = socket;
->> 	pfd.events = POLLIN;
->> 	if (poll(&pfd, 1, -1) != 1)
->> 		continue;
->> 	res = splice(socket, NULL, pipefds[1], NULL, 65536, SPLICE_F_MOVE|SPLICE_F_NONBLOCK);
->> 	if (res > 0)
->> 		nwritten = splice(pipefds[0], NULL, file_fd, NULL, res, SPLICE_F_MOVE|SPLICE_F_MORE);
->> }
+On Wed, Jan 14, 2009 at 12:11:32AM +0100, Bastien ROUCARIES wrote:
+> On Tue, Jan 13, 2009 at 11:45 PM, David Miller <davem@davemloft.net> wrote:
+> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Date: Wed, 14 Jan 2009 07:40:19 +0900
+> >
+> >> > It may be that we've worked around the other spots, although I haven't
+> >> > seen anything like that, we might just have been lucky until now.
+> >> >
+> >> > Can you recall another place where this trick is used?
+> >>
+> >> rmap.
+> >> Don't CRIS use mmu?
+> >
+> > I'm beginning to suspect the issue is only with objects
+> > in the kernel image itself.  Dynamically allocated memory
+> > is properly aligned and therefore the "low bit status bits
+> > in pointer" trick works.
+> Perhaps using a pointerhackalign trick on this structure where
+> #define pointerhackalign(x) __attribute__ ((aligned (x)))
+> and declare
+> struct klist_node {
+> ...
+> }  pointerhackalign(2);
 > 
-> Doesn't this reduce performance again? I thought the whole
-> point of splice() was to increase performance by avoiding
-> memory copies. If I have to do a poll syscall for each call
-> to splice, doesn't the context switch eat that performance
-> advantage again?
+> Because  __attribute__ ((aligned (x))) could only increase alignment
+> it will safe to do that and serve as documentation purpose :)
+
+That works, but we need to do it not for the struct klist_node,
+but for the struct we insert into the void * in klist_node,
+which is struct klist.
+
+The following patch works for CRIS, and is less intrusive than
+my earlier patch. If this the way to go I can resubmit a proper patch.
+
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index 8ea98db..a21cd7a 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -23,7 +23,7 @@ struct klist {
+ 	struct list_head	k_list;
+ 	void			(*get)(struct klist_node *);
+ 	void			(*put)(struct klist_node *);
+-};
++} __attribute__ ((aligned (4)));
+ 
+ #define KLIST_INIT(_name, _get, _put)					\
+ 	{ .k_lock	= __SPIN_LOCK_UNLOCKED(_name.k_lock),		\
+
+> Regards
 > 
-> Or was splice designed only for multi-threaded applications
-> (which at least Samba is not)?
-> 
-> Volker
+> Bastien
 
-splice() avoids memory copies yes, but on typical 1460 bytes
-frames its a small gain.
-
-But if no data is available on socket,
-you still have to wait (and have a context switch later).
-
-Waiting in poll() or splice() has same context switch cost.
-
-Only cost is the extra syscall of course, but it is mandatory
-if you want to avoid a possible deadlock in current splice()
-implementation.
-
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
