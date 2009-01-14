@@ -1,98 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZAND7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZANEA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbZAND7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 22:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZAND7Y
+	id S1757624AbZANEA4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 23:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZANEAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 22:59:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50296 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbZAND7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 22:59:23 -0500
-Message-ID: <496D6300.9070402@kernel.org>
-Date: Wed, 14 Jan 2009 12:58:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 13 Jan 2009 23:00:47 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:29880 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753040AbZANEAq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 23:00:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=nFSOdgOM0XxIECa/bCQaeTghePvJu+yjPqFzK3o3yw52fPRvzSuvVvFskE/+/s3z3C
+         2rcDHnlpCpzj0ozTCYr0C/fHb47AjMn1c8r8R1YOGhHNloFBtclGZpUt9lSfyIz2pGoh
+         ea6dBY8ET1nlhHq+NIsg/lOb20k34MroeTVF8=
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       travis@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: regarding the x86_64 zero-based percpu patches
-References: <49649814.4040005@kernel.org> <20090107120225.GA30651@elte.hu>	<49649C65.6000706@kernel.org>	<200901101716.04220.rusty@rustcorp.com.au>	<Pine.LNX.4.64.0901121120280.30369@quilx.com>	<m1mydwxvtx.fsf@frodo.ebiederm.org> <496BE157.2000009@kernel.org>	<m1y6xfx62a.fsf@frodo.ebiederm.org> <496C071F.3000408@kernel.org> <m1k58zx305.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1k58zx305.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.7
+Date: Tue, 13 Jan 2009 23:00:44 -0500
+Message-ID: <70438690901132000r4fabc40di959fea6f22ed3a69@mail.gmail.com>
+Subject: 2.6.28 boot fails on Cyrix 6x86
+From: zbigniew brzezinskix <zbigniewbrzezinskix@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Jan 2009 03:59:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Eric.
+Vanilla 2.6.28 boot fails on Cyrix 6x86 ... seems ok on 6x86MX.
 
-Eric W. Biederman wrote:
-> Tejun Heo <tj@kernel.org> writes:
->> I don't know.  I think it's a dangerous thing which can be avoided.
->> If there's no other solution, then we might have to live with it but I
->> don't see the winning benefit of such design over per-cpu virtual
->> mapping.
-> 
-> It isn't incompatible with a per-cpu virtual mapping.  It allows the
-> possibility of each cpu reusing the same chunk of virtual address
-> space for per cpu memory.
-> 
-> On x86_64 and other architectures with enough address space bits it allows
-> us to share the large pages that we use for the normal memory mapping with
-> the ones for per cpu access.
-> 
-> I definitely think the work of combining the pda and the percpu areas
-> into a common area is worthwhile.
+tried:
+     (X) 386
+     (X) 486
+     (X) 586/K5/5x86/6x86/6x86MX
 
-Yeah, it's gonna be necessary regardless of which way we go.
+cat /proc/cpuinfo
+processor       : 0
+vendor_id       : CyrixInstead
+cpu family      : 5
+model           : 2
+model name      : 6x86 2x Core/Bus Clock
+stepping        : 5
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : yes
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu cyrix_arr ds_cpl est cid
+bogomips        : 120.01
 
-> I think it would be nice if the percpu area could grow and would not be
-> a fixed size at boot time, I'm not particularly convinced it has to.
+BIOS EBDA/lowmem at: 00000000/000a0000
+Linux version 2.6.28 (root@box48) (gcc version 4.3.2 (Debian
+4.3.2-1.1) ) #1 Tue Jan 13 11:59:16 EST 2009
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  NSC Geode by NSC
+  Cyrix CyrixInstead
+  Centaur CentaurHauls
+  Transmeta GenuineTMx86
+  Transmeta TransmetaCPU
+  UMC UMC UMC UMC
+Enabling CPUID on Cyrix processor.
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 0000000003000000 (usable)
+ BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+DMI not present or invalid.
+last_pfn = 0x3000 max_arch_pfn = 0x100000
+48MB LOWMEM available.
+  mapped low ram: 0 - 03000000
+  low ram: 00000000 - 03000000
+  bootmap 00001000 - 00001600
+(6 early reservations) ==> bootmem [0000000000 - 0003000000]
+  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+  #1 [0000100000 - 000036697c]    TEXT DATA BSS ==> [0000100000 - 000036697c]
+  #2 [0000367000 - 0000369000]    INIT_PG_TABLE ==> [0000367000 - 0000369000]
+  #3 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
+  #4 [0000007000 - 0000012000]          PGTABLE ==> [0000007000 - 0000012000]
+  #5 [0000001000 - 0000002000]          BOOTMAP ==> [0000001000 - 0000002000]
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00001000
+  Normal   0x00001000 -> 0x00003000
+Movable zone start PFN for each node
+early_node_map[2] active PFN ranges
+    0: 0x00000000 -> 0x000000a0
+    0: 0x00000100 -> 0x00003000
+Allocating PCI resources starting at 10000000 (gap: 3000000:fcff0000)
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 12096
+Kernel command line: root=/dev/hda1 ro console=tty0 console=ttyS0,115200
+Initializing CPU#0
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Console: colour VGA+ 80x25
+console [tty0] enabled
+console [ttyS0] enabled
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 45680k/49152k available (1557k kernel code, 3084k reserved,
+602k data, 184k init, 0k highmem)
+virtual kernel memory layout:
+    fixmap  : 0xfffed000 - 0xfffff000   (  72 kB)
+    vmalloc : 0xc3800000 - 0xfffeb000   ( 967 MB)
+    lowmem  : 0xc0000000 - 0xc3000000   (  48 MB)
+      .init : 0xc031e000 - 0xc034c000   ( 184 kB)
+      .data : 0xc0285437 - 0xc031be58   ( 602 kB)
+      .text : 0xc0100000 - 0xc0285437   (1557 kB)
+Checking if this processor honours the WP bit even in supervisor mode...Ok.
+Calibrating delay loop... 119.55 BogoMIPS (lpj=239104)
+Mount-cache hash table entries: 512
+Enabling CPUID on Cyrix processor.
+Enabling CPUID on Cyrix processor.
+CPU: Cyrix 6x86 2x Core/Bus Clock stepping 05
+Checking 'hlt' instruction... OK.
+invalid opcode: 0000 [#1]
+last sysfs file:
 
-The main problem is that the area needs to be congruent which
-basically mandates them to be contiguous.  The three alternatives on
-table are...
-
-1. Just reserve memory from the get-go.  Simplest.  No additional TLB
-   pressure but memory is likely to be wasted and more importantly
-   scalability suffers.
-
-2. Reserve address space and map memory as necessary.  We can be much
-   more generous about reserving address space especially on 64bit
-   machines and probably can mostly forget about scalability issue
-   there.  However, getting things just right for address space
-   contrained 32bit might not be too easy but then again nothing
-   really is scalable on 32bit these days, so we probably can live
-   with boot time parameter or something.
-
-   Another issue is added TLB pressure as it's likely to consume 4K
-   TLB entries in addition to the default kernel mapping 2M TLB
-   entries.  The TLB pressure can be mostly avoided if percpu area is
-   sufficiently large to justify 2MB page allocation but it isn't.
-
-3. Do realloc().  This doesn't impose scalability issues or add to TLB
-   pressure but it does contrain how the percpu variables can be used
-   and introduces certain amount of possibility for scary
-   once-in-a-blue-moon never-reproducible bugs.  Maybe such
-   possibility can be reduced by putting some restriction on the
-   interface but I don't know.  It still scares me.
-
-Hmm... IIUC, the biggest drawback of #2 is the added TLB pressure,
-right?  What if we reserve percpu allocation by 2MB chunks?  ie. use
-4k mapping but always allocate the percpu pages from aligned 2MB
-chunks.  That way it won't waste 2MB per cpu and although it will use
-additional 4K TLB entries, it will free up 2MB TLB entries.
-
-Thanks.
-
--- 
-tejun
+Pid: 0, comm: swapper Not tainted (2.6.28 #1)
+EIP: 0060:[<c03220c6>] EFLAGS: 00010203 CPU: 0
+EIP is at stop_mce+0x0/0x19
+EAX: 00000004 EBX: c03378c8 ECX: c031dfec EDX: 00000034
+ESI: 00099800 EDI: c0316000 EBP: 0078d003 ESP: c031dfe4
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process swapper (pid: 0, ti=c031c000 task=c02f7300 task.ti=c031c000)
+Stack:
+ c0321865 c03220c4 00000000 c031e829 c03378c8 00000000 00000000
+Call Trace:
+ [<c0321865>] alternative_instructions+0xa/0x37
+ [<c03220c4>] check_bugs+0xcd/0xcf
+ [<c031e829>] start_kernel+0x1da/0x1e2
+Code: 09 f4 f4 f4 f4 68 6c 97 2c c0 e8 32 10 f6 ff a0 40 8a 31 c0 5a
+3c 06 b2 36 77 03 8d 50 30 88 15 b1 a0 2f c0 e8 97 f7 ff ff 58 c3 <0f>
+20 e0 83 25 f0 00 35 c0 bf a3 f8 ba 33 c0 0f 20 e0 83 e0 bf
+EIP: [<c03220c6>] stop_mce+0x0/0x19 SS:ESP 0068:c031dfe4
+---[ end trace 4eaa2a86a8e2da22 ]---
+Kernel panic - not syncing: Attempted to kill the idle task!
