@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZANSGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZANSI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZANSGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZANSF6
+	id S1753692AbZANSI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZANSIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:05:58 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53184 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752970AbZANSF5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:05:57 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <496E2956.7050308@s5r6.in-berlin.de>
-Date: Wed, 14 Jan 2009 19:05:10 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Wed, 14 Jan 2009 13:08:47 -0500
+Received: from nacho.alt.net ([208.90.169.18]:33199 "EHLO nacho.alt.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752224AbZANSIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 13:08:46 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 13:08:45 EST
+Date: Wed, 14 Jan 2009 18:02:04 +0000 (UTC)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Denys Fedoryschenko <denys@visp.net.lb>,
+       Jarek Poplawski <jarkao2@gmail.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+In-Reply-To: <1231937404.14825.4.camel@laptop>
+Message-ID: <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
+References: <20081010090426.GA6054@ff.dom.local>
+	<Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
+	<20090114063909.GA4234@ff.dom.local>
+	<200901141417.58667.denys@visp.net.lb>
+	<1231937404.14825.4.camel@laptop>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Manfred Spraul <manfred@colorfullife.com>, dcm@acm.org,
-       Nadia.Derbey@bull.net, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, paulmck@us.ibm.com
-Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
-References: <1231571060.3538.18.camel@localhost.localdomain>	 <49686465.70501@s5r6.in-berlin.de>	 <20090110011557.9d94e111.akpm@linux-foundation.org>	 <496872E0.9030007@s5r6.in-berlin.de>	 <1231773620.6365.21.camel@gaara.bos.redhat.com>	 <496B9FC7.3090108@colorfullife.com>	 <1231792712.6365.31.camel@gaara.bos.redhat.com>	 <496BAD1C.5060201@colorfullife.com>	 <20090113144802.39dc4c23.akpm@linux-foundation.org>	 <1231942990.8542.7.camel@gaara.bos.redhat.com>	 <496E111A.9010808@s5r6.in-berlin.de> <1231950802.9435.4.camel@gaara.bos.redhat.com>
-In-Reply-To: <1231950802.9435.4.camel@gaara.bos.redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Delivery-Agent: TMDA/1.1.4 (Edradour)
+From: Chris Caputo <ccaputo@alt.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> On Wed, 2009-01-14 at 17:21 +0100, Stefan Richter wrote:
->> Kristian Høgsberg wrote:
->>> On Tue, 2009-01-13 at 14:48 -0800, Andrew Morton wrote:
->>>> What do we think of just removing the constructor and using
->>>> kmem_cache_zalloc()?
->>> We still need to zero out the idr_layer before returning it to the idr's
->>> internal free list.
->> I think so too.  But a more robust solution would IMO be to initialize
->> an idr_layer /before/ use, not /after/ use.  Will send a patch later.
+On Wed, 14 Jan 2009, Peter Zijlstra wrote:
+> On Wed, 2009-01-14 at 14:17 +0200, Denys Fedoryschenko wrote:
+> > I will try that patches too, when i got this message, after 3 minutes i got 
+> > crash of my router :-) after working around 17 hours :-(
+> > There is 3 of them by the way, 2 fixes also.
+> > 
+> > hrtimer: removing all ur callback modes
+> > hrtimer: removing all ur callback modes, fix hotplug
+> > hrtimer: removing all ur callback modes, fix
 > 
-> The reason it was done this way is that normally, when the layers are
-> returned to the free list they're already zero'ed out (since their
-> elements have been removed one by one), so no need to do this on later
-> re-initialization or when freeing.  It's a silly little
-> sup-optimization.
-
-Ah, right.
-
-> idr_remove_all() is different in that it doesn't
-> incrementally zero out the layer, and so it has to do it using a memset.
+> I'm afraid its a bit more than that:
 > 
-> If you want rework how this works, I'd suggest just not using the free
-> list except for in the idr_pre_get()+idr_get() sequence.  When a layer
-> is no longer used, just free it, don't put it back on the free list.
-> And use kmem_cache_zalloc() in idr_pre_get() as Andrew suggests.
+> ca109491f612aab5c8152207631c0444f63da97f
+> 37810659ea7d9572c5ac284ade272f806ef8f788
+> a0a99b227da57f81319dd239bc4de811b0f530ec
+> b2e3c0adec918ea22b6c9d7c76193dd3aaba9bd4
+> 8bdec955b0da2ffbd10eb9b200651dd1f9e366f2
+> d5fd43c4ae04523e1dcd7794f9c511b289851350
+> 731a55ba0f17064f85903b7bf8e24849ec6cfa20
+> a6037b61c2f5fc99c57c15b26d7cfa58bbb34008
+> e3f1d883740b09e5116d4d4e30a6a6987264a83c
+> 82c5b7b527ccc4b5d3cf832437e842f9d2920a79
+> 
+> and
+> 
+> 6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
+> 
+> Also, all this is rather invasive and large, so I'm not sure it will
+> meet the -stable criteria.
 
-Wait a moment:  Nadia's change (which introduced the bug) also already
-implements your suggestion.  idr_remove_all feeds to the kmem cache now,
-not to the free list anymore.
+In my testing (another 12 hours of uptime, BTW), the three patches I am 
+using are:
 
-So, Andrew, I take back my assertion that the sequence
+  ca109491f612aab5c8152207631c0444f63da97f
+  37810659ea7d9572c5ac284ade272f806ef8f788
+  a0a99b227da57f81319dd239bc4de811b0f530ec
 
-	idr_remove_all(idr);
+I have not tried the other patches.
 
-	if (idr_pre_get(idr, GFP_KERNEL))
-		id = idr_get_new(idr, p, h);
+That said, I would not recommend just the three for -stable unless they 
+get a much wider amount of testing, on multiple platforms.  I don't see 
+that as likely to happen, plus Peter says they are incomplete, so maybe it 
+is just best to recommend that 2.6.28 users getting crashes while using 
+HTB try these specific patches at first, and then the rest of the patches 
+if they do not work.
 
-would be unsafe.  Your fix has this covered as well.
--- 
-Stefan Richter
--=====-==--= ---= -===-
-http://arcgraph.de/sr/
+Thanks,
+Chris
