@@ -1,169 +1,354 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbZANRgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765298AbZANRiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765066AbZANRgm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbZANRgb
+	id S1765298AbZANRiB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761682AbZANRhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:36:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47908 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758439AbZANRga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:36:30 -0500
-Message-ID: <496E2276.8050309@redhat.com>
-Date: Wed, 14 Jan 2009 11:35:50 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 14 Jan 2009 12:37:51 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:12311 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759992AbZANRhu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:37:50 -0500
+Date: Wed, 14 Jan 2009 10:37:45 -0700
+From: dann frazier <dannf@dannf.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stephane eranian <eranian@googlemail.com>
+Subject: [PATCH] add rtc platform driver for EFI
+Message-ID: <20090114173745.GA24492@ldl.fc.hp.com>
+References: <20090109005644.GH32403@ldl.fc.hp.com> <20090109032729.6e4cd5fd@i1501.lan.towertech.it> <20090109213615.GD31548@ldl.fc.hp.com> <20090113003934.0a7da676.akpm@linux-foundation.org> <20090114000043.GB24423@colo.lackof.org> <20090114011719.GD24423@colo.lackof.org> <20090114023055.1d22d09e@i1501.lan.towertech.it> <20090114041358.GA21357@ldl.fc.hp.com> <20090114043337.GB21357@ldl.fc.hp.com> <20090114115728.15f2db18@i1501.lan.towertech.it>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, pavel@suse.cz
-Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
-References: <1231945948-23676-1-git-send-email-jack@suse.cz> <1231945948-23676-2-git-send-email-jack@suse.cz>
-In-Reply-To: <1231945948-23676-2-git-send-email-jack@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114115728.15f2db18@i1501.lan.towertech.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> To be really safe that the data hit the platter, we should also flush drive's
-> writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
+Munge Stephane Eranian's efirtc.c code into an rtc platform driver
 
-Seems sane, but aren't we getting really divergent behavior here between
-ext2, ext3, and ext4 w.r.t. drive cache flushing for sync paths?
+Signed-off-by: dann frazier <dannf@hp.com>
+---
+ arch/ia64/kernel/time.c |   16 +++
+ drivers/rtc/Kconfig     |   10 ++
+ drivers/rtc/Makefile    |    1 +
+ drivers/rtc/rtc-efi.c   |  237 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 264 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-efi.c
 
-(at least, ext3 has no calls to flush cache at this point)
-
--Eric
-
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> CC: pavel@suse.cz
-> ---
->  fs/ext2/dir.c   |    5 ++++-
->  fs/ext2/fsync.c |    7 +++++--
->  fs/ext2/inode.c |    7 +++++++
->  fs/ext2/xattr.c |    6 +++++-
->  4 files changed, 21 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-> index 2999d72..d6cb59f 100644
-> --- a/fs/ext2/dir.c
-> +++ b/fs/ext2/dir.c
-> @@ -25,6 +25,7 @@
->  #include <linux/buffer_head.h>
->  #include <linux/pagemap.h>
->  #include <linux/swap.h>
-> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
->  
->  typedef struct ext2_dir_entry_2 ext2_dirent;
->  
-> @@ -97,8 +98,10 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
->  
->  	if (IS_DIRSYNC(dir)) {
->  		err = write_one_page(page, 1);
-> -		if (!err)
-> +		if (!err) {
->  			err = ext2_sync_inode(dir);
-> +			blkdev_issue_flush(dir->i_sb->s_bdev, NULL);
-> +		}
->  	} else {
->  		unlock_page(page);
->  	}
-> diff --git a/fs/ext2/fsync.c b/fs/ext2/fsync.c
-> index fc66c93..9cd1838 100644
-> --- a/fs/ext2/fsync.c
-> +++ b/fs/ext2/fsync.c
-> @@ -24,6 +24,7 @@
->  
->  #include "ext2.h"
->  #include <linux/buffer_head.h>		/* for sync_mapping_buffers() */
-> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
->  
->  
->  /*
-> @@ -39,12 +40,14 @@ int ext2_sync_file(struct file *file, struct dentry *dentry, int datasync)
->  
->  	ret = sync_mapping_buffers(inode->i_mapping);
->  	if (!(inode->i_state & I_DIRTY))
-> -		return ret;
-> +		goto out;
->  	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-> -		return ret;
-> +		goto out;
->  
->  	err = ext2_sync_inode(inode);
->  	if (ret == 0)
->  		ret = err;
-> +out:
-> +	blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
->  	return ret;
->  }
-> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> index 23fff2f..49b479e 100644
-> --- a/fs/ext2/inode.c
-> +++ b/fs/ext2/inode.c
-> @@ -33,6 +33,7 @@
->  #include <linux/mpage.h>
->  #include <linux/fiemap.h>
->  #include <linux/namei.h>
-> +#include <linux/blkdev.h>	/* for blkdev_issue_flush() */
->  #include "ext2.h"
->  #include "acl.h"
->  #include "xip.h"
-> @@ -68,9 +69,14 @@ void ext2_delete_inode (struct inode * inode)
->  	mark_inode_dirty(inode);
->  	ext2_update_inode(inode, inode_needs_sync(inode));
->  
-> +	/* Make sure inode deletion really gets to disk. Disk write caches
-> +	 * are flushed either in ext2_truncate() or we do it explicitly */
->  	inode->i_size = 0;
->  	if (inode->i_blocks)
->  		ext2_truncate (inode);
-> +	else if (inode_needs_sync(inode))
-> +		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
-> +
->  	ext2_free_inode (inode);
->  
->  	return;
-> @@ -1104,6 +1110,7 @@ do_indirects:
->  	if (inode_needs_sync(inode)) {
->  		sync_mapping_buffers(inode->i_mapping);
->  		ext2_sync_inode (inode);
-> +		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
->  	} else {
->  		mark_inode_dirty(inode);
->  	}
-> diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
-> index 987a526..d480216 100644
-> --- a/fs/ext2/xattr.c
-> +++ b/fs/ext2/xattr.c
-> @@ -60,6 +60,7 @@
->  #include <linux/mbcache.h>
->  #include <linux/quotaops.h>
->  #include <linux/rwsem.h>
-> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
->  #include "ext2.h"
->  #include "xattr.h"
->  #include "acl.h"
-> @@ -702,6 +703,7 @@ ext2_xattr_set2(struct inode *inode, struct buffer_head *old_bh,
->  				DQUOT_FREE_BLOCK(inode, 1);
->  			goto cleanup;
->  		}
-> +		blkdev_issue_flush(sb->s_bdev, NULL);
->  	} else
->  		mark_inode_dirty(inode);
->  
-> @@ -792,8 +794,10 @@ ext2_xattr_delete_inode(struct inode *inode)
->  			le32_to_cpu(HDR(bh)->h_refcount));
->  		unlock_buffer(bh);
->  		mark_buffer_dirty(bh);
-> -		if (IS_SYNC(inode))
-> +		if (IS_SYNC(inode)) {
->  			sync_dirty_buffer(bh);
-> +			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
-> +		}
->  		DQUOT_FREE_BLOCK(inode, 1);
->  	}
->  	EXT2_I(inode)->i_file_acl = 0;
+diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+index f0ebb34..558051c 100644
+--- a/arch/ia64/kernel/time.c
++++ b/arch/ia64/kernel/time.c
+@@ -20,6 +20,7 @@
+ #include <linux/efi.h>
+ #include <linux/timex.h>
+ #include <linux/clocksource.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/machvec.h>
+ #include <asm/delay.h>
+@@ -405,6 +406,21 @@ static struct irqaction timer_irqaction = {
+ 	.name =		"timer"
+ };
+ 
++static struct platform_device rtc_efi_dev = {
++	.name = "rtc-efi",
++	.id = -1,
++};
++
++static int __init rtc_init(void)
++{
++	if (platform_device_register(&rtc_efi_dev) < 0)
++		printk(KERN_ERR "unable to register rtc device...\n");
++       
++	/* not necessarily an error */
++	return 0;
++}
++module_init(rtc_init);
++
+ void __init
+ time_init (void)
+ {
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index cced4d1..56cc98f 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -434,6 +434,16 @@ config RTC_DRV_DS1742
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-ds1742.
+ 
++config RTC_DRV_EFI
++	tristate "EFI RTC"
++	depends on IA64
++	help
++	  If you say yes here you will get support for the EFI
++	  Real Time Clock.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-efi.
++
+ config RTC_DRV_STK17TA8
+ 	tristate "Simtek STK17TA8"
+ 	depends on RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 6e28021..7256ce8 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -35,6 +35,7 @@ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
+ obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
+ obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
+ obj-$(CONFIG_RTC_DRV_DS3234)	+= rtc-ds3234.o
++obj-$(CONFIG_RTC_DRV_EFI)	+= rtc-efi.o
+ obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
+ obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
+ obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
+diff --git a/drivers/rtc/rtc-efi.c b/drivers/rtc/rtc-efi.c
+new file mode 100644
+index 0000000..cf37810
+--- /dev/null
++++ b/drivers/rtc/rtc-efi.c
+@@ -0,0 +1,237 @@
++/*
++ * rtc-efi: RTC Class Driver for EFI-based systems
++ *
++ * Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
++ *
++ * Author: dann frazier <dannf@hp.com>
++ * Based on efirtc.c by Stephane Eranian
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/time.h>
++#include <linux/platform_device.h>
++#include <linux/rtc.h>
++#include <linux/efi.h>
++
++#define EFI_ISDST (EFI_TIME_ADJUST_DAYLIGHT|EFI_TIME_IN_DAYLIGHT)
++/*
++ * EFI Epoch is 1/1/1998
++ */
++#define EFI_RTC_EPOCH		1998
++
++#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
++
++/*
++ * returns day of the year [0-365]
++ */
++static inline int
++compute_yday(efi_time_t *eft)
++{
++	/* efi_time_t.month is in the [1-12] so, we need -1 */
++	return rtc_year_days(eft->day - 1, eft->month - 1, eft->year);
++}
++/*
++ * returns day of the week [0-6] 0=Sunday
++ *
++ * Don't try to provide a year that's before 1998, please !
++ */
++static int
++compute_wday(efi_time_t *eft)
++{
++	int y;
++	int ndays = 0;
++
++	if (eft->year < 1998) {
++		printk(KERN_ERR "efirtc: EFI year < 1998, invalid date\n");
++		return -1;
++	}
++
++	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
++		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
++
++	ndays += compute_yday(eft);
++
++	/*
++	 * 4=1/1/1998 was a Thursday
++	 */
++	return (ndays + 4) % 7;
++}
++
++static void
++convert_to_efi_time(struct rtc_time *wtime, efi_time_t *eft)
++{
++	eft->year	= wtime->tm_year + 1900;
++	eft->month	= wtime->tm_mon + 1;
++	eft->day	= wtime->tm_mday;
++	eft->hour	= wtime->tm_hour;
++	eft->minute	= wtime->tm_min;
++	eft->second 	= wtime->tm_sec;
++	eft->nanosecond = 0;
++	eft->daylight	= wtime->tm_isdst ? EFI_ISDST : 0;
++	eft->timezone	= EFI_UNSPECIFIED_TIMEZONE;
++}
++
++static void
++convert_from_efi_time(efi_time_t *eft, struct rtc_time *wtime)
++{
++	memset(wtime, 0, sizeof(*wtime));
++	wtime->tm_sec  = eft->second;
++	wtime->tm_min  = eft->minute;
++	wtime->tm_hour = eft->hour;
++	wtime->tm_mday = eft->day;
++	wtime->tm_mon  = eft->month - 1;
++	wtime->tm_year = eft->year - 1900;
++
++	/* day of the week [0-6], Sunday=0 */
++	wtime->tm_wday = compute_wday(eft);
++
++	/* day in the year [1-365]*/
++	wtime->tm_yday = compute_yday(eft);
++
++
++	switch (eft->daylight & EFI_ISDST) {
++	case EFI_ISDST:
++		wtime->tm_isdst = 1;
++		break;
++	case EFI_TIME_ADJUST_DAYLIGHT:
++		wtime->tm_isdst = 0;
++		break;
++	default:
++		wtime->tm_isdst = -1;
++	}
++}
++
++static int efi_read_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
++{
++	efi_time_t eft;
++	efi_status_t status;
++
++	/*
++	 * As of EFI v1.10, this call always returns an unsupported status
++	 */
++	status = efi.get_wakeup_time((efi_bool_t *)&wkalrm->enabled,
++				     (efi_bool_t *)&wkalrm->pending, &eft);
++
++	if (status != EFI_SUCCESS)
++		return -EINVAL;
++
++	convert_from_efi_time(&eft, &wkalrm->time);
++
++	return rtc_valid_tm(&wkalrm->time);
++}
++
++static int efi_set_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
++{
++	efi_time_t eft;
++	efi_status_t status;
++
++	convert_to_efi_time(&wkalrm->time, &eft);
++
++	/*
++	 * XXX Fixme:
++	 * As of EFI 0.92 with the firmware I have on my
++	 * machine this call does not seem to work quite
++	 * right
++	 *
++	 * As of v1.10, this call always returns an unsupported status
++	 */
++	status = efi.set_wakeup_time((efi_bool_t)wkalrm->enabled, &eft);
++
++	printk(KERN_WARNING "write status is %d\n", (int)status);
++
++	return status == EFI_SUCCESS ? 0 : -EINVAL;
++}
++
++static int efi_read_time(struct device *dev, struct rtc_time *tm)
++{
++	efi_status_t status;
++	efi_time_t eft;
++	efi_time_cap_t cap;
++
++	status = efi.get_time(&eft, &cap);
++
++	if (status != EFI_SUCCESS) {
++		/* should never happen */
++		printk(KERN_ERR "efitime: can't read time\n");
++		return -EINVAL;
++	}
++
++	convert_from_efi_time(&eft, tm);
++
++	return rtc_valid_tm(tm);
++}
++
++static int efi_set_time(struct device *dev, struct rtc_time *tm)
++{
++	efi_status_t status;
++	efi_time_t eft;
++
++	convert_to_efi_time(tm, &eft);
++
++	status = efi.set_time(&eft);
++
++	return status == EFI_SUCCESS ? 0 : -EINVAL;
++}
++
++static const struct rtc_class_ops efi_rtc_ops = {
++	.read_time = efi_read_time,
++	.set_time = efi_set_time,
++	.read_alarm = efi_read_alarm,
++	.set_alarm = efi_set_alarm,
++};
++
++static int __init efi_rtc_probe(struct platform_device *dev)
++{
++	struct rtc_device *rtc;
++
++	rtc = rtc_device_register("rtc-efi", &dev->dev, &efi_rtc_ops,
++					THIS_MODULE);
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
++
++	platform_set_drvdata(dev, rtc);
++
++	return 0;
++}
++
++static int __exit efi_rtc_remove(struct platform_device *dev)
++{
++	struct rtc_device *rtc = platform_get_drvdata(dev);
++
++	rtc_device_unregister(rtc);
++
++	return 0;
++}
++
++static struct platform_driver efi_rtc_driver = {
++	.driver = {
++		.name = "rtc-efi",
++		.owner = THIS_MODULE,
++	},
++	.probe = efi_rtc_probe,
++	.remove = __exit_p(efi_rtc_remove),
++};
++
++static int __init efi_rtc_init(void)
++{
++	return platform_driver_probe(&efi_rtc_driver, efi_rtc_probe);
++}
++
++static void __exit efi_rtc_exit(void)
++{
++	platform_driver_unregister(&efi_rtc_driver);
++}
++
++module_init(efi_rtc_init);
++module_exit(efi_rtc_exit);
++
++MODULE_AUTHOR("dann frazier <dannf@hp.com>");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("EFI RTC driver");
+-- 
+1.5.6.5
 
