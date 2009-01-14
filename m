@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbZANX1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbZANXcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760776AbZANX1h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 18:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZANX12
+	id S1759097AbZANXcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 18:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbZANXcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 18:27:28 -0500
-Received: from mail.ab-net.cz ([82.100.38.6]:56379 "EHLO mail.ab-net.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756155AbZANX11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 18:27:27 -0500
-Message-ID: <496E74B6.6080606@email.cz>
-Date: Thu, 15 Jan 2009 00:26:46 +0100
-From: =?windows-1252?Q?Jir=28=ED_Burda?= <jburda@email.cz>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+	Wed, 14 Jan 2009 18:32:04 -0500
+Received: from xm11.infosec.fedex.com ([199.81.193.41]:49361 "EHLO
+	xm11.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbZANXcD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 18:32:03 -0500
+X-Greylist: delayed 2208 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 18:32:03 EST
+X-AuditID: c751575f-9d71ebb000000bb2-77-496e6d4df095
+Message-ID: <001501c976ab$eacf0210$052bd68c@metue56f24d4f1>
+From: "Tynisha Vela" <zsextillion@etrustfoundation.com>
+To: "Linux-kernel" <linux-kernel@silk.corp.fedex.com>
+Subject: Bystryy seks vtroem
+Date: Thu, 15 Jan 2009 00:55:10 +0200
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: Nokia 5310 mass-storage not mounting in kernel 2.6.28
-References: <Pine.LNX.4.44L0.0901140955420.2587-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901140955420.2587-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain;
+        format=flowed;
+        charset="windows-1252";
+        reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2720.2869
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2720.2969
+X-Brightmail-Tracker: AAAABQoDS2QK/qLmDTeWyg04K7ANOUNZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+Ona poluchila prava zadom
 
-I can confirm Nokia 5310 with firmware 8.32 mounts correctly in 2.6.29-rc1.
+floresjxe.narod.ru
 
-Jiri Burda
-
-Alan Stern napsal(a):
-> On Tue, 13 Jan 2009, Andrew Morton wrote:
-> 
->>> From: Jiri Burda <jburda@email.cz>	
->>>
->>> Nokia 5310 mobile with firmware revision 8.32 does not mount as usb mass-storage in kernel 2.6.28 and previous.
->>> This patch solves this problem by increasing firmware revision in drivers/usb/storage/unusual_device.h from 0x0701 to 0x0832.
->>> This bug is recorded in kernel bugzilla as 12367.
-> 
->> The 5310 entry seems to have been removed in 2.6.29-rc1.
-> 
-> Indeed, as Greg mentioned we are now using a generic scheme for Nokia 
-> devices.
-> 
-> Jiri, can you try running 2.6.29-rc1 to see whether it's okay already?
-> 
-> Alan Stern
-> 
-> 
 
