@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763913AbZANQSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbZANQUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763913AbZANQSk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbZANQSb
+	id S1763663AbZANQUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbZANQU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:18:31 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:40702 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761367AbZANQSa (ORCPT
+	Wed, 14 Jan 2009 11:20:27 -0500
+Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:37973
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756969AbZANQU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:18:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nPDKaGARDmpqVpjDj/q+1QzrnAJEGLkOfpBxi0GSS+NsC8kEUiq2ASBkqx2PiDE7H2
-         gBDzcKJJIa0u9sQ89+IpqAeqh0aLxU8Q2EKqexG4IfW97SpwkkNXtFgEm9T36fRHwuaq
-         ndKbPN/M+oQPgOom8igzwA4xwetGZw/neMp1A=
+	Wed, 14 Jan 2009 11:20:26 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RT git pull] fixes for rt/sched
+To: rostedt@home.goodmis.org
+Cc: gregory.haskins@gmail.com, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Wed, 14 Jan 2009 11:23:31 -0500
+Message-ID: <20090114162226.13517.44371.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-In-Reply-To: <496DB067.6060402@linux.intel.com>
-References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
-	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
-	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
-	 <496DB067.6060402@linux.intel.com>
-Date: Wed, 14 Jan 2009 08:18:29 -0800
-Message-ID: <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-From: Tim Hockin <thockin@gmail.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
-       priyankag@google.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 1:29 AM, Andi Kleen <ak@linux.intel.com> wrote:
->
->>
->> I'm 100% on board with that and will even help staff the effort.
->
-> Well if you want to change anything the code would be a good idea first to
-> establish clearly what is actually broken. I know various areas that need
-> improvement (and I have patches fixes most of them), but to my knowledge
-> none of them would be fixed by ASCII logging.
->
-> Perhaps a good start would be if Ingo could expand what exactly
-> he believes is broken currently. At least his earlier "high level" argument
-> seems to be large  based on clear misunderstandings of what kind
-> of MCE events are common and what not. I don't really blame
-> him for that since MCEs are obscure and difficult and badly
-> documented (I had a hard time getting up to speed on them myself
-> and it took me quite some time). But I hope he doesn't
-> dismiss the advice from people who have more experience with
-> them than him though.
->
-> I wrote a long email earlier in the thread with all the reasons why
-> ASCII logging is difficult (like the various atomicity issues and also
-> others)
-> I haven't heard anyone refuting any of the arguments in there, so I assume
-> they
-> are agreed one by everyone.
->
-> I would appreciate if the people who continue to propose ASCII
-> logging would explain how they plan to solve these problems.
->
->> This
->> is something that is VERY HIGHLY desired here.
->
-> What is exactly desired?
+The following changes since commit cfe6498c6a03e574bc9384cc95d73dfd20a13f05:
+  Steven Rostedt (1):
+        rt sched: add rt overload stats
 
->From my point of view: a single, consistent, easy logging interface
-for the kernel to send *structured data* about hardware/system events
-and errors up to userspace.
+are available in the git repository at:
 
-I don't care if it is ASCII, but it probably can be done in ASCII.
-That's the cart before the horse, IMHO.  I just want something more
-structured and better suited than printk().
+  git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git rt/sched
 
->> I already have a
->> couple peopel looking at this and other HW-error reporting issues.
->
-> I have lots of patches pending for over half a year (including
-> tons of bug fixes) and they get all delayed again and again with
-> very little justification why. So before writing any new code
-> it would be good to just get the already pending improvements in.
+Gregory Haskins (1):
+      rt/sched: ensure interrupts are disabled during post-schedule() processing
 
-We'd LOVE your improvements, if they work.  MCE is always a sore point
-for us, in that we take too many of them.  Anything to reduce their
-impact is a win.
+ kernel/sched_rt.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Tim
+---------------
+
+rt/sched: ensure interrupts are disabled during post-schedule() processing
+
+Impact: Fix run-time opps at boot up.
+
+post-schedule() is required to run with interrupts disabled, but we
+currently rely on the caller to have left them disabled for us.  This
+has apparently changed recently such that interrupts are now on and
+we thus crash.  Fix this once and for all by using the irqsave/restore
+variants of spin_lock(rq). 
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: John Stultz <johnstul@us.ibm.com>
+---
+
+ kernel/sched_rt.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 856f6fb..0cd6b07 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1348,14 +1348,16 @@ static int needs_post_schedule_rt(struct rq *rq)
+ 
+ static void post_schedule_rt(struct rq *rq)
+ {
++	unsigned long flags;
++
+ 	/*
+ 	 * This is only called if needs_post_schedule_rt() indicates that
+ 	 * we need to push tasks away
+ 	 */
+-	spin_lock(&rq->lock);
++	spin_lock_irqsave(&rq->lock, flags);
+ 	push_rt_tasks(rq);
+ 	schedstat_inc(rq, rto_schedule_tail);
+-	spin_unlock(&rq->lock);
++	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+ /*
+
