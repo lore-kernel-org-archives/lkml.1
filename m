@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764595AbZANQzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbZANQ6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764595AbZANQzI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757986AbZANQyz
+	id S1764351AbZANQ6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762845AbZANQ56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:54:55 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:37927 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754152AbZANQyy (ORCPT
+	Wed, 14 Jan 2009 11:57:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60622 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762379AbZANQ55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:54:54 -0500
-Date: Wed, 14 Jan 2009 17:54:49 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: compress - Add pcomp interface
-In-Reply-To: <3f9a31f40901140845r6a0cd136ha27304c76001d1c7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901141753090.31703@vixen.sonytel.be>
-References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <3f9a31f40901140845r6a0cd136ha27304c76001d1c7@mail.gmail.com>
+	Wed, 14 Jan 2009 11:57:57 -0500
+Date: Wed, 14 Jan 2009 11:57:53 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: john stultz <johnstul@us.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, rostedt@home.goodmis.org,
+       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RT git pull] fixes for rt/sched
+In-Reply-To: <496E12D3.80804@novell.com>
+Message-ID: <alpine.DEB.1.10.0901141157040.15549@gandalf.stny.rr.com>
+References: <20090114162226.13517.44371.stgit@dev.haskins.net> <496E12D3.80804@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009, Jaswinder Singh Rajput wrote:
-> On Tue, Jan 13, 2009 at 9:29 PM, Geert Uytterhoeven
-> <Geert.Uytterhoeven@sonycom.com> wrote:
-> > +static inline struct pcomp_alg *crypto_pcomp_alg(struct crypto_pcomp *tfm)
-> > +{
-> > +       return __crypto_pcomp_alg(crypto_pcomp_tfm(tfm)->__crt_alg);
-> > +}
-> > +
-> > +static inline int crypto_pcomp_setup(struct crypto_pcomp *tfm,
-> > +                                    const void *params)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->setup(crypto_pcomp_tfm(tfm), params);
-> > +}
-> > +
-> > +static inline int crypto_pcomp_compress_init(struct crypto_pcomp *tfm)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->compress_init(crypto_pcomp_tfm(tfm));
-> > +}
-> > +
-> > +static inline int crypto_pcomp_compress_update(struct crypto_pcomp *tfm,
-> > +                                              struct comp_request *req)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->compress_update(crypto_pcomp_tfm(tfm),
-> > +                                                     req);
-> > +}
-> > +
-> > +static inline int crypto_pcomp_compress_final(struct crypto_pcomp *tfm,
-> > +                                             struct comp_request *req)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->compress_final(crypto_pcomp_tfm(tfm),
-> > +                                                    req);
-> > +}
-> > +
-> > +static inline int crypto_pcomp_decompress_init(struct crypto_pcomp *tfm)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->decompress_init(crypto_pcomp_tfm(tfm));
-> > +}
-> > +
-> > +static inline int crypto_pcomp_decompress_update(struct crypto_pcomp *tfm,
-> > +                                                struct comp_request *req)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->decompress_update(crypto_pcomp_tfm(tfm),
-> > +                                                       req);
-> > +}
-> > +
-> > +static inline int crypto_pcomp_decompress_final(struct crypto_pcomp *tfm,
-> > +                                               struct comp_request *req)
-> > +{
-> > +       return crypto_pcomp_alg(tfm)->decompress_final(crypto_pcomp_tfm(tfm),
-> > +                                                      req);
-> > +}
+
+On Wed, 14 Jan 2009, Gregory Haskins wrote:
+
+> [ Forgot to CC John the first time around ]
 > 
-> Can you please use expressive but short names ?
+> Gregory Haskins wrote:
+> > The following changes since commit cfe6498c6a03e574bc9384cc95d73dfd20a13f05:
+> >   Steven Rostedt (1):
+> >         rt sched: add rt overload stats
+> >
+> > are available in the git repository at:
+> >
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git rt/sched
+> >
+> > Gregory Haskins (1):
+> >       rt/sched: ensure interrupts are disabled during post-schedule() processing
+> >
+> >  kernel/sched_rt.c |    6 ++++--
+> >  1 files changed, 4 insertions(+), 2 deletions(-)
+> >
 
-I admit they're quite long. But they're similar to the ones in use for the
-already existing crypto modules.
 
-With kind regards,
+Thanks, applied.
 
-Geert Uytterhoeven
-Software Architect
+(to git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git)
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+-- Steve
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
