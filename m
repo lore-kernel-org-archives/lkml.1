@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZANSgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZANShN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZANSgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZANSfv
+	id S1755371AbZANShN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZANSg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:35:51 -0500
-Received: from mail-in-16.arcor-online.net ([151.189.21.56]:47799 "EHLO
-	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751765AbZANSfu (ORCPT
+	Wed, 14 Jan 2009 13:36:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38146 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750852AbZANSg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:35:50 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: The policy on initramfs decompression failure
-To: Ingo Molnar <mingo@elte.hu>, Alain Knaff <alain@knaff.lu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ftp.linux.org.uk>
-Reply-To: 7eggert@gmx.de
-Date: Wed, 14 Jan 2009 19:35:44 +0100
-References: <bU0fj-7Ap-43@gated-at.bofh.it> <bU0If-8vA-19@gated-at.bofh.it> <bU6NE-1bi-3@gated-at.bofh.it> <bU837-3lq-11@gated-at.bofh.it> <bU8FR-4by-23@gated-at.bofh.it> <bU9iw-5gV-1@gated-at.bofh.it> <bUbkj-8un-5@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LNAae-0001yT-R7@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+	Wed, 14 Jan 2009 13:36:56 -0500
+Date: Wed, 14 Jan 2009 10:35:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, a.zummo@towertech.it,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: mmotm 2009-01-13-16-38 uploaded (rtc-cmos)
+Message-Id: <20090114103554.ba1f99b5.akpm@linux-foundation.org>
+In-Reply-To: <20090114090741.fcb5d335.randy.dunlap@oracle.com>
+References: <200901140038.n0E0cIPd013916@imap1.linux-foundation.org>
+	<20090114090741.fcb5d335.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 14 Jan 2009 09:07:41 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> Exactly how is such a warning different from other warnings that the
-> kernel already emits? For which people supposedly have to set up a serial
-> console? (which they dont have to)
+> On Tue, 13 Jan 2009 16:38:17 -0800 akpm@linux-foundation.org wrote:
 > 
-> Answer: 
+> > The mm-of-the-moment snapshot 2009-01-13-16-38 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> 
+> 
+> no HPET enabled:
+> 
+> mmotm-2009-0113-1638/drivers/rtc/rtc-cmos.c:97: error: redefinition of 'is_hpet_enabled'
+> mmotm-2009-0113-1638/arch/x86/include/asm/hpet.h:110: error: previous definition of 'is_hpet_enabled' was here
+> 
 
-A warning is given if the systen knows the correct way how to deal with the
-situation, even if it shouldn't be there. How would you know that any system
-being at the compiled-in default root device location (e.g. /dev/sda1, if I
-did not have raid) WILL NOT boot unless I intend it to boot? Maybe it's a
-rescue system supposed to run from initrd only? Or a public terminal
-supposedly running from initrd + network only, where /dev/sda is the
-client's USB stick? Or it's a remote setup, and panic() will reboot into the
-old, working setup?
+Caused by rtc-cumulative-style-fixes-fix-fix.patch:
+
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+This was necessary for hpet* functions.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/rtc/rtc-cmos.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN drivers/rtc/rtc-cmos.c~rtc-cumulative-style-fixes-fix-fix drivers/rtc/rtc-cmos.c
+--- a/drivers/rtc/rtc-cmos.c~rtc-cumulative-style-fixes-fix-fix
++++ a/drivers/rtc/rtc-cmos.c
+@@ -39,6 +39,7 @@
+ 
+ /* this is for "generic access to PC-style RTC" using CMOS_READ/CMOS_WRITE */
+ #include <asm-generic/rtc.h>
++#include <asm/hpet.h>
+ 
+ struct cmos_rtc {
+ 	struct rtc_device	*rtc;
+_
+
+
+alas, we don't know what that fix fixed so I don't know what will break
+when I drop it.
 
