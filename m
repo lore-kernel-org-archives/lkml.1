@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZANGI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZANGUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbZANGI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZANGIp
+	id S1755798AbZANGUK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZANGT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:08:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52076 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754197AbZANGIo (ORCPT
+	Wed, 14 Jan 2009 01:19:57 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3082 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbZANGT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:08:44 -0500
-Message-ID: <496D815E.8010107@jp.fujitsu.com>
-Date: Wed, 14 Jan 2009 15:08:30 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-References: <200901042346.42723.rjw@sisk.pl> <200901100038.56748.rjw@sisk.pl> <496C00CD.3070302@jp.fujitsu.com> <200901131217.07537.rjw@sisk.pl>
-In-Reply-To: <200901131217.07537.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 14 Jan 2009 01:19:56 -0500
+Subject: Re: [PATCH 08/10] MAINTAINERS - Add FTRACE git
+From: Joe Perches <joe@perches.com>
+To: Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090114055954.GA7039@linux-sh.org>
+References: <1231878498-25171-1-git-send-email-joe@perches.com>
+	 <1231878498-25171-9-git-send-email-joe@perches.com>
+	 <20090114055954.GA7039@linux-sh.org>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 22:19:47 -0800
+Message-Id: <1231913987.30095.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 13 January 2009, Kenji Kaneshige wrote:
->> Rafael J. Wysocki wrote:
->>> On Saturday 10 January 2009, Jesse Barnes wrote:
->>>> On Thursday, January 8, 2009 12:45 pm Rafael J. Wysocki wrote:
->>>>> On Thursday 08 January 2009, Rafael J. Wysocki wrote:
->>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->>>>>>> Rafael J. Wysocki wrote:
->>>>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
->>>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>>>>>
->>>>>>>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
->>>>>>>>>> many vectors are allocated and it is not ensured that the right
->>>>>>>>>> vectors will be used for various services.  Namely, the PCI Express
->>>>>>>>>> specification states that both PCI Express native PME and PCI
->>>>>>>>>> Express hotplug will always use the same MSI or MSI-X message for
->>>>>>>>>> signalling interrupts, which implies that the same vector will be
->>>>>>>>>> used by both of them.  Also, the VC service does not use interrupts
->>>>>>>>>> at all. Moreover, is not clear which of the vectors allocated by
->>>>>>>>>> pci_enable_msix() will be used for PME and hotplug and which of
->>>>>>>>>> them will be used for AER if all of these services are configured.
->>>>>>>>>>
->>>>>>>>>> For these reasons, rework the allocation of interrupts for PCI
->>>>>>>>>> Express ports so that at most two vectors are allocated and ensure
->>>>>>>>>> that the right vector will be used for the right purpose.
->>>>> Appended is a cleaned-up version of the patch that also contains comments
->>>>> with references to the appropriate sections of the PCI Express spec.
->>>> We'll need testing here in any case; I'll have to re-read the specs carefully 
->>>> to see if we can really rely on the vector numbers you have here (at first 
->>>> glance Kenji-san's approach seems more robust).
->>> It has a catch too.  Namely, is there any warranty that we'll get the same
->>> vectors when the second pci_enable_msix() is called and that they will be in
->>> the same order?
->>>
->> In my understanding, the following description of Interrupt Message
->> Number in the PCI Express spec explains this.
->>
->> "[...] For a given MSI-X implementation, the entry must remain constant. [...]"
+On Wed, 2009-01-14 at 14:59 +0900, Paul Mundt wrote:
+> On Tue, Jan 13, 2009 at 12:28:16PM -0800, Joe Perches wrote:
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > ---
+> >  MAINTAINERS |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index ceeeb8c..6e051c3 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -2189,6 +2189,7 @@ F:	fs/freevxfs/
+> >  FTRACE
+> >  P:	Steven Rostedt
+> >  M:	rostedt@goodmis.org
+> > +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
+> >  S:	Maintained
+> >  F:	Documentation/ftrace.txt
+> >  F:	arch/*/*/*/ftrace.h
 > 
-> The entry - yes, but the associated interrupt vector as sent to the CPU?  That
-> seems to be platform-dependent.
-> 
+> This sort of thing only makes sense if you include the topic branch for
+> the tree in question. While it is true that ftrace development happens in
+> this tree, people looking at ftrace may not want to sort through the
+> hundreds of unrelated topic branches in the process. I say this as
+> someone that does not want to sort through hundreds of unrelated topic
+> branches in search of ftrace code ;-)
 
-I'm sorry but I don't understand what the problem is.
-Do you mean pci_disable_msix() doesn't work on some platforms?
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=heads
 
-Thanks,
-Kenji Kaneshige
+Is the correct topic branch for ftrace auto-ftrace-next?
+
+maybe:
+
+T:	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git auto-ftrace-next
+
+No idea what's right here.  I had some private emails
+with Steven Rostedt about a git tree.  He suggested
+to use tip.
+
+Steven?  Suggestions?
 
