@@ -1,417 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZANBbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZANBjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbZANBbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 20:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZANBbC
+	id S1756891AbZANBjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 20:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbZANBjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 20:31:02 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:33106 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753163AbZANBa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 20:30:59 -0500
-Date: Wed, 14 Jan 2009 02:30:55 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: dannf@hp.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stephane eranian <eranian@googlemail.com>
-Subject: Re: [rtc-linux] [PATCH] add rtc platform driver for EFI
-Message-ID: <20090114023055.1d22d09e@i1501.lan.towertech.it>
-In-Reply-To: <20090114011719.GD24423@colo.lackof.org>
-References: <20090109005644.GH32403@ldl.fc.hp.com>
-	<20090109032729.6e4cd5fd@i1501.lan.towertech.it>
-	<20090109213615.GD31548@ldl.fc.hp.com>
-	<20090113003934.0a7da676.akpm@linux-foundation.org>
-	<20090114000043.GB24423@colo.lackof.org>
-	<20090114011719.GD24423@colo.lackof.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Jan 2009 20:39:13 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:48654 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753215AbZANBjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 20:39:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=K0mjMAlMFN1OXsNG2tFWflYNV896+Gbrkf5couGmV33mMNxdiZO2nA54ViZiLmvLKx
+         f07LTacutZlbqpcjIge6+9WR7T/PUU3s8vZy7KrQGI3qxFx3f4bRlqKUVhOmBwgnGLzE
+         GMIDCkyd/aw5qwDs/Cm3Nr6PYB6puR7Cm7SSA=
+Message-ID: <cfd18e0f0901131739v5119271flc28b5531604e682@mail.gmail.com>
+Date: Wed, 14 Jan 2009 14:39:09 +1300
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+Cc: "Roland McGrath" <roland@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0901131655040.6528@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
+	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
+	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
+	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
+	 <cfd18e0f0901131653y76a827b5i906fadce63ada56b@mail.gmail.com>
+	 <alpine.LFD.2.00.0901131655040.6528@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 18:17:19 -0700
-dann frazier <dannf@hp.com> wrote:
+On Wed, Jan 14, 2009 at 1:57 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 14 Jan 2009, Michael Kerrisk wrote:
+>>
+>> It has zero downside for *us*.  But it is yet another example of Linux
+>> littering the Unix landscape with unnecessary inconsistencies that
+>> application writers must deal with.
+>
+> Bah. Not so. It matters not at all if you try to write portable code.
+>
+> Linux has extensions.
 
- Hi Dann,
+This a behavior that was unintended by the implementer, wasn't
+requested by application writers, isn't present on other Unix systems,
+and isn't specified by the standards.
 
- thanks for doing the changes that Andrew and I requested. There are
- still a few errors:
+It isn't an extension.  It's an accident.
 
-> Munge Stephane Eranian's efirtc.c code into an rtc platform driver
-> 
-> Signed-off-by: dann frazier <dannf@hp.com>
-> ---
->  arch/ia64/kernel/time.c |   16 +++
->  drivers/rtc/Kconfig     |   10 ++
->  drivers/rtc/Makefile    |    1 +
->  drivers/rtc/rtc-efi.c   |  245 +++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 272 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/rtc/rtc-efi.c
-> 
-> diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-> index f0ebb34..558051c 100644
-> --- a/arch/ia64/kernel/time.c
-> +++ b/arch/ia64/kernel/time.c
-> @@ -20,6 +20,7 @@
->  #include <linux/efi.h>
->  #include <linux/timex.h>
->  #include <linux/clocksource.h>
-> +#include <linux/platform_device.h>
->  
->  #include <asm/machvec.h>
->  #include <asm/delay.h>
-> @@ -405,6 +406,21 @@ static struct irqaction timer_irqaction = {
->  	.name =		"timer"
->  };
->  
-> +static struct platform_device rtc_efi_dev = {
-> +	.name = "rtc-efi",
-> +	.id = -1,
-> +};
-> +
-> +static int __init rtc_init(void)
-> +{
-> +	if (platform_device_register(&rtc_efi_dev) < 0)
-> +		printk(KERN_ERR "unable to register rtc device...\n");
-> +       
-> +	/* not necessarily an error */
-> +	return 0;
-> +}
-> +module_init(rtc_init);
-> +
->  void __init
->  time_init (void)
->  {
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index cced4d1..56cc98f 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -434,6 +434,16 @@ config RTC_DRV_DS1742
->  	  This driver can also be built as a module. If so, the module
->  	  will be called rtc-ds1742.
->  
-> +config RTC_DRV_EFI
-> +	tristate "EFI RTC"
-> +	depends on IA64
-> +	help
-> +	  If you say yes here you will get support for the EFI
-> +	  Real Time Clock.
-> +
-> +	  This driver can also be built as a module. If so, the module
-> +	  will be called rtc-efi.
-> +
->  config RTC_DRV_STK17TA8
->  	tristate "Simtek STK17TA8"
->  	depends on RTC_CLASS
-> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> index 6e28021..7256ce8 100644
-> --- a/drivers/rtc/Makefile
-> +++ b/drivers/rtc/Makefile
-> @@ -35,6 +35,7 @@ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
->  obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
->  obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
->  obj-$(CONFIG_RTC_DRV_DS3234)	+= rtc-ds3234.o
-> +obj-$(CONFIG_RTC_DRV_EFI)	+= rtc-efi.o
->  obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
->  obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
->  obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
-> diff --git a/drivers/rtc/rtc-efi.c b/drivers/rtc/rtc-efi.c
-> new file mode 100644
-> index 0000000..ddf0459
-> --- /dev/null
-> +++ b/drivers/rtc/rtc-efi.c
-> @@ -0,0 +1,245 @@
-> +/*
-> + * rtc-efi: RTC Class Driver for EFI-based systems
-> + *
-> + * Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-> + *
-> + * Author: dann frazier <dannf@hp.com>
-> + * Based on efirtc.c by Stephane Eranian
-> + *
-> + *  This program is free software; you can redistribute  it and/or modify it
-> + *  under  the terms of  the GNU General  Public License as published by the
-> + *  Free Software Foundation;  either version 2 of the  License, or (at your
-> + *  option) any later version.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/time.h>
-> +#include <linux/platform_device.h>
+And the fact that such accidents happen more often than necessary is
+the real problem, rather than the fact that this API in particular is
+inconsistent with expectations.
 
- where's linux/rtc.h ?
+> Deal with it. We have literally _thousands_ of
+> things that work on Linux but not on other OS's. The fact is, you can't
+> just recompile and assume something works, and waitid() has absolutely
+> nothing to do with it.
+>
+>> Well, POSIX.1-2001 is fairly clear:
+>>
+>>       The  application shall ensure that the infop argument points to
+>>       a siginfo_t structure.
+>
+> Right. So the application should do that, and Linux does the right thing.
+> Problem solved.
 
-> +
-> +#include <linux/efi.h>
-> +
-> +#define EFI_ISDST (EFI_TIME_ADJUST_DAYLIGHT|EFI_TIME_IN_DAYLIGHT)
-> +/*
-> + * EFI Epoch is 1/1/1998
-> + */
-> +#define EFI_RTC_EPOCH		1998
-> +
-> +#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
-> +
-> +/*
-> + * returns day of the year [0-365]
-> + */
-> +static inline int
-> +compute_yday(efi_time_t *eft)
-> +{
-> +	/* efi_time_t.month is in the [1-12] so, we need -1 */
-> +	return rtc_year_days(eft->day - 1, eft->month - 1, eft->year);
-> +}
-> +/*
-> + * returns day of the week [0-6] 0=Sunday
-> + *
-> + * Don't try to provide a year that's before 1998, please !
-> + */
-> +static int
-> +compute_wday(efi_time_t *eft)
-> +{
-> +	int y;
-> +	int ndays = 0;
-> +
-> +	if (eft->year < 1998) {
-> +		printk(KERN_ERR "efirtc: EFI year < 1998, invalid date\n");
-> +		return -1;
-> +	}
-> +
-> +	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
-> +		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
-> +
-> +	ndays += compute_yday(eft);
-> +
-> +	/*
-> +	 * 4=1/1/1998 was a Thursday
-> +	 */
-> +	return (ndays + 4) % 7;
-> +}
-> +
-> +static void
-> +convert_to_efi_time(struct rtc_time *wtime, efi_time_t *eft)
-> +{
-> +	eft->year	= wtime->tm_year + 1900;
-> +	eft->month	= wtime->tm_mon + 1;
-> +	eft->day	= wtime->tm_mday;
-> +	eft->hour	= wtime->tm_hour;
-> +	eft->minute	= wtime->tm_min;
-> +	eft->second 	= wtime->tm_sec;
-> +	eft->nanosecond = 0;
-> +	eft->daylight	= wtime->tm_isdst ? EFI_ISDST : 0;
-> +	eft->timezone	= EFI_UNSPECIFIED_TIMEZONE;
-> +}
-> +
-> +static void
-> +convert_from_efi_time(efi_time_t *eft, struct rtc_time *wtime)
-> +{
-> +	memset(wtime, 0, sizeof(*wtime));
-> +	wtime->tm_sec  = eft->second;
-> +	wtime->tm_min  = eft->minute;
-> +	wtime->tm_hour = eft->hour;
-> +	wtime->tm_mday = eft->day;
-> +	wtime->tm_mon  = eft->month - 1;
-> +	wtime->tm_year = eft->year - 1900;
-> +
-> +	/* day of the week [0-6], Sunday=0 */
-> +	wtime->tm_wday = compute_wday(eft);
-> +
-> +	/* day in the year [1-365]*/
-> +	wtime->tm_yday = compute_yday(eft);
-> +
-> +
-> +	switch (eft->daylight & EFI_ISDST) {
-> +	case EFI_ISDST:
-> +		wtime->tm_isdst = 1;
-> +		break;
-> +	case EFI_TIME_ADJUST_DAYLIGHT:
-> +		wtime->tm_isdst = 0;
-> +		break;
-> +	default:
-> +		wtime->tm_isdst = -1;
-> +	}
-> +}
-> +
-> +static int efi_read_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
-> +{
-> +	efi_time_t eft;
-> +	efi_status_t status;
-> +
-> +	/*
-> +	 * As of EFI v1.10, this call always returns an unsupported status
-> +	 */
-> +	status = efi.get_wakeup_time((efi_bool_t *)&wkalrm->enabled,
-> +				     (efi_bool_t *)&wkalrm->pending, &eft);
-> +
-> +	if (status != EFI_SUCCESS)
-> +		return -EINVAL;
-> +
-> +	convert_from_efi_time(&eft, &wkalrm->time);
-> +
-> +	return rtc_valid_tm(&wkalrm->time);
-> +}
-> +
-> +static int efi_set_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
-> +{
-> +	efi_time_t eft;
-> +	efi_status_t status;
-> +
-> +	convert_to_efi_time(&wkalrm->time, &eft);
-> +
-> +	/*
-> +	 * XXX Fixme:
-> +	 * As of EFI 0.92 with the firmware I have on my
-> +	 * machine this call does not seem to work quite
-> +	 * right
-> +	 *
-> +	 * As of v1.10, this call always returns an unsupported status
-> +	 */
-> +	status = efi.set_wakeup_time((efi_bool_t)wkalrm->enabled, &eft);
-> +
-> +	printk(KERN_WARNING "write status is %d\n", (int)status);
-> +
-> +	return status == EFI_SUCCESS ? 0 : -EINVAL;
-> +}
-> +
-> +static int efi_read_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	efi_status_t status;
-> +	efi_time_t eft;
-> +	efi_time_cap_t cap;
-> +
-> +	status = efi.get_time(&eft, &cap);
-> +
-> +	if (status != EFI_SUCCESS) {
-> +		/* should never happen */
-> +		printk(KERN_ERR "efitime: can't read time\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	convert_from_efi_time(&eft, tm);
-> +
-> +	return rtc_valid_tm(tm);
-> +}
-> +
-> +static int efi_set_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	efi_status_t status;
-> +	efi_time_t eft;
-> +
-> +	convert_to_efi_time(tm, &eft);
-> +
-> +	status = efi.set_time(&eft);
-> +
-> +	return status == EFI_SUCCESS ? 0 : -EINVAL;
-> +}
-> +
-> +static const struct rtc_class_ops efi_rtc_ops = {
-> +	.read_time = efi_read_time,
-> +	.set_time = efi_set_time,
-> +	.read_alarm = efi_read_alarm,
-> +	.set_alarm = efi_set_alarm,
-> +};
-> +
-> +static int __devinit efi_rtc_probe(struct platform_device *dev)
+Right.  And this fact is why, while I incline to think we should fix
+the interface, I don't feel strongly about it.
 
- __init
+Cheers,
 
-> +{
-> +	struct rtc_device *rtc;
-> +
-> +	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
-> +	if (!rtc)
-> +		return -ENOMEM;
-
- you are allocating memory 
-
-> +	rtc = rtc_device_register("rtc-efi", &dev->dev, &efi_rtc_ops,
-> +					THIS_MODULE);
-
- and then overwriting it. you don't need kzalloc/kree. the rtc subsystem
- will give you back a valid pointer which will be freed
- when unregistering.
-
-> +	if (IS_ERR(rtc)) {
-> +		int err = PTR_ERR(rtc);
-> +		kfree(rtc);
-> +		return err;
-> +	}
-> +
-> +	platform_set_drvdata(dev, rtc);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __devexit efi_rtc_remove(struct platform_device *dev)
-
- __exit , you are using platform_driver_probe
-
-> +{
-> +	struct rtc_device *rtc = platform_get_drvdata(dev);
-> +
-> +	rtc_device_unregister(rtc);
-> +	kfree(rtc);
-
- ditto.
-
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver efi_rtc_driver = {
-> +	.driver = {
-> +		.name = "rtc-efi",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe = efi_rtc_probe,
-> +	.remove = __devexit_p(efi_rtc_remove),
-
- __exit_p
-
-> +};
-> +
-> +static int __init efi_rtc_init(void)
-> +{
-> +	return platform_driver_probe(&efi_rtc_driver, efi_rtc_probe);
-> +}
-> +
-> +static void __exit efi_rtc_exit(void)
-> +{
-> +	platform_driver_unregister(&efi_rtc_driver);
-> +}
-> +
-> +module_init(efi_rtc_init);
-> +module_exit(efi_rtc_exit);
-> +
-> +MODULE_AUTHOR("dann frazier <dannf@hp.com>");
-> +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("EFI RTC driver");
-> -- 
-> 1.5.6.5
-> 
-> 
-> --~--~---------~--~----~------------~-------~--~----~
-> You received this message because you are subscribed to "rtc-linux".
-> Membership options at http://groups.google.com/group/rtc-linux .
-> Please read http://groups.google.com/group/rtc-linux/web/checklist
-> before submitting a driver.
-> -~----------~----~----~----~------~----~------~--~---
-> 
-
+Michael
 
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
