@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZANCvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZANCvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbZANCvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZANCu0
+	id S1757046AbZANCvt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZANCvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:50:26 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49644 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755255AbZANCuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:50:22 -0500
-Message-ID: <496D52D4.70202@cn.fujitsu.com>
-Date: Wed, 14 Jan 2009 10:49:56 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Tue, 13 Jan 2009 21:51:37 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:44801 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbZANCvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:51:35 -0500
+Date: Wed, 14 Jan 2009 02:51:16 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Paul Mundt <lethal@linux-sh.org>, Sam Ravnborg <sam@ravnborg.org>,
+       "Mark A. Miller" <mark@mirell.org>, Bernd Petrovitsch <bernd@firmix.at>,
+       Leon Woestenberg <leon.woestenberg@gmail.com>,
+       Rob Landley <rob@landley.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Message-ID: <20090114025115.GB22154@shareable.org>
+References: <495FEEAF.5020005@zytor.com> <200901032006.47652.rob@landley.net> <20090104030619.GA21466@linux-sh.org> <c384c5ea0901040223l6e53f041s9f7cdea20c9d1d8d@mail.gmail.com> <1231677939.3517.5.camel@gimli.at.home> <31014a580901111928u586e2246uccf370ff941c8a01@mail.gmail.com> <20090112053552.GA9061@uranus.ravnborg.org> <31014a580901112150x57cd715aj5f42ee19bc28c701@mail.gmail.com> <20090112101803.GB10086@uranus.ravnborg.org> <20090112103820.GF28564@linux-sh.org>
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] ftrace: show ftrace_bprintk()'s formats
-References: <495ADF57.8030008@cn.fujitsu.com> <20090113231617.GD3210@redhat.com>
-In-Reply-To: <20090113231617.GD3210@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090112103820.GF28564@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Baron wrote:
-> On Wed, Dec 31, 2008 at 10:56:23AM +0800, Lai Jiangshan wrote:
->> Impact: let user knows the format
->>
->> Create a file on <debugfs-dir>/tracing/ to show ftrace_bprintk()'s formats.
->>
->> This formats will help for these condition:
->> 1) User get binary data from core file.(formats are backup before coredump)
->> 2) User splice ring_buffer to a file.
->> User can use formats for parsing the binary data in userspace.
->>
-> 
-> When I 'cat' trace_bprintk_formats on my system the file is empty. This
-> seems to be b/c 'ftrace_bprintk' is not being used in this patchset. It
-> can't be used in patch #5 during marker register b/c the format wouldn't
-> be known at runtime. Thus, as it currently stands this patch, patch 4/5,
-> isn't adding much?
+Paul Mundt wrote:
+> This happens in a lot of places, like embedded gentoo ports, where almost
+> all of the work is sent across distcc to a cross-compilation machine. In
+> systems that use package management, it is done on the host through
+> emulation, or painfully cross-compiled.
 
-If you don't use ftrace_bprintk(), the file trace_bprintk_formats is empty.
-This file record all formats which ftrace_bprintk() uses.
+Ah yes, I remember using embedded Gentoo.
 
-You can use ftrace_bprintk() everywhere as another printk().
+95% of the time in ./configure scripts, 5% in compilations.
 
-Patch #5 enables binary printk for markers, this is another additional tool
-for tracing markers.
+And this is on x86!  I dread to think how slow it gets on something
+slow.
 
-> 
-> A thought on how this might be resolved would be to have the core marker
-> code pass us its address so this could be recorded in the trace buffer.
-> Then, also add some debug file that displays the markers and maps marker
-> addresses with format strings.
-> 
-
-Patch#5 does it as you said.
-
-
-
+-- Jamie
