@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbZANLoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762474AbZANLpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbZANLoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 06:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZANLoQ
+	id S1762474AbZANLpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 06:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZANLoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 06:44:16 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:2337 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758965AbZANLoO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 06:44:14 -0500
-X-BigFish: VPS-39(zz1432R98dR1805M179dR936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KDGLXE-03-0J0-01
-Date: Wed, 14 Jan 2009 12:44:01 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
-       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
-Message-ID: <20090114114401.GL20283@amd.com>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-9-git-send-email-joerg.roedel@amd.com> <20090110231127.GK17917@elte.hu>
+	Wed, 14 Jan 2009 06:44:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40305 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761799AbZANLon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 06:44:43 -0500
+Date: Wed, 14 Jan 2009 12:43:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
+       netdev@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 03/16] dma-debug: add hash functions for
+	dma_debug_entries
+Message-ID: <20090114114347.GG8625@elte.hu>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-4-git-send-email-joerg.roedel@amd.com> <20090113005118.82f5037b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090110231127.GK17917@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 14 Jan 2009 11:44:02.0004 (UTC) FILETIME=[65384940:01C9763D]
+In-Reply-To: <20090113005118.82f5037b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4796]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 11, 2009 at 12:11:27AM +0100, Ingo Molnar wrote:
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Fri, 9 Jan 2009 17:19:17 +0100 Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > +struct hash_bucket {
+> > +	struct list_head list;
+> > +	spinlock_t lock;
+> > +} ____cacheline_aligned;
 > 
-> > +#define err_printk(dev, format, arg...) do {			\
-> > +		error_count += 1;				\
-> > +		if (show_all_errors || show_num_errors > 0) {	\
-> > +			WARN(1, "%s %s: " format,		\
-> > +			     dev_driver_string(dev),		\
-> > +			     dev_name(dev) , ## arg);		\
-> > +		}						\
-> > +		if (!show_all_errors && show_num_errors > 0)	\
-> > +			show_num_errors -= 1;			\
+> __cacheline_aligned_in_smp.
 > 
-> Note that the arithmetics here is SMP-unsafe: we only hold the hash bucket 
-> so if two errors hit at once on two CPUs then the error tracking variables 
-> can be accessed at once.
-> 
-> I'd suggest a simple global lock for this error case (taken inside the 
-> hash bucket lock), to be on the safe side.
+> This all looks like an exotically large amount of code for a debug 
+> thingy?
 
-As I wrote in a previous email, a race here is no big deal. I add a
-comment to document it. Or do we want another global lock here?
+this code checks the DMA usage of ~1 million lines of kernel code - all 
+the DMA using drivers. I think Joerg's feature is hugely relevant as DMA 
+scribbles are one of the hardest to debug kernel bugs: they can end up in 
+permanent data corruption or other hard to find bugs. In fact i think his 
+patchset is rather simple and even having 10 times as much debug code 
+would pay for its existence in the long run.
 
-> Also, please dont use a macro for this - printk details can be passed in 
-> to helper inlines/functions too.
-
-Hmm, how does this look like? There is not WARN variant which can use
-va_args as a parameter. And it is important that the error message is
-logged in the warning itself. So the driver developer can see it when a
-user reports the warning.
-
-Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+	Ingo
