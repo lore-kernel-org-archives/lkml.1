@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZANSev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZANSgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbZANSev (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:34:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZANSej
+	id S1755223AbZANSgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZANSfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:34:39 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:34408 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbZANSeh (ORCPT
+	Wed, 14 Jan 2009 13:35:51 -0500
+Received: from mail-in-16.arcor-online.net ([151.189.21.56]:47799 "EHLO
+	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751765AbZANSfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:34:37 -0500
-X-IronPort-AV: E=Sophos;i="4.37,263,1231113600"; 
-   d="scan'208";a="229837703"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Chris Mason" <chris.mason@oracle.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] btrfs: Remove extra KERN_INFO in the middle of a line
-References: <adamydukawi.fsf@cisco.com>
-	<84144f020901132357h7fbac614yb95557d2fcc7c316@mail.gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 14 Jan 2009 10:34:35 -0800
-In-Reply-To: <84144f020901132357h7fbac614yb95557d2fcc7c316@mail.gmail.com>
-	(Pekka Enberg's message of "Wed, 14 Jan 2009 09:57:26 +0200")
-Message-ID: <adaeiz5ivno.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 14 Jan 2009 13:35:50 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: The policy on initramfs decompression failure
+To: Ingo Molnar <mingo@elte.hu>, Alain Knaff <alain@knaff.lu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ftp.linux.org.uk>
+Reply-To: 7eggert@gmx.de
+Date: Wed, 14 Jan 2009 19:35:44 +0100
+References: <bU0fj-7Ap-43@gated-at.bofh.it> <bU0If-8vA-19@gated-at.bofh.it> <bU6NE-1bi-3@gated-at.bofh.it> <bU837-3lq-11@gated-at.bofh.it> <bU8FR-4by-23@gated-at.bofh.it> <bU9iw-5gV-1@gated-at.bofh.it> <bUbkj-8un-5@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Jan 2009 18:34:35.0903 (UTC) FILETIME=[C02AF8F0:01C97676]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LNAae-0001yT-R7@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "devid <xxx> transid <xxx>" printk in btrfs_scan_one_device()
-actually follows another printk that doesn't end in a newline (since the
-intention is for the two printks to make one line of output), so the
-KERN_INFO just ends up messing up the output:
+Ingo Molnar <mingo@elte.hu> wrote:
 
-    device label exp <6>devid 1 transid 9 /dev/sda5
+> Exactly how is such a warning different from other warnings that the
+> kernel already emits? For which people supposedly have to set up a serial
+> console? (which they dont have to)
+> 
+> Answer: 
 
-Fix this by changing the extra KERN_INFO to KERN_CONT.
+A warning is given if the systen knows the correct way how to deal with the
+situation, even if it shouldn't be there. How would you know that any system
+being at the compiled-in default root device location (e.g. /dev/sda1, if I
+did not have raid) WILL NOT boot unless I intend it to boot? Maybe it's a
+rescue system supposed to run from initrd only? Or a public terminal
+supposedly running from initrd + network only, where /dev/sda is the
+client's USB stick? Or it's a remote setup, and panic() will reboot into the
+old, working setup?
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- > We have KERN_CONT for this.
-
-OK, updated patch below...
-
- fs/btrfs/volumes.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index b187b53..bc7e113 100644
---- a/fs/btrfs/volumes.c
-+++ b/fs/btrfs/volumes.c
-@@ -577,7 +577,7 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
- 		       *(unsigned long long *)disk_super->fsid,
- 		       *(unsigned long long *)(disk_super->fsid + 8));
- 	}
--	printk(KERN_INFO "devid %llu transid %llu %s\n",
-+	printk(KERN_CONT "devid %llu transid %llu %s\n",
- 	       (unsigned long long)devid, (unsigned long long)transid, path);
- 	ret = device_list_add(path, disk_super, devid, fs_devices_ret);
- 
