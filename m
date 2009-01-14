@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZANSLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZANSMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbZANSLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZANSLB
+	id S1753727AbZANSMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZANSMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:11:01 -0500
-Received: from mx2.suse.de ([195.135.220.15]:39731 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091AbZANSLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:11:00 -0500
-Date: Wed, 14 Jan 2009 10:04:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	Wed, 14 Jan 2009 13:12:15 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:24089 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752778AbZANSMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 13:12:14 -0500
+Message-ID: <496E2AEE.3060709@oracle.com>
+Date: Wed, 14 Jan 2009 10:11:58 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [BUILD-FAILURE] next-20090114 - drivers/staging/meilhaus
-Message-ID: <20090114180403.GA16974@suse.de>
-References: <20090114165002.3bbe49d7.sfr@canb.auug.org.au> <20090114180024.GB4796@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114180024.GB4796@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20090114165002.3bbe49d7.sfr@canb.auug.org.au> <20090114180024.GB4796@linux.vnet.ibm.com> <20090114180403.GA16974@suse.de>
+In-Reply-To: <20090114180403.GA16974@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.496E2AF2.00EE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 11:30:24PM +0530, Kamalesh Babulal wrote:
-> Hi Stephen,
+Greg KH wrote:
+> On Wed, Jan 14, 2009 at 11:30:24PM +0530, Kamalesh Babulal wrote:
+>> Hi Stephen,
+>>
+>> 	next-20090114 randconfig build on x86_64 machine fails,
+>>
+>>   LD      drivers/staging/meilhaus/built-in.o
+>> drivers/staging/meilhaus/me1600.o: In function `cleanup_module':
+>> (.exit.text+0x0): multiple definition of `cleanup_module'
+>> drivers/staging/meilhaus/memain.o:memain.c:(.exit.text+0x0): first defined here
 > 
-> 	next-20090114 randconfig build on x86_64 machine fails,
+> Yeah, a lot of these staging drivers can't handle being built into the
+> kernel.
 > 
->   LD      drivers/staging/meilhaus/built-in.o
-> drivers/staging/meilhaus/me1600.o: In function `cleanup_module':
-> (.exit.text+0x0): multiple definition of `cleanup_module'
-> drivers/staging/meilhaus/memain.o:memain.c:(.exit.text+0x0): first defined here
+> At first glance, I don't see a way to prevent this, is there some
+> Kconfig option I can use to say, "this can only be a module or disabled,
+> not build statically"?
 
-Yeah, a lot of these staging drivers can't handle being built into the
-kernel.
+	depends on m
 
-At first glance, I don't see a way to prevent this, is there some
-Kconfig option I can use to say, "this can only be a module or disabled,
-not build statically"?
 
-thanks,
-
-greg k-h
+-- 
+~Randy
