@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbZANQUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764049AbZANQV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763663AbZANQUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbZANQU1
+	id S1764049AbZANQV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbZANQVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:20:27 -0500
-Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:37973
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756969AbZANQU0 (ORCPT
+	Wed, 14 Jan 2009 11:21:48 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49774 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757887AbZANQVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:20:26 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RT git pull] fixes for rt/sched
-To: rostedt@home.goodmis.org
-Cc: gregory.haskins@gmail.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Wed, 14 Jan 2009 11:23:31 -0500
-Message-ID: <20090114162226.13517.44371.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
+	Wed, 14 Jan 2009 11:21:48 -0500
+Message-ID: <496E111A.9010808@s5r6.in-berlin.de>
+Date: Wed, 14 Jan 2009 17:21:46 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Manfred Spraul <manfred@colorfullife.com>, dcm@acm.org,
+       Nadia.Derbey@bull.net, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, paulmck@us.ibm.com
+Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
+References: <1231571060.3538.18.camel@localhost.localdomain>	 <49686465.70501@s5r6.in-berlin.de>	 <20090110011557.9d94e111.akpm@linux-foundation.org>	 <496872E0.9030007@s5r6.in-berlin.de>	 <1231773620.6365.21.camel@gaara.bos.redhat.com>	 <496B9FC7.3090108@colorfullife.com>	 <1231792712.6365.31.camel@gaara.bos.redhat.com>	 <496BAD1C.5060201@colorfullife.com>	 <20090113144802.39dc4c23.akpm@linux-foundation.org> <1231942990.8542.7.camel@gaara.bos.redhat.com>
+In-Reply-To: <1231942990.8542.7.camel@gaara.bos.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit cfe6498c6a03e574bc9384cc95d73dfd20a13f05:
-  Steven Rostedt (1):
-        rt sched: add rt overload stats
+Kristian Høgsberg wrote:
+> On Tue, 2009-01-13 at 14:48 -0800, Andrew Morton wrote:
+>> What do we think of just removing the constructor and using
+>> kmem_cache_zalloc()?
+> 
+> We still need to zero out the idr_layer before returning it to the idr's
+> internal free list.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git rt/sched
-
-Gregory Haskins (1):
-      rt/sched: ensure interrupts are disabled during post-schedule() processing
-
- kernel/sched_rt.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
----------------
-
-rt/sched: ensure interrupts are disabled during post-schedule() processing
-
-Impact: Fix run-time opps at boot up.
-
-post-schedule() is required to run with interrupts disabled, but we
-currently rely on the caller to have left them disabled for us.  This
-has apparently changed recently such that interrupts are now on and
-we thus crash.  Fix this once and for all by using the irqsave/restore
-variants of spin_lock(rq). 
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-CC: John Stultz <johnstul@us.ibm.com>
----
-
- kernel/sched_rt.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 856f6fb..0cd6b07 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1348,14 +1348,16 @@ static int needs_post_schedule_rt(struct rq *rq)
- 
- static void post_schedule_rt(struct rq *rq)
- {
-+	unsigned long flags;
-+
- 	/*
- 	 * This is only called if needs_post_schedule_rt() indicates that
- 	 * we need to push tasks away
- 	 */
--	spin_lock(&rq->lock);
-+	spin_lock_irqsave(&rq->lock, flags);
- 	push_rt_tasks(rq);
- 	schedstat_inc(rq, rto_schedule_tail);
--	spin_unlock(&rq->lock);
-+	spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
- /*
-
+I think so too.  But a more robust solution would IMO be to initialize
+an idr_layer /before/ use, not /after/ use.  Will send a patch later.
+-- 
+Stefan Richter
+-=====-==--= ---= -===-
+http://arcgraph.de/sr/
