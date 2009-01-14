@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZANTRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbZANTTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbZANTRB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:17:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZANTQr
+	id S1756209AbZANTTP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZANTS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:16:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54989 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755476AbZANTQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:16:46 -0500
-Date: Wed, 14 Jan 2009 20:16:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86, pat: fix free_memtype() for legacy 1MB range
-Message-ID: <20090114191632.GA17766@elte.hu>
-References: <20090114184834.GC1290@linux-os.sc.intel.com>
+	Wed, 14 Jan 2009 14:18:56 -0500
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:48148 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754384AbZANTSz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:18:55 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
+To: Evgeniy Polyakov <zbr@ioremap.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Reply-To: 7eggert@gmx.de
+Date: Wed, 14 Jan 2009 20:18:49 +0100
+References: <bTx3z-8bU-23@gated-at.bofh.it> <bTxdg-8sZ-23@gated-at.bofh.it> <bTxdg-8sZ-21@gated-at.bofh.it> <bTxmW-hf-1@gated-at.bofh.it> <bTRYr-2up-21@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114184834.GC1290@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LNBGL-00021y-C8@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Evgeniy Polyakov <zbr@ioremap.net> wrote:
+> On Mon, Jan 12, 2009 at 03:51:08PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk)
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+>> > Well, Kenny has to die, but if we still decide to change the world, here
+>> > is the fist step.
+>> 
+>> NAK this entire thing - we have an existing interface that does the job
+>> far better.
+> 
+> Mwahaha, I just checked how scores are calculated, so that userspace
+> could adjust them. Let's start with beginning:
 
-> -	is_range_ram = pagerange_is_ram(start, end);
-> -	if (is_range_ram == 1)
-> -		return free_ram_pages_type(start, end);
-> -	else if (is_range_ram < 0)
-> -		return -EINVAL;
-> +	/*
-> +	 * For legacy reasons, some parts of the physical address range in the
-> +	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
-> +	 * the e820 tables).  So we will track the memory attributes of this
-> +	 * legacy 1MB region using the linear memtype_list always.
-> +	 */
-> +	if (end >= ISA_END_ADDRESS) {
-> +		is_range_ram = pagerange_is_ram(start, end);
-> +		if (is_range_ram == 1)
-> +			return free_ram_pages_type(start, end);
-> +		else if (is_range_ram < 0)
-> +			return -EINVAL;
-> +	}
+[snip]
 
-this logic is now repeated in an open-coded way in two places in pat.c. 
-Could you please send another delta patch that consolidates them into a 
-single helper function, which is used both in free_memtype() and 
-reserve_memtype()?
+> Do you _REALLY_ think anyone can calculate it yourself and then properly
+> calculate adjustment used to properly select oom-killed process?
 
-Thanks,
+That's easy: Just let your Kenny process run, and check it's score. If it's
+too low, increase the adjustment until it's just above the other processes'
+score. Using binary search, you're done in five steps.
 
-	Ingo
+Then, while you're at it, protect the important programs by setting
+their adjustment to -17.
+
