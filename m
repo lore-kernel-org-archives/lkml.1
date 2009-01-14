@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764151AbZANQgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763708AbZANQhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764151AbZANQgc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbZANQgT
+	id S1763708AbZANQhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbZANQhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:36:19 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:46244 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758044AbZANQgS (ORCPT
+	Wed, 14 Jan 2009 11:37:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49225 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759301AbZANQhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:36:18 -0500
-X-Greylist: delayed 27581 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 11:36:17 EST
-Date: Wed, 14 Jan 2009 17:36:14 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: [PULL -tip] fixed few make headers_check warnings
-In-Reply-To: <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901141732450.26663@anakin>
-References: <1231836016.3212.41.camel@jaswinder.satnam>
- <Pine.LNX.4.64.0901140954250.27308@anakin> <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com>
- <20090114153825.GB32082@uranus.ravnborg.org>
- <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Jan 2009 11:37:32 -0500
+Date: Wed, 14 Jan 2009 16:37:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: Pierre Habouzit <pierre.habouzit@intersec.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sctp: if backlog is 0, listening shall not be
+ deactivated.
+Message-ID: <20090114163729.3468d232@lxorguk.ukuu.org.uk>
+In-Reply-To: <496E0A73.9030903@hp.com>
+References: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
+	<496DE5ED.8030609@hp.com>
+	<20090114132124.15b68481@lxorguk.ukuu.org.uk>
+	<496DEA60.2080700@hp.com>
+	<20090114152133.675da27b@lxorguk.ukuu.org.uk>
+	<496E0A73.9030903@hp.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009, Jaswinder Singh Rajput wrote:
-> On Wed, Jan 14, 2009 at 9:08 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > I appreciate your work but I will like to question the approach.
+> I will submit a requirest to change this behavior in the spec, but I am not
+> terribly optimistic.  This has been specified for a very long time and there
+> might be applications taking advantage of the ability to shut listing off.
 > 
-> My approach was:
-> "PATCH should solve a problem per file", like:
->  capability.h: extern's make no sense in userspace
->  coda_psdev.h: extern's make no sense in userspace
->  in6.h: extern's make no sense in userspace
->  nubus.h: extern's make no sense in userspace
->  socket.h: extern's make no sense in userspace
-> 
-> But this warnings was in many files:
->  include of <linux/types.h> is preferred over <asm/types.h> : 15 files
->  found __[us]{8,16,32,64} type without #include <linux/types.h> : 52 files
-> 
-> So in place of making 15 + 52 = 67 patches, I made 2 patches for each warning.
-> 
-> > We should rather take the warnings as an indication that this
-> > file needs to be looked over and fix not only the warnings
-> > reported but rater to fix all the questionable issues on a file-by-file basis.
-> 
-> Should I make 67 patches ?
+> At this time, let's leave this as is.  A well written application should specify
+> the listen backlog anyway, otherwise it's depending on the "may" language in the
+> Posix spec and will not get consistent behavior across different systems.
 
-No.
-
-What Sam means is that the warnings about externs not making sense in userspace
-are indicators that there may be other external declarations (without "extern")
-in those files, and that you should fix those at the same time (i.e. either
-don't fix any of them, or fix all of them (in the same file)). If you don't
-fix them at the same time, people tend to forget about them.
-
-So the warnings are just considered canaries in our coal mine. Killing only the
-canaries doesn't help.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Seems fair enough.
