@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbZANNzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761101AbZANN4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbZANNzy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 08:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbZANNzn
+	id S1761101AbZANN4d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 08:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbZANN4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 08:55:43 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:41860 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbZANNzl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 08:55:41 -0500
-Date: Wed, 14 Jan 2009 19:25:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
-	obsolete
-Message-ID: <20090114135539.GA21516@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp> <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	Wed, 14 Jan 2009 08:56:24 -0500
+Received: from www.tglx.de ([62.245.132.106]:36455 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755865AbZANN4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 08:56:23 -0500
+Date: Wed, 14 Jan 2009 14:56:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kernel <kernel@bazarnic.net>,
+       Venkatesch Pallipadi <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Bug #12404] Oops in 2.6.28-rc9 and -rc8 -- mtrr issues /
+ e1000e
+In-Reply-To: <nHCfeC0YLrE.A.tkB.dafaJB@chimera>
+Message-ID: <alpine.LFD.2.00.0901141450550.3598@localhost.localdomain>
+References: <nn3SOLVZ28H.A.bY.CafaJB@chimera> <nHCfeC0YLrE.A.tkB.dafaJB@chimera>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-14 17:51:21]:
+On Sun, 11 Jan 2009, Rafael J. Wysocki wrote:
 
-> This is a new one. Please review.
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
 > 
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> mem_cgroup_get ensures that the memcg that has been got can be accessed
-> even after the directory has been removed, but it doesn't ensure that parents
-> of it can be accessed: parents might have been freed already by rmdir.
 > 
-> This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
-> climb up the tree.
-> 
-> Check if the memcg is obsolete, and don't call res_counter_uncharge when obsole.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12404
+> Subject		: Oops in 2.6.28-rc9 and -rc8 -- mtrr issues / e1000e
+> Submitter	: Kernel <kernel@bazarnic.net>
+> Date		: 2008-12-22 9:37 (21 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122993873320150&w=4
 
-I liked the earlier, EBUSY approach that ensured that parents could
-not go away if children exist. IMHO, the code has gotten too complex
-and has too many corner cases. Time to revisit it.
+@Raphael: 
+	  not a regression:
+> Btw, I get the same crashes in 2.6.27.6 and 2.6.27.9 as well.
 
--- 
-	Balbir
+@Doug: 
+       can you please boot with "nopat" on the kernel command line.
+
+@Yinghai, Venki: 
+	  can you please have a look at the mtrr messages? The
+	  kernel warning is not very informative.
+
+Thanks,
+
+	tglx
