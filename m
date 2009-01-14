@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZANCus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZANCvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbZANCus (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZANCuQ
+	id S1756839AbZANCvN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZANCu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:50:16 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:56470 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754675AbZANCuP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:50:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvcDAJrebEl5LDnlgWdsb2JhbACUGgEBFiK5PYVv
-X-IronPort-AV: E=Sophos;i="4.37,261,1231075800"; 
-   d="scan'208";a="293181703"
-Date: Wed, 14 Jan 2009 13:49:52 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] async: Add some documentation.
-Message-ID: <20090114024952.GS8071@disturbed>
-Mail-Followup-To: Cornelia Huck <cornelia.huck@de.ibm.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	linux-kernel@vger.kernel.org
-References: <20090113174306.0f620476@gondolin>
+	Tue, 13 Jan 2009 21:50:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49644 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755255AbZANCuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:50:22 -0500
+Message-ID: <496D52D4.70202@cn.fujitsu.com>
+Date: Wed, 14 Jan 2009 10:49:56 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113174306.0f620476@gondolin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jason Baron <jbaron@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] ftrace: show ftrace_bprintk()'s formats
+References: <495ADF57.8030008@cn.fujitsu.com> <20090113231617.GD3210@redhat.com>
+In-Reply-To: <20090113231617.GD3210@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 05:43:06PM +0100, Cornelia Huck wrote:
-> Add some kerneldoc to the async interface.
+Jason Baron wrote:
+> On Wed, Dec 31, 2008 at 10:56:23AM +0800, Lai Jiangshan wrote:
+>> Impact: let user knows the format
+>>
+>> Create a file on <debugfs-dir>/tracing/ to show ftrace_bprintk()'s formats.
+>>
+>> This formats will help for these condition:
+>> 1) User get binary data from core file.(formats are backup before coredump)
+>> 2) User splice ring_buffer to a file.
+>> User can use formats for parsing the binary data in userspace.
+>>
 > 
-> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> +/**
-> + * async_schedule_special - schedule a function for asynchronous execution with a special running queue
-> + * @ptr: function to execute asynchronously
-> + * @data: data pointer to pass to the function
-> + * @running: list head to add to while running
-> + *
-> + * Returns an async_cookie_t that may be used for checkpointing later.
-> + * @running may be used in the async_synchronize_*_special() functions
-> + * to wait on a special running queue rather than on the global running
-> + * queue.
-> + * Note: This function may be called from atomic or non-atomic contexts.
-> + */
->  async_cookie_t async_schedule_special(async_func_ptr *ptr, void *data, struct list_head *running)
+> When I 'cat' trace_bprintk_formats on my system the file is empty. This
+> seems to be b/c 'ftrace_bprintk' is not being used in this patchset. It
+> can't be used in patch #5 during marker register b/c the format wouldn't
+> be known at runtime. Thus, as it currently stands this patch, patch 4/5,
+> isn't adding much?
 
-Rather than polishing a turd, can we rename this "special" stuff to
-something more descriptive? I'm not the only person to complain
-about this. How about async_schedule_list()?
+If you don't use ftrace_bprintk(), the file trace_bprintk_formats is empty.
+This file record all formats which ftrace_bprintk() uses.
 
-After all, async_schedule_list() describes *exactly* how it is
-different to async_schedule(), while the "_special" keywords really
-suck when you consider code is supposed to be self documenting....
+You can use ftrace_bprintk() everywhere as another printk().
 
-> +/**
-> + * async_synchronize_cookie_special - synchronize asynchronous function calls on a running list with cookie checkpointing
-> + * @cookie: async_cookie_t to use as checkpoint
-> + * @running: running list to synchronize on
+Patch #5 enables binary printk for markers, this is another additional tool
+for tracing markers.
 
-And I think that description proves my point about the real
-meaning of "special" in this API.
+> 
+> A thought on how this might be resolved would be to have the core marker
+> code pass us its address so this could be recorded in the trace buffer.
+> Then, also add some debug file that displays the markers and maps marker
+> addresses with format strings.
+> 
 
-Cheers,
+Patch#5 does it as you said.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
+
