@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751593AbZANKGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbZANKIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751593AbZANKGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZANKGh
+	id S1757530AbZANKIQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZANKH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:06:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56294
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755162AbZANKGg (ORCPT
+	Wed, 14 Jan 2009 05:07:57 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:16769 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbZANKH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:06:36 -0500
-Date: Wed, 14 Jan 2009 02:06:37 -0800 (PST)
-Message-Id: <20090114.020637.181791518.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, dada1@cosmosbay.com,
-       w@1wt.eu, ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090114094215.GC4234@ff.dom.local>
-References: <20090114085308.GB4234@ff.dom.local>
-	<20090114.012919.117682429.davem@davemloft.net>
-	<20090114094215.GC4234@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 05:07:56 -0500
+Message-ID: <496DBC4B.2000609@nokia.com>
+Date: Wed, 14 Jan 2009 12:19:55 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+CC: Tony Lindgren <tony@atomide.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 2/2] OMAP: HSMMC: Fix response type for busy after response
+References: <20090113133827.29474.92645.sendpatchset@ahunter-laptop> <20090113133841.29474.15852.sendpatchset@ahunter-laptop>
+In-Reply-To: <20090113133841.29474.15852.sendpatchset@ahunter-laptop>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 14 Jan 2009 10:07:39.0479 (UTC) FILETIME=[EE90FE70:01C9762F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Wed, 14 Jan 2009 09:42:16 +0000
-
-> On Wed, Jan 14, 2009 at 01:29:19AM -0800, David Miller wrote:
-> > From: Jarek Poplawski <jarkao2@gmail.com>
-> > Date: Wed, 14 Jan 2009 08:53:08 +0000
-> > 
-> > > Actually, I still think my second approach (the PageSlab) is probably
-> > > (if tested) the easiest for now, because it should fix the reported
-> > > (Willy's) problem, without any change or copy overhead for splice to
-> > > file (which could be still wrong, but not obviously wrong).
-> > 
-> > It's a simple fix, but as Herbert stated it leaves other ->sendpage()
-> > implementations exposed to data corruption when the from side of the
-> > pipe buffer is a socket.
+Adrian Hunter wrote:
+>>From 410bc62034c021f8767c8dae469c3215783992ca Mon Sep 17 00:00:00 2001
+> From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> Date: Mon, 12 Jan 2009 16:13:08 +0200
+> Subject: [PATCH] OMAP: HSMMC: Fix response type for busy after response
 > 
-> I don't think Herbert meant other ->sendpage() implementations, but I
-> could miss something.
-
-I think he did :-)
-
-Or, more generally, he could have been referring to splice pipe
-outputs.  All of these things grab references to pages and
-expect that to keep the underlying data from being reallocated.
-
-That doesn't work for this skb->data case.
-
-> > That, to me, is almost worse than a bad fix.
-> > 
-> > It's definitely worse than a slower but full fix, which the copy
-> > patch is.
+> Some MMC commands result in the card becoming busy after
+> the response is received.  This needs to be specified
+> for the omap_hsmmc host controller, which is what this
+> patch does.  However, the effect is that some commands
+> with no data will cause a Transfer Complete (TC) interrupt
+> in addition to the Command Complete (CC) interrupt.
+> In order to deal with that, the irq handler has needed
+> a few changes also.
 > 
-> Sorry, I can't see how this patch could make sendpage worse.
+> The benefit of this change is that the omap_hsmmc host
+> controller driver now waits for the TC interrupt while
+> the card is busy, so the mmc_block driver needs to poll
+> the card status just once instead of repeatedly.
+> i.e. the net result is more sleep and less cpu.
+> 
+> This also fixes the hidden problem that the controller
+> was turning off the clock to the card while the card
+> was busy - the clock was then switched on for the
+> duration of each Send Status command used for polling,
+> which is why writes did not lock up altogether.
+> i.e. really dysfunctional.
 
-Because that patch only fixes TCP's ->sendpage() implementation.
+That paragraph is not true.  According to the standard:
 
-There are others out there which could end up experiencing similar
-data corruption.
+"The host is allowed to shut down the clock of a “busy” card. The card will complete the programming
+operation regardless of the host clock. However, the host must provide a clock edge for the card to turn
+off its busy signal. Without a clock edge the card (unless previously disconnected by a deselect command
+-CMD7) will force the DAT0 line down, forever."
+
+i.e. during busy state the clock is only needed to check whether the busy state is over.
+
+I will resend the patch, without that paragraph and with a fix to report the
+error code when there is a timeout error in the busy state.
