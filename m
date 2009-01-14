@@ -1,176 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbZANVqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbZANVt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761047AbZANVqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbZANVqS
+	id S1759937AbZANVt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZANVts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:46:18 -0500
-Received: from colo.lackof.org ([198.49.126.79]:39621 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758075AbZANVqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:46:16 -0500
-Date: Wed, 14 Jan 2009 14:46:03 -0700
-From: dann frazier <dannf@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: alessandro.zummo@towertech.it, rtc-linux@googlegroups.com,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eranian@googlemail.com
-Subject: Re: [PATCH] add rtc platform driver for EFI
-Message-ID: <20090114214603.GC8136@colo.lackof.org>
-References: <20090109213615.GD31548@ldl.fc.hp.com> <20090113003934.0a7da676.akpm@linux-foundation.org> <20090114000043.GB24423@colo.lackof.org> <20090114011719.GD24423@colo.lackof.org> <20090114023055.1d22d09e@i1501.lan.towertech.it> <20090114041358.GA21357@ldl.fc.hp.com> <20090114043337.GB21357@ldl.fc.hp.com> <20090114115728.15f2db18@i1501.lan.towertech.it> <20090114173745.GA24492@ldl.fc.hp.com> <20090114132554.1efce88f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114132554.1efce88f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 14 Jan 2009 16:49:48 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:59550 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753771AbZANVtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:49:47 -0500
+Date: Wed, 14 Jan 2009 13:47:12 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: David Miller <davem@redhat.com>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, andy@openmoko.com, sameo@openedhand.com,
+       mingo@elte.hu, yinghai@kernel.org, akpm@linux-foundation.org,
+       sfr@canb.auug.org.au
+Subject: Re: pcf50663 MFD driver modular build failure
+Message-Id: <20090114134712.6f0e430e.randy.dunlap@oracle.com>
+In-Reply-To: <20090113065159.GB3218@fedora.yogi>
+References: <20090112.210501.215941396.davem@redhat.com>
+	<20090113065159.GB3218@fedora.yogi>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.496E5D69.0170:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 01:25:54PM -0800, Andrew Morton wrote:
-> On Wed, 14 Jan 2009 10:37:45 -0700
-> dann frazier <dannf@dannf.org> wrote:
-> 
-> > +#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
-> 
-> gargh.  We should put a tax on #defines to discourage their consumption.
-> 
-> 
-> How about we do this:
+On Tue, 13 Jan 2009 12:22:02 +0530 Balaji Rao wrote:
 
-Sounds good to me :)
+> On Mon, Jan 12, 2009 at 09:05:01PM -0800, David Miller wrote:
+> > 
+> > This started happening with Linus's pull from today for
+> > sparc64 allmodconfig:
+> > 
+> > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+> > 
+> > Sure we can export __set_irq_handler() and handle_level_irq() to
+> > modules to fix this, but that looks like some hokey stuff for
+> > a MFD driver to be doing :-)
+> 
+> Yes, right! It's really not necessary. I've sent a patch to remove it.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> - the LEAP_YEAR macro is buggy - it references its arg multiple times. 
->   Fix this by turning it into a C function.
-> 
-> - give it a more approriate name
-> 
-> - Move it to rtc.h so that other .c files can use it, instead of copying it.
-> 
-> Cc: dann frazier <dannf@hp.com>
-> Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
-> Cc: stephane eranian <eranian@googlemail.com>
-> Cc: "Luck, Tony" <tony.luck@intel.com>
-> Cc: David Brownell <david-b@pacbell.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/rtc/rtc-lib.c |    7 +++----
->  include/linux/rtc.h   |    6 ++++++
->  2 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff -puN drivers/rtc/rtc-lib.c~rtc-convert-leap_year-into-an-inline drivers/rtc/rtc-lib.c
-> --- a/drivers/rtc/rtc-lib.c~rtc-convert-leap_year-into-an-inline
-> +++ a/drivers/rtc/rtc-lib.c
-> @@ -26,14 +26,13 @@ static const unsigned short rtc_ydays[2]
->  };
->  
->  #define LEAPS_THRU_END_OF(y) ((y)/4 - (y)/100 + (y)/400)
-> -#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
->  
->  /*
->   * The number of days in the month.
->   */
->  int rtc_month_days(unsigned int month, unsigned int year)
->  {
-> -	return rtc_days_in_month[month] + (LEAP_YEAR(year) && month == 1);
-> +	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
->  }
->  EXPORT_SYMBOL(rtc_month_days);
->  
-> @@ -42,7 +41,7 @@ EXPORT_SYMBOL(rtc_month_days);
->   */
->  int rtc_year_days(unsigned int day, unsigned int month, unsigned int year)
->  {
-> -	return rtc_ydays[LEAP_YEAR(year)][month] + day-1;
-> +	return rtc_ydays[is_leap_year(year)][month] + day-1;
->  }
->  EXPORT_SYMBOL(rtc_year_days);
->  
-> @@ -66,7 +65,7 @@ void rtc_time_to_tm(unsigned long time, 
->  		- LEAPS_THRU_END_OF(1970 - 1);
->  	if (days < 0) {
->  		year -= 1;
-> -		days += 365 + LEAP_YEAR(year);
-> +		days += 365 + is_leap_year(year);
->  	}
->  	tm->tm_year = year - 1900;
->  	tm->tm_yday = days + 1;
-> diff -puN include/linux/rtc.h~rtc-convert-leap_year-into-an-inline include/linux/rtc.h
-> --- a/include/linux/rtc.h~rtc-convert-leap_year-into-an-inline
-> +++ a/include/linux/rtc.h
-> @@ -99,6 +99,7 @@ struct rtc_pll_info {
->  
->  #ifdef __KERNEL__
->  
-> +#include <linux/types.h>
->  #include <linux/interrupt.h>
->  
->  extern int rtc_month_days(unsigned int month, unsigned int year);
-> @@ -232,6 +233,11 @@ int rtc_register(rtc_task_t *task);
->  int rtc_unregister(rtc_task_t *task);
->  int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
->  
-> +static inline bool is_leap_year(unsigned int year)
-> +{
-> +	return (!(year % 4) && (year % 100)) || !(year % 400);
-> +}
-> +
->  #endif /* __KERNEL__ */
->  
->  #endif /* _LINUX_RTC_H_ */
-> _
-> 
-> 
-> 
-> and then we modify your patch thusly:
-> 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Use is_leap_year()
-> 
-> Cc: "Luck, Tony" <tony.luck@intel.com>
-> Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
-> Cc: David Brownell <david-b@pacbell.net>
-> Cc: dann frazier <dannf@dannf.org>
-> Cc: dann frazier <dannf@hp.com>
-> Cc: stephane eranian <eranian@googlemail.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/rtc/rtc-efi.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff -puN arch/ia64/kernel/time.c~rtc-add-platform-driver-for-efi-fix arch/ia64/kernel/time.c
-> diff -puN drivers/rtc/Kconfig~rtc-add-platform-driver-for-efi-fix drivers/rtc/Kconfig
-> diff -puN drivers/rtc/Makefile~rtc-add-platform-driver-for-efi-fix drivers/rtc/Makefile
-> diff -puN drivers/rtc/rtc-efi.c~rtc-add-platform-driver-for-efi-fix drivers/rtc/rtc-efi.c
-> --- a/drivers/rtc/rtc-efi.c~rtc-add-platform-driver-for-efi-fix
-> +++ a/drivers/rtc/rtc-efi.c
-> @@ -26,8 +26,6 @@
->   */
->  #define EFI_RTC_EPOCH		1998
->  
-> -#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
-> -
->  /*
->   * returns day of the year [0-365]
->   */
-> @@ -54,7 +52,7 @@ compute_wday(efi_time_t *eft)
->  	}
->  
->  	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
-> -		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
-> +		ndays += 365 + (is_leap_year(y) ? 1 : 0);
->  
->  	ndays += compute_yday(eft);
->  
-> _
-> 
+Who did you send the patch to and where is it in the queue??
 
--- 
-dann frazier
-
+thanks,
+---
+~Randy
