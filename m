@@ -1,59 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZANFSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZANFUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712AbZANFSe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 00:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZANFSZ
+	id S1758064AbZANFUY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 00:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZANFUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 00:18:25 -0500
-Received: from an-out-0708.google.com ([209.85.132.247]:20267 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbZANFSY (ORCPT
+	Wed, 14 Jan 2009 00:20:08 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:52526 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753325AbZANFUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 00:18:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Pkh2UzJ9pMwbSf46a8Wbt/C8UuGCVkNiunsEKpRM7bo6c3p2hFOEozrrEM3X1pcdlN
-         1li4u9kfrKrAITG15jdIxkAnz5r7KbeKZE/gqojQpvlqduxjf4eGiaBt/L10gmBf/6eJ
-         DHAmiW+V3E2nGPNiN6XZpge6qnmgEu9q3L/hA=
-Message-ID: <496D759A.7010401@gmail.com>
-Date: Tue, 13 Jan 2009 21:18:18 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: netlabel: UNLABELED ath9k not denying unlabeled traffic
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Jan 2009 00:20:06 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar8EAGz/bElMQWt2/2dsb2JhbACBbMtVhW8
+Date: Wed, 14 Jan 2009 00:20:02 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
+	(fixed in LTTng 0.78)
+Message-ID: <20090114052002.GB14786@Krystal>
+References: <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com> <20090113225827.GA5791@Krystal> <20090114085427.442F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090114085427.442F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:18:50 up 13 days,  5:17,  1 user,  load average: 0.04, 0.26,
+	0.27
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using netlabelctl on a dell laptop
-I'm able to define the addresses that I want:
+* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> > * KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> > > Hi Mathieu
+> > > 
+> > > 2009/1/11 Mathieu Desnoyers <compudj@krystal.dyndns.org>:
+> > > > Hi,
+> > > >
+> > > > LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
+> > > > It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
+> > > 
+> > > -ECANTBUILD
+> > > 
+> > 
+> > Hi Kosaki,
+> > 
+> > Thanks for the report. This should be fixed in LTTng 0.78 now.
+> > 
+> > Best regards,
+> 
+> Unfortunately, lockdep part also can't build.
+> 
 
-netlabelctl unlbl add interface:wlan0 address:<radiostation> 
-label:system_u:object_r:netlabel_peer_t:s0
-netlabelctl unlbl add interface:wlan0 address:<myaddress> 
-label:system_u:object_r:netlabel_peer_t:s0
-netlabelctl  -p unlbl accept off
+I may be missing something, but I'm pretty sure the
+lttng-instrumentation-lockdep.patch in 0.78 also fixes this. (it's been
+updated)
 
-{the above was from http://paulmoore.livejournal.com/1758.html };
-(I'm able to listen to the radio station allowed, then if I choose 
-another station; if I haven't defined an address like the above, mplayer 
-just sits there.denying the unlabeled packet. that is until I allow the 
-address);
+Mathieu
 
-The problem I have is when I do the same on my macbook pro ati chipset.
-with the ath9k module, I'm able to listen to any station, search the web 
-etc..
-it seems netlabelctl  -p unlbl accept off makes no difference if it's on 
-or off.
- 
-Is this built into ath9k yet, or is there something I'm missing?
+> ==
+> Subject: [PATCH] fix lockdep tracing build error
+> 
+> commit 6afe40b4dace385d7ba2faf24b352f066f3b71bf rename argument a0 to ip.
+> it cause following build error to lttng tree.
+> 
+>   CC      kernel/lockdep.o
+> kernel/lockdep.c: In function 'trace_hardirqs_on_caller':
+> kernel/lockdep.c:2186: error: 'a0' undeclared (first use in this function)
+> kernel/lockdep.c:2186: error: (Each undeclared identifier is reported only once
+> kernel/lockdep.c:2186: error: for each function it appears in.)
+> kernel/lockdep.c: In function 'trace_hardirqs_off_caller':
+> kernel/lockdep.c:2241: error: 'a0' undeclared (first use in this function)
+> make[1]: *** [kernel/lockdep.o] Error 1
+> 
+> 
+> therefore we also need change trace argument.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  kernel/lockdep.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index 2ec98a3..21ef2ad 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -2183,7 +2183,7 @@ void trace_hardirqs_on_caller(unsigned long ip)
+>  
+>  	time_hardirqs_on(CALLER_ADDR0, ip);
+>  
+> -	_trace_lockdep_hardirqs_on(a0);
+> +	_trace_lockdep_hardirqs_on(ip);
+>  
+>  	if (unlikely(!debug_locks || current->lockdep_recursion))
+>  		return;
+> @@ -2238,7 +2238,7 @@ void trace_hardirqs_off_caller(unsigned long ip)
+>  
+>  	time_hardirqs_off(CALLER_ADDR0, ip);
+>  
+> -	_trace_lockdep_hardirqs_off(a0);
+> +	_trace_lockdep_hardirqs_off(ip);
+>  
+>  	if (unlikely(!debug_locks || current->lockdep_recursion))
+>  		return;
+> -- 
+> 1.6.0.6
+> 
+> 
+> 
+> 
+> 
+> 
+> 
 
-regards;
-
-Justin P. Mattock
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
