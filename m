@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZANCz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZANC7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbZANCz2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZANCzT
+	id S1756082AbZANC7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZANC7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:55:19 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:55239 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751762AbZANCzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:55:17 -0500
-Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
-From: David Moore <dcm@MIT.EDU>
-Reply-To: dcm@acm.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Manfred Spraul <manfred@colorfullife.com>, krh@redhat.com,
-       stefanr@s5r6.in-berlin.de, Nadia.Derbey@bull.net,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       paulmck@us.ibm.com
-In-Reply-To: <20090113144802.39dc4c23.akpm@linux-foundation.org>
-References: <1231571060.3538.18.camel@localhost.localdomain>
-	 <49686465.70501@s5r6.in-berlin.de>
-	 <20090110011557.9d94e111.akpm@linux-foundation.org>
-	 <496872E0.9030007@s5r6.in-berlin.de>
-	 <1231773620.6365.21.camel@gaara.bos.redhat.com>
-	 <496B9FC7.3090108@colorfullife.com>
-	 <1231792712.6365.31.camel@gaara.bos.redhat.com>
-	 <496BAD1C.5060201@colorfullife.com>
-	 <20090113144802.39dc4c23.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 13 Jan 2009 18:51:37 -0800
-Message-Id: <1231901497.9714.105.camel@localhost.localdomain>
+	Tue, 13 Jan 2009 21:59:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:51909 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbZANC7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:59:12 -0500
+Date: Wed, 14 Jan 2009 03:59:10 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       linux-mm@kvack.org
+Subject: Re: OOPS and panic on 2.6.29-rc1 on xen-x86
+Message-ID: <20090114025910.GA17395@wotan.suse.de>
+References: <20090112172613.GA8746@shion.is.fushizen.net> <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
-Content-Transfer-Encoding: 7bit
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-13 at 14:48 -0800, Andrew Morton wrote:
-> None of this got us much closer to fixing the bug ;)
+On Mon, Jan 12, 2009 at 11:54:32PM -0500, Bryan Donlan wrote:
+> On Mon, Jan 12, 2009 at 12:26 PM, Bryan Donlan <bdonlan@gmail.com> wrote:
+> > [resending with log/config inline as my previous message seems to have
+> >  been eaten by vger's spam filters]
+> >
+> > Hi,
+> >
+> > After testing 2.6.29-rc1 on xen-x86 with a btrfs root filesystem, I
+> > got the OOPS quoted below and a hard freeze shortly after boot.
+> > Boot messages and config are attached.
+> >
+> > This is on a test system, so I'd be happy to test any patches.
+> >
+> > Thanks,
+> >
+> > Bryan Donlan
 > 
-> What do we think of just removing the constructor and using
-> kmem_cache_zalloc()?
+> I've bisected the bug in question, and the faulty commit appears to be:
+> commit e97a630eb0f5b8b380fd67504de6cedebb489003
+> Author: Nick Piggin <npiggin@suse.de>
+> Date:   Tue Jan 6 14:39:19 2009 -0800
 > 
+>     mm: vmalloc use mutex for purge
+> 
+>     The vmalloc purge lock can be a mutex so we can sleep while a purge is
+>     going on (purge involves a global kernel TLB invalidate, so it can take
+>     quite a while).
+> 
+>     Signed-off-by: Nick Piggin <npiggin@suse.de>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> The bug is easily reproducable by a kernel build on -j4 - it will
+> generally OOPS and panic before the build completes.
+> Also, I've tested it with ext3, and it still occurs, so it seems
+> unrelated to btrfs at least :)
+> 
+> >
+> > ------------[ cut here ]------------
+> > Kernel BUG at c05ef80d [verbose debug info unavailable]
+> > invalid opcode: 0000 [#1] SMP
+> > last sysfs file: /sys/block/xvdc/size
+> > Modules linked in:
 
-Yes, I agree that using kmem_cache_zalloc would be a good solution.
+It is bugging in schedule somehow, but you don't have verbose debug
+info compiled in. Can you compile that in and reproduce if you have
+the time?
 
--David
+Going bug here might indicate that there is some other problem with
+the Xen and/or vmalloc code, regardless of reverting this patch.
 
+Thanks,
+Nick
