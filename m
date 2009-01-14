@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZANVyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbZANV4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761566AbZANVyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZANVxn
+	id S1760613AbZANV4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZANV4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:53:43 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:34718 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759156AbZANVxm (ORCPT
+	Wed, 14 Jan 2009 16:56:41 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58451 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754927AbZANV4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:53:42 -0500
-Date: Wed, 14 Jan 2009 22:53:13 +0100
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Greg KH <gregkh@suse.de>
-Cc: David Miller <davem@davemloft.net>,
-       "roucaries.bastien@gmail.com" <roucaries.bastien@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tj@kernel.org" <tj@kernel.org>,
-       "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
-Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
-Message-ID: <20090114215313.GL19262@axis.com>
-References: <20090114101908.GF19262@axis.com> <20090114.022140.169499153.davem@davemloft.net> <20090114103624.GH19262@axis.com> <20090114.024528.80563421.davem@davemloft.net> <20090114151221.GK19262@axis.com> <20090114181705.GC16505@suse.de>
+	Wed, 14 Jan 2009 16:56:40 -0500
+Date: Wed, 14 Jan 2009 16:54:30 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Alex Buell <alex.buell@munted.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27 BUG at fs/inode.c:263 with ext4
+Message-ID: <20090114215430.GK6222@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alex Buell <alex.buell@munted.org.uk>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20090114210143.39e27168@lithium.local.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114181705.GC16505@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090114210143.39e27168@lithium.local.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 07:17:05PM +0100, Greg KH wrote:
-> On Wed, Jan 14, 2009 at 04:12:21PM +0100, Jesper Nilsson wrote:
-> > On Wed, Jan 14, 2009 at 11:45:28AM +0100, David Miller wrote:
-> > > From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-> > > Date: Wed, 14 Jan 2009 11:36:24 +0100
-> > > > On Wed, Jan 14, 2009 at 11:21:40AM +0100, David Miller wrote:
-> > > > > From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-> > > > > Date: Wed, 14 Jan 2009 11:19:08 +0100
-> > > > > > The following patch works for CRIS, and is less intrusive than
-> > > > > > my earlier patch. If this the way to go I can resubmit a proper patch.
-> > > > > 
-> > > > > Out of curiosity, is there a way to get gcc to output code such
-> > > > > that data objects are aligned more naturally?  Some option or
-> > > > > similar?
-> > > > 
-> > > > There's flags for alignment of objects, but no flags for changing
-> > > > structure layout or size, which is probably what we run into here.
-> > > 
-> > > Really?
-> > 
-> > Yes, after some more research, I found that the bug is indeed triggered by
-> > the struct klist being aligned to odd bytes inside other structs.
-> > 
-> > Since CRIS uses packed structs, having a char * inside the kobjects
-> > shifts the alignment for all data after any struct that contains
-> > a kobject (and indeed inside the kobject itself)
-> > 
-> > In this case it was the class pointer of the struct device
-> > that had a klist in the private pointer (struct class_private),
-> > after a struct kset (which contains a kobject).
+On Wed, Jan 14, 2009 at 09:01:43PM +0000, Alex Buell wrote:
+> I've been testing ext4 with some spare disks, tonight I created an
+> ext4fs on a USB 60GB hard disk, and backed up my /home partition
+> onto it with rsync.
 > 
-> So, in order to make things smaller, your "use an external flag" patch
-> would probably be better than forcing the alignment on a 4 byte boundry,
-> right?
+> After umounting the device, and switching off the USB connection I
+> got the following in my /var/log/messages.
+> 
+> What would this suggest? I'd be happy to supply further information
+> if required.
 
-Unfortunately not, the GCC flags for CRIS only act on objects (address
-of the first member in the struct), the structs themselves are
-still subject to alignment on odd bytes. So the patch for aligning
-all klists on 16 or 32 bits is still needed for CRIS.
-It should however be a no-op for all architectures that do struct padding.
+Can you reproduce this error?  
 
-> thanks,
-> greg k-h
+The BUG is coming from fs/inode.c: 263, which in my kernel is this:
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+void clear_inode(struct inode *inode)
+{
+	might_sleep();
+	invalidate_inode_buffers(inode);
+       
+       BUG_ON(inode->i_data.nrpages);   <--------------------
+       BUG_ON(!(inode->i_state & I_FREEING));
+       BUG_ON(inode->i_state & I_CLEAR);
+       inode_sync_wait(inode);
+       DQUOT_DROP(inode);
+
+... and it's apparently coming from udevd when it deletes the device
+node from /dev, which looks like is a tempfs filesystem.  That would
+explain the call stack, which shows that clear_inode() was apparently
+called from shmem_delete_inode():
+
+> Jan 14 20:50:00 lithium [<c0157c55>] shmem_delete_inode+0x0/0xae
+> Jan 14 20:50:00 lithium [<c016b6e3>] generic_delete_inode+0x91/0xf9
+> Jan 14 20:50:00 lithium [<c016ae1d>] iput+0x48/0x4a
+> Jan 14 20:50:00 lithium [<c0163a44>] do_unlinkat+0xb0/0x11f
+> Jan 14 20:50:00 lithium [<c0112ace>] do_page_fault+0x23c/0x54a
+> Jan 14 20:50:00 lithium [<c0102cb1>] sysenter_do_call+0x12/0x25
+
+That would imply that there were pages from the block device still in
+the page cache, which I suspect means they were left over from mke2fs
+or fsck, or some other program directly accessing the block device
+directly.  I wonder if this BUG can be triggered if a process has an
+open file descriptor on the device at the time when it's powered off,
+or pulled from the system?
+
+Some details about how reliably you can reproduce this BUG would be
+greatly appreciated.
+
+							- Ted
