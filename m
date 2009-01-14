@@ -1,80 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZANTty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZANTuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139AbZANTty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZANTtn
+	id S1756885AbZANTuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZANTuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:49:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:41766 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755882AbZANTtm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:49:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=l6AoPBfdxN1FvNY0S0rp5x1vBz1XVrjf1LlR53bHQAsxS4D1ZgwbFbL2jGroOM/Vgb
-         tKZ2n4O9BABJgVVmCk1EMtAJHoPMypOHSnDQoI0l7gBHY2A6p0kGPVegMxLzAoflf85d
-         qa8h+LcIEDzZgOrs7FfnE+eG7ClGtcF8+eHPM=
-Date: Wed, 14 Jan 2009 22:49:33 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [PATCH -tip] x86: headers - fix export private data to
-	userspace
-Message-ID: <20090114194933.GA8178@localhost>
-References: <20090113183456.GA14470@localhost> <496E4040.9080701@zytor.com>
+	Wed, 14 Jan 2009 14:50:46 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:34169 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752436AbZANTup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:50:45 -0500
+Message-ID: <496E4211.6040503@sgi.com>
+Date: Wed, 14 Jan 2009 11:50:41 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496E4040.9080701@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: arch_probe_nr_irqs
+References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu> <496B9FC3.7080306@kernel.org> <496BCD14.3020201@sgi.com> <20090114111949.GO2913@elte.hu>
+In-Reply-To: <20090114111949.GO2913@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Wed, Jan 14, 2009 at 11:42:56AM -0800]
-> Cyrill Gorcunov wrote:
->> Impact: cleanup
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> Yinghai Lu wrote:
+>>> Impact: save RAM with large NR_CPUS, get smaller nr_irqs
+>>>
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> Built and tested on an 8-core intel system.  Great reduction
+>> in NR_IRQS:
 >>
->> 'make headers_check' warn us about leaking of kernel private
->> (mostly compile time vars) data to userspace in headers. Fix it.
+>> 	[    0.000000] NR_IRQS:33024 nr_irqs:320
 >>
->> More detailed report for easier reviewing:
+>> Thanks Yinghai!
 >>
->> 1) boot.h - neither BOOT_HEAP_SIZE, BOOT_STACK_SIZE refs
->>    was found by searching thru net (ie in user-space area).
+>> Ingo - shall I push this one as well?  (If not, then you
+>> can add my:
 >>
->> 2) prctl.h - sys_arch_prctl is completely removed from
->>    header since frankly I don't even understand why we
->>    describe it here. It is described like
->>     __SYSCALL(__NR_arch_prctl, sys_arch_prctl) in unistd_64.h
->>    and implemented in process_64.c. User-mode linux involved?
->>    So this one in fact is suspicious.
->>
->> 3) ptrace-abi.h - ptrace_bts_config struct is wrapped
->>    by __KERNEL__ -- not sure if it was ever proposed for
->>    userland.
->>
->> 4) setup.h - COMMAND_LINE_SIZE saved for userspace, bootloaders
->>    could use it.
->>
->> 5) sigcontext32.h - we really need linux/types.h here
->>    since we use __u... types.
->>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
->
-> Hi Cyrill; in addition to nonexporting COMMAND_LINE_SIZE, could you  
-> submit this as a patchset to make post-integration bisect easier?
->
-> 	-hpa
->
+>> 	Acked-by: Mike Travis <travis@sgi.com>
+> 
+> yes, please pick it up and i can pull it from you. Please also add a 
+> longer changelog about the precise effects and perhaps some estimations 
+> about what the before and after situation is, and perhaps also some bits 
+> about how it affects normal Linux users as well.
+> 
+> 	Ingo
 
-Hi Peter, to be sure -- you mean to make patchset with 5 patches?
+Hi Ingo,
 
-		- Cyrill -
+Just so I don't screw this thing up, exactly what am I to 'pull' to fix
+this error (listed at the end of this command sequence)?
+
+Thanks,
+Mike
+
+    mkdir linux-2.6-cpus4096-for-ingo
+    cd linux-2.6-cpus4096-for-ingo
+    git-init-db
+    git-remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+    git-remote add tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+    git-remote add my-cpus4096 git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git
+    git-remote add push-cpus4096 ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git
+    git-config --add remote.push-cpus4096.skipDefaultUpdate true
+    git-remote update
+
+    git-checkout -b edit-commits my-cpus4096/master
+    git-log             # insure the commit is the last one
+    git commit --amend
+
+<edit changelog>
+
+    git-push push-cpus4096 edit-commits:master
+
+travis@master.kernel.org's password:
+To ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git
+ ! [rejected]        edit-commits -> master (non-fast forward)
+error: failed to push some refs to 'ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git'
+
+    git-push -f push-cpus4096 edit-commits:master
+
+travis@master.kernel.org's password:
+Counting objects: 31, done.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (16/16), 1.97 KiB, done.
+Total 16 (delta 14), reused 12 (delta 11)
+error: denying non-fast forward refs/heads/master (you should pull first)
+To ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git
+ ! [remote rejected] edit-commits -> master (non-fast forward)
+error: failed to push some refs to 'ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git'
+
+=============================================================
+Here is the altered commit message:
+
+commit 939a9fc9e5f6fda4f797dea209fa881ce1368e37
+Author: Yinghai Lu <yinghai@kernel.org>
+Date:   Mon Jan 12 17:39:24 2009 -0800
+
+    x86: arch_probe_nr_irqs
+
+    Impact: save RAM with large NR_CPUS, get smaller nr_irqs
+
+    Estimating NR_IRQS based on NR_CPUS results in excessive memory used for
+    items like arrays sized by NR_IRQS.  This patch adds an arch specific
+    'probe' or discovery routine to calculate the minimum number of slots
+    required to handle the number of irqs on the running system.  The result
+    is placed in the 'nr_irqs' variable.
+
+    As an example, a system configured with NR_CPUS=4096 that has in fact
+    8 cpu cores, results in a reduction from 33024 to 320 for the number of
+    irqs required.  This is shown in a system log message:
+
+        NR_IRQS:33024 nr_irqs:320
+
+    Of course, this requires that other code dynamically allocate their irq
+    arrays using nr_irqs instead of NR_IRQS.  An example is in early_irq_init()
+    when CONFIG_SPARSE_IRQ is true.
+
+    Currently, the only arch that has this probe function is x86.  A default
+    weak arch_probe_nr_irqs function is placed in kernel/softirq.c, to avoid
+    a problem with some gcc's that do not handle weak functions correctly,
+    if they are in the same file as the reference.
+
+    Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+    Signed-off-by: Mike Travis <travis@sgi.com>
+
+
+
+
