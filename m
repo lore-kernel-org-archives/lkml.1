@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZANEHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbZANEIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbZANEHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 23:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZANEGx
+	id S1757628AbZANEIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 23:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZANEIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 23:06:53 -0500
-Received: from THUNK.ORG ([69.25.196.29]:35167 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbZANEGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 23:06:52 -0500
-Date: Tue, 13 Jan 2009 23:06:45 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-Message-ID: <20090114040645.GG14730@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Evgeniy Polyakov <zbr@ioremap.net>,
-	David Rientjes <rientjes@google.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net> <20090113224941.GA14730@mit.edu> <20090113230240.GA30192@ioremap.net> <20090114011137.GC14730@mit.edu> <20090114012001.GA3402@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114012001.GA3402@ioremap.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 13 Jan 2009 23:08:38 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:60743 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbZANEIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 23:08:37 -0500
+X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Jan 2009 23:08:36 EST
+Subject: Re: ext2 + -osync: not as easy as it seems
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
+In-Reply-To: <20090113143011.GB10064@duck.suse.cz>
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz>
+	 <20090113134503.41318144@lxorguk.ukuu.org.uk>
+	 <20090113140347.GD17664@mit.edu>  <20090113143011.GB10064@duck.suse.cz>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 14 Jan 2009 12:37:19 +0900
+Message-Id: <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:20:01AM +0300, Evgeniy Polyakov wrote:
+(CCing Eric Sandeen)
+
+On Tue, 2009-01-13 at 15:30 +0100, Jan Kara wrote:
+> On Tue 13-01-09 09:03:47, Theodore Tso wrote:
+> > Adding a barrier shouldn't be that hard; just a matter adding a call
+> > to blkdev_issue_flush() to ext2_sync_file() before it returns.
+>   Yes. Something like the patch below?
 > 
-> It is not about the possibility to change the sources, but the way
-> interface is exported to the userspace. Right now it is not usable for
-> some cases. And forcing applications, which are actually cross-platform,
-> depending on the way linux controls its own oom-killer is noticebly more
-> hackish than selecting a system-wide process by its name.
+>   But it's not the whole story. Strictly speaking we should also call
+> blkdev_issue_flush() whenever we write things because of O_SYNC or
+> O_DIRSYNC flags. My patch does also that (it's based on the previous ext2
+> patch I've sent a while before).
 
-And we can change that interface if it's not the right one, or perhaps
-extend it.  After all, you are are proposing extending that interface;
-just in a really horrible, hackish way.
+Commit d755fb384250d6bd7fd18a0930e71965acc8e72e added a call to
+blkdev_issue_flush to ext4_sync_file, and looking at its ext3
+counterpart it seems it might be needed there too.
 
-> You believe that changing apache to control oom_adj is the right way to
-> deal with linux oom-killer? Do we already flight to the moon?
+I may be missing something, but is it possible to ensure the inode hits
+the platter without the patch below?
 
-Actually, I would believe the right answer is adding a new resource
-limit which can be set using the standard getrlimit()/setrlimit()
-interface, and then have apache use this standard interface as a way
-of configuring itself --- much like how a process can change other
-resource limits, such as the number of file descriptors it has open,
-etc.  And if what you want to do is simply make the process volunteer
-to be one of the first processes shot by the OOM killer, the apache
-process wouldn't even need setuid privileges to lower the "OOM
-protection" resource limit.
+--
 
-I think this is cleaner than echoing a magic value to
-/proc/self/oom_adj, and it won't be the first time various open source
-programs have been changed to take advantage of Linux-specific
-interfaces, especially if there's no other standard way of doing
-things --- and an extension of BSD's getrlimit()/setrlimit() is
-natural and makes a lot of sense.  Heck, apache has been changed to
-take advantage of Linux's epoll interface....
+From: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Subject: ext3: call blkdev_issue_flush on fsync
 
-						- Ted
+To ensure that bits are truly on-disk after an fsync, we should call
+blkdev_issue_flush if barriers are supported.
+
+This is a straight port of a similar patch written by Eric Sandeen for
+ext4 (commit d755fb384250d6bd7fd18a0930e71965acc8e72e).
+
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
+
+diff -urNp linux-2.6.29-rc1-orig/fs/ext3/fsync.c linux-2.6.29-rc1/fs/ext3/fsync.c
+--- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
++++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-14 11:45:47.000000000 +0900
+@@ -27,6 +27,7 @@
+ #include <linux/sched.h>
+ #include <linux/writeback.h>
+ #include <linux/jbd.h>
++#include <linux/blkdev.h>
+ #include <linux/ext3_fs.h>
+ #include <linux/ext3_jbd.h>
+ 
+@@ -45,6 +46,7 @@
+ int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ {
+ 	struct inode *inode = dentry->d_inode;
++	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
+ 	int ret = 0;
+ 
+ 	J_ASSERT(ext3_journal_current_handle() == NULL);
+@@ -85,6 +87,9 @@ int ext3_sync_file(struct file * file, s
+ 			.nr_to_write = 0, /* sys_fsync did this */
+ 		};
+ 		ret = sync_inode(inode, &wbc);
++
++		if (journal && (journal->j_flags & JFS_BARRIER))
++			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+ 	}
+ out:
+ 	return ret;
+
+
