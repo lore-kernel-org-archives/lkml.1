@@ -1,96 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZANUEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZANUEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbZANUEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZANUEZ
+	id S1755882AbZANUEy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbZANUEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:04:25 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:33148 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754961AbZANUEY (ORCPT
+	Wed, 14 Jan 2009 15:04:41 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:20474 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755568AbZANUEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:04:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=gzBMI3joiQWJFQZPJdDbGDVwO+zg2Jnxxrvobo5tGnwdvGoMtU1lRgQz0XdYNiMgsB
-         H2zbKYUr0Ws6hxNbqRpRw9fOwrusMTuAwEDxX1oO7gVag6wwhYe13fNOh2nbANNYypiJ
-         uRTd4791Ok/vhQdXqoppua51WSom0QQ4xCrk8=
-Subject: Re: [PATCH -tip] nubus.h: extern's make no sense in userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       sam@ravnborg.org, gorcunov@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0901131001200.19352@vixen.sonytel.be>
-References: <1231832906.3212.24.camel@jaswinder.satnam>
-	 <Pine.LNX.4.64.0901131001200.19352@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 12:04:21 -0800
-Message-Id: <1231963461.5756.9.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 14 Jan 2009 15:04:40 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+Date: Wed, 14 Jan 2009 15:04:30 -0500
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       "SE-Linux" <selinux@tycho.nsa.gov>
+References: <496D759A.7010401@gmail.com> <200901141205.26904.paul.moore@hp.com> <496E21B3.3070206@gmail.com>
+In-Reply-To: <496E21B3.3070206@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901141504.30674.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-13 at 10:03 +0100, Geert Uytterhoeven wrote:
-> On Tue, 13 Jan 2009, Jaswinder Singh Rajput wrote:
-> > Impact: cleanup, Impact: fix 3 make headers_check warnings:
-> > 
-> > usr/include/linux/nubus.h:298: extern's make no sense in userspace
-> > usr/include/linux/nubus.h:300: extern's make no sense in userspace
-> > usr/include/linux/nubus.h:304: extern's make no sense in userspace
-> > 
-> > Also moved nubus_scan_bus() in __KERNEL__
-> > 
-> > Also removed obsolete get_nubus_list()
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  include/linux/nubus.h |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/linux/nubus.h b/include/linux/nubus.h
-> > index bd31554..9f54a23 100644
-> > --- a/include/linux/nubus.h
-> > +++ b/include/linux/nubus.h
-> > @@ -297,6 +297,7 @@ struct nubus_dev {
-> >  	struct nubus_board* board;
-> >  };
-> >  
-> > +#ifdef __KERNEL__
-> >  /* This is all NuBus devices (used to find devices later on) */
-> >  extern struct nubus_dev* nubus_devices;
-> >  /* This is all NuBus cards */
-> > @@ -305,7 +306,7 @@ extern struct nubus_board* nubus_boards;
-> >  /* Generic NuBus interface functions, modelled after the PCI interface */
-> >  void nubus_scan_bus(void);
-> >  extern void nubus_proc_init(void);
-> > -int get_nubus_list(char *buf);
-> > +#endif /* __KERNEL__ */
-> >  int nubus_proc_attach_device(struct nubus_dev *dev);
->    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >  int nubus_proc_detach_device(struct nubus_dev *dev);
->    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >  /* If we need more precision we can add some more of these */
-> 
-> What about these? They (unfortunately) lack the "extern" keyword, but they're
-> still external declarations, and "make headers_check' doesn't notice them?
-> 
-> BTW, is there a way to tell gcc to warn about externs not marked "extern", so
-> we can fix all of them?
+On Wednesday 14 January 2009 12:32:35 pm Justin P. Mattock wrote:
+> Paul Moore wrote:
+> > On Wednesday 14 January 2009 11:15:46 am Justin P. Mattock wrote:
 
-I had a look at this file, there's the small patch that just wraps the whole
-section of function declarations with ifdef __KERNEL, or the larger patch
-that does the wrapping _and_ adds the missing externs to make it obvious.
+...
 
-But I'm not sure that there is agreement regarding adding the externs too.
+> yep, it is pretty cool.
+> ultimately my goal with netlabel is to see if I can setup the network
+> namespace(if this is proper to say).
 
-What do people think?
+I understand what you are trying to say but I don't believe "namespace" 
+is the term you want to use since it is already used by the container 
+folks for something completely different.
 
-Harvey
+>  i.g. have all the radio stations in its own domain,(and possibly
+> it's own tag,doi etc..)
+> and then have all T.V. stations running in its own domain. and then
+> web searching in its own domain.
 
+Yep, you can do that with NetLabel and the fallback/static labels like 
+you've been doing.  Based on what I've seen from you so far, Secmark 
+would also likely work for you but it takes a slightly different 
+approach (configuration with iptables, different allow rules).
+
+> I see cipsov4 does this, but not sure if it does what the UNLABEL
+> domain/protocol does.
+> (just looking at cipsov4; look like ipsec, you need two computers
+> setup with the same domain and tag etc..)
+> not too sure though.
+
+Yep, CIPSO is a labeling protocol like labeled IPsec.  Both have their 
+advantages and disadvantages but both require that the other end of the 
+connection support the labeling protocol.  Since you are talking about 
+labeling public network traffic it is almost certain that the other end 
+of your connections don't support a network labeling protocol.  The 
+fallback/static labeling capabilities of NetLabel (that is 
+the "unlabeled/unlbl" protocol in NetLabel, it is "unlabeled" because 
+there is no label present on the network traffic) was designed to solve 
+this case for the network peer label case.  Secmark was designed to 
+solve this for the iptables label case.
+
+If you don't understand the difference between a network peer label and 
+a network iptables label here is the executive summary:
+
+ "A network peer label represents the security attributes of the
+  traffic's sender, a iptables label represents the network
+  attributes of the traffic."
+
+... which basically means the peer label tells you about the 
+process/host which generated the data (SELinux context, Smack label, 
+etc.) while the iptables label tells you about the network headers of 
+the traffic (destination address, protocol, port, anything that 
+iptables/netfilter can match on).
+
+> >> The two systems I have for this are: Dell latitude x200
+> >> running ubuntu jaunty, kernel is 2.6.29-rc1.
+> >> with netlabel_tools_0.18 which was an rpm packaged
+> >> that I converted to .deb.(can't remember the repository where I
+> >> grabbed it from);
+> >> The wireless card for the dell is a dell 1350
+> >> using bcmxx(b43-phy0); works great.
+> >
+> > Great.  I'm not a debian user so I can't be of much help on the
+> > packaging side, but you can get raw tarballs from the NetLabel
+> > project site on SF (the current release is 0.19 which includes
+> > support for all the goodies in 2.6.28):
+> >
+> >  * http://netlabel.sf.net
+>
+> I did grab that package but ran into the version_info
+> error,(resorted to the rpm out of desperation);
+
+Hmm, can you show me the error?  I'd like to make sure it is fixed ...
+
+> >> The results when using netlabelctl with the dell is nice, i.g.
+> >> like I said as soon as I issue netlabelctl unlbl accept off, those
+> >> addresses not defined are simply not allowed.(the problem with the
+> >> dell is I'm not seeing any allow rules being generated: i.g.
+> >>
+> >> allow netlabel_peer_t netif_t:netif ingress;
+> >> allow netlabel_peer_t node_t:node recvfrom;
+> >> allow unlabeled_t netif_t:netif ingress;
+> >> allow unlabeled_t node_t:node recvfrom;
+> >
+> > [NOTE: the rules/permissions you list above are the "newer"
+> > network_peer permissions which are likely not active unless you are
+> > running a custom SELinux policy as the default Reference Policy
+> > hasn't made the switch yet to the newer system]
+> >
+> > The netlabelctl tool doesn't generate any allow rules, all it does
+> > is configure the NetLabel subsystem which is all that is necessary
+> > because, this is important, NetLabel doesn't actually do any
+> > network traffic enforcement.  NetLabel is a network labeling
+> > framework, which means that it only deals with setting labels on
+> > outbound network packets and retrieving labels from inbound network
+> > packets (the "netlabel unlbl accept on|off" option is a gray area).
+> >  The decision about wether to accept or reject inbound network
+> > traffic is left to the LSM (NetLabel supports both SELinux and
+> > Smack).  If you want I can go into more detail but it would
+> > probably be rather boring and not really provide you much in the
+> > way of answering your question.
+>
+> boring to others, but to me, it's awesome.
+
+I think so too :)
+
+> >> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
+> >> the o.s. is ubuntu jaunty, the netlabel_tools is the same as
+> >> above. the only results I see out of this is the avc's it's
+> >> generating (the allow rules above are from the macbook);
+> >> some reason the dell doesn't generate any avc's,
+> >> which makes me wonder is this a module issue.
+> >
+> > Huh.  Just so I'm clear on this ... on the macbook you see avc
+> > denials that correspond to the allow rules you posted above, but on
+> > the dell you don't see the same avc denials?  Are you running the
+> > same SELinux policy on both systems (version numbers)?  What is the
+> > output of the following command on both systems?
+> >
+> >  # cat /selinux/policy_capabilities/network_peer_controls
+>
+> for both systems I'm running the refpolicy(svn) from tresys.
+> the new ubac options, and newrole mechanism etc..
+> doing cat /selinux/policy_capabilities_netowork_peer_controls says
+> "1" should be for both.
+
+Ahhhh!  How did that happen?!  (see my response to your other email)
+
+-- 
+paul moore
+linux @ hp
