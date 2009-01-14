@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbZANCCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbZANCDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbZANCCe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZANCCZ
+	id S1759943AbZANCDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZANCDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:02:25 -0500
-Received: from mga02.intel.com ([134.134.136.20]:6010 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753726AbZANCCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:02:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,261,1231142400"; 
-   d="asc'?scan'208";a="378238209"
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-From: Huang Ying <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090113174522.GA26965@elte.hu>
-References: <20081227155019.GA15493@elte.hu>
-	 <20081227225102.GA17822@elte.hu> <49594411.60000@linux.intel.com>
-	 <20090113174522.GA26965@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rKYHO/CVuNE869qZ0+Y5"
-Date: Wed, 14 Jan 2009 10:02:21 +0800
-Message-Id: <1231898541.5937.143.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 13 Jan 2009 21:03:03 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:55925 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754682AbZANCDB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:03:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=r0UJwg5+TP2Mk0BiA+W3Qu59fbfxgYUxCFPFCq/0xo1tnpUDV/XrYYHFZLjlxhceRT
+         t04V2n+KIQAT90sTLlIBAOgCxlG4oyypwE8aroPKPSM0flYoHPTS3gvkRT57hFFJd+T8
+         GdE6GCWa+FUcf/a83rZu7ncP1BeicBJwzRK/M=
+Date: Tue, 13 Jan 2009 21:02:40 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [ltt-dev] [PATCH 1/2] Make lttctl mount debugfs automatically
+Message-ID: <20090114020240.GA27672@zod.rchland.ibm.com>
+References: <49646208.7070607@cn.fujitsu.com> <4964BA2B.30200@polymtl.ca> <AA3F776E5F6246859F1978B7C7CF1919@zhaoleiwin> <20090108144430.GA3778@Krystal> <7C0A417AB5B84CDCB9A9484C4E13A08C@zhaoleiwin> <20090109033021.GA25504@Krystal> <20090113235419.GA20644@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113235419.GA20644@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 13, 2009 at 03:54:19PM -0800, Greg KH wrote:
+>On Thu, Jan 08, 2009 at 10:30:22PM -0500, Mathieu Desnoyers wrote:
+>> * Zhaolei (zhaolei@cn.fujitsu.com) wrote:
+>> > * From: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
+>> > >* Zhaolei (zhaolei@cn.fujitsu.com) wrote:
+>> > >> * From: "Pierre-Marc Fournier" <pierre-marc.fournier@polymtl.ca>
+>> > >> > Zhaolei wrote:
+>> > >> >> lttctl need debugfs mounted,
+>> > >> >> This patch make lttctl mount debugfs automatically when it is not mounted.
+>> > >> >> 
+>> > >> > 
+>> > >> > Isn't having a utility such as lttctl mount filesystems against standard
+>> > >> > unix semantics? Can you give an example of another standard command that
+>> > >> > uses a filesystem and that tries to mount it if it isn't already
+>> > >> > mounted? 
+>> > >> Hello, Pierre-Marc,
+>> > >> 
+>> > >> I can give a an example.
+>> > >> It is SystemTap.
+>> > >> 
+>> > > 
+>> > > No offence, but can you find an example which is not explicitly
+>> > > described as "bad taste" example by many people in the Linux kernel
+>> > > community ?
+>> > Hello, Mathieu
+>> > 
+>> > I can't find another example of mounting debugfs automatically.
+>
+>Have you looked?  openSUSE mounts it automatically, and I think Fedora
+>also does so.
 
---=-rKYHO/CVuNE869qZ0+Y5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Fedora doesn't.  At least not with the last 3 stable releases.
 
-On Wed, 2009-01-14 at 01:45 +0800, Ingo Molnar wrote:
-> * Andi Kleen <ak@linux.intel.com> wrote:
->=20
-> > Ingo Molnar wrote:
-> >
-> >>>> A far more useful design for handling MCE events would be to feed=20
-> >>>> them into printk logging.
-> >>> If there's ASCII logging it should be separate from normal printk.
-> >>
-> >> Well, why?=20
-> >
-> > Mostly because the problem is not a kernel issue. Especially large=20
-> > systems with a lot of memory can generate a lot of corrected events (on=
-e=20
-> > bit flips in DIMMs are not that uncommon) and it's not good to mix that=
-=20
-> > all up into other kernel messages. It also makes it more clear that it'=
-s=20
-> > not a kernel problem, but a hardware problem. I've got feedback over th=
-e=20
-> > years that confirm this sight.
->=20
-> Is your argument that syslog is not suitable for the logging of hw events=
-?
->=20
-> If that is your argument then the answer is to extend syslog with those=20
-> aspects, instead of widening the quirky /dev based mce ABIs to achieve=20
-> something similar.
-
-In current /dev based mce ABI implementation, syslog is used for logging
-hw events, not though printk, but through /dev/mcelog and /sbin/mcelog.
-
-For uncorrected MCE, they should be logged via printk. But for corrected
-MCE, there could be thousands/millions ones (imagining you have a DIMM
-with one data pin corrupted). I don't think it's a good idea to blend
-these hardware events with other kernel software events in printk.
-
-Best Regards,
-Huang Ying
-
-
---=-rKYHO/CVuNE869qZ0+Y5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkltR6oACgkQKhFGF+eHlphXDgCfWxRpfYcAiGiZi4f24hWRpU4Q
-eqMAnRVeQch8CyHAgNoTVm2LnkSXwws2
-=AlIH
------END PGP SIGNATURE-----
-
---=-rKYHO/CVuNE869qZ0+Y5--
-
+josh
