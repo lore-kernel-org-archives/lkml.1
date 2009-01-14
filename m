@@ -1,104 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764022AbZANQbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764060AbZANQfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764022AbZANQbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759617AbZANQbe
+	id S1764060AbZANQfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761225AbZANQfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:31:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59317 "EHLO mx2.redhat.com"
+	Wed, 14 Jan 2009 11:35:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59435 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759492AbZANQbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:31:34 -0500
-Message-ID: <496E1357.8050507@redhat.com>
-Date: Wed, 14 Jan 2009 11:31:19 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [PATCH][bugfix] kprobes: fix module compilation error with CONFIG_KPROBES=n
-References: <49628849.1000706@redhat.com> <20090114003234.3720e9a1.akpm@linux-foundation.org>
-In-Reply-To: <20090114003234.3720e9a1.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1755339AbZANQfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 11:35:04 -0500
+Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
+From: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Manfred Spraul <manfred@colorfullife.com>, dcm@acm.org,
+       Nadia.Derbey@bull.net, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, paulmck@us.ibm.com
+In-Reply-To: <496E111A.9010808@s5r6.in-berlin.de>
+References: <1231571060.3538.18.camel@localhost.localdomain>
+	 <49686465.70501@s5r6.in-berlin.de>
+	 <20090110011557.9d94e111.akpm@linux-foundation.org>
+	 <496872E0.9030007@s5r6.in-berlin.de>
+	 <1231773620.6365.21.camel@gaara.bos.redhat.com>
+	 <496B9FC7.3090108@colorfullife.com>
+	 <1231792712.6365.31.camel@gaara.bos.redhat.com>
+	 <496BAD1C.5060201@colorfullife.com>
+	 <20090113144802.39dc4c23.akpm@linux-foundation.org>
+	 <1231942990.8542.7.camel@gaara.bos.redhat.com>
+	 <496E111A.9010808@s5r6.in-berlin.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 14 Jan 2009 11:33:22 -0500
+Message-Id: <1231950802.9435.4.camel@gaara.bos.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 05 Jan 2009 17:23:05 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
+On Wed, 2009-01-14 at 17:21 +0100, Stefan Richter wrote:
+> Kristian Høgsberg wrote:
+> > On Tue, 2009-01-13 at 14:48 -0800, Andrew Morton wrote:
+> >> What do we think of just removing the constructor and using
+> >> kmem_cache_zalloc()?
+> > 
+> > We still need to zero out the idr_layer before returning it to the idr's
+> > internal free list.
 > 
->> Define kprobes related data structures even if CONFIG_KPROBES is not set.
->> This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
->> kprobe using modules.
->>
->> Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> ---
->>  include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
->>  1 file changed, 23 insertions(+), 22 deletions(-)
->>
->> Index: 2.6.28/include/linux/kprobes.h
->> ===================================================================
->> --- 2.6.28.orig/include/linux/kprobes.h
->> +++ 2.6.28/include/linux/kprobes.h
->> @@ -37,9 +37,9 @@
->>  #include <linux/spinlock.h>
->>  #include <linux/rcupdate.h>
->>  #include <linux/mutex.h>
->> +#include <asm/kprobes.h>
->>
->>  #ifdef CONFIG_KPROBES
->> -#include <asm/kprobes.h>
->>
-> 
-> The above change breaks alpha, and any other architecture which has no
-> asm/kprobes.h.
+> I think so too.  But a more robust solution would IMO be to initialize
+> an idr_layer /before/ use, not /after/ use.  Will send a patch later.
 
-Oops, indeed. Thank you for finding it!
+The reason it was done this way is that normally, when the layers are
+returned to the free list they're already zero'ed out (since their
+elements have been removed one by one), so no need to do this on later
+re-initialization or when freeing.  It's a silly little
+sup-optimization.  idr_remove_all() is different in that it doesn't
+incrementally zero out the layer, and so it has to do it using a memset.
 
-> I undid that change, but maybe that rebroke things?
+If you want rework how this works, I'd suggest just not using the free
+list except for in the idr_pre_get()+idr_get() sequence.  When a layer
+is no longer used, just free it, don't put it back on the free list.
+And use kmem_cache_zalloc() in idr_pre_get() as Andrew suggests.
 
-Yes, some structures should be defined in asm/kprobes.h, so
-here is an additional fix patch.
+cheers,
+Kristian
 
-------------------------------------------------------
-From: Masami Hiramatsu <mhiramat@redhat.com>
-
-Add dummy definitions of kprobe_opcode_t and arch_specific_insn
-when CONFIG_KPROBES=n.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
- include/linux/kprobes.h |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: 2.6-mm/include/linux/kprobes.h
-===================================================================
---- 2.6-mm.orig/include/linux/kprobes.h
-+++ 2.6-mm/include/linux/kprobes.h
-@@ -50,6 +50,10 @@
- /* Attach to insert probes on any functions which should be ignored*/
- #define __kprobes	__attribute__((__section__(".kprobes.text"))) notrace
- #else /* CONFIG_KPROBES */
-+typedef int kprobe_opcode_t;
-+struct arch_specific_insn {
-+	int dummy;
-+};
- #define __kprobes	notrace
- #endif /* CONFIG_KPROBES */
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
