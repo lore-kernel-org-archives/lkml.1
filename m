@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZANGyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbZANG6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZANGyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZANGyF
+	id S1756955AbZANG6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZANG6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:54:05 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:42245 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752104AbZANGyE (ORCPT
+	Wed, 14 Jan 2009 01:58:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56956 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbZANG6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:54:04 -0500
-Date: Wed, 14 Jan 2009 17:53:59 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: Use cryptd(%s) as cryptd-ed algorithm name instead of %s
-Message-ID: <20090114065359.GA16044@gondor.apana.org.au>
-References: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com>
+	Wed, 14 Jan 2009 01:58:14 -0500
+Message-ID: <496D8CEB.5060402@zytor.com>
+Date: Tue, 13 Jan 2009 22:57:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <tj@kernel.org>
+CC: Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, mingo@elte.hu,
+       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+Subject: Re: [PATCHSET linux-2.6-x86:tip] x86: make percpu offsets zero-based
+ on SMP
+References: <1231843097-18003-1-git-send-email-tj@kernel.org>	 <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org>
+In-Reply-To: <496C9FB7.9050907@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:44:08PM +0800, Huang Ying wrote:
-> Because:
+Tejun Heo wrote:
 > 
-> 1. if use %s, you can only request cryptd(<driver name>), not
->    cryptd(<alg name>), because generated new algorithm instance has
->    algorithm name: <alg name> and driver name cryptd(<driver name>).
+> I think the two changes aren't exclusive at all.  The order of things
+> could be different but in the end, yeah, zero-based percpu symbols w/
+> mostly empty pda is the goal.
+> 
+>> Once the PDA is empty, I'll base %gs at the start of the per-cpu
+>> area.  I've been working out the bugs with the last patch
+>> (zero-basing the percpu area) before submitting, but I probably
+>> won't have the time until this weekend to polish it off.  I could
+>> submit all but the last patch if you'd like.
+> 
+> Any chance you can rebase those patches on top of mine?  If you don't
+> have time, just send them to me, I'll try to integrate them this week.
+> 
 
-This is intentional.  For the purposes we talked about we should
-be requesting cryptd(<driver name>), as otherwise you may end up
-with someone else's AES algorithm as the base.
+A merged tree here would be absolutely wonderful.  I've kept an eye on
+the discussion so far, but it looks like you guys are handling it fine.
 
-> 2. Generated cryptd-ed algorithm will have the same algorithm name and
->    higher priority, but some user may not want to use cryptd-ed
->    version.
+	-hpa
 
-The priority shouldn't be an issue in our case since the AES-NI
-algorithm should register itself as an ablkcipher with an even
-higher priority.
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
