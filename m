@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbZANRC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764810AbZANRDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764751AbZANRC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763173AbZANRCU
+	id S1764810AbZANRDK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763498AbZANRCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:02:20 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53121 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763037AbZANRCT (ORCPT
+	Wed, 14 Jan 2009 12:02:54 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:42363 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763173AbZANRCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:02:19 -0500
-Date: Wed, 14 Jan 2009 11:59:52 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jan Kara <jack@suse.cz>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090114165952.GH6222@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz> <20090114141204.GD6222@mit.edu> <20090114143756.GF19950@duck.suse.cz>
+	Wed, 14 Jan 2009 12:02:53 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114143756.GF19950@duck.suse.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Transfer-Encoding: 7bit
+Message-ID: <18798.6841.172442.17982@stoffel.org>
+Date: Wed, 14 Jan 2009 12:02:49 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux kernel without file system
+In-Reply-To: <20090114093422.GA9771@frolo.macqel>
+References: <496DA678.1090701@wpkg.org>
+	<20090114093422.GA9771@frolo.macqel>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:37:56PM +0100, Jan Kara wrote:
-> > Um, we have that already; the sync_inode() followed by
-> > blkdev_issue_flush() is the path taken by fdatasync(), I do believe.
->
->   Maybe ext4-patch-queue changes that area but in Linus's tree I see:
-> 
->   if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
->          goto out;
-> 
->   So if we just overwrite some data, we send them to disk via fdatawrite()
-> and then we quickly bail out from ext4_sync_file() without doing
-> blkdev_issue_flush().
+>>>>> "Philippe" == Philippe De Muyter <phdm@macqel.be> writes:
 
-So you're thinking about fdatawrite() being called by some code path
-other than ext4_sync_file() before we call fsync()?  Yeah, that could
-happen....  I think that will only happen if the file is opened
-O_SYNC, but that raises another issue, which is that we're not forcing
-a flush for writes when the file is opened O_SYNC.
+Philippe> On Wed, Jan 14, 2009 at 09:46:48AM +0100, Tomasz Chmielewski wrote:
+>>> I need to design a very small embedded system that must only control
+>>> one ethernet port and two serial lines and must fit in a very small flash
+>>> memory.  So I thought about replacing the call to /etc/init by my 
+>>> application
+>>> program and removing all the file-system part of linux.
+>>> Is that doable ?
+>>> Is there a 'standard' way of doing that ?
+>>> The first problem I see is accessing my serial lines.  How could I do that
+>>> without using open("/dev/ttySx"), which requires a file system ?
+>>> Is there a way to access devices that does not require a file-system ?
+>> 
+>> You could put everything in initramfs (and embed it in the kernel).
 
-							- Ted
+Philippe> Actually, I was thinking about reducing the footprint of my
+Philippe> kernel by removing all the fs-related system calls, so the
+Philippe> problem is not where the file-system is, but how to access
+Philippe> (serial) devices without giving their "/dev/..." name.
+
+Does it have to be linux?  I've been playing with Arduino boards
+(http://www.adafruit.com) lately and they have ethernet modules,
+serial libraries, etc.  All on a small small chip.  Well, the ethernet
+is a daughter board, but they're still pretty small.  
+
+Depends on how general purpose you need to make this device and what
+you're trying to accomplish.  Maybe you need to give people a better
+idea of what you're trying to do, instead of assuming you need Linux
+and trying to shoe-horn it into a really tiny space.
+
+Cheers,
+John
