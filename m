@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbZANIWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbZANIX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbZANIWz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZANIWp
+	id S1759822AbZANIX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZANIXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:22:45 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34035 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbZANIWo (ORCPT
+	Wed, 14 Jan 2009 03:23:49 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:59982 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753305AbZANIXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:22:44 -0500
-Date: Wed, 14 Jan 2009 17:21:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] memcg: fix return value of mem_cgroup_hierarchy_write()
-Message-Id: <20090114172138.d73a8be8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <496D9E0C.4060806@cn.fujitsu.com>
-References: <496D9E0C.4060806@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 03:23:48 -0500
+Date: Wed, 14 Jan 2009 19:23:44 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: Use cryptd(%s) as cryptd-ed algorithm name instead of %s
+Message-ID: <20090114082344.GA16692@gondor.apana.org.au>
+References: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com> <20090114065359.GA16044@gondor.apana.org.au> <1231916511.5937.151.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231916511.5937.151.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 16:10:52 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> When there are sub-dirs, writing to memory.use_hierarchy returns -EBUSY,
-> this doesn't seem to fit the meaning of EBUSY, and is inconsistent with
-> memory.swappiness, which returns -EINVAL in this case.
+On Wed, Jan 14, 2009 at 03:01:51PM +0800, Huang Ying wrote:
 > 
+> Current cryptd works well for AES-NI implementation. But how about
+> somebody want cryptd(cbc(aes)), and don't care about the driver.
 
-Hmm...I'm not sure what error code is the best.
+That's not an issue, if the user wants then all he has to do is
+create cryptd(cbc(aes)) (how that is done is a different matter,
+hopefully something that we will address as part of the user-space
+API to crypto API), and then just using cbc(aes) will be sufficient.
 
-In usual, -EINVAL means parameter to write() is bad. In this case, it isn't.
+In any case, the algorithm name has to be cbc(aes) for it to work,
+since that is what it is.
+ 
+> Yes, not an issue for AES-NI case until now. But, for example there is
+> no aes-ni, if someone request cryptd(cbc(aes-asm)), other user will get
+> cryptd(cbc(aes-asm)) instead of cbc(aes-asm) when request cbc(aes), is
+> this a good behavior?
 
-Considering that, -EBUSY seems ok at returning error because of children.
-How about change swappiness to return -EBUSY ?
+The idea is to allow user-space to control priorities in future
+through a netlink interface.  Then this simply becomes a matter
+of system administration.
 
-Thanks,
--Kame
+For now you simply don't create the cryptd object if you don't
+intend to use it as the system default for that algorithm.
 
-
-
-
-
-
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  mm/memcontrol.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index bc8f101..2497f7d 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1760,6 +1760,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
->  	struct cgroup *parent = cont->parent;
->  	struct mem_cgroup *parent_mem = NULL;
->  
-> +	if (val != 0 && val != 1)
-> +		return -EINVAL;
-> +
->  	if (parent)
->  		parent_mem = mem_cgroup_from_cont(parent);
->  
-> @@ -1773,12 +1776,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
->  	 * set if there are no children.
->  	 */
->  	if ((!parent_mem || !parent_mem->use_hierarchy) &&
-> -				(val == 1 || val == 0)) {
-> -		if (list_empty(&cont->children))
-> +	    list_empty(&cont->children))
->  			mem->use_hierarchy = val;
-> -		else
-> -			retval = -EBUSY;
-> -	} else
-> +	else
->  		retval = -EINVAL;
->  	cgroup_unlock();
->  
-> -- 
-> 1.5.4.rc3
-> 
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
