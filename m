@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZANGF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZANGHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbZANGF6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZANGFu
+	id S1759630AbZANGHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZANGH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:05:50 -0500
-Received: from mail.suse.de ([195.135.220.2]:33808 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537AbZANGFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:05:49 -0500
-Date: Tue, 13 Jan 2009 21:54:04 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [ltt-dev] [PATCH 1/2] Make lttctl mount debugfs automatically
-Message-ID: <20090114055404.GA17400@suse.de>
-References: <49646208.7070607@cn.fujitsu.com> <4964BA2B.30200@polymtl.ca> <AA3F776E5F6246859F1978B7C7CF1919@zhaoleiwin> <20090108144430.GA3778@Krystal> <7C0A417AB5B84CDCB9A9484C4E13A08C@zhaoleiwin> <20090109033021.GA25504@Krystal> <20090113235419.GA20644@suse.de> <20090114051602.GA14786@Krystal>
+	Wed, 14 Jan 2009 01:07:28 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:56490 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754741AbZANGH1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 01:07:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=LSgV6a40MX5R4/54DyABr7oMrQY/4PIQMhbIyBXwUPfi+rGMT3vpkv2quaNc0WMtX2
+         KzVyVgfEsn6greb2PEndjU2X0U+zeIfc0g3+IrwucZV7hoGWQ+YpxQaLZXphZa42+Y7n
+         yZQtYYErHMc4hHcoSS73t+96aGMaPxHGkRVOQ=
+Message-ID: <86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
+Date: Tue, 13 Jan 2009 22:07:26 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "James Kirin" <james.kirin40@gmail.com>
+Subject: Re: memory beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y
+Cc: "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090114051602.GA14786@Krystal>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
+	 <adaeiz6k4o4.fsf@cisco.com>
+	 <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
+X-Google-Sender-Auth: a3e92477756868ae
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 12:16:02AM -0500, Mathieu Desnoyers wrote:
-> * Greg KH (gregkh@suse.de) wrote:
-> > On Thu, Jan 08, 2009 at 10:30:22PM -0500, Mathieu Desnoyers wrote:
-> > > * Zhaolei (zhaolei@cn.fujitsu.com) wrote:
-> > > > * From: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
-> > > > >* Zhaolei (zhaolei@cn.fujitsu.com) wrote:
-> > > > >> * From: "Pierre-Marc Fournier" <pierre-marc.fournier@polymtl.ca>
-> > > > >> > Zhaolei wrote:
-> > > > >> >> lttctl need debugfs mounted,
-> > > > >> >> This patch make lttctl mount debugfs automatically when it is not mounted.
-> > > > >> >> 
-> > > > >> > 
-> > > > >> > Isn't having a utility such as lttctl mount filesystems against standard
-> > > > >> > unix semantics? Can you give an example of another standard command that
-> > > > >> > uses a filesystem and that tries to mount it if it isn't already
-> > > > >> > mounted? 
-> > > > >> Hello, Pierre-Marc,
-> > > > >> 
-> > > > >> I can give a an example.
-> > > > >> It is SystemTap.
-> > > > >> 
-> > > > > 
-> > > > > No offence, but can you find an example which is not explicitly
-> > > > > described as "bad taste" example by many people in the Linux kernel
-> > > > > community ?
-> > > > Hello, Mathieu
-> > > > 
-> > > > I can't find another example of mounting debugfs automatically.
-> > 
-> > Have you looked?  openSUSE mounts it automatically, and I think Fedora
-> > also does so.
-> > 
-> 
-> It makes sense for a whole distribution to mount debugfs automatically,
-> but is it OK for a single userspace application to have this kind of
-> behavior ?
+On Tue, Jan 13, 2009 at 7:10 PM, James Kirin <james.kirin40@gmail.com> wrote:
+> Thank you for your reply, Roland. Unfortunately, this continues
+> happening after having installed the most recent version of the BIOS
+> available from Dell.
+>
+> I understand this is a problem in the BIOS and not the kernel, but is
+> there a way to have the kernel work around this bug in the BIOS and
+> make that memory accessible? Eg,
+>
+> http://www.gossamer-threads.com/lists/linux/kernel/991748#991748
 
-If it's a "debug" application, why not?
+please do
+1. boot linux with "disable_mtrr_trim" in grub.conf etc
+2. after booting input:
+echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
 
-thanks,
+later you could put that line in one scripts and call it from inittab
+# grep mtrrfixup /etc/inittab
+mtrr:345:once:/root/mtrrfixup.sh
 
-greg k-h
+YH
