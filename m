@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbZANUny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbZANUoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759844AbZANUny (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZANUmT
+	id S1759972AbZANUoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZANUmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 14 Jan 2009 15:42:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:50807 "EHLO
+Received: from fg-out-1718.google.com ([72.14.220.152]:46421 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755890AbZANUmO (ORCPT
+	with ESMTP id S1756339AbZANUmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:42:14 -0500
+	Wed, 14 Jan 2009 15:42:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:user-agent:date:from:to:cc:subject:content-disposition
          :message-id;
-        b=oK6AC7ofJIqcAu6AAhwYvmeLPQlHhtU8tW+w/W5W76wqVrlBU+re2l665ziW3dlo5J
-         aqOQB562IostgGh79/fRDWac+9Qx05WMp/laCOYIe0spSwpv47d7JychUDMCpSgvkHJ/
-         mlT6enR0Ya7sdtoBjkkdPk96wB8xdhlhYYjbU=
+        b=Usedhku/xIb81mFM80MM830Y3wK4XLoHa7L2+a9xs2/tginTEezFpMa9h1g8o3rTCI
+         vXgsVpGB7F04KHOzYsh8KxWk6T0Rlrs5oifp+esYRokRslcZpKHgrlxRItPKCK/4OjSd
+         Ij2sjtOihGciOCWN5XH1g0cEgOGNX1S6ayUAg=
 References: <20090114203745.285473388@gmail.com>>
 User-Agent: quilt/0.46-1
-Date: Wed, 14 Jan 2009 23:37:47 +0300
+Date: Wed, 14 Jan 2009 23:37:50 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org
 Cc: harvey.harrison@gmail.com, sam@ravnborg.org, jaswinderrajput@gmail.com,
        Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [patch 2/5] x86: headers cleanup - prctl.h
-Content-Disposition: inline; filename=x86-header-prctl-h
-Message-ID: <496e4e23.0405560a.1bf4.ffff9a1a@mx.google.com>
+Subject: [patch 5/5] x86: headers cleanup - setup.h
+Content-Disposition: inline; filename=x86-header-setup-h
+Message-ID: <496e4e25.0c58560a.4d7a.ffffc01b@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,30 +36,54 @@ Impact: cleanup
 'make headers_check' warn us about leaking of kernel private
 (mostly compile time vars) data to userspace in headers. Fix it.
 
-sys_arch_prctl is completely removed from
-header since frankly I don't even understand why we
-describe it here. It is described like
-__SYSCALL(__NR_arch_prctl, sys_arch_prctl) in unistd_64.h
-and implemented in process_64.c. User-mode linux involved?
-So this one in fact is suspicious.
+Guard this one by __KERNEL__.
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
 ---
- arch/x86/include/asm/prctl.h |    4 ----
- 1 file changed, 4 deletions(-)
+ arch/x86/include/asm/setup.h |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.git/arch/x86/include/asm/prctl.h
+Index: linux-2.6.git/arch/x86/include/asm/setup.h
 ===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/prctl.h
-+++ linux-2.6.git/arch/x86/include/asm/prctl.h
-@@ -6,8 +6,4 @@
- #define ARCH_GET_FS 0x1003
- #define ARCH_GET_GS 0x1004
+--- linux-2.6.git.orig/arch/x86/include/asm/setup.h
++++ linux-2.6.git/arch/x86/include/asm/setup.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_X86_SETUP_H
+ #define _ASM_X86_SETUP_H
  
--#ifdef CONFIG_X86_64
--extern long sys_arch_prctl(int, unsigned long);
--#endif /* CONFIG_X86_64 */
++#ifdef __KERNEL__
++
+ #define COMMAND_LINE_SIZE 2048
+ 
+ #ifndef __ASSEMBLY__
+@@ -8,10 +10,8 @@
+ /* Interrupt control for vSMPowered x86_64 systems */
+ void vsmp_init(void);
+ 
 -
- #endif /* _ASM_X86_PRCTL_H */
+ void setup_bios_corruption_check(void);
+ 
+-
+ #ifdef CONFIG_X86_VISWS
+ extern void visws_early_detect(void);
+ extern int is_visws_box(void);
+@@ -43,7 +43,7 @@ struct x86_quirks {
+ 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
+ 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
+ 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
+-                                    unsigned short oemsize);
++				unsigned short oemsize);
+ 	int (*setup_ioapic_ids)(void);
+ 	int (*update_genapic)(void);
+ };
+@@ -56,8 +56,6 @@ extern unsigned long saved_video_mode;
+ #endif
+ #endif /* __ASSEMBLY__ */
+ 
+-#ifdef __KERNEL__
+-
+ #ifdef __i386__
+ 
+ #include <linux/pfn.h>
 
 -- 
