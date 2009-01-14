@@ -1,66 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764483AbZANQwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764595AbZANQzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764483AbZANQwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763043AbZANQwc
+	id S1764595AbZANQzI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757986AbZANQyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:52:32 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:26820 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762911AbZANQwb (ORCPT
+	Wed, 14 Jan 2009 11:54:55 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:37927 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754152AbZANQyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:52:31 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Olaf Dabrunz <od@suse.de>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot interrupt equivalent
-Date: Wed, 14 Jan 2009 09:52:24 -0700
-User-Agent: KMail/1.9.10
-Cc: Stefan Assmann <sassmann@suse.de>, Shaohua Li <shaohua.li@intel.com>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Sven Dietrich <sdietrich@novell.com>
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <200901140848.08531.bjorn.helgaas@hp.com> <20090114155529.GP25512@suse.de>
-In-Reply-To: <20090114155529.GP25512@suse.de>
+	Wed, 14 Jan 2009 11:54:54 -0500
+Date: Wed, 14 Jan 2009 17:54:49 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: compress - Add pcomp interface
+In-Reply-To: <3f9a31f40901140845r6a0cd136ha27304c76001d1c7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901141753090.31703@vixen.sonytel.be>
+References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <3f9a31f40901140845r6a0cd136ha27304c76001d1c7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901140952.24757.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 January 2009 08:55:29 am Olaf Dabrunz wrote:
-> On 14-Jan-09, Bjorn Helgaas wrote:
-> > On Wednesday 14 January 2009 02:57:22 am Stefan Assmann wrote:
-> > > Shaohua Li wrote:
-> > > > So a device can generate interrupt from two irqs. And we can get the irq
-> > > > number for the routing table. Can we extend the irq mechanism and
-> > > > automatically register the interrupt handler for the two irqs?
-> > > 
-> > > This would not solve the problem of asserting 2 different interrupt
-> > > lines, in the masked interrupt handling case, for 1 interrupt request.
-> > > The result would be that the ISR is called twice and at the second call
-> > > you can't be sure that the device hasn't already been serviced.
-> > 
-> > Calling the ISR twice isn't a problem, is it?  We're talking about
-> > PCI interrupts, which are shareable, so ISRs have to handle being
-> > called extra times.
-> > 
-> > There's still the problem that the core will disable an IRQ if we
-> > take it too many times without any ISR that cares about it.  But that's
-> > a core issue, not an ISR issue.
+On Wed, 14 Jan 2009, Jaswinder Singh Rajput wrote:
+> On Tue, Jan 13, 2009 at 9:29 PM, Geert Uytterhoeven
+> <Geert.Uytterhoeven@sonycom.com> wrote:
+> > +static inline struct pcomp_alg *crypto_pcomp_alg(struct crypto_pcomp *tfm)
+> > +{
+> > +       return __crypto_pcomp_alg(crypto_pcomp_tfm(tfm)->__crt_alg);
+> > +}
+> > +
+> > +static inline int crypto_pcomp_setup(struct crypto_pcomp *tfm,
+> > +                                    const void *params)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->setup(crypto_pcomp_tfm(tfm), params);
+> > +}
+> > +
+> > +static inline int crypto_pcomp_compress_init(struct crypto_pcomp *tfm)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->compress_init(crypto_pcomp_tfm(tfm));
+> > +}
+> > +
+> > +static inline int crypto_pcomp_compress_update(struct crypto_pcomp *tfm,
+> > +                                              struct comp_request *req)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->compress_update(crypto_pcomp_tfm(tfm),
+> > +                                                     req);
+> > +}
+> > +
+> > +static inline int crypto_pcomp_compress_final(struct crypto_pcomp *tfm,
+> > +                                             struct comp_request *req)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->compress_final(crypto_pcomp_tfm(tfm),
+> > +                                                    req);
+> > +}
+> > +
+> > +static inline int crypto_pcomp_decompress_init(struct crypto_pcomp *tfm)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->decompress_init(crypto_pcomp_tfm(tfm));
+> > +}
+> > +
+> > +static inline int crypto_pcomp_decompress_update(struct crypto_pcomp *tfm,
+> > +                                                struct comp_request *req)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->decompress_update(crypto_pcomp_tfm(tfm),
+> > +                                                       req);
+> > +}
+> > +
+> > +static inline int crypto_pcomp_decompress_final(struct crypto_pcomp *tfm,
+> > +                                               struct comp_request *req)
+> > +{
+> > +       return crypto_pcomp_alg(tfm)->decompress_final(crypto_pcomp_tfm(tfm),
+> > +                                                      req);
+> > +}
 > 
-> It is not solvable in the core. How do you find out that the "nobody
-> cared" spurious IRQ is benign?
+> Can you please use expressive but short names ?
 
-Sorry, I'm not suggesting that you can.  I was just trying to clarify
-that the problem is not with calling an ISR twice, but I think I only
-managed to muddy the discussion to no benefit.
+I admit they're quite long. But they're similar to the ones in use for the
+already existing crypto modules.
 
-Bjorn
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
