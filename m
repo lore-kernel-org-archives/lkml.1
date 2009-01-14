@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbZANMqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762411AbZANMun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762321AbZANMqx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 07:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbZANMqp
+	id S1762411AbZANMun (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 07:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZANMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 07:46:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35626 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752886AbZANMqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 07:46:44 -0500
-X-Authenticated: #6028172
-X-Provags-ID: V01U2FsdGVkX18nHupUuVMn/ujz5zWns9pmevn38VTs+wj2jPo5UA
-	NdxeZKomHdYiou
-Message-ID: <496DDED0.9020004@gmx.de>
-Date: Wed, 14 Jan 2009 13:47:12 +0100
-From: Dieter Ries <clip2@gmx.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc1 does not boot
-References: <496A085E.8020604@gmx.de> <8db1092f0901120322x5e453fd0x61a78cc1a55982aa@mail.gmail.com> <20090112112608.GB19388@elte.hu> <200901141146.04563.rusty@rustcorp.com.au>
-In-Reply-To: <200901141146.04563.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 Jan 2009 07:50:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60327 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbZANMua (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 07:50:30 -0500
+Subject: Re: deadlocks if use htb
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Denys Fedoryschenko <denys@visp.net.lb>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, Chris Caputo <ccaputo@alt.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <200901141417.58667.denys@visp.net.lb>
+References: <20081010090426.GA6054@ff.dom.local>
+	 <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
+	 <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 13:50:04 +0100
+Message-Id: <1231937404.14825.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-
-Rusty Russell schrieb:
-> How about this instead of reverting?
-> Rusty.
+On Wed, 2009-01-14 at 14:17 +0200, Denys Fedoryschenko wrote:
+> I will try that patches too, when i got this message, after 3 minutes i got 
+> crash of my router :-) after working around 17 hours :-(
+> There is 3 of them by the way, 2 fixes also.
 > 
-> fix: use smp_call_function_single() not work_on_cpu in acpi-cpufreq.c
-> 
-> get_measured_perf() gets called through twisty chains, and
-> work_on_cpu() has issues being called here as it takes the cpu hotplug
-> lock.
-> 
-> So we just use smp_call_function_single() which should work fine for
-> this case.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
+> hrtimer: removing all ur callback modes
+> hrtimer: removing all ur callback modes, fix hotplug
+> hrtimer: removing all ur callback modes, fix
 
+I'm afraid its a bit more than that:
 
-I just applied that patch and tried it, but it does not work. The
-stacktrace seems to be the same as before, but I cannot say it 100% for
-sure, as I dont have my netconsole machine here.
+ca109491f612aab5c8152207631c0444f63da97f
+37810659ea7d9572c5ac284ade272f806ef8f788
+a0a99b227da57f81319dd239bc4de811b0f530ec
+b2e3c0adec918ea22b6c9d7c76193dd3aaba9bd4
+8bdec955b0da2ffbd10eb9b200651dd1f9e366f2
+d5fd43c4ae04523e1dcd7794f9c511b289851350
+731a55ba0f17064f85903b7bf8e24849ec6cfa20
+a6037b61c2f5fc99c57c15b26d7cfa58bbb34008
+e3f1d883740b09e5116d4d4e30a6a6987264a83c
+82c5b7b527ccc4b5d3cf832437e842f9d2920a79
 
-I can send the trace in the late afternoon, when I am home.
+and
 
+6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
 
-cu
+Also, all this is rather invasive and large, so I'm not sure it will
+meet the -stable criteria.
 
-Dieter
