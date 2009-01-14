@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbZANMZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbZANM1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762284AbZANMZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 07:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZANMZo
+	id S1762186AbZANM1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 07:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZANM07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 07:25:44 -0500
-Received: from hosting.visp.net.lb ([194.146.153.11]:58099 "EHLO
-	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754367AbZANMZl (ORCPT
+	Wed, 14 Jan 2009 07:26:59 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:52738 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755142AbZANM06 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 07:25:41 -0500
-X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 07:25:41 EST
-From: Denys Fedoryschenko <denys@visp.net.lb>
-Organization: VISP
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: deadlocks if use htb
-Date: Wed, 14 Jan 2009 14:17:58 +0200
-User-Agent: KMail/1.9.9
-Cc: Chris Caputo <ccaputo@alt.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <20081010090426.GA6054@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local>
-In-Reply-To: <20090114063909.GA4234@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 07:26:58 -0500
+Message-Id: <496DE847.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 14 Jan 2009 12:27:35 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fully honor "nolapic"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200901141417.58667.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I will try that patches too, when i got this message, after 3 minutes i got 
-crash of my router :-) after working around 17 hours :-(
-There is 3 of them by the way, 2 fixes also.
+"nolapic" should not only suppress SMP and use of the LAPIC, but it
+also ought to have the effect of disabling all IO-APIC related activity
+as well as PCI MSI and HT-IRQs.
 
-hrtimer: removing all ur callback modes
-hrtimer: removing all ur callback modes, fix hotplug
-hrtimer: removing all ur callback modes, fix
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-On Wednesday 14 January 2009 08:39:09 Jarek Poplawski wrote:
-> On Wed, Jan 14, 2009 at 02:43:13AM +0000, Chris Caputo wrote:
-> ...
->
-> > Per Jarek's suggestion in bugzilla, I ran 2.6.28 plus Peter Zijlstra's
-> > "hrtimer: removing all ur callback modes" patches dated 2008-11-25,
-> > 2008-12-04 and 2008-12-08.  Uptime was 2 days 22 hours before I hit what
-> > appears to be an unrelated bug related to the IPv6 FIB.  (Separately
-> > reported with subject 'panic with 2.6.28 while doing "ip -6 route"'.)
->
-> Chris, this is a very good news, thanks for testing this!
->
-> Peter, great work! IMHO these patches should go to the stable (at
-> least 2.6.28).
->
-> Thanks,
-> Jarek P.
+---
+ arch/x86/kernel/apic.c    |    7 ++++++-
+ arch/x86/kernel/io_apic.c |    6 ++++++
+ arch/x86/kernel/smpboot.c |    1 +
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+--- linux-2.6.29-rc1/arch/x86/kernel/apic.c	2009-01-14 11:36:05.000000000 +0100
++++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/apic.c	2009-01-13 14:57:59.000000000 +0100
+@@ -1125,6 +1125,11 @@ void __cpuinit setup_local_APIC(void)
+ 	unsigned int value;
+ 	int i, j;
+ 
++	if (disable_apic) {
++		disable_ioapic_setup();
++		return;
++	}
++
+ #ifdef CONFIG_X86_32
+ 	/* Pound the ESR really hard over the head with a big hammer - mbligh */
+ 	if (lapic_is_integrated() && esr_disable) {
+@@ -1565,11 +1570,11 @@ int apic_version[MAX_APICS];
+ 
+ int __init APIC_init_uniprocessor(void)
+ {
+-#ifdef CONFIG_X86_64
+ 	if (disable_apic) {
+ 		pr_info("Apic disabled\n");
+ 		return -1;
+ 	}
++#ifdef CONFIG_X86_64
+ 	if (!cpu_has_apic) {
+ 		disable_apic = 1;
+ 		pr_info("Apic disabled by BIOS\n");
+--- linux-2.6.29-rc1/arch/x86/kernel/io_apic.c	2009-01-14 11:36:05.000000000 +0100
++++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/io_apic.c	2009-01-13 15:05:37.000000000 +0100
+@@ -3258,6 +3258,9 @@ static int msi_compose_msg(struct pci_de
+ 	int err;
+ 	unsigned dest;
+ 
++	if (disable_apic)
++		return -ENXIO;
++
+ 	cfg = irq_cfg(irq);
+ 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
+ 	if (err)
+@@ -3726,6 +3729,9 @@ int arch_setup_ht_irq(unsigned int irq, 
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 
++	if (disable_apic)
++		return -ENXIO;
++
+ 	cfg = irq_cfg(irq);
+ 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
+ 	if (!err) {
+--- linux-2.6.29-rc1/arch/x86/kernel/smpboot.c	2009-01-14 11:36:05.000000000 +0100
++++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/smpboot.c	2009-01-14 09:14:16.000000000 +0100
+@@ -1125,6 +1125,7 @@ static int __init smp_sanity_check(unsig
+ 		printk(KERN_ERR "... forcing use of dummy APIC emulation."
+ 				"(tell your hw vendor)\n");
+ 		smpboot_clear_io_apic();
++		disable_ioapic_setup();
+ 		return -1;
+ 	}
+ 
+
 
 
