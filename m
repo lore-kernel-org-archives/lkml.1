@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763783AbZANP7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbZANQAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763783AbZANP7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763647AbZANP70
+	id S1763906AbZANQAN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763715AbZANP7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:59:26 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59643 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763642AbZANP7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:59:25 -0500
-Date: Wed, 14 Jan 2009 16:59:23 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090114155923.GC1616@wotan.suse.de>
-References: <20090114090449.GE2942@wotan.suse.de> <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com> <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de> <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 Jan 2009 10:59:38 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:7701 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756711AbZANP7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 10:59:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YJU5irDxSdyC/HZv6GG5tUIkJ2Dajr0unNc3zv70vIYia8J0hB3vcutZZKmWUeS9Xb
+         QoFDwIDrkX+iPpzGtfADi7CyvAvy+ceb/Xq3BB9gJCzFlMHjJF7wwDjgM5IDA+iNr4ZZ
+         Wth5jsoqJyxcYSfD8PlTBfSk6vRwD0th57xNI=
+MIME-Version: 1.0
+In-Reply-To: <20090114153825.GB32082@uranus.ravnborg.org>
+References: <1231836016.3212.41.camel@jaswinder.satnam>
+	 <Pine.LNX.4.64.0901140954250.27308@anakin>
+	 <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com>
+	 <20090114153825.GB32082@uranus.ravnborg.org>
+Date: Wed, 14 Jan 2009 21:29:35 +0530
+Message-ID: <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com>
+Subject: Re: [PULL -tip] fixed few make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 05:30:48PM +0200, Pekka Enberg wrote:
-> Hi Nick,
-> 
-> On Wed, Jan 14, 2009 at 5:22 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > And... IIRC, the Intel guys did make a stink but it wasn't considered
-> > so important or worthwhile to fix for some reason? Anyway, the fact is
-> > that it hadn't been fixed in SLUB. Hmm, I guess it is a significant
-> > failure of SLUB that it hasn't managed to replace SLAB by this point.
-> 
-> Again, not speaking for Christoph, but *I* do consider the regression
-> to be important and I do want it to be fixed. I have asked for a test
-> case to reproduce the regression and/or oprofile reports but have yet
-> to receive them. I did fix one regression I saw with the fio benchmark
-> but unfortunately it wasn't the same regression the Intel guys are
-> hitting. I suppose we're in limbo now because the people who are
-> affected by the regression can simply turn on CONFIG_SLAB.
+Hello Sam,
 
-Mmm. SLES11 will ship with CONFIG_SLAB, FWIW. No I actually didn't
-make any input into the decision. And I have mixed feelings about
-that because there are places where SLAB is better.
+On Wed, Jan 14, 2009 at 9:08 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+>> >
 
-But I must say that SLAB seems to be a really good allocator, and
-outside of some types of microbenchmarks where it would sometimes
-be much slower than SLAB, SLAB was often my main performance competitor
-and often very hard to match with SLQB, let alone beat. That's not
-to say SLUB wasn't also often the faster of the two, but I was
-surprised at how good SLAB is.
+>
+> I appreciate your work but I will like to question the approach.
 
- 
-> In any case, I do agree that the inability to replace SLAB with SLUB
-> is a failure on the latter. I'm just not totally convinced that it's
-> because the SLUB code is unfixable ;).
+My approach was:
+"PATCH should solve a problem per file", like:
+ capability.h: extern's make no sense in userspace
+ coda_psdev.h: extern's make no sense in userspace
+ in6.h: extern's make no sense in userspace
+ nubus.h: extern's make no sense in userspace
+ socket.h: extern's make no sense in userspace
 
-Well if you would like to consider SLQB as a fix for SLUB, that's
-fine by me ;) Actually I guess it is a valid way to look at the problem:
-SLQB solves the OLTP regression, so the only question is "what is the
-downside of it?".
+But this warnings was in many files:
+ include of <linux/types.h> is preferred over <asm/types.h> : 15 files
+ found __[us]{8,16,32,64} type without #include <linux/types.h> : 52 files
 
+So in place of making 15 + 52 = 67 patches, I made 2 patches for each warning.
 
+> We should rather take the warnings as an indication that this
+> file needs to be looked over and fix not only the warnings
+> reported but rater to fix all the questionable issues on a file-by-file basis.
 
+Should I make 67 patches ?
+
+--
+JSR
