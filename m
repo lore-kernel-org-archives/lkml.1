@@ -1,104 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZANAxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbZANAx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbZANAxX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZANAxO
+	id S1759391AbZANAx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZANAxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:53:14 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:48917 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbZANAxM (ORCPT
+	Tue, 13 Jan 2009 19:53:48 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:37407 "EHLO
+	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754008AbZANAxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:53:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=h9/WwDugw+tiU8Kroj3MIAZKzGlNes15XBCIMTUguyRzcZdcZQny0yNAm0nfwSis9s
-         U0crJF8o5P+XAJzzPryVZWK2pLDxf02sy5MHFKTfQiVIoz2h0sh2QnB5HuhSqacMhLO/
-         LROAk5m/pqauMa6X+P9oDLuZiYnyaIrerPk9s=
-Message-ID: <cfd18e0f0901131653y76a827b5i906fadce63ada56b@mail.gmail.com>
-Date: Wed, 14 Jan 2009 13:53:10 +1300
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
-Cc: "Roland McGrath" <roland@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
+	Tue, 13 Jan 2009 19:53:47 -0500
+Date: Wed, 14 Jan 2009 03:53:45 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: David Rientjes <rientjes@google.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090114005345.GB1705@ioremap.net>
+References: <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net> <alpine.DEB.2.00.0901131459001.22290@chino.kir.corp.google.com> <20090113233502.GA31490@ioremap.net> <alpine.DEB.2.00.0901131539050.30953@chino.kir.corp.google.com> <20090113235529.GB32190@ioremap.net> <alpine.DEB.2.00.0901131622530.25707@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
-	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
-	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
-	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
-	 <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
+In-Reply-To: <alpine.DEB.2.00.0901131622530.25707@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 1:33 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Tue, 13 Jan 2009, Roland McGrath wrote:
->>
->> It's always been invalid to call waitid() with a NULL pointer.  It was an
->> oversight that it was allowed (and acts like a wait4() call instead).
->
-> I'm not going to take this.
->
-> If it was some new system call, of if there was some downside to out
-> behavior, I might be interested. As it is, our behaviour has zero
-> downside, and changing existing interfaces simply isn't worth it.
+On Tue, Jan 13, 2009 at 04:32:41PM -0800, David Rientjes (rientjes@google.com) wrote:
+> > Out of curiousity, how feature can be used, if no one except hardcore
+> > kernel hackers know how to work with it? I do not insult, no, I'm really
+> > curious. This may explain, why admins I worked with about this issue did
+> > not fully succeeded with tuning.
+> 
+> You read the code.
 
-It has zero downside for *us*.  But it is yet another example of Linux
-littering the Unix landscape with unnecessary inconsistencies that
-application writers must deal with.  That's a downside for the app
-writers.  (But, given how long the existing behavior has been in the
-wild, my argument here is somewhat academic...)
+Not the best solution actually and at least not the simplest :)
 
-> The alleged "downsides" are bogus:
->
->  - POSIX is not that strict.
+> You're treating each oom constraint like they are on the same; in a 
+> cpuset-constrained oom, which can be much more common than system-wide 
+> unconstrained ooms, we want to target a task that will allow for future 
+> memory freeing in that cpuset.
 
-Well, POSIX.1-2001 is fairly clear:
+I do not break the way oom problem is addressed currently. I just
+extend it from the different angle, which can not be resolved in some
+cases. Those who do not need the feature, can safely disable the check
+and rely on the old algorithms.
 
-      The  application shall ensure that the infop argument points to
-      a siginfo_t structure.
+What you are talking here is a different problem. Completely different
+case. We may have the problem case you described, and we will think on
+how to resolve the issue, but approach used in the patch does not
+enforce the new policy, it extends it adding new global tunable.
 
-(Admittedly, this is a requirement imposed on the application, rather
-than the implementation, but the standard goes on to say that the
-implemenation shall fill in the structure pointed to by infop.)
+> So in these cases, to avoid needlessly killing your victim, you would be 
+> forced to set oom_victim_name to NULL.  That's hardly useful if the same 
+> problem you're trying to fix still exists both globally and within a 
+> cpuset.  Your patch doesn't address this use case, so it's already 
+> incomplete.
 
-Cheers,
+Incorrect point of view. If administrator wants to select victim task by
+name, this patch allows this. If he does not want this, it is turned
+off. There are perfectly split areas where each approach applies: global
+name-based selection and more specific to the areas where problem
+arises.
 
-Michael
+> In a mempolicy-constrained oom as the result of MPOL_BIND, which can also 
+> be much more common than system-wide unconstrained ooms, we want to target 
+> current because it has allocations from the bound nodes.  Your patch 
+> doesn't touch this path, so it's already inconsistent.
 
->   EFAULT is one of the odd error cases anyway,
->   and even explicit requirements are irrelevant: if somebody wants to get
->   strict conformance paperwork done, you just need to tell where you
->   differ, and you're basically done. But perhaps more important, nobody
->   cares.
->
->  - The "portability" argument is totally bogus, since it's not like you
->   compile programs without even testing to another UNIX _anyway_.
->
-> So I'm simply not going to potentially break binaries over something that
-> is so _totally_ irrelevant. Document it in the man-page instead.
+And again wrong conclusion: patch is intended to work in the area it was
+created for. It is the simplest (and the only btw) solution for the showed
+problem. In the systems where it is not needed, it will not be used and
+old algorithms will work fine, apparently since no one proposed it
+before, other areas work ok without it. While the problem (quite common
+actually) I showed was not addressed at all and all proposed solutions
+just failed if we start checking requrements more precisely.
 
-Well, that's doable of course.
+> I'm comfortable that this patch will not be merged, so I'll silently point 
+> to past posts for the duration of this thread.  I definitely think the 
+> documentation can be improved and I don't think you'll have any opposition 
+> to sane heuristic changes that also rely on userspace input via 
+> /proc/pid/oom_adj.  Thank you for working on this!
+
+So you agree that no existing solution can solve the oom problem when
+parent task has to stay and children have to be differentiated. And
+agree that not merging the solution for this commonly happened problem
+is the right way. And while we can reread the whole thread multiple
+times, we will find again and again that proposed approaches do not
+work. This patch does its simple task without breaking others and in the
+systems where this feature is not needed, it can be safely turned off,
+while still fixing the problem for those who care.
+
+I will update documentation tomorrow if there will be no patches.
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+	Evgeniy Polyakov
