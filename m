@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762759AbZANPof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbZANPrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762759AbZANPof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZANPoX
+	id S1762886AbZANPrV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZANPrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:44:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54039 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751268AbZANPoU (ORCPT
+	Wed, 14 Jan 2009 10:47:08 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:42345 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753540AbZANPrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:44:20 -0500
-Date: Wed, 14 Jan 2009 07:43:02 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-In-Reply-To: <20090114112158.GA8625@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901140739110.6528@localhost.localdomain>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
- <1231867314.7141.16.camel@twins> <1231901899.1709.18.camel@think.oraclecorp.com> <20090114112158.GA8625@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 14 Jan 2009 10:47:07 -0500
+Date: Wed, 14 Jan 2009 10:47:05 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: A really interesting mass-storage BUG introduced after 2.6.18
+In-Reply-To: <496C7AC9.3040303@pardus.org.tr>
+Message-ID: <Pine.LNX.4.44L0.0901141041070.2192-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Jan 2009, [UTF-8] Ozan Çağlayan wrote:
 
+> Here's the usbmon log:
+...
 
-On Wed, 14 Jan 2009, Ingo Molnar wrote:
+Here's the interesting part, right at the end of the log:
 
-> 
-> * Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> > v10 is better that not spinning, but its in the 5-10% range.  So, I've 
-> > been trying to find ways to close the gap, just to understand exactly 
-> > where it is different.
-> > 
-> > If I take out:
-> > 	/*
-> > 	 * If there are pending waiters, join them.
-> > 	 */
-> > 	if (!list_empty(&lock->wait_list))
-> > 		break;
-> > 
-> > 
-> > v10 pops dbench 50 up to 1800MB/s.  The other tests soundly beat my 
-> > spinning and aren't less fair.  But clearly this isn't a good solution.
-> 
-> i think since we already decided that it's ok to be somewhat unfair (_all_ 
-> batching constructs introduce unfairness, so the question is never 'should 
-> we?' but 'by how much?'), we should just take this out and enjoy the speed 
+> ee5f0e80 2495844993 S Bo:1:011:1 -115 31 = 55534243 02000000 00000000 00000600 00000000 00000000 00000000 000000
+> ee5f0e80 2495845078 C Bo:1:011:1 0 31 >
+> ee5f0e80 2495845112 S Bi:1:011:2 -115 13 <
+> ee5f0e80 2495845327 C Bi:1:011:2 0 13 = 55534253 02000000 00000000 01
+> ee5f0e80 2495845338 S Bo:1:011:1 -115 31 = 55534243 03000000 12000000 80000603 00000012 00000000 00000000 000000
+> ee5f0e80 2495845579 C Bo:1:011:1 0 31 >
+> ee4d7280 2495845595 S Bi:1:011:2 -115 18 <
+> ee4d7280 2495845829 C Bi:1:011:2 0 18 = 70000600 0000000a 00000000 3a000000 0000
+> ee5f0e80 2495845850 S Bi:1:011:2 -115 13 <
+> ee5f0e80 2495845955 C Bi:1:011:2 0 13 = 55534253 03000000 00000000 00
 
-Yeah, let's just do it. It's going to be unfair, but let's see if the 
-unfairness is going to actually be noticeable in real life. I suspect it 
-isn't, and if it is, we can look at it again and see if there are other 
-approaches.
+This shows the computer sending a TEST UNIT READY command to the drive, 
+and the drive reporting Unit Attention: Media not present.  So of 
+course Linux believes there is no media loaded in the drive and doesn't 
+try to read the partition table or anything else.
 
-If it makes _that_ much of a difference on dbench, it's worth being unfair 
-even if it's just for some dubious benchmark.
+Presumably if the drive is plugged in during bootup then the BIOS does 
+something to make this error status go away.  It's hard to guess what 
+that would be, however.
 
-			Linus
+Alan Stern
+
