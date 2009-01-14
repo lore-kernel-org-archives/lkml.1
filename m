@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763515AbZANPsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761724AbZANPxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763515AbZANPsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZANPsN
+	id S1761724AbZANPxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbZANPx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:48:13 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:34891 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbZANPsM (ORCPT
+	Wed, 14 Jan 2009 10:53:26 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:13406 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbZANPxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:48:12 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Stefan Assmann <sassmann@suse.de>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot interrupt equivalent
-Date: Wed, 14 Jan 2009 08:48:07 -0700
-User-Agent: KMail/1.9.10
-Cc: Shaohua Li <shaohua.li@intel.com>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Sven Dietrich <sdietrich@novell.com>
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <20090113082513.GA18449@sli10-desk.sh.intel.com> <496DB702.40302@suse.de>
-In-Reply-To: <496DB702.40302@suse.de>
+	Wed, 14 Jan 2009 10:53:25 -0500
+Message-ID: <496E0A73.9030903@hp.com>
+Date: Wed, 14 Jan 2009 10:53:23 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Pierre Habouzit <pierre.habouzit@intersec.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sctp: if backlog is 0, listening shall not be deactivated.
+References: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>	<496DE5ED.8030609@hp.com>	<20090114132124.15b68481@lxorguk.ukuu.org.uk>	<496DEA60.2080700@hp.com> <20090114152133.675da27b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090114152133.675da27b@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901140848.08531.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 January 2009 02:57:22 am Stefan Assmann wrote:
-> Shaohua Li wrote:
-> > So a device can generate interrupt from two irqs. And we can get the irq
-> > number for the routing table. Can we extend the irq mechanism and
-> > automatically register the interrupt handler for the two irqs?
+Alan Cox wrote:
+>> SCTP API simply chooses to ignore the "may".  It is still fully compliant
+>> with POSIX in this regard.
 > 
-> This would not solve the problem of asserting 2 different interrupt
-> lines, in the masked interrupt handling case, for 1 interrupt request.
-> The result would be that the ISR is called twice and at the second call
-> you can't be sure that the device hasn't already been serviced.
+> Linux chooses the interpretation that zero means one connection. Having a
+> single protocol variant do different things is not nice because  a lot
+> of code is designed to handle multiple address families and expect the
+> same non address handling behaviour.
+> 
+> So while it may be able to claim posix compliance, its not Linux
+> behaviour, and its relying on a specific interpretation of posix not
+> being used by the OS.
+> 
+> At the very least the current behaviour of the SCTP code is plain rude.
+> 
 
-Calling the ISR twice isn't a problem, is it?  We're talking about
-PCI interrupts, which are shareable, so ISRs have to handle being
-called extra times.
+I will submit a requirest to change this behavior in the spec, but I am not
+terribly optimistic.  This has been specified for a very long time and there
+might be applications taking advantage of the ability to shut listing off.
 
-There's still the problem that the core will disable an IRQ if we
-take it too many times without any ISR that cares about it.  But that's
-a core issue, not an ISR issue.
+At this time, let's leave this as is.  A well written application should specify
+the listen backlog anyway, otherwise it's depending on the "may" language in the
+Posix spec and will not get consistent behavior across different systems.
 
-Bjorn
+-vlad
