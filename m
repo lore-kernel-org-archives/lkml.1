@@ -1,135 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZANVfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZANVgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbZANVfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZANVfc
+	id S1758873AbZANVgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZANVgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:35:32 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:51222 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbZANVfb (ORCPT
+	Wed, 14 Jan 2009 16:36:22 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:29536 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbZANVgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:35:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=hGslpHUMdK8LJmMiCP3fL1cAnbp9tZAXDneli8mm+pmT4pVdL95bDDPCew1OQaHZOT
-         hqHWr7PwFf5esJwM3EkUZg89xdhh8etyZbxa6nn4ddlcT81db50i+BCPZuw+jV2eB25U
-         +TQG/8oUpykrnJkUtuv/bhuh3vt3rM2MOXbQ4=
-Message-ID: <496E5A9D.3050105@gmail.com>
-Date: Wed, 14 Jan 2009 13:35:25 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       SE-Linux <selinux@tycho.nsa.gov>
-Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
-References: <496D759A.7010401@gmail.com> <496E21B3.3070206@gmail.com> <200901141504.30674.paul.moore@hp.com> <200901141508.58174.paul.moore@hp.com>
-In-Reply-To: <200901141508.58174.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Jan 2009 16:36:21 -0500
+Date: Wed, 14 Jan 2009 13:34:44 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Matthias Andree <matthias.andree@gmx.de>
+Subject: Re: [take2] OOM documentation update [was: Linux killed Kenny,
+ bastard!]
+Message-Id: <20090114133444.f85b1dc7.randy.dunlap@oracle.com>
+In-Reply-To: <20090114170606.GB12102@ioremap.net>
+References: <20090112155108.2646b3ae@lxorguk.ukuu.org.uk>
+	<20090113135246.GA29251@ioremap.net>
+	<20090113140627.507f15e1@lxorguk.ukuu.org.uk>
+	<20090113142423.GA30710@ioremap.net>
+	<661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com>
+	<20090113152106.GA1134@ioremap.net>
+	<alpine.DEB.2.00.0901131140340.8522@chino.kir.corp.google.com>
+	<20090113213316.GB27227@ioremap.net>
+	<alpine.DEB.2.00.0901131336040.17683@chino.kir.corp.google.com>
+	<20090114161225.GA9584@ioremap.net>
+	<20090114170606.GB12102@ioremap.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.496E5A79.0271:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Wednesday 14 January 2009 3:04:30 pm Paul Moore wrote:
->   
->> On Wednesday 14 January 2009 12:32:35 pm Justin P. Mattock wrote:
->>     
->
-> ...
->
->   
->>>>> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
->>>>> the o.s. is ubuntu jaunty, the netlabel_tools is the same as
->>>>> above. the only results I see out of this is the avc's it's
->>>>> generating (the allow rules above are from the macbook);
->>>>> some reason the dell doesn't generate any avc's,
->>>>> which makes me wonder is this a module issue.
->>>>>           
->>>> Huh.  Just so I'm clear on this ... on the macbook you see avc
->>>> denials that correspond to the allow rules you posted above, but
->>>> on the dell you don't see the same avc denials?  Are you running
->>>> the same SELinux policy on both systems (version numbers)?  What
->>>> is the output of the following command on both systems?
->>>>
->>>>  # cat /selinux/policy_capabilities/network_peer_controls
->>>>         
->>> for both systems I'm running the refpolicy(svn) from tresys.
->>> the new ubac options, and newrole mechanism etc..
->>> doing cat /selinux/policy_capabilities_netowork_peer_controls says
->>> "1" should be for both.
->>>       
->> Ahhhh!  How did that happen?!  (see my response to your other email)
->>     
->
-> Sorry, just realized your other email was private.  In case anyone else 
-> is following this thread, the SELinux policy for network_peer_controls 
-> policy capability is still a work in progress and is disabled by 
-> default because there are still a few issues remaining.  Disabling the 
-> network_peer_controls (the default configuration) fixed the problem.
->
->   
-Cool, that's what I figured when looking at cipsov4.
-As for the namespace term(yeah I don't know the term; ahh different
-domain's or mappings I think);
-Anyways heres what I'm trying to achieve:
+On Wed, 14 Jan 2009 20:06:06 +0300 Evgeniy Polyakov wrote:
 
-default looks like this:
-Configured NetLabel domain mappings(1)
-domain: DEFAULT
-    protocol: UNLABELED
+> Updated version fixes some errors and extends description by adding
+> swapping and children relation explaintaion.
+> 
+> Signed.
 
-I want to try and have three of these for the
-different types of media:
-(in theory)
-Configured NetLabel domain mappings(3)
-domain:radio
-   protocol: UNLABELED
-domain:T.V.
-   protocol: UNLABELED
-domain:web
-   protocol: UNLABELED
-(and if possible three different tags(either 1,2,5), but probably can
-only do that with cipsov4);
+??
 
-heres what I've come up with so far:
+> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+> index d105eb4..4aa1918 100644
+> --- a/Documentation/filesystems/proc.txt
+> +++ b/Documentation/filesystems/proc.txt
+> @@ -2311,6 +2311,33 @@ increase the likelihood of this process being killed by the oom-killer.  Valid
+>  values are in the range -16 to +15, plus the special value -17, which disables
+>  oom-killing altogether for this process.
+>  
+> +The process to be killed in an out-of-memory situation is selected among all others
+> +based on its badness score. This value equals the original memory size of the process
+> +originally and is then updated according to its CPU time (utime + stime) and the
 
-netlabelctl -p map del default
+drop "originally" since earlier part of sentence says "original memory size".
 
-netlabelctl unlbl add domain:radio interface:wlan0 address:<myadd> 
-label:system_u:object_r:netlabel_peer_t:s0
-netlabelctl unlbl add domain:radio interface:wlan0 address:<radioadd> 
-label:system_u:object_r:netlabel_peer_t:s0
+> +run time (uptime - start time). The longer it runs the smaller is the score.
+> +Badness score is divided by the square root of the cpu time and then by
 
-netlabelctl unlbl add domain:T.V. interface:wlan0 address:<myadd> 
-label:system_u:object_r:netlabel_peer_t:s0
-netlabelctl unlbl add domain:T.V. interface:wlan0 address:<t.v.add> 
-label:system_u:object_r:netlabel_peer_t:s0
+                                                      CPU
 
-As for the new capabilities, I don't mind trying that out when
-the time comes(but first I need to figure the this out before any other 
-ways);
+> +the double square root of the run time.
+> +
+> +Swapped out tasks are killed first. Half of each child's memory size is added to
+> +the parent's score if they do not share the same memory. Thus forking servers
+> +are the prime candidates to be killed. Having only one 'hungry' child will make
+> +parent less preferable than the child.
+> +
+> +/proc/<pid>/oom_score shows process' current badness score.
+> +
+> +The following heuristics are then applied:
+> + * if the task was reniced, its score doubles
+> + * superuser or direct hardware access tasks (CAP_SYS_ADMIN, CAP_SYS_RESOURCE
+> + 	or CAP_SYS_RAWIO) have their score divided by 4
+> + * if oom condition happened in one cpuset and checked task does not belong
+> + 	to it, its score is divided by 8
+> + * resulted score is multiplied by the two in the power of oom_adj when it is
 
-here is what the error looks like:
+confusing.  Is this:    multiplied by two to the power of oom_adj when it is ... ?
 
-netlabel_tools-0.19# make
-INFO: creating the version header file
-.: 10: version_info: not found
-make: *** [include/version.h] Error 2
-
-(googling for the missing package results in a bunch of
-hits on "just do a uname -r");
-
-In any case using the default, and then just adding
-addresses is probably fine for the time being.
-
-regards;
-
-Justin P. Mattock
+> + 	positive, and divided otherwise, i.e.
+> +	points <<= oom_adj when it is positive and
+> +	points >>= oom_adj otherwise
+> +
+> +The task with the highest badness score is then killed.
+> +
+>  2.13 /proc/<pid>/oom_score - Display current oom-killer score
+>  -------------------------------------------------------------
 
 
-
+---
+~Randy
