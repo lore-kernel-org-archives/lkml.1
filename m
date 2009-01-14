@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZANKeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZANKfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZANKeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZANKeD
+	id S1754261AbZANKfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZANKfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:34:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:48743 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbZANKeB (ORCPT
+	Wed, 14 Jan 2009 05:35:04 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:50898 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753918AbZANKfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:34:01 -0500
-MIME-Version: 1.0
-In-Reply-To: <1231926744.11907.12.camel@skunk>
-References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel>
-	 <1231926744.11907.12.camel@skunk>
-Date: Wed, 14 Jan 2009 11:34:00 +0100
-Message-ID: <ac3eb2510901140234m29ca516bocd0e7dd997122a7b@mail.gmail.com>
-Subject: Re: linux kernel without file system
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Philippe De Muyter <phdm@macqel.be>, Tomasz Chmielewski <mangoo@wpkg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 14 Jan 2009 05:35:03 -0500
+Date: Wed, 14 Jan 2009 11:34:50 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] async: Handle kthread_run() return codes.
+Message-ID: <20090114113450.66769432@gondolin>
+In-Reply-To: <20090113203434.7094dd60@infradead.org>
+References: <20090113174304.2186532c@gondolin>
+	<20090113203434.7094dd60@infradead.org>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 10:52, Xavier Bestel <xavier.bestel@free.fr> wrote:
-> On Wed, 2009-01-14 at 10:34 +0100, Philippe De Muyter wrote:
->> On Wed, Jan 14, 2009 at 09:46:48AM +0100, Tomasz Chmielewski wrote:
->> >> I need to design a very small embedded system that must only control
->> >> one ethernet port and two serial lines and must fit in a very small flash
->> >> memory.  So I thought about replacing the call to /etc/init by my
->> >> application
->> >> program and removing all the file-system part of linux.
->> >> Is that doable ?
->> >> Is there a 'standard' way of doing that ?
->> >> The first problem I see is accessing my serial lines.  How could I do that
->> >> without using open("/dev/ttySx"), which requires a file system ?
->> >> Is there a way to access devices that does not require a file-system ?
->> >
->> > You could put everything in initramfs (and embed it in the kernel).
->>
->> Actually, I was thinking about reducing the footprint of my kernel by
->> removing all the fs-related system calls, so the problem is not where
->> the file-system is, but how to access (serial) devices without giving their
->> "/dev/..." name.
->
-> You can still mount sysfs somewhere and access the device nodes from
-> there.
+On Tue, 13 Jan 2009 20:34:34 +0000,
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-There are no device nodes in sysfs to talk to the device, only
-attributes, which are mostly plain small text files. For some devices
-there are a few writable and mappable files which can change the
-device's state, but that's nothing like a device node.
+> >  		ec = atomic_read(&entry_count);
+> >  
+> >  		while (tc < ec && tc < MAX_THREADS) {
+> > -			kthread_run(async_thread, NULL, "async/%i",
+> > tc);
+> > +			if (IS_ERR(kthread_run(async_thread, NULL,
+> > "async/%i",
+> > +					       tc)))
+> > +				/* Try again later. */
+> > +				goto schedule;
+> 
+> I do not like this recovery to be honest. an msleep() followed by a
+> "continue" is probably much better.
 
-Kay
+Will change.
+
+> 
+> 
+> > @@ -330,7 +333,9 @@ static int async_manager_thread(void *un
+> >  static int __init async_init(void)
+> >  {
+> >  	if (async_enabled)
+> > -		kthread_run(async_manager_thread, NULL, "async/mgr");
+> > +		if (IS_ERR(kthread_run(async_manager_thread, NULL,
+> > +				       "async/mgr")))
+> > +			async_enabled = 0;
+> 
+> hmm maybe; it might make more sense to set it to 0 here, and have the
+> thread itself set the variable to 1..... that way we KNOW the thread is
+> running for sure..
+
+That would look a bit strange to me.
+
+setup_async sets async_enabled -> async_init unsets it again ->
+async_manager_thread sets it again
+
+If anything, we could use two variables (use_async and async_enabled),
+but that smells of overengeneering to me...
