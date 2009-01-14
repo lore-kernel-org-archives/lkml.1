@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbZANT2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZANT33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbZANT2o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZANT2c
+	id S1756847AbZANT33 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZANT3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:28:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36131 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753226AbZANT2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:28:31 -0500
-Date: Wed, 14 Jan 2009 20:28:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090114192811.GA19691@elte.hu>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114184746.GA21334@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 14 Jan 2009 14:29:21 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55087 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753964AbZANT3U (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:29:20 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Kyle McMartin <kyle@infradead.org>, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] module: kzalloc mod->ref
+In-Reply-To: Your message of "Wed, 14 Jan 2009 17:25:31 +0100."
+             <s5hiqoh7t38.wl%tiwai@suse.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20090114033533.GL25103@bombadil.infradead.org> <s5hmydufe3c.wl%tiwai@suse.de> <20090114155859.GO25103@bombadil.infradead.org>
+            <s5hiqoh7t38.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1231961348_3678P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 14 Jan 2009 14:29:08 -0500
+Message-ID: <24465.1231961348@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1231961348_3678P
+Content-Type: text/plain; charset=us-ascii
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 14 Jan 2009 17:25:31 +0100, Takashi Iwai said:
 
-> Latest performance figures, on a 2-socket 16-way Nehalem test-system, 
-> running the code above, measured via "test-mutex V 128 10" VFS 
-> creat+unlink scalability test on tmpfs and ext3:
-> 
->                               no-spin           spin
-> 
->  [tmpfs]    avg ops/sec:       291038         392865       (+34.9%)
->  [ext3]     avg ops/sec:       283291         435674       (+53.7%)
+> We can use nr_cpu_ids instead of NR_CPUS.
+> For a machine like 4096 CPUs, such an amount of memory is like a
+> peanut :)
 
-Btw., for historic kicks i just went back to v2.6.15-2019-gf17578d - the 
-last pre-mutexes semaphore based kernel, using the same .config.
+It's not peanuts if you're dealing with a distro kernel that's essentially
+forced to compile with NR_CPUS=<some moby integer>, but booting on a single or
+dual core system with possibly not even 1G of memory.
 
-I tracked down two bugs in it to make it boot on a Nehalem, so we can now 
-compare the above numbers against historic semaphore performance:
 
-                      [v2.6.14]     [v2.6.29]
+--==_Exmh_1231961348_3678P
+Content-Type: application/pgp-signature
 
-                      Semaphores  | Mutexes
-            ----------------------------------------------
-                                  | no-spin           spin
-                                  |
-  [tmpfs]   ops/sec:       50713  |  291038         392865       (+34.9%)
-  [ext3]    ops/sec:       45214  |  283291         435674       (+53.7%)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-A 10x macro-performance improvement on ext3, compared to 2.6.14 :-)
+iD8DBQFJbj0EcC3lWbTT17ARAjA5AKCGpPk6L06dSDQK7283sGm2i7YTLgCfZSvP
+AHb7j/86QaqZAQZo2SsqpVY=
+=ieFn
+-----END PGP SIGNATURE-----
 
-While lots of other details got changed meanwhile, i'm sure most of the 
-performance win on this particular VFS workload comes from mutexes.
-
-So i think the long mutex migration pain was definitely worth it.
-
-	Ingo
+--==_Exmh_1231961348_3678P--
