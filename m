@@ -1,46 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbZANAf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZANAhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbZANAf6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZANAft
+	id S1759504AbZANAhX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZANAhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:35:49 -0500
-Received: from netgear.net.ru ([195.178.208.66]:60362 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755079AbZANAfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:35:48 -0500
-Date: Wed, 14 Jan 2009 03:35:46 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-Message-ID: <20090114003546.GA1705@ioremap.net>
-References: <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <20090113131937.GB17664@mit.edu> <20090113133555.GA28107@ioremap.net> <496D30C3.4010905@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496D30C3.4010905@tmr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Jan 2009 19:37:06 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34283
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753240AbZANAhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:37:05 -0500
+Date: Tue, 13 Jan 2009 16:37:05 -0800 (PST)
+Message-Id: <20090113.163705.130074998.davem@davemloft.net>
+To: zbr@ioremap.net
+Cc: dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090114002252.GE512@ioremap.net>
+References: <20090114001345.GB512@ioremap.net>
+	<20090113.161625.111759506.davem@davemloft.net>
+	<20090114002252.GE512@ioremap.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 07:24:35PM -0500, Bill Davidsen (davidsen@tmr.com) wrote:
-> >So effectively oom_adj only works as enable/disable switch, and since no
-> >one knows how to tune it, it is better to do not touch at all. And get
-> >ssh killed. I believe if it is ever used then only to disable oom at
-> >all, which is wrong, since task still may be killed but after some
-> >others. My patch adds a simple priority for that based on the name of
-> >the process, which are known to the administrators who maintain given
-> >system.
-> >  
-> If nothing else, this would seem to reduce the number of processes for 
-> which the OOM coefficient of evil must be calculated.
+From: Evgeniy Polyakov <zbr@ioremap.net>
+Date: Wed, 14 Jan 2009 03:22:52 +0300
 
-Yes, it allows this.
+> On Tue, Jan 13, 2009 at 04:16:25PM -0800, David Miller (davem@davemloft.net) wrote:
+> > I wish there were some way we could make this code grab and release a
+> > reference to the SKB data area (I mean skb_shinfo(skb)->dataref) to
+> > accomplish it's goals.
+> 
+> Ugh... Clone without cloninig, but by increasing the dataref. Getting
+> that splice only needs that skb to track the head of the original, this
+> may really work.
 
--- 
-	Evgeniy Polyakov
+Here is something I scrambled together, it is largely based upon
+Jarek's patch:
+
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 5110b35..05126da 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -70,12 +70,17 @@
+ static struct kmem_cache *skbuff_head_cache __read_mostly;
+ static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+ 
++static void skb_release_data(struct sk_buff *skb);
++
+ static void sock_pipe_buf_release(struct pipe_inode_info *pipe,
+ 				  struct pipe_buffer *buf)
+ {
+ 	struct sk_buff *skb = (struct sk_buff *) buf->private;
+ 
+-	kfree_skb(skb);
++	if (skb)
++		skb_release_data(skb);
++	else
++		put_page(buf->page);
+ }
+ 
+ static void sock_pipe_buf_get(struct pipe_inode_info *pipe,
+@@ -83,7 +88,10 @@ static void sock_pipe_buf_get(struct pipe_inode_info *pipe,
+ {
+ 	struct sk_buff *skb = (struct sk_buff *) buf->private;
+ 
+-	skb_get(skb);
++	if (skb)
++		atomic_inc(&skb_shinfo(skb)->dataref);
++	else
++		get_page(buf->page);
+ }
+ 
+ static int sock_pipe_buf_steal(struct pipe_inode_info *pipe,
+@@ -1336,7 +1344,10 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+ {
+ 	struct sk_buff *skb = (struct sk_buff *) spd->partial[i].private;
+ 
+-	kfree_skb(skb);
++	if (skb)
++		skb_release_data(skb);
++	else
++		put_page(spd->pages[i]);
+ }
+ 
+ /*
+@@ -1344,7 +1355,7 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+  */
+ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+ 				unsigned int len, unsigned int offset,
+-				struct sk_buff *skb)
++				struct sk_buff *skb, int linear)
+ {
+ 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
+ 		return 1;
+@@ -1352,8 +1363,15 @@ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+ 	spd->pages[spd->nr_pages] = page;
+ 	spd->partial[spd->nr_pages].len = len;
+ 	spd->partial[spd->nr_pages].offset = offset;
+-	spd->partial[spd->nr_pages].private = (unsigned long) skb_get(skb);
++	spd->partial[spd->nr_pages].private =
++		(unsigned long) (linear ? skb : NULL);
+ 	spd->nr_pages++;
++
++	if (linear)
++		atomic_inc(&skb_shinfo(skb)->dataref);
++	else
++		get_page(page);
++
+ 	return 0;
+ }
+ 
+@@ -1369,7 +1387,7 @@ static inline void __segment_seek(struct page **page, unsigned int *poff,
+ static inline int __splice_segment(struct page *page, unsigned int poff,
+ 				   unsigned int plen, unsigned int *off,
+ 				   unsigned int *len, struct sk_buff *skb,
+-				   struct splice_pipe_desc *spd)
++				   struct splice_pipe_desc *spd, int linear)
+ {
+ 	if (!*len)
+ 		return 1;
+@@ -1392,7 +1410,7 @@ static inline int __splice_segment(struct page *page, unsigned int poff,
+ 		/* the linear region may spread across several pages  */
+ 		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
+ 
+-		if (spd_fill_page(spd, page, flen, poff, skb))
++		if (spd_fill_page(spd, page, flen, poff, skb, linear))
+ 			return 1;
+ 
+ 		__segment_seek(&page, &poff, &plen, flen);
+@@ -1419,7 +1437,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+ 	if (__splice_segment(virt_to_page(skb->data),
+ 			     (unsigned long) skb->data & (PAGE_SIZE - 1),
+ 			     skb_headlen(skb),
+-			     offset, len, skb, spd))
++			     offset, len, skb, spd, 1))
+ 		return 1;
+ 
+ 	/*
+@@ -1429,7 +1447,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+ 		const skb_frag_t *f = &skb_shinfo(skb)->frags[seg];
+ 
+ 		if (__splice_segment(f->page, f->page_offset, f->size,
+-				     offset, len, skb, spd))
++				     offset, len, skb, spd, 0))
+ 			return 1;
+ 	}
+ 
