@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbZANIX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZANIYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbZANIX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZANIXt
+	id S1756510AbZANIYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZANIXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:23:49 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:59982 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753305AbZANIXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:23:48 -0500
-Date: Wed, 14 Jan 2009 19:23:44 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: Use cryptd(%s) as cryptd-ed algorithm name instead of %s
-Message-ID: <20090114082344.GA16692@gondor.apana.org.au>
-References: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com> <20090114065359.GA16044@gondor.apana.org.au> <1231916511.5937.151.camel@yhuang-dev.sh.intel.com>
+	Wed, 14 Jan 2009 03:23:52 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:42449 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755655AbZANIXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 03:23:51 -0500
+Message-ID: <496DA0FF.2060206@knaff.lu>
+Date: Wed, 14 Jan 2009 09:23:27 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231916511.5937.151.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: The policy on initramfs decompression failure
+References: <496D17F9.8080605@zytor.com> <496D20FB.5010307@knaff.lu> <20090114054022.GA11153@elte.hu> <496D8E0D.5090401@knaff.lu> <20090114074852.GB16274@elte.hu>
+In-Reply-To: <20090114074852.GB16274@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:01:51PM +0800, Huang Ying wrote:
+Ingo Molnar wrote:
+> * Alain Knaff <alain@knaff.lu> wrote:
 > 
-> Current cryptd works well for AES-NI implementation. But how about
-> somebody want cryptd(cbc(aes)), and don't care about the driver.
+>> Ingo Molnar wrote:
+>>> And your argument makes little sense: if there is something wrong then one 
+>>> looks at the logs _anyway_.
+>> Unfortunately, not everybody has the knowledge or equipment ready to set
+>> up a serial console... [...]
+> 
+> By your argument the ton of warnings we emit in various situations are 
+> wrong too and all should be panic()s.
 
-That's not an issue, if the user wants then all he has to do is
-create cryptd(cbc(aes)) (how that is done is a different matter,
-hopefully something that we will address as part of the user-space
-API to crypto API), and then just using cbc(aes) will be sufficient.
+That is not my argument. I never said something like that.
 
-In any case, the algorithm name has to be cbc(aes) for it to work,
-since that is what it is.
- 
-> Yes, not an issue for AES-NI case until now. But, for example there is
-> no aes-ni, if someone request cryptd(cbc(aes-asm)), other user will get
-> cryptd(cbc(aes-asm)) instead of cbc(aes-asm) when request cbc(aes), is
-> this a good behavior?
+I don't know, but I have to wonder about the strength of _your_ position if
+the only way to defend it is to put words into other people's mouth.
 
-The idea is to allow user-space to control priorities in future
-through a netlink interface.  Then this simply becomes a matter
-of system administration.
+> That argument is bogus.
 
-For now you simply don't create the cryptd object if you don't
-intend to use it as the system default for that algorithm.
+Indeed that argument is bogus. However, I'm not sure where it is coming from...
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> Not looking at the logs makes boot problem analysis harder of course. Nor 
+> is your argument actually true: you can use printk_delay or any other 
+> method.
+
+This is interesting information. Where can I find documentation about this?
+Neither google, nor a find-grep in the kernel sources turned up anything
+useful...
+
+> Or you can use the VGA console and use shift-pageup ...
+
+No you can't. Try it. Or is this only a kvm artifact?
+
+> 
+> 	Ingo
+
+Alain
