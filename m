@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763233AbZANPLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762919AbZANPMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763233AbZANPLp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZANPLe
+	id S1762919AbZANPMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZANPMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:11:34 -0500
-Received: from netgear.net.ru ([195.178.208.66]:49715 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1760179AbZANPLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:11:33 -0500
-Date: Wed, 14 Jan 2009 18:11:32 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [3/7] dst: export node.
-Message-ID: <20090114151132.GB6419@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <1231887933-17843-2-git-send-email-zbr@ioremap.net> <1231887933-17843-3-git-send-email-zbr@ioremap.net> <1231887933-17843-4-git-send-email-zbr@ioremap.net> <20090114145204.GE30821@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114145204.GE30821@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 Jan 2009 10:12:31 -0500
+Received: from styx.suse.cz ([82.119.242.94]:56985 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752358AbZANPMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 10:12:30 -0500
+From: Jan Kara <jack@suse.cz>
+To: linux-ext4@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 1/2] ext2: Update also inode on disk when dir is IS_DIRSYNC
+Date: Wed, 14 Jan 2009 16:12:27 +0100
+Message-Id: <1231945948-23676-1-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:52:05PM +0100, Jens Axboe (jens.axboe@oracle.com) wrote:
-> On Wed, Jan 14 2009, Evgeniy Polyakov wrote:
-> > +	bio = bio_alloc_bioset(GFP_KERNEL,
-> > +			PAGE_ALIGN(cmd->size) >> PAGE_SHIFT,
-> > +			dst_bio_set);
-> > +	if (!bio)
-> > +		goto err_out_exit;
-> > +	bio->bi_private = NULL;
-> > +
-> > +	priv = mempool_alloc(st->node->trans_pool, GFP_KERNEL);
-> > +	if (!priv)
-> > +		goto err_out_free;
-> 
-> Did you know that you can now set the appropriate extra size for your
-> private bio set, thus getting rid of this extra 'priv' allocation and
-> free for each bio?
-> 
-> See bioset_create().
+We used to just write changed page for IS_DIRSYNC inodes. But we also have to
+update directory inode itself just for the case that we've allocated a new
+block and changed i_size.
 
-Yes, that's a good idea, I will update the patch with that changes in
-mind. Thanks Jens.
+Thanks to AKPM for spotting a serious bug in the original version of this
+patch.
 
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: Pavel Machek <pavel@suse.cz>
+---
+ fs/ext2/dir.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+index 9a0fc40..2999d72 100644
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -95,10 +95,13 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
+ 		mark_inode_dirty(dir);
+ 	}
+ 
+-	if (IS_DIRSYNC(dir))
++	if (IS_DIRSYNC(dir)) {
+ 		err = write_one_page(page, 1);
+-	else
++		if (!err)
++			err = ext2_sync_inode(dir);
++	} else {
+ 		unlock_page(page);
++	}
+ 
+ 	return err;
+ }
 -- 
-	Evgeniy Polyakov
+1.6.0.2
+
