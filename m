@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZANUue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbZANUwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758836AbZANUue (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZANUu0
+	id S1759154AbZANUwJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZANUvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:50:26 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60213 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbZANUuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:50:25 -0500
-Date: Wed, 14 Jan 2009 21:52:08 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT] kbuild fixes that needs some testing
-Message-ID: <20090114205208.GA4076@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Wed, 14 Jan 2009 15:51:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36062 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751108AbZANUvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 15:51:50 -0500
+Date: Wed, 14 Jan 2009 21:51:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090114205122.GC6519@elte.hu>
+References: <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114105300.66bd014d.akpm@linux-foundation.org> <20090114190008.GA13203@elte.hu> <20090114113638.c818fcf8.akpm@linux-foundation.org> <20090114201435.GA6519@elte.hu> <20090114123017.9acf42d7.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090114123017.9acf42d7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I plan to ask Linus to pull kbuild-fixes.git soon as it reverts the
-commits that introduces the problems with distcc, too large modules etc.
 
-The pull request are below.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I has been in the work for too long but as my current setup
-is br0ken(*) then I need someone to pull the tree and check
-if it builds etc.
+> > > Do people enable CONFIG_SCHED_DEBUG?
+> > 
+> > If they suspect performance problems and want to analyze them?
+> 
+> The vast majority of users do not and usually cannot compile their own 
+> kernels.
 
-I had hoped to find time to test this myself but thats not this week.
+... which they derive from distro kernels or some old .config they always 
+used, via 'make oldconfig'. You are arguing against well-established facts 
+here.
 
-(*) Motherboard on my primary linux box is dead and the box I use
-    atm is far away from decent...
+If you dont believe my word for it, here's an analysis of all kernel 
+configs posted to lkml in the past 8 months:
 
-	Sam
+   $ grep ^CONFIG_SCHED_DEBUG linux-kernel | wc -l
+   424
 
-The following changes since commit a6525042bfdfcab128bd91fad264de10fd24a55e:
-  Linus Torvalds (1):
-        Merge branch 'x86-pat-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+   $ grep 'CONFIG_SCHED_DEBUG is not' linux-kernel | wc -l
+   109
 
-are available in the git repository at:
+i.e. CONFIG_SCHED_DEBUG=y is set in 80% of the configs. A large majority 
+of testers has it enabled and /sys/debug/sched_features was always a good 
+mechanism that we used for runtime toggles.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+> > Note that CONFIG_SCHED_DEBUG=y is also the default.
+> 
+> akpm:/usr/src/25> echo $ARCH
+> x86_64
+> akpm:/usr/src/25> make defconfig
+> *** Default configuration is based on 'x86_64_defconfig'
 
-Andi Kleen (1):
-      kbuild: print usage with no arguments in scripts/config
+x86 defconfig is used too, but it's a pretty rare usage.
 
-Randy Dunlap (1):
-      kbuild: fix kbuild.txt typos
+Under default i mean the customary meaning of default config: it's the 
+default if you come via 'make oldconfig' or if you derive your config from 
+a distro config:
 
-Sam Ravnborg (1):
-      Revert "kbuild: strip generated symbols from *.ko"
+| config SCHED_DEBUG
+|        bool "Collect scheduler debugging info"
+|        depends on DEBUG_KERNEL && PROC_FS
+|        default y
 
- Documentation/kbuild/kbuild.txt     |   29 +++---
- Makefile                            |   59 ++++--------
- arch/x86/scripts/strip-symbols      |    1 -
- init/Kconfig                        |    7 --
- kernel/kallsyms.c                   |   16 ++-
- scripts/Makefile.build              |   55 ++++-------
- scripts/Makefile.modinst            |    3 +-
- scripts/config                      |    4 +
- scripts/genksyms/genksyms.c         |   21 +---
- scripts/genksyms/keywords.c_shipped |  189 +++++++++++++++++------------------
- scripts/genksyms/keywords.gperf     |    2 -
- scripts/kallsyms.c                  |   21 +++--
- scripts/mksysmap                    |    7 +-
- scripts/strip-symbols               |   22 ----
- 14 files changed, 185 insertions(+), 251 deletions(-)
- delete mode 100644 arch/x86/scripts/strip-symbols
- delete mode 100644 scripts/strip-symbols
+	Ingo
