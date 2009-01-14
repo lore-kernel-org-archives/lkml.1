@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbZANPLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763233AbZANPLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763106AbZANPLZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZANPLO
+	id S1763233AbZANPLp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZANPLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:11:14 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47294 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755304AbZANPLN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:11:13 -0500
-Date: Wed, 14 Jan 2009 10:11:06 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: mingo@elte.hu, rostedt@home.goodmis.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] sched: de CPP-ify the scheduler code
-In-Reply-To: <20090114144624.11627.12938.stgit@dev.haskins.net>
-Message-ID: <alpine.DEB.1.10.0901141009410.6759@gandalf.stny.rr.com>
-References: <20090114144317.11627.69111.stgit@dev.haskins.net> <20090114144624.11627.12938.stgit@dev.haskins.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Jan 2009 10:11:34 -0500
+Received: from netgear.net.ru ([195.178.208.66]:49715 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1760179AbZANPLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 10:11:33 -0500
+Date: Wed, 14 Jan 2009 18:11:32 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net
+Subject: Re: [3/7] dst: export node.
+Message-ID: <20090114151132.GB6419@ioremap.net>
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <1231887933-17843-2-git-send-email-zbr@ioremap.net> <1231887933-17843-3-git-send-email-zbr@ioremap.net> <1231887933-17843-4-git-send-email-zbr@ioremap.net> <20090114145204.GE30821@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114145204.GE30821@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 14, 2009 at 03:52:05PM +0100, Jens Axboe (jens.axboe@oracle.com) wrote:
+> On Wed, Jan 14 2009, Evgeniy Polyakov wrote:
+> > +	bio = bio_alloc_bioset(GFP_KERNEL,
+> > +			PAGE_ALIGN(cmd->size) >> PAGE_SHIFT,
+> > +			dst_bio_set);
+> > +	if (!bio)
+> > +		goto err_out_exit;
+> > +	bio->bi_private = NULL;
+> > +
+> > +	priv = mempool_alloc(st->node->trans_pool, GFP_KERNEL);
+> > +	if (!priv)
+> > +		goto err_out_free;
+> 
+> Did you know that you can now set the appropriate extra size for your
+> private bio set, thus getting rid of this extra 'priv' allocation and
+> free for each bio?
+> 
+> See bioset_create().
 
+Yes, that's a good idea, I will update the patch with that changes in
+mind. Thanks Jens.
 
-
-On Wed, 14 Jan 2009, Gregory Haskins wrote:
-
->  
-> -#define enqueue_pushable_task(rq, p) do { } while (0)
-> -#define dequeue_pushable_task(rq, p) do { } while (0)
-> +static inline
-> +void enqueue_pushable_task(struct rq *rq, struct task_struct *p) {}
-> +static inline
-> +void dequeue_pushable_task(struct rq *rq, struct task_struct *p) {}
-
-Wouldn't the above look better as:
-
-static inline void
-enqueue_pushable_task(struct rq *rq, struct task_struct *p)
-{
-}
-static inline void
-dequeue_pushable_task(struct rq *rq, struct task_struct *p)
-{
-}
-
-
--- Steve
-
+-- 
+	Evgeniy Polyakov
