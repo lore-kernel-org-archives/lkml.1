@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbZANCKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbZANCMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758973AbZANCKv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZANCKm
+	id S1759899AbZANCMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZANCML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:10:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48292
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751163AbZANCKl (ORCPT
+	Tue, 13 Jan 2009 21:12:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51545 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752599AbZANCMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:10:41 -0500
-Date: Tue, 13 Jan 2009 18:10:39 -0800 (PST)
-Message-Id: <20090113.181039.185575172.davem@davemloft.net>
-To: reif@earthlink.net
-Cc: sparclinux-owner@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: sparc32 compile error: redefinition of
- =?utf-8?B?4oCYc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xl4oCZ?=
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <496D4274.6000304@earthlink.net>
-References: <496D4274.6000304@earthlink.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Tue, 13 Jan 2009 21:12:10 -0500
+Date: Tue, 13 Jan 2009 18:10:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mtk.manpages@gmail.com
+cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+In-Reply-To: <cfd18e0f0901131739v5119271flc28b5531604e682@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0901131808070.6528@localhost.localdomain>
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>  <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>  <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>  <20090113224941.36F19FC3DD@magilla.sf.frob.com> 
+ <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>  <cfd18e0f0901131653y76a827b5i906fadce63ada56b@mail.gmail.com>  <alpine.LFD.2.00.0901131655040.6528@localhost.localdomain> <cfd18e0f0901131739v5119271flc28b5531604e682@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0E2AtwM005510
 
-From: Robert Reif <reif@earthlink.net>
-Date: Tue, 13 Jan 2009 20:40:04 -0500
 
-> Todays git produces this compile error on sparc32:
+
+On Wed, 14 Jan 2009, Michael Kerrisk wrote:
 > 
-> kernel/up.c:10: error: redefinition of â€˜smp_call_function_singleâ€™
-> /usr/src/sparc32/linux-2.6/arch/sparc/include/asm/smp_32.h:78: error: previous definition of â€˜smp_call_function_singleâ€™ was here
+> It isn't an extension.  It's an accident.
 
-Andrew, are you sure that Makefile condition for compiling
-up.o is correct?
+Bah. It doesn't matter. It's an ABI. Your arguments make no sense - simply 
+because there are other differences that means that if you develop under 
+one OS, you can't expect it to run on another.
 
-ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
-obj-y += smp.o
-else
-obj-y += up.o
-endif
+Arguing that "accident" is somehow different than "extension" is a totally 
+inane and _idiotic_ argument. Because it's just arguing about the words, 
+not about the end result.
 
-If an arch doesn't use generic SMP helpers, there is no way
-we should compile up.c into the tree when SMP.
+If you're doing a dissertation in English literature, arguing about the 
+words you use is valid. But if you're talking about operating systems, 
+it's just pointless masturbation.
 
-This build regression was caused by:
-
-commit 53ce3d9564908794ae7dd32969089b57df5fc098
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Fri Jan 9 12:27:08 2009 -0800
-
-    smp_call_function_single(): be slightly less stupid
-    
-    If you do
-    
-    	smp_call_function_single(expression-with-side-effects, ...)
-    
-    then expression-with-side-effects never gets evaluated on UP builds.
-    
-    As always, implementing it in C is the correct thing to do.
-    
-    While we're there, uninline it for size and possible header dependency
-    reasons.
-    
-    And create a new kernel/up.c, as a place in which to put
-    uniprocessor-specific code and storage.  It should mirror kernel/smp.c.
-    
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+		Linus
