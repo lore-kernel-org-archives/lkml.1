@@ -1,142 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbZANEA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZANEHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbZANEA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 23:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZANEAr
+	id S1757330AbZANEHG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 23:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZANEGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 23:00:47 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:29880 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753040AbZANEAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 23:00:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=nFSOdgOM0XxIECa/bCQaeTghePvJu+yjPqFzK3o3yw52fPRvzSuvVvFskE/+/s3z3C
-         2rcDHnlpCpzj0ozTCYr0C/fHb47AjMn1c8r8R1YOGhHNloFBtclGZpUt9lSfyIz2pGoh
-         ea6dBY8ET1nlhHq+NIsg/lOb20k34MroeTVF8=
+	Tue, 13 Jan 2009 23:06:53 -0500
+Received: from THUNK.ORG ([69.25.196.29]:35167 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751333AbZANEGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 23:06:52 -0500
+Date: Tue, 13 Jan 2009 23:06:45 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090114040645.GG14730@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Evgeniy Polyakov <zbr@ioremap.net>,
+	David Rientjes <rientjes@google.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <alpine.DEB.2.00.0901131116220.8522@chino.kir.corp.google.com> <20090113214627.GC27227@ioremap.net> <20090113224941.GA14730@mit.edu> <20090113230240.GA30192@ioremap.net> <20090114011137.GC14730@mit.edu> <20090114012001.GA3402@ioremap.net>
 MIME-Version: 1.0
-Date: Tue, 13 Jan 2009 23:00:44 -0500
-Message-ID: <70438690901132000r4fabc40di959fea6f22ed3a69@mail.gmail.com>
-Subject: 2.6.28 boot fails on Cyrix 6x86
-From: zbigniew brzezinskix <zbigniewbrzezinskix@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114012001.GA3402@ioremap.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vanilla 2.6.28 boot fails on Cyrix 6x86 ... seems ok on 6x86MX.
+On Wed, Jan 14, 2009 at 04:20:01AM +0300, Evgeniy Polyakov wrote:
+> 
+> It is not about the possibility to change the sources, but the way
+> interface is exported to the userspace. Right now it is not usable for
+> some cases. And forcing applications, which are actually cross-platform,
+> depending on the way linux controls its own oom-killer is noticebly more
+> hackish than selecting a system-wide process by its name.
 
-tried:
-     (X) 386
-     (X) 486
-     (X) 586/K5/5x86/6x86/6x86MX
+And we can change that interface if it's not the right one, or perhaps
+extend it.  After all, you are are proposing extending that interface;
+just in a really horrible, hackish way.
 
-cat /proc/cpuinfo
-processor       : 0
-vendor_id       : CyrixInstead
-cpu family      : 5
-model           : 2
-model name      : 6x86 2x Core/Bus Clock
-stepping        : 5
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : yes
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu cyrix_arr ds_cpl est cid
-bogomips        : 120.01
+> You believe that changing apache to control oom_adj is the right way to
+> deal with linux oom-killer? Do we already flight to the moon?
 
-BIOS EBDA/lowmem at: 00000000/000a0000
-Linux version 2.6.28 (root@box48) (gcc version 4.3.2 (Debian
-4.3.2-1.1) ) #1 Tue Jan 13 11:59:16 EST 2009
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  NSC Geode by NSC
-  Cyrix CyrixInstead
-  Centaur CentaurHauls
-  Transmeta GenuineTMx86
-  Transmeta TransmetaCPU
-  UMC UMC UMC UMC
-Enabling CPUID on Cyrix processor.
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 0000000003000000 (usable)
- BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
-DMI not present or invalid.
-last_pfn = 0x3000 max_arch_pfn = 0x100000
-48MB LOWMEM available.
-  mapped low ram: 0 - 03000000
-  low ram: 00000000 - 03000000
-  bootmap 00001000 - 00001600
-(6 early reservations) ==> bootmem [0000000000 - 0003000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000100000 - 000036697c]    TEXT DATA BSS ==> [0000100000 - 000036697c]
-  #2 [0000367000 - 0000369000]    INIT_PG_TABLE ==> [0000367000 - 0000369000]
-  #3 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
-  #4 [0000007000 - 0000012000]          PGTABLE ==> [0000007000 - 0000012000]
-  #5 [0000001000 - 0000002000]          BOOTMAP ==> [0000001000 - 0000002000]
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  Normal   0x00001000 -> 0x00003000
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0: 0x00000000 -> 0x000000a0
-    0: 0x00000100 -> 0x00003000
-Allocating PCI resources starting at 10000000 (gap: 3000000:fcff0000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 12096
-Kernel command line: root=/dev/hda1 ro console=tty0 console=ttyS0,115200
-Initializing CPU#0
-PID hash table entries: 256 (order: 8, 1024 bytes)
-Console: colour VGA+ 80x25
-console [tty0] enabled
-console [ttyS0] enabled
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 45680k/49152k available (1557k kernel code, 3084k reserved,
-602k data, 184k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfffed000 - 0xfffff000   (  72 kB)
-    vmalloc : 0xc3800000 - 0xfffeb000   ( 967 MB)
-    lowmem  : 0xc0000000 - 0xc3000000   (  48 MB)
-      .init : 0xc031e000 - 0xc034c000   ( 184 kB)
-      .data : 0xc0285437 - 0xc031be58   ( 602 kB)
-      .text : 0xc0100000 - 0xc0285437   (1557 kB)
-Checking if this processor honours the WP bit even in supervisor mode...Ok.
-Calibrating delay loop... 119.55 BogoMIPS (lpj=239104)
-Mount-cache hash table entries: 512
-Enabling CPUID on Cyrix processor.
-Enabling CPUID on Cyrix processor.
-CPU: Cyrix 6x86 2x Core/Bus Clock stepping 05
-Checking 'hlt' instruction... OK.
-invalid opcode: 0000 [#1]
-last sysfs file:
+Actually, I would believe the right answer is adding a new resource
+limit which can be set using the standard getrlimit()/setrlimit()
+interface, and then have apache use this standard interface as a way
+of configuring itself --- much like how a process can change other
+resource limits, such as the number of file descriptors it has open,
+etc.  And if what you want to do is simply make the process volunteer
+to be one of the first processes shot by the OOM killer, the apache
+process wouldn't even need setuid privileges to lower the "OOM
+protection" resource limit.
 
-Pid: 0, comm: swapper Not tainted (2.6.28 #1)
-EIP: 0060:[<c03220c6>] EFLAGS: 00010203 CPU: 0
-EIP is at stop_mce+0x0/0x19
-EAX: 00000004 EBX: c03378c8 ECX: c031dfec EDX: 00000034
-ESI: 00099800 EDI: c0316000 EBP: 0078d003 ESP: c031dfe4
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process swapper (pid: 0, ti=c031c000 task=c02f7300 task.ti=c031c000)
-Stack:
- c0321865 c03220c4 00000000 c031e829 c03378c8 00000000 00000000
-Call Trace:
- [<c0321865>] alternative_instructions+0xa/0x37
- [<c03220c4>] check_bugs+0xcd/0xcf
- [<c031e829>] start_kernel+0x1da/0x1e2
-Code: 09 f4 f4 f4 f4 68 6c 97 2c c0 e8 32 10 f6 ff a0 40 8a 31 c0 5a
-3c 06 b2 36 77 03 8d 50 30 88 15 b1 a0 2f c0 e8 97 f7 ff ff 58 c3 <0f>
-20 e0 83 25 f0 00 35 c0 bf a3 f8 ba 33 c0 0f 20 e0 83 e0 bf
-EIP: [<c03220c6>] stop_mce+0x0/0x19 SS:ESP 0068:c031dfe4
----[ end trace 4eaa2a86a8e2da22 ]---
-Kernel panic - not syncing: Attempted to kill the idle task!
+I think this is cleaner than echoing a magic value to
+/proc/self/oom_adj, and it won't be the first time various open source
+programs have been changed to take advantage of Linux-specific
+interfaces, especially if there's no other standard way of doing
+things --- and an extension of BSD's getrlimit()/setrlimit() is
+natural and makes a lot of sense.  Heck, apache has been changed to
+take advantage of Linux's epoll interface....
+
+						- Ted
