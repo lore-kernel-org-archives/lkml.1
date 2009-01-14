@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbZANEZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZANE0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758082AbZANEZo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 23:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZANEZb
+	id S1758698AbZANE0P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 23:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZANEZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 23:25:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58013
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752174AbZANEZb (ORCPT
+	Tue, 13 Jan 2009 23:25:55 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2988 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758159AbZANEZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 23:25:31 -0500
-Date: Tue, 13 Jan 2009 20:25:31 -0800 (PST)
-Message-Id: <20090113.202531.43266519.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090114035124.GA8409@gondor.apana.org.au>
-References: <20090113.163705.130074998.davem@davemloft.net>
-	<20090114035124.GA8409@gondor.apana.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 Jan 2009 23:25:54 -0500
+Subject: Re: [PATCH 0/10] MAINTAINERS - script, patterns, and misc fixes
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, pavel@ucw.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <20090113125435.4821123a.akpm@linux-foundation.org>
+References: <1231878498-25171-1-git-send-email-joe@perches.com>
+	 <20090113125435.4821123a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 20:26:50 -0800
+Message-Id: <1231907210.7935.527.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 14 Jan 2009 14:51:24 +1100
+On Tue, 2009-01-13 at 12:54 -0800, Andrew Morton wrote:
+> akpm:/usr/src/git26> ../25/scripts/get_maintainer.pl -f mm/filemap.c 
+> Balbir Singh <balbir@linux.vnet.ibm.com>
+> Hugh Dickins <hugh@veritas.com>
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Miklos Szeredi <mszeredi@suse.cz>
+> Nick Piggin <npiggin@suse.de>
+> 
+> I think Balbir would be surprised!
 
-> Unfortunately this won't work, not even for network destinations.
-> 
-> The reason is that this gets called as soon as the destination's
-> splice hook returns, for networking that means when sendpage returns.
-> 
-> So by that time we'll still be left with just a page reference
-> on a page where the slab memory may already have been freed.
-> 
-> To make this work we need to get the destination's splice hooks
-> to acquire this reference.
+get_maintainer output is in alphabetical order,
+not ordered by signer frequency.
 
-Yes I realized this after your earlier posting today.
+Balbir Singh is one of the top 5 signers over the last year
+for mm/filemap.c excluding you and Linus.
+
+$ git log --since=1-year-ago mm/filemap.c | \
+	grep -P "^ +.*by:" | sort | uniq -c | sort -rn | head
+     38     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+     35     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+     14     Signed-off-by: Nick Piggin <npiggin@suse.de>
+      5     Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+      5     Signed-off-by: Hugh Dickins <hugh@veritas.com>
+      4     Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+      4     Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+> My script generates what I consider to be better results:
+> 
+> akpm:/usr/src/25> who-maintains.sh mm/filemap.c
+> Nick Piggin <npiggin@suse.de>
+> Hugh Dickins <hugh@veritas.com>
+> Fengguang Wu <wfg@mail.ustc.edu.cn>
+> Christoph Hellwig <hch@lst.de>
+> Steven Whitehouse <swhiteho@redhat.com>
+> Zach Brown <zach.brown@oracle.com>
+> Miklos Szeredi <mszeredi@suse.cz>
+> Jan Kara <jack@suse.cz>
+> Balbir Singh <balbir@linux.vnet.ibm.com>
+> Badari Pulavarty <pbadari@us.ibm.com>
+> 
+> For some (git related) reason it is vastly slower than yours.
+
+I think the major reason is your script is using all git history.
+get_maintainer.pl is using just the last calendar year.
+
+
