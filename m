@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZANT33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZANTaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbZANT33 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZANT3V
+	id S1756605AbZANTaN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZANT34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:29:21 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55087 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753964AbZANT3U (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:29:20 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Kyle McMartin <kyle@infradead.org>, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] module: kzalloc mod->ref
-In-Reply-To: Your message of "Wed, 14 Jan 2009 17:25:31 +0100."
-             <s5hiqoh7t38.wl%tiwai@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20090114033533.GL25103@bombadil.infradead.org> <s5hmydufe3c.wl%tiwai@suse.de> <20090114155859.GO25103@bombadil.infradead.org>
-            <s5hiqoh7t38.wl%tiwai@suse.de>
+	Wed, 14 Jan 2009 14:29:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39817 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbZANT3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:29:55 -0500
+Subject: Re: kernel BUG at fs/ext/super.c:428
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <20090114191632.GA13114@linux-os.sc.intel.com>
+References: <20090110003645.GA16107@linux-os.sc.intel.com>
+	 <20090113164842.c6aa7095.akpm@linux-foundation.org>
+	 <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com>
+	 <20090114044059.GA6222@mit.edu>
+	 <20090114191632.GA13114@linux-os.sc.intel.com>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 20:29:37 +0100
+Message-Id: <1231961377.14825.51.camel@laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1231961348_3678P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 14 Jan 2009 14:29:08 -0500
-Message-ID: <24465.1231961348@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1231961348_3678P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 2009-01-14 at 11:16 -0800, Pallipadi, Venkatesh wrote:
+> On Tue, Jan 13, 2009 at 08:40:59PM -0800, Theodore Tso wrote:
+> > On Wed, Jan 14, 2009 at 02:48:13AM +0000, Arjan van de Ven wrote:
+> > >> Well, Arjan's commit, efaee192: "async: make the final inode deletion
+> > >> an asynchronous event", does change how inodes get deleted, and this
+> > >> looks like a race where an inode is getting deleted during the umount.
+> > >>
+> > >> So I would try reverting commit efaee192 and see if it fixes things
+> > >> before starting a full bisect...
+> > >
+> > > the commit is already reverted before rc1
+> > >
+> > 
+> > Ah, right.  I see, the async infrastructure is still in fs/super.c,
+> > but the actual code to insert deleted inodes onto the s_async_list was
+> > removed in commit b32714b.  Sorry, that confused me.
+> > 
+> > OK, so assuming that Venkatesh was using something post-rc1, I can't
+> > suggest anything other than a full bisect.  Sorry....
+> > 
+> 
+> Below is the result of full bisect
+> 
+> 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
+> commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Fri Sep 26 19:32:20 2008 +0200
+> 
+>     futex: rely on get_user_pages() for shared futexes
+>     
+>     On the way of getting rid of the mmap_sem requirement for shared futexes,
+>     start by relying on get_user_pages().
+>     
+>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> :040000 040000 029e79e0a7421438c2a7437dd210a1acf40b6c29 b581716762c1952c0f515fac642690514e7224b7 M      include
+> :040000 040000 5f604b60974dbb9b0ac1a0910234f28c43a5e691 10c576cabe7eae661501ec38861a0f7488d5353b M      kernel
 
-On Wed, 14 Jan 2009 17:25:31 +0100, Takashi Iwai said:
+However does a futex change make ext3 crap its pants?
 
-> We can use nr_cpu_ids instead of NR_CPUS.
-> For a machine like 4096 CPUs, such an amount of memory is like a
-> peanut :)
+Is there anything more to it than start the machine, and reboot?
 
-It's not peanuts if you're dealing with a distro kernel that's essentially
-forced to compile with NR_CPUS=<some moby integer>, but booting on a single or
-dual core system with possibly not even 1G of memory.
-
-
---==_Exmh_1231961348_3678P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJbj0EcC3lWbTT17ARAjA5AKCGpPk6L06dSDQK7283sGm2i7YTLgCfZSvP
-AHb7j/86QaqZAQZo2SsqpVY=
-=ieFn
------END PGP SIGNATURE-----
-
---==_Exmh_1231961348_3678P--
