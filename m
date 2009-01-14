@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762274AbZANNPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762473AbZANNRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762274AbZANNPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 08:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755623AbZANNPi
+	id S1762473AbZANNRF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 08:17:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZANNQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 08:15:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37250 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbZANNPi (ORCPT
+	Wed, 14 Jan 2009 08:16:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50369 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753769AbZANNQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 08:15:38 -0500
-Subject: Re: deadlocks if use htb
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090114131257.GC6117@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local>
-	 <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop>
-	 <200901141505.46929.denys@visp.net.lb> <20090114131257.GC6117@ff.dom.local>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 14:15:29 +0100
-Message-Id: <1231938929.14825.6.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 08:16:53 -0500
+Date: Wed, 14 Jan 2009 08:16:50 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Joe Perches <joe@perches.com>
+cc: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/10] MAINTAINERS - Add FTRACE git
+In-Reply-To: <1231913987.30095.11.camel@localhost>
+Message-ID: <alpine.DEB.1.10.0901140811530.6759@gandalf.stny.rr.com>
+References: <1231878498-25171-1-git-send-email-joe@perches.com>  <1231878498-25171-9-git-send-email-joe@perches.com>  <20090114055954.GA7039@linux-sh.org> <1231913987.30095.11.camel@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 13:12 +0000, Jarek Poplawski wrote:
-> On Wed, Jan 14, 2009 at 03:05:46PM +0200, Denys Fedoryschenko wrote:
-> > > I'm afraid its a bit more than that:
-> > >
-> > > ca109491f612aab5c8152207631c0444f63da97f
-> > > 37810659ea7d9572c5ac284ade272f806ef8f788
-> > > a0a99b227da57f81319dd239bc4de811b0f530ec
-> > > b2e3c0adec918ea22b6c9d7c76193dd3aaba9bd4
-> > > 8bdec955b0da2ffbd10eb9b200651dd1f9e366f2
-> > > d5fd43c4ae04523e1dcd7794f9c511b289851350
-> > > 731a55ba0f17064f85903b7bf8e24849ec6cfa20
-> > > a6037b61c2f5fc99c57c15b26d7cfa58bbb34008
-> > > e3f1d883740b09e5116d4d4e30a6a6987264a83c
-> > > 82c5b7b527ccc4b5d3cf832437e842f9d2920a79
-> > >
-> > > and
-> > >
-> > > 6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
-> > >
-> > > Also, all this is rather invasive and large, so I'm not sure it will
-> > > meet the -stable criteria.
-> > 
-> > Then i will try to run 2.6.29-rc1-git4. Kind of risky to run rc1 on loaded 
-> > router, but i am hitting this bug with hrtimers hardly, so no choice for me 
-> > seems. And i cannot disable hrtimers because of bad shaper precision.
-> > Thanks a lot for info and patches :-)
-> > 
-> 
-> Denys, since these three patches worked for Chris, I guess it's safer
-> to stay with 2.6.28 anyway (or my patches mentioned earlier in this
-> thread). rc1 is really not stable...
 
-Yeah, but those three patches have some holes in them still, so I cannot
-recommend just patching in those three.
+On Tue, 13 Jan 2009, Joe Perches wrote:
+
+> On Wed, 2009-01-14 at 14:59 +0900, Paul Mundt wrote:
+> > On Tue, Jan 13, 2009 at 12:28:16PM -0800, Joe Perches wrote:
+> > > Signed-off-by: Joe Perches <joe@perches.com>
+> > > ---
+> > >  MAINTAINERS |    1 +
+> > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/MAINTAINERS b/MAINTAINERS
+> > > index ceeeb8c..6e051c3 100644
+> > > --- a/MAINTAINERS
+> > > +++ b/MAINTAINERS
+> > > @@ -2189,6 +2189,7 @@ F:	fs/freevxfs/
+> > >  FTRACE
+> > >  P:	Steven Rostedt
+> > >  M:	rostedt@goodmis.org
+> > > +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
+> > >  S:	Maintained
+> > >  F:	Documentation/ftrace.txt
+> > >  F:	arch/*/*/*/ftrace.h
+> > 
+> > This sort of thing only makes sense if you include the topic branch for
+> > the tree in question. While it is true that ftrace development happens in
+> > this tree, people looking at ftrace may not want to sort through the
+> > hundreds of unrelated topic branches in the process. I say this as
+> > someone that does not want to sort through hundreds of unrelated topic
+> > branches in search of ftrace code ;-)
+> 
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=heads
+> 
+> Is the correct topic branch for ftrace auto-ftrace-next?
+
+That is just a location that Ingo places changes that are ready to go to 
+linux-next. Not where development is.
+
+> 
+> maybe:
+> 
+> T:	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git auto-ftrace-next
+> 
+> No idea what's right here.  I had some private emails
+> with Steven Rostedt about a git tree.  He suggested
+> to use tip.
+> 
+> Steven?  Suggestions?
+
+Ingo usually pulls ftrace related patches into the tracing/ftrace 
+branch. That is for core ftrace. Since ftrace has a bunch of pluggins, 
+they may have their own branches.
+
+But to answer Paul's question, I would suggest tracing/ftrace for 
+seeing latest core ftrace changes.
+
+Should we add another topic in MAINTAINERS? The "TRACE RING BUFFER"? or 
+just call it ring_buffer? This is separate from ftrace, although ftrace 
+uses it for on the fly tracing. I maintain it and it is located in the tip 
+git repo under tracing/ring-buffer.
+
+-- Steve
 
