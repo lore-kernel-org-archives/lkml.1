@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763394AbZANPbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbZANPb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763394AbZANPbB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbZANPaw
+	id S1763510AbZANPb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763453AbZANPbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:30:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:35335 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757876AbZANPau (ORCPT
+	Wed, 14 Jan 2009 10:31:15 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:57057 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758220AbZANPbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:30:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=prOEvwf164V1ICoeRIK/Tiu4K0plAbldqi7EoRaFwJKyp9MngC1MDwREO9NPtJ7kgC
-         pp1Tx4Fg443vVqiXeM0MTzYpmwOvCqE+4CLh0UZwDwYSElZBslHZhwYZ53gN9hI+wqp/
-         WGr4zQADvqOlZ8kL+onTGftTbvnlWBCPpx8Nk=
-Message-ID: <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
-Date: Wed, 14 Jan 2009 17:30:48 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: Re: [patch] SLQB slab allocator
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "Lin Ming" <ming.m.lin@intel.com>,
-       "Christoph Lameter" <cl@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20090114152207.GD25401@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 10:31:14 -0500
+Date: Wed, 14 Jan 2009 16:32:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robert Reif <reif@earthlink.net>, David Miller <davem@davemloft.net>,
+       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: sparc32 compile error: =?utf-8?Q?redef?=
+	=?utf-8?B?aW5pdGlvbiBvZiDigJhzbXBfY2FsbF9mdW5jdGlvbl9zaW5nbGXigJk=?=
+Message-ID: <20090114153255.GA32082@uranus.ravnborg.org>
+References: <496D4274.6000304@earthlink.net> <20090113.181039.185575172.davem@davemloft.net> <20090113184239.e6b6e68e.akpm@linux-foundation.org> <20090113184536.95ebc973.akpm@linux-foundation.org> <496D5E19.7040802@earthlink.net> <20090113235940.12d856d0.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20090114090449.GE2942@wotan.suse.de>
-	 <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com>
-	 <20090114114707.GA24673@wotan.suse.de>
-	 <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com>
-	 <20090114142200.GB25401@wotan.suse.de>
-	 <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
-	 <20090114150900.GC25401@wotan.suse.de>
-	 <20090114152207.GD25401@wotan.suse.de>
-X-Google-Sender-Auth: 5e89a2c93d81f343
+In-Reply-To: <20090113235940.12d856d0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+On Tue, Jan 13, 2009 at 11:59:40PM -0800, Andrew Morton wrote:
+> On Tue, 13 Jan 2009 22:38:01 -0500 Robert Reif <reif@earthlink.net> wrote:
+> 
+> > This worked:
+> > 
+> > diff --git a/kernel/Makefile b/kernel/Makefile
+> > index 2aebc4c..368227d 100644
+> > --- a/kernel/Makefile
+> > +++ b/kernel/Makefile
+> > @@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
+> >  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
+> >  obj-y += smp.o
+> >  else
+> > +ifneq ($(CONFIG_SMP),y)
+> >  obj-y += up.o
+> >  endif
+> > +endif
+> >  obj-$(CONFIG_SMP) += spinlock.o
+> >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
+> >  obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+> 
+> This all can be simplified, can't it?
+> 
+> obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
+> ifneq ($(CONFIG_SMP),y)
+> obj-y += up.o
+> endif
+> 
+> (someone please check my homework - I don't have a good track
+> record here ;))
 
-On Wed, Jan 14, 2009 at 5:22 PM, Nick Piggin <npiggin@suse.de> wrote:
-> And... IIRC, the Intel guys did make a stink but it wasn't considered
-> so important or worthwhile to fix for some reason? Anyway, the fact is
-> that it hadn't been fixed in SLUB. Hmm, I guess it is a significant
-> failure of SLUB that it hasn't managed to replace SLAB by this point.
+Looks correct. We pull in smp.o only for SPARC64 AND SMP
 
-Again, not speaking for Christoph, but *I* do consider the regression
-to be important and I do want it to be fixed. I have asked for a test
-case to reproduce the regression and/or oprofile reports but have yet
-to receive them. I did fix one regression I saw with the fio benchmark
-but unfortunately it wasn't the same regression the Intel guys are
-hitting. I suppose we're in limbo now because the people who are
-affected by the regression can simply turn on CONFIG_SLAB.
+But I find the next lines distastefull in a Makefile:
+> ifneq ($(CONFIG_SMP),y)
+> obj-y += up.o
+> endif
 
-In any case, I do agree that the inability to replace SLAB with SLUB
-is a failure on the latter. I'm just not totally convinced that it's
-because the SLUB code is unfixable ;).
+I would prefer a small Kconfig helper symbol:
 
-                                Pekka
+config SPARC_UP
+	def_bool y
+	depends on !SMP
+
+And then we would do the Makefile bits like this:
+obj-$(CONFIG_SPARC_UP) += up.o
+
+So maybe a bit more involved patch - but more readable IMO.
+Robert - can I ask you to fix it up if you and others agree.
+
+Thanks,
+	Sam
