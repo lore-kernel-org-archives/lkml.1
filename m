@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbZANIAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZANIBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758399AbZANIAf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZANIAY
+	id S1759950AbZANIBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:01:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZANIBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:00:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37236 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752709AbZANIAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:00:22 -0500
-Date: Tue, 13 Jan 2009 23:59:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Reif <reif@earthlink.net>
-Cc: David Miller <davem@davemloft.net>,
-       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: sparc32 compile error: redefinition of =?UTF-8?Q?=E2=80=98smp?=
- =?UTF-8?Q?=5Fcall=5Ffunction=5Fsingle=E2=80=99?=
-Message-Id: <20090113235940.12d856d0.akpm@linux-foundation.org>
-In-Reply-To: <496D5E19.7040802@earthlink.net>
-References: <496D4274.6000304@earthlink.net>
-	<20090113.181039.185575172.davem@davemloft.net>
-	<20090113184239.e6b6e68e.akpm@linux-foundation.org>
-	<20090113184536.95ebc973.akpm@linux-foundation.org>
-	<496D5E19.7040802@earthlink.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 03:01:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46052 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751370AbZANIBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 03:01:30 -0500
+Date: Wed, 14 Jan 2009 09:01:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: rostedt@home.goodmis.org, peterz@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] sched: fix build error in kernel/sched_rt.c when
+	RT_GROUP_SCHED && !SMP
+Message-ID: <20090114080111.GC18649@elte.hu>
+References: <20090113014333.GA23448@elte.hu> <20090113023345.32433.28954.stgit@dev.haskins.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113023345.32433.28954.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 22:38:01 -0500 Robert Reif <reif@earthlink.net> wrote:
 
-> This worked:
-> 
-> diff --git a/kernel/Makefile b/kernel/Makefile
-> index 2aebc4c..368227d 100644
-> --- a/kernel/Makefile
-> +++ b/kernel/Makefile
-> @@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
->  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
->  obj-y += smp.o
->  else
-> +ifneq ($(CONFIG_SMP),y)
->  obj-y += up.o
->  endif
-> +endif
->  obj-$(CONFIG_SMP) += spinlock.o
->  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
->  obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
-This all can be simplified, can't it?
+> +#define dec_rt_group(rt_se, rt_rq) do { } while (0)
 
-obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
-ifneq ($(CONFIG_SMP),y)
-obj-y += up.o
-endif
+Please dont _ever_ introduce new CPP macros into core kernel code, and if 
+you see existing once, please fix them to be proper C inline functions. 
+(there's a few other new macros in your patchset)
 
-(someone please check my homework - I don't have a good track
-record here ;))
-
---- a/kernel/Makefile~kernel-upc-omit-it-if-smp=y-use_generic_smp_helpers=n
-+++ a/kernel/Makefile
-@@ -40,9 +40,8 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
- obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
- obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
- obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
--ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
--obj-y += smp.o
--else
-+obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
-+ifneq ($(CONFIG_SMP),y)
- obj-y += up.o
- endif
- obj-$(CONFIG_SMP) += spinlock.o
-_
-
+	Ingo
