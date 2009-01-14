@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbZANKhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbZANKlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbZANKhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZANKhf
+	id S1755669AbZANKlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZANKlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:37:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53579 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Jan 2009 05:41:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53736 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbZANKhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:37:34 -0500
-Date: Wed, 14 Jan 2009 11:37:27 +0100
+	id S1751486AbZANKlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 05:41:08 -0500
+Date: Wed, 14 Jan 2009 11:40:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Alain Knaff <alain@knaff.lu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: The policy on initramfs decompression failure
-Message-ID: <20090114103727.GA2913@elte.hu>
-References: <496D17F9.8080605@zytor.com> <496D20FB.5010307@knaff.lu> <20090114054022.GA11153@elte.hu> <496D8E0D.5090401@knaff.lu> <20090114074852.GB16274@elte.hu> <496DA0FF.2060206@knaff.lu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
+       dvhltc@us.ibm.com
+Subject: Re: [PATCH fyi] RCU: the bloatwatch edition
+Message-ID: <20090114104055.GD2913@elte.hu>
+References: <20090113221724.GA15307@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496DA0FF.2060206@knaff.lu>
+In-Reply-To: <20090113221724.GA15307@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,34 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alain Knaff <alain@knaff.lu> wrote:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-> Ingo Molnar wrote:
-> > * Alain Knaff <alain@knaff.lu> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> And your argument makes little sense: if there is something wrong then one 
-> >>> looks at the logs _anyway_.
-> >> Unfortunately, not everybody has the knowledge or equipment ready to set
-> >> up a serial console... [...]
-> > 
-> > By your argument the ton of warnings we emit in various situations are 
-> > wrong too and all should be panic()s.
+> Just FYI, not for inclusion.
 > 
-> That is not my argument. I never said something like that.
+> This patch is a version of RCU designed for !CONFIG_SMP provided as a 
+> proof of concept of a small-footprint RCU implementation.  In 
+> particular, the implementation of synchronize_rcu() is extremely 
+> lightweight and high performance.  It passes moderate rcutorture testing 
+> in each of the four relevant configurations (combinations of NO_HZ and 
+> PREEMPT) on x86.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-I did not say that it is your argument, i said it is _by_ your argument: 
-i.e. it is a logical extension of your argument.
+maybe it could be included - dependent on PREEMPT, just like we have SLOB?
 
-Exactly how is such a warning different from other warnings that the 
-kernel already emits? For which people supposedly have to set up a serial 
-console? (which they dont have to)
-
-Answer: it is not different, and it is exactly as hard or easy to find as 
-the other ones. I.e. why should this warning get a special treatment? I 
-already told the kernel that i dont want a gzip ramfs image decompressor 
-by turning off the (otherwise default-enabled) option. panic()ing on that 
-decision, overriding my decision and escallating it into a non-working 
-system is silly and a bug.
+it would also be rather educative IMO: if someone wants to understand the 
+core concepts of RCU, start with kernel/rcutiny.c. We are getting 
+complaints from academic institutions that the Linux kernel is getting too 
+complex to teach in courses - and that's a pity.
 
 	Ingo
