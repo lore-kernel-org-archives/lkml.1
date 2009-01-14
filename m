@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZANOB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZANOFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZANOB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZANOBu
+	id S1758161AbZANOFn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZANOFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:01:50 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39611 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbZANOBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:01:49 -0500
-Date: Thu, 15 Jan 2009 01:01:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-Message-Id: <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
-In-Reply-To: <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	<20090108144538.e5195575.akpm@linux-foundation.org>
-	<1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-	<20090112022138.bd2e6ce4.akpm@linux-foundation.org>
-	<20090112213339.feefdd02.sfr@canb.auug.org.au>
-	<1231936220.24082.11.camel@pc1117.cambridge.arm.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey"
+	Wed, 14 Jan 2009 09:05:34 -0500
+Received: from styx.suse.cz ([82.119.242.94]:48857 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752366AbZANOFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:05:34 -0500
+Date: Wed, 14 Jan 2009 15:05:32 +0100
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
+Subject: Re: ext2 + -osync: not as easy as it seems
+Message-ID: <20090114140532.GC19950@duck.suse.cz>
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114132146.GC6222@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed 14-01-09 08:21:46, Theodore Tso wrote:
+> On Wed, Jan 14, 2009 at 11:35:33AM +0100, Jan Kara wrote:
+> >   Yes, I noticed that yesterday as well. But then I was puzzled why ext4
+> > would need the flush where it has it... sync_inode() has started and
+> > committed a transaction which issued a barrier when the commit was done.
+> 
+> You're right; I'm not convinced we need the flush in ext4 (or ext3) at
+> all.  We write the data blocks, *then* we call ext4_write_inode(),
+> which will force a commit.  Now, if we apply that patch which
+> optimizes out commits if there are no dirty blocks, then we'll be
+> trouble, because we won't know for sure whether or not
+> ext4_write_inode() will have forced a journal commit.
+> 
+> If we optimize out the journal commit when there are no blocks
+> attached to the transaction, we could change the patch to only force a
+> flush if inode->i_state did not have I_DIRTY before the call to
+> sync_inode().  Does that sound sane?
+  Yes. And also add a flush in case of fdatasync().
 
-Hi Catalin,
+> > The only reason I could imagine is that barrier (although it is usually
+> > translated to flushing writeback caches) actually means just an ordering
+> > requirement and hence does not necessarily mean that the caches are
+> > properly flushed. Is that so Eric?
+> 
+> I'm not sure what you mean; if the barrier operation isn't flushing
+> all of the caches all the way out to the iron oxide, it's not going to
+> be working properly no matter where it is being called, whether it's
+> in ext4_sync_file() or in jbd2's journal_submit_commit_record().
+  Well, I thought that a barrier, as an abstraction, only guarantees that
+any IO which happened before the barrier hits the iron before any IO which
+has been submitted after a barrier. This is actually enough for a
+journalling to work correctly but it's not enough for fsync() guarantees.
+But I might be wrong...
 
-On Wed, 14 Jan 2009 12:30:20 +0000 Catalin Marinas <catalin.marinas@arm.com=
-> wrote:
->
-> I updated the git://linux-arm.org/linux-2.6.git kmemleak branch to the
-> latest mainline and it works fine. However, I tried to merge it with the
-> linux-next tree and there are many conflicts with kmemtrace as they both
-> modify similar areas of the kernel. The conflicts are relatively simple
-> but they still need manual fixing.
-
-I just did a test merge with today's linux-next and though thee are a few
-conflicts, it is not to much for me to handle - I have had worse :-)
-
-> Are you OK with applying patches to linux-next (git am) rather than
-> using git merge? This way I can rebase kmemleak on top of linux-next.
-
-I would much prefer a few conflicts to carrying a post linux-next patch
-because linux-next can change radically day to day - especially since we
-know there will be clashes in the areas of files you would be patching.
-
-So lets use the above git tree and see how we go. OK?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklt8EUACgkQjjKRsyhoI8xaOgCguj4CoGb/APooVBLXFJjUAw+y
-cJ0AoK0BAIKOAgmka+d7qtEd16Xi/eCE
-=YmkC
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey--
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
