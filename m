@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZANOxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbZANOzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbZANOxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:53:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZANOxZ
+	id S1762766AbZANOzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbZANOzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:53:25 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:16593 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754650AbZANOxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:53:25 -0500
-Date: Wed, 14 Jan 2009 15:52:05 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [3/7] dst: export node.
-Message-ID: <20090114145204.GE30821@kernel.dk>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <1231887933-17843-2-git-send-email-zbr@ioremap.net> <1231887933-17843-3-git-send-email-zbr@ioremap.net> <1231887933-17843-4-git-send-email-zbr@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231887933-17843-4-git-send-email-zbr@ioremap.net>
+	Wed, 14 Jan 2009 09:55:04 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50416 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755136AbZANOzD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:55:03 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Mark WM835x USB_SLV_500MA bit as accessible
+Date: Wed, 14 Jan 2009 14:55:01 +0000
+Message-Id: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14 2009, Evgeniy Polyakov wrote:
-> +	bio = bio_alloc_bioset(GFP_KERNEL,
-> +			PAGE_ALIGN(cmd->size) >> PAGE_SHIFT,
-> +			dst_bio_set);
-> +	if (!bio)
-> +		goto err_out_exit;
-> +	bio->bi_private = NULL;
-> +
-> +	priv = mempool_alloc(st->node->trans_pool, GFP_KERNEL);
-> +	if (!priv)
-> +		goto err_out_free;
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-regmap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Did you know that you can now set the appropriate extra size for your
-private bio set, thus getting rid of this extra 'priv' allocation and
-free for each bio?
-
-See bioset_create().
-
+diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+index 68887b8..9a4cc95 100644
+--- a/drivers/mfd/wm8350-regmap.c
++++ b/drivers/mfd/wm8350-regmap.c
+@@ -3188,7 +3188,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+ 	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+ 	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
+ 	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+-	{ 0xFCF7, 0xFCF7, 0xF800 }, /* R4   - System Control 2 */
++	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+ 	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+ 	{ 0xFB0E, 0xFB0E, 0x0000 }, /* R6   - Interface Control */
+ 	{ 0x0000, 0x0000, 0x0000 }, /* R7 */
 -- 
-Jens Axboe
+1.5.6.5
 
