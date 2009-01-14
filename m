@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763192AbZANPYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762895AbZANP0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763192AbZANPYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZANPY2
+	id S1762895AbZANP0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZANP0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:24:28 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:25198 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753706AbZANPY2 (ORCPT
+	Wed, 14 Jan 2009 10:26:02 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:34906 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbZANP0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:24:28 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AswEAOSSbUnCTtAn/2dsb2JhbACBbMw0hW8
-Date: Wed, 14 Jan 2009 16:24:23 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Rogan Dawes <lists@dawes.za.net>
-Cc: Xavier Bestel <xavier.bestel@free.fr>,
-       Tomasz Chmielewski <mangoo@wpkg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux kernel without file system
-Message-ID: <20090114152423.GA24562@frolo.macqel>
-References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel> <1231926744.11907.12.camel@skunk> <20090114101828.GA15141@frolo.macqel> <496DF66B.3050609@dawes.za.net> <20090114145239.GB21043@frolo.macqel> <496DFD45.5030408@dawes.za.net>
+	Wed, 14 Jan 2009 10:26:01 -0500
+Message-ID: <496E04BB.5010206@novell.com>
+Date: Wed, 14 Jan 2009 10:28:59 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496DFD45.5030408@dawes.za.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: mingo@elte.hu, rostedt@home.goodmis.org, peterz@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] sched: de CPP-ify the scheduler code
+References: <20090114144317.11627.69111.stgit@dev.haskins.net> <20090114144624.11627.12938.stgit@dev.haskins.net> <alpine.DEB.1.10.0901141009410.6759@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0901141009410.6759@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6BDC389FB73B2564D1831CE7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:57:09PM +0200, Rogan Dawes wrote:
-> Philippe De Muyter wrote:
-> > On Wed, Jan 14, 2009 at 04:27:55PM +0200, Rogan Dawes wrote:
-> >> Philippe De Muyter wrote:
-> >>
-> >>> Keeping thinking about it, I now think that my 'application program'
-> >>> (basically a serial-to-ethernet converter) should be a kernel thread,
-> >>> because of the small memory constraints.
-> >>>
-> >>> The question is thus how to access the serial lines from a kernel thread.
-> >>>
-> >>> Philippe
-> >> If your constraints are that severe, perhaps you should be investigating
-> >> other solutions. e.g. eCos?
-> > 
-> > I like to reuse (and contribute to) the linux drivers and kernel.
-> > 
-> >> Linux doesn't ALWAYS have to be the answer :-)
-> > 
-> > No ? :)
-> > 
-> > Philippe
-> > 
-> 
-> Ok, in that case, perhaps you should explain exactly what your
-> constraints are (target board, max memory/flash, etc), and maybe folks
-> will be able to provide more sensible answers.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6BDC389FB73B2564D1831CE7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-if possible, mcf52236 (256k flash 32k sram in chip) :)
+Steven Rostedt wrote:
+>
+> On Wed, 14 Jan 2009, Gregory Haskins wrote:
+>
+>  =20
+>> =20
+>> -#define enqueue_pushable_task(rq, p) do { } while (0)
+>> -#define dequeue_pushable_task(rq, p) do { } while (0)
+>> +static inline
+>> +void enqueue_pushable_task(struct rq *rq, struct task_struct *p) {}
+>> +static inline
+>> +void dequeue_pushable_task(struct rq *rq, struct task_struct *p) {}
+>>    =20
+>
+> Wouldn't the above look better as:
+>
+> static inline void
+> enqueue_pushable_task(struct rq *rq, struct task_struct *p)
+> {
+> }
+> static inline void
+> dequeue_pushable_task(struct rq *rq, struct task_struct *p)
+> {
+> }
+>
+>  =20
+I personally like to try to keep disabled functions ideally as close to
+one line as possible to visually denote that it isn't doing anything
+worth looking at.  But I don't feel strongly either way, so whatever
+makes you guys happy. :)
 
-kernel+uapplication XIP in flash
+Shall I convert the others to this form as well?
 
-they seems to push something called utasker
+-Greg
 
-Philippe
+
+
+
+--------------enig6BDC389FB73B2564D1831CE7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkluBLsACgkQlOSOBdgZUxm44wCeI963PZah2HS81eLtLrznB4VN
+V/sAnA2sNmP3yRsbIUP62iCJKCefczmK
+=wE8+
+-----END PGP SIGNATURE-----
+
+--------------enig6BDC389FB73B2564D1831CE7--
