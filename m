@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762174AbZANLoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbZANLoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762174AbZANLoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 06:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbZANLm5
+	id S1762223AbZANLoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 06:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZANLoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 06:42:57 -0500
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:4160 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762202AbZANLm4 (ORCPT
+	Wed, 14 Jan 2009 06:44:16 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:2337 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758965AbZANLoO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 06:42:56 -0500
-Date: Wed, 14 Jan 2009 12:42:47 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
-Message-ID: <20090114114247.GB23674@vanheusden.com>
-References: <1231774622.4371.96.camel@laptop> <20090114114059.GA23674@vanheusden.com>
+	Wed, 14 Jan 2009 06:44:14 -0500
+X-BigFish: VPS-39(zz1432R98dR1805M179dR936fOzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KDGLXE-03-0J0-01
+Date: Wed, 14 Jan 2009 12:44:01 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, dwmw2@infradead.org,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
+Message-ID: <20090114114401.GL20283@amd.com>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1231517970-20288-9-git-send-email-joerg.roedel@amd.com> <20090110231127.GK17917@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090114114059.GA23674@vanheusden.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu Jan 15 09:10:29 CET 2009
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090110231127.GK17917@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 14 Jan 2009 11:44:02.0004 (UTC) FILETIME=[65384940:01C9763D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The key criteria for the busy wait is that the lock owner has to be running on
-> > a (different) cpu. The idea is that as long as the owner is running, there is a
-> > fair chance it'll release the lock soon, and thus we'll be better off spinning
-> > instead of blocking/scheduling.
+On Sun, Jan 11, 2009 at 12:11:27AM +0100, Ingo Molnar wrote:
 > 
-> Won't this make Linux less "green"? (-> use more power since busy loops
-> use more power than idle loops) If so, maybe it should be make
-> configurable somewhere?
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > +#define err_printk(dev, format, arg...) do {			\
+> > +		error_count += 1;				\
+> > +		if (show_all_errors || show_num_errors > 0) {	\
+> > +			WARN(1, "%s %s: " format,		\
+> > +			     dev_driver_string(dev),		\
+> > +			     dev_name(dev) , ## arg);		\
+> > +		}						\
+> > +		if (!show_all_errors && show_num_errors > 0)	\
+> > +			show_num_errors -= 1;			\
+> 
+> Note that the arithmetics here is SMP-unsafe: we only hold the hash bucket 
+> so if two errors hit at once on two CPUs then the error tracking variables 
+> can be accessed at once.
+> 
+> I'd suggest a simple global lock for this error case (taken inside the 
+> hash bucket lock), to be on the safe side.
 
-Oh darn, it *is* configurable at run-time.
-Sorry for the noise.
+As I wrote in a previous email, a race here is no big deal. I add a
+comment to document it. Or do we want another global lock here?
 
+> Also, please dont use a macro for this - printk details can be passed in 
+> to helper inlines/functions too.
 
-Folkert van Heusden
+Hmm, how does this look like? There is not WARN variant which can use
+va_args as a parameter. And it is important that the error message is
+logged in the warning itself. So the driver developer can see it when a
+user reports the warning.
+
+Joerg
 
 -- 
-Multitail est un outil permettant la visualisation de fichiers de
-journalisation et/ou le suivi de l'exécution de commandes. Filtrage,
-mise en couleur de mot-clé, fusions, visualisation de différences
-(diff-view), etc.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei MÃ¼nchen
+ System    | 
+ Research  | GeschÃ¤ftsfÃ¼hrer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis MÃ¼nchen
+           | Registergericht MÃ¼nchen, HRB Nr. 43632
+
