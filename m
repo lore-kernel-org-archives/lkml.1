@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbZANVha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbZANVib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbZANVha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZANVg4
+	id S1760314AbZANVib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZANViX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:36:56 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33718 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760339AbZANVgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:36:55 -0500
-Message-ID: <496E5AB2.7040507@sandeen.net>
-Date: Wed, 14 Jan 2009 15:35:46 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 14 Jan 2009 16:38:23 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:12159 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbZANViV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:38:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=oTRswYP6gtmXK2/S/XIjZ59XzIGnLIr9BS+c07uFxsGYaf32MHq6S5ukf9V9Y5Q4uL
+         QoXbqvNAjmrQm33Ia15wvMMZt3u196NGY+/a4i9yKIXRKeIqndKqr+qb9ltyZhKDWo4l
+         6T2OBoFbBtMJHp95X8ME0ZVtUW1WQ3WaIn9+c=
+Message-ID: <86802c440901141338m78233d09y99d79be98eea4cba@mail.gmail.com>
+Date: Wed, 14 Jan 2009 13:38:20 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: make 32bit MAX_HARDIRQSS_PER_CPU to be NR_VECTORS
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090114111755.GN2913@elte.hu>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: wk <handygewinnspiel@gmx.de>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-References: <20090112190420.51f75853@pedra.chehab.org>	 <20090112132130.6c932b85.akpm@linux-foundation.org>	 <20090112220624.4fbfee34@pedra.chehab.org>	 <20090112162337.318dd61d.akpm@linux-foundation.org>	 <20090113184755.87720@gmx.net>	 <20090113105947.9e774b69.akpm@linux-foundation.org>	 <20090113191757.74290@gmx.net>	 <20090113113700.776a94b5.akpm@linux-foundation.org>	 <20090113203843.GJ29283@parisc-linux.org>	 <1231957750.8269.28.camel@think.oraclecorp.com>  <496E56EB.2030301@gmx.de> <1231968240.8269.48.camel@think.oraclecorp.com>
-In-Reply-To: <1231968240.8269.48.camel@think.oraclecorp.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <496B9FF3.3080909@kernel.org> <20090114111755.GN2913@elte.hu>
+X-Google-Sender-Auth: 56c7a7a7b3dd4342
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Wed, 2009-01-14 at 22:19 +0100, wk wrote:
-...
->> I cannot fully understand what strace -v outputs (see attachment), but 
->> what i see is that 'find' stops after finding a file with d_off = 4294967295
->> 4294967295  =  0xFFFFFFFF, adding any number greater that zero will be 
->> greater that 32bits, so this could be the reason for the message "value 
->> too large".
+On Wed, Jan 14, 2009 at 3:17 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+>
+>> Impact: clean up to be same as 64bit
 >>
+>> 32bit is use per-cpu vector too, so don't use default NR_IRQS
 >>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 >>
->> I also noticed that i cannot access these files through samba if i boot 
->> from 2.6.28 - really strange.
->> If i reboot older kernels these are visible in samba again and fully 
->> accessible.
+>> ---
+>>  arch/x86/include/asm/hardirq_32.h  |    3 +++
+>>  arch/x86/include/asm/irq_vectors.h |    4 ++--
+>>  2 files changed, 5 insertions(+), 2 deletions(-)
 >>
->> Attached the log from stracing the command which was ivoked by the 
->> Makefile from v4l-dvb.
->> I guess this is all i could contribute to that problem. Thats stuff for 
->> xfs filesystem experts now..
-> 
-> Seems suspect indeed.  Could you please attach the strace for the run
-> that works on the older kernel?
+>> Index: linux-2.6/arch/x86/include/asm/hardirq_32.h
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/include/asm/hardirq_32.h
+>> +++ linux-2.6/arch/x86/include/asm/hardirq_32.h
+>> @@ -20,6 +20,9 @@ typedef struct {
+>>
+>>  DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+>>
+>> +/* We can have at most NR_VECTORS irqs routed to a cpu at a time */
+>> +#define MAX_HARDIRQS_PER_CPU NR_VECTORS
+>> +
+>>  #define __ARCH_IRQ_STAT
+>>  #define __IRQ_STAT(cpu, member) (per_cpu(irq_stat, cpu).member)
+>
+> applied to tip/x86/cleanups. Btw., isnt the irq_vectors.h bit (mentioned
+> in the diffstat) missing?
+>
 
-Chris got my attention on this one; you probably want this fix from hch:
+copy and modify the patch
+forget to do quilt refresh --diffstat
 
-http://oss.sgi.com/archives/xfs/2009-01/msg00158.html
-
--Eric
+YH
