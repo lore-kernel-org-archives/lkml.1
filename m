@@ -1,105 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbZANDfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZANDsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756936AbZANDfo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 22:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZANDff
+	id S1755460AbZANDsV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 22:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZANDsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 22:35:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49913 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbZANDfe (ORCPT
+	Tue, 13 Jan 2009 22:48:11 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2955 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967AbZANDsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 22:35:34 -0500
-Date: Tue, 13 Jan 2009 22:35:33 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] module: kzalloc mod->ref
-Message-ID: <20090114033533.GL25103@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 13 Jan 2009 22:48:09 -0500
+Subject: Re: [PATCH 0/10] MAINTAINERS - script, patterns, and misc fixes
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, pavel@ucw.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <20090113125435.4821123a.akpm@linux-foundation.org>
+References: <1231878498-25171-1-git-send-email-joe@perches.com>
+	 <20090113125435.4821123a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 19:49:02 -0800
+Message-Id: <1231904942.7935.486.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+On Tue, 2009-01-13 at 12:54 -0800, Andrew Morton wrote:
+> I applaud the intent.
+> This patchset is basically unmergeable by anyone except Linus - it
+> already gets three rejects against half-hour-old mainline.
 
-Dynamically allocate mod->ref instead of fixing it in the struct module.
-Reduces on disk space wasted in the module .ko, and kills a loop
-initializing the local_t it contains since we can just kzalloc it.
+True.
 
-This matters when we're talking about large NR_CPUS.
+> How does it work, anyway?
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
----
-The patch removing cacheline_aligned from struct module_ref should be
-applied as well to cut down on the amount of memory we allocate. This
-patch makes a nice stopgap until we have per_cpu module references.
+Find a section/file match by pattern.
+If --git set (default), find the git "by: " signees by file.
+It uses the equivalent of what Linus posted quite a while back.
 
-cheers, Kyle
-
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 4f7ea12..5863998 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -345,7 +345,7 @@ struct module
- 	void (*exit)(void);
- 
- 	/* Reference counts */
--	struct module_ref ref[NR_CPUS];
-+	struct module_ref *ref;
- #endif
- };
- #ifndef MODULE_ARCH_INIT
-diff --git a/kernel/module.c b/kernel/module.c
-index c9332c9..bc0a9b0 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -571,17 +571,19 @@ static char last_unloaded_module[MODULE_NAME_LEN+1];
- 
- #ifdef CONFIG_MODULE_UNLOAD
- /* Init the unload section of the module. */
--static void module_unload_init(struct module *mod)
-+static int module_unload_init(struct module *mod)
- {
--	unsigned int i;
-+	mod->ref = kzalloc(NR_CPUS * sizeof(*mod->ref), GFP_KERNEL);
-+	if (!mod->ref)
-+		return -ENOMEM;
- 
- 	INIT_LIST_HEAD(&mod->modules_which_use_me);
--	for (i = 0; i < NR_CPUS; i++)
--		local_set(&mod->ref[i].count, 0);
- 	/* Hold reference count during initialization. */
- 	local_set(&mod->ref[raw_smp_processor_id()].count, 1);
- 	/* Backwards compatibility macros put refcount during init. */
- 	mod->waiter = current;
++sub recent_git_signoffs {
++    my ($file) = @_;
 +
-+	return 0;
- }
- 
- /* modules using other modules */
-@@ -919,8 +921,9 @@ static inline int use_module(struct module *a, struct module *b)
- 	return strong_try_module_get(b) == 0;
- }
- 
--static inline void module_unload_init(struct module *mod)
-+static inline int module_unload_init(struct module *mod)
- {
-+	return 0;
- }
- #endif /* CONFIG_MODULE_UNLOAD */
- 
-@@ -2071,7 +2074,9 @@ static noinline struct module *load_module(void __user *umod,
- 	mod = (void *)sechdrs[modindex].sh_addr;
- 
- 	/* Now we've moved module, initialize linked lists, etc. */
--	module_unload_init(mod);
-+	err = module_unload_init(mod);
-+	if (err < 0)
-+		goto free_unload;
- 
- 	/* add kobject, so we can reference it. */
- 	err = mod_sysfs_init(mod);
++    my $sign_offs = "";
++    my $cmd = "";
++    my $output = "";
++
++    my @lines = ();
++
++    if (which("git") eq "") {
++       die("$P: git not found.  Add --nogit to options?\n");
++    }
++
++    $cmd = "git log --since=12.months.ago -- ${file}";
++    $cmd .= " | grep -i '^    [-a-z]*by:.*\\\@'";
++    if (!$email_git_penguin_chiefs) {
++       $cmd .= " | grep -E -v \"${penguin_chiefs}\"";
++    }
++    $cmd .= " | sort | uniq -c | sort -r -n | head -n 5";
++    $cmd .= " | cut -f 2 -d ':' -s";
+
+
+> akpm:/usr/src/git26> ../25/scripts/get_maintainer.pl -f mm/filemap.c 
+> Balbir Singh <balbir@linux.vnet.ibm.com>
+> Hugh Dickins <hugh@veritas.com>
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Miklos Szeredi <mszeredi@suse.cz>
+> Nick Piggin <npiggin@suse.de>
+> 
+> I think Balbir would be surprised!
+
+$ scripts/get_maintainer.pl --nogit -f mm/filemap.c
+linux-kernel@vger.kernel.org
+linux-mm@kvack.org
+
+> akpm:/usr/src/git26> ../25/scripts/get_maintainer.pl -f fs/ext3/super.c
+> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Christoph Hellwig <hch@lst.de>
+> Jan Blunck <jblunck@suse.de>
+> Jan Kara <jack@suse.cz>
+> Marcin Slusarz <marcin.slusarz@gmail.com>
+> 
+> mm..  spose so, but it isn't terribly accurate.  Does it take
+> signed-off-by:s and/or the git Commit: header into account?
+
+Just the most frequent and top 5 "by:" signees for the last year.
+
+$ scripts/get_maintainer.pl --nogit -f fs/ext3/super.c
+Andreas Dilger <adilger@sun.com>
+Andrew Morton <akpm@linux-foundation.org>
+Stephen Tweedie <sct@redhat.com>
+linux-ext4@vger.kernel.org
+
+> akpm:/usr/src/git26> ../25/scripts/get_maintainer.pl -f fs/xfs/xfs.h   
+> Christoph Hellwig <hch@infradead.org>
+> Donald Douwsma <donaldd@sgi.com>
+> Eric Sandeen <sandeen@sandeen.net>
+> Lachlan McIlroy <lachlan@sgi.com>
+> Tim Shimmin <tes@sgi.com>
+> 
+> OK, that was an easy case.
+
+$ scripts/get_maintainer.pl --nogit -f fs/xfs/xfs.h
+Tim Shimmin <xfs-masters@oss.sgi.com>
+xfs@oss.sgi.com
+
+
+> It's a bit slow.  That's git's fault.  Perhaps some git person will be
+> able to suggest ways of speeding it up.
+
+Don't use git?  Add --nogit?
+
+> akpm:/usr/src/git26> ../25/scripts/get_maintainer.pl -f mm/pdflush.c 
+> Ingo Molnar <mingo@elte.hu>
+> Jesper Juhl <jesper.juhl@gmail.com>
+> Mike Travis <travis@sgi.com>
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> Pavel Machek <pavel@suse.cz>
+> 
+> again, not the result I'd have expected!
+
+$ scripts/get_maintainer.pl --nogit -f mm/pdflush.c 
+linux-kernel@vger.kernel.org
+linux-mm@kvack.org
+
+> But I guess we can fine-tune these thnigs after we get the bulk of it
+> settled in.
+> My script generates what I consider to be better results:
+
+[script...]
+
+I have no problem changing the get_maintainer.pl script to use
+only the "author:" instead of the signees.
+
+My desire is to add the file patterns themselves.
+
