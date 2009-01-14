@@ -1,87 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbZANUwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759240AbZANUxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759154AbZANUwJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:52:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZANUvv
+	id S1759240AbZANUxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:53:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZANUxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:51:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36062 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbZANUvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:51:50 -0500
-Date: Wed, 14 Jan 2009 21:51:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
-       andi@firstfloor.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
-       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
-       hannes@cmpxchg.org
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090114205122.GC6519@elte.hu>
-References: <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114105300.66bd014d.akpm@linux-foundation.org> <20090114190008.GA13203@elte.hu> <20090114113638.c818fcf8.akpm@linux-foundation.org> <20090114201435.GA6519@elte.hu> <20090114123017.9acf42d7.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 14 Jan 2009 15:53:22 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:33215 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754245AbZANUxW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 15:53:22 -0500
+Date: Wed, 14 Jan 2009 21:55:04 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       harvey.harrison@gmail.com, jaswinderrajput@gmail.com
+Subject: Re: [patch 0/5] x86 -tip: headers cleanup
+Message-ID: <20090114205504.GB4076@uranus.ravnborg.org>
+References: <496e4e23.0305560a.4545.ffffaf3c@mx.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114123017.9acf42d7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <496e4e23.0305560a.4545.ffffaf3c@mx.google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 14, 2009 at 11:37:45PM +0300, Cyrill Gorcunov wrote:
+> Small series of headers cleanup, easy to bisect.
+> make headers_check still complains about vars
+> being found in comments but this is just a false
+> alarm. Please review.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Looked good when I ran through them.
+As for the sys_arch_prctl() I do not know.
 
-> > > Do people enable CONFIG_SCHED_DEBUG?
-> > 
-> > If they suspect performance problems and want to analyze them?
-> 
-> The vast majority of users do not and usually cannot compile their own 
-> kernels.
+Feel free to add my Acked-By.
 
-... which they derive from distro kernels or some old .config they always 
-used, via 'make oldconfig'. You are arguing against well-established facts 
-here.
-
-If you dont believe my word for it, here's an analysis of all kernel 
-configs posted to lkml in the past 8 months:
-
-   $ grep ^CONFIG_SCHED_DEBUG linux-kernel | wc -l
-   424
-
-   $ grep 'CONFIG_SCHED_DEBUG is not' linux-kernel | wc -l
-   109
-
-i.e. CONFIG_SCHED_DEBUG=y is set in 80% of the configs. A large majority 
-of testers has it enabled and /sys/debug/sched_features was always a good 
-mechanism that we used for runtime toggles.
-
-> > Note that CONFIG_SCHED_DEBUG=y is also the default.
-> 
-> akpm:/usr/src/25> echo $ARCH
-> x86_64
-> akpm:/usr/src/25> make defconfig
-> *** Default configuration is based on 'x86_64_defconfig'
-
-x86 defconfig is used too, but it's a pretty rare usage.
-
-Under default i mean the customary meaning of default config: it's the 
-default if you come via 'make oldconfig' or if you derive your config from 
-a distro config:
-
-| config SCHED_DEBUG
-|        bool "Collect scheduler debugging info"
-|        depends on DEBUG_KERNEL && PROC_FS
-|        default y
-
-	Ingo
+	Sam
