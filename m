@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZANKrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbZANKsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbZANKrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZANKrY
+	id S1758153AbZANKsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZANKsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:47:24 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:47377 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZANKrX (ORCPT
+	Wed, 14 Jan 2009 05:48:23 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58367 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753283AbZANKsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:47:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iXftcR55t2kZTcyne92VrlFp/rkhnfqXWoncpHedKLy6wuqjqmZiinKIsg1uDu0yw0
-         J+KeYeI6i2BA+mr+Ce4kPDiwBlv7ulHmmfGGhYySkib8gtawi3N7M23RhroffARH+BAn
-         +f8CYunNpFI02qzPbi2UC4VFb4zrGd8CLVFyc=
-Date: Wed, 14 Jan 2009 10:47:16 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, dada1@cosmosbay.com,
-       w@1wt.eu, ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090114104716.GE4234@ff.dom.local>
-References: <20090114085308.GB4234@ff.dom.local> <20090114.012919.117682429.davem@davemloft.net> <20090114094215.GC4234@ff.dom.local> <20090114.020637.181791518.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114.020637.181791518.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 05:48:22 -0500
+Date: Wed, 14 Jan 2009 10:48:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Greg KH <greg@kroah.com>, Arve Hj?nnev?g <arve@android.com>,
+       Brian Swetland <swetland@google.com>, arve@google.com,
+       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: lowmemory android driver not needed?
+Message-ID: <20090114104834.18387fca@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090114104307.GA20451@elf.ucw.cz>
+References: <20090114010223.GA21380@kroah.com>
+	<20090114021801.GA14759@bulgaria.corp.google.com>
+	<d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com>
+	<20090114035237.GB16442@kroah.com>
+	<20090114104307.GA20451@elf.ucw.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:06:37AM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Wed, 14 Jan 2009 09:42:16 +0000
+> > Alan, does this sound like it should remain in the tree?
 > 
-> > On Wed, Jan 14, 2009 at 01:29:19AM -0800, David Miller wrote:
-> > > From: Jarek Poplawski <jarkao2@gmail.com>
-> > > Date: Wed, 14 Jan 2009 08:53:08 +0000
-> > > 
-> > > > Actually, I still think my second approach (the PageSlab) is probably
-> > > > (if tested) the easiest for now, because it should fix the reported
-> > > > (Willy's) problem, without any change or copy overhead for splice to
-> > > > file (which could be still wrong, but not obviously wrong).
-> > > 
-> > > It's a simple fix, but as Herbert stated it leaves other ->sendpage()
-> > > implementations exposed to data corruption when the from side of the
-> > > pipe buffer is a socket.
-> > 
-> > I don't think Herbert meant other ->sendpage() implementations, but I
-> > could miss something.
-> 
-> I think he did :-)
+> Maybe our oom killer should get a new tunable, telling it how
+> aggressive it should be, instead?
 
-I hope Herbert will make it clear.
+I was thinking that, and it would integrate better with the OLPC work
+(which IMHO is a nicer interface for some stuff)
 
-> 
-> Or, more generally, he could have been referring to splice pipe
-> outputs.  All of these things grab references to pages and
-> expect that to keep the underlying data from being reallocated.
-> 
-> That doesn't work for this skb->data case.
-> 
-> > > That, to me, is almost worse than a bad fix.
-> > > 
-> > > It's definitely worse than a slower but full fix, which the copy
-> > > patch is.
-> > 
-> > Sorry, I can't see how this patch could make sendpage worse.
-> 
-> Because that patch only fixes TCP's ->sendpage() implementation.
+You'd want two thresholds
 
-Yes, it fixes (I hope) the only reported implementation.
+The 'arghhhh....' point where you start killing stuff
+The 'uh oh...' point where an OLPC style low memory notifier kicks in
 
-> 
-> There are others out there which could end up experiencing similar
-> data corruption.
+(OLPC's model is a handle you can select/poll for 'memory getting low' so
+apps can respond to pressure by doing stuff like dumping caches)
 
-Since this fix is very simple (and IMHO safe) it could be probably
-used elsewhere too, but I doubt we should care at the moment.
-
-Jarek P.
+The rest ought to follow naturally IFF you can find a clean efficient way
+to measure that pressure and quantify it as a number. Our default would
+be like now, the Android default might be to trigger earlier..
