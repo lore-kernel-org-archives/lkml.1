@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbZANTiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZANTi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbZANTiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZANThv
+	id S1757378AbZANTi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZANTir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:37:51 -0500
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2400 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757311AbZANThs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:37:48 -0500
-Date: Wed, 14 Jan 2009 20:37:46 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.28] BUG: unable to handle kernel NULL pointer dereference at
-	00000010
-Message-ID: <20090114193745.GQ23674@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 14 Jan 2009 14:38:47 -0500
+Received: from mga02.intel.com ([134.134.136.20]:25892 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756035AbZANTiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:38:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,263,1231142400"; 
+   d="scan'208";a="481679046"
+Date: Wed, 14 Jan 2009 11:38:44 -0800
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: kernel BUG at fs/ext/super.c:428
+Message-ID: <20090114193844.GA18436@linux-os.sc.intel.com>
+References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com> <20090114044059.GA6222@mit.edu> <20090114191632.GA13114@linux-os.sc.intel.com> <1231961377.14825.51.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu Jan 15 09:10:29 CET 2009
-X-Message-Flag: www.vanheusden.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1231961377.14825.51.camel@laptop>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jan 14, 2009 at 11:29:37AM -0800, Peter Zijlstra wrote:
+> On Wed, 2009-01-14 at 11:16 -0800, Pallipadi, Venkatesh wrote:
+> > On Tue, Jan 13, 2009 at 08:40:59PM -0800, Theodore Tso wrote:
+> > > On Wed, Jan 14, 2009 at 02:48:13AM +0000, Arjan van de Ven wrote:
+> > > >> Well, Arjan's commit, efaee192: "async: make the final inode deletion
+> > > >> an asynchronous event", does change how inodes get deleted, and this
+> > > >> looks like a race where an inode is getting deleted during the umount.
+> > > >>
+> > > >> So I would try reverting commit efaee192 and see if it fixes things
+> > > >> before starting a full bisect...
+> > > >
+> > > > the commit is already reverted before rc1
+> > > >
+> > >
+> > > Ah, right.  I see, the async infrastructure is still in fs/super.c,
+> > > but the actual code to insert deleted inodes onto the s_async_list was
+> > > removed in commit b32714b.  Sorry, that confused me.
+> > >
+> > > OK, so assuming that Venkatesh was using something post-rc1, I can't
+> > > suggest anything other than a full bisect.  Sorry....
+> > >
+> >
+> > Below is the result of full bisect
+> >
+> > 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
+> > commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
+> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date:   Fri Sep 26 19:32:20 2008 +0200
+> >
+> >     futex: rely on get_user_pages() for shared futexes
+> >
+> >     On the way of getting rid of the mmap_sem requirement for shared futexes,
+> >     start by relying on get_user_pages().
+> >
+> >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> >
+> > :040000 040000 029e79e0a7421438c2a7437dd210a1acf40b6c29 b581716762c1952c0f515fac642690514e7224b7 M      include
+> > :040000 040000 5f604b60974dbb9b0ac1a0910234f28c43a5e691 10c576cabe7eae661501ec38861a0f7488d5353b M      kernel
+> 
+> However does a futex change make ext3 crap its pants?
+> 
+> Is there anything more to it than start the machine, and reboot?
 
-Was able to trigger the following:
-[  812.572406] FDC 0 is a post-1991 82077
-[  812.587464] work still pending
-[  812.593304] BUG: unable to handle kernel NULL pointer dereference at 00000010
-[  812.593443] IP: [<c01f8633>] elv_next_request+0x1ba/0x1cd
-[  812.593542] *pde = 00000000 
-[  812.593635] Oops: 0000 [#1] SMP 
-[  812.593756] last sysfs file: /sys/devices/pci0000:00/0000:00:1d.7/usb1/idVendor
-[  812.593827] Modules linked in: snd_intel8x0(+) battery thermal processor loop container ata_generic pcspkr i2c_i801 uhci_hcd(-) i2c_core dm_snapshot ac ehci_hcd rng_core snd_ac97_codec ide_cd_mod shpchp dm_mirror dm_region_hash parport_pc pci_hotplug evdev parport cdrom libata scsi_mod dm_log thermal_sys snd_pcm snd_timer ac97_bus snd_page_alloc snd soundcore hid_dell hid_pl hid_cypress hid_zpff hid_gyration hid_bright hid_sony hid_samsung hid_microsoft hid_tmff hid_monterey hid_ezkey hid_apple hid_a4tech hid_logitech ff_memless hid_cherry hid_sunplus hid_petalynx hid_belkin hid_chicony usbhid hid netconsole ipv6 intel_agp agpgart ext3 jbd mbcache dm_mod ide_generic ide_gd_mod piix ide_core e1000 usbcore [last unloaded: floppy]
-[  812.596668] 
-[  812.596718] Pid: 10, comm: events/1 Not tainted (2.6.28 #1) 808736G
-[  812.596777] EIP: 0060:[<c01f8633>] EFLAGS: 00010046 CPU: 1
-[  812.596838] EIP is at elv_next_request+0x1ba/0x1cd
-[  812.596894] EAX: dd63ccc0 EBX: de89981c ECX: 00000000 EDX: 00000000
-[  812.596951] ESI: de899834 EDI: dd63ccc0 EBP: db078f04 ESP: db078ef0
-[  812.597007]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[  812.597007] Process events/1 (pid: 10, ti=db078000 task=db096520 task.ti=db078000)
-[  812.597007] Stack:
-[  812.597007]  00000000 00000002 de89981c de899834 db02d600 db078f60 de89292c db078f34
-[  812.597007]  c01264b7 00000000 00000002 00000000 c012646e 00000046 db02d610 db02d624
-[  812.597007]  00000246 db078f90 db02d600 db078f60 00000246 00000000 00000002 00000000
-[  812.597007] Call Trace:
-[  812.597007]  [<c01264b7>] ? finish_task_switch+0x49/0xbe
-[  812.597007]  [<c012646e>] ? finish_task_switch+0x0/0xbe
-[  812.597007]  [<c0138568>] ? run_workqueue+0xd7/0x1a5
-[  812.597007]  [<c0138523>] ? run_workqueue+0x92/0x1a5
-[  812.597007]  [<c0147b67>] ? trace_hardirqs_on+0xb/0xd
-[  812.597007]  [<c01386ed>] ? worker_thread+0xb7/0xc3
-[  812.597007]  [<c013b7ab>] ? autoremove_wake_function+0x0/0x33
-[  812.597007]  [<c0138636>] ? worker_thread+0x0/0xc3
-[  812.597007]  [<c013b531>] ? kthread+0x3b/0x61
-[  812.597007]  [<c013b4f6>] ? kthread+0x0/0x61
-[  812.597007]  [<c01048e3>] ? kernel_thread_helper+0x7/0x10
-[  812.597007] Code: f0 8d 55 f0 89 f8 e8 e9 38 00 00 85 c0 74 0d 8b 5d f0 85 db 0f 85 67 fe ff ff eb 18 8b 07 39 f8 75 dc 8b 47 0c 31 d2 8b 08 89 f8 <ff> 51 10 85 c0 75 ea 31 db 8d 65 f4 89 d8 5b 5e 5f 5d c3 55 89 
-[  812.597007] EIP: [<c01f8633>] elv_next_request+0x1ba/0x1cd SS:ESP 0068:db078ef0
-[  812.597007] ---[ end trace 965a3d81f81574b8 ]---
+Just system startup and reboot is enough to reproduce the problem. And 100%
+reproducible. So, does seem to be any timing involved either.
 
-
-On a p4 with ht, ide disk and 512mb of ram.
-
-
-Folkert van Heusden
-
--- 
-
-Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
-kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
-i t.d.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Thanks,
+Venki
