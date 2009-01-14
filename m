@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZANIbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbZANIeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbZANIbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZANIbl
+	id S1760767AbZANIeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZANIeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:31:41 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61520 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536AbZANIbk (ORCPT
+	Wed, 14 Jan 2009 03:34:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49424 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756669AbZANIeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:31:40 -0500
-Date: Wed, 14 Jan 2009 17:29:12 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] memcg: fix return value of mem_cgroup_hierarchy_write()
-Message-Id: <20090114172912.95a78542.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <496D9E0C.4060806@cn.fujitsu.com>
-References: <496D9E0C.4060806@cn.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 14 Jan 2009 03:34:04 -0500
+Date: Wed, 14 Jan 2009 00:32:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [PATCH][bugfix] kprobes: fix module compilation error with
+ CONFIG_KPROBES=n
+Message-Id: <20090114003234.3720e9a1.akpm@linux-foundation.org>
+In-Reply-To: <49628849.1000706@redhat.com>
+References: <49628849.1000706@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,49 +30,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 16:10:52 +0800, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> When there are sub-dirs, writing to memory.use_hierarchy returns -EBUSY,
-> this doesn't seem to fit the meaning of EBUSY, and is inconsistent with
-> memory.swappiness, which returns -EINVAL in this case.
+On Mon, 05 Jan 2009 17:23:05 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Define kprobes related data structures even if CONFIG_KPROBES is not set.
+> This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
+> kprobe using modules.
 > 
-I also think -EBUSY is not so bad in this case.
-
-Thanks,
-Daisuke Nishimura.
-
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 > ---
->  mm/memcontrol.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
+>  include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
+>  1 file changed, 23 insertions(+), 22 deletions(-)
 > 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index bc8f101..2497f7d 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1760,6 +1760,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
->  	struct cgroup *parent = cont->parent;
->  	struct mem_cgroup *parent_mem = NULL;
->  
-> +	if (val != 0 && val != 1)
-> +		return -EINVAL;
-> +
->  	if (parent)
->  		parent_mem = mem_cgroup_from_cont(parent);
->  
-> @@ -1773,12 +1776,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
->  	 * set if there are no children.
->  	 */
->  	if ((!parent_mem || !parent_mem->use_hierarchy) &&
-> -				(val == 1 || val == 0)) {
-> -		if (list_empty(&cont->children))
-> +	    list_empty(&cont->children))
->  			mem->use_hierarchy = val;
-> -		else
-> -			retval = -EBUSY;
-> -	} else
-> +	else
->  		retval = -EINVAL;
->  	cgroup_unlock();
->  
-> -- 
-> 1.5.4.rc3
+> Index: 2.6.28/include/linux/kprobes.h
+> ===================================================================
+> --- 2.6.28.orig/include/linux/kprobes.h
+> +++ 2.6.28/include/linux/kprobes.h
+> @@ -37,9 +37,9 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/mutex.h>
+> +#include <asm/kprobes.h>
+> 
+>  #ifdef CONFIG_KPROBES
+> -#include <asm/kprobes.h>
+> 
+
+The above change breaks alpha, and any other architecture which has no
+asm/kprobes.h.
+
+I undid that change, but maybe that rebroke things?
