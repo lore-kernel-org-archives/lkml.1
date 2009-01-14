@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbZANAMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZANAOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759913AbZANAMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZANAM2
+	id S1759504AbZANAOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZANANr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:12:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34227 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753170AbZANAM1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:12:27 -0500
-Date: Tue, 13 Jan 2009 16:12:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: zbr@ioremap.net, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [0/7] Distributed storage for drivers/staging merge request
-Message-Id: <20090113161221.b23510b4.akpm@linux-foundation.org>
-In-Reply-To: <20090114000130.GA20811@kroah.com>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
-	<20090113233932.GA18000@kroah.com>
-	<20090113234734.GA32190@ioremap.net>
-	<20090114000130.GA20811@kroah.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 19:13:47 -0500
+Received: from kandzendo.ru ([195.178.208.66]:58091 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754600AbZANANq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:13:46 -0500
+Date: Wed, 14 Jan 2009 03:13:45 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090114001345.GB512@ioremap.net>
+References: <20090111133533.GB25337@ioremap.net> <496A17A5.7010200@cosmosbay.com> <20090111160548.GA362@ioremap.net> <20090113.160721.68474279.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113.160721.68474279.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 16:01:30 -0800
-Greg KH <greg@kroah.com> wrote:
-
-> > Really. I implemented all the suggestions I got from the previous
-> > reviews (including spaces and documentations, which btw were the only
-> > ones :) way too long ago and did not get any other complaints. Actually
-> > the tree I sent to you does not contain documentation update I have in
-> > the own tree (pointed during review), so this can be added as todo entry :)
-> > My fault I found that too late.
+On Tue, Jan 13, 2009 at 04:07:21PM -0800, David Miller (davem@davemloft.net) wrote:
+> > Exactly, and to have it we earlier release a socket so that it could be
+> > acked and while we copy it or doing anything else, the next one would
+> > received.
 > 
-> Hm, then why can't this whole thing just go into fs/dst/ right now?
-> It's self-contained, so there shouldn't be any special "must live in
-> staging" rule for filesystems before adding them.
-> 
-> We take new drivers at almost any point in the release cycle, why should
-> filesystems be any different?
+> I think the socket release in skb_splice_bits() (although necessary)
+> just muddies the waters, and whether the extra one done in
+> tcp_splice_read() helps at all is open to debate.
 
-Well...  the case for merging drivers is usually pretty simple - the
-hardware exists, so we need the driver.
+Well, yes, probably simple performance test with and without will
+clarify the things.
 
-Whereas the "do we need this" case for new filesystems isn't this simple.
+> That skb_clone() done by skb_splice_bits() pisses me off too,
+> we really ought to fix that.  And we also have that data corruption
+> bug to cure too.
+
+Clone is needed since tcp expects to own the skb and frees it
+unconditionally via __kfree_skb().
+
+What is the best solution for the data corruption bug? To copy the data
+all the time or implement own allocator to be used in alloc_skb and
+friends to allocate the head? I think it can be done transparently for
+the drivers. I can volunteer for this :)
+The first one is more appropriate for the current bugfix-only stage,
+but this will result in the whole release being too slow.
+
+-- 
+	Evgeniy Polyakov
