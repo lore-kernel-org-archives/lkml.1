@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZANAQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZANATS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761203AbZANAQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbZANAQ0
+	id S1760763AbZANATS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZANATG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:16:26 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53021
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756895AbZANAQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:16:24 -0500
-Date: Tue, 13 Jan 2009 16:16:25 -0800 (PST)
-Message-Id: <20090113.161625.111759506.davem@davemloft.net>
-To: zbr@ioremap.net
-Cc: dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090114001345.GB512@ioremap.net>
-References: <20090111160548.GA362@ioremap.net>
-	<20090113.160721.68474279.davem@davemloft.net>
-	<20090114001345.GB512@ioremap.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 13 Jan 2009 19:19:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:46111 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753706AbZANATF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:19:05 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 13/13] x86_32: make percpu symbols zerobased on SMP
+Date: Wed, 14 Jan 2009 10:48:58 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: ebiederm@xmission.com, cl@linux-foundation.org, mingo@elte.hu,
+       travis@sgi.com, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <1231843097-18003-14-git-send-email-tj@kernel.org>
+In-Reply-To: <1231843097-18003-14-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901141048.59632.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Date: Wed, 14 Jan 2009 03:13:45 +0300
+On Tuesday 13 January 2009 21:08:17 Tejun Heo wrote:
+> This patch makes percpu symbols zerobased on x86_32 SMP by using
+> PERCPU_VADDR() with 0 vaddr in vmlinux_32.lds.S.  A new PHDR is added
+> as existing ones cannot contain sections near address zero.
+...
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Mike Travis <travis@sgi.com>
+> ---
+>  arch/x86/kernel/cpu/common.c     |    8 ++++++++
+>  arch/x86/kernel/head_32.S        |   37 ++++++++++++++++++++++++++++++++++---
+>  arch/x86/kernel/setup_percpu.c   |    4 ----
+>  arch/x86/kernel/vmlinux_32.lds.S |   16 +++++++++++++++-
+>  4 files changed, 57 insertions(+), 8 deletions(-)
 
-> What is the best solution for the data corruption bug? To copy the data
-> all the time or implement own allocator to be used in alloc_skb and
-> friends to allocate the head? I think it can be done transparently for
-> the drivers. I can volunteer for this :)
-> The first one is more appropriate for the current bugfix-only stage,
-> but this will result in the whole release being too slow.
+Hmm, the only reason for this change is to unify with 64-bit, yes?  Yet it
+doesn't actually win us anything on that front, as this diffstat shows.
 
-I am looking into this right now.
+If gcc's -mcmodel=kernel had used a weak symbol for the offset of the stack
+canary, we would have been happy.  Unfortunately generic per-cpu and x86-64
+PDA were developed separately, so noone realize the problem until too late.
 
-I wish there were some way we could make this code grab and release a
-reference to the SKB data area (I mean skb_shinfo(skb)->dataref) to
-accomplish it's goals.
+The basic series looks good: it will clash with my per-cpu work (mainly
+because I remove the per_cpu__ prefix) in a purely-textual way though.
+
+Thanks for this!
+Rusty.
