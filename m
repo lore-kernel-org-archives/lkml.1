@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZANW1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZANW3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZANW1N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZANW0w
+	id S1756326AbZANW3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZANW3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:26:52 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:56107 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755495AbZANW0u convert rfc822-to-8bit (ORCPT
+	Wed, 14 Jan 2009 17:29:22 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:16822 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbZANW3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:26:50 -0500
-Message-ID: <d6200be20901141426r1d48ea33gc9a380451e4aaf93@mail.gmail.com>
-Date: Wed, 14 Jan 2009 14:26:48 -0800
-From: "=?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?=" <arve@android.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: lowmemory android driver not needed?
-Cc: "Pavel Machek" <pavel@suse.cz>, "Greg KH" <greg@kroah.com>,
-       "Brian Swetland" <swetland@google.com>, arve@google.com,
-       "San Mehat" <san@android.com>, "Robert Love" <rlove@google.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090114104834.18387fca@lxorguk.ukuu.org.uk>
+	Wed, 14 Jan 2009 17:29:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=d3i/Pw4tNDUzPx49RlrEWWBXm/+XcG2ytzBa7QlrIlV/wSQgI4kWJH0Hq9PMf1YfUN
+         CSwGosWlNn1jYjk2XkVrDuJ+ED2lMcAQ9LN9fbueS+Onmy45P34LfOBmMsl16YuTy9Vz
+         8YJ25vMQjs5WbnraRVoynx6YuVGH6KtOZ/AU4=
+Message-ID: <9f4f8abe0901141429l4b111f7bh6ffbc0680ccf4fbc@mail.gmail.com>
+Date: Wed, 14 Jan 2009 14:29:20 -0800
+From: "Vineet Gupta" <vineetg76@gmail.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: Query about DMA map API implementation in non-coherent archs
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <49686A9E.8090808@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20090114010223.GA21380@kroah.com>
-	 <20090114021801.GA14759@bulgaria.corp.google.com>
-	 <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com>
-	 <20090114035237.GB16442@kroah.com> <20090114104307.GA20451@elf.ucw.cz>
-	 <20090114104834.18387fca@lxorguk.ukuu.org.uk>
+References: <9f4f8abe0901091045k4a06e2c9v29a7e8a7387e7a48@mail.gmail.com>
+	 <49686A9E.8090808@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 2:48 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Maybe our oom killer should get a new tunable, telling it how
->> aggressive it should be, instead?
+On Sat, Jan 10, 2009 at 1:30 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Vineet Gupta wrote:
+> ...
+>> As per dma-mapping and dma-api docs, for streaming DMA mappings arch
+>> needs to provide 2 seperate APIs
+>>
+>> 1. map API to convert cpu address into DMA address
+>> 2. sync API to flush/invalidate the dcaches for non-coherent archs
+>> (essentially when changing the ownership of buffer between cpu and
+>> device).
+>>
+>> However from what I understood, the map API need not take care of
+>> proper cache sync.However both ARM and MIPS do the cache sync
+>> operations in map API as well (this is done standalone in sync APIs
+>> too). Is there a specific reason for this.
+>>
+>> Drivers such as libata don't even call any sync API. For e.g. libata
+>> only calls dma_map_sg ( ) while setting up the DMA.
+> ...
 >
-> I was thinking that, and it would integrate better with the OLPC work
-> (which IMHO is a nicer interface for some stuff)
->
-> You'd want two thresholds
->
-> The 'arghhhh....' point where you start killing stuff
-> The 'uh oh...' point where an OLPC style low memory notifier kicks in
+> dma_map_*() transfers ownership of a buffer from CPUs to the device too.
+>  In case of DMA_TO_DEVICE or DMA_BIDIRECTIONAL, these calls therefore
+> have to make sure that the device sees current buffer contents.
 
-We actually use 6 different thresholds for killing processes. I don't
-know what all the classes are, processes with a higher oom_adj value
-can be killed with less impact to the user than processes with a lower
-oom_adj value. The first few classes only affect latency when
-switching apps, but later classes stop non critical background
-services and finally the foreground app. Another reason to not kill
-every process at the same threshold is that memory may not be free
-immediately when the process is killed.
+I feel that DMA-api.txt should explicitly say that in part Id, just
+before detailing each of the enumerator DMA_TO_DEVICE,
+DMA_FROM_DEVICE...
 
--- 
-Arve Hjønnevåg
+shall I prepare a patch...
+
+
+> --
+> Stefan Richter
+> -=====-==--= ---= -=-=-
+> http://arcgraph.de/sr/
+>
