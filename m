@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZANHcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbZANHdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbZANHcU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 02:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZANHcL
+	id S1759534AbZANHdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 02:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZANHdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 02:32:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49115 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Jan 2009 02:33:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49385 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752978AbZANHcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 02:32:10 -0500
-Date: Wed, 14 Jan 2009 08:31:46 +0100
+	id S1754672AbZANHdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 02:33:08 -0500
+Date: Wed, 14 Jan 2009 08:32:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       shai@scalex86.org
-Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
-Message-ID: <20090114073146.GA14767@elte.hu>
-References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu> <1231848016.442.112.camel@twins> <20090113123317.GA29926@elte.hu> <20090113181311.GA8075@localdomain> <20090113183420.GB10065@elte.hu> <20090113184202.GB8075@localdomain>
+To: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: hpa@zytor.com, tglx@linutronix.de, travis@sgi.com, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: fix broken flush_tlb_others_ipi()
+Message-ID: <20090114073245.GB14767@elte.hu>
+References: <20090114024303.GB1290@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090113184202.GB8075@localdomain>
+In-Reply-To: <20090114024303.GB1290@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,29 +36,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-> On Tue, Jan 13, 2009 at 07:34:20PM +0100, Ingo Molnar wrote:
-> >
-> >* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
-> >
-> >> On Tue, Jan 13, 2009 at 01:33:17PM +0100, Ingo Molnar wrote:
-> >> >
-> >> >
-> >> >VSMP is a clustering solution (default-disabled)
-> >> 
-> >> Small correction :)
-> >> Well, it is a virtualization solution creating single VM across multiple
-> >> systems.  Since it is shared memory, we would rather refer to it as SMP or
-> >> Virtual SMP rather than a clustering solution.
-> >
-> > You do have hardware help too to do efficient cross-node memory 
-> > traffic, dont you?
+> This commit broke flush_tlb_others_ipi() causing boot hangs on a
+> 16 logical cpu system.
 > 
-> Of course.  A fast backplane interconnect.
+> >	commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
+> >	Author: Rusty Russell <rusty@rustcorp.com.au>
+> >	Date:   Sat Jan 10 21:58:09 2009 -0800
+> >
+> >	    x86: change flush_tlb_others to take a const struct cpumask
+> 
+> This change resulted in sending the invalidate tlb vector to the
+> sender itself causing the hang. flush_tlb_others_ipi() should exclude
+> the sender itself from the destination list.
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+> 
+> diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
+> index 2d971a3..53289e1 100644
+> --- a/arch/x86/kernel/tlb_64.c
+> +++ b/arch/x86/kernel/tlb_64.c
+> @@ -188,7 +188,7 @@ static void flush_tlb_others_ipi(const struct cpumask *cpumask,
+>  	 * We have to send the IPI only to
+>  	 * CPUs affected.
+>  	 */
+> -	send_IPI_mask(cpumask, INVALIDATE_TLB_VECTOR_START + sender);
+> +	send_IPI_mask(f->flush_cpumask, INVALIDATE_TLB_VECTOR_START + sender);
+>  
+>  	while (!cpumask_empty(to_cpumask(f->flush_cpumask)))
+>  		cpu_relax();
 
-... so it's PCs clustered together, and called vSMP, right? ;-)
-
-a neat hack in any case.
+Good catch! This might explain one of the hangs i was seeing on a 
+test-system.
 
 	Ingo
