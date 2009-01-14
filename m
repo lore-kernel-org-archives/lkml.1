@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZANN51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZANOB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbZANN51 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 08:57:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZANN5P
+	id S1757362AbZANOB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZANOBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 08:57:15 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:41351 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbZANN5O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 08:57:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xa5xyEuYOsGN024+YfNPdrwM+VV6tTKJ/wlgiFxrJRQJ9zKpLjUXBCfvG7z7TgtBoq
-         eZgcgXbektuFhUXOK0uQPjm4J2+dYciaa77uUoD7y4JGrrgkm2plCSmWxfHVhh8Sn/po
-         UtEuAy6LYIHVzhnqd5rVVLsW5nsfz5yYd8diY=
-Date: Wed, 14 Jan 2009 13:57:06 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090114135706.GE6117@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <200901141505.46929.denys@visp.net.lb> <20090114131257.GC6117@ff.dom.local> <1231938929.14825.6.camel@laptop> <20090114132603.GD6117@ff.dom.local> <1231939946.14825.9.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231939946.14825.9.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 09:01:50 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39611 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbZANOBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:01:49 -0500
+Date: Thu, 15 Jan 2009 01:01:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+Message-Id: <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
+In-Reply-To: <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	<20090108144538.e5195575.akpm@linux-foundation.org>
+	<1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+	<20090112022138.bd2e6ce4.akpm@linux-foundation.org>
+	<20090112213339.feefdd02.sfr@canb.auug.org.au>
+	<1231936220.24082.11.camel@pc1117.cambridge.arm.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:32:26PM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 13:26 +0000, Jarek Poplawski wrote:
-> 
-> > OK, I hope Denys can apply more, but what about others? Without any
-> > patches the hole seems to be much bigger.
-> 
-> OK, I read most of this thread on netdev, but didn't find a clear clue
-> on the specific hrtimer insertion race.
-> 
-> Do you have any clear ideas or should I poke at the htb/hrtimer code a
-> little?
-> 
+--Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I didn't diagnose this entirely, and there were "a few" days since I
-wrote my opinion on this, so currently I forgot details, but I guess
-the most suspicious place is adding a hrtimer, when it's on the list,
-maybe even two times in a row. I guess it's not removed from the
-rbtree in some case. (I stopped searching after seeing you removed
-this list or something...)
+Hi Catalin,
 
-Jarek P.
+On Wed, 14 Jan 2009 12:30:20 +0000 Catalin Marinas <catalin.marinas@arm.com=
+> wrote:
+>
+> I updated the git://linux-arm.org/linux-2.6.git kmemleak branch to the
+> latest mainline and it works fine. However, I tried to merge it with the
+> linux-next tree and there are many conflicts with kmemtrace as they both
+> modify similar areas of the kernel. The conflicts are relatively simple
+> but they still need manual fixing.
+
+I just did a test merge with today's linux-next and though thee are a few
+conflicts, it is not to much for me to handle - I have had worse :-)
+
+> Are you OK with applying patches to linux-next (git am) rather than
+> using git merge? This way I can rebase kmemleak on top of linux-next.
+
+I would much prefer a few conflicts to carrying a post linux-next patch
+because linux-next can change radically day to day - especially since we
+know there will be clashes in the areas of files you would be patching.
+
+So lets use the above git tree and see how we go. OK?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklt8EUACgkQjjKRsyhoI8xaOgCguj4CoGb/APooVBLXFJjUAw+y
+cJ0AoK0BAIKOAgmka+d7qtEd16Xi/eCE
+=YmkC
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__15_Jan_2009_01_01_41_+1100_BvryWY3BzLdrJtey--
