@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZANDGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbZANDK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZANDGL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 22:06:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZANDFm
+	id S1755684AbZANDK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 22:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZANDKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 22:05:42 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:16132 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbZANDFk (ORCPT
+	Tue, 13 Jan 2009 22:10:21 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:60711 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZANDKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 22:05:40 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=v9Ccl/sCP1Eo67fXNnYnIv+B56Kfnm0uhoyf//8CwDb+ibmUw0MPIml1wnDSkb/pv
-	40PhZrYgm45NZ+xEGRiGg==
+	Tue, 13 Jan 2009 22:10:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Pot5YPVGJIPCO6t/yK7wF5fSGCRcL+mOlNtuNJ0cjc6nIwZwDbXPzO2E4DbiXsiGd2
+         iO0+DXJRQtZfsBGJoDROKXCpvbwMDWL/vrh4F0nbqHYxHPnWKQERj/u/+0MLC8cHO5X+
+         uKiEGF4i3ke1i+tBhgwzQie+zSIJInaQJmMeY=
+Message-ID: <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
+Date: Tue, 13 Jan 2009 22:10:18 -0500
+From: "James Kirin" <james.kirin40@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: memory beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <adaeiz6k4o4.fsf@cisco.com>
 MIME-Version: 1.0
-In-Reply-To: <20090114120044.2ecf13db.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090108183529.b4fd99f4.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830901131848gf7f6996iead1276bc50753b8@mail.gmail.com>
-	 <20090114120044.2ecf13db.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 13 Jan 2009 19:05:35 -0800
-Message-ID: <6599ad830901131905ie10e4bl5168ab7f337b27e1@mail.gmail.com>
-Subject: Re: [RFC][PATCH 4/4] cgroup-memcg fix frequent EBUSY at rmdir
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.93
-X-GMailtapped: menage
+Content-Disposition: inline
+References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
+	 <adaeiz6k4o4.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 7:00 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Thank you for your reply, Roland. Unfortunately, this continues
+happening after having installed the most recent version of the BIOS
+available from Dell.
+
+I understand this is a problem in the BIOS and not the kernel, but is
+there a way to have the kernel work around this bug in the BIOS and
+make that memory accessible? Eg,
+
+http://www.gossamer-threads.com/lists/linux/kernel/991748#991748
+
+The difference seems to be that the BIOS on this machine I am using
+does list 8GB memory available.
+
+Thanks for any help,
+
+James
+
+On Tue, Jan 13, 2009 at 9:22 PM, Roland Dreier <rdreier@cisco.com> wrote:
+>  > I am running kernel 2.6.28 on a computer with 8GB RAM. The BIOS
+>  > detects all 8GB, yet
+>  >
+>  > jk@as12:~$ free
+>  >              total       used       free     shared    buffers     cached
+>  > Mem:       3622504     799696    2822808          0      90936     369604
+>  > -/+ buffers/cache:     339156    3283348
+>  > Swap:      6867776          0    6867776
 >
-> Hmm, add wait_queue to css and wake it up at css_put() ?
+> The message in your kernel log:
 >
-> like this ?
-> ==
-> __css_put()
-> {
->        if (atomi_dec_return(&css->refcnt) == 1) {
->                if (notify_on_release(cgrp) {
->                        .....
->                }
->                if (someone_waiting_rmdir(css)) {
->                        wake_up_him().
->                }
->        }
-> }
-
-Yes, something like that. A system-wide wake queue is probably fine though.
-
-> pre_destroy() is for that.  Now, If there are still references from "page"
-> after pre_destroy(), it's bug.
-
-OK.
-
-Paul
+> [    0.000000] WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 4096MB of RAM.
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1662 mtrr_trim_uncached_memory+0x283/0x2a4()
+>
+> is a clue.  You might want to look for a BIOS update for your
+> motherboard.
+>
+>  - R.
+>
