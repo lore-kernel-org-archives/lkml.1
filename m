@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZANFa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbZANFb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbZANFa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 00:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZANFaT
+	id S1758744AbZANFb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 00:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZANFbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 00:30:19 -0500
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:39530 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752535AbZANFaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 00:30:17 -0500
-Date: Wed, 14 Jan 2009 11:00:15 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 1/4] Memory controller soft limit documentation
-Message-ID: <20090114053015.GK27129@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain> <20090107184116.18062.8379.sendpatchset@localhost.localdomain> <6599ad830901131745t704428dav6fbf69aa315285b1@mail.gmail.com>
+	Wed, 14 Jan 2009 00:31:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57321 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753224AbZANFbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 00:31:17 -0500
+Date: Wed, 14 Jan 2009 06:31:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Brian Rogers <brian@xyzw.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] How to get real-time priority using idle priority
+Message-ID: <20090114053106.GA10410@elte.hu>
+References: <4969D0D7.2060401@xyzw.org> <1231736941.6003.7.camel@marge.simson.net> <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu> <496BE8F6.1040308@xyzw.org> <1231815523.5899.7.camel@marge.simson.net> <1231910014.610.14.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830901131745t704428dav6fbf69aa315285b1@mail.gmail.com>
+In-Reply-To: <1231910014.610.14.camel@marge.simson.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Menage <menage@google.com> [2009-01-13 17:45:54]:
 
-> On Wed, Jan 7, 2009 at 10:41 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > -7. TODO
-> > +7. Soft limits
-> > +
-> > +Soft limits allow for greater sharing of memory. The idea behind soft limits
-> > +is to allow control groups to use as much of the memory as needed, provided
-> > +
-> > +a. There is no memory contention
-> > +b. They do not exceed their hard limit
-> > +
-> > +When the system detects memory contention (through do_try_to_free_pages(),
-> > +while allocating), control groups are pushed back to their soft limits if
-> > +possible. If the soft limit of each control group is very high, they are
-> > +pushed back as much as possible to make sure that one control group does not
-> > +starve the others.
-> 
-> Can you give an example here of how to implement the following setup:
-> 
-> - we have a high-priority latency-sensitive server job A and a bunch
-> of low-priority batch jobs B, C and D
-> 
-> - each job *may* need up to 2GB of memory, but generally each tends to
-> use <1GB of memory
-> 
-> - we want to run all four jobs on a 4GB machine
-> 
-> - we don't want A to ever have to wait for memory to be reclaimed (as
-> it's serving latency-sensitive queries), so the kernel should be
-> squashing B/C/D down *before* memory actually runs out.
-> 
-> Is this possible with the proposed hard/soft limit setup? Or do we
-> need some additional support for keeping a pool of pre-reserved free
-> memory available?
+* Mike Galbraith <efault@gmx.de> wrote:
 
-This is a more complex scenario, It sounds like B/C and D should be
-hard limited to 2G or another value, depending on how much you want to
-pre-reserve for A (all B/C and D should be in the same cgroup). Then
-you want to use soft limits within the B/C/D cgroup. You don't want to
-hard limit A, but just setup a 2G soft limit for it.
+> On Tue, 2009-01-13 at 03:58 +0100, Mike Galbraith wrote:
+> > On Mon, 2009-01-12 at 17:05 -0800, Brian Rogers wrote:
+> 
+> > > I'll try Mike's "more complete" patch on top of 2.6.29-rc1 and see what 
+> > > that does.
+> > 
+> > Don't bother.  I just tried a SCHED_IDLE make -j8 and had character
+> > repeats while typing.  Must be another spot.
+> 
+> Hrmph, what an annoying problem.  The below works pretty well, but 
+> _still_ has latency problems in some circumstances.
+> 
+> The more I look at this, the more I think these guys _really_ want to be 
+> a separate class.  The problem is the incredible rate of min_vruntime 
+> advancement creating absurdly huge spreads.
+> 
+> Hm, maybe I could advance min_vruntime at nice 0 when these guys are 
+> running, only advance their vruntime at warp 512, but that seems awfully 
+> hackish.  If they were a separate class, they could use the full nice 
+> spectrum instead of being merely mega-nice.
 
-The notion of prioritized jobs and reservation does not exist yet, but
-once we support soft limits and overcommit via soft limits, we could
-consider looking at what design aspects would help with it.
+A separate class has its own set of problems: starvation, etc.
 
--- 
-	Balbir
+What about increasing the weight of SCHED_IDLE tasks from 1 to 2 or 3? 
+That still makes them mega-nice (which is more than enough), but should 
+make the math a lot less borderline.
+
+	Ingo
