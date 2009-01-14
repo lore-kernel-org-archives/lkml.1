@@ -1,59 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765430AbZANR22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764987AbZANRcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765430AbZANR22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764339AbZANR1x
+	id S1764987AbZANRcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbZANRcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:27:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45739 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755892AbZANR1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:27:52 -0500
-Date: Wed, 14 Jan 2009 18:27:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Jan Kara <jack@suse.cz>, Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-ID: <20090114172750.GJ19950@duck.suse.cz>
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <496D1233.2060905@redhat.com> <20090114042402.GH14730@mit.edu>
+	Wed, 14 Jan 2009 12:32:43 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:36271 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762107AbZANRcl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:32:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=GA0A//lzTUN1mpqHllQbymHJ9VngmJnncoLqVmZmEsv9tHY5mCxjXMzPKvDUxKgEyG
+         zAInslZWl6pEHkLa9tydVj7L9twZOXSvcFLvFOrLipUPGCbjA5WtZz2p0+jvW5VcpGqS
+         Y7bsDZ7tsKUSr6A23iDrFzvOHBEebHJ0T9k+Q=
+Message-ID: <496E21B3.3070206@gmail.com>
+Date: Wed, 14 Jan 2009 09:32:35 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114042402.GH14730@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Paul Moore <paul.moore@hp.com>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       SE-Linux <selinux@tycho.nsa.gov>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+References: <496D759A.7010401@gmail.com> <200901140957.09722.paul.moore@hp.com> <496E0FB2.407@gmail.com> <200901141205.26904.paul.moore@hp.com>
+In-Reply-To: <200901141205.26904.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 13-01-09 23:24:02, Theodore Tso wrote:
-> On Tue, Jan 13, 2009 at 04:14:11PM -0600, Eric Sandeen wrote:
-> > 
-> > This looks sane to me, and it does fix the below testcase.
-> > 
-> > Care to formally propose it?
-> 
-> Can we confirm what is being proposed?  From following this thread, I
-> think what folks are suggesting is:
-> 
-> 1)  Revert the current "ext3/4: wait on all pending ocmmits in ext3/4_sync_fs"
-  Yes.
+Paul Moore wrote:
+> On Wednesday 14 January 2009 11:15:46 am Justin P. Mattock wrote:
+>   
+>> Paul Moore wrote:
+>>     
+>>> On Wednesday 14 January 2009 12:18:18 am Justin P. Mattock wrote:
+>>>       
+>>>> When using netlabelctl on a dell laptop
+>>>> I'm able to define the addresses that I want:
+>>>>
+>>>> netlabelctl unlbl add interface:wlan0 address:<radiostation>
+>>>> label:system_u:object_r:netlabel_peer_t:s0
+>>>> netlabelctl unlbl add interface:wlan0 address:<myaddress>
+>>>> label:system_u:object_r:netlabel_peer_t:s0
+>>>> netlabelctl  -p unlbl accept off
+>>>>
+>>>> {the above was from http://paulmoore.livejournal.com/1758.html };
+>>>>         
+>
+> ...
+>
+>   
+>>>> (I'm able to listen to the radio station allowed, then if I choose
+>>>> another station; if I haven't defined an address like the above,
+>>>> mplayer just sits there.denying the unlabeled packet. that is
+>>>> until I allow the address);
+>>>> The problem I have is when I do the same on my macbook pro ati
+>>>> chipset. with the ath9k module, I'm able to listen to any station,
+>>>> search the web etc..
+>>>> it seems netlabelctl  -p unlbl accept off makes no difference if
+>>>> it's on or off.
+>>>>
+>>>> Is this built into ath9k yet, or is there something I'm missing?
+>>>>         
+>>> That is just plain odd, there isn't really anything that is driver
+>>> specific.  Can you share any more details like kernel version,
+>>> netlabel_tools verion, distro, etc?  I don't have any ath9k
+>>> hardware lying around to test so I would appreciate whatever
+>>> additional information you can provide.
+>>>       
+>> Hey alright.(I finally got around to  trying netlabelctl out!).
+>>     
+>
+> It's pretty cool.  In newer versions of netlabelctl I added an 
+> undocumented option to actually allow it to fix a sandwhich and do the 
+> dishes afterwards.  The exact command line option needed is left as an 
+> exercise for the reader :)
+>   
+yep, it is pretty cool.
+ultimately my goal with netlabel is to see if I can setup the network
+namespace(if this is proper to say).
+ i.g. have all the radio stations in its own domain,(and possibly it's 
+own tag,doi etc..)
+and then have all T.V. stations running in its own domain. and then web 
+searching in its own domain.
+I see cipsov4 does this, but not sure if it does what the UNLABEL 
+domain/protocol does.
+(just looking at cipsov4; look like ipsec, you need two computers setup 
+with the same domain and tag etc..)
+not too sure though.
+>   
+>> The two systems I have for this are: Dell latitude x200
+>> running ubuntu jaunty, kernel is 2.6.29-rc1.
+>> with netlabel_tools_0.18 which was an rpm packaged
+>> that I converted to .deb.(can't remember the repository where I
+>> grabbed it from);
+>> The wireless card for the dell is a dell 1350
+>> using bcmxx(b43-phy0); works great.
+>>     
+>
+> Great.  I'm not a debian user so I can't be of much help on the 
+> packaging side, but you can get raw tarballs from the NetLabel project 
+> site on SF (the current release is 0.19 which includes support for all 
+> the goodies in 2.6.28):
+>
+>  * http://netlabel.sf.net
+>   
+I did grab that package but ran into the version_info
+error,(resorted to the rpm out of desperation);
+>   
+>> The results when using netlabelctl with the dell is nice, i.g. like I
+>> said as soon as I issue netlabelctl unlbl accept off, those addresses
+>> not defined are simply not allowed.(the problem with the dell is I'm
+>> not seeing any allow rules being generated: i.g.
+>>
+>> allow netlabel_peer_t netif_t:netif ingress;
+>> allow netlabel_peer_t node_t:node recvfrom;
+>> allow unlabeled_t netif_t:netif ingress;
+>> allow unlabeled_t node_t:node recvfrom;
+>>     
+>
+> [NOTE: the rules/permissions you list above are the "newer" network_peer 
+> permissions which are likely not active unless you are running a custom 
+> SELinux policy as the default Reference Policy hasn't made the switch 
+> yet to the newer system]
+>
+> The netlabelctl tool doesn't generate any allow rules, all it does is 
+> configure the NetLabel subsystem which is all that is necessary 
+> because, this is important, NetLabel doesn't actually do any network 
+> traffic enforcement.  NetLabel is a network labeling framework, which 
+> means that it only deals with setting labels on outbound network 
+> packets and retrieving labels from inbound network packets 
+> (the "netlabel unlbl accept on|off" option is a gray area).  The 
+> decision about wether to accept or reject inbound network traffic is 
+> left to the LSM (NetLabel supports both SELinux and Smack).  If you 
+> want I can go into more detail but it would probably be rather boring 
+> and not really provide you much in the way of answering your question.
+>   
+boring to others, but to me, it's awesome.
 
-> 2)  Apply Jan's patch "jbd[2]: Fix return value of journal_start_commit()"
-  Yes.
+>   
+>> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
+>> the o.s. is ubuntu jaunty, the netlabel_tools is the same as above.
+>> the only results I see out of this is the avc's it's generating
+>> (the allow rules above are from the macbook);
+>> some reason the dell doesn't generate any avc's,
+>> which makes me wonder is this a module issue.
+>>     
+>
+> Huh.  Just so I'm clear on this ... on the macbook you see avc denials 
+> that correspond to the allow rules you posted above, but on the dell 
+> you don't see the same avc denials?  Are you running the same SELinux 
+> policy on both systems (version numbers)?  What is the output of the 
+> following command on both systems?
+>
+>  # cat /selinux/policy_capabilities/network_peer_controls
+>   
+for both systems I'm running the refpolicy(svn) from tresys.
+the new ubac options, and newrole mechanism etc..
+doing cat /selinux/policy_capabilities_netowork_peer_controls says "1"
+should be for both.
+>   
+>> Also I've gone through thinking, well maybe this is avc's driven,
+>> i.g. each address once added by netlabelctl receives a certain allow
+>> rule (like the allow rules above),
+>> if not either no allow rule is given to it,resulting in a denial you
+>> can't see in dmesg,
+>> or a denial that just won't be allowed by checkpolicy.
+>> So after seeing if this was the case I was left with  an address
+>> defined by netlabel(allowed) and defined the allow rules that it had
+>> created. unfortunately after all of that I still was able to turn on
+>> another radio station  that had  no  address  in netlabelctl's  unlbl
+>> database.(and no allow rule
+>> with SELinux);
+>> leading me to believe that the netlabel area or driver isn't working
+>> properly. or just told to not enforce the netlabel accept off option.
+>>     
+>
+> Well, like I said above, it shouldn't be a policy module or allow rule 
+> problem but I think you may be right in that the SELinux policy is a 
+> good place to start looking.  Compare the policy on the two systems to 
+> see if they are the same version and check to see if the new network 
+> peer controls are active (the cat command above; 0 is disabled, 1 is 
+> enabled).  Post what you find out.
+>   
+they should be for both(uncommenting in 
+/etc/selinux/refpolicy/policy/policy_capabilities
+enables that option);
 
-> 3)  Also apply Jan's patch "jbd2: Skip commit of a transaction without
-> any buffers" since it appears to be a good optimization (although it's
-> not clear it would happen once we revert (1), above.
-  Yes, it's an optimization but I'm still a bit afraid about something
-relying on jbd2_journal_force_commit() implying a barrier which would not
-always be a case after this patch... So we should probably audit all users of
-ext4_force_commit() and check that this change is fine with them.
+I think at this point I'm going to load an older kernel, with the madwifi
+module(ath0) to isolate this issue i.g. if ath0 module reacts the same
+as the dell does(when adding address and such); then this would point
+me in the right direction. but if I receive the same response.
+then maybe my libraries are messed up.
+>   
+>> As for the list, I have linux-wireless in my address book(not sure
+>> which is right);
+>>     
+>
+> Not sure linux-wireless will have much to do about this but you included 
+> the SELinux which is good, thank you.
+>
+>   
+overall I like this netlabel mechanism, hopefully I can get this
+working properly.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+regards;
+
+Justin P. Mattock
