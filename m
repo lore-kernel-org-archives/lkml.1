@@ -1,137 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763933AbZANQQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763913AbZANQSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763933AbZANQQL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbZANQPz
+	id S1763913AbZANQSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbZANQSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:15:55 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:58402 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754286AbZANQPx (ORCPT
+	Wed, 14 Jan 2009 11:18:31 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:40702 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761367AbZANQSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:15:53 -0500
+	Wed, 14 Jan 2009 11:18:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QJa83uD+4odBTR2mXSHIgD+APEbP2p5md3+WAIr38H5MvgUy9WUI3lf/ln122atxSL
-         heQ2HWM00UJNM34euz8sTQXJEaqhHmfpTAne1403/VseUBjXJXLA3tGWgehHefibd5A9
-         iA6doFpoqfO1KQNPTviDoGG4W+Omj+Vwi1rno=
-Message-ID: <496E0FB2.407@gmail.com>
-Date: Wed, 14 Jan 2009 08:15:46 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nPDKaGARDmpqVpjDj/q+1QzrnAJEGLkOfpBxi0GSS+NsC8kEUiq2ASBkqx2PiDE7H2
+         gBDzcKJJIa0u9sQ89+IpqAeqh0aLxU8Q2EKqexG4IfW97SpwkkNXtFgEm9T36fRHwuaq
+         ndKbPN/M+oQPgOom8igzwA4xwetGZw/neMp1A=
 MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       SE-Linux <selinux@tycho.nsa.gov>
-Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
-References: <496D759A.7010401@gmail.com> <200901140957.09722.paul.moore@hp.com>
-In-Reply-To: <200901140957.09722.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <496DB067.6060402@linux.intel.com>
+References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
+	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
+	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
+	 <496DB067.6060402@linux.intel.com>
+Date: Wed, 14 Jan 2009 08:18:29 -0800
+Message-ID: <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+From: Tim Hockin <thockin@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
+       priyankag@google.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Wednesday 14 January 2009 12:18:18 am Justin P. Mattock wrote:
->   
->> When using netlabelctl on a dell laptop
->> I'm able to define the addresses that I want:
+On Wed, Jan 14, 2009 at 1:29 AM, Andi Kleen <ak@linux.intel.com> wrote:
+>
 >>
->> netlabelctl unlbl add interface:wlan0 address:<radiostation>
->> label:system_u:object_r:netlabel_peer_t:s0
->> netlabelctl unlbl add interface:wlan0 address:<myaddress>
->> label:system_u:object_r:netlabel_peer_t:s0
->> netlabelctl  -p unlbl accept off
->>
->> {the above was from http://paulmoore.livejournal.com/1758.html };
->>     
+>> I'm 100% on board with that and will even help staff the effort.
 >
-> Hey, somebody actually reads that stuff!  I guess I'll need to be 
-> careful what I write from now on :)
+> Well if you want to change anything the code would be a good idea first to
+> establish clearly what is actually broken. I know various areas that need
+> improvement (and I have patches fixes most of them), but to my knowledge
+> none of them would be fixed by ASCII logging.
 >
-> Hi Justin, on a more serious note, if you are having problems with 
-> labeled networking it's probably a good idea to CC the SELinux, LSM 
-> and/or netdev lists depending on the issue as I often miss mail if it 
-> is only posted to LKML.  When in doubt you can just CC me personally 
-> (paul.moore@hp.com) and I'll add whatever list seems appropriate.
+> Perhaps a good start would be if Ingo could expand what exactly
+> he believes is broken currently. At least his earlier "high level" argument
+> seems to be large  based on clear misunderstandings of what kind
+> of MCE events are common and what not. I don't really blame
+> him for that since MCEs are obscure and difficult and badly
+> documented (I had a hard time getting up to speed on them myself
+> and it took me quite some time). But I hope he doesn't
+> dismiss the advice from people who have more experience with
+> them than him though.
 >
->   
->> (I'm able to listen to the radio station allowed, then if I choose
->> another station; if I haven't defined an address like the above,
->> mplayer just sits there.denying the unlabeled packet. that is until I
->> allow the address);
->>     
+> I wrote a long email earlier in the thread with all the reasons why
+> ASCII logging is difficult (like the various atomicity issues and also
+> others)
+> I haven't heard anyone refuting any of the arguments in there, so I assume
+> they
+> are agreed one by everyone.
 >
-> Good, that is how it should work give the configuration shown above.
+> I would appreciate if the people who continue to propose ASCII
+> logging would explain how they plan to solve these problems.
 >
->   
->> The problem I have is when I do the same on my macbook pro ati
->> chipset. with the ath9k module, I'm able to listen to any station,
->> search the web etc..
->> it seems netlabelctl  -p unlbl accept off makes no difference if it's
->> on or off.
->>
->> Is this built into ath9k yet, or is there something I'm missing?
->>     
+>> This
+>> is something that is VERY HIGHLY desired here.
 >
-> That is just plain odd, there isn't really anything that is driver 
-> specific.  Can you share any more details like kernel version, 
-> netlabel_tools verion, distro, etc?  I don't have any ath9k hardware 
-> lying around to test so I would appreciate whatever additional 
-> information you can provide.
+> What is exactly desired?
+
+>From my point of view: a single, consistent, easy logging interface
+for the kernel to send *structured data* about hardware/system events
+and errors up to userspace.
+
+I don't care if it is ASCII, but it probably can be done in ASCII.
+That's the cart before the horse, IMHO.  I just want something more
+structured and better suited than printk().
+
+>> I already have a
+>> couple peopel looking at this and other HW-error reporting issues.
 >
->   
-Hey alright.(I finally got around to  trying netlabelctl out!).
+> I have lots of patches pending for over half a year (including
+> tons of bug fixes) and they get all delayed again and again with
+> very little justification why. So before writing any new code
+> it would be good to just get the already pending improvements in.
 
-The two systems I have for this are: Dell latitude x200
-running ubuntu jaunty, kernel is 2.6.29-rc1.
-with netlabel_tools_0.18 which was an rpm packaged
-that I converted to .deb.(can't remember the repository where I grabbed 
-it from);
-The wireless card for the dell is a dell 1350
-using bcmxx(b43-phy0); works great.
+We'd LOVE your improvements, if they work.  MCE is always a sore point
+for us, in that we take too many of them.  Anything to reduce their
+impact is a win.
 
-The results when using netlabelctl with the dell is nice, i.g. like I said
-as soon as I issue netlabelctl unlbl accept off, those addresses not defined
-are simply not allowed.(the problem with the dell is I'm not seeing
-any allow rules being generated: i.g.
-
-allow netlabel_peer_t netif_t:netif ingress;
-allow netlabel_peer_t node_t:node recvfrom;
-allow unlabeled_t netif_t:netif ingress;
-allow unlabeled_t node_t:node recvfrom;
-
-The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
-the o.s. is ubuntu jaunty, the netlabel_tools is the same as above.
-the only results I see out of this is the avc's it's generating
-(the allow rules above are from the macbook);
-some reason the dell doesn't generate any avc's,
-which makes me wonder is this a module issue.
-
-Also I've gone through thinking, well maybe this is avc's driven,
-i.g. each address once added by netlabelctl receives a certain allow rule
-(like the allow rules above),
-if not either no allow rule is given to it,resulting in a denial you 
-can't see in dmesg,
-or a denial that just won't be allowed by checkpolicy.
-So after seeing if this was the case I was left with  an address defined by
-netlabel(allowed) and defined the allow rules that it had created.
-unfortunately after all of that I still was able to turn on another radio
-station  that had  no  address  in netlabelctl's  unlbl database.(and no 
-allow rule
-with SELinux);
-leading me to believe that the netlabel area or driver isn't working
-properly. or just told to not enforce the netlabel accept off option.
-
-As for the list, I have linux-wireless in my address book(not sure which 
-is right);
-
-regards;
-
-Justin P. Mattock
-
-
-
+Tim
