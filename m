@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZANUIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZANUJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZANUIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZANUIh
+	id S1758562AbZANUJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbZANUJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:08:37 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:59945 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbZANUIg (ORCPT
+	Wed, 14 Jan 2009 15:09:04 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:38223 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbZANUJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:08:36 -0500
-Date: Wed, 14 Jan 2009 21:10:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       gorcunov@gmail.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] nubus.h: extern's make no sense in userspace
-Message-ID: <20090114201019.GB1556@uranus.ravnborg.org>
-References: <1231832906.3212.24.camel@jaswinder.satnam> <Pine.LNX.4.64.0901131001200.19352@vixen.sonytel.be> <1231963461.5756.9.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Jan 2009 15:09:01 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       "SE-Linux" <selinux@tycho.nsa.gov>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+Date: Wed, 14 Jan 2009 15:08:58 -0500
+User-Agent: KMail/1.9.10
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>
+References: <496D759A.7010401@gmail.com> <496E21B3.3070206@gmail.com> <200901141504.30674.paul.moore@hp.com>
+In-Reply-To: <200901141504.30674.paul.moore@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1231963461.5756.9.camel@brick>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901141508.58174.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 12:04:21PM -0800, Harvey Harrison wrote:
-> On Tue, 2009-01-13 at 10:03 +0100, Geert Uytterhoeven wrote:
-> > On Tue, 13 Jan 2009, Jaswinder Singh Rajput wrote:
-> > > Impact: cleanup, Impact: fix 3 make headers_check warnings:
-> > > 
-> > > usr/include/linux/nubus.h:298: extern's make no sense in userspace
-> > > usr/include/linux/nubus.h:300: extern's make no sense in userspace
-> > > usr/include/linux/nubus.h:304: extern's make no sense in userspace
-> > > 
-> > > Also moved nubus_scan_bus() in __KERNEL__
-> > > 
-> > > Also removed obsolete get_nubus_list()
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > ---
-> > >  include/linux/nubus.h |    3 ++-
-> > >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/include/linux/nubus.h b/include/linux/nubus.h
-> > > index bd31554..9f54a23 100644
-> > > --- a/include/linux/nubus.h
-> > > +++ b/include/linux/nubus.h
-> > > @@ -297,6 +297,7 @@ struct nubus_dev {
-> > >  	struct nubus_board* board;
-> > >  };
-> > >  
-> > > +#ifdef __KERNEL__
-> > >  /* This is all NuBus devices (used to find devices later on) */
-> > >  extern struct nubus_dev* nubus_devices;
-> > >  /* This is all NuBus cards */
-> > > @@ -305,7 +306,7 @@ extern struct nubus_board* nubus_boards;
-> > >  /* Generic NuBus interface functions, modelled after the PCI interface */
-> > >  void nubus_scan_bus(void);
-> > >  extern void nubus_proc_init(void);
-> > > -int get_nubus_list(char *buf);
-> > > +#endif /* __KERNEL__ */
-> > >  int nubus_proc_attach_device(struct nubus_dev *dev);
-> >    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > >  int nubus_proc_detach_device(struct nubus_dev *dev);
-> >    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > >  /* If we need more precision we can add some more of these */
-> > 
-> > What about these? They (unfortunately) lack the "extern" keyword, but they're
-> > still external declarations, and "make headers_check' doesn't notice them?
-> > 
-> > BTW, is there a way to tell gcc to warn about externs not marked "extern", so
-> > we can fix all of them?
-> 
-> I had a look at this file, there's the small patch that just wraps the whole
-> section of function declarations with ifdef __KERNEL, or the larger patch
-> that does the wrapping _and_ adds the missing externs to make it obvious.
-> 
-> But I'm not sure that there is agreement regarding adding the externs too.
-> 
-> What do people think?
+On Wednesday 14 January 2009 3:04:30 pm Paul Moore wrote:
+> On Wednesday 14 January 2009 12:32:35 pm Justin P. Mattock wrote:
 
-The general consensus is to add externs for new prototypes.
-So if _and only if_ you are anyway touching this file in that area then
-I would say - add the externs. But just adding externs are not (yet)
-worth a patch alone.
+...
 
-	Sam
+> > >> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
+> > >> the o.s. is ubuntu jaunty, the netlabel_tools is the same as
+> > >> above. the only results I see out of this is the avc's it's
+> > >> generating (the allow rules above are from the macbook);
+> > >> some reason the dell doesn't generate any avc's,
+> > >> which makes me wonder is this a module issue.
+> > >
+> > > Huh.  Just so I'm clear on this ... on the macbook you see avc
+> > > denials that correspond to the allow rules you posted above, but
+> > > on the dell you don't see the same avc denials?  Are you running
+> > > the same SELinux policy on both systems (version numbers)?  What
+> > > is the output of the following command on both systems?
+> > >
+> > >  # cat /selinux/policy_capabilities/network_peer_controls
+> >
+> > for both systems I'm running the refpolicy(svn) from tresys.
+> > the new ubac options, and newrole mechanism etc..
+> > doing cat /selinux/policy_capabilities_netowork_peer_controls says
+> > "1" should be for both.
+>
+> Ahhhh!  How did that happen?!  (see my response to your other email)
+
+Sorry, just realized your other email was private.  In case anyone else 
+is following this thread, the SELinux policy for network_peer_controls 
+policy capability is still a work in progress and is disabled by 
+default because there are still a few issues remaining.  Disabling the 
+network_peer_controls (the default configuration) fixed the problem.
+
+-- 
+paul moore
+linux @ hp
