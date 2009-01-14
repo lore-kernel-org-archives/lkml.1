@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbZANWad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbZANWeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757227AbZANWad (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZANWaW
+	id S1756740AbZANWeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZANWeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:30:22 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:61181 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753747AbZANWaV (ORCPT
+	Wed, 14 Jan 2009 17:34:15 -0500
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:65247 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754136AbZANWeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:30:21 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuQCAG/0bUl5LDnlgWdsb2JhbACTfgEBFiK7E4Vv
-X-IronPort-AV: E=Sophos;i="4.37,263,1231075800"; 
-   d="scan'208";a="293864527"
-Date: Thu, 15 Jan 2009 09:30:16 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: wk <handygewinnspiel@gmx.de>
-Cc: Chris Mason <chris.mason@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-Message-ID: <20090114223016.GY8071@disturbed>
-Mail-Followup-To: wk <handygewinnspiel@gmx.de>,
-	Chris Mason <chris.mason@oracle.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-	HWerner4@gmx.de, viro@zeniv.linux.org.uk,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	mchehab@infradead.org
-References: <20090112132130.6c932b85.akpm@linux-foundation.org> <20090112220624.4fbfee34@pedra.chehab.org> <20090112162337.318dd61d.akpm@linux-foundation.org> <20090113184755.87720@gmx.net> <20090113105947.9e774b69.akpm@linux-foundation.org> <20090113191757.74290@gmx.net> <20090113113700.776a94b5.akpm@linux-foundation.org> <20090113203843.GJ29283@parisc-linux.org> <1231957750.8269.28.camel@think.oraclecorp.com> <496E56EB.2030301@gmx.de>
+	Wed, 14 Jan 2009 17:34:14 -0500
+Message-ID: <496E67DA.7050503@cs.columbia.edu>
+Date: Wed, 14 Jan 2009 17:31:54 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496E56EB.2030301@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v12][PATCH 01/14] Create syscalls: sys_checkpoint,	sys_restart
+References: <1230542187-10434-1-git-send-email-orenl@cs.columbia.edu> <1230542187-10434-2-git-send-email-orenl@cs.columbia.edu> <20090114180441.GD21516@balbir.in.ibm.com>
+In-Reply-To: <20090114180441.GD21516@balbir.in.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 10:19:39PM +0100, wk wrote:
-> Chris Mason wrote:
-> I cannot fully understand what strace -v outputs (see attachment), but  
-> what i see is that 'find' stops after finding a file with d_off = 
-> 4294967295
-> 4294967295  =  0xFFFFFFFF, adding any number greater that zero will be  
-> greater that 32bits, so this could be the reason for the message "value  
-> too large".
->
->
->
-> I also noticed that i cannot access these files through samba if i boot  
-> from 2.6.28 - really strange.
-> If i reboot older kernels these are visible in samba again and fully  
-> accessible.
->
-> Attached the log from stracing the command which was ivoked by the  
-> Makefile from v4l-dvb.
-> I guess this is all i could contribute to that problem. Thats stuff for  
-> xfs filesystem experts now..
 
-It's obviously the regression fixed by:
 
-http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs.git;a=commit;h=15440319767942a363f282d6585303d3d75088ba
+Balbir Singh wrote:
+> * Oren Laadan <orenl@cs.columbia.edu> [2008-12-29 04:16:14]:
+> 
+>> Create trivial sys_checkpoint and sys_restore system calls. They will
+>> enable to checkpoint and restart an entire container, to and from a
+>> checkpoint image file descriptor.
+>>
+>> The syscalls take a file descriptor (for the image file) and flags as
+>> arguments. For sys_checkpoint the first argument identifies the target
+>> container; for sys_restart it will identify the checkpoint image.
+>>
+>> A checkpoint, much like a process coredump, dumps the state of multiple
+>> processes at once, including the state of the container. The checkpoint
+>> image is written to (and read from) the file descriptor directly from
+>> the kernel. This way the data is generated and then pushed out naturally
+>> as resources and tasks are scanned to save their state. This is the
+>> approach taken by, e.g., Zap and OpenVZ.
+>>
+>> By using a return value and not a file descriptor, we can distinguish
+>> between a return from checkpoint, a return from restart (in case of a
+>> checkpoint that includes self, i.e. a task checkpointing its own
+>> container, or itself), and an error condition, in a manner analogous
+>> to a fork() call.
+>>
+>> We don't use copyin()/copyout() because it requires holding the entire
+> 
+>               ^^^^^^^^^^^^^^^^^^^ Do you mean get_user_pages(),
+> copy_to/from_user()?
 
-It needs to be pushed to Linus, then into 2.6.28-stable.
+Yes, I meant copy_to/from_user() ...
 
-Cheers,
+Oren.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
