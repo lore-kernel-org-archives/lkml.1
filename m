@@ -1,104 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765017AbZANRWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765199AbZANRXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765017AbZANRWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbZANRW3
+	id S1765199AbZANRXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763998AbZANRXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:22:29 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:63969 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756350AbZANRW1 convert rfc822-to-8bit (ORCPT
+	Wed, 14 Jan 2009 12:23:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36717 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760827AbZANRXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:22:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=ANJmaL8zyV2nDLosEmTfNcEM/0YcgX+EEX/YxIiAJ4I1zv3mTNMXEdvX7RDFot6oxE
-         GZVP0HvJ0jiRfZXpb56v9znYBRast9QzkacFr4dvNq09TqU9edVYViD4Rl6j5odqnlnN
-         mpBoX7W8wwywtAOdXXxTFqpZhjFxDd/uocTsQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>
-Subject: Re: regression: 295f000 breaks suspend to disk
-Date: Wed, 14 Jan 2009 18:16:47 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-06859-gede6f5a-dirty; KDE/4.1.3; i686; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-References: <1231797615.2797.5.camel@odie.local>
-In-Reply-To: <1231797615.2797.5.camel@odie.local>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901141816.47422.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Jan 2009 12:23:01 -0500
+Subject: Re: [PATCH -v11][RFC] mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <20090114171800.GA18621@wotan.suse.de>
+References: <1231774622.4371.96.camel@laptop>
+	 <1231859742.442.128.camel@twins>
+	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
+	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
+	 <20090114171800.GA18621@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 18:22:36 +0100
+Message-Id: <1231953757.14825.33.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 January 2009, Simon Holm Thøgersen wrote:
-> commit 295f000 ("ide: don't execute the next queued command from the
-> hard-IRQ context (v2)") breaks suspend to disk for me. On
-> 'echo disk > /sys/power/state' the systems hangs, letting me switch
-> virtual consoles, but not responding to Alt+SysRq
+On Wed, 2009-01-14 at 18:18 +0100, Nick Piggin wrote:
 
-Thanks, please try the patch below (it fixes the problem for me):
+> > @@ -173,21 +237,21 @@ __mutex_lock_common(struct mutex *lock, 
+> >  			spin_unlock_mutex(&lock->wait_lock, flags);
+> >  
+> >  			debug_mutex_free_waiter(&waiter);
+> > +			preempt_enable();
+> >  			return -EINTR;
+> >  		}
+> >  		__set_task_state(task, state);
+> >  
+> >  		/* didnt get the lock, go to sleep: */
+> >  		spin_unlock_mutex(&lock->wait_lock, flags);
+> > -		schedule();
+> > +		__schedule();
+> 
+> Why does this need to do a preempt-disabled schedule? After we schedule
+> away, the next task can do arbitrary things or reschedule itself, so if
+> we have not anticipated such a condition here, then I can't see what
+> __schedule protects. At least a comment is in order?
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: fix suspend regression
+From:
+http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/mutex-preempt.patch
 
-On Monday 12 January 2009, Simon Holm Thøgersen wrote:
-> commit 295f000 ("ide: don't execute the next queued command from the
-> hard-IRQ context (v2)") breaks suspend to disk for me. On
-> 'echo disk > /sys/power/state' the systems hangs, letting me switch
-> virtual consoles, but not responding to Alt+SysRq
+Subject: mutex: preemption fixes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed Jan 14 15:36:26 CET 2009
 
-Restart the request queue early for REQ_TYPE_PM_RESUME requests
-(though there is only one resume request for the whole resume
-sequence it stays in the queue until is fully completed and now
-depends on kblockd for processing consequential resume states).
+The problem is that dropping the spinlock right before schedule is a voluntary
+preemption point and can cause a schedule, right after which we schedule again.
 
-Reported-and-bisected-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-pm.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+Fix this inefficiency by keeping preemption disabled until we schedule, do this
+by explicitly disabling preemption and providing a schedule() variant that
+assumes preemption is already disabled.
 
-Index: b/drivers/ide/ide-pm.c
-===================================================================
---- a/drivers/ide/ide-pm.c
-+++ b/drivers/ide/ide-pm.c
-@@ -186,12 +186,10 @@ void ide_complete_pm_request(ide_drive_t
- 	       blk_pm_suspend_request(rq) ? "suspend" : "resume");
- #endif
- 	spin_lock_irqsave(q->queue_lock, flags);
--	if (blk_pm_suspend_request(rq)) {
-+	if (blk_pm_suspend_request(rq))
- 		blk_stop_queue(q);
--	} else {
-+	else
- 		drive->dev_flags &= ~IDE_DFLAG_BLOCKED;
--		blk_start_queue(q);
--	}
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- 
- 	drive->hwif->rq = NULL;
-@@ -219,6 +217,8 @@ void ide_check_pm_state(ide_drive_t *dri
- 		 * point.
- 		 */
- 		ide_hwif_t *hwif = drive->hwif;
-+		struct request_queue *q = drive->queue;
-+		unsigned long flags;
- 		int rc;
- #ifdef DEBUG_PM
- 		printk("%s: Wakeup request inited, waiting for !BSY...\n", drive->name);
-@@ -231,5 +231,9 @@ void ide_check_pm_state(ide_drive_t *dri
- 		rc = ide_wait_not_busy(hwif, 100000);
- 		if (rc)
- 			printk(KERN_WARNING "%s: drive not ready on wakeup\n", drive->name);
-+
-+		spin_lock_irqsave(q->queue_lock, flags);
-+		blk_start_queue(q);
-+		spin_unlock_irqrestore(q->queue_lock, flags);
- 	}
- }
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Pity to add the call overhead to schedule just for this case.
+
+Good point, seeing any way around that?
+
+>  BTW. __schedule shouldn't need to be asmlinkage?
+
+TBH I've no clue, probably not, Ingo?
+
