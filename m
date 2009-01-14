@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZANATS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760847AbZANAUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbZANATS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZANATG
+	id S1760847AbZANAUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbZANAUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:19:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:46111 "EHLO ozlabs.org"
+	Tue, 13 Jan 2009 19:20:11 -0500
+Received: from matrixpower.ru ([195.178.208.66]:47532 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753706AbZANATF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:19:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 13/13] x86_32: make percpu symbols zerobased on SMP
-Date: Wed, 14 Jan 2009 10:48:58 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: ebiederm@xmission.com, cl@linux-foundation.org, mingo@elte.hu,
-       travis@sgi.com, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <1231843097-18003-14-git-send-email-tj@kernel.org>
-In-Reply-To: <1231843097-18003-14-git-send-email-tj@kernel.org>
+	id S1755777AbZANAUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:20:09 -0500
+Date: Wed, 14 Jan 2009 03:20:08 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dst@ioremap.net
+Subject: Re: [0/7] Distributed storage for drivers/staging merge request
+Message-ID: <20090114002008.GD512@ioremap.net>
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net> <20090114000130.GA20811@kroah.com> <20090113161221.b23510b4.akpm@linux-foundation.org> <20090114001546.GC512@ioremap.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901141048.59632.rusty@rustcorp.com.au>
+In-Reply-To: <20090114001546.GC512@ioremap.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 January 2009 21:08:17 Tejun Heo wrote:
-> This patch makes percpu symbols zerobased on x86_32 SMP by using
-> PERCPU_VADDR() with 0 vaddr in vmlinux_32.lds.S.  A new PHDR is added
-> as existing ones cannot contain sections near address zero.
-...
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Mike Travis <travis@sgi.com>
-> ---
->  arch/x86/kernel/cpu/common.c     |    8 ++++++++
->  arch/x86/kernel/head_32.S        |   37 ++++++++++++++++++++++++++++++++++---
->  arch/x86/kernel/setup_percpu.c   |    4 ----
->  arch/x86/kernel/vmlinux_32.lds.S |   16 +++++++++++++++-
->  4 files changed, 57 insertions(+), 8 deletions(-)
+On Wed, Jan 14, 2009 at 03:15:46AM +0300, Evgeniy Polyakov (zbr@ioremap.net) wrote:
+> > Whereas the "do we need this" case for new filesystems isn't this simple.
+> 
+> More on this, it is a block device which does not work with hardware.
+> And yes, question is serious. And you may not believe, but it is not me
+> to answer this. I'm happy to provide any needed information.
+> In a nutshell, it is a network block device on really huge steroids.
 
-Hmm, the only reason for this change is to unify with 64-bit, yes?  Yet it
-doesn't actually win us anything on that front, as this diffstat shows.
+And according to POHMELFS which is a parallel very high-performance
+(forget nfs) network filesystem with coherent local cache of data
+and metadata.
 
-If gcc's -mcmodel=kernel had used a weak symbol for the offset of the stack
-canary, we would have been happy.  Unfortunately generic per-cpu and x86-64
-PDA were developed separately, so noone realize the problem until too late.
+The only change expected to be done is one additional network command
+to parse the data currently sent via netlink. We want to connect to the
+new servers by another server request and not by admin steps.
 
-The basic series looks good: it will clash with my per-cpu work (mainly
-because I remove the per_cpu__ prefix) in a purely-textual way though.
+Patch will be somewhat 10-50 lines. And while you at it, please shed a
+light on this exports for POHMELFS:
 
-Thanks for this!
-Rusty.
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -513,6 +513,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
+ 
+ #ifdef CONFIG_NUMA
+ struct page *__page_cache_alloc(gfp_t gfp)
+@@ -627,6 +628,7 @@ int __lock_page_killable(struct page *page)
+ 	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+ 					sync_page_killable, TASK_KILLABLE);
+ }
++EXPORT_SYMBOL_GPL(__lock_page_killable);
+ 
+ /**
+  * __lock_page_nosync - get a lock on the page, without calling sync_page()
+
+
+
+-- 
+	Evgeniy Polyakov
