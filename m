@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759763AbZANGDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZANGF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759763AbZANGDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbZANGCu
+	id S1759522AbZANGF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZANGFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:02:50 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34526 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758895AbZANGCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:02:49 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/f3rxQ0tDf/vUurgJ+hC2LvL87WJe+6E6DB7KxaA
-	bjHA014268ClZ2
-Subject: Re: [BUG] How to get real-time priority using idle priority
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Brian Rogers <brian@xyzw.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090114053106.GA10410@elte.hu>
-References: <4969D0D7.2060401@xyzw.org>
-	 <1231736941.6003.7.camel@marge.simson.net>
-	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
-	 <496BE8F6.1040308@xyzw.org> <1231815523.5899.7.camel@marge.simson.net>
-	 <1231910014.610.14.camel@marge.simson.net> <20090114053106.GA10410@elte.hu>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 07:02:45 +0100
-Message-Id: <1231912965.956.11.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Wed, 14 Jan 2009 01:05:50 -0500
+Received: from mail.suse.de ([195.135.220.2]:33808 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537AbZANGFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 01:05:49 -0500
+Date: Tue, 13 Jan 2009 21:54:04 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [ltt-dev] [PATCH 1/2] Make lttctl mount debugfs automatically
+Message-ID: <20090114055404.GA17400@suse.de>
+References: <49646208.7070607@cn.fujitsu.com> <4964BA2B.30200@polymtl.ca> <AA3F776E5F6246859F1978B7C7CF1919@zhaoleiwin> <20090108144430.GA3778@Krystal> <7C0A417AB5B84CDCB9A9484C4E13A08C@zhaoleiwin> <20090109033021.GA25504@Krystal> <20090113235419.GA20644@suse.de> <20090114051602.GA14786@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114051602.GA14786@Krystal>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 06:31 +0100, Ingo Molnar wrote:
-> What about increasing the weight of SCHED_IDLE tasks from 1 to 2 or 3? 
-> That still makes them mega-nice (which is more than enough), but should 
-> make the math a lot less borderline.
+On Wed, Jan 14, 2009 at 12:16:02AM -0500, Mathieu Desnoyers wrote:
+> * Greg KH (gregkh@suse.de) wrote:
+> > On Thu, Jan 08, 2009 at 10:30:22PM -0500, Mathieu Desnoyers wrote:
+> > > * Zhaolei (zhaolei@cn.fujitsu.com) wrote:
+> > > > * From: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
+> > > > >* Zhaolei (zhaolei@cn.fujitsu.com) wrote:
+> > > > >> * From: "Pierre-Marc Fournier" <pierre-marc.fournier@polymtl.ca>
+> > > > >> > Zhaolei wrote:
+> > > > >> >> lttctl need debugfs mounted,
+> > > > >> >> This patch make lttctl mount debugfs automatically when it is not mounted.
+> > > > >> >> 
+> > > > >> > 
+> > > > >> > Isn't having a utility such as lttctl mount filesystems against standard
+> > > > >> > unix semantics? Can you give an example of another standard command that
+> > > > >> > uses a filesystem and that tries to mount it if it isn't already
+> > > > >> > mounted? 
+> > > > >> Hello, Pierre-Marc,
+> > > > >> 
+> > > > >> I can give a an example.
+> > > > >> It is SystemTap.
+> > > > >> 
+> > > > > 
+> > > > > No offence, but can you find an example which is not explicitly
+> > > > > described as "bad taste" example by many people in the Linux kernel
+> > > > > community ?
+> > > > Hello, Mathieu
+> > > > 
+> > > > I can't find another example of mounting debugfs automatically.
+> > 
+> > Have you looked?  openSUSE mounts it automatically, and I think Fedora
+> > also does so.
+> > 
+> 
+> It makes sense for a whole distribution to mount debugfs automatically,
+> but is it OK for a single userspace application to have this kind of
+> behavior ?
 
-The weight is currently 2, inv_weight is 1 << 31, which is correct.
+If it's a "debug" application, why not?
 
-I implemented the advance min_vruntime at nice 0 thing, and that seems
-to work fine.  SCHED_IDLE tasks slam right as they execute, but check
-out how _far_ right they slam.  This was with the build pinned to cpu 3,
-so no migration issues.  I'll try weight of 3.
+thanks,
 
-cfs_rq[3]:
-  .exec_clock                    : 0.000000
-  .MIN_vruntime                  : 281842722.745713
-  .min_vruntime                  : 370490.315434
-  .max_vruntime                  : 281843966.887081
-  .spread                        : 1244.141368
-  .spread0                       : 85467.080507
-  .nr_running                    : 6
-  .load                          : 12
-  .nr_spread_over                : 0
-
-rt_rq[3]:
-  .rt_nr_running                 : 0
-  .rt_throttled                  : 0
-  .rt_time                       : 0.000000
-  .rt_runtime                    : 950.000000
-
-runnable tasks:
-            task   PID         tree-key  switches  prio     exec-runtime         sum-exec        sum-sleep
-----------------------------------------------------------------------------------------------------------
-            make 29977 281843914.902150       171   120               0               0               0.000000               0.000000               0.000000
-            make 30530 281842722.745713         6   120               0               0               0.000000               0.000000               0.000000
-             gcc 30584 281843921.282161         1   120               0               0               0.000000               0.000000               0.000000
-              sh 30590 281843966.887081         2   120               0               0               0.000000               0.000000               0.000000
-             gcc 30591 281843882.274316         1   120               0               0               0.000000               0.000000               0.000000
-R            cc1 30592    372734.946902         5   120               0               0               0.000000               0.000000               0.000000
-
-
-
+greg k-h
