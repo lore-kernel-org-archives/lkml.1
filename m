@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbZANGpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZANGr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbZANGpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZANGph
+	id S1754842AbZANGr7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZANGru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:45:37 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:15714 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751262AbZANGpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:45:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ma0v5X8ns1UE7QXlWS8BxdEXIFG55uU0y+gOOmnEtfafPLQ7nHKj4rkR4gylbmMoUV
-         TGymcfCEghS022huKCu3W9D/r/kPFSXhM1XZ+CeUUVmTlnKubx/jIIDt0/Yiwx0qw59t
-         9CfuO7T/2g9bo5Ll6lH/GkjpzAQ3dRjVqyhc4=
-Message-ID: <28c262360901132245j8fe121naf1d6b1450b4cade@mail.gmail.com>
-Date: Wed, 14 Jan 2009 15:45:35 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "=?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?=" <arve@android.com>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rik van Riel" <riel@surriel.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: lowmemory android driver not needed?
-Cc: "Brian Swetland" <swetland@google.com>, "Greg KH" <greg@kroah.com>,
-       arve@google.com, "San Mehat" <san@android.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Robert Love" <rlove@google.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com>
+	Wed, 14 Jan 2009 01:47:50 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:37094 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751902AbZANGrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 01:47:49 -0500
+Message-ID: <496D8A83.1040801@knaff.lu>
+Date: Wed, 14 Jan 2009 07:47:31 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <20090114010223.GA21380@kroah.com>
-	 <20090114021801.GA14759@bulgaria.corp.google.com>
-	 <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Bodo Eggert <7eggert@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: The policy on initramfs decompression failure
+References: <bU0fj-7Ap-43@gated-at.bofh.it> <E1LMstm-0001QW-7i@be1.7eggert.dyndns.org> <20090114054556.GB11153@elte.hu>
+In-Reply-To: <20090114054556.GB11153@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0E6jowM007740
 
-Hi, Arve.
-On Wed, Jan 14, 2009 at 11:30 AM, Arve Hj√∏nnev√•g <arve@android.com> wrote:> The oom killer does not kick in until all caches are emptied. Our user> space code changes the oom_adj value of processes that are no longer> in the foreground so that they killed first (the process saves its> state but does not exit). To avoid excessive demand paging, the low> memory killer will kill these processes when the memory available> drops below a threshold.
+Ingo Molnar wrote:
+> So basically now the kernel has regressed in its bzImage utility: "oh, i 
+> dont have a decompressor for the initrd. PANIC!". And that is a step 
+> backwards.
 
-It have some problems. (drivers/staging/android/lwmemorykiller.c)
-1. lowmem_shrink function have to answer about vm's query the cache size fast.2. it don't consider page size and memory size when it makelowmem_minfree's values.3. If system have many processes, for_each_process take a long time.it may result system latency although lowmemkiller intend to avoidlatency.4. Most important thing. Could we use memory controller instead oflowmemkiller ? I am not sure since I don't follow up memory controllerin these days.
-I think we have to use existing facility if possible.Previously, There are similar kinds of patches. but It can't mergemainline due to some issue.  They can comment about lowmemkiller. Iwill CC them.
-> --> Arve Hj√∏nnev√•g>>> On Tue, Jan 13, 2009 at 6:18 PM, Brian Swetland <swetland@google.com> wrote:>>>> Looping in Arve who wrote the low memory killer and can explain things>> in more detail.>>>> Brian>>>> [Greg KH <greg@kroah.com>]>>> Hi San,>>>>>> Alan Cox pointed me at the /proc/<pid>/oom_adj file that controls the>>> oom-killer score for any process as being more than sufficent to control>>> the oom killer.>>>>>> This makes me wonder why you wrote the android lowmemlorykiller driver?>>>>>> What is that driver for that is not already present in the existing>>> oom_* values for every process?>>>>>> thanks,>>>>>> greg k-h>> -->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in>> the body of a message to majordomo@vger.kernel.org>> More majordomo info at  http://vger.kernel.org/majordomo-info.html>> Please read the FAQ at  http://www.tux.org/lkml/>>> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html> Please read the FAQ at  http://www.tux.org/lkml/>
+Well, for the precise case of gzip I agree with you. The reason why you
+are right in that special case is that gzip used to be the *only*
+decompressor available, so it was always available, so you couldn't
+easily chose a config option which removes the decompressor for a gzip
+initrd.
 
+However, if you think in more general terms, you _could_ get into that
+case by attempting to boot up using a bzip2-compressed initrd. If you
+fed such an initrd to the old unpatched code, you'd get an exception at
+exactly the same place (populate_rootfs) for exactly the same reason
+(kernel doesn't have a decompressor for the initrd). Please think about
+it...
 
--- Kinds regards,MinChan KimˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+I'm not against fixing old problems with new code, that's in general a
+good thing. What I do have an issue with is that this seems to become
+_mandatory_, at least in this case...
+
+And the result of such strictness will not be better code, but stagnant
+code. Nobody will be able to address one problem, because anybody
+attempting to do that will have his patch rejected because it doesn't
+also solve the "hunger in the 3rd world" problem.
+
+> Unless you use bzImage i dont think you can really appreciate 
+> this argument.
+
+Maybe that's the source of our misunderstanding. What is this bzImage?
+(I suppose it's not just the kernel name/format but something more. But
+what?)
+
+Regards,
+
+Alain
