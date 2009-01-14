@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbZANIeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760463AbZANIiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760767AbZANIeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZANIeH
+	id S1760463AbZANIiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZANIik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:34:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49424 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756669AbZANIeE (ORCPT
+	Wed, 14 Jan 2009 03:38:40 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:49709 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZANIij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:34:04 -0500
-Date: Wed, 14 Jan 2009 00:32:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+	Wed, 14 Jan 2009 03:38:39 -0500
+Date: Wed, 14 Jan 2009 14:08:35 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
        LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [PATCH][bugfix] kprobes: fix module compilation error with
- CONFIG_KPROBES=n
-Message-Id: <20090114003234.3720e9a1.akpm@linux-foundation.org>
-In-Reply-To: <49628849.1000706@redhat.com>
-References: <49628849.1000706@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: fix return value of mem_cgroup_hierarchy_write()
+Message-ID: <20090114083835.GL27129@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <496D9E0C.4060806@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <496D9E0C.4060806@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Jan 2009 17:23:05 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> [2009-01-14 16:10:52]:
 
-> Define kprobes related data structures even if CONFIG_KPROBES is not set.
-> This fixes compilation errors which occur if CONFIG_KPROBES is not set, in
-> kprobe using modules.
+> When there are sub-dirs, writing to memory.use_hierarchy returns -EBUSY,
+> this doesn't seem to fit the meaning of EBUSY, and is inconsistent with
+> memory.swappiness, which returns -EINVAL in this case.
 > 
-> Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
->  include/linux/kprobes.h |   45 +++++++++++++++++++++++----------------------
->  1 file changed, 23 insertions(+), 22 deletions(-)
-> 
-> Index: 2.6.28/include/linux/kprobes.h
-> ===================================================================
-> --- 2.6.28.orig/include/linux/kprobes.h
-> +++ 2.6.28/include/linux/kprobes.h
-> @@ -37,9 +37,9 @@
->  #include <linux/spinlock.h>
->  #include <linux/rcupdate.h>
->  #include <linux/mutex.h>
-> +#include <asm/kprobes.h>
-> 
->  #ifdef CONFIG_KPROBES
-> -#include <asm/kprobes.h>
-> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-The above change breaks alpha, and any other architecture which has no
-asm/kprobes.h.
+The patch does much more than the changelog says. The reason for EBUSY
+is that the group is in use due to children or existing references and
+tasks. I think EBUSY is the correct error code to return.
 
-I undid that change, but maybe that rebroke things?
+-- 
+	Balbir
