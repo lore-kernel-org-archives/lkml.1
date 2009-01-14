@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbZANGvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZANGyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbZANGvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZANGvh
+	id S1757095AbZANGyS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZANGyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:51:37 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:55704 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbZANGvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:51:37 -0500
-Message-ID: <496D8B55.2000901@knaff.lu>
-Date: Wed, 14 Jan 2009 07:51:01 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 14 Jan 2009 01:54:05 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:42245 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752104AbZANGyE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 01:54:04 -0500
+Date: Wed, 14 Jan 2009 17:53:59 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: Use cryptd(%s) as cryptd-ed algorithm name instead of %s
+Message-ID: <20090114065359.GA16044@gondor.apana.org.au>
+References: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Al Viro <viro@ftp.linux.org.uk>, Alain Knaff <alain@knaff.lu>
-Subject: Re: The policy on initramfs decompression failure
-References: <496D17F9.8080605@zytor.com> <20090114011844.GD14730@mit.edu>
-In-Reply-To: <20090114011844.GD14730@mit.edu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
->    failed-initramfs-decode=panic      Panic on failed initramfs
->    failed-initramfs-decode=partial    If the initramfs fails part-way in, 
->    				      decode what you can and let the boot
-> 				      system see what files could be fully
-> 				      decypted
->    failed-initramfs-decode=allow      If the initramfs decryption fails
->    				      part-of-the-way in, continue the
-> 				      boot, but do not provide the partial
-> 				      initramfs --- i.e., this is the 
-> 				      all-or-nothing option
+On Wed, Jan 14, 2009 at 02:44:08PM +0800, Huang Ying wrote:
+> Because:
+> 
+> 1. if use %s, you can only request cryptd(<driver name>), not
+>    cryptd(<alg name>), because generated new algorithm instance has
+>    algorithm name: <alg name> and driver name cryptd(<driver name>).
 
-Interesting approach... but wouldn't it make more sense to have that be
-global? Or else, eventually every single panic will have such a
-tri-state switch, with associated option parsing and overhead, leading
-to bloat.
+This is intentional.  For the purposes we talked about we should
+be requesting cryptd(<driver name>), as otherwise you may end up
+with someone else's AES algorithm as the base.
 
-> If this is too complicated, I'd be happy with the "panic on failed
-> initramfs".  After all, the user can always simply delete the initrd
-> specifier from their grub boot configuration, and simply retry the
-> boot....
+> 2. Generated cryptd-ed algorithm will have the same algorithm name and
+>    higher priority, but some user may not want to use cryptd-ed
+>    version.
 
-Exactly!
+The priority shouldn't be an issue in our case since the AES-NI
+algorithm should register itself as an ablkcipher with an even
+higher priority.
 
-Regards,
-
-Alain
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
