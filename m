@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZANCEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbZANCKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbZANCEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZANCEJ
+	id S1758973AbZANCKv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZANCKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:04:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49578 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754984AbZANCEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:04:08 -0500
-Message-ID: <496D47F7.9020504@kernel.org>
-Date: Wed, 14 Jan 2009 11:03:35 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: ebiederm@xmission.com, cl@linux-foundation.org, mingo@elte.hu,
-       travis@sgi.com, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
-Subject: Re: [PATCH 13/13] x86_32: make percpu symbols zerobased on SMP
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <1231843097-18003-14-git-send-email-tj@kernel.org> <200901141048.59632.rusty@rustcorp.com.au>
-In-Reply-To: <200901141048.59632.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Jan 2009 02:03:39 +0000 (UTC)
+	Tue, 13 Jan 2009 21:10:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48292
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751163AbZANCKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:10:41 -0500
+Date: Tue, 13 Jan 2009 18:10:39 -0800 (PST)
+Message-Id: <20090113.181039.185575172.davem@davemloft.net>
+To: reif@earthlink.net
+Cc: sparclinux-owner@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: sparc32 compile error: redefinition of
+ =?utf-8?B?4oCYc21wX2NhbGxfZnVuY3Rpb25fc2luZ2xl4oCZ?=
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <496D4274.6000304@earthlink.net>
+References: <496D4274.6000304@earthlink.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n0E2AtwM005510
 
-Hello, Rusty.
+From: Robert Reif <reif@earthlink.net>
+Date: Tue, 13 Jan 2009 20:40:04 -0500
 
-Rusty Russell wrote:
-> On Tuesday 13 January 2009 21:08:17 Tejun Heo wrote:
->> This patch makes percpu symbols zerobased on x86_32 SMP by using
->> PERCPU_VADDR() with 0 vaddr in vmlinux_32.lds.S.  A new PHDR is added
->> as existing ones cannot contain sections near address zero.
-> ...
->> Signed-off-by: Tejun Heo <tj@kernel.org>
->> Cc: Mike Travis <travis@sgi.com>
->> ---
->>  arch/x86/kernel/cpu/common.c     |    8 ++++++++
->>  arch/x86/kernel/head_32.S        |   37 ++++++++++++++++++++++++++++++++++---
->>  arch/x86/kernel/setup_percpu.c   |    4 ----
->>  arch/x86/kernel/vmlinux_32.lds.S |   16 +++++++++++++++-
->>  4 files changed, 57 insertions(+), 8 deletions(-)
+> Todays git produces this compile error on sparc32:
 > 
-> Hmm, the only reason for this change is to unify with 64-bit, yes?  Yet it
-> doesn't actually win us anything on that front, as this diffstat shows.
+> kernel/up.c:10: error: redefinition of â€˜smp_call_function_singleâ€™
+> /usr/src/sparc32/linux-2.6/arch/sparc/include/asm/smp_32.h:78: error: previous definition of â€˜smp_call_function_singleâ€™ was here
 
-Yeah and to simplify things for future changes.  In this patch, the
-only actual unification is in __per_cpu_offset initialization but the
-lack of unification is partly due to the usage of pda and differences
-in initialization sequence, which again couldn't be unified because
-percpu handling was different, so it's a tied knot and this patch
-helps untangling it.  Also, with cpualloc (or whatever) scheduled, I
-think it's better to have two percpu models, up and smp, even if it
-costs 49 more lines.
+Andrew, are you sure that Makefile condition for compiling
+up.o is correct?
 
-> If gcc's -mcmodel=kernel had used a weak symbol for the offset of the stack
-> canary, we would have been happy.  Unfortunately generic per-cpu and x86-64
-> PDA were developed separately, so noone realize the problem until too late.
+ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
+obj-y += smp.o
+else
+obj-y += up.o
+endif
 
-And we seem to be stuck with it if we want to keep compatibility with
-compilers.  :-(
+If an arch doesn't use generic SMP helpers, there is no way
+we should compile up.c into the tree when SMP.
 
-> The basic series looks good: it will clash with my per-cpu work (mainly
-> because I remove the per_cpu__ prefix) in a purely-textual way though.
+This build regression was caused by:
 
-I thought about removing all explicit per_cpu__ prefixes with
-per_cpu_var() but the usage seemed prevalent so left it alone.  Why
-remove it BTW?
+commit 53ce3d9564908794ae7dd32969089b57df5fc098
+Author: Andrew Morton <akpm@linux-foundation.org>
+Date:   Fri Jan 9 12:27:08 2009 -0800
 
-Thanks.
-
--- 
-tejun
+    smp_call_function_single(): be slightly less stupid
+    
+    If you do
+    
+    	smp_call_function_single(expression-with-side-effects, ...)
+    
+    then expression-with-side-effects never gets evaluated on UP builds.
+    
+    As always, implementing it in C is the correct thing to do.
+    
+    While we're there, uninline it for size and possible header dependency
+    reasons.
+    
+    And create a new kernel/up.c, as a place in which to put
+    uniprocessor-specific code and storage.  It should mirror kernel/smp.c.
+    
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
