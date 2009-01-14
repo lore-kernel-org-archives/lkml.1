@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbZANVxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZANVyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761387AbZANVxp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758175AbZANVxT
+	id S1761566AbZANVyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZANVxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:53:19 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:59617 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756769AbZANVxS (ORCPT
+	Wed, 14 Jan 2009 16:53:43 -0500
+Received: from krynn.se.axis.com ([193.13.178.10]:34718 "EHLO
+	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759156AbZANVxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:53:18 -0500
-Message-ID: <496E5ECA.6030306@us.ibm.com>
-Date: Wed, 14 Jan 2009 15:53:14 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 14 Jan 2009 16:53:42 -0500
+Date: Wed, 14 Jan 2009 22:53:13 +0100
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Greg KH <gregkh@suse.de>
+Cc: David Miller <davem@davemloft.net>,
+       "roucaries.bastien@gmail.com" <roucaries.bastien@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tj@kernel.org" <tj@kernel.org>,
+       "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
+Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
+Message-ID: <20090114215313.GL19262@axis.com>
+References: <20090114101908.GF19262@axis.com> <20090114.022140.169499153.davem@davemloft.net> <20090114103624.GH19262@axis.com> <20090114.024528.80563421.davem@davemloft.net> <20090114151221.GK19262@axis.com> <20090114181705.GC16505@suse.de>
 MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 0/9] oprofile: implement support of samples with variable
- data size
-References: <1231368325-19246-1-git-send-email-robert.richter@amd.com>
-In-Reply-To: <1231368325-19246-1-git-send-email-robert.richter@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114181705.GC16505@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> This patch series implements support of samples with variable data
-> size. Current implementation has a fixed sample size of 2 unsigned
-> longs. This makes it hard to implement use cases with a different
-> sample size (AMD IBS or power pc cell) since buffer locking is
-> required or samples my become incomplete. The internal cpu buffer
-> usage has been changed now and allows the attachment of data with
-> varable length to samples.
+On Wed, Jan 14, 2009 at 07:17:05PM +0100, Greg KH wrote:
+> On Wed, Jan 14, 2009 at 04:12:21PM +0100, Jesper Nilsson wrote:
+> > On Wed, Jan 14, 2009 at 11:45:28AM +0100, David Miller wrote:
+> > > From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+> > > Date: Wed, 14 Jan 2009 11:36:24 +0100
+> > > > On Wed, Jan 14, 2009 at 11:21:40AM +0100, David Miller wrote:
+> > > > > From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+> > > > > Date: Wed, 14 Jan 2009 11:19:08 +0100
+> > > > > > The following patch works for CRIS, and is less intrusive than
+> > > > > > my earlier patch. If this the way to go I can resubmit a proper patch.
+> > > > > 
+> > > > > Out of curiosity, is there a way to get gcc to output code such
+> > > > > that data objects are aligned more naturally?  Some option or
+> > > > > similar?
+> > > > 
+> > > > There's flags for alignment of objects, but no flags for changing
+> > > > structure layout or size, which is probably what we run into here.
+> > > 
+> > > Really?
+> > 
+> > Yes, after some more research, I found that the bug is indeed triggered by
+> > the struct klist being aligned to odd bytes inside other structs.
+> > 
+> > Since CRIS uses packed structs, having a char * inside the kobjects
+> > shifts the alignment for all data after any struct that contains
+> > a kobject (and indeed inside the kobject itself)
+> > 
+> > In this case it was the class pointer of the struct device
+> > that had a klist in the private pointer (struct class_private),
+> > after a struct kset (which contains a kobject).
 > 
-> There are patches that also change the current ibs implementation. In
-> the end the ibs implentation could be removed from the general
-> oprofile code to model specific code. An API is available that
-> provides generic functions to use variable sample sizes.
-> 
-> The patches are also available here:
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git oprofile-for-tip
-This patch set looks fine.  Nice work!  I still need to test on a couple of platforms, though.  Feel free to bug me if I don't get back to you with results within a week or so.
+> So, in order to make things smaller, your "use an external flag" patch
+> would probably be better than forcing the alignment on a 4 byte boundry,
+> right?
 
--Maynard
-> 
-> -Robert
-> 
-> 
-> 
-> 
-> ------------------------------------------------------------------------------
-> Check out the new SourceForge.net Marketplace.
-> It is the best place to buy or sell services for
-> just about anything Open Source.
-> http://p.sf.net/sfu/Xq1LFB
-> _______________________________________________
-> oprofile-list mailing list
-> oprofile-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/oprofile-list
+Unfortunately not, the GCC flags for CRIS only act on objects (address
+of the first member in the struct), the structs themselves are
+still subject to alignment on odd bytes. So the patch for aligning
+all klists on 16 or 32 bits is still needed for CRIS.
+It should however be a no-op for all architectures that do struct padding.
 
+> thanks,
+> greg k-h
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
