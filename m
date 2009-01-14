@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbZANUWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbZANUYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758730AbZANUWg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZANUWZ
+	id S1758625AbZANUYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbZANUYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:22:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56487 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756098AbZANUWX (ORCPT
+	Wed, 14 Jan 2009 15:24:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34913 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755417AbZANUYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:22:23 -0500
-Date: Wed, 14 Jan 2009 12:21:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       ghaskins@novell.com, matthew@wil.cx, andi@firstfloor.org,
-       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       tglx@linutronix.de, npiggin@suse.de, pmorreale@novell.com,
-       SDietrich@novell.com, dmitry.adamushko@gmail.com, hannes@cmpxchg.org
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-Id: <20090114122131.021e96b0.akpm@linux-foundation.org>
-In-Reply-To: <1231962650.14825.55.camel@laptop>
-References: <1231774622.4371.96.camel@laptop>
-	<1231859742.442.128.camel@twins>
-	<alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
-	<1231863710.7141.3.camel@twins>
-	<1231864854.7141.8.camel@twins>
-	<alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-	<1231867314.7141.16.camel@twins>
-	<1231952436.14825.28.camel@laptop>
-	<20090114183319.GA18630@elte.hu>
-	<20090114105300.66bd014d.akpm@linux-foundation.org>
-	<20090114190008.GA13203@elte.hu>
-	<20090114113638.c818fcf8.akpm@linux-foundation.org>
-	<1231962650.14825.55.camel@laptop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 14 Jan 2009 15:24:12 -0500
+Subject: Re: [git pull] scheduler fixes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090114121521.197dfc5e.akpm@linux-foundation.org>
+References: <20090111144305.GA7154@elte.hu>
+	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 21:24:07 +0100
+Message-Id: <1231964647.14825.59.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 20:50:50 +0100
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Wed, 2009-01-14 at 11:36 -0800, Andrew Morton wrote:
+On Wed, 2009-01-14 at 12:15 -0800, Andrew Morton wrote:
+> On Sun, 11 Jan 2009 15:43:05 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > Do people enable CONFIG_SCHED_DEBUG?
+> > Please pull the latest sched-fixes-for-linus git tree
 > 
-> Well, I have it always enabled, but I've honestly no idea if that makes
-> me weird.
-
-It'd be weird if you're not weird.
-
-> > CONFIG_DEBUG_MUTEXES=n, CONFIG_SCHED_DEBUG=y is getting to be a pretty
-> > small subset?
+> In http://bugzilla.kernel.org/show_bug.cgi?id=12309 the reporters have
+> identified what appears to be a sched-related performance regression. 
+> A fairly long-term one - post-2.6.18, perhaps.
 > 
-> Could be, do you fancy me doing a sysctl? shouldn't be hard.
+> Testcase code has been added today.  Could someone please take a look
+> sometime?
 
-The /sys/debug knob depends upon CONFIG_SCHED_DEBUG, I assume?
+There appear to be two different bug reports in there. One about iowait,
+and one I'm not quite sure what it is about.
 
-umm, yes, I do think that it would be prudent to make this control
-unconditionally available.  Experience tells us that any regressions
-which this change causes could take a long time to turn up - sometimes
-years.  By which time the people who are reporting the regressions are
-running packaged kernels, and if that packaged kernel didn't enable
-CONFIG_SCHED_DEBUG, we're a bit screwed.
+The second thing shows some numbers and a test case, but I fail to see
+what the problem is with it.
 
-Did we end up deciding to remove the CONFIG_DEBUG_MUTEXES=n dependency?
