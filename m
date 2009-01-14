@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbZANAHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbZANAH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbZANAHf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZANAHW
+	id S1760642AbZANAH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760397AbZANAHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:07:22 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52130
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756718AbZANAHV (ORCPT
+	Tue, 13 Jan 2009 19:07:45 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:8721 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760148AbZANAHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:07:21 -0500
-Date: Tue, 13 Jan 2009 16:07:21 -0800 (PST)
-Message-Id: <20090113.160721.68474279.davem@davemloft.net>
-To: zbr@ioremap.net
-Cc: dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com, jarkao2@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090111160548.GA362@ioremap.net>
-References: <20090111133533.GB25337@ioremap.net>
-	<496A17A5.7010200@cosmosbay.com>
-	<20090111160548.GA362@ioremap.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 19:07:43 -0500
+X-IronPort-AV: E=Sophos;i="4.37,261,1231113600"; 
+   d="scan'208";a="27989234"
+From: Roland Dreier <rdreier@cisco.com>
+To: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] btrfs: Remove extra KERN_INFO in the middle of a line
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 13 Jan 2009 16:07:41 -0800
+Message-ID: <adamydukawi.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Jan 2009 00:07:41.0885 (UTC) FILETIME=[1E540ED0:01C975DC]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Date: Sun, 11 Jan 2009 19:05:48 +0300
+The "devid <xxx> transid <xxx>" printk in btrfs_scan_one_device()
+actually follows another printk that doesn't end in a newline (since the
+intention is for the two printks to make one line of output), so the
+KERN_INFO just ends up messing up the output:
 
-> On Sun, Jan 11, 2009 at 05:00:37PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
-> > While we drop lock in skb_splice_bits() to prevent the deadlock, we
-> > also process backlog at this stage. No need to process backlog
-> > again in the higher level function.
-> 
-> Yes, but having it earlier allows to receive new skb while processing
-> already received.
-> 
-> > > I think that even with non-blocking splice that release_sock/lock_sock
-> > > is needed, since we are able to do a parallel job: to receive new data
-> > > (scheduled by early release_sock backlog processing) in bh and to
-> > > process already received data via splice codepath.
-> > > Maybe in non-blocking splice mode this is not an issue though, but for
-> > > the blocking mode this allows to grab more skbs at once in skb_splice_bits.
-> > 
-> > skb_splice_bits() operates on one skb, you lost me :)
-> 
-> Exactly, and to have it we earlier release a socket so that it could be
-> acked and while we copy it or doing anything else, the next one would
-> received.
+    device label exp <6>devid 1 transid 9 /dev/sda5
 
-I think the socket release in skb_splice_bits() (although necessary)
-just muddies the waters, and whether the extra one done in
-tcp_splice_read() helps at all is open to debate.
+Fix this by deleting the extra KERN_INFO.
 
-That skb_clone() done by skb_splice_bits() pisses me off too,
-we really ought to fix that.  And we also have that data corruption
-bug to cure too.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ fs/btrfs/volumes.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index b187b53..2280d19 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -577,7 +577,7 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
+ 		       *(unsigned long long *)disk_super->fsid,
+ 		       *(unsigned long long *)(disk_super->fsid + 8));
+ 	}
+-	printk(KERN_INFO "devid %llu transid %llu %s\n",
++	printk("devid %llu transid %llu %s\n",
+ 	       (unsigned long long)devid, (unsigned long long)transid, path);
+ 	ret = device_list_add(path, disk_super, devid, fs_devices_ret);
+ 
