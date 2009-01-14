@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760149AbZANNU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbZANNVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760149AbZANNU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 08:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbZANNUN
+	id S1762679AbZANNVi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 08:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758042AbZANNV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 08:20:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52015 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757067AbZANNUL (ORCPT
+	Wed, 14 Jan 2009 08:21:29 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48417 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757554AbZANNV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 08:20:11 -0500
-Subject: Re: [PATCH 1/2] sched: introduce avg_wakeup
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090114120558.GA5711@elte.hu>
-References: <20090114113917.199690328@chello.nl>
-	 <20090114114026.969559732@chello.nl> <1231934371.7141.29.camel@twins>
-	 <1231934594.7141.30.camel@twins>  <20090114120558.GA5711@elte.hu>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 14:20:08 +0100
-Message-Id: <1231939208.14825.7.camel@laptop>
+	Wed, 14 Jan 2009 08:21:28 -0500
+Date: Wed, 14 Jan 2009 13:21:24 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: Pierre Habouzit <pierre.habouzit@intersec.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sctp: if backlog is 0, listening shall not be
+ deactivated.
+Message-ID: <20090114132124.15b68481@lxorguk.ukuu.org.uk>
+In-Reply-To: <496DE5ED.8030609@hp.com>
+References: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
+	<496DE5ED.8030609@hp.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 13:05 +0100, Ingo Molnar wrote:
+> However SCTP API explicitly states that when the backlog is 0, listening is
+> disabled.  Here is an excerpt from the draft describing this:
 
-> mind sending a delta against the first submission? Whenever you are done 
-> with the lunch stuff ;-)
+POSIX is an established standard, SCTP is a draft proposal. POSIX should
+win. The SCTP developers need to bring their draft API into alignment with
+POSIX.
 
-Compile fix and cleanup, actually compile tested too :-)
-
----
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2415,14 +2415,16 @@ out_activate:
- 	 * Only attribute actual wakeups done by this task.
- 	 */
- 	if (!in_interrupt()) {
-+		struct sched_entity *se = &current->se;
- 		u64 sample = se->sum_exec_runtime;
-+
- 		if (se->last_wakeup)
- 			sample -= se->last_wakeup;
- 		else
- 			sample -= se->start_runtime;
- 		update_avg(&se->avg_wakeup, sample);
- 
--		current->se.last_wakeup = current->se.sum_exec_runtime;
-+		se->last_wakeup = se->sum_exec_runtime;
- 	}
- 
- out_running:
-
+They need to fix their draft to use a sockopt or similar to
+enable/disable listening.
 
