@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbZANOux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbZANOwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762817AbZANOux (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZANOun
+	id S1761367AbZANOwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZANOwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:50:43 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:40064 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754241AbZANOum (ORCPT
+	Wed, 14 Jan 2009 09:52:44 -0500
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:3325 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752392AbZANOwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:50:42 -0500
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20090108144538.e5195575.akpm@linux-foundation.org>
-	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
-	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
-	 <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
-	 <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 14 Jan 2009 14:50:02 +0000
-Message-Id: <1231944602.24082.42.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2009 14:50:02.0900 (UTC) FILETIME=[61A1DD40:01C97657]
+	Wed, 14 Jan 2009 09:52:43 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswEAIeJbUnCTtAn/2dsb2JhbACBbMwMhW8
+Date: Wed, 14 Jan 2009 15:52:39 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: Rogan Dawes <lists@dawes.za.net>
+Cc: Xavier Bestel <xavier.bestel@free.fr>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux kernel without file system
+Message-ID: <20090114145239.GB21043@frolo.macqel>
+References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel> <1231926744.11907.12.camel@skunk> <20090114101828.GA15141@frolo.macqel> <496DF66B.3050609@dawes.za.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496DF66B.3050609@dawes.za.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 01:01 +1100, Stephen Rothwell wrote:
-> On Wed, 14 Jan 2009 12:30:20 +0000 Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > Are you OK with applying patches to linux-next (git am) rather than
-> > using git merge? This way I can rebase kmemleak on top of linux-next.
+On Wed, Jan 14, 2009 at 04:27:55PM +0200, Rogan Dawes wrote:
+> Philippe De Muyter wrote:
 > 
-> I would much prefer a few conflicts to carrying a post linux-next patch
-> because linux-next can change radically day to day - especially since we
-> know there will be clashes in the areas of files you would be patching.
+> > Keeping thinking about it, I now think that my 'application program'
+> > (basically a serial-to-ethernet converter) should be a kernel thread,
+> > because of the small memory constraints.
+> > 
+> > The question is thus how to access the serial lines from a kernel thread.
+> > 
+> > Philippe
 > 
-> So lets use the above git tree and see how we go. OK?
+> If your constraints are that severe, perhaps you should be investigating
+> other solutions. e.g. eCos?
 
-It sounds fine. Thanks.
+I like to reuse (and contribute to) the linux drivers and kernel.
 
--- 
-Catalin
+> Linux doesn't ALWAYS have to be the answer :-)
 
+No ? :)
+
+Philippe
