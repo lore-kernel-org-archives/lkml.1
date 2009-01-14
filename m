@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZANTvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbZANTza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZANTvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbZANTvb
+	id S1757108AbZANTza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZANTzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:51:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37884 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753132AbZANTv3 (ORCPT
+	Wed, 14 Jan 2009 14:55:10 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3924 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753770AbZANTzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:51:29 -0500
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Wed, 14 Jan 2009 14:55:09 -0500
+Subject: Re: [PATCH 0/10] MAINTAINERS - script, patterns, and misc fixes
+From: Joe Perches <joe@perches.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
-       andi@firstfloor.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
-       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
-       hannes@cmpxchg.org
-In-Reply-To: <20090114113638.c818fcf8.akpm@linux-foundation.org>
-References: <1231774622.4371.96.camel@laptop>
-	 <1231859742.442.128.camel@twins>
-	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
-	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
-	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
-	 <20090114183319.GA18630@elte.hu>
-	 <20090114105300.66bd014d.akpm@linux-foundation.org>
-	 <20090114190008.GA13203@elte.hu>
-	 <20090114113638.c818fcf8.akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, pavel@ucw.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <1231961837.30095.23.camel@localhost>
+References: <1231878498-25171-1-git-send-email-joe@perches.com>
+	 <20090113125435.4821123a.akpm@linux-foundation.org>
+	 <1231907210.7935.527.camel@localhost>
+	 <20090113231329.ee0e534f.akpm@linux-foundation.org>
+	 <1231961837.30095.23.camel@localhost>
 Content-Type: text/plain
-Date: Wed, 14 Jan 2009 20:50:50 +0100
-Message-Id: <1231962650.14825.55.camel@laptop>
+Date: Wed, 14 Jan 2009 11:55:39 -0800
+Message-Id: <1231962939.30095.25.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 11:36 -0800, Andrew Morton wrote:
+On Wed, 2009-01-14 at 11:37 -0800, Joe Perches wrote:
+> max-history
 
-> Do people enable CONFIG_SCHED_DEBUG?
+Not quite.
 
-Well, I have it always enabled, but I've honestly no idea if that makes
-me weird.
+commit 0cd5dbd1d732a36777f27f1250622554e7aa3b62
+Author: Joe Perches <joe@perches.com>
+Date:   Wed Jan 14 11:52:48 2009 -0800
 
-> CONFIG_DEBUG_MUTEXES=n, CONFIG_SCHED_DEBUG=y is getting to be a pretty
-> small subset?
+    scripts/get_maintainer.pl - Correct --help for git-since
+    
+    Signed-off-by: Joe Perches <joe@perches.com>
 
-Could be, do you fancy me doing a sysctl? shouldn't be hard.
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 48e2d5f..1ed62a8 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -285,7 +285,7 @@ MAINTAINER field selection options:
+     --git-chief-penguins => include ${penguin_chiefs}
+     --git-min-signatures => number of signatures required (default: 1)
+     --git-max-maintainers => maximum maintainers to add (default: 5)
+-    --git-max-history => git history to use (default: 1-year-ago)
++    --git-since => git history to use (default: 1-year-ago)
+     --m => include maintainer(s) if any
+     --n => include name 'Full Name <addr\@domain.tld>'
+     --l => include list(s) if any
+
 
