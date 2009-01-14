@@ -1,124 +1,500 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761889AbZANRxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763770AbZANRxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761889AbZANRxY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZANRxF
+	id S1763770AbZANRxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZANRxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:53:05 -0500
-Received: from kroah.org ([198.145.64.141]:56235 "EHLO coco.kroah.org"
+	Wed, 14 Jan 2009 12:53:09 -0500
+Received: from kroah.org ([198.145.64.141]:56239 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752691AbZANRxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753580AbZANRxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Jan 2009 12:53:03 -0500
-Date: Wed, 14 Jan 2009 09:51:26 -0800
+Date: Wed, 14 Jan 2009 09:51:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.27.11
-Message-ID: <20090114175126.GA32220@kroah.com>
+Subject: Re: Linux 2.6.27.11
+Message-ID: <20090114175150.GA395@kroah.com>
+References: <20090114175126.GA32220@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090114175126.GA32220@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.27.11
-kernel.
-
-It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
-series are strongly encouraged to upgrade.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.27.10 and 2.6.27.11
-
-The updated 2.6.27.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                              |    2 +-
- arch/powerpc/lib/rheap.c              |    1 +
- arch/x86/kernel/amd_iommu.c           |    4 ++--
- arch/x86/kernel/amd_iommu_init.c      |    7 ++++++-
- crypto/async_tx/async_xor.c           |   11 +++++++++--
- drivers/block/cciss.c                 |    5 +++++
- drivers/dma/dmaengine.c               |    3 +++
- drivers/dma/ioat_dma.c                |    5 ++++-
- drivers/dma/iop-adma.c                |   16 +++++++++++++---
- drivers/dma/mv_xor.c                  |   15 ++++++++++++---
- drivers/md/bitmap.c                   |   22 +++++++++++++++++-----
- drivers/net/starfire.c                |    5 +++++
- drivers/net/wireless/iwlwifi/iwl-tx.c |    7 +++----
- drivers/scsi/aacraid/linit.c          |    4 ++--
- drivers/scsi/ibmvscsi/ibmvstgt.c      |   16 +++++++++-------
- drivers/usb/gadget/f_rndis.c          |    4 ++++
- drivers/usb/storage/unusual_devs.h    |   16 +++++++++++++++-
- include/asm-parisc/tlbflush.h         |    5 ++++-
- sound/pci/hda/patch_sigmatel.c        |    1 +
- sound/soc/omap/omap-pcm.c             |    2 +-
- 20 files changed, 117 insertions(+), 34 deletions(-)
-
-Alan Stern (1):
-      usb-storage: update unusual_devs entry for Nokia 5310
-
-Brian King (1):
-      SCSI: ibmvstgt: move crq_queue_create to the end of initialization
-
-CSÉCSY László (1):
-      USB: storage: unusual_devs.h: Nokia 3109c addition
-
-Dan Williams (3):
-      async_xor: dma_map destination DMA_BIDIRECTIONAL
-      dmaengine: protect 'id' from concurrent registrations
-      ioat: wait for self-test completion
-
-David Brownell (1):
-      USB: gadget: fix rndis working at high speed
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.27.11
-
-Guillaume Knispel (1):
-      powerpc: Fix corruption error in rh_alloc_fixed()
-
-Herton Ronaldo Krzesinski (1):
-      ALSA: hda - Add missing terminators in patch_sigmatel.c
-
-Hillier, Gernot (1):
-      SCSI: aacraid: disable Dell Percraid quirk on Adaptec 2200S and 2120S
-
-Jarek Poplawski (1):
-      drivers/net: starfire: Fix napi ->poll() weight handling
-
-Joerg Roedel (4):
-      AMD IOMMU: reset command buffer pointers manually
-      AMD IOMMU: allocate rlookup_table with __GFP_ZERO
-      AMD IOMMU: initialize phys_addr correctly in iommu_page_map
-      AMD IOMMU: fix wrong loop counter in free_pagetables
-
-Johannes Berg (1):
-      iwlagn: downgrade BUG_ON in interrupt
-
-Kyle McMartin (1):
-      parisc: disable UP-optimized flush_tlb_mm
-
-NeilBrown (1):
-      md: Don't read past end of bitmap when reading bitmap.
-
-Ozan Sener (1):
-      USB: Unusual devs patch for Nokia 3500c
-
-Stanley Miao (1):
-      ALSA: Fix a Oops bug in omap soc driver.
-
-Stephen M. Cameron (1):
-      cciss: fix problem that deleting multiple logical drives could cause a panic
-
+diff --git a/Makefile b/Makefile
+index 24f4804..240d376 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 27
+-EXTRAVERSION = .10
++EXTRAVERSION = .11
+ NAME = Trembling Tortoise
+ 
+ # *DOCUMENTATION*
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index 29b2941..45907c1 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -556,6 +556,7 @@ unsigned long rh_alloc_fixed(rh_info_t * info, unsigned long start, int size, co
+ 		be = blk->start + blk->size;
+ 		if (s >= bs && e <= be)
+ 			break;
++		blk = NULL;
+ 	}
+ 
+ 	if (blk == NULL)
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 042fdc2..20804d0 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -235,7 +235,7 @@ static int iommu_map(struct protection_domain *dom,
+ 	u64 __pte, *pte, *page;
+ 
+ 	bus_addr  = PAGE_ALIGN(bus_addr);
+-	phys_addr = PAGE_ALIGN(bus_addr);
++	phys_addr = PAGE_ALIGN(phys_addr);
+ 
+ 	/* only support 512GB address spaces for now */
+ 	if (bus_addr > IOMMU_MAP_SIZE_L3 || !(prot & IOMMU_PROT_MASK))
+@@ -487,7 +487,7 @@ static void dma_ops_free_pagetable(struct dma_ops_domain *dma_dom)
+ 			continue;
+ 
+ 		p2 = IOMMU_PTE_PAGE(p1[i]);
+-		for (j = 0; j < 512; ++i) {
++		for (j = 0; j < 512; ++j) {
+ 			if (!IOMMU_PTE_PRESENT(p2[j]))
+ 				continue;
+ 			p3 = IOMMU_PTE_PAGE(p2[j]);
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index a1378c4..923e682 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -407,6 +407,10 @@ static u8 * __init alloc_command_buffer(struct amd_iommu *iommu)
+ 	memcpy_toio(iommu->mmio_base + MMIO_CMD_BUF_OFFSET,
+ 			&entry, sizeof(entry));
+ 
++	/* set head and tail to zero manually */
++	writel(0x00, iommu->mmio_base + MMIO_CMD_HEAD_OFFSET);
++	writel(0x00, iommu->mmio_base + MMIO_CMD_TAIL_OFFSET);
++
+ 	iommu_feature_enable(iommu, CONTROL_CMDBUF_EN);
+ 
+ 	return cmd_buf;
+@@ -926,7 +930,8 @@ int __init amd_iommu_init(void)
+ 		goto free;
+ 
+ 	/* IOMMU rlookup table - find the IOMMU for a specific device */
+-	amd_iommu_rlookup_table = (void *)__get_free_pages(GFP_KERNEL,
++	amd_iommu_rlookup_table = (void *)__get_free_pages(
++			GFP_KERNEL | __GFP_ZERO,
+ 			get_order(rlookup_table_size));
+ 	if (amd_iommu_rlookup_table == NULL)
+ 		goto free;
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index c029d3e..595b786 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -53,10 +53,17 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
+ 	int xor_src_cnt;
+ 	dma_addr_t dma_dest;
+ 
+-	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_FROM_DEVICE);
+-	for (i = 0; i < src_cnt; i++)
++	/* map the dest bidrectional in case it is re-used as a source */
++	dma_dest = dma_map_page(dma->dev, dest, offset, len, DMA_BIDIRECTIONAL);
++	for (i = 0; i < src_cnt; i++) {
++		/* only map the dest once */
++		if (unlikely(src_list[i] == dest)) {
++			dma_src[i] = dma_dest;
++			continue;
++		}
+ 		dma_src[i] = dma_map_page(dma->dev, src_list[i], offset,
+ 					  len, DMA_TO_DEVICE);
++	}
+ 
+ 	while (src_cnt) {
+ 		async_flags = flags;
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 2ac91b8..ee1eb5e 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1692,6 +1692,11 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 	for (i = 0; i <= h->highest_lun; i++) {
+ 		int j;
+ 		drv_found = 0;
++
++		/* skip holes in the array from already deleted drives */
++		if (h->drv[i].raid_level == -1)
++			continue;
++
+ 		for (j = 0; j < num_luns; j++) {
+ 			memcpy(&lunid, &ld_buff->LUN[j][0], 4);
+ 			lunid = le32_to_cpu(lunid);
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index dc003a3..53bb74b 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -388,7 +388,10 @@ int dma_async_device_register(struct dma_device *device)
+ 
+ 	init_completion(&device->done);
+ 	kref_init(&device->refcount);
++
++	mutex_lock(&dma_list_mutex);
+ 	device->dev_id = id++;
++	mutex_unlock(&dma_list_mutex);
+ 
+ 	/* represent channels in sysfs. Probably want devs too */
+ 	list_for_each_entry(chan, &device->channels, device_node) {
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 3f4db54..56790f8 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -1337,10 +1337,12 @@ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
+  */
+ #define IOAT_TEST_SIZE 2000
+ 
++DECLARE_COMPLETION(test_completion);
+ static void ioat_dma_test_callback(void *dma_async_param)
+ {
+ 	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(%p)\n",
+ 		dma_async_param);
++	complete(&test_completion);
+ }
+ 
+ /**
+@@ -1406,7 +1408,8 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 		goto free_resources;
+ 	}
+ 	device->common.device_issue_pending(dma_chan);
+-	msleep(1);
++
++	wait_for_completion_timeout(&test_completion, msecs_to_jiffies(3000));
+ 
+ 	if (device->common.device_is_tx_complete(dma_chan, cookie, NULL, NULL)
+ 					!= DMA_SUCCESS) {
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 71fba82..cbb7ab8 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -85,18 +85,28 @@ iop_adma_run_tx_complete_actions(struct iop_adma_desc_slot *desc,
+ 			enum dma_ctrl_flags flags = desc->async_tx.flags;
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
++			dma_addr_t dest;
+ 
++			src_cnt = unmap->unmap_src_cnt;
++			dest = iop_desc_get_dest_addr(unmap, iop_chan);
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+-				addr = iop_desc_get_dest_addr(unmap, iop_chan);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				enum dma_data_direction dir;
++
++				if (src_cnt > 1) /* is xor? */
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++
++				dma_unmap_page(dev, dest, len, dir);
+ 			}
+ 
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = iop_desc_get_src_addr(unmap,
+ 								     iop_chan,
+ 								     src_cnt);
++					if (addr == dest)
++						continue;
+ 					dma_unmap_page(dev, addr, len,
+ 						       DMA_TO_DEVICE);
+ 				}
+diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
+index 0328da0..bcda174 100644
+--- a/drivers/dma/mv_xor.c
++++ b/drivers/dma/mv_xor.c
+@@ -311,17 +311,26 @@ mv_xor_run_tx_complete_actions(struct mv_xor_desc_slot *desc,
+ 			enum dma_ctrl_flags flags = desc->async_tx.flags;
+ 			u32 src_cnt;
+ 			dma_addr_t addr;
++			dma_addr_t dest;
+ 
++			src_cnt = unmap->unmap_src_cnt;
++			dest = mv_desc_get_dest_addr(unmap);
+ 			if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+-				addr = mv_desc_get_dest_addr(unmap);
+-				dma_unmap_page(dev, addr, len, DMA_FROM_DEVICE);
++				enum dma_data_direction dir;
++
++				if (src_cnt > 1) /* is xor ? */
++					dir = DMA_BIDIRECTIONAL;
++				else
++					dir = DMA_FROM_DEVICE;
++				dma_unmap_page(dev, dest, len, dir);
+ 			}
+ 
+ 			if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+-				src_cnt = unmap->unmap_src_cnt;
+ 				while (src_cnt--) {
+ 					addr = mv_desc_get_src_addr(unmap,
+ 								    src_cnt);
++					if (addr == dest)
++						continue;
+ 					dma_unmap_page(dev, addr, len,
+ 						       DMA_TO_DEVICE);
+ 				}
+diff --git a/drivers/md/bitmap.c b/drivers/md/bitmap.c
+index ac89a5d..ab7c8e4 100644
+--- a/drivers/md/bitmap.c
++++ b/drivers/md/bitmap.c
+@@ -208,16 +208,19 @@ static void bitmap_checkfree(struct bitmap *bitmap, unsigned long page)
+  */
+ 
+ /* IO operations when bitmap is stored near all superblocks */
+-static struct page *read_sb_page(mddev_t *mddev, long offset, unsigned long index)
++static struct page *read_sb_page(mddev_t *mddev, long offset,
++				 struct page *page,
++				 unsigned long index, int size)
+ {
+ 	/* choose a good rdev and read the page from there */
+ 
+ 	mdk_rdev_t *rdev;
+ 	struct list_head *tmp;
+-	struct page *page = alloc_page(GFP_KERNEL);
+ 	sector_t target;
+ 
+ 	if (!page)
++		page = alloc_page(GFP_KERNEL);
++	if (!page)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	rdev_for_each(rdev, tmp, mddev) {
+@@ -227,7 +230,9 @@ static struct page *read_sb_page(mddev_t *mddev, long offset, unsigned long inde
+ 
+ 		target = rdev->sb_start + offset + index * (PAGE_SIZE/512);
+ 
+-		if (sync_page_io(rdev->bdev, target, PAGE_SIZE, page, READ)) {
++		if (sync_page_io(rdev->bdev, target,
++				 roundup(size, bdev_hardsect_size(rdev->bdev)),
++				 page, READ)) {
+ 			page->index = index;
+ 			attach_page_buffers(page, NULL); /* so that free_buffer will
+ 							  * quietly no-op */
+@@ -544,7 +549,9 @@ static int bitmap_read_sb(struct bitmap *bitmap)
+ 
+ 		bitmap->sb_page = read_page(bitmap->file, 0, bitmap, bytes);
+ 	} else {
+-		bitmap->sb_page = read_sb_page(bitmap->mddev, bitmap->offset, 0);
++		bitmap->sb_page = read_sb_page(bitmap->mddev, bitmap->offset,
++					       NULL,
++					       0, sizeof(bitmap_super_t));
+ 	}
+ 	if (IS_ERR(bitmap->sb_page)) {
+ 		err = PTR_ERR(bitmap->sb_page);
+@@ -957,11 +964,16 @@ static int bitmap_init_from_disk(struct bitmap *bitmap, sector_t start)
+ 				 */
+ 				page = bitmap->sb_page;
+ 				offset = sizeof(bitmap_super_t);
++				read_sb_page(bitmap->mddev, bitmap->offset,
++					     page,
++					     index, count);
+ 			} else if (file) {
+ 				page = read_page(file, index, bitmap, count);
+ 				offset = 0;
+ 			} else {
+-				page = read_sb_page(bitmap->mddev, bitmap->offset, index);
++				page = read_sb_page(bitmap->mddev, bitmap->offset,
++						    NULL,
++						    index, count);
+ 				offset = 0;
+ 			}
+ 			if (IS_ERR(page)) { /* read error */
+diff --git a/drivers/net/starfire.c b/drivers/net/starfire.c
+index 1d2ef8f..5a40f2d 100644
+--- a/drivers/net/starfire.c
++++ b/drivers/net/starfire.c
+@@ -1509,6 +1509,11 @@ static int __netdev_rx(struct net_device *dev, int *quota)
+ 		desc->status = 0;
+ 		np->rx_done = (np->rx_done + 1) % DONE_Q_SIZE;
+ 	}
++
++	if (*quota == 0) {	/* out of rx quota */
++		retcode = 1;
++		goto out;
++	}
+ 	writew(np->rx_done, np->base + CompletionQConsumerIdx);
+ 
+  out:
+diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
+index 78b1a7a..67da11b 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -1192,10 +1192,9 @@ void iwl_tx_cmd_complete(struct iwl_priv *priv, struct iwl_rx_mem_buffer *rxb)
+ 	/* If a Tx command is being handled and it isn't in the actual
+ 	 * command queue then there a command routing bug has been introduced
+ 	 * in the queue management code. */
+-	if (txq_id != IWL_CMD_QUEUE_NUM)
+-		IWL_ERROR("Error wrong command queue %d command id 0x%X\n",
+-			  txq_id, pkt->hdr.cmd);
+-	BUG_ON(txq_id != IWL_CMD_QUEUE_NUM);
++	if (WARN(txq_id != IWL_CMD_QUEUE_NUM,
++		 "wrong command queue %d, command id 0x%X\n", txq_id, pkt->hdr.cmd))
++		return;
+ 
+ 	cmd_index = get_cmd_index(&priv->txq[IWL_CMD_QUEUE_NUM].q, index, huge);
+ 	cmd = priv->txq[IWL_CMD_QUEUE_NUM].cmd[cmd_index];
+diff --git a/drivers/scsi/aacraid/linit.c b/drivers/scsi/aacraid/linit.c
+index 9aa301c..f90fbcd 100644
+--- a/drivers/scsi/aacraid/linit.c
++++ b/drivers/scsi/aacraid/linit.c
+@@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drivers[] = {
+ 	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+diff --git a/drivers/scsi/ibmvscsi/ibmvstgt.c b/drivers/scsi/ibmvscsi/ibmvstgt.c
+index 2a5b29d..e2dd6a4 100644
+--- a/drivers/scsi/ibmvscsi/ibmvstgt.c
++++ b/drivers/scsi/ibmvscsi/ibmvstgt.c
+@@ -864,21 +864,23 @@ static int ibmvstgt_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	INIT_WORK(&vport->crq_work, handle_crq);
+ 
+-	err = crq_queue_create(&vport->crq_queue, target);
++	err = scsi_add_host(shost, target->dev);
+ 	if (err)
+ 		goto free_srp_target;
+ 
+-	err = scsi_add_host(shost, target->dev);
++	err = scsi_tgt_alloc_queue(shost);
+ 	if (err)
+-		goto destroy_queue;
++		goto remove_host;
+ 
+-	err = scsi_tgt_alloc_queue(shost);
++	err = crq_queue_create(&vport->crq_queue, target);
+ 	if (err)
+-		goto destroy_queue;
++		goto free_queue;
+ 
+ 	return 0;
+-destroy_queue:
+-	crq_queue_destroy(target);
++free_queue:
++	scsi_tgt_free_queue(shost);
++remove_host:
++	scsi_remove_host(shost);
+ free_srp_target:
+ 	srp_target_free(target);
+ put_host:
+diff --git a/drivers/usb/gadget/f_rndis.c b/drivers/usb/gadget/f_rndis.c
+index 428b599..3a8bb53 100644
+--- a/drivers/usb/gadget/f_rndis.c
++++ b/drivers/usb/gadget/f_rndis.c
+@@ -651,6 +651,8 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
+ 				fs_in_desc.bEndpointAddress;
+ 		hs_out_desc.bEndpointAddress =
+ 				fs_out_desc.bEndpointAddress;
++		hs_notify_desc.bEndpointAddress =
++				fs_notify_desc.bEndpointAddress;
+ 
+ 		/* copy descriptors, and track endpoint copies */
+ 		f->hs_descriptors = usb_copy_descriptors(eth_hs_function);
+@@ -662,6 +664,8 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
+ 				f->hs_descriptors, &hs_in_desc);
+ 		rndis->hs.out = usb_find_endpoint(eth_hs_function,
+ 				f->hs_descriptors, &hs_out_desc);
++		rndis->hs.notify = usb_find_endpoint(eth_hs_function,
++				f->hs_descriptors, &hs_notify_desc);
+ 	}
+ 
+ 	rndis->port.open = rndis_open;
+diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+index e61f2bf..e16d547 100644
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -168,7 +168,7 @@ UNUSUAL_DEV(  0x0421, 0x005d, 0x0001, 0x0600,
+ 		US_FL_FIX_CAPACITY ),
+ 
+ /* Patch for Nokia 5310 capacity */
+-UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0591,
++UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
+ 		"Nokia",
+ 		"5310",
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+@@ -253,6 +253,20 @@ UNUSUAL_DEV(  0x0421, 0x04fa, 0x0550, 0x0660,
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY ),
+ 
++/* Reported by Ozan Sener <themgzzy@gmail.com> */
++UNUSUAL_DEV(  0x0421, 0x0060, 0x0551, 0x0551,
++		"Nokia",
++		"3500c",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY ),
++
++/* Reported by CSECSY Laszlo <boobaa@frugalware.org> */
++UNUSUAL_DEV(  0x0421, 0x0063, 0x0001, 0x0601,
++		"Nokia",
++		"Nokia 3109c",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY ),
++
+ /* Patch for Nokia 5310 capacity */
+ UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0591,
+ 	"Nokia",
+diff --git a/include/asm-parisc/tlbflush.h b/include/asm-parisc/tlbflush.h
+index b72ec66..1f6fd4f 100644
+--- a/include/asm-parisc/tlbflush.h
++++ b/include/asm-parisc/tlbflush.h
+@@ -44,9 +44,12 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	BUG_ON(mm == &init_mm); /* Should never happen */
+ 
+-#ifdef CONFIG_SMP
++#if 1 || defined(CONFIG_SMP)
+ 	flush_tlb_all();
+ #else
++	/* FIXME: currently broken, causing space id and protection ids
++	 *  to go out of sync, resulting in faults on userspace accesses.
++	 */
+ 	if (mm) {
+ 		if (mm->context != 0)
+ 			free_sid(mm->context);
+diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
+index 1d96aed..fdef553 100644
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -638,6 +638,7 @@ static struct hda_verb stac92hd71bxx_core_init[] = {
+ 	{ 0x0a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
+ 	{ 0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
+ 	{ 0x0f, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_UNMUTE(0)},
++	{}
+ };
+ 
+ #define HD_DISABLE_PORTF 3
+diff --git a/sound/soc/omap/omap-pcm.c b/sound/soc/omap/omap-pcm.c
+index 690bfea..5e023ba 100644
+--- a/sound/soc/omap/omap-pcm.c
++++ b/sound/soc/omap/omap-pcm.c
+@@ -231,7 +231,7 @@ static int omap_pcm_open(struct snd_pcm_substream *substream)
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	prtd = kzalloc(sizeof(prtd), GFP_KERNEL);
++	prtd = kzalloc(sizeof(*prtd), GFP_KERNEL);
+ 	if (prtd == NULL) {
+ 		ret = -ENOMEM;
+ 		goto out;
