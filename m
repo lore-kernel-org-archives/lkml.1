@@ -1,36 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbZANAYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbZANAZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760424AbZANAYv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbZANAYm
+	id S1761061AbZANAZO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760641AbZANAYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:24:42 -0500
-Received: from netgear.net.ru ([195.178.208.66]:34280 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754600AbZANAYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:24:42 -0500
-Date: Wed, 14 Jan 2009 03:24:40 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: greg@kroah.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [0/7] Distributed storage for drivers/staging merge request
-Message-ID: <20090114002440.GA1338@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net> <20090114000130.GA20811@kroah.com> <20090113161221.b23510b4.akpm@linux-foundation.org> <20090114001546.GC512@ioremap.net> <20090114002008.GD512@ioremap.net> <20090113162307.3805ddc7.akpm@linux-foundation.org>
+	Tue, 13 Jan 2009 19:24:53 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45522 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760451AbZANAYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:24:51 -0500
+Message-ID: <496D30C7.4080001@redhat.com>
+Date: Tue, 13 Jan 2009 16:24:39 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113162307.3805ddc7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: mtk.manpages@gmail.com
+CC: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vegard.nossum@gmail.com, linux-man@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>	 <cfd18e0f0901131514i2f7be7f1t2c6275c26dbb6874@mail.gmail.com>	 <20090113152457.0d7685ad.akpm@linux-foundation.org>	 <20090113234716.765A8FC3DD@magilla.sf.frob.com> <cfd18e0f0901131613l65bff51fo22e86a01ba2c0720@mail.gmail.com>
+In-Reply-To: <cfd18e0f0901131613l65bff51fo22e86a01ba2c0720@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 04:23:07PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> Please maintain these alongside the pohmelfs patchset.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Yes, thank you.
-I will send them together.
+Michael Kerrisk wrote:
+> I don't feel strongly about this, but lean towards the idea that we
+> should fix things, as per Roland's patch, and I suspect we can get
+> away with it, for the reasons I mentioned already.
 
--- 
-	Evgeniy Polyakov
+Yes, change it, it will only cause harm leaving it.  I very much doubt
+any programmer deliberately uses this case and if it's not deliberate
+they likely want to know about it.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkltMMcACgkQ2ijCOnn/RHQ8fQCgnghAaJQ4fkEMZCnQwsaza80X
+WrIAn2z7tEsiMy8pYJs3gkdzO6CNiKTz
+=WaAV
+-----END PGP SIGNATURE-----
