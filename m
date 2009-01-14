@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763711AbZANQOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbZANQOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763711AbZANQOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbZANQOb
+	id S1764030AbZANQOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763860AbZANQOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:14:31 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60652 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755754AbZANQOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:14:30 -0500
-Date: Wed, 14 Jan 2009 08:14:28 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu: add __cpuinit to rcu_init_percpu_data()
-Message-ID: <20090114161428.GB6734@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <496D8D07.5080108@cn.fujitsu.com>
+	Wed, 14 Jan 2009 11:14:42 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:47867 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763725AbZANQOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 11:14:40 -0500
+X-IronPort-AV: E=Sophos;i="4.37,263,1231113600"; 
+   d="scan'208";a="128875512"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Yinghai Lu" <yinghai@kernel.org>
+Cc: "James Kirin" <james.kirin40@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: memory beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y
+References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
+	<adaeiz6k4o4.fsf@cisco.com>
+	<baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
+	<86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 14 Jan 2009 08:14:35 -0800
+In-Reply-To: <86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
+	(Yinghai Lu's message of "Tue, 13 Jan 2009 22:07:26 -0800")
+Message-ID: <ada63khkgpg.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496D8D07.5080108@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 14 Jan 2009 16:14:35.0952 (UTC) FILETIME=[31682B00:01C97663]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:58:15PM +0800, Lai Jiangshan wrote:
-> 
-> Impact: rcu_init_percpu_data() is not use after boot when !CONFIG_HOTPLUG_CPU
-> 
-> add __cpuinit to rcu_init_percpu_data(), and this function's text
-> will be discarded after boot when !CONFIG_HOTPLUG_CPU.
+ > please do
+ > 1. boot linux with "disable_mtrr_trim" in grub.conf etc
+ > 2. after booting input:
+ > echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
 
-Good catch!!!
+Is there any way we can have the kernel do this automatically if there
+are any free mtrr slots?  I would guess this type of BIOS bug is pretty
+common (desktop boards not validated with > 4GB of RAM), and having the
+kernel throw away 4GB of memory unless the user does some fancy
+scripting is not very friendly (not to mention the fact that things are
+likely to be very slow until the mtrr fixup script runs).
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index 490934f..bd5a900 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -716,7 +716,7 @@ void rcu_check_callbacks(int cpu, int user)
->  	raise_rcu_softirq();
->  }
-> 
-> -static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
-> +static void __cpuinit rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
->  						struct rcu_data *rdp)
->  {
->  	unsigned long flags;
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index f2d8638..b2fd602 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -1314,7 +1314,7 @@ int rcu_needs_cpu(int cpu)
->   * access due to the fact that this CPU cannot possibly have any RCU
->   * callbacks in flight yet.
->   */
-> -static void
-> +static void __cpuinit
->  rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
->  {
->  	unsigned long flags;
-> 
-> 
-> 
+ - R.
