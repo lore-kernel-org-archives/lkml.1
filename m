@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbZANBYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbZANB3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759488AbZANBYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 20:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZANBYa
+	id S1757112AbZANB3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 20:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZANB3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 20:24:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41251
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754733AbZANBY3 (ORCPT
+	Tue, 13 Jan 2009 20:29:37 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59625 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZANB3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 20:24:29 -0500
-Date: Tue, 13 Jan 2009 17:24:30 -0800 (PST)
-Message-Id: <20090113.172430.177897618.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090114005110.GA6814@gondor.apana.org.au>
-References: <20090113.161625.111759506.davem@davemloft.net>
-	<20090114005110.GA6814@gondor.apana.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Jan 2009 20:29:36 -0500
+Date: Tue, 13 Jan 2009 20:29:27 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: David Miller <davem@redhat.com>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, andy@openmoko.com, sameo@openedhand.com,
+       mingo@elte.hu, yinghai@kernel.org, akpm@linux-foundation.org,
+       sfr@canb.auug.org.au
+Subject: Re: pcf50663 MFD driver modular build failure
+Message-ID: <20090114012927.GK25103@bombadil.infradead.org>
+References: <20090112.210501.215941396.davem@redhat.com> <20090113065159.GB3218@fedora.yogi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113065159.GB3218@fedora.yogi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 14 Jan 2009 11:51:10 +1100
-
-> We can probably do that for spliced data that end up going to
-> the networking stack again.  However, as splice is generic the
-> data may be headed to a destination other than the network stack.
+On Tue, Jan 13, 2009 at 12:22:02PM +0530, Balaji Rao wrote:
+> On Mon, Jan 12, 2009 at 09:05:01PM -0800, David Miller wrote:
+> > 
+> > This started happening with Linus's pull from today for
+> > sparc64 allmodconfig:
+> > 
+> > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+> > 
+> > Sure we can export __set_irq_handler() and handle_level_irq() to
+> > modules to fix this, but that looks like some hokey stuff for
+> > a MFD driver to be doing :-)
 > 
-> In that case to make dataref work we'd need some mechanism
-> that allows non-network entities to get/drop this ref count.
+> Yes, right! It's really not necessary. I've sent a patch to remove it.
+> 
 
-I see.
-
-I'll think about this some more.
+Thanks, I just hit this on a rawhide build as well...
