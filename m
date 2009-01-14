@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbZANLEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZANLNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761633AbZANLEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 06:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZANLEM
+	id S1757820AbZANLNB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 06:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZANLMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 06:04:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56896 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Jan 2009 06:12:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43453 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbZANLEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 06:04:10 -0500
-Date: Wed, 14 Jan 2009 12:03:56 +0100
+	id S1752587AbZANLMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 06:12:49 -0500
+Date: Wed, 14 Jan 2009 12:12:26 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, rostedt@home.goodmis.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] sched: fix build error in kernel/sched_rt.c when
-	RT_GROUP_SCHED && !SMP
-Message-ID: <20090114110356.GK2913@elte.hu>
-References: <20090113014333.GA23448@elte.hu> <20090113023345.32433.28954.stgit@dev.haskins.net> <20090114080111.GC18649@elte.hu> <1231930476.7141.27.camel@twins>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>, ia64 <linux-ia64@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       u.kleine-koenig@pengutronix.de
+Subject: Re: [PATCH 0/9] ftrace: updates for tip
+Message-ID: <20090114111226.GL2913@elte.hu>
+References: <20090113061110.856268617@goodmis.org> <alpine.DEB.1.10.0901130905110.31098@gandalf.stny.rr.com> <alpine.DEB.1.10.0901131147310.9837@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231930476.7141.27.camel@twins>
+In-Reply-To: <alpine.DEB.1.10.0901131147310.9837@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,27 +39,81 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Wed, 2009-01-14 at 09:01 +0100, Ingo Molnar wrote:
-> > * Gregory Haskins <ghaskins@novell.com> wrote:
-> > 
-> > > +#define dec_rt_group(rt_se, rt_rq) do { } while (0)
-> > 
-> > Please dont _ever_ introduce new CPP macros into core kernel code, and if 
-> > you see existing once, please fix them to be proper C inline functions. 
-> > (there's a few other new macros in your patchset)
 > 
-> Generally good advice, and certainly doable in this case. But in some 
-> very rare occasions I've had to use CPP in order to avoid silly header 
-> dependency hell -- I think we should add comments in such cases as to 
-> why we use CPP.
+> On Tue, 13 Jan 2009, Steven Rostedt wrote:
+> 
+> > 
+> > 
+> > On Tue, 13 Jan 2009, Steven Rostedt wrote:
+> > 
+> > > 
+> > > The following patches are in:
+> > > 
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > > 
+> > >     branch: tip/devel
+> > 
+> > Ingo,
+> > 
+> > Don't pull any of this yet please. I'm going to rebase some of the patches 
+> > to fix the change logs (typos). I'll let you know when that's finished.
+> > 
+> 
+> OK, I rebased in changing the change logs. Here's what I did:
+> 
+> s/destinct/distinct/
+> s/K?nig/Koenig/
+> 
+> Here's the changes:
+> 
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: tip/devel
+> 
+> 
+> Frederic Weisbecker (2):
+>       tracing/ftrace: separate events tracing and stats tracing engine
+>       tracing: add a new workqueue tracer
+> 
+> Shaohua Li (6):
+>       ftrace, ia64: make recordmcount distinct module compile
+>       ftrace, ia64: explictly ignore a file in recordmcount.pl
+>       ftrace, ia64: Add macro for ftrace_caller
+>       ftrace, ia64: Add recordmcount for ia64
+>       ftrace, ia64: IA64 static ftrace support
+>       ftrace, ia64: IA64 dynamic ftrace support
+> 
+> Uwe Kleine-Koenig (1):
+>       ftrace, trivial: fix typo "resgister" -> "register"
+> 
+> ----
+>  arch/ia64/Kconfig              |    3 +
+>  arch/ia64/include/asm/ftrace.h |   28 ++++
+>  arch/ia64/kernel/Makefile      |    5 +
+>  arch/ia64/kernel/entry.S       |  100 ++++++++++++++
+>  arch/ia64/kernel/ftrace.c      |  206 ++++++++++++++++++++++++++++
+>  arch/ia64/kernel/ia64_ksyms.c  |    6 +
+>  include/linux/ftrace.h         |    4 +
+>  include/trace/workqueue.h      |   25 ++++
+>  kernel/trace/Kconfig           |   11 ++
+>  kernel/trace/Makefile          |    1 +
+>  kernel/trace/ftrace.c          |   14 +--
+>  kernel/trace/trace.c           |    2 -
+>  kernel/trace/trace.h           |   20 ---
+>  kernel/trace/trace_branch.c    |  108 +++++++++-------
+>  kernel/trace/trace_stat.c      |  191 +++++++++++---------------
+>  kernel/trace/trace_stat.h      |   31 +++++
+>  kernel/trace/trace_workqueue.c |  287 ++++++++++++++++++++++++++++++++++++++++
+>  kernel/workqueue.c             |   16 ++-
+>  scripts/Makefile.build         |   13 +-
+>  scripts/recordmcount.pl        |   18 ++-
+>  20 files changed, 888 insertions(+), 201 deletions(-)
 
-yeah - that's why i qualified it with 'core kernel code', not 'headers'. 
-
-(But even in the dependency spaghetti case the right solution is to clean 
-up the header dependencies. It's just very hard in most cases due to most 
-folks running on x86 and there being 20+ other architectures they cannot 
-really test. So the dependency hell tends to grow not shrink. )
+pulled into tip/tracing/ftrace, thanks Steve!
 
 	Ingo
