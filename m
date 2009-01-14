@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbZANVvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbZANVws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760235AbZANVvp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZANVve
+	id S1760772AbZANVws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZANVwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:51:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33402 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753263AbZANVvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:51:33 -0500
-Message-ID: <496E5DB8.1030007@sandeen.net>
-Date: Wed, 14 Jan 2009 15:48:40 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 14 Jan 2009 16:52:36 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:33878 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756834AbZANVwf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:52:35 -0500
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: chris.mason@oracle.com, handygewinnspiel@gmx.de, matthew@wil.cx,
-       rjw@sisk.pl, HWerner4@gmx.de, viro@zeniv.linux.org.uk,
+In-Reply-To: <20090114214158.GA9992@elte.hu>
+References: <1231952436.14825.28.camel@laptop>
+	 <20090114105300.66bd014d.akpm@linux-foundation.org>
+	 <20090114190008.GA13203@elte.hu>
+	 <20090114113638.c818fcf8.akpm@linux-foundation.org>
+	 <20090114201435.GA6519@elte.hu>
+	 <20090114123017.9acf42d7.akpm@linux-foundation.org>
+	 <20090114205122.GC6519@elte.hu>
+	 <20090114130642.cf2b18b2.akpm@linux-foundation.org>
+	 <20090114211458.GD6519@elte.hu> <20090114214158.GA9992@elte.hu>
+Date: Wed, 14 Jan 2009 22:50:59 +0100
+Message-ID: <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, paulmck@linux.vnet.ibm.com, ghaskins@novell.com,
+       matthew@wil.cx, andi@firstfloor.org, chris.mason@oracle.com,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mchehab@infradead.org, stable@kernel.org,
-       Christoph Hellwig <hch@lst.de>, Lachlan McIlroy <lachlan@sgi.com>,
-       xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-References: <20090112190420.51f75853@pedra.chehab.org>	<20090112132130.6c932b85.akpm@linux-foundation.org>	<20090112220624.4fbfee34@pedra.chehab.org>	<20090112162337.318dd61d.akpm@linux-foundation.org>	<20090113184755.87720@gmx.net>	<20090113105947.9e774b69.akpm@linux-foundation.org>	<20090113191757.74290@gmx.net>	<20090113113700.776a94b5.akpm@linux-foundation.org>	<20090113203843.GJ29283@parisc-linux.org>	<1231957750.8269.28.camel@think.oraclecorp.com>	<496E56EB.2030301@gmx.de>	<1231968240.8269.48.camel@think.oraclecorp.com>	<496E5AB2.7040507@sandeen.net> <20090114134417.e6b29b52.akpm@linux-foundation.org>
-In-Reply-To: <20090114134417.e6b29b52.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 14 Jan 2009 15:35:46 -0600
-> Eric Sandeen <sandeen@sandeen.net> wrote:
-> 
->> Chris Mason wrote:
->>> On Wed, 2009-01-14 at 22:19 +0100, wk wrote:
->> ...
->>>> I cannot fully understand what strace -v outputs (see attachment), but 
->>>> what i see is that 'find' stops after finding a file with d_off = 4294967295
->>>> 4294967295  =  0xFFFFFFFF, adding any number greater that zero will be 
->>>> greater that 32bits, so this could be the reason for the message "value 
->>>> too large".
->>>>
->>>>
->>>>
->>>> I also noticed that i cannot access these files through samba if i boot 
->>>> from 2.6.28 - really strange.
->>>> If i reboot older kernels these are visible in samba again and fully 
->>>> accessible.
->>>>
->>>> Attached the log from stracing the command which was ivoked by the 
->>>> Makefile from v4l-dvb.
->>>> I guess this is all i could contribute to that problem. Thats stuff for 
->>>> xfs filesystem experts now..
->>> Seems suspect indeed.  Could you please attach the strace for the run
->>> that works on the older kernel?
->> Chris got my attention on this one; you probably want this fix from hch:
+On Wed, Jan 14, 2009 at 22:41, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> > You just disproved your own case :(
 >>
->> http://oss.sgi.com/archives/xfs/2009-01/msg00158.html
->>
-> 
-> Looks likely.  It is below, for anyone who would like to test it.
-> 
-> 
-> It is in linux-next.  Guys, do we plan to merge this into 2.6.29?
+>> how so? 80% is not enough? I also checked Fedora and it has
+>> SCHED_DEBUG=y in its kernel rpms.
+>
+> Ubuntu has CONFIG_SCHED_DEBUG=y as well in their kernels.
 
-It should be merged there, yes.  Was hoping that sgi would request that
-soon....
+$ cat /etc/SuSE-release
+openSUSE 11.1 (x86_64)
+VERSION = 11.1
 
-> (cc's stable@kernel.org)
-> 
-> This patch applies OK to 2.6.27 and 2.6.28.  Is it also needed there? 
-> If so, it should have had "Cc: <stable@kernel.org>" in the changelog so
-> that it doesn't get lost.
-> 
+$ uname -a
+Linux nga 2.6.27.7-9-default #1 SMP 2008-12-04 18:10:04 +0100 x86_64
+x86_64 x86_64 GNU/Linux
 
-It is needed for .28, but should not be needed for .27 AFAIK.
+$ zgrep SCHED_DEBUG /proc/config.gz
+CONFIG_SCHED_DEBUG=y
 
--Eric
+$ zgrep DEBUG_MUTEX /proc/config.gz
+# CONFIG_DEBUG_MUTEXES is not set
+
+Kay
