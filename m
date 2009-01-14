@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZANONb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZANONs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbZANONb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZANONU
+	id S1754008AbZANONs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbZANONh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:13:20 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:41029 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZANONT (ORCPT
+	Wed, 14 Jan 2009 09:13:37 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51849 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753272AbZANONg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:13:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sEk0qcAh2CHp8d5GqlOmbccrNvtsoB61uXSZZaE+9Cucq8c3KkFdrlLOt7Y2eJTqkx
-         s/TmGc0YJ6ok/TDa1Pi+uX6dtvtV/gQT2LfbAV2XqviQ3YCERH384ICQH8qCV1kuQfUR
-         mrtnjlCCIFIKVpOfPxEyRApFE/37f3BHspTTw=
-Date: Wed, 14 Jan 2009 14:13:11 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090114141311.GA6643@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <200901141505.46929.denys@visp.net.lb> <20090114131257.GC6117@ff.dom.local> <1231938929.14825.6.camel@laptop> <20090114132603.GD6117@ff.dom.local> <1231939946.14825.9.camel@laptop>
+	Wed, 14 Jan 2009 09:13:36 -0500
+Date: Wed, 14 Jan 2009 09:12:04 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Jan Kara <jack@suse.cz>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
+Subject: Re: ext2 + -osync: not as easy as it seems
+Message-ID: <20090114141204.GD6222@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231939946.14825.9.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090114140532.GC19950@duck.suse.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:32:26PM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 13:26 +0000, Jarek Poplawski wrote:
-> 
-> > OK, I hope Denys can apply more, but what about others? Without any
-> > patches the hole seems to be much bigger.
-> 
-> OK, I read most of this thread on netdev, but didn't find a clear clue
-> on the specific hrtimer insertion race.
+On Wed, Jan 14, 2009 at 03:05:32PM +0100, Jan Kara wrote:
+> On Wed 14-01-09 08:21:46, Theodore Tso wrote:
+> > 
+> > If we optimize out the journal commit when there are no blocks
+> > attached to the transaction, we could change the patch to only force a
+> > flush if inode->i_state did not have I_DIRTY before the call to
+> > sync_inode().  Does that sound sane?
+>   Yes. And also add a flush in case of fdatasync().
 
-There is something at the beginning of this thread, plus earlier
-threads mostly with Denys as sender, and "htb bug" in the subject.
+Um, we have that already; the sync_inode() followed by
+blkdev_issue_flush() is the path taken by fdatasync(), I do believe.
 
-> 
-> Do you have any clear ideas or should I poke at the htb/hrtimer code a
-> little?
-> 
+>   Well, I thought that a barrier, as an abstraction, only guarantees that
+> any IO which happened before the barrier hits the iron before any IO which
+> has been submitted after a barrier. This is actually enough for a
+> journalling to work correctly but it's not enough for fsync() guarantees.
+> But I might be wrong...
 
-...And htb code is htb_dequeue(): qdisc_watchdog_schedule().
+Ah, yes, that's what you're getting at.  True, but for better or for
+worse, we have no other interface other than blkdev_issue_flush().
+This will guarantee that the data has made it to the disk controller,
+but it won't necessarily guarantee that it will have made it onto the
+disk platter, as I understand things; but I don't think we have any
+other interfaces available to us at this point.
 
-Jarek P.
+						- Ted
