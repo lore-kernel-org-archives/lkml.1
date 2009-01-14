@@ -1,107 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZANVgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760413AbZANVhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbZANVgc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZANVgW
+	id S1760413AbZANVhA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbZANVgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:36:22 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:29536 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbZANVgV (ORCPT
+	Wed, 14 Jan 2009 16:36:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46733 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751914AbZANVgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:36:21 -0500
-Date: Wed, 14 Jan 2009 13:34:44 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Matthias Andree <matthias.andree@gmx.de>
-Subject: Re: [take2] OOM documentation update [was: Linux killed Kenny,
- bastard!]
-Message-Id: <20090114133444.f85b1dc7.randy.dunlap@oracle.com>
-In-Reply-To: <20090114170606.GB12102@ioremap.net>
-References: <20090112155108.2646b3ae@lxorguk.ukuu.org.uk>
-	<20090113135246.GA29251@ioremap.net>
-	<20090113140627.507f15e1@lxorguk.ukuu.org.uk>
-	<20090113142423.GA30710@ioremap.net>
-	<661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com>
-	<20090113152106.GA1134@ioremap.net>
-	<alpine.DEB.2.00.0901131140340.8522@chino.kir.corp.google.com>
-	<20090113213316.GB27227@ioremap.net>
-	<alpine.DEB.2.00.0901131336040.17683@chino.kir.corp.google.com>
-	<20090114161225.GA9584@ioremap.net>
-	<20090114170606.GB12102@ioremap.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 14 Jan 2009 16:36:40 -0500
+Date: Wed, 14 Jan 2009 13:35:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-Id: <20090114133529.317a346c.akpm@linux-foundation.org>
+In-Reply-To: <20090114211458.GD6519@elte.hu>
+References: <1231867314.7141.16.camel@twins>
+	<1231952436.14825.28.camel@laptop>
+	<20090114183319.GA18630@elte.hu>
+	<20090114105300.66bd014d.akpm@linux-foundation.org>
+	<20090114190008.GA13203@elte.hu>
+	<20090114113638.c818fcf8.akpm@linux-foundation.org>
+	<20090114201435.GA6519@elte.hu>
+	<20090114123017.9acf42d7.akpm@linux-foundation.org>
+	<20090114205122.GC6519@elte.hu>
+	<20090114130642.cf2b18b2.akpm@linux-foundation.org>
+	<20090114211458.GD6519@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.496E5A79.0271:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 20:06:06 +0300 Evgeniy Polyakov wrote:
+On Wed, 14 Jan 2009 22:14:58 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Updated version fixes some errors and extends description by adding
-> swapping and children relation explaintaion.
 > 
-> Signed.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Wed, 14 Jan 2009 21:51:22 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > > > Do people enable CONFIG_SCHED_DEBUG?
+> > > > > 
+> > > > > If they suspect performance problems and want to analyze them?
+> > > > 
+> > > > The vast majority of users do not and usually cannot compile their own 
+> > > > kernels.
+> > > 
+> > > ... which they derive from distro kernels or some old .config they always 
+> > > used, via 'make oldconfig'. You are arguing against well-established facts 
+> > > here.
+> > > 
+> > > If you dont believe my word for it, here's an analysis of all kernel 
+> > > configs posted to lkml in the past 8 months:
+> > > 
+> > >    $ grep ^CONFIG_SCHED_DEBUG linux-kernel | wc -l
+> > >    424
+> > > 
+> > >    $ grep 'CONFIG_SCHED_DEBUG is not' linux-kernel | wc -l
+> > >    109
+> > > 
+> > > i.e. CONFIG_SCHED_DEBUG=y is set in 80% of the configs. A large majority 
+> > > of testers has it enabled and /sys/debug/sched_features was always a good 
+> > > mechanism that we used for runtime toggles.
+> > 
+> > You just disproved your own case :(
+> 
+> how so? 80% is not enough?
 
-??
+No.
 
-> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> index d105eb4..4aa1918 100644
-> --- a/Documentation/filesystems/proc.txt
-> +++ b/Documentation/filesystems/proc.txt
-> @@ -2311,6 +2311,33 @@ increase the likelihood of this process being killed by the oom-killer.  Valid
->  values are in the range -16 to +15, plus the special value -17, which disables
->  oom-killing altogether for this process.
->  
-> +The process to be killed in an out-of-memory situation is selected among all others
-> +based on its badness score. This value equals the original memory size of the process
-> +originally and is then updated according to its CPU time (utime + stime) and the
+It really depends on what distros do.
 
-drop "originally" since earlier part of sentence says "original memory size".
+> I also checked Fedora and it has SCHED_DEBUG=y 
+> in its kernel rpms.
 
-> +run time (uptime - start time). The longer it runs the smaller is the score.
-> +Badness score is divided by the square root of the cpu time and then by
+If all distros set SCHED_DEBUG=y then fine.
 
-                                                      CPU
+But if they do this then we should do this at the kernel.org level, and
+make it a hard-to-turn-off thing via CONFIG_EMBEDDED=y.
 
-> +the double square root of the run time.
-> +
-> +Swapped out tasks are killed first. Half of each child's memory size is added to
-> +the parent's score if they do not share the same memory. Thus forking servers
-> +are the prime candidates to be killed. Having only one 'hungry' child will make
-> +parent less preferable than the child.
-> +
-> +/proc/<pid>/oom_score shows process' current badness score.
-> +
-> +The following heuristics are then applied:
-> + * if the task was reniced, its score doubles
-> + * superuser or direct hardware access tasks (CAP_SYS_ADMIN, CAP_SYS_RESOURCE
-> + 	or CAP_SYS_RAWIO) have their score divided by 4
-> + * if oom condition happened in one cpuset and checked task does not belong
-> + 	to it, its score is divided by 8
-> + * resulted score is multiplied by the two in the power of oom_adj when it is
+> note that there's also a performance issue here: we generally _dont want_ 
+> a debug sysctl overhead in the mutex code or in any fastpath for that 
+> matter. So making it depend on SCHED_DEBUG is useful.
+> 
+> sched_feat() features get optimized out at build time when SCHED_DEBUG is 
+> disabled. So it gives us the best of two worlds: the utility of sysctls in 
+> the SCHED_DEBUG=y, and they get compiled out in the !SCHED_DEBUG case.
 
-confusing.  Is this:    multiplied by two to the power of oom_adj when it is ... ?
+I'm not detecting here a sufficient appreciation of the number of
+sched-related regressions we've seen in recent years, nor of the
+difficulty encountered in diagnosing and fixing them.  Let alone
+the difficulty getting those fixes propagated out a *long* time
+after the regression was added.
 
-> + 	positive, and divided otherwise, i.e.
-> +	points <<= oom_adj when it is positive and
-> +	points >>= oom_adj otherwise
-> +
-> +The task with the highest badness score is then killed.
-> +
->  2.13 /proc/<pid>/oom_score - Display current oom-killer score
->  -------------------------------------------------------------
+You're taking a whizzy new feature which drastically changes a critical
+core kernel feature and jamming it into mainline with a vestigial
+amount of testing coverage without giving sufficient care and thought
+to the practical lessons which we have learned from doing this in the
+past.
 
-
----
-~Randy
+This is a highly risky change.  It's not that the probability of
+failure is high - the problem is that the *cost* of the improbable
+failure is high.  We should seek to minimize that cost.
