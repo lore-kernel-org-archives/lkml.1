@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbZANUNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZANUNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbZANUNc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZANUNX
+	id S1757380AbZANUNs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZANUNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:13:23 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:33612 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbZANUNW (ORCPT
+	Wed, 14 Jan 2009 15:13:35 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:46740 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757363AbZANUNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:13:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CgKSh6H8E27QW98D6set+CiMAQCJ6jQ/EPx+p/OfT/QepSo0epvDg8NPaKX+CIHsFp
-         tjhwtCGwHimP9mUxuatJpxkVt6U54+xo7Fu3JXFuH3MKe1JsoAPmXQjS8wBw98lXWRdH
-         ETTuLZJ2osCD8L0k9uGsQlJ8J68zp6WRxMof4=
-Subject: Re: [PATCH -tip] nubus.h: extern's make no sense in userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Wed, 14 Jan 2009 15:13:33 -0500
+Date: Wed, 14 Jan 2009 21:15:13 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
        Jaswinder Singh Rajput <jaswinder@infradead.org>,
        Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       gorcunov@gmail.com, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090114201019.GB1556@uranus.ravnborg.org>
-References: <1231832906.3212.24.camel@jaswinder.satnam>
-	 <Pine.LNX.4.64.0901131001200.19352@vixen.sonytel.be>
-	 <1231963461.5756.9.camel@brick> <20090114201019.GB1556@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 12:13:19 -0800
-Message-Id: <1231963999.5756.11.camel@brick>
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: [PULL -tip] fixed few make headers_check warnings
+Message-ID: <20090114201513.GC1556@uranus.ravnborg.org>
+References: <1231836016.3212.41.camel@jaswinder.satnam> <Pine.LNX.4.64.0901140954250.27308@anakin> <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com> <20090114153825.GB32082@uranus.ravnborg.org> <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com> <Pine.LNX.4.64.0901141732450.26663@anakin>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901141732450.26663@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 21:10 +0100, Sam Ravnborg wrote:
-> On Wed, Jan 14, 2009 at 12:04:21PM -0800, Harvey Harrison wrote:
+On Wed, Jan 14, 2009 at 05:36:14PM +0100, Geert Uytterhoeven wrote:
+> On Wed, 14 Jan 2009, Jaswinder Singh Rajput wrote:
+> > On Wed, Jan 14, 2009 at 9:08 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > I appreciate your work but I will like to question the approach.
 > > 
-> > I had a look at this file, there's the small patch that just wraps the whole
-> > section of function declarations with ifdef __KERNEL, or the larger patch
-> > that does the wrapping _and_ adds the missing externs to make it obvious.
+> > My approach was:
+> > "PATCH should solve a problem per file", like:
+> >  capability.h: extern's make no sense in userspace
+> >  coda_psdev.h: extern's make no sense in userspace
+> >  in6.h: extern's make no sense in userspace
+> >  nubus.h: extern's make no sense in userspace
+> >  socket.h: extern's make no sense in userspace
 > > 
-> > But I'm not sure that there is agreement regarding adding the externs too.
+> > But this warnings was in many files:
+> >  include of <linux/types.h> is preferred over <asm/types.h> : 15 files
+> >  found __[us]{8,16,32,64} type without #include <linux/types.h> : 52 files
 > > 
-> > What do people think?
+> > So in place of making 15 + 52 = 67 patches, I made 2 patches for each warning.
+> > 
+> > > We should rather take the warnings as an indication that this
+> > > file needs to be looked over and fix not only the warnings
+> > > reported but rater to fix all the questionable issues on a file-by-file basis.
+> > 
+> > Should I make 67 patches ?
 > 
-> The general consensus is to add externs for new prototypes.
-> So if _and only if_ you are anyway touching this file in that area then
-> I would say - add the externs. But just adding externs are not (yet)
-> worth a patch alone.
+> No.
 > 
+> What Sam means is that the warnings about externs not making sense in userspace
+> are indicators that there may be other external declarations (without "extern")
+> in those files, and that you should fix those at the same time (i.e. either
+> don't fix any of them, or fix all of them (in the same file)). If you don't
+> fix them at the same time, people tend to forget about them.
+> 
+> So the warnings are just considered canaries in our coal mine. Killing only the
+> canaries doesn't help.
 
-Agreed about just adding externs not being worth it, but as part of auditing
-this file for userspace inclusion I'll send the patch that adds the externs
-as well as the ifdef __KERNEL__ bits.
+Correct. We should use the warnings to tell us that there may be something
+fishy here and fix it all.
+I've used checkpatch in the same way occasionally. If I had to do some
+cleanup and checkpatch was a bit noisy I went through the file
+_manually_. And when finished I ran chackpatch again and fixed up the
+warnings/errors that made sense for me to fix and that I forgot when I refactored
+the code.
 
+So when I see "capability.h: extern's make no sense in userspace"
+the perfect approach would be that the whole file was checked.
 
-Harvey
+This is a much bigger task that just removing the warning.
 
+(All this said I have sometimes doen the "remove warnings only trick too").
+
+	Sam
