@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbZANHvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbZANH5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbZANHvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 02:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZANHvf
+	id S1758763AbZANH5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 02:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZANH53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 02:51:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42565 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbZANHve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 02:51:34 -0500
-Date: Wed, 14 Jan 2009 08:51:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, travis@sgi.com, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: fix broken flush_tlb_others_ipi()
-Message-ID: <20090114075126.GA17562@elte.hu>
-References: <20090114024303.GB1290@linux-os.sc.intel.com>
+	Wed, 14 Jan 2009 02:57:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:65048 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754654AbZANH52 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 02:57:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=IVkXnt5bkynyDlmgrrt0ZrKbFeoUso6oDLnCh8m806dqWkd2WONGKwxhQVslGVmgAu
+         VAzuvw5hLl4ZdDHEH+viISLtVeZPTaHIjX/EgBHZhMxHqmBMpcLGgEyfqi1kcdWr3md+
+         RFlYJh9hjsNpNXVfsSUSrEs5i3LakEMno8zsE=
+Message-ID: <84144f020901132357h7fbac614yb95557d2fcc7c316@mail.gmail.com>
+Date: Wed, 14 Jan 2009 09:57:26 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [PATCH] btrfs: Remove extra KERN_INFO in the middle of a line
+Cc: "Chris Mason" <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <adamydukawi.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090114024303.GB1290@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <adamydukawi.fsf@cisco.com>
+X-Google-Sender-Auth: 46472d578b0b7a79
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Roland,
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+On Wed, Jan 14, 2009 at 2:07 AM, Roland Dreier <rdreier@cisco.com> wrote:
+> diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+> index b187b53..2280d19 100644
+> --- a/fs/btrfs/volumes.c
+> +++ b/fs/btrfs/volumes.c
+> @@ -577,7 +577,7 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
+>                       *(unsigned long long *)disk_super->fsid,
+>                       *(unsigned long long *)(disk_super->fsid + 8));
+>        }
+> -       printk(KERN_INFO "devid %llu transid %llu %s\n",
+> +       printk("devid %llu transid %llu %s\n",
 
-> This commit broke flush_tlb_others_ipi() causing boot hangs on a
-> 16 logical cpu system.
-> 
-> >	commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
-> >	Author: Rusty Russell <rusty@rustcorp.com.au>
-> >	Date:   Sat Jan 10 21:58:09 2009 -0800
-> >
-> >	    x86: change flush_tlb_others to take a const struct cpumask
-> 
-> This change resulted in sending the invalidate tlb vector to the
-> sender itself causing the hang. flush_tlb_others_ipi() should exclude
-> the sender itself from the destination list.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+We have KERN_CONT for this.
 
-applied to tip/cpus4096, thanks Suresh!
-
-	Ingo
+>               (unsigned long long)devid, (unsigned long long)transid, path);
+>        ret = device_list_add(path, disk_super, devid, fs_devices_ret);
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
