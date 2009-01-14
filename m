@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbZANI1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbZANI2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbZANI1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZANI1M
+	id S1760647AbZANI2W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZANI2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:27:12 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:59997 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752805AbZANI1M (ORCPT
+	Wed, 14 Jan 2009 03:28:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43109 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756292AbZANI2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:27:12 -0500
-Date: Wed, 14 Jan 2009 19:26:30 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090114082630.GB16692@gondor.apana.org.au>
-References: <20090113.163705.130074998.davem@davemloft.net> <20090114035124.GA8409@gondor.apana.org.au> <20090113.232710.55011568.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113.232710.55011568.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 03:28:07 -0500
+Date: Wed, 14 Jan 2009 00:27:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew S. Johnson" <andy@asjohnson.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: TMDC Joystick no longer works in kernel 2.6.28
+Message-Id: <20090114002757.6ef66074.akpm@linux-foundation.org>
+In-Reply-To: <200901101553.40515.andy@asjohnson.com>
+References: <200901101553.40515.andy@asjohnson.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 11:27:10PM -0800, David Miller wrote:
-> 
-> So while trying to figure out a sane way to fix this, I found
-> another bug:
-> 
-> 	/*
-> 	 * map the linear part
-> 	 */
-> 	if (__splice_segment(virt_to_page(skb->data),
-> 			     (unsigned long) skb->data & (PAGE_SIZE - 1),
-> 			     skb_headlen(skb),
-> 			     offset, len, skb, spd))
-> 		return 1;
-> 
-> This will explode if the SLAB cache for skb->head is using compound
-> (ie. order > 0) pages.
-> 
-> For example, if this is an order-1 page being used for the skb->head
-> data (which would be true on most systems for jumbo MTU frames being
-> received into a linear SKB), the offset will be wrong and depending
-> upon skb_headlen() we could reference past the end of that
-> non-compound page we will end up grabbing a reference to.
+(cc linux-input)
 
-I'm actually not worried so much about these packets since these
-drivers should be converted to skb frags as otherwise they'll
-probably stop working after a while due to memory fragmentation.
+On Sat, 10 Jan 2009 15:53:40 -0600 "Andrew S. Johnson" <andy@asjohnson.com> wrote:
 
-But yeah for correctness we definitely should address this in
-skb_splice_bits.
+> Up through kernel version 2.6.27.9 I have had no problems with
+> my joystick on the game port.  Now with 2.6.28, the game port
+> is recognized when the gameport and ns558 modules load, but
+> loading the tmdc module doesn't also automatically load joydev,
+> and even loading joydev manually doesn't give me a working
+> joystick.  There are no error messages in dmesg, /var/log/messages, 
+> or /var/log/syslog.  This is on Slackware 12.1, so I don't think
+> it's a distro issue.  Do I need to do something different than
+> in the past to make it work, or is there some debug I can turn
+> on to give more info?
+> 
 
-I still think Jarek's approach (the copying one) is probably the
-easiest for now until we can find a better way.
+If this doesn't get resolved with a few days, please raise a report at
+bugzilla.kernel.org, so that we can not fix it in a more organised
+fashion, thanks.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
