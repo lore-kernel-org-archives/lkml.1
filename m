@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbZANMan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZANMbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762357AbZANMan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 07:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbZANMaf
+	id S1756492AbZANMbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 07:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762458AbZANMaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 07:30:35 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54799 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752634AbZANMae (ORCPT
+	Wed, 14 Jan 2009 07:30:46 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:52864 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762433AbZANMap convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 07:30:34 -0500
-Subject: Re: [PATCH 00/14] Kernel memory leak detector
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090112213339.feefdd02.sfr@canb.auug.org.au>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20090108144538.e5195575.akpm@linux-foundation.org>
-	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
-	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
-	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 14 Jan 2009 12:30:20 +0000
-Message-Id: <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
+	Wed, 14 Jan 2009 07:30:45 -0500
+Message-Id: <496DE927.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 14 Jan 2009 12:31:19 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: simplify HIGHMEM-related Kconfig entries
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2009 12:30:21.0098 (UTC) FILETIME=[DDB060A0:01C97643]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+Additionally remove the dependency of X86_PAE on !HIGHMEM4G - at least
+I can't understand why that dependency existed.
 
-On Mon, 2009-01-12 at 21:33 +1100, Stephen Rothwell wrote:
-> On Mon, 12 Jan 2009 02:21:38 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > The many trees in linux-next are actually based on current mainline. 
-> > So if you can prepare and maintain a tree based on current mainline,
-> > Stephen could integrate that into linux-next, hopefully.
-> 
-> That's what I'm here for :-)
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-I updated the git://linux-arm.org/linux-2.6.git kmemleak branch to the
-latest mainline and it works fine. However, I tried to merge it with the
-linux-next tree and there are many conflicts with kmemtrace as they both
-modify similar areas of the kernel. The conflicts are relatively simple
-but they still need manual fixing.
+---
+ arch/x86/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Are you OK with applying patches to linux-next (git am) rather than
-using git merge? This way I can rebase kmemleak on top of linux-next.
+--- linux-2.6.29-rc1/arch/x86/Kconfig	2009-01-14 11:36:05.000000000 +0100
++++ 2.6.29-rc1-x86-kconfig-highmem/arch/x86/Kconfig	2009-01-08 09:03:21.000000000 +0100
+@@ -896,8 +896,8 @@ config X86_CPUID
+ 
+ choice
+ 	prompt "High Memory Support"
+-	default HIGHMEM4G if !X86_NUMAQ
+ 	default HIGHMEM64G if X86_NUMAQ
++	default HIGHMEM4G
+ 	depends on X86_32
+ 
+ config NOHIGHMEM
+@@ -1004,7 +1004,7 @@ config HIGHMEM
+ 
+ config X86_PAE
+ 	bool "PAE (Physical Address Extension) Support"
+-	depends on X86_32 && !HIGHMEM4G
++	depends on X86_32
+ 	help
+ 	  PAE is required for NX support, and furthermore enables
+ 	  larger swapspace support for non-overcommit purposes. It
+@@ -1147,7 +1147,7 @@ source "mm/Kconfig"
+ 
+ config HIGHPTE
+ 	bool "Allocate 3rd-level pagetables from highmem"
+-	depends on X86_32 && (HIGHMEM4G || HIGHMEM64G)
++	depends on HIGHMEM
+ 	help
+ 	  The VM uses one page table entry for each page of physical memory.
+ 	  For systems with a lot of RAM, this can be wasteful of precious
 
-Thanks.
 
--- 
-Catalin
 
