@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZANTdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbZANTdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbZANTdE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZANTcy
+	id S1757198AbZANTdy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZANTdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:32:54 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:1615 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbZANTcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:32:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Safnuj5rn07MdU77mWvPT0AX0xDzD7+7JcmZF8/65ZfwHhehDgEQFvyAnCd1HI9THq
-         zREJUZS9DyJPfEexKGSvKYAYHGU0YCNGbbTy1aj8wvSAO8MrQutqLObX7qomDSC5eceO
-         p51WkcnKJPGFFmFQToP412IaXeaTN7bmeLDKQ=
+	Wed, 14 Jan 2009 14:33:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52698 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753528AbZANTdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:33:40 -0500
+Date: Wed, 14 Jan 2009 20:33:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090114193317.GA23227@elte.hu>
+References: <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114105300.66bd014d.akpm@linux-foundation.org> <1231960986.14825.45.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <496E297B.6010100@linux.intel.com>
-References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
-	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
-	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
-	 <496DB067.6060402@linux.intel.com>
-	 <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>
-	 <496E297B.6010100@linux.intel.com>
-Date: Wed, 14 Jan 2009 11:32:51 -0800
-Message-ID: <b3ece790901141132u28ba2482h2e7af7bd51224f2a@mail.gmail.com>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-From: Tim Hockin <thockin@gmail.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
-       priyankag@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231960986.14825.45.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 10:05 AM, Andi Kleen <ak@linux.intel.com> wrote:
->
->>
->> From my point of view: a single, consistent, easy logging interface
->> for the kernel to send *structured data* about hardware/system events
->> and errors up to userspace.
->
-> Which kinds of events were you thinking of?
->
-> So far we managed by cramming some other CPU events like thermal
-> trip into "pseudo banks" in struct mce. Admittedly it's not the
-> most pretty solution in the world, but it worked.
 
-Yeah, no offense, but that's horrible :)
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Ideally, I'd rather see a more generic conduit for all sorts of
-events.  Polled and exception MCEs.  Thermal interrupts.  MCE
-threshold interrupts.  EDAC polled errors.  PCI-express errors.  SATA
-disk timeouts.
+> On Wed, 2009-01-14 at 10:53 -0800, Andrew Morton wrote:
+> > On Wed, 14 Jan 2009 19:33:19 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > Please pull the adaptive-mutexes-for-linus git tree
+> > 
+> > <fear>
+> > 
+> > - It seems a major shortcoming that the feature is disabled if
+> >   CONFIG_DEBUG_MUTEXES=y.  It means that lots of people won't test it.
+> 
+> Yes, that's a bit unfortunate, a simple patch to enable that is:
+> 
+> I must admit I'm a bit stumped on why that debug check triggers, I
+> couldn't reproduce today, but Ingo ran into it quite quickly :/
 
-Now I know there are different conduits for some events - netlink
-tells me about netif link up/down events I think.  I would settle for
-a small number of interfaces.  What I don't want is what we have today
-- EVERYTHING has a different interface.  Some are poll()-able.  Some
-have to be actively polled.  Some have to have a daemon listening or
-else messages are dropped.  Some have to parse logs.  Puke.
+Yes, the debug patch caused this false positive warning on one of my 
+test-systems:
 
-Put it this way:  Given a thousand machines, I want to gather,
-collate, and correlate all these events.  I want to be able to produce
-a "life story" of sorts for a machine and for a data center.  Once I
-can do that, I can start to make predictive diagnoses more accurately,
-and I can know how much these things actually COST us.
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 255762
+------------[ cut here ]------------
+WARNING: at kernel/mutex-debug.c:77 debug_mutex_unlock+0x94/0xde()
+Hardware name:         
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.29-rc1-tip-00983-ge1af3bd-dirty #1
+Call Trace:
+ [<ffffffff8024f2f7>] warn_slowpath+0xd8/0xf7
+ [<ffffffff8024f5ec>] ? wake_up_klogd+0x9/0x2f
+ [<ffffffff80270fd1>] ? graph_lock+0x27/0x66
+ [<ffffffff80275329>] ? validate_chain+0xd4d/0xd9f
+ [<ffffffff802714c4>] ? save_trace+0x3f/0xb2
+ [<ffffffff80275b4f>] ? __lock_acquire+0x7d4/0x832
+ [<ffffffff80275c5f>] ? lock_acquire+0xb2/0xc2
+ [<ffffffff8025091c>] ? cpu_maps_update_begin+0x17/0x19
+ [<ffffffff80271d21>] ? trace_hardirqs_off+0xd/0xf
+ [<ffffffff80270a8e>] debug_mutex_unlock+0x94/0xde
+ [<ffffffff80906d71>] __mutex_unlock_slowpath+0xdd/0x152
+ [<ffffffff80906df4>] mutex_unlock+0xe/0x10
+ [<ffffffff80250955>] cpu_maps_update_done+0x15/0x17
+ [<ffffffff808ce8b5>] register_cpu_notifier+0x2c/0x32
+ [<ffffffff80d7683e>] page_alloc_init+0x10/0x12
+ [<ffffffff80d5ac45>] start_kernel+0x1ba/0x422
+ [<ffffffff80d5a140>] ? early_idt_handler+0x0/0x73
+ [<ffffffff80d5a2c3>] x86_64_start_reservations+0xae/0xb2
+ [<ffffffff80d5a421>] x86_64_start_kernel+0x137/0x146
+---[ end trace a7919e7f17c0a725 ]---
+Kernel command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 console=tty 5 profile=0 debug initcall_debug apic=debug apic=verbose ignore_loglevel sysrq_always_enabled pci=nomsi
+kernel profiling enabled (shift: 0)
+debug: sysrq always enabled.
+Initializing CPU#0
 
-Tim
+So we left that change out from this pull request. It's not a big deal i 
+think - mutex debugging always had a different fast-path from no-debug 
+mutexes anyway (or a lack of fast-path to begin with). So the performance 
+characteristics were always subtly different. Now they might be more 
+different - but we'll fix that too.
+
+	Ingo
