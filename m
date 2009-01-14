@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbZANAPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760801AbZANAPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbZANAPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbZANAN6
+	id S1760801AbZANAPi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbZANAOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:13:58 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:37856 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758322AbZANAN5 (ORCPT
+	Tue, 13 Jan 2009 19:14:18 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:55742 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760486AbZANAOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:13:57 -0500
+	Tue, 13 Jan 2009 19:14:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=vOKbnQ6+59/TMNGFnjZb3IoU2KdrUCESwiJxrLZvlKcCw6ZC0oxqB8leFM2T6micUR
-         mkoSACd4WQkX9WTTQMrLwWAEGpCvOiqToFaiTmY9QIyL7yQXxhQEq58Exr3Ahn4vAFDg
-         oEoRagWiblHXtJP4d7nz3hS1iD13zdgnoUCfM=
-Message-ID: <cfd18e0f0901131613l65bff51fo22e86a01ba2c0720@mail.gmail.com>
-Date: Wed, 14 Jan 2009 13:13:54 +1300
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, drepper@redhat.com,
-       vegard.nossum@gmail.com, linux-man@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20090113234716.765A8FC3DD@magilla.sf.frob.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=CoKDFsMOCU3RM1Ni8SpeVez7o+ilGm8N7/4vRt0z1qfUOAU9gDfre/qd+340JZr3L3
+         QctTi7IyCpnk5d/skEXgsx7rYfEcHljweUIkoSHPpaYi0I6uUd6lg5ATgyigbb/OVSo8
+         RUv/5BvzWAfjUxCBM4ZvgVmaW7HZrqe4qnF70=
+Message-ID: <496D2E4F.6000005@gmail.com>
+Date: Tue, 13 Jan 2009 19:14:07 -0500
+From: Connor Behan <connor.behan@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b1pre) Gecko/20080904135032 Shredder/3.0b1pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Grant Grundler <grundler@parisc-linux.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Linux PCI <linux-pci@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
+Subject: Re: Can't allocate resources for PCI video card behind bridge
+References: <49665493.4070808@gmail.com> <200901082057.00170.rjw@sisk.pl> <200901081226.38909.jbarnes@virtuousgeek.org> <200901091530.58694.bjorn.helgaas@hp.com> <20090110200902.GA14664@colo.lackof.org> <496BFFAA.3000707@gmail.com> <alpine.LFD.2.00.0901121856150.6528@localhost.localdomain> <496D0653.3040709@gmail.com> <alpine.LFD.2.00.0901131331330.6528@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901131331330.6528@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
-	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
-	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
-	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
-	 <cfd18e0f0901131514i2f7be7f1t2c6275c26dbb6874@mail.gmail.com>
-	 <20090113152457.0d7685ad.akpm@linux-foundation.org>
-	 <20090113234716.765A8FC3DD@magilla.sf.frob.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 12:47 PM, Roland McGrath <roland@redhat.com> wrote:
->> Well yes.  waitid() has been in there since 2.6.9.  I assume that it
->> has had this wait4-emulation mode for that amount of time as well?
+Linus Torvalds wrote:
+> Well, your dmesg is now from a 2.6.27 kernel, so I'd like to double-check
+> and verify that upgrading the kernel really works now. It does sound like
+> some non-kernel-related issue, but still..
 >
-> Correct.
->
->> Well, we might get away with it.  But formally speaking, we should live
->> with our Linux-specific screwup.
->
-> I agree with both of you and I don't care which we do.
+>    
+Oops I forgot that 2.6.28 was still in testing. I have enabled testing 
+again and everything still works on 2.6.28 so I think this was a BIOS issue.
 
-I don't feel strongly about this, but lean towards the idea that we
-should fix things, as per Roland's patch, and I suspect we can get
-away with it, for the reasons I mentioned already.
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+2.6.28 dmesg: http://pastebin.com/m3e9bc913
+2.6.28 lspci: http://pastebin.com/m3cb8112d
