@@ -1,215 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764987AbZANRcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764439AbZANRd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764987AbZANRcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:32:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763518AbZANRcn
+	id S1764439AbZANRd2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764262AbZANRdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:32:43 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:36271 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762107AbZANRcl (ORCPT
+	Wed, 14 Jan 2009 12:33:06 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:52591 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763518AbZANRdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:32:41 -0500
+	Wed, 14 Jan 2009 12:33:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=GA0A//lzTUN1mpqHllQbymHJ9VngmJnncoLqVmZmEsv9tHY5mCxjXMzPKvDUxKgEyG
-         zAInslZWl6pEHkLa9tydVj7L9twZOXSvcFLvFOrLipUPGCbjA5WtZz2p0+jvW5VcpGqS
-         Y7bsDZ7tsKUSr6A23iDrFzvOHBEebHJ0T9k+Q=
-Message-ID: <496E21B3.3070206@gmail.com>
-Date: Wed, 14 Jan 2009 09:32:35 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vhm+QS20i8sszDHoZ5UQbHj93FwyI0doTtrYkSUvPXLGhj+HGl5IJH+WW1AtzQ1Q71
+         5y3Wz5vZ6bKYGNRPTNRwCosmov83Qpq0A8xzgbT5hk995b0I0h2qIlVrHz13JuPSkETp
+         179deoZov/T6cPYby7Ekuq4k4OWpMNHgQS56I=
 MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       SE-Linux <selinux@tycho.nsa.gov>
-Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
-References: <496D759A.7010401@gmail.com> <200901140957.09722.paul.moore@hp.com> <496E0FB2.407@gmail.com> <200901141205.26904.paul.moore@hp.com>
-In-Reply-To: <200901141205.26904.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <1231951662.8269.22.camel@think.oraclecorp.com>
+References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins>
+	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
+	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins>
+	 <1231901899.1709.18.camel@think.oraclecorp.com>
+	 <b647ffbd0901140318g7e4ccab6m9bf03e9ac6acf797@mail.gmail.com>
+	 <1231951662.8269.22.camel@think.oraclecorp.com>
+Date: Wed, 14 Jan 2009 18:32:58 +0100
+Message-ID: <b647ffbd0901140932v5fba34f9oe2098635c937a678@mail.gmail.com>
+Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Wednesday 14 January 2009 11:15:46 am Justin P. Mattock wrote:
->   
->> Paul Moore wrote:
->>     
->>> On Wednesday 14 January 2009 12:18:18 am Justin P. Mattock wrote:
->>>       
->>>> When using netlabelctl on a dell laptop
->>>> I'm able to define the addresses that I want:
->>>>
->>>> netlabelctl unlbl add interface:wlan0 address:<radiostation>
->>>> label:system_u:object_r:netlabel_peer_t:s0
->>>> netlabelctl unlbl add interface:wlan0 address:<myaddress>
->>>> label:system_u:object_r:netlabel_peer_t:s0
->>>> netlabelctl  -p unlbl accept off
->>>>
->>>> {the above was from http://paulmoore.livejournal.com/1758.html };
->>>>         
->
-> ...
->
->   
->>>> (I'm able to listen to the radio station allowed, then if I choose
->>>> another station; if I haven't defined an address like the above,
->>>> mplayer just sits there.denying the unlabeled packet. that is
->>>> until I allow the address);
->>>> The problem I have is when I do the same on my macbook pro ati
->>>> chipset. with the ath9k module, I'm able to listen to any station,
->>>> search the web etc..
->>>> it seems netlabelctl  -p unlbl accept off makes no difference if
->>>> it's on or off.
->>>>
->>>> Is this built into ath9k yet, or is there something I'm missing?
->>>>         
->>> That is just plain odd, there isn't really anything that is driver
->>> specific.  Can you share any more details like kernel version,
->>> netlabel_tools verion, distro, etc?  I don't have any ath9k
->>> hardware lying around to test so I would appreciate whatever
->>> additional information you can provide.
->>>       
->> Hey alright.(I finally got around to  trying netlabelctl out!).
->>     
->
-> It's pretty cool.  In newer versions of netlabelctl I added an 
-> undocumented option to actually allow it to fix a sandwhich and do the 
-> dishes afterwards.  The exact command line option needed is left as an 
-> exercise for the reader :)
->   
-yep, it is pretty cool.
-ultimately my goal with netlabel is to see if I can setup the network
-namespace(if this is proper to say).
- i.g. have all the radio stations in its own domain,(and possibly it's 
-own tag,doi etc..)
-and then have all T.V. stations running in its own domain. and then web 
-searching in its own domain.
-I see cipsov4 does this, but not sure if it does what the UNLABEL 
-domain/protocol does.
-(just looking at cipsov4; look like ipsec, you need two computers setup 
-with the same domain and tag etc..)
-not too sure though.
->   
->> The two systems I have for this are: Dell latitude x200
->> running ubuntu jaunty, kernel is 2.6.29-rc1.
->> with netlabel_tools_0.18 which was an rpm packaged
->> that I converted to .deb.(can't remember the repository where I
->> grabbed it from);
->> The wireless card for the dell is a dell 1350
->> using bcmxx(b43-phy0); works great.
->>     
->
-> Great.  I'm not a debian user so I can't be of much help on the 
-> packaging side, but you can get raw tarballs from the NetLabel project 
-> site on SF (the current release is 0.19 which includes support for all 
-> the goodies in 2.6.28):
->
->  * http://netlabel.sf.net
->   
-I did grab that package but ran into the version_info
-error,(resorted to the rpm out of desperation);
->   
->> The results when using netlabelctl with the dell is nice, i.g. like I
->> said as soon as I issue netlabelctl unlbl accept off, those addresses
->> not defined are simply not allowed.(the problem with the dell is I'm
->> not seeing any allow rules being generated: i.g.
+2009/1/14 Chris Mason <chris.mason@oracle.com>:
+> On Wed, 2009-01-14 at 12:18 +0100, Dmitry Adamushko wrote:
+>> 2009/1/14 Chris Mason <chris.mason@oracle.com>:
+>> > On Tue, 2009-01-13 at 18:21 +0100, Peter Zijlstra wrote:
+>> >> On Tue, 2009-01-13 at 08:49 -0800, Linus Torvalds wrote:
+>> >> >
+>> >> > So do a v10, and ask people to test.
+>> >>
+>> >> ---
+>> >> Subject: mutex: implement adaptive spinning
+>> >> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>> >> Date: Mon Jan 12 14:01:47 CET 2009
+>> >>
+>> >> Change mutex contention behaviour such that it will sometimes busy wait on
+>> >> acquisition - moving its behaviour closer to that of spinlocks.
+>> >>
+>> >
+>> > I've spent a bunch of time on this one, and noticed earlier today that I
+>> > still had bits of CONFIG_FTRACE compiling.  I wasn't actually tracing
+>> > anything, but it seems to have had a big performance hit.
+>> >
+>> > The bad news is the simple spin got much much faster, dbench 50 coming
+>> > in at 1282MB/s instead of 580MB/s.  (other benchmarks give similar
+>> > results)
+>> >
+>> > v10 is better that not spinning, but its in the 5-10% range.  So, I've
+>> > been trying to find ways to close the gap, just to understand exactly
+>> > where it is different.
+>> >
+>> > If I take out:
+>> >        /*
+>> >         * If there are pending waiters, join them.
+>> >         */
+>> >        if (!list_empty(&lock->wait_list))
+>> >                break;
+>> >
+>> >
+>> > v10 pops dbench 50 up to 1800MB/s.  The other tests soundly beat my
+>> > spinning and aren't less fair.  But clearly this isn't a good solution.
+>> >
+>> > I tried a few variations, like only checking the wait list once before
+>> > looping, which helps some.  Are there other suggestions on better tuning
+>> > options?
 >>
->> allow netlabel_peer_t netif_t:netif ingress;
->> allow netlabel_peer_t node_t:node recvfrom;
->> allow unlabeled_t netif_t:netif ingress;
->> allow unlabeled_t node_t:node recvfrom;
->>     
+>> (some thoughts/speculations)
+>>
+>> Perhaps for highly-contanded mutexes the spinning implementation may
+>> quickly degrade [*] to the non-spinning one (i.e. the current
+>> sleep-wait mutex) and then just stay in this state until a moment of
+>> time when there are no waiters  [**]  -- i.e.
+>> list_empty(&lock->wait_list) == 1 and waiters can start spinning
+>> again.
 >
-> [NOTE: the rules/permissions you list above are the "newer" network_peer 
-> permissions which are likely not active unless you are running a custom 
-> SELinux policy as the default Reference Policy hasn't made the switch 
-> yet to the newer system]
->
-> The netlabelctl tool doesn't generate any allow rules, all it does is 
-> configure the NetLabel subsystem which is all that is necessary 
-> because, this is important, NetLabel doesn't actually do any network 
-> traffic enforcement.  NetLabel is a network labeling framework, which 
-> means that it only deals with setting labels on outbound network 
-> packets and retrieving labels from inbound network packets 
-> (the "netlabel unlbl accept on|off" option is a gray area).  The 
-> decision about wether to accept or reject inbound network traffic is 
-> left to the LSM (NetLabel supports both SELinux and Smack).  If you 
-> want I can go into more detail but it would probably be rather boring 
-> and not really provide you much in the way of answering your question.
->   
-boring to others, but to me, it's awesome.
+> It is actually ok if the highly contention mutexes don't degrade as long
+> as they are highly contended and the holder isn't likely to schedule.
 
->   
->> The next is a macbookpro ati chipset the kernel is 2.6.29-rc1
->> the o.s. is ubuntu jaunty, the netlabel_tools is the same as above.
->> the only results I see out of this is the avc's it's generating
->> (the allow rules above are from the macbook);
->> some reason the dell doesn't generate any avc's,
->> which makes me wonder is this a module issue.
->>     
->
-> Huh.  Just so I'm clear on this ... on the macbook you see avc denials 
-> that correspond to the allow rules you posted above, but on the dell 
-> you don't see the same avc denials?  Are you running the same SELinux 
-> policy on both systems (version numbers)?  What is the output of the 
-> following command on both systems?
->
->  # cat /selinux/policy_capabilities/network_peer_controls
->   
-for both systems I'm running the refpolicy(svn) from tresys.
-the new ubac options, and newrole mechanism etc..
-doing cat /selinux/policy_capabilities_netowork_peer_controls says "1"
-should be for both.
->   
->> Also I've gone through thinking, well maybe this is avc's driven,
->> i.g. each address once added by netlabelctl receives a certain allow
->> rule (like the allow rules above),
->> if not either no allow rule is given to it,resulting in a denial you
->> can't see in dmesg,
->> or a denial that just won't be allowed by checkpolicy.
->> So after seeing if this was the case I was left with  an address
->> defined by netlabel(allowed) and defined the allow rules that it had
->> created. unfortunately after all of that I still was able to turn on
->> another radio station  that had  no  address  in netlabelctl's  unlbl
->> database.(and no allow rule
->> with SELinux);
->> leading me to believe that the netlabel area or driver isn't working
->> properly. or just told to not enforce the netlabel accept off option.
->>     
->
-> Well, like I said above, it shouldn't be a policy module or allow rule 
-> problem but I think you may be right in that the SELinux policy is a 
-> good place to start looking.  Compare the policy on the two systems to 
-> see if they are the same version and check to see if the new network 
-> peer controls are active (the cat command above; 0 is disabled, 1 is 
-> enabled).  Post what you find out.
->   
-they should be for both(uncommenting in 
-/etc/selinux/refpolicy/policy/policy_capabilities
-enables that option);
+Yes, my point was that they likely do fall back (degrade) to the
+wait-on-the-list (non-spinning) behavior with dbench, and that's why
+the performance numbers are similar (5-10% IIRC) to those of the
+'normal' mutex.
 
-I think at this point I'm going to load an older kernel, with the madwifi
-module(ath0) to isolate this issue i.g. if ath0 module reacts the same
-as the dell does(when adding address and such); then this would point
-me in the right direction. but if I receive the same response.
-then maybe my libraries are messed up.
->   
->> As for the list, I have linux-wireless in my address book(not sure
->> which is right);
->>     
->
-> Not sure linux-wireless will have much to do about this but you included 
-> the SELinux which is good, thank you.
->
->   
-overall I like this netlabel mechanism, hopefully I can get this
-working properly.
+And the thing is that for the highly contention mutexes, it's not easy
+to switch back to the (fast) spinning-wait -- just because most of the
+time there is someone waiting for the lock (and if this 'someone' is
+not a spinner, none of the new mutex_lock() requests can do
+busy-waiting/spinning).
 
-regards;
+But whatever, without the list_empty() check it's not relevant any more.
 
-Justin P. Mattock
+>>
+>> what may trigger [*]:
+>>
+>> (1) obviously, an owner scheduling out.
+>>
+>> Even if it happens rarely (otherwise, it's not a target scenario for
+>> our optimization), due to the [**] it may take quite some time until
+>> waiters are able to spin again.
+>>
+>> let's say, waiters (almost) never block (and possibly, such cases
+>> would be better off just using a spinlock after some refactoring, if
+>> possible)
+>>
+>> (2) need_resched() is triggered for one of the waiters.
+>>
+>> (3) !owner && rt_task(p)
+>>
+>> quite unlikely, but possible (there are 2 race windows).
+>>
+>> Of course, the question is whether it really takes a noticeable amount
+>> of time to get out of the [**] state.
+>> I'd imagine it can be a case for highly-contended locks.
+>>
+>> If this is the case indeed, then which of 1,2,3 gets triggered the most.
+>
+> Sorry, I don't have stats on that.
+>
+>>
+>> Have you tried removing need_resched() checks? So we kind of emulate
+>> real spinlocks here.
+>
+> Unfortunately, the need_resched() checks deal with a few of the ugly
+> corners.  They are more important without the waiter list check.
+> Basically if we spun without the need_resched() checks, the process who
+> wants to unlock might not be able to schedule back in.
+
+Yeah, for the "owner == NULL" case. If the owner was preempted in the
+fast path right after taking the lock and before calling
+mutex_set_owner().
+
+btw., I wonder... would an additional preempt_disable/enable() in the
+fast path harm that much?
+We could avoid the preemption scenario above.
+
+>
+> -chris
+>
+
+
+-- 
+Best regards,
+Dmitry Adamushko
