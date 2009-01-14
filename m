@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZANFQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZANFSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZANFQa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 00:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZANFQU
+	id S1757712AbZANFSe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 00:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZANFSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 00:16:20 -0500
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:46262 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751447AbZANFQU (ORCPT
+	Wed, 14 Jan 2009 00:18:25 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:20267 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbZANFSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 00:16:20 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtgFAA8BbUlMQWt2/2dsb2JhbACBbJMHuFCFbw
-Date: Wed, 14 Jan 2009 00:16:02 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [ltt-dev] [PATCH 1/2] Make lttctl mount debugfs automatically
-Message-ID: <20090114051602.GA14786@Krystal>
-References: <49646208.7070607@cn.fujitsu.com> <4964BA2B.30200@polymtl.ca> <AA3F776E5F6246859F1978B7C7CF1919@zhaoleiwin> <20090108144430.GA3778@Krystal> <7C0A417AB5B84CDCB9A9484C4E13A08C@zhaoleiwin> <20090109033021.GA25504@Krystal> <20090113235419.GA20644@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Jan 2009 00:18:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Pkh2UzJ9pMwbSf46a8Wbt/C8UuGCVkNiunsEKpRM7bo6c3p2hFOEozrrEM3X1pcdlN
+         1li4u9kfrKrAITG15jdIxkAnz5r7KbeKZE/gqojQpvlqduxjf4eGiaBt/L10gmBf/6eJ
+         DHAmiW+V3E2nGPNiN6XZpge6qnmgEu9q3L/hA=
+Message-ID: <496D759A.7010401@gmail.com>
+Date: Tue, 13 Jan 2009 21:18:18 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: netlabel: UNLABELED ath9k not denying unlabeled traffic
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090113235419.GA20644@suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:15:23 up 13 days,  5:13,  1 user,  load average: 0.46, 0.46,
-	0.33
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (gregkh@suse.de) wrote:
-> On Thu, Jan 08, 2009 at 10:30:22PM -0500, Mathieu Desnoyers wrote:
-> > * Zhaolei (zhaolei@cn.fujitsu.com) wrote:
-> > > * From: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
-> > > >* Zhaolei (zhaolei@cn.fujitsu.com) wrote:
-> > > >> * From: "Pierre-Marc Fournier" <pierre-marc.fournier@polymtl.ca>
-> > > >> > Zhaolei wrote:
-> > > >> >> lttctl need debugfs mounted,
-> > > >> >> This patch make lttctl mount debugfs automatically when it is not mounted.
-> > > >> >> 
-> > > >> > 
-> > > >> > Isn't having a utility such as lttctl mount filesystems against standard
-> > > >> > unix semantics? Can you give an example of another standard command that
-> > > >> > uses a filesystem and that tries to mount it if it isn't already
-> > > >> > mounted? 
-> > > >> Hello, Pierre-Marc,
-> > > >> 
-> > > >> I can give a an example.
-> > > >> It is SystemTap.
-> > > >> 
-> > > > 
-> > > > No offence, but can you find an example which is not explicitly
-> > > > described as "bad taste" example by many people in the Linux kernel
-> > > > community ?
-> > > Hello, Mathieu
-> > > 
-> > > I can't find another example of mounting debugfs automatically.
-> 
-> Have you looked?  openSUSE mounts it automatically, and I think Fedora
-> also does so.
-> 
+When using netlabelctl on a dell laptop
+I'm able to define the addresses that I want:
 
-It makes sense for a whole distribution to mount debugfs automatically,
-but is it OK for a single userspace application to have this kind of
-behavior ?
+netlabelctl unlbl add interface:wlan0 address:<radiostation> 
+label:system_u:object_r:netlabel_peer_t:s0
+netlabelctl unlbl add interface:wlan0 address:<myaddress> 
+label:system_u:object_r:netlabel_peer_t:s0
+netlabelctl  -p unlbl accept off
 
-Mathieu
+{the above was from http://paulmoore.livejournal.com/1758.html };
+(I'm able to listen to the radio station allowed, then if I choose 
+another station; if I haven't defined an address like the above, mplayer 
+just sits there.denying the unlabeled packet. that is until I allow the 
+address);
 
-> thanks,
-> 
-> greg k-h
-> 
+The problem I have is when I do the same on my macbook pro ati chipset.
+with the ath9k module, I'm able to listen to any station, search the web 
+etc..
+it seems netlabelctl  -p unlbl accept off makes no difference if it's on 
+or off.
+ 
+Is this built into ath9k yet, or is there something I'm missing?
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+regards;
+
+Justin P. Mattock
+
