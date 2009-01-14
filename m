@@ -1,336 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZANEbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZANEdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbZANEbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 23:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZANEbY
+	id S1756639AbZANEdx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 23:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZANEdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 23:31:24 -0500
-Received: from sh.osrg.net ([192.16.179.4]:48946 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZANEbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 23:31:23 -0500
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: [PATCH mmotm] nilfs2: fix miss-sync issue for do_sync_mapping_range
-Date: Wed, 14 Jan 2009 13:27:54 +0900
-Message-Id: <1231907274-508-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-X-Dispatcher: imput version 20050308(IM148)
+	Tue, 13 Jan 2009 23:33:43 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:30205 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224AbZANEdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 23:33:42 -0500
+Date: Tue, 13 Jan 2009 21:33:38 -0700
+From: dann frazier <dannf@hp.com>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stephane eranian <eranian@googlemail.com>
+Subject: [PATCH] add rtc platform driver for EFI
+Message-ID: <20090114043337.GB21357@ldl.fc.hp.com>
+References: <20090109005644.GH32403@ldl.fc.hp.com> <20090109032729.6e4cd5fd@i1501.lan.towertech.it> <20090109213615.GD31548@ldl.fc.hp.com> <20090113003934.0a7da676.akpm@linux-foundation.org> <20090114000043.GB24423@colo.lackof.org> <20090114011719.GD24423@colo.lackof.org> <20090114023055.1d22d09e@i1501.lan.towertech.it> <20090114041358.GA21357@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114041358.GA21357@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason pointed out that there is a miss sync issue in
-nilfs_writepages():
+Munge Stephane Eranian's efirtc.c code into an rtc platform driver
 
-On Wed, 17 Dec 2008 21:52:55 -0500, Chris Mason wrote:
-> It looks like nilfs_writepage ignores WB_SYNC_NONE, which is used by
-> do_sync_mapping_range().
-
-where WB_SYNC_NONE in do_sync_mapping_range() was replaced with
-WB_SYNC_ALL by a Nick's patch
-(commit: ee53a891f47444c53318b98dac947ede963db400).
-
-This fixes the problem by letting nilfs_writepages() write out the log
-of file data within the range if sync_mode is WB_SYNC_ALL.
-
-This involves removal of nilfs_file_aio_write() which was previously
-needed to ensure O_SYNC sync writes.
-
-Cc: Chris Mason <chris.mason@oracle.com>
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Signed-off-by: dann frazier <dannf@hp.com>
 ---
- fs/nilfs2/file.c    |   27 ++-----------------
- fs/nilfs2/inode.c   |   16 ++++++-----
- fs/nilfs2/segment.c |   69 ++++++++++++++++++++++++++++++++++----------------
- fs/nilfs2/segment.h |   11 ++++++-
- 4 files changed, 68 insertions(+), 55 deletions(-)
+ arch/ia64/kernel/time.c |   16 +++
+ drivers/rtc/Kconfig     |   10 ++
+ drivers/rtc/Makefile    |    1 +
+ drivers/rtc/rtc-efi.c   |  240 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 267 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-efi.c
 
-diff --git a/fs/nilfs2/file.c b/fs/nilfs2/file.c
-index c22f97c..34c751b 100644
---- a/fs/nilfs2/file.c
-+++ b/fs/nilfs2/file.c
-@@ -44,35 +44,14 @@ int nilfs_sync_file(struct file *file, struct dentry *dentry, int datasync)
- 		return 0;
+diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+index f0ebb34..558051c 100644
+--- a/arch/ia64/kernel/time.c
++++ b/arch/ia64/kernel/time.c
+@@ -20,6 +20,7 @@
+ #include <linux/efi.h>
+ #include <linux/timex.h>
+ #include <linux/clocksource.h>
++#include <linux/platform_device.h>
  
- 	if (datasync)
--		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
-+		err = nilfs_construct_dsync_segment(inode->i_sb, inode, 0,
-+						    LLONG_MAX);
- 	else
- 		err = nilfs_construct_segment(inode->i_sb);
+ #include <asm/machvec.h>
+ #include <asm/delay.h>
+@@ -405,6 +406,21 @@ static struct irqaction timer_irqaction = {
+ 	.name =		"timer"
+ };
  
- 	return err;
- }
- 
--static ssize_t
--nilfs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
--		     unsigned long nr_segs, loff_t pos)
--{
--	struct file *file = iocb->ki_filp;
--	struct inode *inode = file->f_dentry->d_inode;
--	ssize_t ret;
--
--	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
--	if (ret <= 0)
--		return ret;
--
--	if ((file->f_flags & O_SYNC) || IS_SYNC(inode)) {
--		int err;
--
--		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
--		if (unlikely(err))
--			return err;
--	}
--	return ret;
--}
--
- static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
- {
- 	struct inode *inode = vma->vm_file->f_dentry->d_inode;
-@@ -158,7 +137,7 @@ struct file_operations nilfs_file_operations = {
- 	.read		= do_sync_read,
- 	.write		= do_sync_write,
- 	.aio_read	= generic_file_aio_read,
--	.aio_write	= nilfs_file_aio_write,
-+	.aio_write	= generic_file_aio_write,
- 	.ioctl		= nilfs_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= nilfs_compat_ioctl,
-diff --git a/fs/nilfs2/inode.c b/fs/nilfs2/inode.c
-index e29e329..4bf1e2c 100644
---- a/fs/nilfs2/inode.c
-+++ b/fs/nilfs2/inode.c
-@@ -24,6 +24,7 @@
- #include <linux/buffer_head.h>
- #include <linux/mpage.h>
- #include <linux/writeback.h>
-+#include <linux/uio.h>
- #include "nilfs.h"
- #include "segment.h"
- #include "page.h"
-@@ -146,8 +147,14 @@ static int nilfs_readpages(struct file *file, struct address_space *mapping,
- static int nilfs_writepages(struct address_space *mapping,
- 			    struct writeback_control *wbc)
- {
--	/* This empty method is required not to call generic_writepages() */
--	return 0;
-+	struct inode *inode = mapping->host;
-+	int err = 0;
++static struct platform_device rtc_efi_dev = {
++	.name = "rtc-efi",
++	.id = -1,
++};
 +
-+	if (wbc->sync_mode == WB_SYNC_ALL)
-+		err = nilfs_construct_dsync_segment(inode->i_sb, inode,
-+						    wbc->range_start,
-+						    wbc->range_end);
-+	return err;
- }
- 
- static int nilfs_writepage(struct page *page, struct writeback_control *wbc)
-@@ -226,11 +233,6 @@ nilfs_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
- 	struct file *file = iocb->ki_filp;
- 	struct inode *inode = file->f_mapping->host;
- 	ssize_t size;
--	int err;
--
--	err = nilfs_construct_dsync_segment(inode->i_sb, inode);
--	if (unlikely(err))
--		return err;
- 
- 	if (rw == WRITE)
- 		return 0;
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index b4b96ac..90de8bb 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -669,27 +669,43 @@ struct nilfs_sc_operations nilfs_sc_dsync_ops = {
- 
- static int nilfs_lookup_dirty_data_buffers(struct inode *inode,
- 					   struct list_head *listp,
--					   struct nilfs_sc_info *sci)
-+					   struct nilfs_sc_info *sci,
-+					   loff_t start, loff_t end)
++static int __init rtc_init(void)
++{
++	if (platform_device_register(&rtc_efi_dev) < 0)
++		printk(KERN_ERR "unable to register rtc device...\n");
++       
++	/* not necessarily an error */
++	return 0;
++}
++module_init(rtc_init);
++
+ void __init
+ time_init (void)
  {
- 	struct nilfs_segment_buffer *segbuf = sci->sc_curseg;
- 	struct address_space *mapping = inode->i_mapping;
- 	struct pagevec pvec;
- 	unsigned i, ndirties = 0, nlimit;
--	pgoff_t index = 0;
-+	pgoff_t index = 0, last = ULONG_MAX;
- 	int err = 0;
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index cced4d1..56cc98f 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -434,6 +434,16 @@ config RTC_DRV_DS1742
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-ds1742.
  
-+	if (unlikely(start != 0 || end != LLONG_MAX)) {
-+		/*
-+		 * A valid range is given for sync-ing data pages. The
-+		 * range is rounded to per-page; extra dirty buffers
-+		 * may be included if blocksize < pagesize.
-+		 */
-+		index = start >> PAGE_SHIFT;
-+		last = end >> PAGE_SHIFT;
++config RTC_DRV_EFI
++	tristate "EFI RTC"
++	depends on IA64
++	help
++	  If you say yes here you will get support for the EFI
++	  Real Time Clock.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-efi.
++
+ config RTC_DRV_STK17TA8
+ 	tristate "Simtek STK17TA8"
+ 	depends on RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 6e28021..7256ce8 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -35,6 +35,7 @@ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
+ obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
+ obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
+ obj-$(CONFIG_RTC_DRV_DS3234)	+= rtc-ds3234.o
++obj-$(CONFIG_RTC_DRV_EFI)	+= rtc-efi.o
+ obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
+ obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
+ obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
+diff --git a/drivers/rtc/rtc-efi.c b/drivers/rtc/rtc-efi.c
+new file mode 100644
+index 0000000..2c98c35
+--- /dev/null
++++ b/drivers/rtc/rtc-efi.c
+@@ -0,0 +1,240 @@
++/*
++ * rtc-efi: RTC Class Driver for EFI-based systems
++ *
++ * Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
++ *
++ * Author: dann frazier <dannf@hp.com>
++ * Based on efirtc.c by Stephane Eranian
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/time.h>
++#include <linux/platform_device.h>
++#include <linux/rtc.h>
++#include <linux/efi.h>
++
++#define EFI_ISDST (EFI_TIME_ADJUST_DAYLIGHT|EFI_TIME_IN_DAYLIGHT)
++/*
++ * EFI Epoch is 1/1/1998
++ */
++#define EFI_RTC_EPOCH		1998
++
++#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
++
++/*
++ * returns day of the year [0-365]
++ */
++static inline int
++compute_yday(efi_time_t *eft)
++{
++	/* efi_time_t.month is in the [1-12] so, we need -1 */
++	return rtc_year_days(eft->day - 1, eft->month - 1, eft->year);
++}
++/*
++ * returns day of the week [0-6] 0=Sunday
++ *
++ * Don't try to provide a year that's before 1998, please !
++ */
++static int
++compute_wday(efi_time_t *eft)
++{
++	int y;
++	int ndays = 0;
++
++	if (eft->year < 1998) {
++		printk(KERN_ERR "efirtc: EFI year < 1998, invalid date\n");
++		return -1;
 +	}
- 	nlimit = sci->sc_segbuf_nblocks -
- 		(sci->sc_nblk_this_inc + segbuf->sb_sum.nblocks);
-+		/* Remaining number of blocks within the segment */
- 	pagevec_init(&pvec, 0);
-  repeat:
--	if (!pagevec_lookup_tag(&pvec, mapping, &index, PAGECACHE_TAG_DIRTY,
--				PAGEVEC_SIZE))
-+	if (unlikely(index > last) ||
-+	    !pagevec_lookup_tag(&pvec, mapping, &index, PAGECACHE_TAG_DIRTY,
-+				min_t(pgoff_t, last - index,
-+				      PAGEVEC_SIZE - 1) + 1))
- 		return 0;
- 
- 	for (i = 0; i < pagevec_count(&pvec); i++) {
- 		struct buffer_head *bh, *head;
- 		struct page *page = pvec.pages[i];
- 
-+		if (unlikely(page->index > last))
-+			break;
 +
- 		if (mapping->host) {
- 			lock_page(page);
- 			if (!page_has_buffers(page))
-@@ -700,18 +716,21 @@ static int nilfs_lookup_dirty_data_buffers(struct inode *inode,
- 
- 		bh = head = page_buffers(page);
- 		do {
--			if (buffer_dirty(bh)) {
--				if (ndirties > nlimit) {
--					err = -E2BIG;
--					break;
--				}
--				get_bh(bh);
--				list_add_tail(&bh->b_assoc_buffers, listp);
--				ndirties++;
-+			if (!buffer_dirty(bh))
-+				continue;
-+			if (unlikely(ndirties >= nlimit)) {
-+				err = -E2BIG; /*
-+					       * Internal code to indicate the
-+					       * inode has more dirty buffers.
-+					       */
-+				goto bounded;
- 			}
--			bh = bh->b_this_page;
--		} while (bh != head);
-+			get_bh(bh);
-+			list_add_tail(&bh->b_assoc_buffers, listp);
-+			ndirties++;
-+		} while (bh = bh->b_this_page, bh != head);
- 	}
-+ bounded:
- 	pagevec_release(&pvec);
- 	cond_resched();
- 
-@@ -1081,7 +1100,7 @@ static int nilfs_segctor_scan_file(struct nilfs_sc_info *sci,
- 
- 	if (!(sci->sc_stage.flags & NILFS_CF_NODE)) {
- 		err = nilfs_lookup_dirty_data_buffers(inode, &data_buffers,
--						      sci);
-+						      sci, 0, LLONG_MAX);
- 		if (err) {
- 			err2 = nilfs_segctor_apply_buffers(
- 				sci, inode, &data_buffers,
-@@ -1129,7 +1148,10 @@ static int nilfs_segctor_scan_file_dsync(struct nilfs_sc_info *sci,
- 	LIST_HEAD(data_buffers);
- 	int err, err2;
- 
--	err = nilfs_lookup_dirty_data_buffers(inode, &data_buffers, sci);
-+	err = nilfs_lookup_dirty_data_buffers(inode, &data_buffers, sci,
-+					      sci->sc_dsync_start,
-+					      sci->sc_dsync_end);
++	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
++		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
 +
- 	err2 = nilfs_segctor_apply_buffers(sci, inode, &data_buffers,
- 					   (!err || err == -E2BIG) ?
- 					   nilfs_collect_file_data : NULL);
-@@ -1289,14 +1311,13 @@ static int nilfs_segctor_collect_blocks(struct nilfs_sc_info *sci, int mode)
- 	case NILFS_ST_DSYNC:
-  dsync_mode:
- 		sci->sc_curseg->sb_sum.flags |= NILFS_SS_SYNDT;
--		ii = sci->sc_stage.dirty_file_ptr;
-+		ii = sci->sc_dsync_inode;
- 		if (!test_bit(NILFS_I_BUSY, &ii->i_state))
- 			break;
- 
- 		err = nilfs_segctor_scan_file_dsync(sci, &ii->vfs_inode);
- 		if (unlikely(err))
- 			break;
--		sci->sc_stage.dirty_file_ptr = NULL;
- 		sci->sc_curseg->sb_sum.flags |= NILFS_SS_LOGEND;
- 		sci->sc_stage.scnt = NILFS_ST_DONE;
- 		return 0;
-@@ -2637,7 +2658,9 @@ int nilfs_construct_segment(struct super_block *sb)
- /**
-  * nilfs_construct_dsync_segment - construct a data-only logical segment
-  * @sb: super block
-- * @inode: the inode whose data blocks should be written out
-+ * @inode: inode whose data blocks should be written out
-+ * @start: start byte offset
-+ * @end: end byte offset (inclusive)
-  *
-  * Return Value: On success, 0 is retured. On errors, one of the following
-  * negative error code is returned.
-@@ -2652,8 +2675,8 @@ int nilfs_construct_segment(struct super_block *sb)
-  *
-  * %-ENOMEM - Insufficient memory available.
-  */
--int nilfs_construct_dsync_segment(struct super_block *sb,
--				  struct inode *inode)
-+int nilfs_construct_dsync_segment(struct super_block *sb, struct inode *inode,
-+				  loff_t start, loff_t end)
- {
- 	struct nilfs_sb_info *sbi = NILFS_SB(sb);
- 	struct nilfs_sc_info *sci = NILFS_SC(sbi);
-@@ -2684,7 +2707,9 @@ int nilfs_construct_dsync_segment(struct super_block *sb,
- 		return 0;
- 	}
- 	spin_unlock(&sbi->s_inode_lock);
--	sci->sc_stage.dirty_file_ptr = ii;
-+	sci->sc_dsync_inode = ii;
-+	sci->sc_dsync_start = start;
-+	sci->sc_dsync_end = end;
- 
- 	err = nilfs_segctor_do_construct(sci, SC_LSEG_DSYNC);
- 
-diff --git a/fs/nilfs2/segment.h b/fs/nilfs2/segment.h
-index 615654b..2dd39da 100644
---- a/fs/nilfs2/segment.h
-+++ b/fs/nilfs2/segment.h
-@@ -93,6 +93,9 @@ struct nilfs_segsum_pointer {
-  * @sc_active_segments: List of active segments that were already written out
-  * @sc_cleaning_segments: List of segments to be freed through construction
-  * @sc_copied_buffers: List of copied buffers (buffer heads) to freeze data
-+ * @sc_dsync_inode: inode whose data pages are written for a sync operation
-+ * @sc_dsync_start: start byte offset of data pages
-+ * @sc_dsync_end: end byte offset of data pages (inclusive)
-  * @sc_segbufs: List of segment buffers
-  * @sc_segbuf_nblocks: Number of available blocks in segment buffers.
-  * @sc_curseg: Current segment buffer
-@@ -134,6 +137,10 @@ struct nilfs_sc_info {
- 	struct list_head	sc_cleaning_segments;
- 	struct list_head	sc_copied_buffers;
- 
-+	struct nilfs_inode_info *sc_dsync_inode;
-+	loff_t			sc_dsync_start;
-+	loff_t			sc_dsync_end;
++	ndays += compute_yday(eft);
 +
- 	/* Segment buffers */
- 	struct list_head	sc_segbufs;
- 	unsigned long		sc_segbuf_nblocks;
-@@ -221,8 +228,8 @@ extern void nilfs_destroy_transaction_cache(void);
- extern void nilfs_relax_pressure_in_lock(struct super_block *);
- 
- extern int nilfs_construct_segment(struct super_block *);
--extern int nilfs_construct_dsync_segment(struct super_block *,
--					 struct inode *);
-+extern int nilfs_construct_dsync_segment(struct super_block *, struct inode *,
-+					 loff_t, loff_t);
- extern void nilfs_flush_segment(struct super_block *, ino_t);
- extern int nilfs_clean_segments(struct super_block *, void __user *);
- 
++	/*
++	 * 4=1/1/1998 was a Thursday
++	 */
++	return (ndays + 4) % 7;
++}
++
++static void
++convert_to_efi_time(struct rtc_time *wtime, efi_time_t *eft)
++{
++	eft->year	= wtime->tm_year + 1900;
++	eft->month	= wtime->tm_mon + 1;
++	eft->day	= wtime->tm_mday;
++	eft->hour	= wtime->tm_hour;
++	eft->minute	= wtime->tm_min;
++	eft->second 	= wtime->tm_sec;
++	eft->nanosecond = 0;
++	eft->daylight	= wtime->tm_isdst ? EFI_ISDST : 0;
++	eft->timezone	= EFI_UNSPECIFIED_TIMEZONE;
++}
++
++static void
++convert_from_efi_time(efi_time_t *eft, struct rtc_time *wtime)
++{
++	memset(wtime, 0, sizeof(*wtime));
++	wtime->tm_sec  = eft->second;
++	wtime->tm_min  = eft->minute;
++	wtime->tm_hour = eft->hour;
++	wtime->tm_mday = eft->day;
++	wtime->tm_mon  = eft->month - 1;
++	wtime->tm_year = eft->year - 1900;
++
++	/* day of the week [0-6], Sunday=0 */
++	wtime->tm_wday = compute_wday(eft);
++
++	/* day in the year [1-365]*/
++	wtime->tm_yday = compute_yday(eft);
++
++
++	switch (eft->daylight & EFI_ISDST) {
++	case EFI_ISDST:
++		wtime->tm_isdst = 1;
++		break;
++	case EFI_TIME_ADJUST_DAYLIGHT:
++		wtime->tm_isdst = 0;
++		break;
++	default:
++		wtime->tm_isdst = -1;
++	}
++}
++
++static int efi_read_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
++{
++	efi_time_t eft;
++	efi_status_t status;
++
++	/*
++	 * As of EFI v1.10, this call always returns an unsupported status
++	 */
++	status = efi.get_wakeup_time((efi_bool_t *)&wkalrm->enabled,
++				     (efi_bool_t *)&wkalrm->pending, &eft);
++
++	if (status != EFI_SUCCESS)
++		return -EINVAL;
++
++	convert_from_efi_time(&eft, &wkalrm->time);
++
++	return rtc_valid_tm(&wkalrm->time);
++}
++
++static int efi_set_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
++{
++	efi_time_t eft;
++	efi_status_t status;
++
++	convert_to_efi_time(&wkalrm->time, &eft);
++
++	/*
++	 * XXX Fixme:
++	 * As of EFI 0.92 with the firmware I have on my
++	 * machine this call does not seem to work quite
++	 * right
++	 *
++	 * As of v1.10, this call always returns an unsupported status
++	 */
++	status = efi.set_wakeup_time((efi_bool_t)wkalrm->enabled, &eft);
++
++	printk(KERN_WARNING "write status is %d\n", (int)status);
++
++	return status == EFI_SUCCESS ? 0 : -EINVAL;
++}
++
++static int efi_read_time(struct device *dev, struct rtc_time *tm)
++{
++	efi_status_t status;
++	efi_time_t eft;
++	efi_time_cap_t cap;
++
++	status = efi.get_time(&eft, &cap);
++
++	if (status != EFI_SUCCESS) {
++		/* should never happen */
++		printk(KERN_ERR "efitime: can't read time\n");
++		return -EINVAL;
++	}
++
++	convert_from_efi_time(&eft, tm);
++
++	return rtc_valid_tm(tm);
++}
++
++static int efi_set_time(struct device *dev, struct rtc_time *tm)
++{
++	efi_status_t status;
++	efi_time_t eft;
++
++	convert_to_efi_time(tm, &eft);
++
++	status = efi.set_time(&eft);
++
++	return status == EFI_SUCCESS ? 0 : -EINVAL;
++}
++
++static const struct rtc_class_ops efi_rtc_ops = {
++	.read_time = efi_read_time,
++	.set_time = efi_set_time,
++	.read_alarm = efi_read_alarm,
++	.set_alarm = efi_set_alarm,
++};
++
++static int __init efi_rtc_probe(struct platform_device *dev)
++{
++	struct rtc_device *rtc;
++
++	rtc = rtc_device_register("rtc-efi", &dev->dev, &efi_rtc_ops,
++					THIS_MODULE);
++	if (IS_ERR(rtc)) {
++		int err = PTR_ERR(rtc);
++		return err;
++	}
++
++	platform_set_drvdata(dev, rtc);
++
++	return 0;
++}
++
++static int __exit efi_rtc_remove(struct platform_device *dev)
++{
++	struct rtc_device *rtc = platform_get_drvdata(dev);
++
++	rtc_device_unregister(rtc);
++	kfree(rtc);
++
++	return 0;
++}
++
++static struct platform_driver efi_rtc_driver = {
++	.driver = {
++		.name = "rtc-efi",
++		.owner = THIS_MODULE,
++	},
++	.probe = efi_rtc_probe,
++	.remove = __exit_p(efi_rtc_remove),
++};
++
++static int __init efi_rtc_init(void)
++{
++	return platform_driver_probe(&efi_rtc_driver, efi_rtc_probe);
++}
++
++static void __exit efi_rtc_exit(void)
++{
++	platform_driver_unregister(&efi_rtc_driver);
++}
++
++module_init(efi_rtc_init);
++module_exit(efi_rtc_exit);
++
++MODULE_AUTHOR("dann frazier <dannf@hp.com>");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("EFI RTC driver");
 -- 
 1.5.6.5
 
