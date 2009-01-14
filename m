@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZANSI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZANSLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZANSI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZANSIr
+	id S1754096AbZANSLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZANSLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:08:47 -0500
-Received: from nacho.alt.net ([208.90.169.18]:33199 "EHLO nacho.alt.net"
+	Wed, 14 Jan 2009 13:11:01 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39731 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbZANSIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:08:46 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 13:08:45 EST
-Date: Wed, 14 Jan 2009 18:02:04 +0000 (UTC)
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Denys Fedoryschenko <denys@visp.net.lb>,
-       Jarek Poplawski <jarkao2@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-In-Reply-To: <1231937404.14825.4.camel@laptop>
-Message-ID: <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
-References: <20081010090426.GA6054@ff.dom.local>
-	<Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
-	<20090114063909.GA4234@ff.dom.local>
-	<200901141417.58667.denys@visp.net.lb>
-	<1231937404.14825.4.camel@laptop>
+	id S1752091AbZANSLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 13:11:00 -0500
+Date: Wed, 14 Jan 2009 10:04:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUILD-FAILURE] next-20090114 - drivers/staging/meilhaus
+Message-ID: <20090114180403.GA16974@suse.de>
+References: <20090114165002.3bbe49d7.sfr@canb.auug.org.au> <20090114180024.GB4796@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Delivery-Agent: TMDA/1.1.4 (Edradour)
-From: Chris Caputo <ccaputo@alt.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114180024.GB4796@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 14:17 +0200, Denys Fedoryschenko wrote:
-> > I will try that patches too, when i got this message, after 3 minutes i got 
-> > crash of my router :-) after working around 17 hours :-(
-> > There is 3 of them by the way, 2 fixes also.
-> > 
-> > hrtimer: removing all ur callback modes
-> > hrtimer: removing all ur callback modes, fix hotplug
-> > hrtimer: removing all ur callback modes, fix
+On Wed, Jan 14, 2009 at 11:30:24PM +0530, Kamalesh Babulal wrote:
+> Hi Stephen,
 > 
-> I'm afraid its a bit more than that:
+> 	next-20090114 randconfig build on x86_64 machine fails,
 > 
-> ca109491f612aab5c8152207631c0444f63da97f
-> 37810659ea7d9572c5ac284ade272f806ef8f788
-> a0a99b227da57f81319dd239bc4de811b0f530ec
-> b2e3c0adec918ea22b6c9d7c76193dd3aaba9bd4
-> 8bdec955b0da2ffbd10eb9b200651dd1f9e366f2
-> d5fd43c4ae04523e1dcd7794f9c511b289851350
-> 731a55ba0f17064f85903b7bf8e24849ec6cfa20
-> a6037b61c2f5fc99c57c15b26d7cfa58bbb34008
-> e3f1d883740b09e5116d4d4e30a6a6987264a83c
-> 82c5b7b527ccc4b5d3cf832437e842f9d2920a79
-> 
-> and
-> 
-> 6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
-> 
-> Also, all this is rather invasive and large, so I'm not sure it will
-> meet the -stable criteria.
+>   LD      drivers/staging/meilhaus/built-in.o
+> drivers/staging/meilhaus/me1600.o: In function `cleanup_module':
+> (.exit.text+0x0): multiple definition of `cleanup_module'
+> drivers/staging/meilhaus/memain.o:memain.c:(.exit.text+0x0): first defined here
 
-In my testing (another 12 hours of uptime, BTW), the three patches I am 
-using are:
+Yeah, a lot of these staging drivers can't handle being built into the
+kernel.
 
-  ca109491f612aab5c8152207631c0444f63da97f
-  37810659ea7d9572c5ac284ade272f806ef8f788
-  a0a99b227da57f81319dd239bc4de811b0f530ec
+At first glance, I don't see a way to prevent this, is there some
+Kconfig option I can use to say, "this can only be a module or disabled,
+not build statically"?
 
-I have not tried the other patches.
+thanks,
 
-That said, I would not recommend just the three for -stable unless they 
-get a much wider amount of testing, on multiple platforms.  I don't see 
-that as likely to happen, plus Peter says they are incomplete, so maybe it 
-is just best to recommend that 2.6.28 users getting crashes while using 
-HTB try these specific patches at first, and then the rest of the patches 
-if they do not work.
-
-Thanks,
-Chris
+greg k-h
