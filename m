@@ -1,145 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764451AbZANQt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764561AbZANQt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764451AbZANQt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764202AbZANQtL
+	id S1764561AbZANQt7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761919AbZANQtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:49:11 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:33259 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764081AbZANQtI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:49:08 -0500
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-From: Chris Mason <chris.mason@oracle.com>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
-In-Reply-To: <b647ffbd0901140318g7e4ccab6m9bf03e9ac6acf797@mail.gmail.com>
-References: <1231774622.4371.96.camel@laptop>
-	 <1231859742.442.128.camel@twins>
-	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
-	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
-	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-	 <1231867314.7141.16.camel@twins>
-	 <1231901899.1709.18.camel@think.oraclecorp.com>
-	 <b647ffbd0901140318g7e4ccab6m9bf03e9ac6acf797@mail.gmail.com>
+	Wed, 14 Jan 2009 11:49:49 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:32042 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754743AbZANQts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 11:49:48 -0500
+Subject: Re: checkpatch confused by pre-existing #endif
+From: Pavel Roskin <proski@gnu.org>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090114164539.GD10653@shadowen.org>
+References: <1231883863.21706.17.camel@dv>
+	 <20090114164539.GD10653@shadowen.org>
 Content-Type: text/plain
-Date: Wed, 14 Jan 2009 11:47:42 -0500
-Message-Id: <1231951662.8269.22.camel@think.oraclecorp.com>
+Date: Wed, 14 Jan 2009 11:49:42 -0500
+Message-Id: <1231951782.29339.5.camel@dv>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.496E1733.021C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 12:18 +0100, Dmitry Adamushko wrote:
-> 2009/1/14 Chris Mason <chris.mason@oracle.com>:
-> > On Tue, 2009-01-13 at 18:21 +0100, Peter Zijlstra wrote:
-> >> On Tue, 2009-01-13 at 08:49 -0800, Linus Torvalds wrote:
-> >> >
-> >> > So do a v10, and ask people to test.
-> >>
-> >> ---
-> >> Subject: mutex: implement adaptive spinning
-> >> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >> Date: Mon Jan 12 14:01:47 CET 2009
-> >>
-> >> Change mutex contention behaviour such that it will sometimes busy wait on
-> >> acquisition - moving its behaviour closer to that of spinlocks.
-> >>
-> >
-> > I've spent a bunch of time on this one, and noticed earlier today that I
-> > still had bits of CONFIG_FTRACE compiling.  I wasn't actually tracing
-> > anything, but it seems to have had a big performance hit.
-> >
-> > The bad news is the simple spin got much much faster, dbench 50 coming
-> > in at 1282MB/s instead of 580MB/s.  (other benchmarks give similar
-> > results)
-> >
-> > v10 is better that not spinning, but its in the 5-10% range.  So, I've
-> > been trying to find ways to close the gap, just to understand exactly
-> > where it is different.
-> >
-> > If I take out:
-> >        /*
-> >         * If there are pending waiters, join them.
-> >         */
-> >        if (!list_empty(&lock->wait_list))
-> >                break;
-> >
-> >
-> > v10 pops dbench 50 up to 1800MB/s.  The other tests soundly beat my
-> > spinning and aren't less fair.  But clearly this isn't a good solution.
-> >
-> > I tried a few variations, like only checking the wait list once before
-> > looping, which helps some.  Are there other suggestions on better tuning
-> > options?
-> 
-> (some thoughts/speculations)
-> 
-> Perhaps for highly-contanded mutexes the spinning implementation may
-> quickly degrade [*] to the non-spinning one (i.e. the current
-> sleep-wait mutex) and then just stay in this state until a moment of
-> time when there are no waiters  [**]  -- i.e.
-> list_empty(&lock->wait_list) == 1 and waiters can start spinning
-> again.
+On Wed, 2009-01-14 at 16:45 +0000, Andy Whitcroft wrote:
 
-It is actually ok if the highly contention mutexes don't degrade as long
-as they are highly contended and the holder isn't likely to schedule.
+> Yes this should be fixed in the changes pushed up to Andrew.  You can
+> confirm this using the version here:
+> 
+>   http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
 
-> 
-> what may trigger [*]:
-> 
-> (1) obviously, an owner scheduling out.
-> 
-> Even if it happens rarely (otherwise, it's not a target scenario for
-> our optimization), due to the [**] it may take quite some time until
-> waiters are able to spin again.
-> 
-> let's say, waiters (almost) never block (and possibly, such cases
-> would be better off just using a spinlock after some refactoring, if
-> possible)
-> 
-> (2) need_resched() is triggered for one of the waiters.
-> 
-> (3) !owner && rt_task(p)
-> 
-> quite unlikely, but possible (there are 2 race windows).
-> 
-> Of course, the question is whether it really takes a noticeable amount
-> of time to get out of the [**] state.
-> I'd imagine it can be a case for highly-contended locks.
-> 
-> If this is the case indeed, then which of 1,2,3 gets triggered the most.
+It's working fine on the ath9k patchset where the issue was discovered.
+Thank you!
 
-Sorry, I don't have stats on that.
-
-> 
-> Have you tried removing need_resched() checks? So we kind of emulate
-> real spinlocks here.
-
-Unfortunately, the need_resched() checks deal with a few of the ugly
-corners.  They are more important without the waiter list check.
-Basically if we spun without the need_resched() checks, the process who
-wants to unlock might not be able to schedule back in.
-
--chris
-
-
-
+-- 
+Regards,
+Pavel Roskin
