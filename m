@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZANHk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbZANHlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbZANHk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 02:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZANHkO
+	id S1760129AbZANHlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 02:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZANHln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 02:40:14 -0500
-Received: from mail1.SerNet.de ([193.175.80.2]:55709 "EHLO mail.SerNet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbZANHkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 02:40:12 -0500
-Date: Wed, 14 Jan 2009 08:40:08 +0100
-From: Volker Lendecke <Volker.Lendecke@SerNet.DE>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-Reply-To: Volker.Lendecke@SerNet.DE
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wac7ysb48OaltWcw"
+	Wed, 14 Jan 2009 02:41:43 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:64129 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753638AbZANHlm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 02:41:42 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Alexey Rempel <fishor@gmx.net>
+Subject: Re: [Bug #12420] WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+Date: Wed, 14 Jan 2009 08:40:39 +0100
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <oWTznAnH9BI.A.PPH.GHfaJB@chimera> <496D95BA.4070304@gmx.net>
+In-Reply-To: <496D95BA.4070304@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <496D2078.9080302@cosmosbay.com>
-User-Agent: Mutt/1.5.9i
-Message-Id: <E1LN0MC-00DaJs-M2@intern.SerNet.DE>
-Organization: SerNet GmbH, Goettingen, Germany
+Message-Id: <200901140840.39202.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Mittwoch 14 Januar 2009 schrieb Alexey Rempel:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12420
+> > Subject		: WARNING: at drivers/ata/libata-sff.c:1017 
+ata_sff_hsm_move+0x45e/0x750()
+> > Submitter	: Christian Borntraeger <borntraeger@de.ibm.com>
+> > Date		: 2009-01-09 12:34 (3 days old)
+> > First-Bad-Commit: 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=871af1210f13966ab911ed2166e4ab2ce775b99d
+> > References	: http://marc.info/?l=linux-kernel&m=123150457832109&w=4
 
---wac7ysb48OaltWcw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 14, 2009 at 12:15:04AM +0100, Eric Dumazet wrote:
-> Volker, your splice() is a blocking one, from tcp socket to a pipe ?
+> This warning was disabled in latest git.
 
-Yes, it is.
+Yes. After the discussion had a conclusion, I decided to to send a patch 
+myself and Jeff sent it to Linus.
 
-> If no other thread is reading the pipe, then you might block forever
-> in splice_to_pipe() as soon pipe is full (16 pages).
-
-Why does it block when the pipe is full? Why doesn't it
-return a short read, just like the read(2) call does? We
-need to cope with that behaviour anyway.
-
-> As pages are not necessarly full (each skb will use at least one page, ev=
-en if=20
-> its length is small), it is not really possible to use splice() like this.
->=20
-> In your case, only safe way with current kernel would be to call splice()
-> asking for no more than 16 bytes, that would be really insane for your ne=
-eds.
->=20
-> You may prefer a non blocking mode, at least when calling splice_to_pipe()
-
-Which fd do I have to set the nonblocking flag on? The TCP
-socket I read from, or the pipe I write to?
-
-Thanks for the hint anyway :-)
-
-Volker
-
---wac7ysb48OaltWcw
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFJbZbXbsgDfmnSbrYRAsruAJ9LsFBmZe0ujTclxWLT4YJi02RW5QCdHJhH
-z/AdX1fcqLIvALxDMdaPUsI=
-=G6NX
------END PGP SIGNATURE-----
-
---wac7ysb48OaltWcw--
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0f79f7ad3e52b908786462cf5446ebe20fe14fa
