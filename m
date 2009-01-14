@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbZANWRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZANWSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760634AbZANWRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZANWRE
+	id S1760948AbZANWSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZANWS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:17:04 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:65230 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755493AbZANWRD (ORCPT
+	Wed, 14 Jan 2009 17:18:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60329 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751268AbZANWS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:17:03 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuQCANPwbUl5LDnlgWdsb2JhbACTfgEBFiK7AYVv
-X-IronPort-AV: E=Sophos;i="4.37,263,1231075800"; 
-   d="scan'208";a="293852388"
-Date: Thu, 15 Jan 2009 09:16:55 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Lachlan McIlroy <lachlan@sgi.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090114221655.GX8071@disturbed>
-Mail-Followup-To: Lachlan McIlroy <lachlan@sgi.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com> <20090112151133.GA24852@infradead.org> <496C2D69.2010301@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496C2D69.2010301@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 17:18:26 -0500
+Date: Wed, 14 Jan 2009 14:17:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-Id: <20090114141727.0a5dd3fb.akpm@linux-foundation.org>
+In-Reply-To: <20090114220418.GN6222@mit.edu>
+References: <1231945948-23676-1-git-send-email-jack@suse.cz>
+	<1231945948-23676-2-git-send-email-jack@suse.cz>
+	<20090114101834.fbb9ea12.akpm@linux-foundation.org>
+	<20090114220418.GN6222@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 04:58:01PM +1100, Lachlan McIlroy wrote:
-> Christoph Hellwig wrote:
->> On Mon, Jan 12, 2009 at 06:14:36AM -0500, Mikulas Patocka wrote:
->>> Hi
->>>
->>> I discovered a bug in XFS in delayed allocation.
->>>
->>> When you take a small partition (52MB in my case) and copy many small 
->>> files on it (source code) that barely fits there, you get -ENOSPC. 
->>> Then sync the partition, some free space pops up, click "retry" in MC 
->>> an the copy continues. They you get again -ENOSPC, you must sync, 
->>> click "retry" and go on. And so on few times until the source code 
->>> finally fits on the XFS partition.
->>>
->>> This misbehavior is apparently caused by delayed allocation, delayed  
->>> allocation does not exactly know how much space will be occupied by 
->>> data, so it makes some upper bound guess. Because free space count is 
->>> only a guess, not the actual data being consumed, XFS should not 
->>> return -ENOSPC on behalf of it. When the free space overflows, XFS 
->>> should sync itself, retry allocation and only return -ENOSPC if it 
->>> fails the second time, after the sync.
-> This sounds like a problem with speculative allocation - delayed allocations
-> beyond eof.  Even if we write a small file, say 4k, a 64k chunk of delayed
-> allocation will be credited to the file. 
+On Wed, 14 Jan 2009 17:04:18 -0500
+Theodore Tso <tytso@MIT.EDU> wrote:
 
-The second retry occurs without speculative EOF allocation. That's
-what the BMAPI_SYNC flag does....
+> On Wed, Jan 14, 2009 at 10:18:34AM -0800, Andrew Morton wrote:
+> > /**
+> >  * blkdev_issue_flush - queue a flush
+> >  * @bdev:	blockdev to issue flush for
+> >  * @error_sector:	error sector
+> >  *
+> >  * Description:
+> >  *    Issue a flush for the block device in question. Caller can supply
+> >  *    room for storing the error offset in case of a flush error, if they
+> >  *    wish to.  Caller must run wait_for_completion() on its own.
+> >  */
+> > 
+> > So afaict the change you've made is incomplete.  We'll queue a
+> > writeback command to the disk but we won't wait for it to be sent down
+> > the wire.  
+> 
+> No, that last part of the comment is stale, and it's already been
+> confirmed by Jens.   He's queued in the block tree:
+> 
+> >From 801d773a6ff5dbb37c9eaa4b89ae3fc6574ba294 Mon Sep 17 00:00:00 2001
+> From: Theodore Ts'o <tytso@mit.edu>
+> Date: Tue, 13 Jan 2009 09:25:08 -0500
+> Subject: [PATCH] block: Fix documentation for blkdev_issue_flush()
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> ---
+>  block/blk-barrier.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+> index 8eba4e4..f7dae57 100644
+> --- a/block/blk-barrier.c
+> +++ b/block/blk-barrier.c
+> @@ -302,7 +302,7 @@ static void bio_end_empty_barrier(struct bio *bio, int err)
+>   * Description:
+>   *    Issue a flush for the block device in question. Caller can supply
+>   *    room for storing the error offset in case of a flush error, if they
+> - *    wish to.  Caller must run wait_for_completion() on its own.
+> + *    wish to.
+>   */
+>  int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+>  {
 
-That being said, it can't truncate away pre-existing speculative
-allocations on other files, which is why there is a global flush
-and wait before the third retry.....
+<glances at the code>
 
-Cheers,
+<doh>
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+The function's name is now inappropriate.
