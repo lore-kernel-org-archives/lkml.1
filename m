@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZANCqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZANCsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZANCqJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZANCpz
+	id S1753972AbZANCsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZANCsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:45:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55356 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751555AbZANCpz (ORCPT
+	Tue, 13 Jan 2009 21:48:30 -0500
+Received: from mga10.intel.com ([192.55.52.92]:9672 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751393AbZANCs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:45:55 -0500
-Date: Tue, 13 Jan 2009 18:45:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>, reif@earthlink.net,
-       sparclinux-owner@vger.kernel.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: sparc32 compile error: redefinition of =?UTF-8?Q?=E2=80=98smp?=
- =?UTF-8?Q?=5Fcall=5Ffunction=5Fsingle=E2=80=99?=
-Message-Id: <20090113184536.95ebc973.akpm@linux-foundation.org>
-In-Reply-To: <20090113184239.e6b6e68e.akpm@linux-foundation.org>
-References: <496D4274.6000304@earthlink.net>
-	<20090113.181039.185575172.davem@davemloft.net>
-	<20090113184239.e6b6e68e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Jan 2009 21:48:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,261,1231142400"; 
+   d="scan'208";a="656923685"
+Message-ID: <496D526D.1010402@linux.intel.com>
+Date: Wed, 14 Jan 2009 02:48:13 +0000
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: kernel BUG at fs/ext/super.c:428
+References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu>
+In-Reply-To: <20090114014434.GE14730@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 18:42:39 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+Theodore Tso wrote:
+> On Tue, Jan 13, 2009 at 04:48:42PM -0800, Andrew Morton wrote:
+>> Well that's not good.  I don't recall us making any changes which
+>> affect the orphan list handling.  Perhaps "filesystem freeze: add error
+>> handling of write_super_lockfs/unlockfs", but only indirectly.
+>>
+>> Does Arjan's new async stuff play with filesystems at umount/shutdown
+>> time?  Don't think so.
+> 
+> Well, Arjan's commit, efaee192: "async: make the final inode deletion
+> an asynchronous event", does change how inodes get deleted, and this
+> looks like a race where an inode is getting deleted during the umount.
+> 
+> So I would try reverting commit efaee192 and see if it fixes things
+> before starting a full bisect...
 
-> On Tue, 13 Jan 2009 18:10:39 -0800 (PST) David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Robert Reif <reif@earthlink.net>
-> > Date: Tue, 13 Jan 2009 20:40:04 -0500
-> > 
-> > > Todays git produces this compile error on sparc32:
-> > > 
-> > > kernel/up.c:10: error: redefinition of ___smp_call_function_single___
-> > > /usr/src/sparc32/linux-2.6/arch/sparc/include/asm/smp_32.h:78: error: previous definition of ___smp_call_function_single___ was here
-> > 
-> > Andrew, are you sure that Makefile condition for compiling
-> > up.o is correct?
-> 
-> you give me grounds for now being ;)
-> 
-> > ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
-> > obj-y += smp.o
-> > else
-> > obj-y += up.o
-> > endif
-> > 
-> > If an arch doesn't use generic SMP helpers, there is no way
-> > we should compile up.c into the tree when SMP.
-> > 
-> 
-> How's about this?
-> 
-> --- a/kernel/Makefile~a
-> +++ a/kernel/Makefile
-> @@ -43,7 +43,7 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
->  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
->  obj-y += smp.o
->  else
-> -obj-y += up.o
-> +obj-$(CONFIG_SMP) += up.o
->  endif
->  obj-$(CONFIG_SMP) += spinlock.o
->  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
-
-err, the other way of course...
-
---- a/kernel/Makefile~a
-+++ a/kernel/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
- ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
- obj-y += smp.o
- else
-+ifneq ($(CONFIG_SMP),y)
- obj-y += up.o
- endif
- obj-$(CONFIG_SMP) += spinlock.o
-_
-
+the commit is already reverted before rc1
 
