@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbZANOcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761158AbZANOdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760750AbZANOcb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:32:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZANOcT
+	id S1761158AbZANOdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:33:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZANOc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:32:19 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:60404 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbZANOcS (ORCPT
+	Wed, 14 Jan 2009 09:32:57 -0500
+Received: from mga09.intel.com ([134.134.136.24]:64449 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754224AbZANOc4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:32:18 -0500
-Date: Wed, 14 Jan 2009 17:32:28 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Daniel Drake <dsd@gentoo.org>, Richard Henderson <rth@twiddle.net>,
-       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] alpha: nautilus - fix compile failure with gcc-4.3
-Message-ID: <20090114143228.GB10788@jurassic.park.msu.ru>
+	Wed, 14 Jan 2009 09:32:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,263,1231142400"; 
+   d="scan'208";a="481594382"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+Date: Wed, 14 Jan 2009 14:32:39 +0000
+Subject: RE: [PATCH] dmatest: Use custom map/unmap for destination buffer
+Thread-Topic: [PATCH] dmatest: Use custom map/unmap for destination buffer
+Thread-Index: Acl1lHjH196Pg5seSCqJ3A3xQvh/egAwDN2g
+Message-ID: <129600E5E5FB004392DDC3FB599660D70CAAE436@irsmsx504.ger.corp.intel.com>
+References: <1231860880-6277-1-git-send-email-anemo@mba.ocn.ne.jp>
+In-Reply-To: <1231860880-6277-1-git-send-email-anemo@mba.ocn.ne.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-init_srm_irq() deals with irq's #16 and above, but size of irq_desc
-array on nautilus and some other system types is 16. So gcc-4.3
-complains that "array subscript is above array bounds", even though
-this function is never called on those systems.
+Atsushi Nemoto wrote:
+> The dmatest driver should use DMA_BIDIRECTIONAL on the destination
+> buffer
+> to ensure that the poison values are written to RAM and not just
+> written
+> to cache and discarded.
+>
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
 
-This adds a check for NR_IRQS <= 16, which effectively optimizes
-init_srm_irq() code away on problematic platforms.
-
-Thanks to Daniel Drake <dsd@gentoo.org> for detailed analysis
-of the problem.
-
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/kernel/irq_srm.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/alpha/kernel/irq_srm.c b/arch/alpha/kernel/irq_srm.c
-index 3221201..a03fbca 100644
---- a/arch/alpha/kernel/irq_srm.c
-+++ b/arch/alpha/kernel/irq_srm.c
-@@ -63,6 +63,8 @@ init_srm_irqs(long max, unsigned long ignore_mask)
- {
- 	long i;
- 
-+	if (NR_IRQS <= 16)
-+		return;
- 	for (i = 16; i < max; ++i) {
- 		if (i < 64 && ((ignore_mask >> i) & 1))
- 			continue;
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
