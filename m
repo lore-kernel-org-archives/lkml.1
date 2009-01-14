@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760220AbZANKgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZANKg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760220AbZANKgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZANKgM
+	id S1758510AbZANKg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZANKgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:36:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56705 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbZANKgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:36:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-Date: Wed, 14 Jan 2009 11:35:30 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <200901131217.07537.rjw@sisk.pl> <496D815E.8010107@jp.fujitsu.com>
-In-Reply-To: <496D815E.8010107@jp.fujitsu.com>
+	Wed, 14 Jan 2009 05:36:47 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:43995 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZANKgq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 05:36:46 -0500
+Date: Wed, 14 Jan 2009 11:36:24 +0100
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: David Miller <davem@davemloft.net>
+Cc: "roucaries.bastien@gmail.com" <roucaries.bastien@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tj@kernel.org" <tj@kernel.org>, "gregkh@suse.de" <gregkh@suse.de>,
+       "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
+Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
+Message-ID: <20090114103624.GH19262@axis.com>
+References: <195c7a900901131511l7077eebar8396267e3f2b670b@mail.gmail.com> <20090114101908.GF19262@axis.com> <20090114.022140.169499153.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901141135.31165.rjw@sisk.pl>
+In-Reply-To: <20090114.022140.169499153.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 January 2009, Kenji Kaneshige wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday 13 January 2009, Kenji Kaneshige wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Saturday 10 January 2009, Jesse Barnes wrote:
-> >>>> On Thursday, January 8, 2009 12:45 pm Rafael J. Wysocki wrote:
-> >>>>> On Thursday 08 January 2009, Rafael J. Wysocki wrote:
-> >>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
-> >>>>>>> Rafael J. Wysocki wrote:
-> >>>>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
-> >>>>>>>>> Rafael J. Wysocki wrote:
-> >>>>>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
-> >>>>>>>>>>
-> >>>>>>>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
-> >>>>>>>>>> many vectors are allocated and it is not ensured that the right
-> >>>>>>>>>> vectors will be used for various services.  Namely, the PCI Express
-> >>>>>>>>>> specification states that both PCI Express native PME and PCI
-> >>>>>>>>>> Express hotplug will always use the same MSI or MSI-X message for
-> >>>>>>>>>> signalling interrupts, which implies that the same vector will be
-> >>>>>>>>>> used by both of them.  Also, the VC service does not use interrupts
-> >>>>>>>>>> at all. Moreover, is not clear which of the vectors allocated by
-> >>>>>>>>>> pci_enable_msix() will be used for PME and hotplug and which of
-> >>>>>>>>>> them will be used for AER if all of these services are configured.
-> >>>>>>>>>>
-> >>>>>>>>>> For these reasons, rework the allocation of interrupts for PCI
-> >>>>>>>>>> Express ports so that at most two vectors are allocated and ensure
-> >>>>>>>>>> that the right vector will be used for the right purpose.
-> >>>>> Appended is a cleaned-up version of the patch that also contains comments
-> >>>>> with references to the appropriate sections of the PCI Express spec.
-> >>>> We'll need testing here in any case; I'll have to re-read the specs carefully 
-> >>>> to see if we can really rely on the vector numbers you have here (at first 
-> >>>> glance Kenji-san's approach seems more robust).
-> >>> It has a catch too.  Namely, is there any warranty that we'll get the same
-> >>> vectors when the second pci_enable_msix() is called and that they will be in
-> >>> the same order?
-> >>>
-> >> In my understanding, the following description of Interrupt Message
-> >> Number in the PCI Express spec explains this.
-> >>
-> >> "[...] For a given MSI-X implementation, the entry must remain constant. [...]"
-> > 
-> > The entry - yes, but the associated interrupt vector as sent to the CPU?  That
-> > seems to be platform-dependent.
-> > 
+On Wed, Jan 14, 2009 at 11:21:40AM +0100, David Miller wrote:
+> From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+> Date: Wed, 14 Jan 2009 11:19:08 +0100
+> > The following patch works for CRIS, and is less intrusive than
+> > my earlier patch. If this the way to go I can resubmit a proper patch.
 > 
-> I'm sorry but I don't understand what the problem is.
-> Do you mean pci_disable_msix() doesn't work on some platforms?
+> Out of curiosity, is there a way to get gcc to output code such
+> that data objects are aligned more naturally?  Some option or
+> similar?
 
-No, I don't.  It was just confusion on my side, sorry.
+There's flags for alignment of objects, but no flags for changing
+structure layout or size, which is probably what we run into here.
 
-Please have a look at the new version of the patch I sent yesterday
-(http://marc.info/?l=linux-pci&m=123185510828181&w=4).
-
-Thanks,
-Rafael
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
