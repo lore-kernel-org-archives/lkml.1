@@ -1,63 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761499AbZANJqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbZANJsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761499AbZANJqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 04:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755690AbZANJqf
+	id S1761544AbZANJsD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 04:48:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbZANJrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 04:46:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54570 "EHLO mx2.mail.elte.hu"
+	Wed, 14 Jan 2009 04:47:53 -0500
+Received: from pan.madism.org ([88.191.52.104]:45979 "EHLO hermes.madism.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754163AbZANJqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 04:46:34 -0500
-Date: Wed, 14 Jan 2009 10:45:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Tejun Heo <tj@kernel.org>, Brian Gerst <brgerst@gmail.com>,
-       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       steiner@sgi.com, hugh@veritas.com
-Subject: Re: [patch] add optimized generic percpu accessors
-Message-ID: <20090114094546.GA29776@elte.hu>
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114093834.GA19799@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4844]
+	id S1755690AbZANJrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 04:47:52 -0500
+X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 04:47:52 EST
+From: Pierre Habouzit <pierre.habouzit@intersec.com>
+To: Wei Yongjun <yjwei@cn.fujitsu.com>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>,
+       " David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org,
+       Pierre Habouzit <pierre.habouzit@intersec.com>
+Subject: [PATCH] sctp: if backlog is 0, listening shall not be deactivated.
+Date: Wed, 14 Jan 2009 10:42:03 +0100
+Message-Id: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
+X-Mailer: git-send-email 1.6.1.161.g5e07b.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+POSIX hints that when 0 is used for the listen backlog argument, the
+kernel shall chose a default automatic value. TCP for example, works this
+way.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
+---
 
-> Tejun, could you please also add the patch below to your lineup too?
-> 
-> It is an optimization and a cleanup, and adds the following new generic 
-> percpu methods:
-> 
->   percpu_read()
->   percpu_write()
->   percpu_add()
->   percpu_sub()
->   percpu_or() 
->   percpu_xor()
-> 
-> and implements support for them on x86. (other architectures will fall 
-> back to a default implementation)
+ net/sctp/socket.c |   20 --------------------
+ 1 files changed, 0 insertions(+), 20 deletions(-)
 
-btw., this patch means that we can move Brian's original PDA cleanups 
-fully and without kernel size bloat: instead of pda_read() we can use 
-percpu_read(), and not bloat the kernel at all.
+    To put a bit of background, I stumbled against this while doing a code
+    that basically did:
 
-and thus the pda ops can go away completely.
+	struct sctp_event_subscribe events;
+	/* ... */
 
-	Ingo
+	fd = socket(AF_INET, SOCK_SEQPACKETS, IPPROTO_SCTP);
+	sctp_bindx(fd, ....);
+	events = (struct sctp_event_subscribe){
+	    .sctp_data_io_event     = 1,
+	    .sctp_association_event = 1,
+	};
+	setsockopt(fd, SOL_SCTP, SCTP_EVENTS, &events, sizeof(events));
+	listen(fd, 0);
+	len = sctp_recvmsg(fd, .....);
+
+    The latter call instead of blocking like I expected returned with
+    errno == ENOTCONN.
+
+    I know POSIX doesn't _require_ listen() to accept 0 as a valid backlog,
+    but the other listen() implementation I have used in the kernel do, and
+    it looks really surprising for the programmer (who really searches the
+    error elsewhere).
+
+    Fortunately I had another working code at hand and I managed to find the
+    problem resorting to reverting the changes I made to the original code
+    line per line (*sigh*).
+
+    I'm unsure if the diff shouldn't do instead:
+
+    if (!backlog)
+        backlog = 1;
+
+    I'm not really comfortable around the kernel core ;)
+
+
+diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+index ff0a8f8..da1d96a 100644
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -5866,16 +5866,6 @@ SCTP_STATIC int sctp_seqpacket_listen(struct sock *sk, int backlog)
+ 	if (!sctp_style(sk, UDP))
+ 		return -EINVAL;
+ 
+-	/* If backlog is zero, disable listening. */
+-	if (!backlog) {
+-		if (sctp_sstate(sk, CLOSED))
+-			return 0;
+-
+-		sctp_unhash_endpoint(ep);
+-		sk->sk_state = SCTP_SS_CLOSED;
+-		return 0;
+-	}
+-
+ 	/* Return if we are already listening. */
+ 	if (sctp_sstate(sk, LISTENING))
+ 		return 0;
+@@ -5919,16 +5909,6 @@ SCTP_STATIC int sctp_stream_listen(struct sock *sk, int backlog)
+ 	struct sctp_sock *sp = sctp_sk(sk);
+ 	struct sctp_endpoint *ep = sp->ep;
+ 
+-	/* If backlog is zero, disable listening. */
+-	if (!backlog) {
+-		if (sctp_sstate(sk, CLOSED))
+-			return 0;
+-
+-		sctp_unhash_endpoint(ep);
+-		sk->sk_state = SCTP_SS_CLOSED;
+-		return 0;
+-	}
+-
+ 	if (sctp_sstate(sk, LISTENING))
+ 		return 0;
+ 
+-- 
+1.6.1.161.g5e07b.dirty
+
