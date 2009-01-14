@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZANAwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZANAxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbZANAwI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZANAvw
+	id S1758561AbZANAxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZANAxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:51:52 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:38700 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754412AbZANAvv (ORCPT
+	Tue, 13 Jan 2009 19:53:14 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:48917 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbZANAxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:51:51 -0500
-Date: Wed, 14 Jan 2009 11:51:10 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090114005110.GA6814@gondor.apana.org.au>
+	Tue, 13 Jan 2009 19:53:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=h9/WwDugw+tiU8Kroj3MIAZKzGlNes15XBCIMTUguyRzcZdcZQny0yNAm0nfwSis9s
+         U0crJF8o5P+XAJzzPryVZWK2pLDxf02sy5MHFKTfQiVIoz2h0sh2QnB5HuhSqacMhLO/
+         LROAk5m/pqauMa6X+P9oDLuZiYnyaIrerPk9s=
+Message-ID: <cfd18e0f0901131653y76a827b5i906fadce63ada56b@mail.gmail.com>
+Date: Wed, 14 Jan 2009 13:53:10 +1300
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+Cc: "Roland McGrath" <roland@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090113.161625.111759506.davem@davemloft.net>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
+	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
+	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
+	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
+On Wed, Jan 14, 2009 at 1:33 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> I wish there were some way we could make this code grab and release a
-> reference to the SKB data area (I mean skb_shinfo(skb)->dataref) to
-> accomplish it's goals.
+>
+> On Tue, 13 Jan 2009, Roland McGrath wrote:
+>>
+>> It's always been invalid to call waitid() with a NULL pointer.  It was an
+>> oversight that it was allowed (and acts like a wait4() call instead).
+>
+> I'm not going to take this.
+>
+> If it was some new system call, of if there was some downside to out
+> behavior, I might be interested. As it is, our behaviour has zero
+> downside, and changing existing interfaces simply isn't worth it.
 
-We can probably do that for spliced data that end up going to
-the networking stack again.  However, as splice is generic the
-data may be headed to a destination other than the network stack.
+It has zero downside for *us*.  But it is yet another example of Linux
+littering the Unix landscape with unnecessary inconsistencies that
+application writers must deal with.  That's a downside for the app
+writers.  (But, given how long the existing behavior has been in the
+wild, my argument here is somewhat academic...)
 
-In that case to make dataref work we'd need some mechanism
-that allows non-network entities to get/drop this ref count.
+> The alleged "downsides" are bogus:
+>
+>  - POSIX is not that strict.
+
+Well, POSIX.1-2001 is fairly clear:
+
+      The  application shall ensure that the infop argument points to
+      a siginfo_t structure.
+
+(Admittedly, this is a requirement imposed on the application, rather
+than the implementation, but the standard goes on to say that the
+implemenation shall fill in the structure pointed to by infop.)
 
 Cheers,
+
+Michael
+
+>   EFAULT is one of the odd error cases anyway,
+>   and even explicit requirements are irrelevant: if somebody wants to get
+>   strict conformance paperwork done, you just need to tell where you
+>   differ, and you're basically done. But perhaps more important, nobody
+>   cares.
+>
+>  - The "portability" argument is totally bogus, since it's not like you
+>   compile programs without even testing to another UNIX _anyway_.
+>
+> So I'm simply not going to potentially break binaries over something that
+> is so _totally_ irrelevant. Document it in the man-page instead.
+
+Well, that's doable of course.
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
