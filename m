@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZANONs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbZANOWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbZANONs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbZANONh
+	id S1758432AbZANOWU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZANOWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:13:37 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51849 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753272AbZANONg (ORCPT
+	Wed, 14 Jan 2009 09:22:06 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:57675 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753854AbZANOWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:13:36 -0500
-Date: Wed, 14 Jan 2009 09:12:04 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jan Kara <jack@suse.cz>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090114141204.GD6222@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz>
+	Wed, 14 Jan 2009 09:22:04 -0500
+X-BigFish: VPS-37(zz1432R62a3L98dR936eQ1805Mzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 7,
+X-WSS-ID: 0KDGT85-02-7FT-01
+Date: Wed, 14 Jan 2009 15:21:24 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Maynard Johnson <maynardj@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [PATCH 01/18] oprofile: rename kernel-wide identifiers
+Message-ID: <20090114142123.GA11465@erda.amd.com>
+References: <1231366655-17837-1-git-send-email-robert.richter@amd.com> <1231366655-17837-2-git-send-email-robert.richter@amd.com> <496CD537.5050803@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20090114140532.GC19950@duck.suse.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+In-Reply-To: <496CD537.5050803@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 14 Jan 2009 14:21:25.0659 (UTC) FILETIME=[6213AEB0:01C97653]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:05:32PM +0100, Jan Kara wrote:
-> On Wed 14-01-09 08:21:46, Theodore Tso wrote:
-> > 
-> > If we optimize out the journal commit when there are no blocks
-> > attached to the transaction, we could change the patch to only force a
-> > flush if inode->i_state did not have I_DIRTY before the call to
-> > sync_inode().  Does that sound sane?
->   Yes. And also add a flush in case of fdatasync().
+On 13.01.09 11:53:59, Maynard Johnson wrote:
+> Robert Richter wrote:
+> > This patch renames kernel-wide identifiers to something more oprofile
+> > specific names.
+> Are these oprofile-specific names going to be exported outside the oprofile kernel driver at some point?  If not, I don't really see the need for these changes.  Maybe I'm missing something . . .
 
-Um, we have that already; the sync_inode() followed by
-blkdev_issue_flush() is the path taken by fdatasync(), I do believe.
+These names are visible as symbols when compiling into the
+kernel. There would be a collision with any other non-static variable
+or function in any other file.
 
->   Well, I thought that a barrier, as an abstraction, only guarantees that
-> any IO which happened before the barrier hits the iron before any IO which
-> has been submitted after a barrier. This is actually enough for a
-> journalling to work correctly but it's not enough for fsync() guarantees.
-> But I might be wrong...
+ $ nm .build/oprofile-x86_64-standard.obj/vmlinux | grep oprofile_cpu_buffer_size
+ ffffffff808bf428 B oprofile_cpu_buffer_size
 
-Ah, yes, that's what you're getting at.  True, but for better or for
-worse, we have no other interface other than blkdev_issue_flush().
-This will guarantee that the data has made it to the disk controller,
-but it won't necessarily guarantee that it will have made it onto the
-disk platter, as I understand things; but I don't think we have any
-other interfaces available to us at this point.
+-Robert
 
-						- Ted
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
