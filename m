@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbZANOzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbZANO50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762867AbZANOzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbZANOzg
+	id S1762803AbZANO50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZANO5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:55:36 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38774 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756883AbZANOzf (ORCPT
+	Wed, 14 Jan 2009 09:57:15 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:18113 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbZANO5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:55:35 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Date: Wed, 14 Jan 2009 15:55:25 +0100
-Message-Id: <1231944925-5402-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 14 Jan 2009 09:57:14 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+Date: Wed, 14 Jan 2009 09:57:09 -0500
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <496D759A.7010401@gmail.com>
+In-Reply-To: <496D759A.7010401@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-Subject: [PATCH RFC] Use kernel/Kconfig.preempt for ARM
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901140957.09722.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-before this patch ARM had it's own definition of CONFIG_PREEMPT.
-Instead of that use the general definition provided in
-kernel/Kconfig.preempt.
+On Wednesday 14 January 2009 12:18:18 am Justin P. Mattock wrote:
+> When using netlabelctl on a dell laptop
+> I'm able to define the addresses that I want:
+>
+> netlabelctl unlbl add interface:wlan0 address:<radiostation>
+> label:system_u:object_r:netlabel_peer_t:s0
+> netlabelctl unlbl add interface:wlan0 address:<myaddress>
+> label:system_u:object_r:netlabel_peer_t:s0
+> netlabelctl  -p unlbl accept off
+>
+> {the above was from http://paulmoore.livejournal.com/1758.html };
 
-It adds some dependencies such that the available options don't change
-(neither for ARM nor for other archs).  The only resulting changes are
-that ARM gets CONFIG_PREEMPT_NONE and the help text.
+Hey, somebody actually reads that stuff!  I guess I'll need to be 
+careful what I write from now on :)
 
-Currently the only usage of CONFIG_PREEMPT_NONE is in
-kernel/trace/trace.c and only affects the content of some proc files
-where "M:unknown" is changed to "M:server" if it is defined.
+Hi Justin, on a more serious note, if you are having problems with 
+labeled networking it's probably a good idea to CC the SELinux, LSM 
+and/or netdev lists depending on the issue as I often miss mail if it 
+is only posted to LKML.  When in doubt you can just CC me personally 
+(paul.moore@hp.com) and I'll add whatever list seems appropriate.
 
-The intention is that ARM gets the option CONFIG_PREEMPT_RT after it
-will be added to kernel/Kconfig.preempt as it is done in the linux-rt
-tree.
+> (I'm able to listen to the radio station allowed, then if I choose
+> another station; if I haven't defined an address like the above,
+> mplayer just sits there.denying the unlabeled packet. that is until I
+> allow the address);
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
----
- arch/arm/Kconfig       |   13 +------------
- kernel/Kconfig.preempt |    2 ++
- 2 files changed, 3 insertions(+), 12 deletions(-)
+Good, that is how it should work give the configuration shown above.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index d6ebe39..941824e 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -838,18 +838,7 @@ config LOCAL_TIMERS
- 	  accounting to be spread across the timer interval, preventing a
- 	  "thundering herd" at every timer tick.
- 
--config PREEMPT
--	bool "Preemptible Kernel (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
--	help
--	  This option reduces the latency of the kernel when reacting to
--	  real-time or interactive events by allowing a low priority process to
--	  be preempted even if it is in kernel mode executing a system call.
--	  This allows applications to run more reliably even when the system is
--	  under load.
--
--	  Say Y here if you are building a kernel for a desktop, embedded
--	  or real-time system.  Say N if you are unsure.
-+source kernel/Kconfig.preempt
- 
- config HZ
- 	int
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index bf987b9..03f136b 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -18,6 +18,7 @@ config PREEMPT_NONE
- 
- config PREEMPT_VOLUNTARY
- 	bool "Voluntary Kernel Preemption (Desktop)"
-+	depends on !ARM
- 	help
- 	  This option reduces the latency of the kernel by adding more
- 	  "explicit preemption points" to the kernel code. These new
-@@ -35,6 +36,7 @@ config PREEMPT_VOLUNTARY
- 
- config PREEMPT
- 	bool "Preemptible Kernel (Low-Latency Desktop)"
-+	depends on !ARM || EXPERIMENTAL
- 	help
- 	  This option reduces the latency of the kernel by making
- 	  all kernel code (that is not executing in a critical section)
+> The problem I have is when I do the same on my macbook pro ati
+> chipset. with the ath9k module, I'm able to listen to any station,
+> search the web etc..
+> it seems netlabelctl  -p unlbl accept off makes no difference if it's
+> on or off.
+>
+> Is this built into ath9k yet, or is there something I'm missing?
+
+That is just plain odd, there isn't really anything that is driver 
+specific.  Can you share any more details like kernel version, 
+netlabel_tools verion, distro, etc?  I don't have any ath9k hardware 
+lying around to test so I would appreciate whatever additional 
+information you can provide.
+
 -- 
-1.5.6.5
-
+paul moore
+linux @ hp
