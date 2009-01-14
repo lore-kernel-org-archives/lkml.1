@@ -1,132 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760407AbZANOWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZANOZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760407AbZANOWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbZANOWH
+	id S1757362AbZANOZK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZANOY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:22:07 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45264 "EHLO mx1.suse.de"
+	Wed, 14 Jan 2009 09:24:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56150 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753983AbZANOWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:22:06 -0500
-Date: Wed, 14 Jan 2009 15:22:00 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090114142200.GB25401@wotan.suse.de>
-References: <20090114090449.GE2942@wotan.suse.de> <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com> <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com>
+	id S1751766AbZANOY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:24:56 -0500
+Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
+From: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Manfred Spraul <manfred@colorfullife.com>, stefanr@s5r6.in-berlin.de,
+       dcm@acm.org, Nadia.Derbey@bull.net,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       paulmck@us.ibm.com
+In-Reply-To: <20090113144802.39dc4c23.akpm@linux-foundation.org>
+References: <1231571060.3538.18.camel@localhost.localdomain>
+	 <49686465.70501@s5r6.in-berlin.de>
+	 <20090110011557.9d94e111.akpm@linux-foundation.org>
+	 <496872E0.9030007@s5r6.in-berlin.de>
+	 <1231773620.6365.21.camel@gaara.bos.redhat.com>
+	 <496B9FC7.3090108@colorfullife.com>
+	 <1231792712.6365.31.camel@gaara.bos.redhat.com>
+	 <496BAD1C.5060201@colorfullife.com>
+	 <20090113144802.39dc4c23.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 09:23:10 -0500
+Message-Id: <1231942990.8542.7.camel@gaara.bos.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:44:44PM +0200, Pekka Enberg wrote:
-> Hi Nick,
+On Tue, 2009-01-13 at 14:48 -0800, Andrew Morton wrote:
+> On Mon, 12 Jan 2009 21:50:36 +0100
+> Manfred Spraul <manfred@colorfullife.com> wrote:
 > 
-> On Wed, Jan 14, 2009 at 1:47 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > The core allocator algorithms are so completely different that it is
-> > obviously as different from SLUB as SLUB is from SLAB (apart from peripheral
-> > support code and code structure). So it may as well be a patch against
-> > SLAB.
-> >
-> > I will also prefer to maintain it myself because as I've said I don't
-> > really agree with choices made in SLUB (and ergo SLUB developers don't
-> > agree with SLQB).
+> > Kristian H__gsberg wrote:
+> > > On Mon, 2009-01-12 at 20:53 +0100, Manfred Spraul wrote:
+> > >   
+> > >> Kristian H__gsberg wrote:
+> > >>     
+> > >>>   The problem
+> > >>> isn't about returning un-zeroed-out objects to the kmem cache, the
+> > >>> problem is returning them to the idr free list.
+> > >>>   
+> > >>>       
+> > >> I think this is wrong:
+> > >> The slab allocator assumes that the objects that are given to 
+> > >> kmem_cache_free() are properly constructed.
+> > >> I.e.: No additional constructor is called prior to returning the object 
+> > >> from the next kmem_cache_alloc() call.
+> > >>     
+> > >
+> > > That's fine, the ctor associated with the kmem cache is called, and in
+> > > the case of idr, it does a memset().
+> > >   
+> > No.
+> > As I said, the construtor is not called.
+> > An object that is given to kmem_cache_free() must be properly constructed.
+> > kmem_cache_free() just adds the obj pointer to a list, the next 
+> > kmem_cache_alloc returns the pointer.
+> > 
+> > This is also documented in mm/slab.c:
+> >  * The memory is organized in caches, one cache for each object type.
+> >  * (e.g. inode_cache, dentry_cache, buffer_head, vm_area_struct)
+> >  * Each cache consists out of many slabs (they are small (usually one
+> >  * page long) and always contiguous), and each slab contains multiple
+> >  * initialized objects.
+> >  *
+> >  * This means, that your constructor is used only for newly allocated
+> >  * slabs and you must pass objects with the same initializations to
+> >  * kmem_cache_free.
+> >  *
+> > 
+> > If the idr code passes uninitialized objects to kmem_cache_free(), then 
+> > the next kmem_cache_alloc will return a bad object.
+> > 
 > 
-> Just for the record, I am only interesting in getting rid of SLAB (and
-> SLOB if we can serve the embedded folks as well in the future, sorry
-> Matt). Now, if that means we have to replace SLUB with SLQB, I am fine
-> with that. Judging from the SLAB -> SLUB experience, though, I am not
-> so sure adding a completely separate allocator is the way to get
-> there.
-
-The problem is there was apparently no plan for resolving the SLAB vs SLUB
-strategy. And then features and things were added to one or the other one.
-But on the other hand, the SLUB experience was a success in a way because
-there were a lot of performance regressions found and fixed after it was
-merged, for example.
-
-I'd love to be able to justify replacing SLAB and SLUB today, but actually
-it is simply never going to be trivial to discover performance regressions.
-So I don't think outright replacement is great either (consider if SLUB
-had replaced SLAB completely).
-
-
-> On Wed, Jan 14, 2009 at 1:47 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > Note that I'm not trying to be nasty here. Of course I raised objections
-> > to things I don't like, and I don't think I'm right by default. Just IMO
-> > SLUB has some problems. As do SLAB and SLQB of course. Nothing is
-> > perfect.
-> >
-> > Also, I don't want to propose replacing any of the other allocators yet,
-> > until more performance data is gathered. People need to compare each one.
-> > SLQB definitely is not a clear winner in all tests. At the moment I want
-> > to see healthy competition and hopefully one day decide on just one of
-> > the main 3.
+> None of this got us much closer to fixing the bug ;)
 > 
-> OK, then it is really up to Andrew and Linus to decide whether they
-> want to merge it or not. I'm not violently against it, it's just that
-> there's some maintenance overhead for API changes and for external
-> code like kmemcheck, kmemtrace, and failslab, that need hooks in the
-> slab allocator.
+> What do we think of just removing the constructor and using
+> kmem_cache_zalloc()?
 
-Sure. On the slab side, I would be happy to do that work.
+We still need to zero out the idr_layer before returning it to the idr's
+internal free list.  I had a memset(p, 0, sizeof *p) just before the
+free_layer() call in idr_remove_all() in the original version.  I don't
+know why that was taken out (some rcu thing?) but if you're looking for
+a minimal change to just fix the bug, just put that back in.  Or maybe
+it now needs to be in idr_layer_rcu_free(), I never really figured out
+how rcu works.
 
-We split the user base, which is a big problem if it drags out for years
-like SLAB/SLUB. But if it is a very deliberate use of testing resources
-in order to make progress on the issue, then that can be a positive.
-
-
- 
-> On Wed, Jan 14, 2009 at 1:47 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > Cache colouring was just brought over from SLAB. prefetching was done
-> > by looking at cache misses generally, and attempting to reduce them.
-> > But you end up barely making a significant difference or just pushing
-> > the cost elsewhere really. Down to the level of prefetching it is
-> > going to hugely depend on the exact behaviour of the workload and
-> > the allocator.
+> --- a/lib/idr.c~a
+> +++ a/lib/idr.c
+> @@ -121,7 +121,7 @@ int idr_pre_get(struct idr *idp, gfp_t g
+>  {
+>  	while (idp->id_free_cnt < IDR_FREE_MAX) {
+>  		struct idr_layer *new;
+> -		new = kmem_cache_alloc(idr_layer_cache, gfp_mask);
+> +		new = kmem_cache_zalloc(idr_layer_cache, gfp_mask);
+>  		if (new == NULL)
+>  			return (0);
+>  		move_to_free_list(idp, new);
+> @@ -623,16 +623,10 @@ void *idr_replace(struct idr *idp, void 
+>  }
+>  EXPORT_SYMBOL(idr_replace);
+>  
+> -static void idr_cache_ctor(void *idr_layer)
+> -{
+> -	memset(idr_layer, 0, sizeof(struct idr_layer));
+> -}
+> -
+>  void __init idr_init_cache(void)
+>  {
+>  	idr_layer_cache = kmem_cache_create("idr_layer_cache",
+> -				sizeof(struct idr_layer), 0, SLAB_PANIC,
+> -				idr_cache_ctor);
+> +				sizeof(struct idr_layer), 0, SLAB_PANIC, NULL);
+>  }
+>  
+>  /**
+> _
 > 
-> As far as I understood, the prefetch optimizations can produce
-> unexpected results on some systems (yes, bit of hand-waving here), so
-> I would consider ripping them out. Even if cache coloring isn't a huge
-> win on most systems, it's probably not going to hurt either.
-
-I hit problems on some microbenchmark where I was prefetching a NULL pointer in
-some cases, which must have been causing the CPU to trap internally and alloc
-overhead suddenly got much higher ;) 
-
-Possibly sometimes if you prefetch too early or when various queues are
-already full, then it ends up causing slowdowns too.
-
- 
-> On Wed, Jan 14, 2009 at 1:47 PM, Nick Piggin <npiggin@suse.de> wrote:
-> >> > +   object = page->freelist;
-> >> > +   page->freelist = get_freepointer(s, object);
-> >> > +   if (page->freelist)
-> >> > +           prefetchw(page->freelist);
-> >>
-> >> I don't understand this prefetchw(). Who exactly is going to be updating
-> >> contents of page->freelist?
-> >
-> > Again, it is for the next allocation. This was shown to reduce cache
-> > misses here in IIRC tbench, but I'm not sure if that translated to a
-> > significant performance improvement.
-> 
-> I'm not sure why you would want to optimize for the next allocation. I
-> mean, I'd expect us to optimize for the kmalloc() + do some work +
-> kfree() case where prefetching is likely to hurt more than help. Not
-> that I have any numbers on this.
-
-That's true, OTOH if the time between allocations is large, then an
-extra prefetch is just a small cost. If the time between them is
-short, it might be a bigger win.
 
