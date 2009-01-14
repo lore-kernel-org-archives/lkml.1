@@ -1,328 +1,393 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbZANK4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZANK5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759973AbZANK4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:56:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbZANK4b
+	id S1760289AbZANK5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbZANK5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:56:31 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:22977 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbZANK43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:56:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=KVRDkiAYm+3PEz+DADkD8fjexU7oqPGNpvyJcfhfskIcN/z7cOpq6Xn7/N1aSNeAOg
-         6TumVfPG0h/M50jakWgmUgyCBbQw/pPdKZYwbXGhmmPIb6JhEeoH2NrmeHO9Ofy1RyyF
-         TecR5jUOU+1K4OId7jTTeUzOVtrFcGjFtyur8=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, lethal@linux-sh.org, johnstul@us.ibm.com,
-       gregkh@suse.de, mingo@redhat.com, Magnus Damm <magnus.damm@gmail.com>,
-       tglx@linutronix.de
-Date: Wed, 14 Jan 2009 19:54:36 +0900
-Message-Id: <20090114105436.18974.45429.sendpatchset@rx1.opensource.se>
-Subject: [RESEND][PATCH] early platform drivers V2
+	Wed, 14 Jan 2009 05:57:34 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:53346 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753165AbZANK5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 05:57:32 -0500
+Date: Wed, 14 Jan 2009 11:57:28 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: dann frazier <dannf@hp.com>
+Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stephane eranian <eranian@googlemail.com>
+Subject: Re: [PATCH] add rtc platform driver for EFI
+Message-ID: <20090114115728.15f2db18@i1501.lan.towertech.it>
+In-Reply-To: <20090114043337.GB21357@ldl.fc.hp.com>
+References: <20090109005644.GH32403@ldl.fc.hp.com>
+	<20090109032729.6e4cd5fd@i1501.lan.towertech.it>
+	<20090109213615.GD31548@ldl.fc.hp.com>
+	<20090113003934.0a7da676.akpm@linux-foundation.org>
+	<20090114000043.GB24423@colo.lackof.org>
+	<20090114011719.GD24423@colo.lackof.org>
+	<20090114023055.1d22d09e@i1501.lan.towertech.it>
+	<20090114041358.GA21357@ldl.fc.hp.com>
+	<20090114043337.GB21357@ldl.fc.hp.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Tue, 13 Jan 2009 21:33:38 -0700
+dann frazier <dannf@hp.com> wrote:
 
-This patch is V2 of the early platform driver implementation.
+> Munge Stephane Eranian's efirtc.c code into an rtc platform driver
 
-Platform drivers are great for embedded platforms because we
-can separate driver configuration from the actual driver. So
-base addresses, interrupts and other configuration can be kept
-with the processor or board code, and the platform driver can
-be reused by many different platforms.
-
-For early devices we have nothing today. For instance, to configure
-early timers and early serial ports we cannot use platform devices.
-This because the setup order during boot. Timers are needed before
-the platform driver core code is available. The same goes for early
-printk support. Early in this case means before initcalls.
-
-These early drivers today have their configuration either hard coded
-or they receive it using some special configuration method. This is
-working quite well, but if we want to support both regular kernel
-modules and early devices then we need to have two ways of configuring
-the same driver. A single way would be better.
-
-The early platform driver patch is basically a set of functions that
-allow drivers to register themselves and architecture code to locate
-them and probe. Registration happens through early_param(). The time
-for the probe is decided by the architecture code.
-
-The drivers are regular compiled-in modules with the exception that
-they also register themselves using early_platform_init():
-
- +static int __init sh_cmt_init(void)
- +{
- +       return platform_driver_register(&sh_cmt_device_driver);
- +}
- +
- +static void __exit sh_cmt_exit(void)
- +{
- +       platform_driver_unregister(&sh_cmt_device_driver);
- +}
- +
- +early_platform_init("earlytimer", &sh_cmt_device_driver);
- +module_init(sh_cmt_init);
- +module_exit(sh_cmt_exit);
-
-The architecture code can then decide whenever it wants to probe for
-early platform devices. The architecture code simply does:
-
- +void __init time_init(void)
- +{
- +       early_platform_driver_probe("earlytimer", sh_timer_pdevs,
- +                                   sh_timer_nr_pdevs, 1);
-
-This will first make sure that all compiled-in early platform drivers
-belonging to the class "earlytimer" get registered. After that the
-platform devices passed to the function are scanned through and matched
-against the registered early platform drivers. The user can select which
-device that should be prioritized by specifying the classname and platform
-device name together with id on the kernel commandline. For instance the
-string "earlytimer=cmt0" will match the driver named "cmt" with id 0.
-
-Later when the platform device core code is up and running the driver
-can turn itself into a regular platform device in the regular probe()
-callback.
-
-Comments anyone? Maybe there are better ways to do this?
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- This patch was previously sent to LKML 2008-12-15.
-
- Changes since V1:
- - changed function names to use "early_" prefix
- - use struct early_platform_driver for data
- - added support for matching against pdev->id
- - use early_platform_init() in device drivers
- - added more comments
-
- drivers/base/platform.c         |  139 +++++++++++++++++++++++++++++++++++++++
- include/linux/init.h            |    1 
- include/linux/platform_device.h |   29 ++++++++
- init/main.c                     |    7 +
- 4 files changed, 175 insertions(+), 1 deletion(-)
-
---- 0001/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2009-01-14 19:24:55.000000000 +0900
-@@ -986,3 +986,142 @@ u64 dma_get_required_mask(struct device 
- }
- EXPORT_SYMBOL_GPL(dma_get_required_mask);
- #endif
-+
-+static LIST_HEAD(early_platform_driver_list);
-+
-+/**
-+ * early_platform_driver_register
-+ * @edrv: early_platform driver structure
-+ * @buf: string passed from early_param()
-+ */
-+int __init early_platform_driver_register(struct early_platform_driver *epdrv,
-+					  char *buf)
-+{
-+	int id = -1;
-+
-+	/* Simply add the driver to the end of the global list.
-+	 * Drivers will by default be put on the list in compiled-in order.
-+	 */
-+	if (!epdrv->list.next) {
-+		INIT_LIST_HEAD(&epdrv->list);
-+		list_add_tail(&epdrv->list, &early_platform_driver_list);
-+	}
-+
-+	/* If the user has specified device then make sure the driver
-+	 * gets prioritized. The driver of the last device specified on
-+	 * command line will be put first on the list.
-+	 */
-+	if (buf && !strncmp(buf, epdrv->pdrv->driver.name, strlen(buf))) {
-+		list_move(&epdrv->list, &early_platform_driver_list);
-+		if (strcmp(buf, epdrv->pdrv->driver.name))
-+			id = simple_strtoul(buf +
-+					    strlen(epdrv->pdrv->driver.name),
-+					    NULL, 0);
-+	}
-+
-+	epdrv->requested_id = id;
-+	return 0;
-+}
-+
-+/**
-+ * early_platform_match
-+ * @edrv: early platform driver structure
-+ * @pdevs: platform devices to match against
-+ * @nr_pdevs: number of platform devices to match against
-+ * @id: id to match against
-+ * @match: matching platform device
-+ */
-+static int __init early_platform_match(struct early_platform_driver *epdrv,
-+				       struct platform_device **pdevs,
-+				       int nr_pdevs, int id,
-+				       struct platform_device **match)
-+{
-+	struct platform_device *pdev;
-+	int k, n, match_id;
-+
-+	if (id == -2)
-+		match_id = epdrv->requested_id;
-+	else
-+		match_id = id;
-+
-+	n = 0;
-+	*match = NULL;
-+	for (k = 0; k < nr_pdevs; k++) {
-+		pdev = pdevs[k];
-+		if (platform_match(&pdev->dev, &epdrv->pdrv->driver)) {
-+			if (id != -2) /* skip previously checked device */
-+				if (match_id == epdrv->requested_id)
-+					goto skip;
-+
-+			if (pdev->id == match_id)
-+				*match = pdev;
-+
-+skip:
-+			if (pdev->id > match_id)
-+				n++;
-+		}
-+	}
-+
-+	return n;
-+}
-+
-+/**
-+ * early_platform_driver_probe
-+ * @class_str: string to identify early platform driver class
-+ * @pdevs: platform devices to match against
-+ * @nr_pdevs: number of platform devices to match against
-+ * @nr_probe: number of platform devices to successfully probe before exiting
-+ */
-+int __init early_platform_driver_probe(char *class_str,
-+				       struct platform_device **pdevs,
-+				       int nr_pdevs, int nr_probe)
-+{
-+	struct early_platform_driver *epdrv;
-+	struct platform_device *match;
-+	int k, n, i;
-+
-+	/* The "class_str" parameter may or may not be present on the kernel
-+	 * command line. If it is present then there may be more than one
-+	 * matching parameter.
-+	 *
-+	 * Since we register our early platform drivers using early_param()
-+	 * we need to make sure that they also get registered in the case
-+	 * when the parameter is missing from the kernel command line.
-+	 *
-+	 * We use parse_early_options() to make sure the early_param() gets
-+	 * called at least once. The early_param() may be called more than
-+	 * once since the name of the preferred device may be specified on
-+	 * the kernel command line. early_platform_driver_register() handles
-+	 * this case for us.
-+	 */
-+	parse_early_options(class_str);
-+
-+	n = 0;
-+	list_for_each_entry(epdrv, &early_platform_driver_list, list) {
-+		/* only use drivers matching our class_str */
-+		if (strcmp(class_str, epdrv->class_str))
-+			continue;
-+
-+		/* start with exact device match, continue with any device */
-+		k = 1;
-+		for (i = -2; k && n < nr_probe; i++) {
-+			k = early_platform_match(epdrv, pdevs, nr_pdevs,
-+						 i, &match);
-+			if (!match)
-+				continue;
-+
-+			if (epdrv->pdrv->probe(match)) {
-+				pr_warning("%s: unable to probe %s early.\n",
-+					   class_str, match->name);
-+				continue;
-+			}
-+			n++;
-+		}
-+	}
-+
-+	if (!n)
-+		pr_warning("%s: no early platform devices found.\n", class_str);
-+
-+	return n;
-+}
-+
---- 0001/include/linux/init.h
-+++ work/include/linux/init.h	2009-01-14 19:24:55.000000000 +0900
-@@ -247,6 +247,7 @@ struct obs_kernel_param {
+ almost there :) see below
  
- /* Relies on boot_command_line being set */
- void __init parse_early_param(void);
-+void __init parse_early_options(char *cmdline);
- #endif /* __ASSEMBLY__ */
- 
- /**
---- 0001/include/linux/platform_device.h
-+++ work/include/linux/platform_device.h	2009-01-14 19:24:55.000000000 +0900
-@@ -70,4 +70,33 @@ extern int platform_driver_probe(struct 
- #define platform_get_drvdata(_dev)	dev_get_drvdata(&(_dev)->dev)
- #define platform_set_drvdata(_dev,data)	dev_set_drvdata(&(_dev)->dev, (data))
- 
-+/* early platform driver interface */
-+struct early_platform_driver {
-+	const char *class_str;
-+	struct platform_driver *pdrv;
-+	struct list_head list;
-+	int requested_id;
-+};
-+
-+extern int early_platform_driver_register(struct early_platform_driver *epdrv,
-+					  char *buf);
-+extern int early_platform_driver_probe(char *class_str,
-+				       struct platform_device **pdevs,
-+				       int nr_pdevs, int nr_probe);
-+
-+#ifndef MODULE
-+#define early_platform_init(class_string, platform_driver)		\
-+static __initdata struct early_platform_driver early_driver = {		\
-+	.class_str = class_string,					\
-+	.pdrv = platform_driver,					\
-+};									\
-+static int __init early_platform_driver_setup_func(char *buf)		\
-+{									\
-+	return early_platform_driver_register(&early_driver, buf);	\
-+}									\
-+early_param(class_string, early_platform_driver_setup_func)
-+#else /* MODULE */
-+#define early_platform_init(class_string, platform_driver)
-+#endif /* MODULE */
-+
- #endif /* _PLATFORM_DEVICE_H_ */
---- 0001/init/main.c
-+++ work/init/main.c	2009-01-14 19:24:55.000000000 +0900
-@@ -490,6 +490,11 @@ static int __init do_early_param(char *p
- 	return 0;
- }
- 
-+void __init parse_early_options(char *cmdline)
-+{
-+	parse_args("early options", cmdline, NULL, 0, do_early_param);
-+}
-+
- /* Arch code calls this early on, or if not, just before other parsing. */
- void __init parse_early_param(void)
- {
-@@ -501,7 +506,7 @@ void __init parse_early_param(void)
- 
- 	/* All fall through to do_early_param. */
- 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
--	parse_args("early options", tmp_cmdline, NULL, 0, do_early_param);
-+	parse_early_options(tmp_cmdline);
- 	done = 1;
- }
- 
+> Signed-off-by: dann frazier <dannf@hp.com>
+> ---
+>  arch/ia64/kernel/time.c |   16 +++
+>  drivers/rtc/Kconfig     |   10 ++
+>  drivers/rtc/Makefile    |    1 +
+>  drivers/rtc/rtc-efi.c   |  240 +++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 267 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-efi.c
+> 
+> diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+> index f0ebb34..558051c 100644
+> --- a/arch/ia64/kernel/time.c
+> +++ b/arch/ia64/kernel/time.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/efi.h>
+>  #include <linux/timex.h>
+>  #include <linux/clocksource.h>
+> +#include <linux/platform_device.h>
+>  
+>  #include <asm/machvec.h>
+>  #include <asm/delay.h>
+> @@ -405,6 +406,21 @@ static struct irqaction timer_irqaction = {
+>  	.name =		"timer"
+>  };
+>  
+> +static struct platform_device rtc_efi_dev = {
+> +	.name = "rtc-efi",
+> +	.id = -1,
+> +};
+> +
+> +static int __init rtc_init(void)
+> +{
+> +	if (platform_device_register(&rtc_efi_dev) < 0)
+> +		printk(KERN_ERR "unable to register rtc device...\n");
+> +       
+> +	/* not necessarily an error */
+> +	return 0;
+> +}
+> +module_init(rtc_init);
+> +
+>  void __init
+>  time_init (void)
+>  {
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index cced4d1..56cc98f 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -434,6 +434,16 @@ config RTC_DRV_DS1742
+>  	  This driver can also be built as a module. If so, the module
+>  	  will be called rtc-ds1742.
+>  
+> +config RTC_DRV_EFI
+> +	tristate "EFI RTC"
+> +	depends on IA64
+> +	help
+> +	  If you say yes here you will get support for the EFI
+> +	  Real Time Clock.
+> +
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called rtc-efi.
+> +
+>  config RTC_DRV_STK17TA8
+>  	tristate "Simtek STK17TA8"
+>  	depends on RTC_CLASS
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index 6e28021..7256ce8 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -35,6 +35,7 @@ obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
+>  obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
+>  obj-$(CONFIG_RTC_DRV_DS1742)	+= rtc-ds1742.o
+>  obj-$(CONFIG_RTC_DRV_DS3234)	+= rtc-ds3234.o
+> +obj-$(CONFIG_RTC_DRV_EFI)	+= rtc-efi.o
+>  obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
+>  obj-$(CONFIG_RTC_DRV_FM3130)	+= rtc-fm3130.o
+>  obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
+> diff --git a/drivers/rtc/rtc-efi.c b/drivers/rtc/rtc-efi.c
+> new file mode 100644
+> index 0000000..2c98c35
+> --- /dev/null
+> +++ b/drivers/rtc/rtc-efi.c
+> @@ -0,0 +1,240 @@
+> +/*
+> + * rtc-efi: RTC Class Driver for EFI-based systems
+> + *
+> + * Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
+> + *
+> + * Author: dann frazier <dannf@hp.com>
+> + * Based on efirtc.c by Stephane Eranian
+> + *
+> + *  This program is free software; you can redistribute  it and/or modify it
+> + *  under  the terms of  the GNU General  Public License as published by the
+> + *  Free Software Foundation;  either version 2 of the  License, or (at your
+> + *  option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/time.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/rtc.h>
+> +#include <linux/efi.h>
+> +
+> +#define EFI_ISDST (EFI_TIME_ADJUST_DAYLIGHT|EFI_TIME_IN_DAYLIGHT)
+> +/*
+> + * EFI Epoch is 1/1/1998
+> + */
+> +#define EFI_RTC_EPOCH		1998
+> +
+> +#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
+> +
+> +/*
+> + * returns day of the year [0-365]
+> + */
+> +static inline int
+> +compute_yday(efi_time_t *eft)
+> +{
+> +	/* efi_time_t.month is in the [1-12] so, we need -1 */
+> +	return rtc_year_days(eft->day - 1, eft->month - 1, eft->year);
+> +}
+> +/*
+> + * returns day of the week [0-6] 0=Sunday
+> + *
+> + * Don't try to provide a year that's before 1998, please !
+> + */
+> +static int
+> +compute_wday(efi_time_t *eft)
+> +{
+> +	int y;
+> +	int ndays = 0;
+> +
+> +	if (eft->year < 1998) {
+> +		printk(KERN_ERR "efirtc: EFI year < 1998, invalid date\n");
+> +		return -1;
+> +	}
+> +
+> +	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
+> +		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
+> +
+> +	ndays += compute_yday(eft);
+> +
+> +	/*
+> +	 * 4=1/1/1998 was a Thursday
+> +	 */
+> +	return (ndays + 4) % 7;
+> +}
+> +
+> +static void
+> +convert_to_efi_time(struct rtc_time *wtime, efi_time_t *eft)
+> +{
+> +	eft->year	= wtime->tm_year + 1900;
+> +	eft->month	= wtime->tm_mon + 1;
+> +	eft->day	= wtime->tm_mday;
+> +	eft->hour	= wtime->tm_hour;
+> +	eft->minute	= wtime->tm_min;
+> +	eft->second 	= wtime->tm_sec;
+> +	eft->nanosecond = 0;
+> +	eft->daylight	= wtime->tm_isdst ? EFI_ISDST : 0;
+> +	eft->timezone	= EFI_UNSPECIFIED_TIMEZONE;
+> +}
+> +
+> +static void
+> +convert_from_efi_time(efi_time_t *eft, struct rtc_time *wtime)
+> +{
+> +	memset(wtime, 0, sizeof(*wtime));
+> +	wtime->tm_sec  = eft->second;
+> +	wtime->tm_min  = eft->minute;
+> +	wtime->tm_hour = eft->hour;
+> +	wtime->tm_mday = eft->day;
+> +	wtime->tm_mon  = eft->month - 1;
+> +	wtime->tm_year = eft->year - 1900;
+> +
+> +	/* day of the week [0-6], Sunday=0 */
+> +	wtime->tm_wday = compute_wday(eft);
+> +
+> +	/* day in the year [1-365]*/
+> +	wtime->tm_yday = compute_yday(eft);
+> +
+> +
+> +	switch (eft->daylight & EFI_ISDST) {
+> +	case EFI_ISDST:
+> +		wtime->tm_isdst = 1;
+> +		break;
+> +	case EFI_TIME_ADJUST_DAYLIGHT:
+> +		wtime->tm_isdst = 0;
+> +		break;
+> +	default:
+> +		wtime->tm_isdst = -1;
+> +	}
+> +}
+> +
+> +static int efi_read_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
+> +{
+> +	efi_time_t eft;
+> +	efi_status_t status;
+> +
+> +	/*
+> +	 * As of EFI v1.10, this call always returns an unsupported status
+> +	 */
+> +	status = efi.get_wakeup_time((efi_bool_t *)&wkalrm->enabled,
+> +				     (efi_bool_t *)&wkalrm->pending, &eft);
+> +
+> +	if (status != EFI_SUCCESS)
+> +		return -EINVAL;
+> +
+> +	convert_from_efi_time(&eft, &wkalrm->time);
+> +
+> +	return rtc_valid_tm(&wkalrm->time);
+> +}
+> +
+> +static int efi_set_alarm(struct device *dev, struct rtc_wkalrm *wkalrm)
+> +{
+> +	efi_time_t eft;
+> +	efi_status_t status;
+> +
+> +	convert_to_efi_time(&wkalrm->time, &eft);
+> +
+> +	/*
+> +	 * XXX Fixme:
+> +	 * As of EFI 0.92 with the firmware I have on my
+> +	 * machine this call does not seem to work quite
+> +	 * right
+> +	 *
+> +	 * As of v1.10, this call always returns an unsupported status
+> +	 */
+> +	status = efi.set_wakeup_time((efi_bool_t)wkalrm->enabled, &eft);
+> +
+> +	printk(KERN_WARNING "write status is %d\n", (int)status);
+> +
+> +	return status == EFI_SUCCESS ? 0 : -EINVAL;
+> +}
+> +
+> +static int efi_read_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	efi_status_t status;
+> +	efi_time_t eft;
+> +	efi_time_cap_t cap;
+> +
+> +	status = efi.get_time(&eft, &cap);
+> +
+> +	if (status != EFI_SUCCESS) {
+> +		/* should never happen */
+> +		printk(KERN_ERR "efitime: can't read time\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	convert_from_efi_time(&eft, tm);
+> +
+> +	return rtc_valid_tm(tm);
+> +}
+> +
+> +static int efi_set_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	efi_status_t status;
+> +	efi_time_t eft;
+> +
+> +	convert_to_efi_time(tm, &eft);
+> +
+> +	status = efi.set_time(&eft);
+> +
+> +	return status == EFI_SUCCESS ? 0 : -EINVAL;
+> +}
+> +
+> +static const struct rtc_class_ops efi_rtc_ops = {
+> +	.read_time = efi_read_time,
+> +	.set_time = efi_set_time,
+> +	.read_alarm = efi_read_alarm,
+> +	.set_alarm = efi_set_alarm,
+> +};
+> +
+> +static int __init efi_rtc_probe(struct platform_device *dev)
+> +{
+> +	struct rtc_device *rtc;
+> +
+> +	rtc = rtc_device_register("rtc-efi", &dev->dev, &efi_rtc_ops,
+> +					THIS_MODULE);
+> +	if (IS_ERR(rtc)) {
+> +		int err = PTR_ERR(rtc);
+> +		return err;
+> +	}
+
+
+	if (IS_ERR(rtc))
+		return PTR_ERR(rtc);
+
+
+> +
+> +	platform_set_drvdata(dev, rtc);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __exit efi_rtc_remove(struct platform_device *dev)
+> +{
+> +	struct rtc_device *rtc = platform_get_drvdata(dev);
+> +
+> +	rtc_device_unregister(rtc);
+> +	kfree(rtc);
+
+
+ don't free it!!
+
+
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver efi_rtc_driver = {
+> +	.driver = {
+> +		.name = "rtc-efi",
+> +		.owner = THIS_MODULE,
+> +	},
+> +	.probe = efi_rtc_probe,
+> +	.remove = __exit_p(efi_rtc_remove),
+> +};
+> +
+> +static int __init efi_rtc_init(void)
+> +{
+> +	return platform_driver_probe(&efi_rtc_driver, efi_rtc_probe);
+> +}
+> +
+> +static void __exit efi_rtc_exit(void)
+> +{
+> +	platform_driver_unregister(&efi_rtc_driver);
+> +}
+> +
+> +module_init(efi_rtc_init);
+> +module_exit(efi_rtc_exit);
+> +
+> +MODULE_AUTHOR("dann frazier <dannf@hp.com>");
+> +MODULE_LICENSE("GPL");
+> +MODULE_DESCRIPTION("EFI RTC driver");
+> -- 
+> 1.5.6.5
+> 
+
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
