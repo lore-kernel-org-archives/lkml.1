@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZANTaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZANTdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbZANTaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZANT34
+	id S1756885AbZANTdE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:33:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZANTcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:29:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39817 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbZANT3z (ORCPT
+	Wed, 14 Jan 2009 14:32:54 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:1615 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbZANTcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:29:55 -0500
-Subject: Re: kernel BUG at fs/ext/super.c:428
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <20090114191632.GA13114@linux-os.sc.intel.com>
-References: <20090110003645.GA16107@linux-os.sc.intel.com>
-	 <20090113164842.c6aa7095.akpm@linux-foundation.org>
-	 <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com>
-	 <20090114044059.GA6222@mit.edu>
-	 <20090114191632.GA13114@linux-os.sc.intel.com>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 20:29:37 +0100
-Message-Id: <1231961377.14825.51.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 14 Jan 2009 14:32:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Safnuj5rn07MdU77mWvPT0AX0xDzD7+7JcmZF8/65ZfwHhehDgEQFvyAnCd1HI9THq
+         zREJUZS9DyJPfEexKGSvKYAYHGU0YCNGbbTy1aj8wvSAO8MrQutqLObX7qomDSC5eceO
+         p51WkcnKJPGFFmFQToP412IaXeaTN7bmeLDKQ=
+MIME-Version: 1.0
+In-Reply-To: <496E297B.6010100@linux.intel.com>
+References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
+	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
+	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
+	 <496DB067.6060402@linux.intel.com>
+	 <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>
+	 <496E297B.6010100@linux.intel.com>
+Date: Wed, 14 Jan 2009 11:32:51 -0800
+Message-ID: <b3ece790901141132u28ba2482h2e7af7bd51224f2a@mail.gmail.com>
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+From: Tim Hockin <thockin@gmail.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
+       priyankag@google.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 11:16 -0800, Pallipadi, Venkatesh wrote:
-> On Tue, Jan 13, 2009 at 08:40:59PM -0800, Theodore Tso wrote:
-> > On Wed, Jan 14, 2009 at 02:48:13AM +0000, Arjan van de Ven wrote:
-> > >> Well, Arjan's commit, efaee192: "async: make the final inode deletion
-> > >> an asynchronous event", does change how inodes get deleted, and this
-> > >> looks like a race where an inode is getting deleted during the umount.
-> > >>
-> > >> So I would try reverting commit efaee192 and see if it fixes things
-> > >> before starting a full bisect...
-> > >
-> > > the commit is already reverted before rc1
-> > >
-> > 
-> > Ah, right.  I see, the async infrastructure is still in fs/super.c,
-> > but the actual code to insert deleted inodes onto the s_async_list was
-> > removed in commit b32714b.  Sorry, that confused me.
-> > 
-> > OK, so assuming that Venkatesh was using something post-rc1, I can't
-> > suggest anything other than a full bisect.  Sorry....
-> > 
-> 
-> Below is the result of full bisect
-> 
-> 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
-> commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Fri Sep 26 19:32:20 2008 +0200
-> 
->     futex: rely on get_user_pages() for shared futexes
->     
->     On the way of getting rid of the mmap_sem requirement for shared futexes,
->     start by relying on get_user_pages().
->     
->     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> :040000 040000 029e79e0a7421438c2a7437dd210a1acf40b6c29 b581716762c1952c0f515fac642690514e7224b7 M      include
-> :040000 040000 5f604b60974dbb9b0ac1a0910234f28c43a5e691 10c576cabe7eae661501ec38861a0f7488d5353b M      kernel
+On Wed, Jan 14, 2009 at 10:05 AM, Andi Kleen <ak@linux.intel.com> wrote:
+>
+>>
+>> From my point of view: a single, consistent, easy logging interface
+>> for the kernel to send *structured data* about hardware/system events
+>> and errors up to userspace.
+>
+> Which kinds of events were you thinking of?
+>
+> So far we managed by cramming some other CPU events like thermal
+> trip into "pseudo banks" in struct mce. Admittedly it's not the
+> most pretty solution in the world, but it worked.
 
-However does a futex change make ext3 crap its pants?
+Yeah, no offense, but that's horrible :)
 
-Is there anything more to it than start the machine, and reboot?
+Ideally, I'd rather see a more generic conduit for all sorts of
+events.  Polled and exception MCEs.  Thermal interrupts.  MCE
+threshold interrupts.  EDAC polled errors.  PCI-express errors.  SATA
+disk timeouts.
 
+Now I know there are different conduits for some events - netlink
+tells me about netif link up/down events I think.  I would settle for
+a small number of interfaces.  What I don't want is what we have today
+- EVERYTHING has a different interface.  Some are poll()-able.  Some
+have to be actively polled.  Some have to have a daemon listening or
+else messages are dropped.  Some have to parse logs.  Puke.
+
+Put it this way:  Given a thousand machines, I want to gather,
+collate, and correlate all these events.  I want to be able to produce
+a "life story" of sorts for a machine and for a data center.  Once I
+can do that, I can start to make predictive diagnoses more accurately,
+and I can know how much these things actually COST us.
+
+Tim
