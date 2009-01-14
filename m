@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbZANOJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZANONb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbZANOJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZANOJY
+	id S1757977AbZANONb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZANONU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:09:24 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:14009 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZANOJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:09:24 -0500
-Date: Wed, 14 Jan 2009 15:08:04 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, sandeen@redhat.com
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090114140802.GC30821@kernel.dk>
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz>
+	Wed, 14 Jan 2009 09:13:20 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:41029 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZANONT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:13:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sEk0qcAh2CHp8d5GqlOmbccrNvtsoB61uXSZZaE+9Cucq8c3KkFdrlLOt7Y2eJTqkx
+         s/TmGc0YJ6ok/TDa1Pi+uX6dtvtV/gQT2LfbAV2XqviQ3YCERH384ICQH8qCV1kuQfUR
+         mrtnjlCCIFIKVpOfPxEyRApFE/37f3BHspTTw=
+Date: Wed, 14 Jan 2009 14:13:11 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+Message-ID: <20090114141311.GA6643@ff.dom.local>
+References: <20081010090426.GA6054@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <200901141505.46929.denys@visp.net.lb> <20090114131257.GC6117@ff.dom.local> <1231938929.14825.6.camel@laptop> <20090114132603.GD6117@ff.dom.local> <1231939946.14825.9.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114140532.GC19950@duck.suse.cz>
+In-Reply-To: <1231939946.14825.9.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14 2009, Jan Kara wrote:
-> > I'm not sure what you mean; if the barrier operation isn't flushing
-> > all of the caches all the way out to the iron oxide, it's not going to
-> > be working properly no matter where it is being called, whether it's
-> > in ext4_sync_file() or in jbd2's journal_submit_commit_record().
->   Well, I thought that a barrier, as an abstraction, only guarantees that
-> any IO which happened before the barrier hits the iron before any IO which
-> has been submitted after a barrier. This is actually enough for a
-> journalling to work correctly but it's not enough for fsync() guarantees.
-> But I might be wrong...
+On Wed, Jan 14, 2009 at 02:32:26PM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-01-14 at 13:26 +0000, Jarek Poplawski wrote:
+> 
+> > OK, I hope Denys can apply more, but what about others? Without any
+> > patches the hole seems to be much bigger.
+> 
+> OK, I read most of this thread on netdev, but didn't find a clear clue
+> on the specific hrtimer insertion race.
 
-It also guarentees that when you get a completion for that barrier
-write, it's on safe storage. Think of it as a flush-write-flush
-operation, in the presence of write back caching.
+There is something at the beginning of this thread, plus earlier
+threads mostly with Denys as sender, and "htb bug" in the subject.
 
--- 
-Jens Axboe
+> 
+> Do you have any clear ideas or should I poke at the htb/hrtimer code a
+> little?
+> 
 
+...And htb code is htb_dequeue(): qdisc_watchdog_schedule().
+
+Jarek P.
