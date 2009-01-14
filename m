@@ -1,65 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbZANWs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbZANWtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbZANWs4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZANWsU
+	id S1760174AbZANWtx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZANWto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:48:20 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:58681 "EHLO
-	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756644AbZANWsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:48:18 -0500
-From: Eric Anholt <eric@anholt.net>
-To: linux-kernel@vger.kernel.org
-Cc: Eric Anholt <eric@anholt.net>
-Subject: [PATCH] drm/i915: why does kconfig hate?
-Date: Wed, 14 Jan 2009 14:48:12 -0800
-Message-Id: <1231973292-8344-1-git-send-email-eric@anholt.net>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 14 Jan 2009 17:49:44 -0500
+Received: from mail.impinj.com ([206.169.229.170]:54779 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754153AbZANWtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 17:49:43 -0500
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+Subject: Re: amd5536udc interrupts bug
+Date: Wed, 14 Jan 2009 14:49:37 -0800
+User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <49661E83.2070703@arcor.de> <200901131119.54994.vlobanov@speakeasy.net> <496DDDFC.7030301@arcor.de>
+In-Reply-To: <496DDDFC.7030301@arcor.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901141449.37246.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 14 Jan 2009 22:49:37.0649 (UTC) FILETIME=[60B81E10:01C9769A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the obvious fix attempt for people updating their .configs and not
-getting the i915 driver any more, or people not selecting FB and not finding
-it as an option.  We want to just enable the code needed to build the driver,
-not force the user to go find the option to enable it, because they really
-don't care.
+On Wednesday 14 January 2009 04:43:40 Thomas Dahlmann wrote:
+> Vadim Lobanov schrieb:
+> > cap=0x000083EA
+> > 	The host power control bits affect USB_PWR_EN1 for ports 1-3.
+> > 	The host power control bits affect USB_PWR_EN2 for port 4.
+> > 	Port power enabled with output of 1 on USB_PWR_EN1 and USB_PWR_EN2.
+> > 	No overcurrent reporting.
+> > 	Automatic pull-up (APU) is enabled.
+> >
+> > mux=0x00000003
+> > 	The muxed port is assigned to the device controller.
+> >
+> > ctl=0x00000083
+> > 	The muxed port is assigned to the device controller.
+> > 	The comparator circuitry for VBUS detection (PADEN) is enabled.
+>
+> The UOC registers look good to me too except for bit VBUSVLD
+> (bit 8 in UOCMUX). This bit should get set when cable is
+> connected. Maybe VBUS pin is not connected. In this case the
+> internal pull up will not get connected. For testing the pull up can
+> be connected manually by clearing APU in UOCCAP and
+> setting PUEN in UOCMUX.
 
-However, with this patch, the build results in:
-drivers/gpu/drm/Kconfig:8:error: found recursive dependency: DRM -> <choice> -> DRM_I915 -> FB -> FB_I810 -> AGP -> DRM
-and I need some help interpreting this.  In particular, how do these two
-dependencies get produced:
-FB -> FB_I810
-AGP -> DRM
-as they seem to be backwards (DRM results in AGP being required, FB_I810
-results in FB being required).  If I remove this wonky bit from DRM:
+I modprobed the driver before plugging in the cable, so that would explain the 
+VBUSVLD bit not being set.
 
- menuconfig DRM
-        tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support
--       depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG && MMU
-+       depends on PCI && !EMULATED_CMPXCHG && MMU
+> But if SD bit is cleared (and UOC bits seem OK as you showed)
+> then only hardware can be the root cause of the issue. If host
+> detects a USB connection it will automatically send a
+> GET_DESCRIPTOR message to UDC. You would see kernel
+> messages on host side, at least messages indicating that device
+> is not responding.
 
-then it still produces:
-drivers/video/Kconfig:23:error: found recursive dependency: FB -> FB_I810 -> AGP -> <choice> -> DRM_I915 -> FB
----
- drivers/gpu/drm/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+It seems that the ultimate cause for all this strangeness was a mis-wired 
+board: the vendor at long last admitted that the VBUS signal is not connected 
+in the hardware. Why they didn't simply document this fact, and thereby save 
+me a lot of wasted effort, remains a mystery.
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 5130b72..4be3acb 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -70,7 +70,7 @@ config DRM_I915
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	depends on FB
-+	select FB
- 	tristate "i915 driver"
- 	help
- 	  Choose this option if you have a system that has Intel 830M, 845G,
--- 
-1.5.6.5
+As a workaround, they suggested setting bit 0x00000010 in the ctl register, 
+which is strangely enough inside the "reserved" space according to the AMD 
+data book. Worth a shot, I thought. After hacking up the amd5536udc driver 
+even more to do this operation at load time, the register states change to:
+
+cap=0x000083EA
+mux=0x00000007
+ctl=0x00000193
+
+Seems that a few other "reserved" bits also raised in response. (I still do 
+not understand exactly how they wired up the CS5536 IO chip to be different 
+from the data book, but oh well.) In this mode, the USB link is finally 
+detected, and the board is finally able to enumerate itself as a g_zero 
+device.
+
+Please accept my sincere thank-you for your help. I'm hoping that everything 
+will work from now on, and that I won't send any more questions your way. :) 
+I'll also await an update to the irq stuff in the amd5536udc driver that we 
+talked about earlier, if you get around to making the fix for it first.
+
+> I found a Hurricane LX800 manual at
+>
+> http://www.lippert-at.de/fileadmin/lippert-at/products/EPIC/Hurricane-LX800
+>/TME-EPIC-HURLX-R1V4.pdf
+>
+> saying that there is no type B device port and device port is port 3.
+> Do you have a different one?
+
+Yep, that's the one. We're using a USB A-to-B adapter to turn port 3 from an A 
+port to a B-port. The standard USB cable uses this adapter.
+
+> Chapter 3.8, page 19:
+> 4 standard USB 2.0 host ports are provided at the I/O panel
+> of the Hurricane LX800. . . Port 3 can be used as USB device
+> port. This feature must be enabled in BIOS
+> under Motherboard Device Configuration -> PCI Configuration.
+> UDC must be enabled; Port 3 assignment should be set to device.
+
+See how they conveniently forgot to mention UOC in their description, much 
+less some magical bit in the ctl register? Tricky, tricky! :)
+
+-- Vadim Lobanov
 
