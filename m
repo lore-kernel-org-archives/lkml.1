@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbZANJ6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZANKCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbZANJ6n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 04:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZANJ61
+	id S1753367AbZANKCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbZANKCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 04:58:27 -0500
-Received: from mail.SerNet.de ([193.175.80.2]:54738 "EHLO mail.SerNet.de"
+	Wed, 14 Jan 2009 05:02:04 -0500
+Received: from 1wt.eu ([62.212.114.60]:1470 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755796AbZANJ60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 04:58:26 -0500
-Date: Wed, 14 Jan 2009 11:03:30 +0100
-From: Volker Lendecke <Volker.Lendecke@SerNet.DE>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-Reply-To: Volker.Lendecke@SerNet.DE
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com> <E1LN0MC-00DaJs-M2@intern.SerNet.DE> <496DACBE.3030701@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="32u276st3Jlj2kUU"
+	id S1754407AbZANKCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 05:02:03 -0500
+Date: Wed, 14 Jan 2009 11:01:18 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       zbr@ioremap.net, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090114100118.GA9888@1wt.eu>
+References: <20090113.232710.55011568.davem@davemloft.net> <20090114082630.GB16692@gondor.apana.org.au> <20090114085308.GB4234@ff.dom.local> <20090114.012919.117682429.davem@davemloft.net> <20090114095454.GD4234@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496DACBE.3030701@cosmosbay.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Message-Id: <E1LN2Vu-00DluN-6Z@intern.SerNet.DE>
-Organization: SerNet GmbH, Goettingen, Germany
+In-Reply-To: <20090114095454.GD4234@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 14, 2009 at 09:54:54AM +0000, Jarek Poplawski wrote:
+> You are very brave! I'd prefer to wait for at least minimal testing
+> by Willy...
 
---32u276st3Jlj2kUU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Will test, probably this evening.
 
-On Wed, Jan 14, 2009 at 10:13:34AM +0100, Eric Dumazet wrote:
-> for (;;) {
-> 	struct pollfd pfd;
-> 	pfd.fd = socket;
-> 	pfd.events = POLLIN;
-> 	if (poll(&pfd, 1, -1) != 1)
-> 		continue;
-> 	res = splice(socket, NULL, pipefds[1], NULL, 65536, SPLICE_F_MOVE|SPLICE_F_NONBLOCK);
-> 	if (res > 0)
-> 		nwritten = splice(pipefds[0], NULL, file_fd, NULL, res, SPLICE_F_MOVE|SPLICE_F_MORE);
-> }
+Thanks guys,
+Willy
 
-Doesn't this reduce performance again? I thought the whole
-point of splice() was to increase performance by avoiding
-memory copies. If I have to do a poll syscall for each call
-to splice, doesn't the context switch eat that performance
-advantage again?
-
-Or was splice designed only for multi-threaded applications
-(which at least Samba is not)?
-
-Volker
-
---32u276st3Jlj2kUU
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJbbhxbsgDfmnSbrYRArUlAKCNJN/kZsH3qvIYr463z1dlJbuFnQCfQ8qv
-alcUmIhEtdEGjlJBBkzCQt0=
-=FrZY
------END PGP SIGNATURE-----
-
---32u276st3Jlj2kUU--
