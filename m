@@ -1,27 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbZANLm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762042AbZANLnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762204AbZANLm4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 06:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZANLlg
+	id S1762042AbZANLnW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 06:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761967AbZANLlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 06:41:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45990 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759902AbZANLlc (ORCPT
+	Wed, 14 Jan 2009 06:41:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40914 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759116AbZANLlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Jan 2009 06:41:32 -0500
-Message-Id: <20090114113917.199690328@chello.nl>
+Message-Id: <20090114114027.069060224@chello.nl>
+References: <20090114113917.199690328@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 14 Jan 2009 12:39:17 +0100
+Date: Wed, 14 Jan 2009 12:39:19 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 0/2] prefer wakers -v2
+Subject: [PATCH 2/2] sched: prefer wakers
+Content-Disposition: inline; filename=wakeup-preempt-fiddle.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, so lets try this again...
+Prefer tasks that wake other tasks to preempt quickly. This improves
+performance because more work is available sooner.
+
+The workload that prompted this patch was a kernel build over NFS4 (for some
+curious and not understood reason we had to revert commit:
+18de9735300756e3ca9c361ef58409d8561dfe0d to make any progress at all)
+
+Without this patch a make -j8 bzImage (of x86-64 defconfig) would take
+3m30-ish, with this patch we're down to 2m50-ish.
+
+psql-sysbench/mysql-sysbench show a slight improvement in peak performance as
+well, tbench and vmark seemed to not care.
+
+It is possible to improve upon the build time (to 2m20-ish) but that seriously
+destroys other benchmarks (just shows that there's more room for tinkering).
+
+Much thanks to Mike who put in a lot of effort to benchmark things and proved
+a worthy opponent with a competing patch.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+---
+ include/linux/sched.h   |    3 ++
+ kernel/sched.c          |   34 ++++++++++++++++++++++-----
+ kernel/sched_debug.c    |    1 
+ kernel/sched_fair.c     |   59 +++++++++++++++++++++++++++++++++++++++++++-----
+ kernel/sched_features.h |    3 +-
+ 5 files changed, 87 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1295,16 +1295,63 @@ out:
+ }
+ #endif /* CONFIG_SMP */
+ 
+-static unsigned long wakeup_gran(struct sched_entity *se)
++/*
++ * Adaptive granularity
++ *
++ * se->avg_wakeup gives the average time a task runs until it does a wakeup,
++ * with the limit of wakeup_gran -- when it never does a wakeup.
++ *
++ * So the smaller avg_wakeup is the faster we want this task to preempt,
++ * but we don't want to treat the preemptee unfairly and therefore allow it
++ * to run for at least the amount of time we'd like to run.
++ *
++ * NOTE: we use 2*avg_wakeup to increase the probability of actually doing one
++ *
++ * NOTE: we use *nr_running to scale with load, this nicely matches the
++ *       degrading latency on load.
++ */
++static unsigned long
++adaptive_gran(struct sched_entity *curr, struct sched_entity *se)
++{
++	u64 this_run = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
++	u64 expected_wakeup = 2*se->avg_wakeup * cfs_rq_of(se)->nr_running;
++	u64 gran = 0;
++
++	if (this_run < expected_wakeup)
++		gran = expected_wakeup - this_run;
++
++	return min_t(s64, gran, sysctl_sched_wakeup_granularity);
++}
++
++static unsigned long
++wakeup_gran(struct sched_entity *curr, struct sched_entity *se)
+ {
+ 	unsigned long gran = sysctl_sched_wakeup_granularity;
+ 
++	if (cfs_rq_of(curr)->curr && sched_feat(ADAPTIVE_GRAN))
++		gran = adaptive_gran(curr, se);
++
+ 	/*
+-	 * More easily preempt - nice tasks, while not making it harder for
+-	 * + nice tasks.
++	 * Since its curr running now, convert the gran from real-time
++	 * to virtual-time in his units.
+ 	 */
+-	if (!sched_feat(ASYM_GRAN) || se->load.weight > NICE_0_LOAD)
+-		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
++	if (sched_feat(ASYM_GRAN)) {
++		/*
++		 * By using 'se' instead of 'curr' we penalize light tasks, so
++		 * they get preempted easier. That is, if 'se' < 'curr' then
++		 * the resulting gran will be larger, therefore penalizing the
++		 * lighter, if otoh 'se' > 'curr' then the resulting gran will
++		 * be smaller, again penalizing the lighter task.
++		 *
++		 * This is especially important for buddies when the leftmost
++		 * task is higher priority than the buddy.
++		 */
++		if (unlikely(se->load.weight != NICE_0_LOAD))
++			gran = calc_delta_fair(gran, se);
++	} else {
++		if (unlikely(curr->load.weight != NICE_0_LOAD))
++			gran = calc_delta_fair(gran, curr);
++	}
+ 
+ 	return gran;
+ }
+@@ -1331,7 +1378,7 @@ wakeup_preempt_entity(struct sched_entit
+ 	if (vdiff <= 0)
+ 		return -1;
+ 
+-	gran = wakeup_gran(curr);
++	gran = wakeup_gran(curr, se);
+ 	if (vdiff > gran)
+ 		return 1;
+ 
+Index: linux-2.6/kernel/sched_features.h
+===================================================================
+--- linux-2.6.orig/kernel/sched_features.h
++++ linux-2.6/kernel/sched_features.h
+@@ -1,5 +1,5 @@
+ SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
+-SCHED_FEAT(NORMALIZED_SLEEPER, 1)
++SCHED_FEAT(NORMALIZED_SLEEPER, 0)
+ SCHED_FEAT(WAKEUP_PREEMPT, 1)
+ SCHED_FEAT(START_DEBIT, 1)
+ SCHED_FEAT(AFFINE_WAKEUPS, 1)
+@@ -13,4 +13,5 @@ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
+ SCHED_FEAT(ASYM_EFF_LOAD, 1)
+ SCHED_FEAT(WAKEUP_OVERLAP, 0)
+ SCHED_FEAT(LAST_BUDDY, 1)
++SCHED_FEAT(ADAPTIVE_GRAN, 1)
+ SCHED_FEAT(OWNER_SPIN, 1)
+
 -- 
 
