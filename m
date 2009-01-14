@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbZANWVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZANW0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758481AbZANWVt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZANWVk
+	id S1755302AbZANW0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZANW0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:21:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58619 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZANWVj (ORCPT
+	Wed, 14 Jan 2009 17:26:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60035 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753117AbZANW0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:21:39 -0500
-Message-ID: <496E6585.8050505@zytor.com>
-Date: Wed, 14 Jan 2009 14:21:57 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Markus Metzger <markus.t.metzger@intel.com>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, harvey.harrison@gmail.com,
-       sam@ravnborg.org, jaswinderrajput@gmail.com,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-References: <20090114203745.285473388@gmail.com>> <496e4e23.0c07560a.5e4e.529c@mx.google.com>
-In-Reply-To: <496e4e23.0c07560a.5e4e.529c@mx.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Jan 2009 17:26:33 -0500
+Date: Wed, 14 Jan 2009 14:26:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-Id: <20090114142612.03945fd2.akpm@linux-foundation.org>
+In-Reply-To: <20090114220900.GO6222@mit.edu>
+References: <1231945948-23676-1-git-send-email-jack@suse.cz>
+	<1231945948-23676-2-git-send-email-jack@suse.cz>
+	<20090114101834.fbb9ea12.akpm@linux-foundation.org>
+	<20090114220900.GO6222@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, this one really looks wrong to me.
+On Wed, 14 Jan 2009 17:09:00 -0500
+Theodore Tso <tytso@MIT.EDU> wrote:
 
-Markus, could you confirm if this was ever intended to be exported to 
-userspace?  I suspect The Right Thing is simply to remove the #ifdef 
-CONFIG_X86_TRACE_BTS here...
+> On Wed, Jan 14, 2009 at 10:18:34AM -0800, Andrew Morton wrote:
+> > On Wed, 14 Jan 2009 16:12:28 +0100 Jan Kara <jack@suse.cz> wrote:
+> > 
+> > > To be really safe that the data hit the platter, we should also flush drive's
+> > > writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
+> > > 
+> > 
+> > It's not good to randomly sprinkle blkdev_issue_flush() calls all over
+> > the filesystem like this.  How do we know that you didn't miss a site? 
+> > How do we ensure that people who modify the fs in the future don't
+> > forget to add the blkdev_issue_flush() call, if needed?
+> > 
+> > IOW, it is fragile.  Is there anything we can do to make this more
+> > robust?  Do the flush calls from some higher-level callsite?  Perhaps
+> > even the VFS?
+> 
+> The problem with doing it in the VFS is that we might end up calling
+> flush twice; it may very well be that for some filesystems, we'll be
+> calling the flush operation as part of writing out the commit block,
+> for example.
 
-	-hpa
+It depends how it's done.  One way would be via a new
+address_space_operations entry.
+
+> I'm not sure it's fair to say that we need to "randomly sprinkle
+> blkdev_issue_flush() calls all over the place".  The number of places
+> where we need to do O_SYNC or fsync() handling is in fact quite small.
+> We were simply ignoring this problem before.
+
+Well it _does_ sprinkle them all over.
+
+> > > +			blkdev_issue_flush(dir->i_sb->s_bdev, NULL);
+> > 
+> > The patch itself would have been a bit neater if it had added
+> > 
+> > int ext3_blkdev_issue_flush(struct inode *inode)
+> 
+> What, just to avoid needing the "..->i_sb->s_bdev" construction?
+
+Partly as a cleanup, yes.  But such a function then becomes a site
+where we can add commentary explaining the reason for its existence,
+along with commentary which describes the semantics in details,
+exceptions, caveats, etc.
+
+It also becomes a single site where the feature can be disabled for
+those who wish to evaluate its performance cost.
+
+The single site can also be used for convenient gathering of timing
+information.
+
+One thing we may well choose to do is to stop issuing the flush if
+blkdev_issue_flush() is returning -EOPNOTSUPP, which some devices will
+presumably do.  Reissuing a pointless and quite expensive command over
+and over again doesn't seem clever.
+
+And I can probably think of more reasons :)
 
 
-Cyrill Gorcunov wrote:
-> Impact: cleanup
+>  I
+> personally find extra levels of inline functions
+
+It shouldn't be inlined.
+
+> to be harder to deal
+> with long term, since I then I have to track down the definition of
+> ext3_blkdev_issue_flush in the header files to make sure there isn't
+> any other magic hiding in there other than the i->i_sb->s_bdev
+> derefencing.
 > 
-> 'make headers_check' warn us about leaking of kernel private
-> (mostly compile time vars) data to userspace in headers. Fix it.
-> 
-> ptrace_bts_config struct is wrapped by __KERNEL__ --
-> not sure if it was ever proposed for userland. On the
-> other hand branch tracing is really anxious for userland
-> developers.
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> ---
->  arch/x86/include/asm/ptrace-abi.h |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.git/arch/x86/include/asm/ptrace-abi.h
-> ===================================================================
-> --- linux-2.6.git.orig/arch/x86/include/asm/ptrace-abi.h
-> +++ linux-2.6.git/arch/x86/include/asm/ptrace-abi.h
-> @@ -50,7 +50,7 @@
->  #define RSP 152
->  #define SS 160
->  #define ARGOFFSET R11
-> -#endif /* __ASSEMBLY__ */
-> +#endif /* __ASSEMBLY__ || __FRAME_OFFSETS */
->  
->  /* top of stack page */
->  #define FRAME_SIZE 168
-> @@ -80,6 +80,7 @@
->  
->  #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
->  
-> +#ifdef __KERNEL__
->  #ifdef CONFIG_X86_PTRACE_BTS
->  
->  #ifndef __ASSEMBLY__
-> @@ -141,5 +142,6 @@ struct ptrace_bts_config {
->     Returns number of BTS records drained.
->  */
->  #endif /* CONFIG_X86_PTRACE_BTS */
-> +#endif /* __KERNEL__ */
->  
->  #endif /* _ASM_X86_PTRACE_ABI_H */
-> 
+> 						- Ted
