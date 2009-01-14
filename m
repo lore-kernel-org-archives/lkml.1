@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZANIBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbZANIHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759950AbZANIBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:01:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZANIBb
+	id S1759581AbZANIHR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZANIG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:01:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46052 "EHLO mx2.mail.elte.hu"
+	Wed, 14 Jan 2009 03:06:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38766 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbZANIBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:01:30 -0500
-Date: Wed, 14 Jan 2009 09:01:11 +0100
+	id S1754654AbZANIG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 03:06:57 -0500
+Date: Wed, 14 Jan 2009 09:06:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: rostedt@home.goodmis.org, peterz@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] sched: fix build error in kernel/sched_rt.c when
-	RT_GROUP_SCHED && !SMP
-Message-ID: <20090114080111.GC18649@elte.hu>
-References: <20090113014333.GA23448@elte.hu> <20090113023345.32433.28954.stgit@dev.haskins.net>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: linux-kernel@vger.kernel.org, rientjes@google.com, mbligh@google.com,
+       thockin@google.com, akpm@linux-foundation.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] softlockup: detect bottom-half lockups
+Message-ID: <20090114080640.GA19116@elte.hu>
+References: <20090114070447.GA25222@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090113023345.32433.28954.stgit@dev.haskins.net>
+In-Reply-To: <20090114070447.GA25222@google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,12 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gregory Haskins <ghaskins@novell.com> wrote:
+* Mandeep Singh Baines <msb@google.com> wrote:
 
-> +#define dec_rt_group(rt_se, rt_rq) do { } while (0)
+> The feature should be useful to real-time developers and developers of 
+> network and other high-performance drivers.
 
-Please dont _ever_ introduce new CPP macros into core kernel code, and if 
-you see existing once, please fix them to be proper C inline functions. 
-(there's a few other new macros in your patchset)
+hm, did you know about the ftrace latency tracers:
+
+ config IRQSOFF_TRACER
+         bool "Interrupts-off Latency Tracer"
+
+ config PREEMPT_TRACER
+         bool "Preemption-off Latency Tracer"
+
+ config SCHED_TRACER
+         bool "Scheduling Latency Tracer"
+
+PREEMPT_TRACER would have shown you that softirqs-off section very nicely. 
+
+(And if you also enable the function tracer then not just the latency 
+endpoint is shown, but also all the function calls that happened in the 
+critical section.)
 
 	Ingo
