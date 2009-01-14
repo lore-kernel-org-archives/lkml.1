@@ -1,93 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762473AbZANNRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbZANNRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762473AbZANNRF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 08:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZANNQy
+	id S1762605AbZANNRt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 08:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbZANNRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 08:16:54 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50369 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753769AbZANNQx (ORCPT
+	Wed, 14 Jan 2009 08:17:39 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:46228 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbZANNRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 08:16:53 -0500
-Date: Wed, 14 Jan 2009 08:16:50 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Joe Perches <joe@perches.com>
-cc: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/10] MAINTAINERS - Add FTRACE git
-In-Reply-To: <1231913987.30095.11.camel@localhost>
-Message-ID: <alpine.DEB.1.10.0901140811530.6759@gandalf.stny.rr.com>
-References: <1231878498-25171-1-git-send-email-joe@perches.com>  <1231878498-25171-9-git-send-email-joe@perches.com>  <20090114055954.GA7039@linux-sh.org> <1231913987.30095.11.camel@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Jan 2009 08:17:38 -0500
+Message-ID: <496DE5ED.8030609@hp.com>
+Date: Wed, 14 Jan 2009 08:17:33 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pierre Habouzit <pierre.habouzit@intersec.com>
+CC: Wei Yongjun <yjwei@cn.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sctp: if backlog is 0, listening shall not be deactivated.
+References: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
+In-Reply-To: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 13 Jan 2009, Joe Perches wrote:
-
-> On Wed, 2009-01-14 at 14:59 +0900, Paul Mundt wrote:
-> > On Tue, Jan 13, 2009 at 12:28:16PM -0800, Joe Perches wrote:
-> > > Signed-off-by: Joe Perches <joe@perches.com>
-> > > ---
-> > >  MAINTAINERS |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/MAINTAINERS b/MAINTAINERS
-> > > index ceeeb8c..6e051c3 100644
-> > > --- a/MAINTAINERS
-> > > +++ b/MAINTAINERS
-> > > @@ -2189,6 +2189,7 @@ F:	fs/freevxfs/
-> > >  FTRACE
-> > >  P:	Steven Rostedt
-> > >  M:	rostedt@goodmis.org
-> > > +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
-> > >  S:	Maintained
-> > >  F:	Documentation/ftrace.txt
-> > >  F:	arch/*/*/*/ftrace.h
-> > 
-> > This sort of thing only makes sense if you include the topic branch for
-> > the tree in question. While it is true that ftrace development happens in
-> > this tree, people looking at ftrace may not want to sort through the
-> > hundreds of unrelated topic branches in the process. I say this as
-> > someone that does not want to sort through hundreds of unrelated topic
-> > branches in search of ftrace code ;-)
+Pierre Habouzit wrote:
+> POSIX hints that when 0 is used for the listen backlog argument, the
+> kernel shall chose a default automatic value. TCP for example, works this
+> way.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=heads
+
+However SCTP API explicitly states that when the backlog is 0, listening is
+disabled.  Here is an excerpt from the draft describing this:
+
+   int listen(int sd,
+              int backlog);
+
+   and the arguments are
+   sd:  The socket descriptor of the endpoint.
+   backlog:  If backlog is non-zero, enable listening else disable
+      listening.
+
+
+So, this is something that spelled out in the draft.
+
+NAK.
+
+-vlad
+
+> Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
+> ---
 > 
-> Is the correct topic branch for ftrace auto-ftrace-next?
-
-That is just a location that Ingo places changes that are ready to go to 
-linux-next. Not where development is.
-
+>  net/sctp/socket.c |   20 --------------------
+>  1 files changed, 0 insertions(+), 20 deletions(-)
 > 
-> maybe:
+>     To put a bit of background, I stumbled against this while doing a code
+>     that basically did:
 > 
-> T:	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git auto-ftrace-next
+> 	struct sctp_event_subscribe events;
+> 	/* ... */
 > 
-> No idea what's right here.  I had some private emails
-> with Steven Rostedt about a git tree.  He suggested
-> to use tip.
+> 	fd = socket(AF_INET, SOCK_SEQPACKETS, IPPROTO_SCTP);
+> 	sctp_bindx(fd, ....);
+> 	events = (struct sctp_event_subscribe){
+> 	    .sctp_data_io_event     = 1,
+> 	    .sctp_association_event = 1,
+> 	};
+> 	setsockopt(fd, SOL_SCTP, SCTP_EVENTS, &events, sizeof(events));
+> 	listen(fd, 0);
+> 	len = sctp_recvmsg(fd, .....);
 > 
-> Steven?  Suggestions?
-
-Ingo usually pulls ftrace related patches into the tracing/ftrace 
-branch. That is for core ftrace. Since ftrace has a bunch of pluggins, 
-they may have their own branches.
-
-But to answer Paul's question, I would suggest tracing/ftrace for 
-seeing latest core ftrace changes.
-
-Should we add another topic in MAINTAINERS? The "TRACE RING BUFFER"? or 
-just call it ring_buffer? This is separate from ftrace, although ftrace 
-uses it for on the fly tracing. I maintain it and it is located in the tip 
-git repo under tracing/ring-buffer.
-
--- Steve
+>     The latter call instead of blocking like I expected returned with
+>     errno == ENOTCONN.
+> 
+>     I know POSIX doesn't _require_ listen() to accept 0 as a valid backlog,
+>     but the other listen() implementation I have used in the kernel do, and
+>     it looks really surprising for the programmer (who really searches the
+>     error elsewhere).
+> 
+>     Fortunately I had another working code at hand and I managed to find the
+>     problem resorting to reverting the changes I made to the original code
+>     line per line (*sigh*).
+> 
+>     I'm unsure if the diff shouldn't do instead:
+> 
+>     if (!backlog)
+>         backlog = 1;
+> 
+>     I'm not really comfortable around the kernel core ;)
+> 
+> 
+> diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+> index ff0a8f8..da1d96a 100644
+> --- a/net/sctp/socket.c
+> +++ b/net/sctp/socket.c
+> @@ -5866,16 +5866,6 @@ SCTP_STATIC int sctp_seqpacket_listen(struct sock *sk, int backlog)
+>  	if (!sctp_style(sk, UDP))
+>  		return -EINVAL;
+>  
+> -	/* If backlog is zero, disable listening. */
+> -	if (!backlog) {
+> -		if (sctp_sstate(sk, CLOSED))
+> -			return 0;
+> -
+> -		sctp_unhash_endpoint(ep);
+> -		sk->sk_state = SCTP_SS_CLOSED;
+> -		return 0;
+> -	}
+> -
+>  	/* Return if we are already listening. */
+>  	if (sctp_sstate(sk, LISTENING))
+>  		return 0;
+> @@ -5919,16 +5909,6 @@ SCTP_STATIC int sctp_stream_listen(struct sock *sk, int backlog)
+>  	struct sctp_sock *sp = sctp_sk(sk);
+>  	struct sctp_endpoint *ep = sp->ep;
+>  
+> -	/* If backlog is zero, disable listening. */
+> -	if (!backlog) {
+> -		if (sctp_sstate(sk, CLOSED))
+> -			return 0;
+> -
+> -		sctp_unhash_endpoint(ep);
+> -		sk->sk_state = SCTP_SS_CLOSED;
+> -		return 0;
+> -	}
+> -
+>  	if (sctp_sstate(sk, LISTENING))
+>  		return 0;
+>  
 
