@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZANVjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbZANVlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbZANVjf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbZANVj0
+	id S1760344AbZANVlq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZANVlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:39:26 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:53519 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755497AbZANVjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:39:25 -0500
-Date: Wed, 14 Jan 2009 22:39:19 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: akpm@linux-foundation.org, dann frazier <dannf@dannf.org>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       eranian@googlemail.com
-Subject: Re: [rtc-linux] Re: [PATCH] add rtc platform driver for EFI
-Message-ID: <20090114223919.120405f6@i1501.lan.towertech.it>
-In-Reply-To: <20090114132554.1efce88f.akpm@linux-foundation.org>
-References: <20090109005644.GH32403@ldl.fc.hp.com>
-	<20090109032729.6e4cd5fd@i1501.lan.towertech.it>
-	<20090109213615.GD31548@ldl.fc.hp.com>
-	<20090113003934.0a7da676.akpm@linux-foundation.org>
-	<20090114000043.GB24423@colo.lackof.org>
-	<20090114011719.GD24423@colo.lackof.org>
-	<20090114023055.1d22d09e@i1501.lan.towertech.it>
-	<20090114041358.GA21357@ldl.fc.hp.com>
-	<20090114043337.GB21357@ldl.fc.hp.com>
-	<20090114115728.15f2db18@i1501.lan.towertech.it>
-	<20090114173745.GA24492@ldl.fc.hp.com>
-	<20090114132554.1efce88f.akpm@linux-foundation.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Wed, 14 Jan 2009 16:41:35 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:23928 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbZANVle (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:41:34 -0500
+Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
+From: Chris Mason <chris.mason@oracle.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: wk <handygewinnspiel@gmx.de>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
+In-Reply-To: <496E5AB2.7040507@sandeen.net>
+References: <20090112190420.51f75853@pedra.chehab.org>
+	 <20090112132130.6c932b85.akpm@linux-foundation.org>
+	 <20090112220624.4fbfee34@pedra.chehab.org>
+	 <20090112162337.318dd61d.akpm@linux-foundation.org>
+	 <20090113184755.87720@gmx.net>
+	 <20090113105947.9e774b69.akpm@linux-foundation.org>
+	 <20090113191757.74290@gmx.net>
+	 <20090113113700.776a94b5.akpm@linux-foundation.org>
+	 <20090113203843.GJ29283@parisc-linux.org>
+	 <1231957750.8269.28.camel@think.oraclecorp.com> <496E56EB.2030301@gmx.de>
+	 <1231968240.8269.48.camel@think.oraclecorp.com>
+	 <496E5AB2.7040507@sandeen.net>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 16:40:21 -0500
+Message-Id: <1231969221.8269.50.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.496E5BCA.0083:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 13:25:54 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 2009-01-14 at 15:35 -0600, Eric Sandeen wrote:
 
-> From: Andrew Morton <akpm@linux-foundation.org>
+> >> Attached the log from stracing the command which was ivoked by the 
+> >> Makefile from v4l-dvb.
+> >> I guess this is all i could contribute to that problem. Thats stuff for 
+> >> xfs filesystem experts now..
+> > 
+> > Seems suspect indeed.  Could you please attach the strace for the run
+> > that works on the older kernel?
 > 
-> - the LEAP_YEAR macro is buggy - it references its arg multiple times. 
->   Fix this by turning it into a C function.
+> Chris got my attention on this one; you probably want this fix from hch:
 > 
-> - give it a more approriate name
+> http://oss.sgi.com/archives/xfs/2009-01/msg00158.html
 > 
-> - Move it to rtc.h so that other .c files can use it, instead of copying it.
+> -Eric
 
- Seems nice! I'll send to Linus :))))
+Seems like this one should get queued for -stable as well if it isn't
+already.
 
+-chris
 
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
 
