@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbZANWHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbZANWJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbZANWHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZANWHb
+	id S1760656AbZANWJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbZANWJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:07:31 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:34488 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753996AbZANWHa (ORCPT
+	Wed, 14 Jan 2009 17:09:16 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62139 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755272AbZANWJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:07:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=P5jo5iD025nuVVd2EvyrZ7th6MxSB/e8f4rUvmDpBLzj3bNtvbvOAoNKxfT3bnLnb7sVNX6NOQrr8dkagK1kaoHDgeiaeu20xhliN75uRr7TJjW+d/n5fbAb/h+B+Zg+imHpWCJpq11cKH55E6w9HVeiHs6zf9cwra8Ma65AtVo=  ;
-X-YMail-OSG: M3aSnzIVM1nEWoVDKv7dvZnAQDE6GBOvnYcFOHJRlFZuIXdH_I4PvHe5kIkES.LV1aha7NpHg_HO9pneTnJbb.fCDcQZeejJOWXyv1QqbcjiBvjhqKkwAZZCZqh6XsKTwuHFMall_6j62lSyTqTaR17EUI5WHpHpxFrUpgYYvZc2QlV7zVmoL8sY0htzLcmxSbPV39MH9WUYmAbQdo9ubcnY1F7YgHAuZ91hQQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [patch 2.6.29-rc] regulator: minor cleanup of virtual consumer
-Date: Wed, 14 Jan 2009 13:16:27 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Wed, 14 Jan 2009 17:09:15 -0500
+Date: Wed, 14 Jan 2009 17:09:00 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-ID: <20090114220900.GO6222@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	pavel@suse.cz
+References: <1231945948-23676-1-git-send-email-jack@suse.cz> <1231945948-23676-2-git-send-email-jack@suse.cz> <20090114101834.fbb9ea12.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901141316.27584.david-b@pacbell.net>
+In-Reply-To: <20090114101834.fbb9ea12.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Wed, Jan 14, 2009 at 10:18:34AM -0800, Andrew Morton wrote:
+> On Wed, 14 Jan 2009 16:12:28 +0100 Jan Kara <jack@suse.cz> wrote:
+> 
+> > To be really safe that the data hit the platter, we should also flush drive's
+> > writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
+> > 
+> 
+> It's not good to randomly sprinkle blkdev_issue_flush() calls all over
+> the filesystem like this.  How do we know that you didn't miss a site? 
+> How do we ensure that people who modify the fs in the future don't
+> forget to add the blkdev_issue_flush() call, if needed?
+> 
+> IOW, it is fragile.  Is there anything we can do to make this more
+> robust?  Do the flush calls from some higher-level callsite?  Perhaps
+> even the VFS?
 
-Minor cleanup to the regulator set_mode sysfs support:
-switch to sysfs_streq() in set_mode(), which is also
-a code shrink.  Use the same strings that get_mode()
-uses, shrinking data too.
+The problem with doing it in the VFS is that we might end up calling
+flush twice; it may very well be that for some filesystems, we'll be
+calling the flush operation as part of writing out the commit block,
+for example.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/regulator/virtual.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+I'm not sure it's fair to say that we need to "randomly sprinkle
+blkdev_issue_flush() calls all over the place".  The number of places
+where we need to do O_SYNC or fsync() handling is in fact quite small.
+We were simply ignoring this problem before.
 
---- a/drivers/regulator/virtual.c
-+++ b/drivers/regulator/virtual.c
-@@ -226,13 +226,13 @@ static ssize_t set_mode(struct device *d
- 	unsigned int mode;
- 	int ret;
- 
--	if (strncmp(buf, "fast", strlen("fast")) == 0)
-+	if (sysfs_streq(buf, "fast\n") == 0)
- 		mode = REGULATOR_MODE_FAST;
--	else if (strncmp(buf, "normal", strlen("normal")) == 0)
-+	else if (sysfs_streq(buf, "normal\n") == 0)
- 		mode = REGULATOR_MODE_NORMAL;
--	else if (strncmp(buf, "idle", strlen("idle")) == 0)
-+	else if (sysfs_streq(buf, "idle\n") == 0)
- 		mode = REGULATOR_MODE_IDLE;
--	else if (strncmp(buf, "standby", strlen("standby")) == 0)
-+	else if (sysfs_streq(buf, "standby\n") == 0)
- 		mode = REGULATOR_MODE_STANDBY;
- 	else {
- 		dev_err(dev, "Configuring invalid mode\n");
+> > +			blkdev_issue_flush(dir->i_sb->s_bdev, NULL);
+> 
+> The patch itself would have been a bit neater if it had added
+> 
+> int ext3_blkdev_issue_flush(struct inode *inode)
+
+What, just to avoid needing the "..->i_sb->s_bdev" construction?  I
+personally find extra levels of inline functions to be harder to deal
+with long term, since I then I have to track down the definition of
+ext3_blkdev_issue_flush in the header files to make sure there isn't
+any other magic hiding in there other than the i->i_sb->s_bdev
+derefencing.
+
+						- Ted
