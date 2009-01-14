@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZANVUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZANVWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbZANVUy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbZANVUY
+	id S1760050AbZANVWl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZANVWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:20:24 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:64592 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756937AbZANVUW (ORCPT
+	Wed, 14 Jan 2009 16:22:32 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46803 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754273AbZANVWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:20:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Spp9U2iUvWWVTtY53Mow0St3BT/C3xy/PY4j7o1iF1iyybFKOZHpN6qgqIF7cdX740
-         vu9uwVjf3ERgNQi7pIOR7+aDq1GH9mgA/1W8rDfRHiL0wyBeCxRpRd6hA1PFMhYE3NKR
-         84rfVO5XsCNQ7qVR/Rg670pnTRiaQyePAoyvw=
-Date: Thu, 15 Jan 2009 00:20:18 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>, mingo@elte.hu, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       jaswinderrajput@gmail.com
-Subject: Re: [patch 1/5] x86: headers cleanup - boot.h
-Message-ID: <20090114212018.GF8178@localhost>
-References: <20090114203745.285473388@gmail.com> <496e4e23.1358560a.0b42.ffff8588@mx.google.com> <1231967080.5756.12.camel@brick> <20090114211142.GE8178@localhost>
+	Wed, 14 Jan 2009 16:22:30 -0500
+Date: Wed, 14 Jan 2009 16:20:38 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: kernel BUG at fs/ext/super.c:428
+Message-ID: <20090114212038.GJ6222@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
+References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com> <20090114044059.GA6222@mit.edu> <20090114191632.GA13114@linux-os.sc.intel.com> <1231961377.14825.51.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114211142.GE8178@localhost>
+In-Reply-To: <1231961377.14825.51.camel@laptop>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Thu, Jan 15, 2009 at 12:11:42AM +0300]
-| [Harvey Harrison - Wed, Jan 14, 2009 at 01:04:40PM -0800]
-| | On Wed, 2009-01-14 at 23:37 +0300, Cyrill Gorcunov wrote:
-| | > -#if (defined CONFIG_KERNEL_BZIP2)
-| | > +#ifdef CONFIG_KERNEL_BZIP2
-| | >  #define BOOT_HEAP_SIZE             0x400000
-| | > -#else
-| | > +#else /* !CONFIG_KERNEL_BZIP2 */
-| | 
-| | Curious, I haven't seen the #else comments with the extra ! before,
-| | is that something that's coming into common use?
-| | 
-| | Harvey
-| | 
-| 
-| Actually I saw the both.
-| 
-| ./arch/mips/include/asm/dec/prom.h:54:#else /* !CONFIG_64BIT */
-| ./arch/mips/include/asm/dec/prom.h:58:#endif /* !CONFIG_64BIT */
-| 
-| 		- Cyrill -
+On Wed, Jan 14, 2009 at 08:29:37PM +0100, Peter Zijlstra wrote:
+> > 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
+> > commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
+> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Date:   Fri Sep 26 19:32:20 2008 +0200
+> > 
+> >     futex: rely on get_user_pages() for shared futexes
+> >     
+> >     On the way of getting rid of the mmap_sem requirement for shared futexes,
+> >     start by relying on get_user_pages().
+> >     
+> >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> However does a futex change make ext3 crap its pants?
 
-You know Harvey, I think such a details could be
-mentioned in CodingStyle. At least I found two
-types of comments:
+I agree, this doesn't make much sense.  I've looked at the patch, and
+I don't see how this would cause an ext3 orphaned-inode list handling
+problem
 
-1) Forward comments:
+Are you sure the bisect was done correctly?  Have you tried reverting
+that one commit, or otherwise conclusively shown that a kernel with
+this commit fails, and one without this commit works just fine?
 
-	#if FOO
-	#else	/* !FOO */
-	#endif	/* !FOO */
-
-2) Backward comments:
-
-	#if FOO
-	#else	/* FOO */
-	#endif	/* !FOO */
-
-I prefer the first variant. But with any variant
-I'm always rereading twice what is defined and
-what is not :)
-
-		- Cyrill -
+     	    	       	   	   	- Ted
