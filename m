@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZANDtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZANDwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbZANDtk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 22:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZANDtb
+	id S1756899AbZANDwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 22:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZANDwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 22:49:31 -0500
-Received: from fall-lakeland.atl.sa.earthlink.net ([207.69.195.103]:57450 "EHLO
-	fall-lakeland.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753062AbZANDta (ORCPT
+	Tue, 13 Jan 2009 22:52:08 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:49570 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752621AbZANDwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 22:49:30 -0500
-X-Greylist: delayed 679 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Jan 2009 22:49:30 EST
-Message-ID: <496D5E19.7040802@earthlink.net>
-Date: Tue, 13 Jan 2009 22:38:01 -0500
-From: Robert Reif <reif@earthlink.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Tue, 13 Jan 2009 22:52:07 -0500
+Date: Wed, 14 Jan 2009 14:51:24 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
+       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090114035124.GA8409@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>,
-       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: =?windows-1252?Q?Re=3A_sparc32_compile_error=3A_redefini?=
- =?windows-1252?Q?tion_of_=91smp=5Fcall=5Ffunction=5Fsingle=92?=
-References: <496D4274.6000304@earthlink.net>	<20090113.181039.185575172.davem@davemloft.net>	<20090113184239.e6b6e68e.akpm@linux-foundation.org> <20090113184536.95ebc973.akpm@linux-foundation.org>
-In-Reply-To: <20090113184536.95ebc973.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113.163705.130074998.davem@davemloft.net>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 13 Jan 2009 18:42:39 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+David Miller <davem@davemloft.net> wrote:
 >
->   
->> On Tue, 13 Jan 2009 18:10:39 -0800 (PST) David Miller <davem@davemloft.net> wrote:
->>
->>     
->>> From: Robert Reif <reif@earthlink.net>
->>> Date: Tue, 13 Jan 2009 20:40:04 -0500
->>>
->>>       
->>>> Todays git produces this compile error on sparc32:
->>>>
->>>> kernel/up.c:10: error: redefinition of ___smp_call_function_single___
->>>> /usr/src/sparc32/linux-2.6/arch/sparc/include/asm/smp_32.h:78: error: previous definition of ___smp_call_function_single___ was here
->>>>         
->>> Andrew, are you sure that Makefile condition for compiling
->>> up.o is correct?
->>>       
->> you give me grounds for now being ;)
->>
->>     
->>> ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
->>> obj-y += smp.o
->>> else
->>> obj-y += up.o
->>> endif
->>>
->>> If an arch doesn't use generic SMP helpers, there is no way
->>> we should compile up.c into the tree when SMP.
->>>
->>>       
->> How's about this?
->>
->> --- a/kernel/Makefile~a
->> +++ a/kernel/Makefile
->> @@ -43,7 +43,7 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
->>  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
->>  obj-y += smp.o
->>  else
->> -obj-y += up.o
->> +obj-$(CONFIG_SMP) += up.o
->>  endif
->>  obj-$(CONFIG_SMP) += spinlock.o
->>  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
->>     
->
-> err, the other way of course...
->
-> --- a/kernel/Makefile~a
-> +++ a/kernel/Makefile
-> @@ -43,6 +43,7 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
->  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
->  obj-y += smp.o
->  else
-> +ifneq ($(CONFIG_SMP),y)
->  obj-y += up.o
->  endif
->  obj-$(CONFIG_SMP) += spinlock.o
-> _
->
->
->
->   
-This worked:
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index 5110b35..05126da 100644
+> --- a/net/core/skbuff.c
+> +++ b/net/core/skbuff.c
+> @@ -70,12 +70,17 @@
+> static struct kmem_cache *skbuff_head_cache __read_mostly;
+> static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+> 
+> +static void skb_release_data(struct sk_buff *skb);
+> +
+> static void sock_pipe_buf_release(struct pipe_inode_info *pipe,
+>                                  struct pipe_buffer *buf)
+> {
+>        struct sk_buff *skb = (struct sk_buff *) buf->private;
+> 
+> -       kfree_skb(skb);
+> +       if (skb)
+> +               skb_release_data(skb);
+> +       else
+> +               put_page(buf->page);
+> }
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 2aebc4c..368227d 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
- ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
- obj-y += smp.o
- else
-+ifneq ($(CONFIG_SMP),y)
- obj-y += up.o
- endif
-+endif
- obj-$(CONFIG_SMP) += spinlock.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
- obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+Unfortunately this won't work, not even for network destinations.
 
+The reason is that this gets called as soon as the destination's
+splice hook returns, for networking that means when sendpage returns.
+
+So by that time we'll still be left with just a page reference
+on a page where the slab memory may already have been freed.
+
+To make this work we need to get the destination's splice hooks
+to acquire this reference.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
