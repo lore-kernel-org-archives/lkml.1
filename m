@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbZANAQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZANAQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760807AbZANAQE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759243AbZANAPt
+	id S1761203AbZANAQj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbZANAQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:15:49 -0500
-Received: from matrixpower.ru ([195.178.208.66]:58119 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758953AbZANAPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:15:48 -0500
-Date: Wed, 14 Jan 2009 03:15:46 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [0/7] Distributed storage for drivers/staging merge request
-Message-ID: <20090114001546.GC512@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net> <20090114000130.GA20811@kroah.com> <20090113161221.b23510b4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113161221.b23510b4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 13 Jan 2009 19:16:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53021
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756895AbZANAQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:16:24 -0500
+Date: Tue, 13 Jan 2009 16:16:25 -0800 (PST)
+Message-Id: <20090113.161625.111759506.davem@davemloft.net>
+To: zbr@ioremap.net
+Cc: dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com, jarkao2@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090114001345.GB512@ioremap.net>
+References: <20090111160548.GA362@ioremap.net>
+	<20090113.160721.68474279.davem@davemloft.net>
+	<20090114001345.GB512@ioremap.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 04:12:21PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > Hm, then why can't this whole thing just go into fs/dst/ right now?
-> > It's self-contained, so there shouldn't be any special "must live in
-> > staging" rule for filesystems before adding them.
-> > 
-> > We take new drivers at almost any point in the release cycle, why should
-> > filesystems be any different?
-> 
-> Well...  the case for merging drivers is usually pretty simple - the
-> hardware exists, so we need the driver.
-> 
-> Whereas the "do we need this" case for new filesystems isn't this simple.
+From: Evgeniy Polyakov <zbr@ioremap.net>
+Date: Wed, 14 Jan 2009 03:13:45 +0300
 
-More on this, it is a block device which does not work with hardware.
-And yes, question is serious. And you may not believe, but it is not me
-to answer this. I'm happy to provide any needed information.
-In a nutshell, it is a network block device on really huge steroids.
+> What is the best solution for the data corruption bug? To copy the data
+> all the time or implement own allocator to be used in alloc_skb and
+> friends to allocate the head? I think it can be done transparently for
+> the drivers. I can volunteer for this :)
+> The first one is more appropriate for the current bugfix-only stage,
+> but this will result in the whole release being too slow.
 
--- 
-	Evgeniy Polyakov
+I am looking into this right now.
+
+I wish there were some way we could make this code grab and release a
+reference to the SKB data area (I mean skb_shinfo(skb)->dataref) to
+accomplish it's goals.
