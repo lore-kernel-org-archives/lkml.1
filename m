@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZANGHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZANGI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbZANGHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZANGH2
+	id S1759910AbZANGI4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZANGIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:07:28 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:56490 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754741AbZANGH1 (ORCPT
+	Wed, 14 Jan 2009 01:08:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52076 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754197AbZANGIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:07:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=LSgV6a40MX5R4/54DyABr7oMrQY/4PIQMhbIyBXwUPfi+rGMT3vpkv2quaNc0WMtX2
-         KzVyVgfEsn6greb2PEndjU2X0U+zeIfc0g3+IrwucZV7hoGWQ+YpxQaLZXphZa42+Y7n
-         yZQtYYErHMc4hHcoSS73t+96aGMaPxHGkRVOQ=
-Message-ID: <86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
-Date: Tue, 13 Jan 2009 22:07:26 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "James Kirin" <james.kirin40@gmail.com>
-Subject: Re: memory beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y
-Cc: "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
+	Wed, 14 Jan 2009 01:08:44 -0500
+Message-ID: <496D815E.8010107@jp.fujitsu.com>
+Date: Wed, 14 Jan 2009 15:08:30 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+References: <200901042346.42723.rjw@sisk.pl> <200901100038.56748.rjw@sisk.pl> <496C00CD.3070302@jp.fujitsu.com> <200901131217.07537.rjw@sisk.pl>
+In-Reply-To: <200901131217.07537.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
-	 <adaeiz6k4o4.fsf@cisco.com>
-	 <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
-X-Google-Sender-Auth: a3e92477756868ae
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 7:10 PM, James Kirin <james.kirin40@gmail.com> wrote:
-> Thank you for your reply, Roland. Unfortunately, this continues
-> happening after having installed the most recent version of the BIOS
-> available from Dell.
->
-> I understand this is a problem in the BIOS and not the kernel, but is
-> there a way to have the kernel work around this bug in the BIOS and
-> make that memory accessible? Eg,
->
-> http://www.gossamer-threads.com/lists/linux/kernel/991748#991748
+Rafael J. Wysocki wrote:
+> On Tuesday 13 January 2009, Kenji Kaneshige wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Saturday 10 January 2009, Jesse Barnes wrote:
+>>>> On Thursday, January 8, 2009 12:45 pm Rafael J. Wysocki wrote:
+>>>>> On Thursday 08 January 2009, Rafael J. Wysocki wrote:
+>>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
+>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>> On Thursday 08 January 2009, Kenji Kaneshige wrote:
+>>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>>>>>>
+>>>>>>>>>> If MSI-X interrupt mode is used by the PCI Express port driver, too
+>>>>>>>>>> many vectors are allocated and it is not ensured that the right
+>>>>>>>>>> vectors will be used for various services.  Namely, the PCI Express
+>>>>>>>>>> specification states that both PCI Express native PME and PCI
+>>>>>>>>>> Express hotplug will always use the same MSI or MSI-X message for
+>>>>>>>>>> signalling interrupts, which implies that the same vector will be
+>>>>>>>>>> used by both of them.  Also, the VC service does not use interrupts
+>>>>>>>>>> at all. Moreover, is not clear which of the vectors allocated by
+>>>>>>>>>> pci_enable_msix() will be used for PME and hotplug and which of
+>>>>>>>>>> them will be used for AER if all of these services are configured.
+>>>>>>>>>>
+>>>>>>>>>> For these reasons, rework the allocation of interrupts for PCI
+>>>>>>>>>> Express ports so that at most two vectors are allocated and ensure
+>>>>>>>>>> that the right vector will be used for the right purpose.
+>>>>> Appended is a cleaned-up version of the patch that also contains comments
+>>>>> with references to the appropriate sections of the PCI Express spec.
+>>>> We'll need testing here in any case; I'll have to re-read the specs carefully 
+>>>> to see if we can really rely on the vector numbers you have here (at first 
+>>>> glance Kenji-san's approach seems more robust).
+>>> It has a catch too.  Namely, is there any warranty that we'll get the same
+>>> vectors when the second pci_enable_msix() is called and that they will be in
+>>> the same order?
+>>>
+>> In my understanding, the following description of Interrupt Message
+>> Number in the PCI Express spec explains this.
+>>
+>> "[...] For a given MSI-X implementation, the entry must remain constant. [...]"
+> 
+> The entry - yes, but the associated interrupt vector as sent to the CPU?  That
+> seems to be platform-dependent.
+> 
 
-please do
-1. boot linux with "disable_mtrr_trim" in grub.conf etc
-2. after booting input:
-echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
+I'm sorry but I don't understand what the problem is.
+Do you mean pci_disable_msix() doesn't work on some platforms?
 
-later you could put that line in one scripts and call it from inittab
-# grep mtrrfixup /etc/inittab
-mtrr:345:once:/root/mtrrfixup.sh
+Thanks,
+Kenji Kaneshige
 
-YH
