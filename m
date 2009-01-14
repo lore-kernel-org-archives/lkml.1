@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZANSm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZANSsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbZANSm7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbZANSml
+	id S1755346AbZANSsX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZANSsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:42:41 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:37092 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756067AbZANSmh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:42:37 -0500
-X-IronPort-AV: E=Sophos;i="4.37,263,1231113600"; 
-   d="scan'208";a="229842603"
-From: Roland Dreier <rdreier@cisco.com>
+	Wed, 14 Jan 2009 13:48:10 -0500
+Received: from web82508.mail.mud.yahoo.com ([209.191.86.195]:33347 "HELO
+	web82508.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752737AbZANSsJ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 13:48:09 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 13:48:09 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=2v7lauQ7knP/Gn9DepXNzbrFnmvVhajTiWPsFUIE/e0RguD5fw1yJoThJXw/nazg15xHdIYu9Roh1LrOmsjI9y0spQaDHd0ppfbhpbS3LrW011ohMK2/OW7DsXsS/C6CTyD4w07Hv/n+yXbrimqO6TLlWt0vgu1tFKBJpNqvOXI=;
+X-YMail-OSG: Ca10K3UVM1mNq_MdWMzpflUd2kgd85KbUXlgq_OXhLBlhccH09_1iXO80XwGzPSPXPfJS7gIF.i1ffZUp7gmjnV6le52v7Ah3AvygjQqSuf5eTqbCvWWsSvEgJvExq7YgcbnQ9RK8Jk3XYtcoDurpSuB8Mi91NhcNJ6gmnH361Ngijm6z78YPdEfHgo.oyj3gK8nQ3ihn19wElpKs0p7Np2Eb2NBuFI-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Wed, 14 Jan 2009 10:41:28 -0800 (PST)
+From: Keith Kong <keith_kong@sbcglobal.net>
+Subject: isolcpus jitter performance
 To: linux-kernel@vger.kernel.org
-Subject: CPA warning when running dmidecode on 2.6.29-rc1
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 14 Jan 2009 10:42:36 -0800
-Message-ID: <adaab9tivab.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Jan 2009 18:42:37.0087 (UTC) FILETIME=[DEF9D2F0:01C97677]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <718120.6885.qm@web82508.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just got the following when trying to dmidecode on a system running
-2.6.29-rc1-git... STRICT_DEVMEM isn't set.  Let me know if any further
-info would be helpful...
+Hi everyone,
+ 
+Newbie here to this list, so please be gentle 8-)
+ 
+I’m doing some latency-sensitive work that requires isolating a CPU and running stuff on it with as little perturbance as possible.  Someone pointed me to isolcpus and Max Krasnyansky’s work on preventing IRQs from being handled by isolated CPUs.  Exactly what I needed, so I went ahead and ftped kernel 2.6.25.6 and patched it with this: http://kernel.org/pub/linux/kernel/people/maxk/cpuisol/patches/v2.6.25.6.cpuisol1.patch
+ 
+But the measured jitter is much bigger than “single digit usec worst case and around 200nsec ave response time”  (http://readlist.com/lists/vger.kernel.org/linux-kernel/89/447300.html).
+ 
+So a couple of questions:
 
-[72673.717016] ------------[ cut here ]------------
-[72673.721697] WARNING: at /scratch/Ksrc/linux-git/arch/x86/mm/pageattr.c:560 __change_page_attr_set_clr+0xe2/0x867()
-[72673.732061] Hardware name: PowerEdge SC1435
-[72673.736260] CPA: called for zero pte. vaddr = ffff8800dffbc000 cpa->vaddr = ffff8800dffbc000
-[72673.744710] Modules linked in: tun nfs lockd nfs_acl auth_rpcgss sunrpc ipv6 bridge stp llc dm_snapshot dm_mirror dm_region_hash dm_log dm_mod kvm_amd kvm loop evdev ib_mthca thermal serio_raw psmouse pcspkr ib_mad ib_core ohci_hcd ehci_hcd tg3 libphy processor dcdbas
-[72673.769213] Pid: 2622, comm: dmidecode Not tainted 2.6.29-rc1 #38
-[72673.775329] Call Trace:
-[72673.777802]  [<ffffffff80233cc5>] warn_slowpath+0xd8/0x112
-[72673.783310]  [<ffffffff8026f178>] __alloc_pages_internal+0xd2/0x40e
-[72673.789596]  [<ffffffff80310f15>] do_get_write_access+0x3c6/0x408
-[72673.795705]  [<ffffffff80278b18>] zone_statistics+0x3c/0x5f
-[72673.801292]  [<ffffffff80222e64>] __change_page_attr_set_clr+0xe2/0x867
-[72673.807916]  [<ffffffff802855ae>] __purge_vmap_area_lazy+0x146/0x155
-[72673.814274]  [<ffffffff802869b7>] vm_unmap_aliases+0x16f/0x180
-[72673.820107]  [<ffffffff80223734>] change_page_attr_set_clr+0x14b/0x2fa
-[72673.826643]  [<ffffffff802239eb>] _set_memory_wb+0x1d/0x20
-[72673.832136]  [<ffffffff80224c71>] reserve_pfn_range+0x1a2/0x233
-[72673.838066]  [<ffffffff8027d966>] remap_pfn_range+0x8f/0x342
-[72673.843732]  [<ffffffff80224795>] reserve_memtype+0x193/0x4cd
-[72673.849480]  [<ffffffff8022509e>] phys_mem_access_prot_allowed+0xb4/0x1aa
-[72673.856275]  [<ffffffff803c79d8>] mmap_mem+0x6c/0x91
-[72673.861249]  [<ffffffff8028205c>] mmap_region+0x2e0/0x57d
-[72673.866657]  [<ffffffff80282585>] do_mmap_pgoff+0x28c/0x2f3
-[72673.872240]  [<ffffffff8020fa7f>] sys_mmap+0x8c/0xc5
-[72673.877212]  [<ffffffff8020bedb>] system_call_fastpath+0x16/0x1b
-[72673.883227] ---[ end trace 592fdf59445922ef ]---
-[72673.887864] dmidecode:2622 reserve_pfn_range ioremap_change_attr failed write-back for dffbc000-dffbd000
-[72673.897346] dmidecode:2622 freeing invalid memtype dffbc000-dffbd000
+1. ***Has anyone gotten the kinds of results above?  If so, how did you do it, along with your definition of “worst case and ave response time.”***  If your source code is not too big, attaching it would be good. 
+
+2. The methodology I used is below.  *** Any issues with it? ***
+
+  1. Patch kernel 2.6.25.6 with v2.6.25.6.cpuisol1.patch, RedHat Enterprise AS4, on 8GB dual Xeon quad core (8 cores) 2.67GHz machine.  No load on the machine (according to “top”).
+
+  2. Add kernel parms: isolcpus=4,5,6,7 
+
+  3. Ensure /etc/sysconfig/syspart has PAR0_CPUS=”0-3” so that CPUs 0-3 handle general kernel and user tasks, and CPUs 4-7 are isolated 
+Ensure /etc/init.d/syspart has “activated” the partition 
+
+  4. Collected Pentium clock register values via rdtscll() using following code (ensuring cpu affinity set correctly): 
+ 
+      #define BUFSIZE 1000000
+      #define LOOPCNT 10000
+      for ( i = 0; i < BUFSIZE; i++ ) {
+        for ( j = 0; j < LOOPCNT; j++ ) {}
+        rdtscll(gullStartCpuTime); /* Pentium clock register */
+        ullTimeStampBuf[i] = gullStartCpuTime;
+      }
+
+  5. Dumped the ullTimeStampBuf[] data into a file and do post-process.  Definition of jitter and details of post-processing below. 
+ 
+The kinds of results I’m getting are:
+
+Max jitter (max diff between consecutive Pentium counter values):
+*** ~ 460 usec ***
+
+Ave. jitter (std. deviation of diff between consecutive Pentium counters): *** ~ 5.7 usec ***
+ 
+ 
+Thanks!
+ 
+ 
+Keith
+
+----- detailed explanation of methodology below --- 
+All the data is based on computing statistics on “diff and diff of diff” between successive Pentium counters.  For example:
+ 
+83228160 71336 0 0
+83299496 71336 0 0
+83370832 71336 0 0
+83442168 71336 0 0
+83513528 71360 24 0.00900003262511827
+83584864 71336 -24 -0.00900003262511827
+83656200 71336 0 0
+83727536 71336 0 0
+83798872 71336 0 0
+ 
+The first column is Pentium counter, second column is diff of previous and current counter, third column is diff of this diff.  Last column is simply third column converted into microseconds.
+ 
+The third column is added to some array, which is then fed as input to some statistics package to provide results.  Note that STDDEV (usec): 5.7567 means standard deviation of the third column.
+ 
+ 
+ 
+SAMPLE INFO FILE
+------------------------------
+STATISTICS
+----------
+ DIFF SAMPLE COUNT: 999998
+   DIFF MIN (usec):   26.7449164221
+   DIFF MAX (usec):  462.6135543326
+  DIFF MEAN (usec):   26.8811017636
+DIFF MEDIAN (usec):   26.7509164034
+DIFF STDDEV (usec):    5.7567862963
+   DIFF VAR (usec):   33.1405884609
+ 
+ 
+ DIFFDIFF SAMPLE COUNT: 999997
+   DIFFDIFF MIN (usec): -435.1036403011
+   DIFFDIFF MAX (usec):  435.8626379293
+  DIFFDIFF MEAN (usec):   -0.0000089190
+DIFFDIFF MEDIAN (usec):    0.0000000000
+DIFFDIFF STDDEV (usec):    8.1034032634
+   DIFFDIFF VAR (usec):   65.6651444491
+ 
+ 
+PENTIUM COUNTER ROLLOVER SANITY CHECK
+-------------------------------------
+          GETTIMEOFDAY LAPSED TIME (usec): 26881133
+ TOTAL PENTIUM COUNTER LAPSED TIME (usec): 26881048.00135
+              DIFF OF LAPSED TIMES (usec): 84.9986500032246
+[DIFF TIME OF 84.9986500032246 usec < 10 ms (resolution of gettimeofday() on linux), SO GOOD CONFIDENCE ROLLOVERS ACCOUNTED FOR PROPERLY]
+ 
+ 
