@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbZANQ6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764724AbZANQ6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764351AbZANQ6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762845AbZANQ56
+	id S1764724AbZANQ6j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764626AbZANQ6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:57:58 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60622 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762379AbZANQ55 (ORCPT
+	Wed, 14 Jan 2009 11:58:22 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:14083 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762845AbZANQ6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:57:57 -0500
-Date: Wed, 14 Jan 2009 11:57:53 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: john stultz <johnstul@us.ibm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, rostedt@home.goodmis.org,
-       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RT git pull] fixes for rt/sched
-In-Reply-To: <496E12D3.80804@novell.com>
-Message-ID: <alpine.DEB.1.10.0901141157040.15549@gandalf.stny.rr.com>
-References: <20090114162226.13517.44371.stgit@dev.haskins.net> <496E12D3.80804@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Jan 2009 11:58:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OedbwsHpHoV6otHFLHnYskyX3yH2r+80RM7m8XTzAAUnckb6GZwKpSGrIyksVLo0TU
+         pktkTSqnKiCcxuppR4g3n4e9LGFJ9ivDPLFhLiX65cwcO5ISAJnrQa9nKjTmEsB5Psux
+         UvZZpYGepYKajvzsUdxjWMzekUx3lTJHEAfS0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.64.0901141732450.26663@anakin>
+References: <1231836016.3212.41.camel@jaswinder.satnam>
+	 <Pine.LNX.4.64.0901140954250.27308@anakin>
+	 <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com>
+	 <20090114153825.GB32082@uranus.ravnborg.org>
+	 <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com>
+	 <Pine.LNX.4.64.0901141732450.26663@anakin>
+Date: Wed, 14 Jan 2009 22:28:19 +0530
+Message-ID: <3f9a31f40901140858w3a024023h94ebb1a6e087d03e@mail.gmail.com>
+Subject: Re: [PULL -tip] fixed few make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 14, 2009 at 10:06 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> What Sam means is that the warnings about externs not making sense in userspace
+> are indicators that there may be other external declarations (without "extern")
+> in those files, and that you should fix those at the same time (i.e. either
+> don't fix any of them, or fix all of them (in the same file)). If you don't
+> fix them at the same time, people tend to forget about them.
+>
+> So the warnings are just considered canaries in our coal mine. Killing only the
+> canaries doesn't help.
+>
 
-On Wed, 14 Jan 2009, Gregory Haskins wrote:
+If this is the case, then drop extern patches and let maintainers of
+those files should handle them then they will not forget and never
+repeat this mistake again.
 
-> [ Forgot to CC John the first time around ]
-> 
-> Gregory Haskins wrote:
-> > The following changes since commit cfe6498c6a03e574bc9384cc95d73dfd20a13f05:
-> >   Steven Rostedt (1):
-> >         rt sched: add rt overload stats
-> >
-> > are available in the git repository at:
-> >
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git rt/sched
-> >
-> > Gregory Haskins (1):
-> >       rt/sched: ensure interrupts are disabled during post-schedule() processing
-> >
-> >  kernel/sched_rt.c |    6 ++++--
-> >  1 files changed, 4 insertions(+), 2 deletions(-)
-> >
-
-
-Thanks, applied.
-
-(to git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git)
-
--- Steve
-
+--
+JSR
