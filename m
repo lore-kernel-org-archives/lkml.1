@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbZANSlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZANSmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbZANSlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZANSlF
+	id S1755841AbZANSmI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZANSlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:41:05 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:59711 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016AbZANSlE (ORCPT
+	Wed, 14 Jan 2009 13:41:51 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:21700 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbZANSlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:41:04 -0500
-Date: Wed, 14 Jan 2009 12:40:12 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <20090114155923.GC1616@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0901141219140.26507@quilx.com>
-References: <20090114090449.GE2942@wotan.suse.de>
- <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com>
- <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com>
- <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
- <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de>
- <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
- <20090114155923.GC1616@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+	Wed, 14 Jan 2009 13:41:49 -0500
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+From: Chris Mason <chris.mason@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <20090114183319.GA18630@elte.hu>
+References: <1231774622.4371.96.camel@laptop>
+	 <1231859742.442.128.camel@twins>
+	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
+	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
+	 <20090114183319.GA18630@elte.hu>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 13:40:46 -0500
+Message-Id: <1231958447.8269.30.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.496E31B4.01E4:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009, Nick Piggin wrote:
+On Wed, 2009-01-14 at 19:33 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > Full series, including changelogs available at:
+> > 
+> >  http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/
+> > 
+> > and should shortly appear in a git tree near Ingo :-)
+> 
+> Linus,
+> 
+> Please pull the adaptive-mutexes-for-linus git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git adaptive-mutexes-for-linus
+> 
 
-> Well if you would like to consider SLQB as a fix for SLUB, that's
-> fine by me ;) Actually I guess it is a valid way to look at the problem:
-> SLQB solves the OLTP regression, so the only question is "what is the
-> downside of it?".
+I was going to put this into the btrfs tree, but since you have a branch
+just for adaptive mutexes, is it easier to put there?
 
-The downside is that it brings the SLAB stuff back that SLUB was
-designed to avoid. Queue expiration. The use of timers to expire at
-uncontrollable intervals for user space. Object dispersal
-in the kernel address space. Memory policy handling in the slab
-allocator. Even seems to include periodic moving of objects between
-queues. The NUMA stuff is still a bit foggy to me since it seems to assume
-a mapping between cpus and nodes. There are cpuless nodes as well as
-memoryless cpus.
+From: Chris Mason <chris.mason@oracle.com>
 
-SLQB maybe a good cleanup for SLAB. Its good that it is based on the
-cleaned up code in SLUB but the fundamental design is SLAB (or rather the
-Solaris allocator from which we got the design for all the queuing stuff
-in the first place). It preserves many of the drawbacks of that code.
+Btrfs: stop spinning on mutex_trylock and let the adaptive code spin for us
 
-If SLQB would replace SLAB then there would be a lot of shared code
-(debugging for example). Having a generic slab allocator framework may
-then be possible within which a variety of algorithms may be implemented.
+Mutexes now spin internally and the btrfs spin is no longer required for
+performance.
+
+Signed-off-by: Chris Mason <chris.mason@oracle.com>
+
+diff --git a/fs/btrfs/locking.c b/fs/btrfs/locking.c
+index 39bae77..40ba8e8 100644
+--- a/fs/btrfs/locking.c
++++ b/fs/btrfs/locking.c
+@@ -37,16 +37,6 @@
+ 
+ int btrfs_tree_lock(struct extent_buffer *eb)
+ {
+-	int i;
+-
+-	if (mutex_trylock(&eb->mutex))
+-		return 0;
+-	for (i = 0; i < 512; i++) {
+-		cpu_relax();
+-		if (mutex_trylock(&eb->mutex))
+-			return 0;
+-	}
+-	cpu_relax();
+ 	mutex_lock_nested(&eb->mutex, BTRFS_MAX_LEVEL - btrfs_header_level(eb));
+ 	return 0;
+ }
+
+
