@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763714AbZANQAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764008AbZANQBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763714AbZANQAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759346AbZANQA2
+	id S1764008AbZANQBO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 11:01:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763963AbZANQAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:00:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:53359 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760799AbZANQA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:00:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=SADD78dpwpyj87b8f7VgEf9MBqZSEPClPJpz29XO5P1EH7TlhfwKE3qQSv7obrLJy0
-         uwuthkgHEZzJ4rJG1T3FiKml/WXN16jBsrID7OZm9XQwURgNgY/AHHnhOlnd72pIKxNI
-         fA84Ymq5E3ZLf9RvWHinQz3OXRNsGNxxU6u28=
-Message-ID: <9766ebc0901140800j41f8e10y42c7a00becc03dc7@mail.gmail.com>
-Date: Wed, 14 Jan 2009 17:00:24 +0100
-From: "Patrick Plattes" <patrick@erdbeere.net>
-To: linux-kernel@vger.kernel.org
-Subject: Test driven developed part of the kernel
+	Wed, 14 Jan 2009 11:00:53 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:45102 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763957AbZANQAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 11:00:50 -0500
+Date: Wed, 14 Jan 2009 08:00:48 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
+       dvhltc@us.ibm.com
+Subject: Re: [PATCH fyi] RCU: the bloatwatch edition
+Message-ID: <20090114160048.GA6734@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090113221724.GA15307@linux.vnet.ibm.com> <20090114104055.GD2913@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 1abde774d6775e3f
+In-Reply-To: <20090114104055.GD2913@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello lkml,
+On Wed, Jan 14, 2009 at 11:40:55AM +0100, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > Just FYI, not for inclusion.
+> > 
+> > This patch is a version of RCU designed for !CONFIG_SMP provided as a 
+> > proof of concept of a small-footprint RCU implementation.  In 
+> > particular, the implementation of synchronize_rcu() is extremely 
+> > lightweight and high performance.  It passes moderate rcutorture testing 
+> > in each of the four relevant configurations (combinations of NO_HZ and 
+> > PREEMPT) on x86.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> maybe it could be included - dependent on PREEMPT, just like we have SLOB?
 
-I'm a software developer for a small company and I write some
-applikation stuff. we are using test driven development and some other
-'modern' ideas to improve our software development process.
+I suppose that the fact that it already depends on !SMP should keep
+it hidden from most people, and it does work just fine for !PREEMPT.
+My concern is rather that if no one is using it, the code will bitrot
+rather quickly.  None of us needs a broken RCU implementation in mainline,
+least of all me.  ;-)
 
-We (a friend of mine and I) want to try to port some of the ideas to
-an other kind of software. I'm searching for a small, closed and well
-documented part of the kernel, eg. a driver for a cheap hardware
-(maybe a soundcard?), or how difficult is it to create an own file
-system or maybe a simple scheduler?
+> it would also be rather educative IMO: if someone wants to understand the 
+> core concepts of RCU, start with kernel/rcutiny.c. We are getting 
+> complaints from academic institutions that the Linux kernel is getting too 
+> complex to teach in courses - and that's a pity.
 
-If you have any ideas where to look, please send an email.
+Yeah, I have had to refer a number of institutions to various LWN
+articles.  I think that it is safe to say that LWN is not on every
+university's normal reading list.  ;-)  One (surprisingly prominent)
+institution that -does- read LWN unfortunately chose "The design
+of preemptible read-copy-update" to introduce themselves to RCU
+(http://lwn.net/Articles/253651/), and, needless to say, found it
+tough going.  I offered my sympathies and pointed them at the "What is
+RCU?" LWN series.
 
-Thank You,
- Patrick
+So it might well be good to have simplified implementations for academic
+study and perhaps also for deep embedded use.  Sort of like the approach
+for designing video games -- easy first level, second level is a bit
+harder, and so on.
+
+							Thanx, Paul
