@@ -1,526 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZANJjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbZANJk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760586AbZANJjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 04:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZANJjZ
+	id S1761303AbZANJk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 04:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZANJkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 04:39:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56184 "EHLO mx3.mail.elte.hu"
+	Wed, 14 Jan 2009 04:40:10 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:50436 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755144AbZANJjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 04:39:20 -0500
-Date: Wed, 14 Jan 2009 10:38:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Tejun Heo <tj@kernel.org>, Brian Gerst <brgerst@gmail.com>,
-       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       steiner@sgi.com, hugh@veritas.com
-Subject: [patch] add optimized generic percpu accessors
-Message-ID: <20090114093834.GA19799@elte.hu>
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com>
+	id S1754378AbZANJkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 04:40:08 -0500
+Message-ID: <496DB2EF.70405@garzik.org>
+Date: Wed, 14 Jan 2009 04:39:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496D8CEB.5060402@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>
+CC: greg@kroah.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dst@ioremap.net
+Subject: Re: [0/7] Distributed storage for drivers/staging merge request
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>	<20090113233932.GA18000@kroah.com>	<20090113234734.GA32190@ioremap.net>	<20090114000130.GA20811@kroah.com>	<20090113161221.b23510b4.akpm@linux-foundation.org>	<20090114001546.GC512@ioremap.net>	<20090114002008.GD512@ioremap.net> <20090113162307.3805ddc7.akpm@linux-foundation.org>
+In-Reply-To: <20090113162307.3805ddc7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> Tejun Heo wrote:
-> > 
-> > I think the two changes aren't exclusive at all.  The order of things
-> > could be different but in the end, yeah, zero-based percpu symbols w/
-> > mostly empty pda is the goal.
-> > 
-> >> Once the PDA is empty, I'll base %gs at the start of the per-cpu
-> >> area.  I've been working out the bugs with the last patch
-> >> (zero-basing the percpu area) before submitting, but I probably
-> >> won't have the time until this weekend to polish it off.  I could
-> >> submit all but the last patch if you'd like.
-> > 
-> > Any chance you can rebase those patches on top of mine?  If you don't
-> > have time, just send them to me, I'll try to integrate them this week.
-> > 
+Andrew Morton wrote:
+> On Wed, 14 Jan 2009 03:20:08 +0300
+> Evgeniy Polyakov <zbr@ioremap.net> wrote:
 > 
-> A merged tree here would be absolutely wonderful.  I've kept an eye on 
-> the discussion so far, but it looks like you guys are handling it fine.
+>> And while you at it, please shed a
+>> light on this exports for POHMELFS:
+>>
+>> --- a/mm/filemap.c
+>> +++ b/mm/filemap.c
+>> @@ -513,6 +513,7 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
+>>  	}
+>>  	return ret;
+>>  }
+>> +EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
+> 
+> OK by me.
+> 
+>>  #ifdef CONFIG_NUMA
+>>  struct page *__page_cache_alloc(gfp_t gfp)
+>> @@ -627,6 +628,7 @@ int __lock_page_killable(struct page *page)
+>>  	return __wait_on_bit_lock(page_waitqueue(page), &wait,
+>>  					sync_page_killable, TASK_KILLABLE);
+>>  }
+>> +EXPORT_SYMBOL_GPL(__lock_page_killable);
+> 
+> Needed for modular use of lock_page_killable() - makes sense.
+> 
+> Please maintain these alongside the pohmelfs patchset.
 
-agreed, it looks really good.
+FWIW we definitely want pohmelfs in staging...
 
-Tejun, could you please also add the patch below to your lineup too?
+(yes, I realize we are discussing dst not pohmelfs)
 
-It is an optimization and a cleanup, and adds the following new generic 
-percpu methods:
+	Jeff
 
-  percpu_read()
-  percpu_write()
-  percpu_add()
-  percpu_sub()
-  percpu_or() 
-  percpu_xor()
 
-and implements support for them on x86. (other architectures will fall 
-back to a default implementation)
 
-The advantage is that for example to read a local percpu variable, instead 
-of this sequence:
 
- return __get_cpu_var(var);
-
- ffffffff8102ca2b:	48 8b 14 fd 80 09 74 	mov    -0x7e8bf680(,%rdi,8),%rdx
- ffffffff8102ca32:	81 
- ffffffff8102ca33:	48 c7 c0 d8 59 00 00 	mov    $0x59d8,%rax
- ffffffff8102ca3a:	48 8b 04 10          	mov    (%rax,%rdx,1),%rax
-
-We can get a single instruction by using the optimized variants:
-
- return percpu_read(var);
-
- ffffffff8102ca3f:	65 48 8b 05 91 8f fd 	mov    %gs:0x7efd8f91(%rip),%rax
-
-I also cleaned up the x86-specific APIs and made the x86 code use these 
-new generic percpu primitives.
-
-It looks quite hard to convince the compiler to generate the optimized 
-single-instruction sequence for us out of __get_cpu_var(var) - or can you 
-perhaps see a way to do it?
-
-The patch is against your latest zero-based percpu / pda unification tree. 
-Untested.
-
-	Ingo
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/current.h        |    2 +-
- arch/x86/include/asm/irq_regs_32.h    |    4 ++--
- arch/x86/include/asm/mmu_context_32.h |   12 ++++++------
- arch/x86/include/asm/pda.h            |   10 +++++-----
- arch/x86/include/asm/percpu.h         |   23 ++++++++++++-----------
- arch/x86/include/asm/smp.h            |    2 +-
- arch/x86/kernel/process_32.c          |    2 +-
- arch/x86/kernel/tlb_32.c              |   10 +++++-----
- arch/x86/mach-voyager/voyager_smp.c   |    4 ++--
- arch/x86/xen/enlighten.c              |   14 +++++++-------
- arch/x86/xen/irq.c                    |    8 ++++----
- arch/x86/xen/mmu.c                    |    2 +-
- arch/x86/xen/multicalls.h             |    2 +-
- arch/x86/xen/smp.c                    |    2 +-
- include/asm-generic/percpu.h          |   28 ++++++++++++++++++++++++++++
- 16 files changed, 90 insertions(+), 48 deletions(-)
-
-Index: linux/arch/x86/include/asm/current.h
-===================================================================
---- linux.orig/arch/x86/include/asm/current.h
-+++ linux/arch/x86/include/asm/current.h
-@@ -10,7 +10,7 @@ struct task_struct;
- DECLARE_PER_CPU(struct task_struct *, current_task);
- static __always_inline struct task_struct *get_current(void)
- {
--	return x86_read_percpu(current_task);
-+	return percpu_read(current_task);
- }
- 
- #else /* X86_32 */
-Index: linux/arch/x86/include/asm/irq_regs_32.h
-===================================================================
---- linux.orig/arch/x86/include/asm/irq_regs_32.h
-+++ linux/arch/x86/include/asm/irq_regs_32.h
-@@ -15,7 +15,7 @@ DECLARE_PER_CPU(struct pt_regs *, irq_re
- 
- static inline struct pt_regs *get_irq_regs(void)
- {
--	return x86_read_percpu(irq_regs);
-+	return percpu_read(irq_regs);
- }
- 
- static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
-@@ -23,7 +23,7 @@ static inline struct pt_regs *set_irq_re
- 	struct pt_regs *old_regs;
- 
- 	old_regs = get_irq_regs();
--	x86_write_percpu(irq_regs, new_regs);
-+	percpu_write(irq_regs, new_regs);
- 
- 	return old_regs;
- }
-Index: linux/arch/x86/include/asm/mmu_context_32.h
-===================================================================
---- linux.orig/arch/x86/include/asm/mmu_context_32.h
-+++ linux/arch/x86/include/asm/mmu_context_32.h
-@@ -4,8 +4,8 @@
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
- #ifdef CONFIG_SMP
--	if (x86_read_percpu(cpu_tlbstate.state) == TLBSTATE_OK)
--		x86_write_percpu(cpu_tlbstate.state, TLBSTATE_LAZY);
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
- #endif
- }
- 
-@@ -19,8 +19,8 @@ static inline void switch_mm(struct mm_s
- 		/* stop flush ipis for the previous mm */
- 		cpu_clear(cpu, prev->cpu_vm_mask);
- #ifdef CONFIG_SMP
--		x86_write_percpu(cpu_tlbstate.state, TLBSTATE_OK);
--		x86_write_percpu(cpu_tlbstate.active_mm, next);
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
- 		cpu_set(cpu, next->cpu_vm_mask);
- 
-@@ -35,8 +35,8 @@ static inline void switch_mm(struct mm_s
- 	}
- #ifdef CONFIG_SMP
- 	else {
--		x86_write_percpu(cpu_tlbstate.state, TLBSTATE_OK);
--		BUG_ON(x86_read_percpu(cpu_tlbstate.active_mm) != next);
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
- 
- 		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
- 			/* We were in lazy tlb mode and leave_mm disabled
-Index: linux/arch/x86/include/asm/pda.h
-===================================================================
---- linux.orig/arch/x86/include/asm/pda.h
-+++ linux/arch/x86/include/asm/pda.h
-@@ -45,11 +45,11 @@ extern void pda_init(int);
- 
- #define cpu_pda(cpu)		(&per_cpu(__pda, cpu))
- 
--#define read_pda(field)		x86_read_percpu(__pda.field)
--#define write_pda(field, val)	x86_write_percpu(__pda.field, val)
--#define add_pda(field, val)	x86_add_percpu(__pda.field, val)
--#define sub_pda(field, val)	x86_sub_percpu(__pda.field, val)
--#define or_pda(field, val)	x86_or_percpu(__pda.field, val)
-+#define read_pda(field)		percpu_read(__pda.field)
-+#define write_pda(field, val)	percpu_write(__pda.field, val)
-+#define add_pda(field, val)	percpu_add(__pda.field, val)
-+#define sub_pda(field, val)	percpu_sub(__pda.field, val)
-+#define or_pda(field, val)	percpu_or(__pda.field, val)
- 
- /* This is not atomic against other CPUs -- CPU preemption needs to be off */
- #define test_and_clear_bit_pda(bit, field)				\
-Index: linux/arch/x86/include/asm/percpu.h
-===================================================================
---- linux.orig/arch/x86/include/asm/percpu.h
-+++ linux/arch/x86/include/asm/percpu.h
-@@ -40,16 +40,11 @@
- 
- #ifdef CONFIG_SMP
- #define __percpu_seg_str	"%%"__stringify(__percpu_seg)":"
--#define __my_cpu_offset		x86_read_percpu(this_cpu_off)
-+#define __my_cpu_offset		percpu_read(this_cpu_off)
- #else
- #define __percpu_seg_str
- #endif
- 
--#include <asm-generic/percpu.h>
--
--/* We can use this directly for local CPU (faster). */
--DECLARE_PER_CPU(unsigned long, this_cpu_off);
--
- /* For arch-specific code, we can use direct single-insn ops (they
-  * don't give an lvalue though). */
- extern void __bad_percpu_size(void);
-@@ -115,11 +110,12 @@ do {							\
- 	ret__;						\
- })
- 
--#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
--#define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu__##var, val)
--#define x86_add_percpu(var, val) percpu_to_op("add", per_cpu__##var, val)
--#define x86_sub_percpu(var, val) percpu_to_op("sub", per_cpu__##var, val)
--#define x86_or_percpu(var, val) percpu_to_op("or", per_cpu__##var, val)
-+#define percpu_read(var)	percpu_from_op("mov", per_cpu__##var)
-+#define percpu_write(var, val)	percpu_to_op("mov", per_cpu__##var, val)
-+#define percpu_add(var, val)	percpu_to_op("add", per_cpu__##var, val)
-+#define percpu_sub(var, val)	percpu_to_op("sub", per_cpu__##var, val)
-+#define percpu_or(var, val)	percpu_to_op("or", per_cpu__##var, val)
-+#define percpu_xor(var, val)	percpu_to_op("xor", per_cpu__##var, val)
- 
- /* This is not atomic against other CPUs -- CPU preemption needs to be off */
- #define x86_test_and_clear_bit_percpu(bit, var)				\
-@@ -131,6 +127,11 @@ do {							\
- 	old__;								\
- })
- 
-+#include <asm-generic/percpu.h>
-+
-+/* We can use this directly for local CPU (faster). */
-+DECLARE_PER_CPU(unsigned long, this_cpu_off);
-+
- #ifdef CONFIG_X86_64
- extern void load_pda_offset(int cpu);
- #else
-Index: linux/arch/x86/include/asm/smp.h
-===================================================================
---- linux.orig/arch/x86/include/asm/smp.h
-+++ linux/arch/x86/include/asm/smp.h
-@@ -163,7 +163,7 @@ extern unsigned disabled_cpus __cpuinitd
-  * from the initial startup. We map APIC_BASE very early in page_setup(),
-  * so this is correct in the x86 case.
-  */
--#define raw_smp_processor_id() (x86_read_percpu(cpu_number))
-+#define raw_smp_processor_id() (percpu_read(cpu_number))
- extern int safe_smp_processor_id(void);
- 
- #elif defined(CONFIG_X86_64_SMP)
-Index: linux/arch/x86/kernel/process_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/process_32.c
-+++ linux/arch/x86/kernel/process_32.c
-@@ -592,7 +592,7 @@ __switch_to(struct task_struct *prev_p, 
- 	if (prev->gs | next->gs)
- 		loadsegment(gs, next->gs);
- 
--	x86_write_percpu(current_task, next_p);
-+	percpu_write(current_task, next_p);
- 
- 	return prev_p;
- }
-Index: linux/arch/x86/kernel/tlb_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_32.c
-+++ linux/arch/x86/kernel/tlb_32.c
-@@ -34,8 +34,8 @@ static DEFINE_SPINLOCK(tlbstate_lock);
-  */
- void leave_mm(int cpu)
- {
--	BUG_ON(x86_read_percpu(cpu_tlbstate.state) == TLBSTATE_OK);
--	cpu_clear(cpu, x86_read_percpu(cpu_tlbstate.active_mm)->cpu_vm_mask);
-+	BUG_ON(percpu_read(cpu_tlbstate.state) == TLBSTATE_OK);
-+	cpu_clear(cpu, percpu_read(cpu_tlbstate.active_mm)->cpu_vm_mask);
- 	load_cr3(swapper_pg_dir);
- }
- EXPORT_SYMBOL_GPL(leave_mm);
-@@ -103,8 +103,8 @@ void smp_invalidate_interrupt(struct pt_
- 		 * BUG();
- 		 */
- 
--	if (flush_mm == x86_read_percpu(cpu_tlbstate.active_mm)) {
--		if (x86_read_percpu(cpu_tlbstate.state) == TLBSTATE_OK) {
-+	if (flush_mm == percpu_read(cpu_tlbstate.active_mm)) {
-+		if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK) {
- 			if (flush_va == TLB_FLUSH_ALL)
- 				local_flush_tlb();
- 			else
-@@ -237,7 +237,7 @@ static void do_flush_tlb_all(void *info)
- 	unsigned long cpu = smp_processor_id();
- 
- 	__flush_tlb_all();
--	if (x86_read_percpu(cpu_tlbstate.state) == TLBSTATE_LAZY)
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_LAZY)
- 		leave_mm(cpu);
- }
- 
-Index: linux/arch/x86/mach-voyager/voyager_smp.c
-===================================================================
---- linux.orig/arch/x86/mach-voyager/voyager_smp.c
-+++ linux/arch/x86/mach-voyager/voyager_smp.c
-@@ -410,7 +410,7 @@ void __init find_smp_config(void)
- 	     VOYAGER_SUS_IN_CONTROL_PORT);
- 
- 	current_thread_info()->cpu = boot_cpu_id;
--	x86_write_percpu(cpu_number, boot_cpu_id);
-+	percpu_write(cpu_number, boot_cpu_id);
- }
- 
- /*
-@@ -1790,7 +1790,7 @@ static void __init voyager_smp_cpus_done
- void __init smp_setup_processor_id(void)
- {
- 	current_thread_info()->cpu = hard_smp_processor_id();
--	x86_write_percpu(cpu_number, hard_smp_processor_id());
-+	percpu_write(cpu_number, hard_smp_processor_id());
- }
- 
- static void voyager_send_call_func(cpumask_t callmask)
-Index: linux/arch/x86/xen/enlighten.c
-===================================================================
---- linux.orig/arch/x86/xen/enlighten.c
-+++ linux/arch/x86/xen/enlighten.c
-@@ -702,17 +702,17 @@ static void xen_write_cr0(unsigned long 
- 
- static void xen_write_cr2(unsigned long cr2)
- {
--	x86_read_percpu(xen_vcpu)->arch.cr2 = cr2;
-+	percpu_read(xen_vcpu)->arch.cr2 = cr2;
- }
- 
- static unsigned long xen_read_cr2(void)
- {
--	return x86_read_percpu(xen_vcpu)->arch.cr2;
-+	return percpu_read(xen_vcpu)->arch.cr2;
- }
- 
- static unsigned long xen_read_cr2_direct(void)
- {
--	return x86_read_percpu(xen_vcpu_info.arch.cr2);
-+	return percpu_read(xen_vcpu_info.arch.cr2);
- }
- 
- static void xen_write_cr4(unsigned long cr4)
-@@ -725,12 +725,12 @@ static void xen_write_cr4(unsigned long 
- 
- static unsigned long xen_read_cr3(void)
- {
--	return x86_read_percpu(xen_cr3);
-+	return percpu_read(xen_cr3);
- }
- 
- static void set_current_cr3(void *v)
- {
--	x86_write_percpu(xen_current_cr3, (unsigned long)v);
-+	percpu_write(xen_current_cr3, (unsigned long)v);
- }
- 
- static void __xen_write_cr3(bool kernel, unsigned long cr3)
-@@ -755,7 +755,7 @@ static void __xen_write_cr3(bool kernel,
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- 
- 	if (kernel) {
--		x86_write_percpu(xen_cr3, cr3);
-+		percpu_write(xen_cr3, cr3);
- 
- 		/* Update xen_current_cr3 once the batch has actually
- 		   been submitted. */
-@@ -771,7 +771,7 @@ static void xen_write_cr3(unsigned long 
- 
- 	/* Update while interrupts are disabled, so its atomic with
- 	   respect to ipis */
--	x86_write_percpu(xen_cr3, cr3);
-+	percpu_write(xen_cr3, cr3);
- 
- 	__xen_write_cr3(true, cr3);
- 
-Index: linux/arch/x86/xen/irq.c
-===================================================================
---- linux.orig/arch/x86/xen/irq.c
-+++ linux/arch/x86/xen/irq.c
-@@ -39,7 +39,7 @@ static unsigned long xen_save_fl(void)
- 	struct vcpu_info *vcpu;
- 	unsigned long flags;
- 
--	vcpu = x86_read_percpu(xen_vcpu);
-+	vcpu = percpu_read(xen_vcpu);
- 
- 	/* flag has opposite sense of mask */
- 	flags = !vcpu->evtchn_upcall_mask;
-@@ -62,7 +62,7 @@ static void xen_restore_fl(unsigned long
- 	   make sure we're don't switch CPUs between getting the vcpu
- 	   pointer and updating the mask. */
- 	preempt_disable();
--	vcpu = x86_read_percpu(xen_vcpu);
-+	vcpu = percpu_read(xen_vcpu);
- 	vcpu->evtchn_upcall_mask = flags;
- 	preempt_enable_no_resched();
- 
-@@ -83,7 +83,7 @@ static void xen_irq_disable(void)
- 	   make sure we're don't switch CPUs between getting the vcpu
- 	   pointer and updating the mask. */
- 	preempt_disable();
--	x86_read_percpu(xen_vcpu)->evtchn_upcall_mask = 1;
-+	percpu_read(xen_vcpu)->evtchn_upcall_mask = 1;
- 	preempt_enable_no_resched();
- }
- 
-@@ -96,7 +96,7 @@ static void xen_irq_enable(void)
- 	   the caller is confused and is trying to re-enable interrupts
- 	   on an indeterminate processor. */
- 
--	vcpu = x86_read_percpu(xen_vcpu);
-+	vcpu = percpu_read(xen_vcpu);
- 	vcpu->evtchn_upcall_mask = 0;
- 
- 	/* Doesn't matter if we get preempted here, because any
-Index: linux/arch/x86/xen/mmu.c
-===================================================================
---- linux.orig/arch/x86/xen/mmu.c
-+++ linux/arch/x86/xen/mmu.c
-@@ -1074,7 +1074,7 @@ static void drop_other_mm_ref(void *info
- 
- 	/* If this cpu still has a stale cr3 reference, then make sure
- 	   it has been flushed. */
--	if (x86_read_percpu(xen_current_cr3) == __pa(mm->pgd)) {
-+	if (percpu_read(xen_current_cr3) == __pa(mm->pgd)) {
- 		load_cr3(swapper_pg_dir);
- 		arch_flush_lazy_cpu_mode();
- 	}
-Index: linux/arch/x86/xen/multicalls.h
-===================================================================
---- linux.orig/arch/x86/xen/multicalls.h
-+++ linux/arch/x86/xen/multicalls.h
-@@ -39,7 +39,7 @@ static inline void xen_mc_issue(unsigned
- 		xen_mc_flush();
- 
- 	/* restore flags saved in xen_mc_batch */
--	local_irq_restore(x86_read_percpu(xen_mc_irq_flags));
-+	local_irq_restore(percpu_read(xen_mc_irq_flags));
- }
- 
- /* Set up a callback to be called when the current batch is flushed */
-Index: linux/arch/x86/xen/smp.c
-===================================================================
---- linux.orig/arch/x86/xen/smp.c
-+++ linux/arch/x86/xen/smp.c
-@@ -78,7 +78,7 @@ static __cpuinit void cpu_bringup(void)
- 	xen_setup_cpu_clockevents();
- 
- 	cpu_set(cpu, cpu_online_map);
--	x86_write_percpu(cpu_state, CPU_ONLINE);
-+	percpu_write(cpu_state, CPU_ONLINE);
- 	wmb();
- 
- 	/* We can take interrupts now: we're officially "up". */
-Index: linux/include/asm-generic/percpu.h
-===================================================================
---- linux.orig/include/asm-generic/percpu.h
-+++ linux/include/asm-generic/percpu.h
-@@ -80,4 +80,32 @@ extern void setup_per_cpu_areas(void);
- #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
- 					__typeof__(type) per_cpu_var(name)
- 
-+/*
-+ * Optional methods for optimized non-lvalue per-cpu variable access:
-+ */
-+
-+#ifndef percpu_read
-+# define percpu_read(var)		__get_cpu_var(var)
-+#endif
-+
-+#ifndef percpu_write
-+# define percpu_write(var, val)		({ __get_cpu_var(var) = (val); })
-+#endif
-+
-+#ifndef percpu_add
-+# define percpu_add(var, val)		({ __get_cpu_var(var) += (val); })
-+#endif
-+
-+#ifndef percpu_sub
-+# define percpu_add(var, val)		({ __get_cpu_var(var) += (val); })
-+#endif
-+
-+#ifndef percpu_or
-+# define percpu_or(var, val)		({ __get_cpu_var(var) |= (val); })
-+#endif
-+
-+#ifndef percpu_xor
-+# define percpu_xor(var, val)		({ __get_cpu_var(var) ^= (val); })
-+#endif
-+
- #endif /* _ASM_GENERIC_PERCPU_H_ */
