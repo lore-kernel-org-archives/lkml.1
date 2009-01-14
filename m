@@ -1,113 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbZANJsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbZANJtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761544AbZANJsD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 04:48:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbZANJrx
+	id S1757680AbZANJtM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 04:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbZANJsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 04:47:53 -0500
-Received: from pan.madism.org ([88.191.52.104]:45979 "EHLO hermes.madism.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755690AbZANJrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 04:47:52 -0500
-X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 04:47:52 EST
-From: Pierre Habouzit <pierre.habouzit@intersec.com>
-To: Wei Yongjun <yjwei@cn.fujitsu.com>,
-       Vlad Yasevich <vladislav.yasevich@hp.com>,
-       " David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org,
-       Pierre Habouzit <pierre.habouzit@intersec.com>
-Subject: [PATCH] sctp: if backlog is 0, listening shall not be deactivated.
-Date: Wed, 14 Jan 2009 10:42:03 +0100
-Message-Id: <1231926123-26196-1-git-send-email-pierre.habouzit@intersec.com>
-X-Mailer: git-send-email 1.6.1.161.g5e07b.dirty
+	Wed, 14 Jan 2009 04:48:55 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48503 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757488AbZANJsy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 04:48:54 -0500
+Message-ID: <496DB504.8090800@s5r6.in-berlin.de>
+Date: Wed, 14 Jan 2009 10:48:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Manfred Spraul <manfred@colorfullife.com>, krh@redhat.com, dcm@acm.org,
+       Nadia.Derbey@bull.net, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, paulmck@us.ibm.com, stable@kernel.org
+Subject: Re: [PATCH] lib/idr.c: Zero memory properly in idr_remove_all
+References: <1231571060.3538.18.camel@localhost.localdomain>	<49686465.70501@s5r6.in-berlin.de>	<20090110011557.9d94e111.akpm@linux-foundation.org>	<496872E0.9030007@s5r6.in-berlin.de>	<1231773620.6365.21.camel@gaara.bos.redhat.com>	<496B9FC7.3090108@colorfullife.com>	<1231792712.6365.31.camel@gaara.bos.redhat.com>	<496BAD1C.5060201@colorfullife.com>	<20090113144802.39dc4c23.akpm@linux-foundation.org>	<84144f020901132319g50dc9e50o283b0d263f287eea@mail.gmail.com>	<20090114001745.9575ab02.akpm@linux-foundation.org>	<496DA95B.6070401@s5r6.in-berlin.de> <20090114012234.bce79d7b.akpm@linux-foundation.org>
+In-Reply-To: <20090114012234.bce79d7b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-POSIX hints that when 0 is used for the listen backlog argument, the
-kernel shall chose a default automatic value. TCP for example, works this
-way.
+Andrew Morton wrote:
+> On Wed, 14 Jan 2009 09:59:07 +0100 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> 
+>> > --- a/lib/idr.c~lib-idrc-use-kmem_cache_zalloc-for-the-idr_layer-cache
+>> > +++ a/lib/idr.c
+>> > @@ -121,7 +121,7 @@ int idr_pre_get(struct idr *idp, gfp_t g
+>> >  {
+>> >  	while (idp->id_free_cnt < IDR_FREE_MAX) {
+>> >  		struct idr_layer *new;
+>> > -		new = kmem_cache_alloc(idr_layer_cache, gfp_mask);
+>> > +		new = kmem_cache_zalloc(idr_layer_cache, gfp_mask);
+>> >  		if (new == NULL)
+>> >  			return (0);
+>> >  		move_to_free_list(idp, new);
+>> ...
+>> 
+>> I wonder if it would be more robust --- or even necessary --- to instead
+>> add proper initialization code to get_from_free_list().
+>> 
+>> As far as David and I tested the new idr using code in firewire, we
+>> called idr_remove_all() *and* idr_destroy() before any subsequent
+>> idr_get_new().  But in practice, idr_get_new() may of course also happen
+>> between idr_remove_all() and idr_destroy().
+>> 
+>> And then this fix won't be sufficient, would it?
+> 
+> Maybe I'm having a thick day, but I'm not following you at all here.
+> 
+> What do you think the remaining problem is?  get_from_free_list()
+> starts out with a not-fully-zeroed object?  Something else?
 
-Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
----
+AFAICS:
 
- net/sctp/socket.c |   20 --------------------
- 1 files changed, 0 insertions(+), 20 deletions(-)
+Before the faulty commit, all code sites which moved something into the
+per-idr free list cleared the respective idr_layer.
 
-    To put a bit of background, I stumbled against this while doing a code
-    that basically did:
+After the faulty commit, idr_remove_all() forgot to do so.
 
-	struct sctp_event_subscribe events;
-	/* ... */
+After your patch, idr_remove_all() still doesn't clear anything.  But
+there will typically be idr_destroy() called right after an
+idr_remove_all().  idr_destroy() moves all idr_layers out of this idr's
+free list back into the kernel-global idr_layer_cache.
 
-	fd = socket(AF_INET, SOCK_SEQPACKETS, IPPROTO_SCTP);
-	sctp_bindx(fd, ....);
-	events = (struct sctp_event_subscribe){
-	    .sctp_data_io_event     = 1,
-	    .sctp_association_event = 1,
-	};
-	setsockopt(fd, SOL_SCTP, SCTP_EVENTS, &events, sizeof(events));
-	listen(fd, 0);
-	len = sctp_recvmsg(fd, .....);
+Your fix only clears idr_layers which an idr_get_new*() pulls out of the
+idr_layer_cache, but not any one which it pulls out of the idr's own
+free list.
 
-    The latter call instead of blocking like I expected returned with
-    errno == ENOTCONN.
+Hmm, OK.  Seems to be harmless as long as idr users don't start to add
+new entries to an idr after they did idr_remove_all().
 
-    I know POSIX doesn't _require_ listen() to accept 0 as a valid backlog,
-    but the other listen() implementation I have used in the kernel do, and
-    it looks really surprising for the programmer (who really searches the
-    error elsewhere).
+I presume there is none such user, is there?  Such a usage would be
+unusual but not illegal, I suppose.
 
-    Fortunately I had another working code at hand and I managed to find the
-    problem resorting to reverting the changes I made to the original code
-    line per line (*sigh*).
-
-    I'm unsure if the diff shouldn't do instead:
-
-    if (!backlog)
-        backlog = 1;
-
-    I'm not really comfortable around the kernel core ;)
-
-
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index ff0a8f8..da1d96a 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -5866,16 +5866,6 @@ SCTP_STATIC int sctp_seqpacket_listen(struct sock *sk, int backlog)
- 	if (!sctp_style(sk, UDP))
- 		return -EINVAL;
- 
--	/* If backlog is zero, disable listening. */
--	if (!backlog) {
--		if (sctp_sstate(sk, CLOSED))
--			return 0;
--
--		sctp_unhash_endpoint(ep);
--		sk->sk_state = SCTP_SS_CLOSED;
--		return 0;
--	}
--
- 	/* Return if we are already listening. */
- 	if (sctp_sstate(sk, LISTENING))
- 		return 0;
-@@ -5919,16 +5909,6 @@ SCTP_STATIC int sctp_stream_listen(struct sock *sk, int backlog)
- 	struct sctp_sock *sp = sctp_sk(sk);
- 	struct sctp_endpoint *ep = sp->ep;
- 
--	/* If backlog is zero, disable listening. */
--	if (!backlog) {
--		if (sctp_sstate(sk, CLOSED))
--			return 0;
--
--		sctp_unhash_endpoint(ep);
--		sk->sk_state = SCTP_SS_CLOSED;
--		return 0;
--	}
--
- 	if (sctp_sstate(sk, LISTENING))
- 		return 0;
- 
+(Furthermore, I may by thoroughly mistaken about how lib/idr.c works.)
 -- 
-1.6.1.161.g5e07b.dirty
-
+Stefan Richter
+-=====-==--= ---= -===-
+http://arcgraph.de/sr/
