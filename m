@@ -1,129 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZANV0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757810AbZANV1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbZANV0l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZANV0d
+	id S1757810AbZANV1F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZANV0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:26:33 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:43893 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753895AbZANV0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:26:32 -0500
-Message-ID: <496E587E.6010503@sgi.com>
-Date: Wed, 14 Jan 2009 13:26:22 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: arch_probe_nr_irqs
-References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu> <496B9FC3.7080306@kernel.org> <496BCD14.3020201@sgi.com> <20090114111949.GO2913@elte.hu> <496E4211.6040503@sgi.com> <20090114201152.GA31581@elte.hu>
-In-Reply-To: <20090114201152.GA31581@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 Jan 2009 16:26:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38444 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760169AbZANV0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:26:42 -0500
+Date: Wed, 14 Jan 2009 13:25:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dann frazier <dannf@dannf.org>
+Cc: alessandro.zummo@towertech.it, rtc-linux@googlegroups.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       eranian@googlemail.com
+Subject: Re: [PATCH] add rtc platform driver for EFI
+Message-Id: <20090114132554.1efce88f.akpm@linux-foundation.org>
+In-Reply-To: <20090114173745.GA24492@ldl.fc.hp.com>
+References: <20090109005644.GH32403@ldl.fc.hp.com>
+	<20090109032729.6e4cd5fd@i1501.lan.towertech.it>
+	<20090109213615.GD31548@ldl.fc.hp.com>
+	<20090113003934.0a7da676.akpm@linux-foundation.org>
+	<20090114000043.GB24423@colo.lackof.org>
+	<20090114011719.GD24423@colo.lackof.org>
+	<20090114023055.1d22d09e@i1501.lan.towertech.it>
+	<20090114041358.GA21357@ldl.fc.hp.com>
+	<20090114043337.GB21357@ldl.fc.hp.com>
+	<20090114115728.15f2db18@i1501.lan.towertech.it>
+	<20090114173745.GA24492@ldl.fc.hp.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Very cool, thanks!!
+On Wed, 14 Jan 2009 10:37:45 -0700
+dann frazier <dannf@dannf.org> wrote:
 
-The one thing I always get hung up on is what args to use with the git
-rebase -i command.  Say I want to edit 4a046d1 (which I do ;-), I see
-it in my repo with git-log (3rd one down):
+> +#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
 
-commit e46d517...
-Merge: a4a0acf... 4a046d1...
-Author: Ingo Molnar <mingo@elte.hu>
-
-    Merge branch 'master' of ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo into cpus4096
-
-commit a4a0acf...
-Author: Suresh Siddha <suresh.b.siddha@intel.com>
-
-    x86: fix broken flush_tlb_others_ipi()
-
-commit 4a046d1...
-Author: Yinghai Lu <yinghai@kernel.org>
-
-    x86: arch_probe_nr_irqs
-
-commit e65e49d...
-Author: Mike Travis <travis@sgi.com>
-
-    irq: update all arches for new irq_desc
+gargh.  We should put a tax on #defines to discourage their consumption.
 
 
-So, upstream is tip/cpus4096 yes?  But then:
+How about we do this:
 
-: git-rebase -i tip/cpus4096
-Nothing to do
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Attempting other args proved equally fruitless.
+- the LEAP_YEAR macro is buggy - it references its arg multiple times. 
+  Fix this by turning it into a C function.
 
-Thanks,
-Mike
+- give it a more approriate name
 
-Ingo Molnar wrote:
-... You should just create a -git based repo on 
-> kernel.org:
-> 
->   cd /pub/scm/linux/kernel/git/travis/
->   rm -rf linux-2.6-cpus4096-for-ingo
->   git-clone --bare --shared ../torvalds/linux-2.6.git linux-2.6-cpus4096-for-ingo
-> 
-> that's all - you dont ever have to touch the master.kernel.org bits on 
-> that box anymore. Then you can clone it (via ssh) to your local box:
-> 
->   git clone ssh://master.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo
-> 
-> that's it - you are all set!
-> 
-> Now you can go into your repo, and do a few convenience things like:
-> 
->      git-remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->      git-remote add tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> 
->      git remote update
-> 
-> But these dont ever go to your master.kernel.org tree. Your local 'master' 
-> branch is what you will push out most of the time.
-> 
-> To prepare a tree for me, if you want to base it on the latest 
-> tip/cpus4096, you do this:
-> 
->      git checkout master
->      git reset --hard tip/cpus4096
-> 
-> that's all. You can then (force-)push this out to your kernel.org repo 
-> via:
-> 
->      git push -f origin master
-> 
-> and you can manipulate your master branch and push it out to your 
-> master.kernel.org repo whenever you want to.
-> 
-> If you want a separate 'release' branch, you can do it too:
-> 
->    git checkout master
-> 
->    [ prepare your master branch with the bits. ]
-> 
->    git checkout -b for-ingo
->    git push origin for-ingo
-> 
->    [ git checkout master ]
-> 
-> That's it. If the for-ingo branch already exists and you know that it 
-> contains no bits that i might pull in parallel with you updating it, you 
-> can force-push it as well:
-> 
->    git checkout for-ingo
->    git reset --hard master          # set it to your release bits
->    git push -f origin for-ingo
-> 
-> that's it really.
-> 
-> 	Ingo
+- Move it to rtc.h so that other .c files can use it, instead of copying it.
+
+Cc: dann frazier <dannf@hp.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: stephane eranian <eranian@googlemail.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>
+Cc: David Brownell <david-b@pacbell.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/rtc/rtc-lib.c |    7 +++----
+ include/linux/rtc.h   |    6 ++++++
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff -puN drivers/rtc/rtc-lib.c~rtc-convert-leap_year-into-an-inline drivers/rtc/rtc-lib.c
+--- a/drivers/rtc/rtc-lib.c~rtc-convert-leap_year-into-an-inline
++++ a/drivers/rtc/rtc-lib.c
+@@ -26,14 +26,13 @@ static const unsigned short rtc_ydays[2]
+ };
+ 
+ #define LEAPS_THRU_END_OF(y) ((y)/4 - (y)/100 + (y)/400)
+-#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
+ 
+ /*
+  * The number of days in the month.
+  */
+ int rtc_month_days(unsigned int month, unsigned int year)
+ {
+-	return rtc_days_in_month[month] + (LEAP_YEAR(year) && month == 1);
++	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
+ }
+ EXPORT_SYMBOL(rtc_month_days);
+ 
+@@ -42,7 +41,7 @@ EXPORT_SYMBOL(rtc_month_days);
+  */
+ int rtc_year_days(unsigned int day, unsigned int month, unsigned int year)
+ {
+-	return rtc_ydays[LEAP_YEAR(year)][month] + day-1;
++	return rtc_ydays[is_leap_year(year)][month] + day-1;
+ }
+ EXPORT_SYMBOL(rtc_year_days);
+ 
+@@ -66,7 +65,7 @@ void rtc_time_to_tm(unsigned long time, 
+ 		- LEAPS_THRU_END_OF(1970 - 1);
+ 	if (days < 0) {
+ 		year -= 1;
+-		days += 365 + LEAP_YEAR(year);
++		days += 365 + is_leap_year(year);
+ 	}
+ 	tm->tm_year = year - 1900;
+ 	tm->tm_yday = days + 1;
+diff -puN include/linux/rtc.h~rtc-convert-leap_year-into-an-inline include/linux/rtc.h
+--- a/include/linux/rtc.h~rtc-convert-leap_year-into-an-inline
++++ a/include/linux/rtc.h
+@@ -99,6 +99,7 @@ struct rtc_pll_info {
+ 
+ #ifdef __KERNEL__
+ 
++#include <linux/types.h>
+ #include <linux/interrupt.h>
+ 
+ extern int rtc_month_days(unsigned int month, unsigned int year);
+@@ -232,6 +233,11 @@ int rtc_register(rtc_task_t *task);
+ int rtc_unregister(rtc_task_t *task);
+ int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
+ 
++static inline bool is_leap_year(unsigned int year)
++{
++	return (!(year % 4) && (year % 100)) || !(year % 400);
++}
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _LINUX_RTC_H_ */
+_
+
+
+
+and then we modify your patch thusly:
+
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+Use is_leap_year()
+
+Cc: "Luck, Tony" <tony.luck@intel.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: dann frazier <dannf@dannf.org>
+Cc: dann frazier <dannf@hp.com>
+Cc: stephane eranian <eranian@googlemail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/rtc/rtc-efi.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff -puN arch/ia64/kernel/time.c~rtc-add-platform-driver-for-efi-fix arch/ia64/kernel/time.c
+diff -puN drivers/rtc/Kconfig~rtc-add-platform-driver-for-efi-fix drivers/rtc/Kconfig
+diff -puN drivers/rtc/Makefile~rtc-add-platform-driver-for-efi-fix drivers/rtc/Makefile
+diff -puN drivers/rtc/rtc-efi.c~rtc-add-platform-driver-for-efi-fix drivers/rtc/rtc-efi.c
+--- a/drivers/rtc/rtc-efi.c~rtc-add-platform-driver-for-efi-fix
++++ a/drivers/rtc/rtc-efi.c
+@@ -26,8 +26,6 @@
+  */
+ #define EFI_RTC_EPOCH		1998
+ 
+-#define LEAP_YEAR(year) ((!(year % 4) && (year % 100)) || !(year % 400))
+-
+ /*
+  * returns day of the year [0-365]
+  */
+@@ -54,7 +52,7 @@ compute_wday(efi_time_t *eft)
+ 	}
+ 
+ 	for (y = EFI_RTC_EPOCH; y < eft->year; y++)
+-		ndays += 365 + (LEAP_YEAR(y) ? 1 : 0);
++		ndays += 365 + (is_leap_year(y) ? 1 : 0);
+ 
+ 	ndays += compute_yday(eft);
+ 
+_
 
