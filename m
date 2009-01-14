@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbZANAeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbZANAf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbZANAeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbZANAeJ
+	id S1760698AbZANAf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZANAft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:34:09 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53826 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755497AbZANAeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:34:08 -0500
-Date: Wed, 14 Jan 2009 00:33:23 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: David Miller <davem@davemloft.net>
-cc: kosaki.motohiro@jp.fujitsu.com, Jesper.Nilsson@axis.com, tj@kernel.org,
-       gregkh@suse.de, stern@rowland.harvard.edu, jens.axboe@oracle.com,
-       hinko.kocevar@cetrtapot.si, linux-kernel@vger.kernel.org
-Subject: Re: lib/klist.c: bit 0 in pointer can't be used as flag
-In-Reply-To: <20090113.144521.97357573.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0901140026240.3808@blonde.anvils>
-References: <20090113.131030.207355839.davem@davemloft.net>
- <20090113221235.GD19262@axis.com> <2f11576a0901131440w7fd3290uc9664aaf7aa89b08@mail.gmail.com>
- <20090113.144521.97357573.davem@davemloft.net>
+	Tue, 13 Jan 2009 19:35:49 -0500
+Received: from netgear.net.ru ([195.178.208.66]:60362 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755079AbZANAfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:35:48 -0500
+Date: Wed, 14 Jan 2009 03:35:46 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090114003546.GA1705@ioremap.net>
+References: <20090112231728.GA23803@ioremap.net> <alpine.DEB.2.00.0901121746220.20329@chino.kir.corp.google.com> <20090113085244.GA13796@ioremap.net> <alpine.DEB.2.00.0901130134090.25386@chino.kir.corp.google.com> <20090113115408.GA22289@ioremap.net> <20090113121510.68a55fe9@lxorguk.ukuu.org.uk> <20090113122904.GC25011@ioremap.net> <20090113131937.GB17664@mit.edu> <20090113133555.GA28107@ioremap.net> <496D30C3.4010905@tmr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496D30C3.4010905@tmr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009, David Miller wrote:
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Date: Wed, 14 Jan 2009 07:40:19 +0900
-> 
-> > > It may be that we've worked around the other spots, although I haven't
-> > > seen anything like that, we might just have been lucky until now.
-> > >
-> > > Can you recall another place where this trick is used?
-> > 
-> > rmap.
-> > Don't CRIS use mmu?
-> 
-> I'm beginning to suspect the issue is only with objects
-> in the kernel image itself.  Dynamically allocated memory
-> is properly aligned and therefore the "low bit status bits
-> in pointer" trick works.
+On Tue, Jan 13, 2009 at 07:24:35PM -0500, Bill Davidsen (davidsen@tmr.com) wrote:
+> >So effectively oom_adj only works as enable/disable switch, and since no
+> >one knows how to tune it, it is better to do not touch at all. And get
+> >ssh killed. I believe if it is ever used then only to disable oom at
+> >all, which is wrong, since task still may be killed but after some
+> >others. My patch adds a simple priority for that based on the name of
+> >the process, which are known to the administrators who maintain given
+> >system.
+> >  
+> If nothing else, this would seem to reduce the number of processes for 
+> which the OOM coefficient of evil must be calculated.
 
-Yes: I don't think we fully realized that when adding the
-__attribute__((aligned(sizeof(long)))) to struct address_space
-(so the PAGE_MAPPING_ANON bit didn't mess up on CRIS), but the
-only instance which actually gave a problem was the peculiar
-struct swapper_space declared in mm/swap_state.c.
+Yes, it allows this.
 
-Hugh
+-- 
+	Evgeniy Polyakov
