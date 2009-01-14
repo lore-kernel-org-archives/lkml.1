@@ -1,103 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZANS1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbZANS1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbZANS1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:27:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZANS0z
+	id S1755363AbZANS1c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZANS1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:26:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48819 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751158AbZANS0x (ORCPT
+	Wed, 14 Jan 2009 13:27:17 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55879 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753156AbZANS1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:26:53 -0500
-Date: Wed, 14 Jan 2009 10:25:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Robert Reif <reif@earthlink.net>, David Miller <davem@davemloft.net>,
-       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: sparc32 compile error: redefinition of =?UTF-8?Q?=E2=80=98smp?=
- =?UTF-8?Q?=5Fcall=5Ffunction=5Fsingle=E2=80=99?=
-Message-Id: <20090114102544.71893225.akpm@linux-foundation.org>
-In-Reply-To: <20090114153255.GA32082@uranus.ravnborg.org>
-References: <496D4274.6000304@earthlink.net>
-	<20090113.181039.185575172.davem@davemloft.net>
-	<20090113184239.e6b6e68e.akpm@linux-foundation.org>
-	<20090113184536.95ebc973.akpm@linux-foundation.org>
-	<496D5E19.7040802@earthlink.net>
-	<20090113235940.12d856d0.akpm@linux-foundation.org>
-	<20090114153255.GA32082@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 13:27:16 -0500
+Date: Wed, 14 Jan 2009 19:27:06 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-ID: <20090114182706.GA24719@elf.ucw.cz>
+References: <1231945948-23676-1-git-send-email-jack@suse.cz> <1231945948-23676-2-git-send-email-jack@suse.cz> <20090114101834.fbb9ea12.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114101834.fbb9ea12.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 16:32:55 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+Hi!
 
-> On Tue, Jan 13, 2009 at 11:59:40PM -0800, Andrew Morton wrote:
-> > On Tue, 13 Jan 2009 22:38:01 -0500 Robert Reif <reif@earthlink.net> wrote:
-> > 
-> > > This worked:
-> > > 
-> > > diff --git a/kernel/Makefile b/kernel/Makefile
-> > > index 2aebc4c..368227d 100644
-> > > --- a/kernel/Makefile
-> > > +++ b/kernel/Makefile
-> > > @@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
-> > >  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
-> > >  obj-y += smp.o
-> > >  else
-> > > +ifneq ($(CONFIG_SMP),y)
-> > >  obj-y += up.o
-> > >  endif
-> > > +endif
-> > >  obj-$(CONFIG_SMP) += spinlock.o
-> > >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
-> > >  obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
-> > 
-> > This all can be simplified, can't it?
-> > 
-> > obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
-> > ifneq ($(CONFIG_SMP),y)
-> > obj-y += up.o
-> > endif
-> > 
-> > (someone please check my homework - I don't have a good track
-> > record here ;))
+> Also, the changelog needs some work, methinks.
 > 
-> Looks correct. We pull in smp.o only for SPARC64 AND SMP
-
-SPARC64=n and SMP, actually (assuming sparc64 is the only
-USE_GENERIC_SMP_HELPERS=n arch)
-
-> But I find the next lines distastefull in a Makefile:
-> > ifneq ($(CONFIG_SMP),y)
-> > obj-y += up.o
-> > endif
-
-me too.
-
-> I would prefer a small Kconfig helper symbol:
+> /**
+>  * blkdev_issue_flush - queue a flush
+>  * @bdev:	blockdev to issue flush for
+>  * @error_sector:	error sector
+>  *
+>  * Description:
+>  *    Issue a flush for the block device in question. Caller can supply
+>  *    room for storing the error offset in case of a flush error, if they
+>  *    wish to.  Caller must run wait_for_completion() on its own.
+>  */
 > 
-> config SPARC_UP
-> 	def_bool y
-> 	depends on !SMP
+> So afaict the change you've made is incomplete.  We'll queue a
+> writeback command to the disk but we won't wait for it to be sent down
+> the wire.  Nor do we wait for the command to complete at the device
+> end.  So it can still be a looong time (seconds!) before the data which
+> the user thinks is on disk really is safe.
 > 
-> And then we would do the Makefile bits like this:
-> obj-$(CONFIG_SPARC_UP) += up.o
+> Yes?
+> 
+> If so, this design decision should be described in the changelog, and
+> justified.  Actually, doing this in the comment over
+> ext3_blkdev_issue_flush() would be good.
 
-eek.  Mentioning sparc explicitly in kernel/Makefile is badder.
+Actually, if sync() and fsync() do not work, it probably needs more
+than a comment in changelog. Like comment in documentation, in big
+bold letters.
+									Pavel
 
-we could remove zillions of these conditionals if something somewhere
-were to generate negated symbols for us.  Say, when kbuild sees
-CONFIG_SMP=y, it will generate another symbol: NOT_CONFIG_SMP=y.  So
-then we can do
-
-obj-$NOT_CONFIG_SMP += up.o
-
-Or is that too cheesy?
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
