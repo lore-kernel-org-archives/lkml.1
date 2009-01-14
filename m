@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZANOpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbZANOpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759278AbZANOpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 09:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZANOpH
+	id S1761469AbZANOpo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 09:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbZANOpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 09:45:07 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:16996 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752253AbZANOpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 09:45:06 -0500
-Date: Wed, 14 Jan 2009 15:43:46 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Jan Kara <jack@suse.cz>,
-       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>, sandeen@redhat.com
-Subject: Re: ext2 + -osync: not as easy as it seems
-Message-ID: <20090114144345.GD30821@kernel.dk>
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz> <20090114140802.GC30821@kernel.dk> <20090114143455.GE6222@mit.edu>
+	Wed, 14 Jan 2009 09:45:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:40870 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755647AbZANOpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 09:45:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=nNnhC4VI8JXtj3lSVllrVl7qaB8tJhaYmDjBoxErwpHlwPb0OHlEqHhiXbOds0DY6Q
+         fPwaetZh7Klt8muqlCYbx+/OXA918FJqAemsQWcuAKmjbUdSNt9DCJ+lv1N7PR5SwslZ
+         rt9T++AlnViuZ088zDxJKd6y+uGBGc6ByBLwo=
+Message-ID: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
+Date: Wed, 14 Jan 2009 16:45:15 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [patch] SLQB slab allocator
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "Lin Ming" <ming.m.lin@intel.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20090114142200.GB25401@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090114143455.GE6222@mit.edu>
+References: <20090114090449.GE2942@wotan.suse.de>
+	 <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com>
+	 <20090114114707.GA24673@wotan.suse.de>
+	 <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com>
+	 <20090114142200.GB25401@wotan.suse.de>
+X-Google-Sender-Auth: 06d8b3fa3806c7db
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14 2009, Theodore Tso wrote:
-> On Wed, Jan 14, 2009 at 03:08:04PM +0100, Jens Axboe wrote:
-> > 
-> > It also guarentees that when you get a completion for that barrier
-> > write, it's on safe storage. Think of it as a flush-write-flush
-> > operation, in the presence of write back caching.
-> > 
-> 
-> Is that true even if the barrier isn't attached to a write operation,
-> i.e., when using
-> 
->       blkdev_issue_flush(sb, NULL);
-> 
-> ?
+Hi Nick,
 
-No, since there's no specific write to protect in that case. The above
-will flush existing writes to platter, but has no bearing on writes
-submitted later (other than the obvious effect that they will be on disk
-later then previously submitted writes). So for blkdev_issue_flush(),
-when that returns with good status, then the writes are safe. In the
-absence of the barrier flag on a write, completion of that write may
-just mean that the disk drive is aware of it, not that it is in any way
-safe.
+On Wed, Jan 14, 2009 at 4:22 PM, Nick Piggin <npiggin@suse.de> wrote:
+> The problem is there was apparently no plan for resolving the SLAB vs SLUB
+> strategy. And then features and things were added to one or the other one.
+> But on the other hand, the SLUB experience was a success in a way because
+> there were a lot of performance regressions found and fixed after it was
+> merged, for example.
 
-The hardware may even treat the flush as a noop and do absolutely
-nothing, which is perfectly valid if it guarantees us that it will never
-lose a submitted write.
+That's not completely true. I can't speak for Christoph, but the
+biggest problem I have is that I have _no way_ of reproducing or
+analyzing the regression. I've tried out various benchmarks I have
+access to but I haven't been able to find anything.
 
--- 
-Jens Axboe
+The hypothesis is that SLUB regresses because of kmalloc()/kfree()
+ping-pong between CPUs and as far as I understood, Christoph thinks we
+can improve SLUB with the per-cpu alloc patches and the freelist
+management rework.
 
+Don't get me wrong, though. I am happy you are able to work with the
+Intel engineers to fix the long standing issue (I want it fixed too!)
+but I would be happier if the end-result was few simple patches
+against mm/slub.c :-).
+
+On Wed, Jan 14, 2009 at 4:22 PM, Nick Piggin <npiggin@suse.de> wrote:
+> I'd love to be able to justify replacing SLAB and SLUB today, but actually
+> it is simply never going to be trivial to discover performance regressions.
+> So I don't think outright replacement is great either (consider if SLUB
+> had replaced SLAB completely).
+
+If you ask me, I wish we *had* removed SLAB so relevant people could
+have made a huge stink out of it and the regression would have been
+taken care quickly ;-).
+
+                       Pekka
