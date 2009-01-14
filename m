@@ -1,84 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbZANVOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZANVPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759583AbZANVOH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:14:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbZANVNv
+	id S1759745AbZANVPh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 16:15:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbZANVP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:13:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51818 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754045AbZANVNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:13:50 -0500
-Date: Wed, 14 Jan 2009 13:13:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Erik Ekman <erik@kryo.se>
-Cc: linux-kernel@vger.kernel.org, abelay@mit.edu, bjorn.helgaas@hp.com
-Subject: Re: [PATCH -tip][RFC] pnpbios: Fix warning if no hotplug
-Message-Id: <20090114131321.78c2d088.akpm@linux-foundation.org>
-In-Reply-To: <20090110115219.1ebb94cd.erik@kryo.se>
-References: <20090110115219.1ebb94cd.erik@kryo.se>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 16:15:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59772 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754418AbZANVPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 16:15:25 -0500
+Date: Wed, 14 Jan 2009 22:14:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090114211458.GD6519@elte.hu>
+References: <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114105300.66bd014d.akpm@linux-foundation.org> <20090114190008.GA13203@elte.hu> <20090114113638.c818fcf8.akpm@linux-foundation.org> <20090114201435.GA6519@elte.hu> <20090114123017.9acf42d7.akpm@linux-foundation.org> <20090114205122.GC6519@elte.hu> <20090114130642.cf2b18b2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114130642.cf2b18b2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Jan 2009 11:52:19 +0100
-Erik Ekman <erik@kryo.se> wrote:
 
-> pnpbios: Fix warning if no hotplug
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 14 Jan 2009 21:51:22 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> When hotplug is turned off, I get:
-> drivers/pnp/pnpbios/core.c: In function 'pnpbios_thread_init':
-> drivers/pnp/pnpbios/core.c:578: warning: unused variable 'task'
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > > > Do people enable CONFIG_SCHED_DEBUG?
+> > > > 
+> > > > If they suspect performance problems and want to analyze them?
+> > > 
+> > > The vast majority of users do not and usually cannot compile their own 
+> > > kernels.
+> > 
+> > ... which they derive from distro kernels or some old .config they always 
+> > used, via 'make oldconfig'. You are arguing against well-established facts 
+> > here.
+> > 
+> > If you dont believe my word for it, here's an analysis of all kernel 
+> > configs posted to lkml in the past 8 months:
+> > 
+> >    $ grep ^CONFIG_SCHED_DEBUG linux-kernel | wc -l
+> >    424
+> > 
+> >    $ grep 'CONFIG_SCHED_DEBUG is not' linux-kernel | wc -l
+> >    109
+> > 
+> > i.e. CONFIG_SCHED_DEBUG=y is set in 80% of the configs. A large majority 
+> > of testers has it enabled and /sys/debug/sched_features was always a good 
+> > mechanism that we used for runtime toggles.
 > 
-> Is this a good way to fix this? Or should I just a #ifdef
-> CONFIG_HOTPLUG around the task variable?
-> 
-> Signed-off-by: Erik Ekman <erik@kryo.se>
-> ---
-> diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
-> index 996f648..e706d22 100644
-> --- a/drivers/pnp/pnpbios/core.c
-> +++ b/drivers/pnp/pnpbios/core.c
-> @@ -575,8 +575,6 @@ fs_initcall(pnpbios_init);
->  
->  static int __init pnpbios_thread_init(void)
->  {
-> -	struct task_struct *task;
-> -
->  #if defined(CONFIG_PPC)
->  	if (check_legacy_ioport(PNPBIOS_BASE))
->  		return 0;
-> @@ -584,10 +582,13 @@ static int __init pnpbios_thread_init(void)
->  	if (pnpbios_disabled)
->  		return 0;
->  #ifdef CONFIG_HOTPLUG
-> -	init_completion(&unload_sem);
-> -	task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
-> -	if (!IS_ERR(task))
-> -		unloading = 0;
-> +	{
-> +		struct task_struct *task;
-> +		init_completion(&unload_sem);
-> +		task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
-> +		if (!IS_ERR(task))
-> +			unloading = 0;
-> +	}
->  #endif
->  	return 0;
->  }
+> You just disproved your own case :(
 
-Well you could just remove `task' altogether and do
+how so? 80% is not enough? I also checked Fedora and it has SCHED_DEBUG=y 
+in its kernel rpms.
 
-	if (!IS_ERR(kthread_run(pnp_dock_thread, NULL, "kpnpbiosd")))
-		unloading = 0;
+note that there's also a performance issue here: we generally _dont want_ 
+a debug sysctl overhead in the mutex code or in any fastpath for that 
+matter. So making it depend on SCHED_DEBUG is useful.
 
-but
+sched_feat() features get optimized out at build time when SCHED_DEBUG is 
+disabled. So it gives us the best of two worlds: the utility of sysctls in 
+the SCHED_DEBUG=y, and they get compiled out in the !SCHED_DEBUG case.
 
-a) `unloading' doesn't actually do anything, and can be removed
-
-b) this function shouldn't return 0 if kthread_run() failed
+	Ingo
