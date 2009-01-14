@@ -1,143 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZANFGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZANFNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZANFGI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 00:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZANFFy
+	id S1756134AbZANFNy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 00:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZANFNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 00:05:54 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:53289 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982AbZANFFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 00:05:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f1h+/6QWw/GlsPBVR2VYrTQbBbW3UGyQ7vPNZOaf6DTBzQFy6eGpADdWkSmHAeBq4A
-         HXZZAlJIESTdPG08L0tm+JG3QNq5hyTNXaSbg5KGCNKPVyJSlYGI6y7vJE5DAvkW3xkC
-         UE1WYO9kD15uvf6KvyUZH56l+Rxe/h3E5aEI0=
-Message-ID: <b9df5fa10901132105n478c501cq5b18285a22164b6e@mail.gmail.com>
-Date: Wed, 14 Jan 2009 11:05:52 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: Fix section mismatch in memcontrol.c
-Cc: "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       mingo@elte.hu, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>
-In-Reply-To: <20090114140010.3649cd2e.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 Jan 2009 00:13:44 -0500
+Received: from mail.gmx.net ([213.165.64.20]:38001 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753217AbZANFNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 00:13:43 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/qC5AP6DXqV4+DbjCzc8i6sT0D+kIDzEzp8BVXIn
+	LOed8H8Vhg74on
+Subject: Re: [BUG] How to get real-time priority using idle priority
+From: Mike Galbraith <efault@gmx.de>
+To: Brian Rogers <brian@xyzw.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1231815523.5899.7.camel@marge.simson.net>
+References: <4969D0D7.2060401@xyzw.org>
+	 <1231736941.6003.7.camel@marge.simson.net>
+	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
+	 <496BE8F6.1040308@xyzw.org>  <1231815523.5899.7.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 06:13:34 +0100
+Message-Id: <1231910014.610.14.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b9df5fa10901122139h4bfb727i64f864ec185c731d@mail.gmail.com>
-	 <496C2B4F.3090406@cn.fujitsu.com>
-	 <20090113151307.e9ddc085.kamezawa.hiroyu@jp.fujitsu.com>
-	 <b9df5fa10901132043j5a577b2fxeaaa4cc1fdd551f2@mail.gmail.com>
-	 <20090114140010.3649cd2e.kamezawa.hiroyu@jp.fujitsu.com>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.43
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh, yes. I forgot to signed off the patch. Here it is.
+On Tue, 2009-01-13 at 03:58 +0100, Mike Galbraith wrote:
+> On Mon, 2009-01-12 at 17:05 -0800, Brian Rogers wrote:
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> > I'll try Mike's "more complete" patch on top of 2.6.29-rc1 and see what 
+> > that does.
+> 
+> Don't bother.  I just tried a SCHED_IDLE make -j8 and had character
+> repeats while typing.  Must be another spot.
 
---- linux-2.6-orig/mm/memcontrol.c	2009-01-12 09:53:10.000000000 +0600
-+++ linux-2.6/mm/memcontrol.c	2009-01-13 19:55:02.846459224 +0600
-@@ -2170,13 +2170,13 @@ static void mem_cgroup_put(struct mem_cg
+Hrmph, what an annoying problem.  The below works pretty well, but
+_still_ has latency problems in some circumstances.
 
+The more I look at this, the more I think these guys _really_ want to be
+a separate class.  The problem is the incredible rate of min_vruntime
+advancement creating absurdly huge spreads.
 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
--static void __init enable_swap_cgroup(void)
-+static void __init_refok enable_swap_cgroup(void)
- {
- 	if (!mem_cgroup_disabled() && really_do_swap_account)
- 		do_swap_account = 1;
- }
- #else
--static void __init enable_swap_cgroup(void)
-+static void __init_refok enable_swap_cgroup(void)
- {
- }
+Hm, maybe I could advance min_vruntime at nice 0 when these guys are
+running, only advance their vruntime at warp 512, but that seems awfully
+hackish.  If they were a separate class, they could use the full nice
+spectrum instead of being merely mega-nice.
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index deb5ac8..5221515 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1888,8 +1888,29 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+ 			schedstat_inc(p, se.nr_forced2_migrations);
+ 	}
  #endif
+-	p->se.vruntime -= old_cfsrq->min_vruntime -
+-					 new_cfsrq->min_vruntime;
++	if (old_cpu != new_cpu) {
++		u64 vruntime, min_vruntime;
++		s64 delta = p->se.vruntime - old_cfsrq->min_vruntime;
++
++		/*
++		 * min_vruntimes may be advancing at wildly different
++		 * rates, so we must scale the delta accordingly.
++		 */
++		if (new_cfsrq->load.weight != old_cfsrq->load.weight) {
++			int negative = delta < 0;
++
++			delta = negative ? -delta : delta;
++			delta = calc_delta_mine(delta,
++				new_cfsrq->load.weight, &old_cfsrq->load);
++			delta = negative ? -delta : delta;
++		}
++		vruntime = new_cfsrq->min_vruntime + delta;
++		min_vruntime = new_cfsrq->min_vruntime - sysctl_sched_latency;
++		delta = (s64)(vruntime - min_vruntime);
++		if (delta > 0)
++			min_vruntime = vruntime;
++		p->se.vruntime = min_vruntime;
++	}
+ 
+ 	__set_task_cpu(p, new_cpu);
+ }
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 8e1352c..b18658f 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -673,7 +673,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 
+ 	if (!initial) {
+ 		/* sleeps upto a single latency don't count. */
+-		if (sched_feat(NEW_FAIR_SLEEPERS)) {
++		if (sched_feat(NEW_FAIR_SLEEPERS) &&
++				task_of(se)->policy != SCHED_IDLE) {
+ 			unsigned long thresh = sysctl_sched_latency;
+ 
+ 			/*
+@@ -793,6 +794,10 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 	}
+ #endif
+ 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
++
++	/* Idle tasks reach parity as soon as they get a chance to run. */
++	if (unlikely(task_of(se)->policy == SCHED_IDLE))
++		se->vruntime = cfs_rq->min_vruntime;
+ }
+ 
+ static int
+@@ -1340,14 +1345,18 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
+ 
+ static void set_last_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->last = se;
++	for_each_sched_entity(se) {
++		if (likely(task_of(se)->policy != SCHED_IDLE))
++			cfs_rq_of(se)->last = se;
++	}
+ }
+ 
+ static void set_next_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->next = se;
++	for_each_sched_entity(se) {
++		if (likely(task_of(se)->policy != SCHED_IDLE))
++			cfs_rq_of(se)->next = se;
++	}
+ }
+ 
+ /*
+@@ -1393,12 +1402,18 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+ 		return;
+ 
+ 	/*
+-	 * Batch tasks do not preempt (their preemption is driven by
++	 * Batch and idle tasks do not preempt (their preemption is driven by
+ 	 * the tick):
+ 	 */
+-	if (unlikely(p->policy == SCHED_BATCH))
++	if (unlikely(p->policy != SCHED_NORMAL))
+ 		return;
+ 
++	/* Idle tasks are by definition preempted by everybody. */
++	if (unlikely(curr->policy == SCHED_IDLE)) {
++		resched_task(curr);
++		return;
++	}
++
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+ 
 
 
-On 1/14/09, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 14 Jan 2009 10:43:24 +0600
-> "Rakib Mullick" <rakib.mullick@gmail.com> wrote:
->
->> Sure. You can carryout your other jobs. Here is the patch.
->> Thanks for your help guys.
->>
-> Thank you. I confirmed this fixes mismatch.
->
-> Could you send this with your Signed-off-by, again ?
->
-> you got my Ack.
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
->
->
->> --- linux-2.6-orig/mm/memcontrol.c	2009-01-12 09:53:10.000000000 +0600
->> +++ linux-2.6/mm/memcontrol.c	2009-01-13 19:55:02.846459224 +0600
->> @@ -2170,13 +2170,13 @@ static void mem_cgroup_put(struct mem_cg
->>
->>
->>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->> -static void __init enable_swap_cgroup(void)
->> +static void __init_refok enable_swap_cgroup(void)
->>  {
->>  	if (!mem_cgroup_disabled() && really_do_swap_account)
->>  		do_swap_account = 1;
->>  }
->>  #else
->> -static void __init enable_swap_cgroup(void)
->> +static void __init_refok enable_swap_cgroup(void)
->>  {
->>  }
->>  #endif
->>
->>
->> On 1/13/09, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> > On Tue, 13 Jan 2009 13:49:03 +0800
->> > Li Zefan <lizf@cn.fujitsu.com> wrote:
->> >
->> >> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> >> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
->> >>
->> >> Rakib Mullick wrote:
->> >> > Impact: Fix section mismatch warning.
->> >> >
->> >> > The annotation for __init in enable_swap_cgroup() and __initdata for
->> >> > really_do_swap_account produces the following warning. Which is not
->> >> > right, since this function is called from non-init section. This
->> >> > patch
->> >> > fixes it. If anything else please notice.
->> >> >
->> >>
->> >> I saw this warning on IA64. But this fix is wrong IMO.
->> >>
->> >> enable_swap_cgroup() will be called at system boot only:
->> >>
->> >> start_kernel()
->> >>   cgroup_init()
->> >>     mem_cgroup_create()
->> >>       enable_swap_cgroup()
->> >>
->> >> I think the proper fix is annotate mem_cgroup_create() with
->> >> __init_refok.
->> >>
->> > I think Li Zefan's fix is correct.
->> > Could you make a patch ? or I'll schedule this as my work.
->> >
->> > Thanks,
->> > -Kame
->> >
->> >
->> >
->>
->
->
