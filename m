@@ -1,126 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZANFUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZANFa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZANFUY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 00:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZANFUI
+	id S1757516AbZANFa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 00:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZANFaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 00:20:08 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:52526 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753325AbZANFUG (ORCPT
+	Wed, 14 Jan 2009 00:30:19 -0500
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:39530 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752535AbZANFaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 00:20:06 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar8EAGz/bElMQWt2/2dsb2JhbACBbMtVhW8
-Date: Wed, 14 Jan 2009 00:20:02 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, Theodore Tso <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
-	(fixed in LTTng 0.78)
-Message-ID: <20090114052002.GB14786@Krystal>
-References: <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com> <20090113225827.GA5791@Krystal> <20090114085427.442F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 00:30:17 -0500
+Date: Wed, 14 Jan 2009 11:00:15 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 1/4] Memory controller soft limit documentation
+Message-ID: <20090114053015.GK27129@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090107184110.18062.41459.sendpatchset@localhost.localdomain> <20090107184116.18062.8379.sendpatchset@localhost.localdomain> <6599ad830901131745t704428dav6fbf69aa315285b1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090114085427.442F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:18:50 up 13 days,  5:17,  1 user,  load average: 0.04, 0.26,
-	0.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <6599ad830901131745t704428dav6fbf69aa315285b1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> > * KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> > > Hi Mathieu
-> > > 
-> > > 2009/1/11 Mathieu Desnoyers <compudj@krystal.dyndns.org>:
-> > > > Hi,
-> > > >
-> > > > LTTng 0.74 fixes the probe Makefile to build the net-trace probe module.
-> > > > It also adds jbd2 and ext4 tracepoints, and jbd2 probe module.
-> > > 
-> > > -ECANTBUILD
-> > > 
-> > 
-> > Hi Kosaki,
-> > 
-> > Thanks for the report. This should be fixed in LTTng 0.78 now.
-> > 
-> > Best regards,
-> 
-> Unfortunately, lockdep part also can't build.
-> 
+* Paul Menage <menage@google.com> [2009-01-13 17:45:54]:
 
-I may be missing something, but I'm pretty sure the
-lttng-instrumentation-lockdep.patch in 0.78 also fixes this. (it's been
-updated)
+> On Wed, Jan 7, 2009 at 10:41 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > -7. TODO
+> > +7. Soft limits
+> > +
+> > +Soft limits allow for greater sharing of memory. The idea behind soft limits
+> > +is to allow control groups to use as much of the memory as needed, provided
+> > +
+> > +a. There is no memory contention
+> > +b. They do not exceed their hard limit
+> > +
+> > +When the system detects memory contention (through do_try_to_free_pages(),
+> > +while allocating), control groups are pushed back to their soft limits if
+> > +possible. If the soft limit of each control group is very high, they are
+> > +pushed back as much as possible to make sure that one control group does not
+> > +starve the others.
+> 
+> Can you give an example here of how to implement the following setup:
+> 
+> - we have a high-priority latency-sensitive server job A and a bunch
+> of low-priority batch jobs B, C and D
+> 
+> - each job *may* need up to 2GB of memory, but generally each tends to
+> use <1GB of memory
+> 
+> - we want to run all four jobs on a 4GB machine
+> 
+> - we don't want A to ever have to wait for memory to be reclaimed (as
+> it's serving latency-sensitive queries), so the kernel should be
+> squashing B/C/D down *before* memory actually runs out.
+> 
+> Is this possible with the proposed hard/soft limit setup? Or do we
+> need some additional support for keeping a pool of pre-reserved free
+> memory available?
 
-Mathieu
+This is a more complex scenario, It sounds like B/C and D should be
+hard limited to 2G or another value, depending on how much you want to
+pre-reserve for A (all B/C and D should be in the same cgroup). Then
+you want to use soft limits within the B/C/D cgroup. You don't want to
+hard limit A, but just setup a 2G soft limit for it.
 
-> ==
-> Subject: [PATCH] fix lockdep tracing build error
-> 
-> commit 6afe40b4dace385d7ba2faf24b352f066f3b71bf rename argument a0 to ip.
-> it cause following build error to lttng tree.
-> 
->   CC      kernel/lockdep.o
-> kernel/lockdep.c: In function 'trace_hardirqs_on_caller':
-> kernel/lockdep.c:2186: error: 'a0' undeclared (first use in this function)
-> kernel/lockdep.c:2186: error: (Each undeclared identifier is reported only once
-> kernel/lockdep.c:2186: error: for each function it appears in.)
-> kernel/lockdep.c: In function 'trace_hardirqs_off_caller':
-> kernel/lockdep.c:2241: error: 'a0' undeclared (first use in this function)
-> make[1]: *** [kernel/lockdep.o] Error 1
-> 
-> 
-> therefore we also need change trace argument.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  kernel/lockdep.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index 2ec98a3..21ef2ad 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -2183,7 +2183,7 @@ void trace_hardirqs_on_caller(unsigned long ip)
->  
->  	time_hardirqs_on(CALLER_ADDR0, ip);
->  
-> -	_trace_lockdep_hardirqs_on(a0);
-> +	_trace_lockdep_hardirqs_on(ip);
->  
->  	if (unlikely(!debug_locks || current->lockdep_recursion))
->  		return;
-> @@ -2238,7 +2238,7 @@ void trace_hardirqs_off_caller(unsigned long ip)
->  
->  	time_hardirqs_off(CALLER_ADDR0, ip);
->  
-> -	_trace_lockdep_hardirqs_off(a0);
-> +	_trace_lockdep_hardirqs_off(ip);
->  
->  	if (unlikely(!debug_locks || current->lockdep_recursion))
->  		return;
-> -- 
-> 1.6.0.6
-> 
-> 
-> 
-> 
-> 
-> 
-> 
+The notion of prioritized jobs and reservation does not exist yet, but
+once we support soft limits and overcommit via soft limits, we could
+consider looking at what design aspects would help with it.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Balbir
