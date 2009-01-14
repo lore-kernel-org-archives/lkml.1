@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbZANAOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbZANAPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760849AbZANAOr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbZANANy
+	id S1760598AbZANAPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbZANAN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:13:54 -0500
-Received: from THUNK.ORG ([69.25.196.29]:55562 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757422AbZANANv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:13:51 -0500
-Date: Tue, 13 Jan 2009 19:13:46 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
-	(fixed in LTTng 0.78)
-Message-ID: <20090114001346.GB14730@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>,
-	ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-References: <20090109235449.GA21999@Krystal> <20090110161137.GA20526@Krystal> <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com> <20090113225827.GA5791@Krystal>
+	Tue, 13 Jan 2009 19:13:58 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:37856 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758322AbZANAN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:13:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=vOKbnQ6+59/TMNGFnjZb3IoU2KdrUCESwiJxrLZvlKcCw6ZC0oxqB8leFM2T6micUR
+         mkoSACd4WQkX9WTTQMrLwWAEGpCvOiqToFaiTmY9QIyL7yQXxhQEq58Exr3Ahn4vAFDg
+         oEoRagWiblHXtJP4d7nz3hS1iD13zdgnoUCfM=
+Message-ID: <cfd18e0f0901131613l65bff51fo22e86a01ba2c0720@mail.gmail.com>
+Date: Wed, 14 Jan 2009 13:13:54 +1300
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, drepper@redhat.com,
+       vegard.nossum@gmail.com, linux-man@vger.kernel.org, stable@kernel.org
+In-Reply-To: <20090113234716.765A8FC3DD@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090113225827.GA5791@Krystal>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
+	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
+	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
+	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
+	 <cfd18e0f0901131514i2f7be7f1t2c6275c26dbb6874@mail.gmail.com>
+	 <20090113152457.0d7685ad.akpm@linux-foundation.org>
+	 <20090113234716.765A8FC3DD@magilla.sf.frob.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 05:58:27PM -0500, Mathieu Desnoyers wrote:
-> > 
-> > -ECANTBUILD
-> > 
-> Thanks for the report. This should be fixed in LTTng 0.78 now.
+On Wed, Jan 14, 2009 at 12:47 PM, Roland McGrath <roland@redhat.com> wrote:
+>> Well yes.  waitid() has been in there since 2.6.9.  I assume that it
+>> has had this wait4-emulation mode for that amount of time as well?
+>
+> Correct.
+>
+>> Well, we might get away with it.  But formally speaking, we should live
+>> with our Linux-specific screwup.
+>
+> I agree with both of you and I don't care which we do.
 
-Out of curiosity, do you maintain a branch of LTTNG versus any of the
--rc kernels, or do you only track the stable kernels?  I tried pulling
-LTTNG 0.78 against the most recent Linus mainline and got a whole pile
-of conflicts.
+I don't feel strongly about this, but lean towards the idea that we
+should fix things, as per Roland's patch, and I suspect we can get
+away with it, for the reasons I mentioned already.
 
-I then tried building LTTng 0.78 and got build failures:
 
-  CC      arch/x86/kernel/init_task.o
-distcc[27501] ERROR: compile /var/cache/ccache/init_task.tmp.closure.27497.i on localhost failed
-/usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: unknown field ‘user_markers_mutex’ specified in initializer
-/usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: warning: braces around scalar initializer
-/usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: warning: (near initialization for ‘init_task.latency_record_count’)
-/usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: field name not in record or union initializer
-/usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: (near initialization for ‘init_task.latency_record_count’)
-
-Looks like CONFIG_MARKERS_USERSPAC is busted....
-
-						- Ted
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
