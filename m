@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbZANUoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZANUqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759972AbZANUoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZANUmT
+	id S1759463AbZANUqI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbZANUpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:42:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:46421 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756339AbZANUmP (ORCPT
+	Wed, 14 Jan 2009 15:45:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55196 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755402AbZANUps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:42:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition
-         :message-id;
-        b=Usedhku/xIb81mFM80MM830Y3wK4XLoHa7L2+a9xs2/tginTEezFpMa9h1g8o3rTCI
-         vXgsVpGB7F04KHOzYsh8KxWk6T0Rlrs5oifp+esYRokRslcZpKHgrlxRItPKCK/4OjSd
-         Ij2sjtOihGciOCWN5XH1g0cEgOGNX1S6ayUAg=
-References: <20090114203745.285473388@gmail.com>>
-User-Agent: quilt/0.46-1
-Date: Wed, 14 Jan 2009 23:37:50 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org
-Cc: harvey.harrison@gmail.com, sam@ravnborg.org, jaswinderrajput@gmail.com,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [patch 5/5] x86: headers cleanup - setup.h
-Content-Disposition: inline; filename=x86-header-setup-h
-Message-ID: <496e4e25.0c58560a.4d7a.ffffc01b@mx.google.com>
+	Wed, 14 Jan 2009 15:45:48 -0500
+Date: Wed, 14 Jan 2009 12:44:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
+       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
+       hannes@cmpxchg.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-Id: <20090114124436.9ac29330.akpm@linux-foundation.org>
+In-Reply-To: <20090114202736.GB6519@elte.hu>
+References: <1231863710.7141.3.camel@twins>
+	<1231864854.7141.8.camel@twins>
+	<alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	<1231867314.7141.16.camel@twins>
+	<1231952436.14825.28.camel@laptop>
+	<20090114183319.GA18630@elte.hu>
+	<20090114105300.66bd014d.akpm@linux-foundation.org>
+	<20090114190008.GA13203@elte.hu>
+	<20090114113638.c818fcf8.akpm@linux-foundation.org>
+	<1231962650.14825.55.camel@laptop>
+	<20090114202736.GB6519@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+On Wed, 14 Jan 2009 21:27:36 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-'make headers_check' warn us about leaking of kernel private
-(mostly compile time vars) data to userspace in headers. Fix it.
+> 
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > On Wed, 2009-01-14 at 11:36 -0800, Andrew Morton wrote:
+> > 
+> > > Do people enable CONFIG_SCHED_DEBUG?
+> > 
+> > Well, I have it always enabled, but I've honestly no idea if that makes
+> > me weird.
+> > 
+> > > CONFIG_DEBUG_MUTEXES=n, CONFIG_SCHED_DEBUG=y is getting to be a pretty 
+> > > small subset?
+> > 
+> > Could be, do you fancy me doing a sysctl? shouldn't be hard.
+> 
+> i dunno, why another fancy sysctl for something that fits quite nicely 
+> into the existing sched_features scheme that we've been using for such 
+> purposes for the past 3-4 kernel releases?
+> 
+> we always provided various toggles for new scheduler features via 
+> /sys/debug/sched_features, so that people can do performance regression 
+> testing, and it works quite well.
+> 
 
-Guard this one by __KERNEL__.
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/include/asm/setup.h |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.git/arch/x86/include/asm/setup.h
-===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/setup.h
-+++ linux-2.6.git/arch/x86/include/asm/setup.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_SETUP_H
- #define _ASM_X86_SETUP_H
- 
-+#ifdef __KERNEL__
-+
- #define COMMAND_LINE_SIZE 2048
- 
- #ifndef __ASSEMBLY__
-@@ -8,10 +10,8 @@
- /* Interrupt control for vSMPowered x86_64 systems */
- void vsmp_init(void);
- 
--
- void setup_bios_corruption_check(void);
- 
--
- #ifdef CONFIG_X86_VISWS
- extern void visws_early_detect(void);
- extern int is_visws_box(void);
-@@ -43,7 +43,7 @@ struct x86_quirks {
- 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
- 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
- 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
--                                    unsigned short oemsize);
-+				unsigned short oemsize);
- 	int (*setup_ioapic_ids)(void);
- 	int (*update_genapic)(void);
- };
-@@ -56,8 +56,6 @@ extern unsigned long saved_video_mode;
- #endif
- #endif /* __ASSEMBLY__ */
- 
--#ifdef __KERNEL__
--
- #ifdef __i386__
- 
- #include <linux/pfn.h>
-
--- 
+If we know that this control will be reliably available in packaged
+kernels then fine.  But how to we arrange for that?
