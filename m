@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760616AbZANIal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZANIbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760616AbZANIal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 03:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZANIac
+	id S1758161AbZANIbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 03:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZANIbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 03:30:32 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:35856 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756574AbZANIab (ORCPT
+	Wed, 14 Jan 2009 03:31:41 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61520 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754536AbZANIbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 03:30:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAHcwbUnCTtAn/2dsb2JhbACBbMtWhW8
-Date: Wed, 14 Jan 2009 09:30:24 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: linux kernel without file system
-Message-ID: <20090114083024.GA30573@frolo.macqel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 14 Jan 2009 03:31:40 -0500
+Date: Wed, 14 Jan 2009 17:29:12 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] memcg: fix return value of mem_cgroup_hierarchy_write()
+Message-Id: <20090114172912.95a78542.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <496D9E0C.4060806@cn.fujitsu.com>
+References: <496D9E0C.4060806@cn.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
+On Wed, 14 Jan 2009 16:10:52 +0800, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> When there are sub-dirs, writing to memory.use_hierarchy returns -EBUSY,
+> this doesn't seem to fit the meaning of EBUSY, and is inconsistent with
+> memory.swappiness, which returns -EINVAL in this case.
+> 
+I also think -EBUSY is not so bad in this case.
 
-I need to design a very small embedded system that must only control
-one ethernet port and two serial lines and must fit in a very small flash
-memory.  So I thought about replacing the call to /etc/init by my application
-program and removing all the file-system part of linux.
+Thanks,
+Daisuke Nishimura.
 
-Is that doable ?
-
-Is there a 'standard' way of doing that ?
-
-The first problem I see is accessing my serial lines.  How could I do that
-without using open("/dev/ttySx"), which requires a file system ?
-
-Is there a way to access devices that does not require a file-system ?
-
-Thanks for reading this far
-
-Philippe
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  mm/memcontrol.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index bc8f101..2497f7d 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -1760,6 +1760,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
+>  	struct cgroup *parent = cont->parent;
+>  	struct mem_cgroup *parent_mem = NULL;
+>  
+> +	if (val != 0 && val != 1)
+> +		return -EINVAL;
+> +
+>  	if (parent)
+>  		parent_mem = mem_cgroup_from_cont(parent);
+>  
+> @@ -1773,12 +1776,9 @@ static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
+>  	 * set if there are no children.
+>  	 */
+>  	if ((!parent_mem || !parent_mem->use_hierarchy) &&
+> -				(val == 1 || val == 0)) {
+> -		if (list_empty(&cont->children))
+> +	    list_empty(&cont->children))
+>  			mem->use_hierarchy = val;
+> -		else
+> -			retval = -EBUSY;
+> -	} else
+> +	else
+>  		retval = -EINVAL;
+>  	cgroup_unlock();
+>  
+> -- 
+> 1.5.4.rc3
