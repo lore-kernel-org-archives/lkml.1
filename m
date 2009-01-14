@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbZANGj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZANGo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbZANGj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 01:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbZANGjQ
+	id S1755818AbZANGo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 01:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZANGoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 01:39:16 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:55376 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbZANGjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 01:39:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vUXLXABdp5dpKpH1DOPvQJjLvRwxDfIQDodcpykRXM7Iy0VzHd3JoSxpFkOVFPA5Ab
-         F3BVnNJFF2+PFtMwdhrvs5S0ItfTzRNX7Kr+zV++HRVh5YLuq0XyBxvEJN9dHD2GOepm
-         mrL/dFhXAc7bxemh9Km2FldA00FPkAK9O2j7w=
-Date: Wed, 14 Jan 2009 06:39:09 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Chris Caputo <ccaputo@alt.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Denys Fedoryschenko <denys@visp.net.lb>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090114063909.GA4234@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <20081010095129.GB6054@ff.dom.local> <48F6FB3E.7060903@bigtelecom.ru> <20081016084027.GA17632@ff.dom.local> <48FEC302.5090707@bigtelecom.ru> <20081022070200.GB4178@ff.dom.local> <493FDCD4.5020108@bigtelecom.ru> <20081218081737.GA8416@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 01:44:18 -0500
+Received: from mga01.intel.com ([192.55.52.88]:33539 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752621AbZANGoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 01:44:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,262,1231142400"; 
+   d="asc'?scan'208";a="656962357"
+Subject: Use cryptd(%s) as cryptd-ed algorithm name instead of %s
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8cegAMkWd/GWRuciTo1o"
+Date: Wed, 14 Jan 2009 14:44:08 +0800
+Message-Id: <1231915448.5937.145.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:43:13AM +0000, Chris Caputo wrote:
-...
-> Per Jarek's suggestion in bugzilla, I ran 2.6.28 plus Peter Zijlstra's 
-> "hrtimer: removing all ur callback modes" patches dated 2008-11-25, 
-> 2008-12-04 and 2008-12-08.  Uptime was 2 days 22 hours before I hit what 
-> appears to be an unrelated bug related to the IPv6 FIB.  (Separately 
-> reported with subject 'panic with 2.6.28 while doing "ip -6 route"'.)
 
-Chris, this is a very good news, thanks for testing this!
+--=-8cegAMkWd/GWRuciTo1o
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Peter, great work! IMHO these patches should go to the stable (at
-least 2.6.28).
+Because:
 
-Thanks,
-Jarek P.
+1. if use %s, you can only request cryptd(<driver name>), not
+   cryptd(<alg name>), because generated new algorithm instance has
+   algorithm name: <alg name> and driver name cryptd(<driver name>).
+
+2. Generated cryptd-ed algorithm will have the same algorithm name and
+   higher priority, but some user may not want to use cryptd-ed
+   version.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ crypto/cryptd.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -215,7 +215,9 @@ static struct crypto_instance *cryptd_al
+=20
+ 	ctx->state =3D state;
+=20
+-	memcpy(inst->alg.cra_name, alg->cra_name, CRYPTO_MAX_ALG_NAME);
++	if (snprintf(inst->alg.cra_name, CRYPTO_MAX_ALG_NAME,
++		     "cryptd(%s)", alg->cra_name) >=3D CRYPTO_MAX_ALG_NAME)
++		goto out_free_inst;
+=20
+ 	inst->alg.cra_priority =3D alg->cra_priority + 50;
+ 	inst->alg.cra_blocksize =3D alg->cra_blocksize;
+
+
+--=-8cegAMkWd/GWRuciTo1o
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkltibMACgkQKhFGF+eHlpiFDgCfRrxNsesjmM39mzQxWVN8gwF9
+uQcAn1ToKNBajnqvmD38hZe4qHqd/aqo
+=8QGZ
+-----END PGP SIGNATURE-----
+
+--=-8cegAMkWd/GWRuciTo1o--
+
