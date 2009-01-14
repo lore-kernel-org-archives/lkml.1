@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760390AbZANADZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbZANAFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760390AbZANADZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbZANACw
+	id S1760202AbZANAFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZANAFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:02:52 -0500
-Received: from kroah.org ([198.145.64.141]:41720 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756628AbZANACv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:02:51 -0500
-Date: Tue, 13 Jan 2009 16:01:30 -0800
-From: Greg KH <greg@kroah.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>, torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [0/7] Distributed storage for drivers/staging merge request
-Message-ID: <20090114000130.GA20811@kroah.com>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113234734.GA32190@ioremap.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 13 Jan 2009 19:05:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52121
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752722AbZANAFE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:05:04 -0500
+Date: Tue, 13 Jan 2009 16:05:05 -0800 (PST)
+Message-Id: <20090113.160505.178961721.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: w@1wt.eu, ben@zeus.com, jarkao2@gmail.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4967DF10.2010107@cosmosbay.com>
+References: <4967D36E.6020207@cosmosbay.com>
+	<20090109225309.GC4819@1wt.eu>
+	<4967DF10.2010107@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:47:34AM +0300, Evgeniy Polyakov wrote:
-> On Tue, Jan 13, 2009 at 03:39:32PM -0800, Greg KH (greg@kroah.com) wrote:
-> > On Wed, Jan 14, 2009 at 02:05:26AM +0300, Evgeniy Polyakov wrote:
-> > > Patches were split on per-file basis, so tree in the middle of the series will not
-> > > compile, which should not be a problem, since kconfig/makefile changes are introduced
-> > > in the latest patch.
-> > 
-> > Looks good to me, but do we need the "export these symbols" patch to get
-> > this to work properly as well?
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Sat, 10 Jan 2009 00:34:40 +0100
+
+> David, do you think we still must call __tcp_splice_read() only once
+> in tcp_splice_read() if SPLICE_F_NONBLOCK is set ?
+
+You seem to be working that out in another thread :-)
+
+> [PATCH] tcp: splice as many packets as possible at once
 > 
-> No, exports are needed for POHMELFS which I'm waiting a reply from
-> Andrew or Linus.
-
-Ah, sorry, got the two confused :)
-
-> > Also, can you send me a patch with a TODO file in the
-> > drivers/staging/dst/ directory, detailing what needs to be done on it to
-> > move it over to the main portion of the kernel?
+> As spotted by Willy Tarreau, current splice() from tcp socket to pipe is not
+> optimal. It processes at most one segment per call.
+> This results in low performance and very high overhead due to syscall rate
+> when splicing from interfaces which do not support LRO.
 > 
-> Nothing :)
+> Willy provided a patch inside tcp_splice_read(), but a better fix
+> is to let tcp_read_sock() process as many segments as possible, so
+> that tcp_rcv_space_adjust() and tcp_cleanup_rbuf() are called less
+> often.
+> 
+> With this change, splice() behaves like tcp_recvmsg(), being able
+> to consume many skbs in one system call. With typical 1460 bytes
+> of payload per frame, that means splice(SPLICE_F_NONBLOCK) can return
+> 16*1460 = 23360 bytes.
+> 
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-Great!
-
-> Really. I implemented all the suggestions I got from the previous
-> reviews (including spaces and documentations, which btw were the only
-> ones :) way too long ago and did not get any other complaints. Actually
-> the tree I sent to you does not contain documentation update I have in
-> the own tree (pointed during review), so this can be added as todo entry :)
-> My fault I found that too late.
-
-Hm, then why can't this whole thing just go into fs/dst/ right now?
-It's self-contained, so there shouldn't be any special "must live in
-staging" rule for filesystems before adding them.
-
-We take new drivers at almost any point in the release cycle, why should
-filesystems be any different?
-
-Linus, Andrew, any objections?
-
-thanks,
-
-greg k-h
+I've applied this, thanks!
