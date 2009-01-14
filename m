@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbZANCDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZANCEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759943AbZANCDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZANCDD
+	id S1760116AbZANCEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZANCEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:03:03 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:55925 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754682AbZANCDB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:03:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=r0UJwg5+TP2Mk0BiA+W3Qu59fbfxgYUxCFPFCq/0xo1tnpUDV/XrYYHFZLjlxhceRT
-         t04V2n+KIQAT90sTLlIBAOgCxlG4oyypwE8aroPKPSM0flYoHPTS3gvkRT57hFFJd+T8
-         GdE6GCWa+FUcf/a83rZu7ncP1BeicBJwzRK/M=
-Date: Tue, 13 Jan 2009 21:02:40 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [ltt-dev] [PATCH 1/2] Make lttctl mount debugfs automatically
-Message-ID: <20090114020240.GA27672@zod.rchland.ibm.com>
-References: <49646208.7070607@cn.fujitsu.com> <4964BA2B.30200@polymtl.ca> <AA3F776E5F6246859F1978B7C7CF1919@zhaoleiwin> <20090108144430.GA3778@Krystal> <7C0A417AB5B84CDCB9A9484C4E13A08C@zhaoleiwin> <20090109033021.GA25504@Krystal> <20090113235419.GA20644@suse.de>
+	Tue, 13 Jan 2009 21:04:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49578 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754984AbZANCEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 21:04:08 -0500
+Message-ID: <496D47F7.9020504@kernel.org>
+Date: Wed, 14 Jan 2009 11:03:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090113235419.GA20644@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: ebiederm@xmission.com, cl@linux-foundation.org, mingo@elte.hu,
+       travis@sgi.com, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
+Subject: Re: [PATCH 13/13] x86_32: make percpu symbols zerobased on SMP
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <1231843097-18003-14-git-send-email-tj@kernel.org> <200901141048.59632.rusty@rustcorp.com.au>
+In-Reply-To: <200901141048.59632.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 14 Jan 2009 02:03:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 03:54:19PM -0800, Greg KH wrote:
->On Thu, Jan 08, 2009 at 10:30:22PM -0500, Mathieu Desnoyers wrote:
->> * Zhaolei (zhaolei@cn.fujitsu.com) wrote:
->> > * From: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
->> > >* Zhaolei (zhaolei@cn.fujitsu.com) wrote:
->> > >> * From: "Pierre-Marc Fournier" <pierre-marc.fournier@polymtl.ca>
->> > >> > Zhaolei wrote:
->> > >> >> lttctl need debugfs mounted,
->> > >> >> This patch make lttctl mount debugfs automatically when it is not mounted.
->> > >> >> 
->> > >> > 
->> > >> > Isn't having a utility such as lttctl mount filesystems against standard
->> > >> > unix semantics? Can you give an example of another standard command that
->> > >> > uses a filesystem and that tries to mount it if it isn't already
->> > >> > mounted? 
->> > >> Hello, Pierre-Marc,
->> > >> 
->> > >> I can give a an example.
->> > >> It is SystemTap.
->> > >> 
->> > > 
->> > > No offence, but can you find an example which is not explicitly
->> > > described as "bad taste" example by many people in the Linux kernel
->> > > community ?
->> > Hello, Mathieu
->> > 
->> > I can't find another example of mounting debugfs automatically.
->
->Have you looked?  openSUSE mounts it automatically, and I think Fedora
->also does so.
+Hello, Rusty.
 
-Fedora doesn't.  At least not with the last 3 stable releases.
+Rusty Russell wrote:
+> On Tuesday 13 January 2009 21:08:17 Tejun Heo wrote:
+>> This patch makes percpu symbols zerobased on x86_32 SMP by using
+>> PERCPU_VADDR() with 0 vaddr in vmlinux_32.lds.S.  A new PHDR is added
+>> as existing ones cannot contain sections near address zero.
+> ...
+>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>> Cc: Mike Travis <travis@sgi.com>
+>> ---
+>>  arch/x86/kernel/cpu/common.c     |    8 ++++++++
+>>  arch/x86/kernel/head_32.S        |   37 ++++++++++++++++++++++++++++++++++---
+>>  arch/x86/kernel/setup_percpu.c   |    4 ----
+>>  arch/x86/kernel/vmlinux_32.lds.S |   16 +++++++++++++++-
+>>  4 files changed, 57 insertions(+), 8 deletions(-)
+> 
+> Hmm, the only reason for this change is to unify with 64-bit, yes?  Yet it
+> doesn't actually win us anything on that front, as this diffstat shows.
 
-josh
+Yeah and to simplify things for future changes.  In this patch, the
+only actual unification is in __per_cpu_offset initialization but the
+lack of unification is partly due to the usage of pda and differences
+in initialization sequence, which again couldn't be unified because
+percpu handling was different, so it's a tied knot and this patch
+helps untangling it.  Also, with cpualloc (or whatever) scheduled, I
+think it's better to have two percpu models, up and smp, even if it
+costs 49 more lines.
+
+> If gcc's -mcmodel=kernel had used a weak symbol for the offset of the stack
+> canary, we would have been happy.  Unfortunately generic per-cpu and x86-64
+> PDA were developed separately, so noone realize the problem until too late.
+
+And we seem to be stuck with it if we want to keep compatibility with
+compilers.  :-(
+
+> The basic series looks good: it will clash with my per-cpu work (mainly
+> because I remove the per_cpu__ prefix) in a purely-textual way though.
+
+I thought about removing all explicit per_cpu__ prefixes with
+per_cpu_var() but the usage seemed prevalent so left it alone.  Why
+remove it BTW?
+
+Thanks.
+
+-- 
+tejun
