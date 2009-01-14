@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761696AbZANPJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761696AbZANPKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761696AbZANPJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 10:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZANPJE
+	id S1761696AbZANPKp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 10:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZANPKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 10:09:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:56150 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754845AbZANPJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 10:09:03 -0500
-Date: Wed, 14 Jan 2009 16:09:00 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090114150900.GC25401@wotan.suse.de>
-References: <20090114090449.GE2942@wotan.suse.de> <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com> <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 14 Jan 2009 10:10:36 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:62576 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbZANPKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 10:10:36 -0500
+Date: Wed, 14 Jan 2009 16:10:24 +0100
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090114151024.GH10720@gambetta>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu> <1231848016.442.112.camel@twins> <20090114090811.GQ23848@one.firstfloor.org> <20090114144115.GF10720@gambetta> <20090114152001.GS23848@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090114152001.GS23848@one.firstfloor.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:45:15PM +0200, Pekka Enberg wrote:
-> Hi Nick,
+On Wed, Jan 14, 2009 at 04:20:01PM +0100, Andi Kleen wrote:
+> > To be fair, it also depends on whenever HOTPLUG_CPU is on or not (if it
+> > is we allocate NR_CPUS percpu sections).
 > 
-> On Wed, Jan 14, 2009 at 4:22 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > The problem is there was apparently no plan for resolving the SLAB vs SLUB
-> > strategy. And then features and things were added to one or the other one.
-> > But on the other hand, the SLUB experience was a success in a way because
-> > there were a lot of performance regressions found and fixed after it was
-> > merged, for example.
+> not true to my knowledge. Even a !HOTPLUG_CPU kernel doesn't
+> allocate more than what is in the possible map. That would be dumb 
+> if it was true, but it isn't fortunately.
+My point is that possible map == NR_CPUS if HOTPLUG_CPU
 > 
-> That's not completely true. I can't speak for Christoph, but the
-> biggest problem I have is that I have _no way_ of reproducing or
-> analyzing the regression. I've tried out various benchmarks I have
-> access to but I haven't been able to find anything.
+> I don't think it does.
+>  In that case, which is Ubuntu's
+> > and Fedora's, 
 > 
-> The hypothesis is that SLUB regresses because of kmalloc()/kfree()
-> ping-pong between CPUs and as far as I understood, Christoph thinks we
-> can improve SLUB with the per-cpu alloc patches and the freelist
-> management rework.
+> You're saying that Ubuntu and Fedora do not support suspend to ram?
+> (suspend to ram requires CPU hotplug). At least my Fedora box
+> does S3 just fine so that cannot be correct.
 > 
-> Don't get me wrong, though. I am happy you are able to work with the
-> Intel engineers to fix the long standing issue (I want it fixed too!)
-> but I would be happier if the end-result was few simple patches
-> against mm/slub.c :-).
-
-Right, but that regression isn't my only problem with SLUB. I think
-higher order allocations could be much more damaging for more a wider
-class of users. It is less common to see higher order allocation failure
-reports in places other than lkml, where people tend to have systems
-stay up longer and/or do a wider range of things with them.
-
-The idea of removing queues doesn't seem so good to me. Queues are good.
-You amortize or avoid all sorts of things with queues. We have them
-everywhere in the kernel ;)
-
- 
-> On Wed, Jan 14, 2009 at 4:22 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > I'd love to be able to justify replacing SLAB and SLUB today, but actually
-> > it is simply never going to be trivial to discover performance regressions.
-> > So I don't think outright replacement is great either (consider if SLUB
-> > had replaced SLAB completely).
+> we do save memory.
+> > This would make for a fairly long changelog, how about a link to this
+> > thread, and removing the NR_CPUS bit?
 > 
-> If you ask me, I wish we *had* removed SLAB so relevant people could
-> have made a huge stink out of it and the regression would have been
-> taken care quickly ;-).
-
-Well, presumably the stink was made because we've been stuck with SLAB
-for 2 years for some reason. But it is not only that one but there were
-other regressions too. Point simply is that it would have been much
-harder for users to detect if there even is a regression, what with all
-the other changes happening.
-
-
+> My original paragraph is correct and it's not long. At least your
+> claim is just wrong.
+> 
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
