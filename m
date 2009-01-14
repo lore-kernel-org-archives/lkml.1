@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbZANAH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZANAIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbZANAH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760397AbZANAHp
+	id S1760646AbZANAIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZANAIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:07:45 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:8721 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760148AbZANAHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:07:43 -0500
-X-IronPort-AV: E=Sophos;i="4.37,261,1231113600"; 
-   d="scan'208";a="27989234"
-From: Roland Dreier <rdreier@cisco.com>
-To: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] btrfs: Remove extra KERN_INFO in the middle of a line
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 13 Jan 2009 16:07:41 -0800
-Message-ID: <adamydukawi.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 13 Jan 2009 19:08:41 -0500
+Received: from corega.com.ru ([195.178.208.66]:59679 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756278AbZANAIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:08:40 -0500
+Date: Wed, 14 Jan 2009 03:08:39 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Greg KH <greg@kroah.com>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, dst@ioremap.net
+Subject: Re: [0/7] Distributed storage for drivers/staging merge request
+Message-ID: <20090114000839.GA512@ioremap.net>
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net> <20090114000130.GA20811@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Jan 2009 00:07:41.0885 (UTC) FILETIME=[1E540ED0:01C975DC]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20090114000130.GA20811@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "devid <xxx> transid <xxx>" printk in btrfs_scan_one_device()
-actually follows another printk that doesn't end in a newline (since the
-intention is for the two printks to make one line of output), so the
-KERN_INFO just ends up messing up the output:
+On Tue, Jan 13, 2009 at 04:01:30PM -0800, Greg KH (greg@kroah.com) wrote:
+> > Really. I implemented all the suggestions I got from the previous
+> > reviews (including spaces and documentations, which btw were the only
+> > ones :) way too long ago and did not get any other complaints. Actually
+> > the tree I sent to you does not contain documentation update I have in
+> > the own tree (pointed during review), so this can be added as todo entry :)
+> > My fault I found that too late.
+> 
+> Hm, then why can't this whole thing just go into fs/dst/ right now?
+> It's self-contained, so there shouldn't be any special "must live in
+> staging" rule for filesystems before adding them.
 
-    device label exp <6>devid 1 transid 9 /dev/sda5
+Its a block device not a filesystem, so it is more like a driver.
+All original patches placed it into the drivers/block/dst without touch
+any external files except makefile and kconfig.
 
-Fix this by deleting the extra KERN_INFO.
+> We take new drivers at almost any point in the release cycle, why should
+> filesystems be any different?
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- fs/btrfs/volumes.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I suppose this is a rethorical question, since there is no answer :)
 
-diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index b187b53..2280d19 100644
---- a/fs/btrfs/volumes.c
-+++ b/fs/btrfs/volumes.c
-@@ -577,7 +577,7 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
- 		       *(unsigned long long *)disk_super->fsid,
- 		       *(unsigned long long *)(disk_super->fsid + 8));
- 	}
--	printk(KERN_INFO "devid %llu transid %llu %s\n",
-+	printk("devid %llu transid %llu %s\n",
- 	       (unsigned long long)devid, (unsigned long long)transid, path);
- 	ret = device_list_add(path, disk_super, devid, fs_devices_ret);
- 
+> Linus, Andrew, any objections?
+
+Hi there!
+
+-- 
+	Evgeniy Polyakov
