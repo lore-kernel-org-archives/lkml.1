@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbZANV4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbZANWCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbZANV4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 16:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZANV4l
+	id S1758898AbZANWCU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZANWCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 16:56:41 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58451 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754927AbZANV4k (ORCPT
+	Wed, 14 Jan 2009 17:02:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58345 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124AbZANWCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 16:56:40 -0500
-Date: Wed, 14 Jan 2009 16:54:30 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Alex Buell <alex.buell@munted.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27 BUG at fs/inode.c:263 with ext4
-Message-ID: <20090114215430.GK6222@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alex Buell <alex.buell@munted.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090114210143.39e27168@lithium.local.net>
+	Wed, 14 Jan 2009 17:02:01 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 14 Jan 2009 23:01:35 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: linux-next: Tree for January 14 (multimedia/firesat-rc)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+In-Reply-To: <496E1F84.7040605@oracle.com>
+Message-ID: <tkrat.2f847580e17dc214@s5r6.in-berlin.de>
+References: <20090114165002.3bbe49d7.sfr@canb.auug.org.au>
+ <496E1F84.7040605@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114210143.39e27168@lithium.local.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 09:01:43PM +0000, Alex Buell wrote:
-> I've been testing ext4 with some spare disks, tonight I created an
-> ext4fs on a USB 60GB hard disk, and backed up my /home partition
-> onto it with rsync.
+Randy Dunlap wrote:
+> drivers/built-in.o: In function `input_report_key':
+> firesat-rc.c:(.text+0x776f3): undefined reference to `input_event'
+> drivers/built-in.o: In function `firesat_register_rc':
+> (.text+0x777af): undefined reference to `input_allocate_device'
+> drivers/built-in.o: In function `firesat_register_rc':
+> (.text+0x7781c): undefined reference to `input_register_device'
+> drivers/built-in.o: In function `firesat_register_rc':
+> (.text+0x77834): undefined reference to `input_free_device'
+> drivers/built-in.o: In function `firesat_unregister_rc':
+> (.text+0x7779d): undefined reference to `input_unregister_device'
 > 
-> After umounting the device, and switching off the USB connection I
-> got the following in my /var/log/messages.
-> 
-> What would this suggest? I'd be happy to supply further information
-> if required.
+> config attached.
+...
+> # Input device support
+> #
+> # CONFIG_INPUT is not set
 
-Can you reproduce this error?  
+Thanks.  firesat a.k.a. firedtv lives currently in linux1394-2.6.git.
 
-The BUG is coming from fs/inode.c: 263, which in my kernel is this:
 
-void clear_inode(struct inode *inode)
-{
-	might_sleep();
-	invalidate_inode_buffers(inode);
-       
-       BUG_ON(inode->i_data.nrpages);   <--------------------
-       BUG_ON(!(inode->i_state & I_FREEING));
-       BUG_ON(inode->i_state & I_CLEAR);
-       inode_sync_wait(inode);
-       DQUOT_DROP(inode);
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firedtv: add missing dependency on CONFIG_INPUT
 
-... and it's apparently coming from udevd when it deletes the device
-node from /dev, which looks like is a tempfs filesystem.  That would
-explain the call stack, which shows that clear_inode() was apparently
-called from shmem_delete_inode():
+Fix build error \
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Jan 14 20:50:00 lithium [<c0157c55>] shmem_delete_inode+0x0/0xae
-> Jan 14 20:50:00 lithium [<c016b6e3>] generic_delete_inode+0x91/0xf9
-> Jan 14 20:50:00 lithium [<c016ae1d>] iput+0x48/0x4a
-> Jan 14 20:50:00 lithium [<c0163a44>] do_unlinkat+0xb0/0x11f
-> Jan 14 20:50:00 lithium [<c0112ace>] do_page_fault+0x23c/0x54a
-> Jan 14 20:50:00 lithium [<c0102cb1>] sysenter_do_call+0x12/0x25
+Perhaps we should make the remote control part of firedtv modular so
+that the driver can be built without input support.  But it's not very
+likely that anybody would have use for such a constellation.
 
-That would imply that there were pages from the block device still in
-the page cache, which I suspect means they were left over from mke2fs
-or fsck, or some other program directly accessing the block device
-directly.  I wonder if this BUG can be triggered if a process has an
-open file descriptor on the device at the time when it's powered off,
-or pulled from the system?
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Some details about how reliably you can reproduce this BUG would be
-greatly appreciated.
+I need to fold it into "DVB: add firesat driver" before I submit the
+driver for mainline merge.
 
-							- Ted
+ drivers/media/dvb/firesat/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/drivers/media/dvb/firesat/Kconfig
+===================================================================
+--- linux.orig/drivers/media/dvb/firesat/Kconfig
++++ linux/drivers/media/dvb/firesat/Kconfig
+@@ -1,6 +1,6 @@
+ config DVB_FIREDTV
+ 	tristate "FireDTV (FireWire attached DVB receivers)"
+-	depends on DVB_CORE && IEEE1394
++	depends on DVB_CORE && IEEE1394 && INPUT
+ 	help
+ 	  Support for DVB receivers from Digital Everywhere, known as FireDTV
+ 	  and FloppyDTV, which are connected via IEEE 1394 (FireWire).
+
+
+-- 
+Stefan Richter
+-=====-==--= ---= -===-
+http://arcgraph.de/sr/
+
