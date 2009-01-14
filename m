@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbZANWxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbZANWxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758297AbZANWxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZANWx3
+	id S1760620AbZANWxy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZANWxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:53:29 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60113 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755328AbZANWx2 (ORCPT
+	Wed, 14 Jan 2009 17:53:31 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:46408 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755495AbZANWxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:53:28 -0500
-Date: Wed, 14 Jan 2009 17:53:24 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Jon Masters <jcm@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Stefan Assmann <sassmann@suse.de>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
- interrupt equivalent
-In-Reply-To: <m11vv5wlug.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.DEB.1.10.0901141751200.24309@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <496B24E5.1070804@suse.de> <200901121151.53195.bjorn.helgaas@hp.com> <m1d4esxfk2.fsf@frodo.ebiederm.org> <1231806563.4094.25.camel@perihelion.bos.jonmasters.org> <20090113014723.GA11366@elte.hu>
- <m1prirx3xn.fsf@frodo.ebiederm.org> <1231820798.4094.34.camel@perihelion.bos.jonmasters.org> <20090114114006.GF8625@elte.hu> <1231960709.23174.0.camel@londonpacket.bos.redhat.com> <m11vv5wlug.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 14 Jan 2009 17:53:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:cc:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=c+81r6SJWRoc/1jbRKorUVxgXO9dMhPB/8kNhv60pfaqjmlkBwLaa2BKdwsI6V3WEs
+         +eCUNsCkV4TRN2JQ7NH5FgLpOhYLVzXbmw4jJ6oGlVoSkN2fRk5lCXcx7U5amvECTRrR
+         iWw82Ddh1/n83ZIZ7wH3fhxbrd7SghXjI7A9c=
+Date: Thu, 15 Jan 2009 06:53:29 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: sameo@openedhand.com
+Subject: mfd: PCF50633: remove duplicated #include
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20090115064950.1F10.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Removed duplicated #include <linux/device.h> in
+  drivers/mfd/pcf50633-core.c
 
-On Wed, 14 Jan 2009, Eric W. Biederman wrote:
-> Jon Masters <jcm@redhat.com> writes:
-> 
-> Which leads me to conclude.
-> - IRQ handling in the RT kernel is hopelessly broken.
-> - IRQ threads are a bad idea.
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-I would rephrase that to
-
-  -- boot interrupts are hopelessly broken
-
-> 
-> Because it is all leading to stupid patches and stupid development.
-
-Hmm, WTF should we have maskable interrupts for anyway? Sounds like broken 
-hardware design to me.
-
-> 
-> None of this works reliably on level triggered ioapic irqs.
-> 
-
-I guess this means that ioapic's are not for RTOS of any kind.
-
--- Steve
+diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+index 24508e2..feb8ddd 100644
+--- a/drivers/mfd/pcf50633-core.c
++++ b/drivers/mfd/pcf50633-core.c
+@@ -15,7 +15,6 @@
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+ #include <linux/sysfs.h>
+-#include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/interrupt.h>
 
