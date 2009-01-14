@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbZANLUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbZANLWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760618AbZANLUZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 06:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZANLUJ
+	id S1761228AbZANLWv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 06:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZANLWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 06:20:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37894 "EHLO mx2.mail.elte.hu"
+	Wed, 14 Jan 2009 06:22:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41999 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754234AbZANLUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 06:20:07 -0500
-Date: Wed, 14 Jan 2009 12:19:49 +0100
+	id S1753302AbZANLWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 06:22:33 -0500
+Date: Wed, 14 Jan 2009 12:21:58 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: arch_probe_nr_irqs
-Message-ID: <20090114111949.GO2913@elte.hu>
-References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu> <496B9FC3.7080306@kernel.org> <496BCD14.3020201@sgi.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
+Message-ID: <20090114112158.GA8625@elte.hu>
+References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231901899.1709.18.camel@think.oraclecorp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496BCD14.3020201@sgi.com>
+In-Reply-To: <1231901899.1709.18.camel@think.oraclecorp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4998]
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+* Chris Mason <chris.mason@oracle.com> wrote:
 
-> Yinghai Lu wrote:
-> > Impact: save RAM with large NR_CPUS, get smaller nr_irqs
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> v10 is better that not spinning, but its in the 5-10% range.  So, I've 
+> been trying to find ways to close the gap, just to understand exactly 
+> where it is different.
 > 
-> Built and tested on an 8-core intel system.  Great reduction
-> in NR_IRQS:
+> If I take out:
+> 	/*
+> 	 * If there are pending waiters, join them.
+> 	 */
+> 	if (!list_empty(&lock->wait_list))
+> 		break;
 > 
-> 	[    0.000000] NR_IRQS:33024 nr_irqs:320
 > 
-> Thanks Yinghai!
-> 
-> Ingo - shall I push this one as well?  (If not, then you
-> can add my:
-> 
-> 	Acked-by: Mike Travis <travis@sgi.com>
+> v10 pops dbench 50 up to 1800MB/s.  The other tests soundly beat my 
+> spinning and aren't less fair.  But clearly this isn't a good solution.
 
-yes, please pick it up and i can pull it from you. Please also add a 
-longer changelog about the precise effects and perhaps some estimations 
-about what the before and after situation is, and perhaps also some bits 
-about how it affects normal Linux users as well.
+i think since we already decided that it's ok to be somewhat unfair (_all_ 
+batching constructs introduce unfairness, so the question is never 'should 
+we?' but 'by how much?'), we should just take this out and enjoy the speed 
+...
 
 	Ingo
