@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbZANUFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZANUHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbZANUFf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZANUFL
+	id S1758103AbZANUHT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZANUHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:05:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:41828 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755896AbZANUFI (ORCPT
+	Wed, 14 Jan 2009 15:07:00 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:52389 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbZANUHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:05:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iUwCjwy2lhFPA8OUtBbvjmO/KpSjM6XJ4wlXJTV4S4CAL76w7MoXYAS31vR4QZf6b2
-         bZdsCfxvmbp2XsBingKKUUI2H6mPEq6OTrAM0Hi/KJui4wy/g1l+gphwyKVhA9FlqKYx
-         2uRMZ+glqb/wHJOiXB7uSMVUKT03qTy7M0JEE=
-Date: Wed, 14 Jan 2009 23:05:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [PATCH -tip] x86: headers - fix export private data to
-	userspace
-Message-ID: <20090114200502.GB8178@localhost>
-References: <20090113183456.GA14470@localhost> <496E4040.9080701@zytor.com> <20090114194933.GA8178@localhost>
-MIME-Version: 1.0
+	Wed, 14 Jan 2009 15:07:00 -0500
+Date: Wed, 14 Jan 2009 21:08:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robert Reif <reif@earthlink.net>, David Miller <davem@davemloft.net>,
+       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: sparc32 compile error: =?utf-8?Q?redef?=
+	=?utf-8?B?aW5pdGlvbiBvZiDigJhzbXBfY2FsbF9mdW5jdGlvbl9zaW5nbGXigJk=?=
+Message-ID: <20090114200839.GA1556@uranus.ravnborg.org>
+References: <496D4274.6000304@earthlink.net> <20090113.181039.185575172.davem@davemloft.net> <20090113184239.e6b6e68e.akpm@linux-foundation.org> <20090113184536.95ebc973.akpm@linux-foundation.org> <496D5E19.7040802@earthlink.net> <20090113235940.12d856d0.akpm@linux-foundation.org> <20090114153255.GA32082@uranus.ravnborg.org> <20090114102544.71893225.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114194933.GA8178@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090114102544.71893225.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Wed, Jan 14, 2009 at 10:49:33PM +0300]
-...
-| >
-| > Hi Cyrill; in addition to nonexporting COMMAND_LINE_SIZE, could you  
-| > submit this as a patchset to make post-integration bisect easier?
-| >
-| > 	-hpa
-| >
-| 
-| Hi Peter, to be sure -- you mean to make patchset with 5 patches?
-| 
-| 		- Cyrill -
+On Wed, Jan 14, 2009 at 10:25:44AM -0800, Andrew Morton wrote:
+> On Wed, 14 Jan 2009 16:32:55 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Tue, Jan 13, 2009 at 11:59:40PM -0800, Andrew Morton wrote:
+> > > On Tue, 13 Jan 2009 22:38:01 -0500 Robert Reif <reif@earthlink.net> wrote:
+> > > 
+> > > > This worked:
+> > > > 
+> > > > diff --git a/kernel/Makefile b/kernel/Makefile
+> > > > index 2aebc4c..368227d 100644
+> > > > --- a/kernel/Makefile
+> > > > +++ b/kernel/Makefile
+> > > > @@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
+> > > >  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
+> > > >  obj-y += smp.o
+> > > >  else
+> > > > +ifneq ($(CONFIG_SMP),y)
+> > > >  obj-y += up.o
+> > > >  endif
+> > > > +endif
+> > > >  obj-$(CONFIG_SMP) += spinlock.o
+> > > >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
+> > > >  obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+> > > 
+> > > This all can be simplified, can't it?
+> > > 
+> > > obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
+> > > ifneq ($(CONFIG_SMP),y)
+> > > obj-y += up.o
+> > > endif
+> > > 
+> > > (someone please check my homework - I don't have a good track
+> > > record here ;))
+> > 
+> > Looks correct. We pull in smp.o only for SPARC64 AND SMP
+> 
+> SPARC64=n and SMP, actually (assuming sparc64 is the only
+> USE_GENERIC_SMP_HELPERS=n arch)
+> 
+> > But I find the next lines distastefull in a Makefile:
+> > > ifneq ($(CONFIG_SMP),y)
+> > > obj-y += up.o
+> > > endif
+> 
+> me too.
+> 
+> > I would prefer a small Kconfig helper symbol:
+> > 
+> > config SPARC_UP
+> > 	def_bool y
+> > 	depends on !SMP
+> > 
+> > And then we would do the Makefile bits like this:
+> > obj-$(CONFIG_SPARC_UP) += up.o
+> 
+> eek.  Mentioning sparc explicitly in kernel/Makefile is badder.
 
-Of course you mean that, i need some coffee :)
-Will do soon.
+Ups - I my horry I did not notice this was _taht_ kernel/Makefile.
 
-		- Cyrill -
+> 
+> we could remove zillions of these conditionals if something somewhere
+> were to generate negated symbols for us.  Say, when kbuild sees
+> CONFIG_SMP=y, it will generate another symbol: NOT_CONFIG_SMP=y.  So
+> then we can do
+> 
+> obj-$NOT_CONFIG_SMP += up.o
+> 
+> Or is that too cheesy?
+
+If we can remove a zillion lines - then no.
+But maybe the actual figure is a bit less :-)
+
+	Sam
