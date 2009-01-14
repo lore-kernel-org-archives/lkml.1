@@ -1,104 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZANUHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZANUIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbZANUHT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 15:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZANUHA
+	id S1758174AbZANUIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 15:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZANUIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 15:07:00 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:52389 "EHLO
+	Wed, 14 Jan 2009 15:08:37 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59945 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbZANUHA (ORCPT
+	with ESMTP id S1752326AbZANUIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 15:07:00 -0500
-Date: Wed, 14 Jan 2009 21:08:39 +0100
+	Wed, 14 Jan 2009 15:08:36 -0500
+Date: Wed, 14 Jan 2009 21:10:19 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Robert Reif <reif@earthlink.net>, David Miller <davem@davemloft.net>,
-       "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: sparc32 compile error: =?utf-8?Q?redef?=
-	=?utf-8?B?aW5pdGlvbiBvZiDigJhzbXBfY2FsbF9mdW5jdGlvbl9zaW5nbGXigJk=?=
-Message-ID: <20090114200839.GA1556@uranus.ravnborg.org>
-References: <496D4274.6000304@earthlink.net> <20090113.181039.185575172.davem@davemloft.net> <20090113184239.e6b6e68e.akpm@linux-foundation.org> <20090113184536.95ebc973.akpm@linux-foundation.org> <496D5E19.7040802@earthlink.net> <20090113235940.12d856d0.akpm@linux-foundation.org> <20090114153255.GA32082@uranus.ravnborg.org> <20090114102544.71893225.akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       gorcunov@gmail.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] nubus.h: extern's make no sense in userspace
+Message-ID: <20090114201019.GB1556@uranus.ravnborg.org>
+References: <1231832906.3212.24.camel@jaswinder.satnam> <Pine.LNX.4.64.0901131001200.19352@vixen.sonytel.be> <1231963461.5756.9.camel@brick>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114102544.71893225.akpm@linux-foundation.org>
+In-Reply-To: <1231963461.5756.9.camel@brick>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 10:25:44AM -0800, Andrew Morton wrote:
-> On Wed, 14 Jan 2009 16:32:55 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > On Tue, Jan 13, 2009 at 11:59:40PM -0800, Andrew Morton wrote:
-> > > On Tue, 13 Jan 2009 22:38:01 -0500 Robert Reif <reif@earthlink.net> wrote:
+On Wed, Jan 14, 2009 at 12:04:21PM -0800, Harvey Harrison wrote:
+> On Tue, 2009-01-13 at 10:03 +0100, Geert Uytterhoeven wrote:
+> > On Tue, 13 Jan 2009, Jaswinder Singh Rajput wrote:
+> > > Impact: cleanup, Impact: fix 3 make headers_check warnings:
 > > > 
-> > > > This worked:
-> > > > 
-> > > > diff --git a/kernel/Makefile b/kernel/Makefile
-> > > > index 2aebc4c..368227d 100644
-> > > > --- a/kernel/Makefile
-> > > > +++ b/kernel/Makefile
-> > > > @@ -43,8 +43,10 @@ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
-> > > >  ifeq ($(CONFIG_USE_GENERIC_SMP_HELPERS),y)
-> > > >  obj-y += smp.o
-> > > >  else
-> > > > +ifneq ($(CONFIG_SMP),y)
-> > > >  obj-y += up.o
-> > > >  endif
-> > > > +endif
-> > > >  obj-$(CONFIG_SMP) += spinlock.o
-> > > >  obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
-> > > >  obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+> > > usr/include/linux/nubus.h:298: extern's make no sense in userspace
+> > > usr/include/linux/nubus.h:300: extern's make no sense in userspace
+> > > usr/include/linux/nubus.h:304: extern's make no sense in userspace
 > > > 
-> > > This all can be simplified, can't it?
+> > > Also moved nubus_scan_bus() in __KERNEL__
 > > > 
-> > > obj-$(CONFIG_USE_GENERIC_SMP_HELPERS) += smp.o
-> > > ifneq ($(CONFIG_SMP),y)
-> > > obj-y += up.o
-> > > endif
+> > > Also removed obsolete get_nubus_list()
 > > > 
-> > > (someone please check my homework - I don't have a good track
-> > > record here ;))
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  include/linux/nubus.h |    3 ++-
+> > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/include/linux/nubus.h b/include/linux/nubus.h
+> > > index bd31554..9f54a23 100644
+> > > --- a/include/linux/nubus.h
+> > > +++ b/include/linux/nubus.h
+> > > @@ -297,6 +297,7 @@ struct nubus_dev {
+> > >  	struct nubus_board* board;
+> > >  };
+> > >  
+> > > +#ifdef __KERNEL__
+> > >  /* This is all NuBus devices (used to find devices later on) */
+> > >  extern struct nubus_dev* nubus_devices;
+> > >  /* This is all NuBus cards */
+> > > @@ -305,7 +306,7 @@ extern struct nubus_board* nubus_boards;
+> > >  /* Generic NuBus interface functions, modelled after the PCI interface */
+> > >  void nubus_scan_bus(void);
+> > >  extern void nubus_proc_init(void);
+> > > -int get_nubus_list(char *buf);
+> > > +#endif /* __KERNEL__ */
+> > >  int nubus_proc_attach_device(struct nubus_dev *dev);
+> >    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > >  int nubus_proc_detach_device(struct nubus_dev *dev);
+> >    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > >  /* If we need more precision we can add some more of these */
 > > 
-> > Looks correct. We pull in smp.o only for SPARC64 AND SMP
-> 
-> SPARC64=n and SMP, actually (assuming sparc64 is the only
-> USE_GENERIC_SMP_HELPERS=n arch)
-> 
-> > But I find the next lines distastefull in a Makefile:
-> > > ifneq ($(CONFIG_SMP),y)
-> > > obj-y += up.o
-> > > endif
-> 
-> me too.
-> 
-> > I would prefer a small Kconfig helper symbol:
+> > What about these? They (unfortunately) lack the "extern" keyword, but they're
+> > still external declarations, and "make headers_check' doesn't notice them?
 > > 
-> > config SPARC_UP
-> > 	def_bool y
-> > 	depends on !SMP
-> > 
-> > And then we would do the Makefile bits like this:
-> > obj-$(CONFIG_SPARC_UP) += up.o
+> > BTW, is there a way to tell gcc to warn about externs not marked "extern", so
+> > we can fix all of them?
 > 
-> eek.  Mentioning sparc explicitly in kernel/Makefile is badder.
+> I had a look at this file, there's the small patch that just wraps the whole
+> section of function declarations with ifdef __KERNEL, or the larger patch
+> that does the wrapping _and_ adds the missing externs to make it obvious.
+> 
+> But I'm not sure that there is agreement regarding adding the externs too.
+> 
+> What do people think?
 
-Ups - I my horry I did not notice this was _taht_ kernel/Makefile.
-
-> 
-> we could remove zillions of these conditionals if something somewhere
-> were to generate negated symbols for us.  Say, when kbuild sees
-> CONFIG_SMP=y, it will generate another symbol: NOT_CONFIG_SMP=y.  So
-> then we can do
-> 
-> obj-$NOT_CONFIG_SMP += up.o
-> 
-> Or is that too cheesy?
-
-If we can remove a zillion lines - then no.
-But maybe the actual figure is a bit less :-)
+The general consensus is to add externs for new prototypes.
+So if _and only if_ you are anyway touching this file in that area then
+I would say - add the externs. But just adding externs are not (yet)
+worth a patch alone.
 
 	Sam
