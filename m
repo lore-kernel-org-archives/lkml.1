@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbZANMSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762309AbZANMS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761988AbZANMSk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 07:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbZANMSb
+	id S1762309AbZANMS4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 07:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbZANMSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 07:18:31 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:5363 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751958AbZANMSa (ORCPT
+	Wed, 14 Jan 2009 07:18:35 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:46846 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756384AbZANMSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 07:18:30 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAF5mbUnCTtAn/2dsb2JhbACBbMwihW8
-Date: Wed, 14 Jan 2009 13:18:23 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux kernel without file system
-Message-ID: <20090114121823.GA32180@frolo.macqel>
-References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel> <200901141259.50237.arnd@arndb.de>
+	Wed, 14 Jan 2009 07:18:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Y/7toCgDujZpmFSvcrT5VtbOKHHMP40k7JjqDmlNbOOkuemzOh3WwPrgxdgy8fBfK5
+         rIGOu/yPWLNvKhJcHGBXihudLDBoFkMLf0HPAWH0mIK1/rh+wuattCjjXzpVrDXFsmlM
+         bPhj8mXElnknewVf/ygRmxFrf5oXehntHhYjs=
+Message-ID: <28c262360901140418y242586cekd1c3220c2f4336a3@mail.gmail.com>
+Date: Wed, 14 Jan 2009 21:18:32 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: lowmemory android driver not needed?
+Cc: "Pavel Machek" <pavel@suse.cz>, "Greg KH" <greg@kroah.com>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       "Brian Swetland" <swetland@google.com>, arve@google.com,
+       "San Mehat" <san@android.com>, "Robert Love" <rlove@google.com>,
+       linux-kernel@vger.kernel.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <20090114104834.18387fca@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901141259.50237.arnd@arndb.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20090114010223.GA21380@kroah.com>
+	 <20090114021801.GA14759@bulgaria.corp.google.com>
+	 <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com>
+	 <20090114035237.GB16442@kroah.com> <20090114104307.GA20451@elf.ucw.cz>
+	 <20090114104834.18387fca@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 12:59:49PM +0100, Arnd Bergmann wrote:
-> On Wednesday 14 January 2009, Philippe De Muyter wrote:
-> > Actually, I was thinking about reducing the footprint of my kernel by
-> > removing all the fs-related system calls, so the problem is not where
-> > the file-system is, but how to access (serial) devices without giving their
-> > "/dev/..." name.
-> 
-> One thing that you can do is remove support for block devices in somewhat
-> recent kernels, which gets you most of the way. File systems themselves
-> are required for the majority of all system calls (anything that takes
-> a file descriptor) and for the boot process.
+Last time,  it seems my mail is lost.
+My mail is mangled by web mail(gmail) which change my mail's base encoding type.
 
-file descriptor is actually an historical name, now too particular.
+On Wed, Jan 14, 2009 at 7:48 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > Alan, does this sound like it should remain in the tree?
+>>
+>> Maybe our oom killer should get a new tunable, telling it how
+>> aggressive it should be, instead?
+>
+> I was thinking that, and it would integrate better with the OLPC work
+> (which IMHO is a nicer interface for some stuff)
+>
+> You'd want two thresholds
+>
+> The 'arghhhh....' point where you start killing stuff
+> The 'uh oh...' point where an OLPC style low memory notifier kicks in
+>
+> (OLPC's model is a handle you can select/poll for 'memory getting low' so
+> apps can respond to pressure by doing stuff like dumping caches)
 
-I would like to keep sockets and serial lines, for which the handle is a
-"file descriptor", but not use any file.  So, of course I need to keep
-write(), read(), poll(), socket() etc, but not open(), link(), mknod() and
-everything that walks a directory tree.
+I guess OLPC model is similar to mem_notify.
+Last year, Kosaki-san made mem_notify patch series.
+It may help this situation.
 
-Philippe
+http://lwn.net/Articles/268732/
+
+
+> The rest ought to follow naturally IFF you can find a clean efficient way
+> to measure that pressure and quantify it as a number. Our default would
+> be like now, the Android default might be to trigger earlier..
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
