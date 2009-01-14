@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZANRjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765295AbZANRke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932104AbZANRjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbZANRjI
+	id S1765295AbZANRke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZANRkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:39:08 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:45113 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758203AbZANRjH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:39:07 -0500
-Date: Wed, 14 Jan 2009 10:39:03 -0700
-From: dann frazier <dannf@dannf.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stephane eranian <eranian@googlemail.com>
-Subject: Re: [PATCH] add rtc platform driver for EFI
-Message-ID: <20090114173903.GB24492@ldl.fc.hp.com>
-References: <20090109005644.GH32403@ldl.fc.hp.com> <20090109032729.6e4cd5fd@i1501.lan.towertech.it> <20090109213615.GD31548@ldl.fc.hp.com> <20090113003934.0a7da676.akpm@linux-foundation.org> <20090114000043.GB24423@colo.lackof.org> <20090114011719.GD24423@colo.lackof.org> <20090114023055.1d22d09e@i1501.lan.towertech.it> <20090114041358.GA21357@ldl.fc.hp.com> <20090114043337.GB21357@ldl.fc.hp.com> <20090114115728.15f2db18@i1501.lan.towertech.it>
+	Wed, 14 Jan 2009 12:40:25 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46749 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756759AbZANRkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:40:24 -0500
+Date: Wed, 14 Jan 2009 18:40:23 +0100
+From: Jan Kara <jack@suse.cz>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-ID: <20090114174023.GK19950@duck.suse.cz>
+References: <1231945948-23676-1-git-send-email-jack@suse.cz> <1231945948-23676-2-git-send-email-jack@suse.cz> <496E2276.8050309@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114115728.15f2db18@i1501.lan.towertech.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <496E2276.8050309@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 11:57:28AM +0100, Alessandro Zummo wrote:
-> On Tue, 13 Jan 2009 21:33:38 -0700
-> dann frazier <dannf@hp.com> wrote:
+On Wed 14-01-09 11:35:50, Eric Sandeen wrote:
+> Jan Kara wrote:
+> > To be really safe that the data hit the platter, we should also flush drive's
+> > writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
 > 
-> > Munge Stephane Eranian's efirtc.c code into an rtc platform driver
-> 
->  almost there :) see below
+> Seems sane, but aren't we getting really divergent behavior here between
+> ext2, ext3, and ext4 w.r.t. drive cache flushing for sync paths?
+  Well, but ext3/4 should do a barrier on a transaction commit (if the user
+really cares about data integrity) and hence it implicitely does the same.
 
-Thanks - another patch sent.
-
-By the way, what do you think about moving the LEAP_YEAR macro in
-rtc-lib into rtc.h to avoid the duplicate definition?
-
+									Honza
 -- 
-dann frazier
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
