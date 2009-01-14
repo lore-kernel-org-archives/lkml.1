@@ -1,174 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764439AbZANRd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbZANRgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764439AbZANRd2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764262AbZANRdG
+	id S1765066AbZANRgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbZANRgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:33:06 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:52591 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763518AbZANRdC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:33:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vhm+QS20i8sszDHoZ5UQbHj93FwyI0doTtrYkSUvPXLGhj+HGl5IJH+WW1AtzQ1Q71
-         5y3Wz5vZ6bKYGNRPTNRwCosmov83Qpq0A8xzgbT5hk995b0I0h2qIlVrHz13JuPSkETp
-         179deoZov/T6cPYby7Ekuq4k4OWpMNHgQS56I=
+	Wed, 14 Jan 2009 12:36:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47908 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758439AbZANRga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:36:30 -0500
+Message-ID: <496E2276.8050309@redhat.com>
+Date: Wed, 14 Jan 2009 11:35:50 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <1231951662.8269.22.camel@think.oraclecorp.com>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins>
-	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
-	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
-	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-	 <1231867314.7141.16.camel@twins>
-	 <1231901899.1709.18.camel@think.oraclecorp.com>
-	 <b647ffbd0901140318g7e4ccab6m9bf03e9ac6acf797@mail.gmail.com>
-	 <1231951662.8269.22.camel@think.oraclecorp.com>
-Date: Wed, 14 Jan 2009 18:32:58 +0100
-Message-ID: <b647ffbd0901140932v5fba34f9oe2098635c937a678@mail.gmail.com>
-Subject: Re: [PATCH -v9][RFC] mutex: implement adaptive spinning
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>
+To: Jan Kara <jack@suse.cz>
+CC: linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+References: <1231945948-23676-1-git-send-email-jack@suse.cz> <1231945948-23676-2-git-send-email-jack@suse.cz>
+In-Reply-To: <1231945948-23676-2-git-send-email-jack@suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/14 Chris Mason <chris.mason@oracle.com>:
-> On Wed, 2009-01-14 at 12:18 +0100, Dmitry Adamushko wrote:
->> 2009/1/14 Chris Mason <chris.mason@oracle.com>:
->> > On Tue, 2009-01-13 at 18:21 +0100, Peter Zijlstra wrote:
->> >> On Tue, 2009-01-13 at 08:49 -0800, Linus Torvalds wrote:
->> >> >
->> >> > So do a v10, and ask people to test.
->> >>
->> >> ---
->> >> Subject: mutex: implement adaptive spinning
->> >> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> >> Date: Mon Jan 12 14:01:47 CET 2009
->> >>
->> >> Change mutex contention behaviour such that it will sometimes busy wait on
->> >> acquisition - moving its behaviour closer to that of spinlocks.
->> >>
->> >
->> > I've spent a bunch of time on this one, and noticed earlier today that I
->> > still had bits of CONFIG_FTRACE compiling.  I wasn't actually tracing
->> > anything, but it seems to have had a big performance hit.
->> >
->> > The bad news is the simple spin got much much faster, dbench 50 coming
->> > in at 1282MB/s instead of 580MB/s.  (other benchmarks give similar
->> > results)
->> >
->> > v10 is better that not spinning, but its in the 5-10% range.  So, I've
->> > been trying to find ways to close the gap, just to understand exactly
->> > where it is different.
->> >
->> > If I take out:
->> >        /*
->> >         * If there are pending waiters, join them.
->> >         */
->> >        if (!list_empty(&lock->wait_list))
->> >                break;
->> >
->> >
->> > v10 pops dbench 50 up to 1800MB/s.  The other tests soundly beat my
->> > spinning and aren't less fair.  But clearly this isn't a good solution.
->> >
->> > I tried a few variations, like only checking the wait list once before
->> > looping, which helps some.  Are there other suggestions on better tuning
->> > options?
->>
->> (some thoughts/speculations)
->>
->> Perhaps for highly-contanded mutexes the spinning implementation may
->> quickly degrade [*] to the non-spinning one (i.e. the current
->> sleep-wait mutex) and then just stay in this state until a moment of
->> time when there are no waiters  [**]  -- i.e.
->> list_empty(&lock->wait_list) == 1 and waiters can start spinning
->> again.
->
-> It is actually ok if the highly contention mutexes don't degrade as long
-> as they are highly contended and the holder isn't likely to schedule.
+Jan Kara wrote:
+> To be really safe that the data hit the platter, we should also flush drive's
+> writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
 
-Yes, my point was that they likely do fall back (degrade) to the
-wait-on-the-list (non-spinning) behavior with dbench, and that's why
-the performance numbers are similar (5-10% IIRC) to those of the
-'normal' mutex.
+Seems sane, but aren't we getting really divergent behavior here between
+ext2, ext3, and ext4 w.r.t. drive cache flushing for sync paths?
 
-And the thing is that for the highly contention mutexes, it's not easy
-to switch back to the (fast) spinning-wait -- just because most of the
-time there is someone waiting for the lock (and if this 'someone' is
-not a spinner, none of the new mutex_lock() requests can do
-busy-waiting/spinning).
+(at least, ext3 has no calls to flush cache at this point)
 
-But whatever, without the list_empty() check it's not relevant any more.
+-Eric
 
->>
->> what may trigger [*]:
->>
->> (1) obviously, an owner scheduling out.
->>
->> Even if it happens rarely (otherwise, it's not a target scenario for
->> our optimization), due to the [**] it may take quite some time until
->> waiters are able to spin again.
->>
->> let's say, waiters (almost) never block (and possibly, such cases
->> would be better off just using a spinlock after some refactoring, if
->> possible)
->>
->> (2) need_resched() is triggered for one of the waiters.
->>
->> (3) !owner && rt_task(p)
->>
->> quite unlikely, but possible (there are 2 race windows).
->>
->> Of course, the question is whether it really takes a noticeable amount
->> of time to get out of the [**] state.
->> I'd imagine it can be a case for highly-contended locks.
->>
->> If this is the case indeed, then which of 1,2,3 gets triggered the most.
->
-> Sorry, I don't have stats on that.
->
->>
->> Have you tried removing need_resched() checks? So we kind of emulate
->> real spinlocks here.
->
-> Unfortunately, the need_resched() checks deal with a few of the ugly
-> corners.  They are more important without the waiter list check.
-> Basically if we spun without the need_resched() checks, the process who
-> wants to unlock might not be able to schedule back in.
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> CC: pavel@suse.cz
+> ---
+>  fs/ext2/dir.c   |    5 ++++-
+>  fs/ext2/fsync.c |    7 +++++--
+>  fs/ext2/inode.c |    7 +++++++
+>  fs/ext2/xattr.c |    6 +++++-
+>  4 files changed, 21 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+> index 2999d72..d6cb59f 100644
+> --- a/fs/ext2/dir.c
+> +++ b/fs/ext2/dir.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/buffer_head.h>
+>  #include <linux/pagemap.h>
+>  #include <linux/swap.h>
+> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
+>  
+>  typedef struct ext2_dir_entry_2 ext2_dirent;
+>  
+> @@ -97,8 +98,10 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
+>  
+>  	if (IS_DIRSYNC(dir)) {
+>  		err = write_one_page(page, 1);
+> -		if (!err)
+> +		if (!err) {
+>  			err = ext2_sync_inode(dir);
+> +			blkdev_issue_flush(dir->i_sb->s_bdev, NULL);
+> +		}
+>  	} else {
+>  		unlock_page(page);
+>  	}
+> diff --git a/fs/ext2/fsync.c b/fs/ext2/fsync.c
+> index fc66c93..9cd1838 100644
+> --- a/fs/ext2/fsync.c
+> +++ b/fs/ext2/fsync.c
+> @@ -24,6 +24,7 @@
+>  
+>  #include "ext2.h"
+>  #include <linux/buffer_head.h>		/* for sync_mapping_buffers() */
+> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
+>  
+>  
+>  /*
+> @@ -39,12 +40,14 @@ int ext2_sync_file(struct file *file, struct dentry *dentry, int datasync)
+>  
+>  	ret = sync_mapping_buffers(inode->i_mapping);
+>  	if (!(inode->i_state & I_DIRTY))
+> -		return ret;
+> +		goto out;
+>  	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> -		return ret;
+> +		goto out;
+>  
+>  	err = ext2_sync_inode(inode);
+>  	if (ret == 0)
+>  		ret = err;
+> +out:
+> +	blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+>  	return ret;
+>  }
+> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+> index 23fff2f..49b479e 100644
+> --- a/fs/ext2/inode.c
+> +++ b/fs/ext2/inode.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/mpage.h>
+>  #include <linux/fiemap.h>
+>  #include <linux/namei.h>
+> +#include <linux/blkdev.h>	/* for blkdev_issue_flush() */
+>  #include "ext2.h"
+>  #include "acl.h"
+>  #include "xip.h"
+> @@ -68,9 +69,14 @@ void ext2_delete_inode (struct inode * inode)
+>  	mark_inode_dirty(inode);
+>  	ext2_update_inode(inode, inode_needs_sync(inode));
+>  
+> +	/* Make sure inode deletion really gets to disk. Disk write caches
+> +	 * are flushed either in ext2_truncate() or we do it explicitly */
+>  	inode->i_size = 0;
+>  	if (inode->i_blocks)
+>  		ext2_truncate (inode);
+> +	else if (inode_needs_sync(inode))
+> +		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+> +
+>  	ext2_free_inode (inode);
+>  
+>  	return;
+> @@ -1104,6 +1110,7 @@ do_indirects:
+>  	if (inode_needs_sync(inode)) {
+>  		sync_mapping_buffers(inode->i_mapping);
+>  		ext2_sync_inode (inode);
+> +		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+>  	} else {
+>  		mark_inode_dirty(inode);
+>  	}
+> diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
+> index 987a526..d480216 100644
+> --- a/fs/ext2/xattr.c
+> +++ b/fs/ext2/xattr.c
+> @@ -60,6 +60,7 @@
+>  #include <linux/mbcache.h>
+>  #include <linux/quotaops.h>
+>  #include <linux/rwsem.h>
+> +#include <linux/blkdev.h>		/* for blkdev_issue_flush() */
+>  #include "ext2.h"
+>  #include "xattr.h"
+>  #include "acl.h"
+> @@ -702,6 +703,7 @@ ext2_xattr_set2(struct inode *inode, struct buffer_head *old_bh,
+>  				DQUOT_FREE_BLOCK(inode, 1);
+>  			goto cleanup;
+>  		}
+> +		blkdev_issue_flush(sb->s_bdev, NULL);
+>  	} else
+>  		mark_inode_dirty(inode);
+>  
+> @@ -792,8 +794,10 @@ ext2_xattr_delete_inode(struct inode *inode)
+>  			le32_to_cpu(HDR(bh)->h_refcount));
+>  		unlock_buffer(bh);
+>  		mark_buffer_dirty(bh);
+> -		if (IS_SYNC(inode))
+> +		if (IS_SYNC(inode)) {
+>  			sync_dirty_buffer(bh);
+> +			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+> +		}
+>  		DQUOT_FREE_BLOCK(inode, 1);
+>  	}
+>  	EXT2_I(inode)->i_file_acl = 0;
 
-Yeah, for the "owner == NULL" case. If the owner was preempted in the
-fast path right after taking the lock and before calling
-mutex_set_owner().
-
-btw., I wonder... would an additional preempt_disable/enable() in the
-fast path harm that much?
-We could avoid the preemption scenario above.
-
->
-> -chris
->
-
-
--- 
-Best regards,
-Dmitry Adamushko
