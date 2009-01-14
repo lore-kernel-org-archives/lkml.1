@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbZANCXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZANC2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbZANCXX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 21:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbZANCXE
+	id S1757002AbZANC2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 21:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZANC2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 21:23:04 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:38493 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755121AbZANCXC (ORCPT
+	Tue, 13 Jan 2009 21:28:39 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:63016 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbZANC2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 21:23:02 -0500
-Date: Tue, 13 Jan 2009 18:22:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net
-Subject: Re: [8/7] dst: kconfig update.
-Message-Id: <20090113182251.1cda2d64.randy.dunlap@oracle.com>
-In-Reply-To: <20090113230943.GA30952@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-2-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-3-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-4-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-5-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-6-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-7-git-send-email-zbr@ioremap.net>
-	<1231887933-17843-8-git-send-email-zbr@ioremap.net>
-	<20090113230943.GA30952@ioremap.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Jan 2009 21:28:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=b3frUAAo6f2adSpOw/AmrzfpKgMO8HF8XiJCMp2xQ6dlvKPdxLjOTVB+bhzL9vfK8u
+         0eRmEemTBOg49XudTBXlDD4PJ0d+gxuADBJHc+g6ByLUxSo980CPwAmcR5+Jdzbt4wJ/
+         NLoJ1JbcNUKY2+cAgpI/lAQWrdiG6crLaT3wg=
+Message-ID: <cfd18e0f0901131828p3a737e6cx317ccda67ba9f733@mail.gmail.com>
+Date: Wed, 14 Jan 2009 15:28:35 +1300
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] sys_waitid: return -EFAULT for NULL
+Cc: "Roland McGrath" <roland@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0901131808070.6528@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.496D4C7E.0028:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+References: <cfd18e0f0901131436ud2cf61bkf0e6b00f4b765bb5@mail.gmail.com>
+	 <cfd18e0f0901131438n232ba114n27ea2d7964d071de@mail.gmail.com>
+	 <20090113224759.7DFB7FC3DD@magilla.sf.frob.com>
+	 <20090113224941.36F19FC3DD@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0901131629220.6528@localhost.localdomain>
+	 <cfd18e0f0901131653y76a827b5i906fadce63ada56b@mail.gmail.com>
+	 <alpine.LFD.2.00.0901131655040.6528@localhost.localdomain>
+	 <cfd18e0f0901131739v5119271flc28b5531604e682@mail.gmail.com>
+	 <alpine.LFD.2.00.0901131808070.6528@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 02:09:43 +0300 Evgeniy Polyakov wrote:
+On Wed, Jan 14, 2009 at 3:10 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 14 Jan 2009, Michael Kerrisk wrote:
+>>
+>> It isn't an extension.  It's an accident.
+>
+> Bah. It doesn't matter. It's an ABI. Your arguments make no sense - simply
+> because there are other differences that means that if you develop under
+> one OS, you can't expect it to run on another.
 
-> On Wed, Jan 14, 2009 at 02:05:33AM +0300, Evgeniy Polyakov (zbr@ioremap.net) wrote:
-> > --- /dev/null
-> > +++ b/drivers/staging/dst/Kconfig
-> > @@ -0,0 +1,71 @@
-> > +config DST
-> > +	tristate "Distributed storage"
-> > +	depends on NET && CRYPTO && SYSFS
-> > +	select CONNECTOR
-> > +	select LIBCRC32C
-> 
-> Above is not needed.
-> 
-> --- ./drivers/staging/dst/Kconfig.old	2009-01-14 02:09:52.000000000 +0300
-> +++ ./drivers/staging/dst/Kconfig	2009-01-14 02:10:02.000000000 +0300
-> @@ -2,14 +2,10 @@
->  	tristate "Distributed storage"
->  	depends on NET && CRYPTO && SYSFS
->  	select CONNECTOR
-> -	select LIBCRC32C
->  	---help---
->  	DST is a network block device storage, which can be used to organize
->  	exported storages on the remote nodes into the local block device.
->  
-> -	DST is a network block device storage, which can be used to organize
-> -	exported storages on the remote nodes into the local block device.
-> -
->  	DST works on top of any network media and protocol, it is just a matter
->  	of configuration utility to understand the correct addresses. The most
->  	common example is TCP over IP allows to pass through firewalls and
+(I don't think implied such an expectation.  On the other hand, we can
+do things to make more or less difficult for writers of portable
+applications.)
 
-ah, i see.
+> Arguing that "accident" is somehow different than "extension" is a totally
+> inane and _idiotic_ argument. Because it's just arguing about the words,
+> not about the end result.
+>
+> If you're doing a dissertation in English literature, arguing about the
+> words you use is valid. But if you're talking about operating systems,
+> it's just pointless masturbation.
 
----
-~Randy
+I agree that for practical purposes with respect to waitid(),
+"extension" versus "accident" is only about words: we've had the
+interface in its current form for so long that changing it shouldn't
+be done without consideration.
+
+But (and this was why I constrasted "extension" with "accident"), I
+already made it clear that IMO there was another point that was more
+important than this specific case:
+
+: And the fact that such accidents happen more often than necessary is
+: the real problem, rather than the fact that this API in particular is
+: inconsistent with expectations.
+
+but you responded to the point I found less important.
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
