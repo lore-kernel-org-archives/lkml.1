@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZANW3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbZANWad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZANW3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 17:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZANW3W
+	id S1757227AbZANWad (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 17:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZANWaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 17:29:22 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:16822 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbZANW3V (ORCPT
+	Wed, 14 Jan 2009 17:30:22 -0500
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:61181 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753747AbZANWaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 17:29:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=d3i/Pw4tNDUzPx49RlrEWWBXm/+XcG2ytzBa7QlrIlV/wSQgI4kWJH0Hq9PMf1YfUN
-         CSwGosWlNn1jYjk2XkVrDuJ+ED2lMcAQ9LN9fbueS+Onmy45P34LfOBmMsl16YuTy9Vz
-         8YJ25vMQjs5WbnraRVoynx6YuVGH6KtOZ/AU4=
-Message-ID: <9f4f8abe0901141429l4b111f7bh6ffbc0680ccf4fbc@mail.gmail.com>
-Date: Wed, 14 Jan 2009 14:29:20 -0800
-From: "Vineet Gupta" <vineetg76@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: Query about DMA map API implementation in non-coherent archs
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <49686A9E.8090808@s5r6.in-berlin.de>
+	Wed, 14 Jan 2009 17:30:21 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuQCAG/0bUl5LDnlgWdsb2JhbACTfgEBFiK7E4Vv
+X-IronPort-AV: E=Sophos;i="4.37,263,1231075800"; 
+   d="scan'208";a="293864527"
+Date: Thu, 15 Jan 2009 09:30:16 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: wk <handygewinnspiel@gmx.de>
+Cc: Chris Mason <chris.mason@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
+Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
+Message-ID: <20090114223016.GY8071@disturbed>
+Mail-Followup-To: wk <handygewinnspiel@gmx.de>,
+	Chris Mason <chris.mason@oracle.com>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
+	HWerner4@gmx.de, viro@zeniv.linux.org.uk,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	mchehab@infradead.org
+References: <20090112132130.6c932b85.akpm@linux-foundation.org> <20090112220624.4fbfee34@pedra.chehab.org> <20090112162337.318dd61d.akpm@linux-foundation.org> <20090113184755.87720@gmx.net> <20090113105947.9e774b69.akpm@linux-foundation.org> <20090113191757.74290@gmx.net> <20090113113700.776a94b5.akpm@linux-foundation.org> <20090113203843.GJ29283@parisc-linux.org> <1231957750.8269.28.camel@think.oraclecorp.com> <496E56EB.2030301@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9f4f8abe0901091045k4a06e2c9v29a7e8a7387e7a48@mail.gmail.com>
-	 <49686A9E.8090808@s5r6.in-berlin.de>
+In-Reply-To: <496E56EB.2030301@gmx.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 10, 2009 at 1:30 AM, Stefan Richter
-<stefanr@s5r6.in-berlin.de> wrote:
-> Vineet Gupta wrote:
-> ...
->> As per dma-mapping and dma-api docs, for streaming DMA mappings arch
->> needs to provide 2 seperate APIs
->>
->> 1. map API to convert cpu address into DMA address
->> 2. sync API to flush/invalidate the dcaches for non-coherent archs
->> (essentially when changing the ownership of buffer between cpu and
->> device).
->>
->> However from what I understood, the map API need not take care of
->> proper cache sync.However both ARM and MIPS do the cache sync
->> operations in map API as well (this is done standalone in sync APIs
->> too). Is there a specific reason for this.
->>
->> Drivers such as libata don't even call any sync API. For e.g. libata
->> only calls dma_map_sg ( ) while setting up the DMA.
-> ...
+On Wed, Jan 14, 2009 at 10:19:39PM +0100, wk wrote:
+> Chris Mason wrote:
+> I cannot fully understand what strace -v outputs (see attachment), but  
+> what i see is that 'find' stops after finding a file with d_off = 
+> 4294967295
+> 4294967295  =  0xFFFFFFFF, adding any number greater that zero will be  
+> greater that 32bits, so this could be the reason for the message "value  
+> too large".
 >
-> dma_map_*() transfers ownership of a buffer from CPUs to the device too.
->  In case of DMA_TO_DEVICE or DMA_BIDIRECTIONAL, these calls therefore
-> have to make sure that the device sees current buffer contents.
-
-I feel that DMA-api.txt should explicitly say that in part Id, just
-before detailing each of the enumerator DMA_TO_DEVICE,
-DMA_FROM_DEVICE...
-
-shall I prepare a patch...
-
-
-> --
-> Stefan Richter
-> -=====-==--= ---= -=-=-
-> http://arcgraph.de/sr/
 >
+>
+> I also noticed that i cannot access these files through samba if i boot  
+> from 2.6.28 - really strange.
+> If i reboot older kernels these are visible in samba again and fully  
+> accessible.
+>
+> Attached the log from stracing the command which was ivoked by the  
+> Makefile from v4l-dvb.
+> I guess this is all i could contribute to that problem. Thats stuff for  
+> xfs filesystem experts now..
+
+It's obviously the regression fixed by:
+
+http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs.git;a=commit;h=15440319767942a363f282d6585303d3d75088ba
+
+It needs to be pushed to Linus, then into 2.6.28-stable.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
