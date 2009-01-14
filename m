@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbZANSSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZANSSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbZANSSJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 13:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZANSRx
+	id S1754811AbZANSSv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 13:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbZANSSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 13:17:53 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38352 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbZANSRx (ORCPT
+	Wed, 14 Jan 2009 13:18:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49484 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753148AbZANSSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 13:17:53 -0500
-Date: Wed, 14 Jan 2009 13:17:48 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: richard kennedy <richard@rsk.demon.co.uk>
-Cc: Kyle McMartin <kyle@infradead.org>, Takashi Iwai <tiwai@suse.de>,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] module: kzalloc mod->ref
-Message-ID: <20090114181748.GQ25103@bombadil.infradead.org>
-References: <20090114033533.GL25103@bombadil.infradead.org> <s5hmydufe3c.wl%tiwai@suse.de> <20090114155859.GO25103@bombadil.infradead.org> <496E261F.9000803@rsk.demon.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496E261F.9000803@rsk.demon.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 13:18:41 -0500
+Date: Wed, 14 Jan 2009 10:18:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@suse.cz
+Subject: Re: [PATCH 2/2] ext2: Add blk_issue_flush() to syncing paths
+Message-Id: <20090114101834.fbb9ea12.akpm@linux-foundation.org>
+In-Reply-To: <1231945948-23676-2-git-send-email-jack@suse.cz>
+References: <1231945948-23676-1-git-send-email-jack@suse.cz>
+	<1231945948-23676-2-git-send-email-jack@suse.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 05:51:27PM +0000, richard kennedy wrote:
-> Aside from the code in socket does this reference count really get used
-> that often? Atomic_t gets used for ref counts is lots of other places in
-> the kernel, so why not turn module_ref into an atomic counter & drop the
-> array entirely saving all of the memory & disk space?
-> 
-> I do wonder if socket could manage its module lifetimes in some other
-> way, then we really could just use an atomic module ref without too much
-> impact. I didn't get very far in trying to work out what exactly was
-> going on in socket.c but maybe it's worth another look.
+On Wed, 14 Jan 2009 16:12:28 +0100 Jan Kara <jack@suse.cz> wrote:
+
+> To be really safe that the data hit the platter, we should also flush drive's
+> writeback caches on fsync and for O_SYNC files or O_DIRSYNC inodes.
 > 
 
-I suppose it depends on how much contention there will end up being on
-the atomic_t, given that right now, the module_ref structure favours
-writers (since readers need to loop.) 
+It's not good to randomly sprinkle blkdev_issue_flush() calls all over
+the filesystem like this.  How do we know that you didn't miss a site? 
+How do we ensure that people who modify the fs in the future don't
+forget to add the blkdev_issue_flush() call, if needed?
 
-I'd like to hear what rusty has to say, but I'm working on a patch
-to do module_ref with RCU (and to allocate it in modpost with per_cpu
-variables, but that needs more testing.) I'll check what kind of
-difference those end up making.
+IOW, it is fragile.  Is there anything we can do to make this more
+robust?  Do the flush calls from some higher-level callsite?  Perhaps
+even the VFS?
 
-> I don't have any network test harness so it's difficult to tell what
-> impact any code change is going to have. Do you have any suggestions for
-> a good test of this?
-> 
+> @@ -97,8 +98,10 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
+>  
+>  	if (IS_DIRSYNC(dir)) {
+>  		err = write_one_page(page, 1);
+> -		if (!err)
+> +		if (!err) {
+>  			err = ext2_sync_inode(dir);
+> +			blkdev_issue_flush(dir->i_sb->s_bdev, NULL);
 
-No, but I imagine Rick Jones' netperf would show the effect, if any.
+The patch itself would have been a bit neater if it had added
 
-cheers, Kyle
+int ext3_blkdev_issue_flush(struct inode *inode)
+
+and called that, IMO.
+
+
+Also, the changelog needs some work, methinks.
+
+/**
+ * blkdev_issue_flush - queue a flush
+ * @bdev:	blockdev to issue flush for
+ * @error_sector:	error sector
+ *
+ * Description:
+ *    Issue a flush for the block device in question. Caller can supply
+ *    room for storing the error offset in case of a flush error, if they
+ *    wish to.  Caller must run wait_for_completion() on its own.
+ */
+
+So afaict the change you've made is incomplete.  We'll queue a
+writeback command to the disk but we won't wait for it to be sent down
+the wire.  Nor do we wait for the command to complete at the device
+end.  So it can still be a looong time (seconds!) before the data which
+the user thinks is on disk really is safe.
+
+Yes?
+
+If so, this design decision should be described in the changelog, and
+justified.  Actually, doing this in the comment over
+ext3_blkdev_issue_flush() would be good.
+
+
