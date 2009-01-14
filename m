@@ -1,32 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZANAIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbZANAMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbZANAIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 19:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZANAIl
+	id S1759913AbZANAMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 19:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZANAM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 19:08:41 -0500
-Received: from corega.com.ru ([195.178.208.66]:59679 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756278AbZANAIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 19:08:40 -0500
-Date: Wed, 14 Jan 2009 03:08:39 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
+	Tue, 13 Jan 2009 19:12:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34227 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753170AbZANAM1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Jan 2009 19:12:27 -0500
+Date: Tue, 13 Jan 2009 16:12:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Greg KH <greg@kroah.com>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+Cc: zbr@ioremap.net, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org, dst@ioremap.net
 Subject: Re: [0/7] Distributed storage for drivers/staging merge request
-Message-ID: <20090114000839.GA512@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <20090113233932.GA18000@kroah.com> <20090113234734.GA32190@ioremap.net> <20090114000130.GA20811@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <20090113161221.b23510b4.akpm@linux-foundation.org>
 In-Reply-To: <20090114000130.GA20811@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
+	<20090113233932.GA18000@kroah.com>
+	<20090113234734.GA32190@ioremap.net>
+	<20090114000130.GA20811@kroah.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 04:01:30PM -0800, Greg KH (greg@kroah.com) wrote:
+On Tue, 13 Jan 2009 16:01:30 -0800
+Greg KH <greg@kroah.com> wrote:
+
 > > Really. I implemented all the suggestions I got from the previous
 > > reviews (including spaces and documentations, which btw were the only
 > > ones :) way too long ago and did not get any other complaints. Actually
@@ -37,19 +43,11 @@ On Tue, Jan 13, 2009 at 04:01:30PM -0800, Greg KH (greg@kroah.com) wrote:
 > Hm, then why can't this whole thing just go into fs/dst/ right now?
 > It's self-contained, so there shouldn't be any special "must live in
 > staging" rule for filesystems before adding them.
-
-Its a block device not a filesystem, so it is more like a driver.
-All original patches placed it into the drivers/block/dst without touch
-any external files except makefile and kconfig.
-
+> 
 > We take new drivers at almost any point in the release cycle, why should
 > filesystems be any different?
 
-I suppose this is a rethorical question, since there is no answer :)
+Well...  the case for merging drivers is usually pretty simple - the
+hardware exists, so we need the driver.
 
-> Linus, Andrew, any objections?
-
-Hi there!
-
--- 
-	Evgeniy Polyakov
+Whereas the "do we need this" case for new filesystems isn't this simple.
