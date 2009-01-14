@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZANTi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbZANTjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZANTi6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZANTir
+	id S1757470AbZANTjg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbZANTjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:38:47 -0500
-Received: from mga02.intel.com ([134.134.136.20]:25892 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756035AbZANTiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:38:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,263,1231142400"; 
-   d="scan'208";a="481679046"
-Date: Wed, 14 Jan 2009 11:38:44 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: kernel BUG at fs/ext/super.c:428
-Message-ID: <20090114193844.GA18436@linux-os.sc.intel.com>
-References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com> <20090114044059.GA6222@mit.edu> <20090114191632.GA13114@linux-os.sc.intel.com> <1231961377.14825.51.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1231961377.14825.51.camel@laptop>
-User-Agent: Mutt/1.4.1i
+	Wed, 14 Jan 2009 14:39:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39210 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756108AbZANTjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:39:23 -0500
+Message-ID: <496E3F7D.2060908@zytor.com>
+Date: Wed, 14 Jan 2009 11:39:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: simplify HIGHMEM-related Kconfig entries
+References: <496DE927.76E4.0078.0@novell.com>
+In-Reply-To: <496DE927.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 11:29:37AM -0800, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 11:16 -0800, Pallipadi, Venkatesh wrote:
-> > On Tue, Jan 13, 2009 at 08:40:59PM -0800, Theodore Tso wrote:
-> > > On Wed, Jan 14, 2009 at 02:48:13AM +0000, Arjan van de Ven wrote:
-> > > >> Well, Arjan's commit, efaee192: "async: make the final inode deletion
-> > > >> an asynchronous event", does change how inodes get deleted, and this
-> > > >> looks like a race where an inode is getting deleted during the umount.
-> > > >>
-> > > >> So I would try reverting commit efaee192 and see if it fixes things
-> > > >> before starting a full bisect...
-> > > >
-> > > > the commit is already reverted before rc1
-> > > >
-> > >
-> > > Ah, right.  I see, the async infrastructure is still in fs/super.c,
-> > > but the actual code to insert deleted inodes onto the s_async_list was
-> > > removed in commit b32714b.  Sorry, that confused me.
-> > >
-> > > OK, so assuming that Venkatesh was using something post-rc1, I can't
-> > > suggest anything other than a full bisect.  Sorry....
-> > >
-> >
-> > Below is the result of full bisect
-> >
-> > 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
-> > commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
-> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date:   Fri Sep 26 19:32:20 2008 +0200
-> >
-> >     futex: rely on get_user_pages() for shared futexes
-> >
-> >     On the way of getting rid of the mmap_sem requirement for shared futexes,
-> >     start by relying on get_user_pages().
-> >
-> >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> >
-> > :040000 040000 029e79e0a7421438c2a7437dd210a1acf40b6c29 b581716762c1952c0f515fac642690514e7224b7 M      include
-> > :040000 040000 5f604b60974dbb9b0ac1a0910234f28c43a5e691 10c576cabe7eae661501ec38861a0f7488d5353b M      kernel
-> 
-> However does a futex change make ext3 crap its pants?
-> 
-> Is there anything more to it than start the machine, and reboot?
+Jan Beulich wrote:
+> Additionally remove the dependency of X86_PAE on !HIGHMEM4G - at least
+> I can't understand why that dependency existed.
 
-Just system startup and reboot is enough to reproduce the problem. And 100%
-reproducible. So, does seem to be any timing involved either.
+At least originally, the meaning of the x86 highmem entries were:
 
-Thanks,
-Venki
+	No highmem	- No highmem, no PAE
+	HIGHMEM4G	- Highmem, no PAE
+	HIGHMEM64G	- Highmem, PAE
+
+So X86_PAE and HIGHMEM4G is a bit of a contradiction.  I haven't looked 
+at the logic in detail, or remember offhand if there have been any 
+weakening of the definitions above; e.g. someone could have implemented 
+a way to do PAE without highmem, to get access to the NX bits.
+
+	-hpa
