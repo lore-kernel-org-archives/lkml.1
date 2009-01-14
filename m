@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbZANK6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbZANK70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbZANK6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 05:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZANK6N
+	id S1761036AbZANK70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 05:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbZANK7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 05:58:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56835 "EHLO ogre.sisk.pl"
+	Wed, 14 Jan 2009 05:59:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56847 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbZANK6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 05:58:11 -0500
+	id S1754296AbZANK7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 05:59:15 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-Date: Wed, 14 Jan 2009 11:57:32 +0100
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [Bug #12420] WARNING: at drivers/ata/libata-sff.c:1017 ata_sff_hsm_move+0x45e/0x750()
+Date: Wed, 14 Jan 2009 11:58:52 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <496D815E.8010107@jp.fujitsu.com> <200901141135.31165.rjw@sisk.pl>
-In-Reply-To: <200901141135.31165.rjw@sisk.pl>
+Cc: Alexey Rempel <fishor@gmx.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <496D95BA.4070304@gmx.net> <200901140840.39202.borntraeger@de.ibm.com>
+In-Reply-To: <200901140840.39202.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-2022-jp"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901141157.32720.rjw@sisk.pl>
+Message-Id: <200901141158.53554.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
-> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
-[...]
-> > I'm sorry but I don't understand what the problem is.
-> > Do you mean pci_disable_msix() doesn't work on some platforms?
+On Wednesday 14 January 2009, Christian Borntraeger wrote:
+> Am Mittwoch 14 Januar 2009 schrieb Alexey Rempel:
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12420
+> > > Subject		: WARNING: at drivers/ata/libata-sff.c:1017 
+> ata_sff_hsm_move+0x45e/0x750()
+> > > Submitter	: Christian Borntraeger <borntraeger@de.ibm.com>
+> > > Date		: 2009-01-09 12:34 (3 days old)
+> > > First-Bad-Commit: 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=871af1210f13966ab911ed2166e4ab2ce775b99d
+> > > References	: http://marc.info/?l=linux-kernel&m=123150457832109&w=4
 > 
-> No, I don't.  It was just confusion on my side, sorry.
 > 
-> Please have a look at the new version of the patch I sent yesterday
-> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
+> > This warning was disabled in latest git.
+> 
+> Yes. After the discussion had a conclusion, I decided to to send a patch 
+> myself and Jeff sent it to Linus.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0f79f7ad3e52b908786462cf5446ebe20fe14fa
 
-BTW, in your patch the first dummy pci_enable_msix() allocates just one
-vector, which means that the contents of both
-msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
-if my reading of the spec (PCI 3.0 in this case) is correct.
+Thanks, closed.
 
-However, if the second pci_enable_msix() allocates two vectors, the contents of the
-message number fields in the PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS
-registers may change as a result.
-
-Thanks,
 Rafael
