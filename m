@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763630AbZANR13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765345AbZANR2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763630AbZANR13 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761974AbZANR1T
+	id S1765345AbZANR2F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764186AbZANR1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:27:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55400 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761024AbZANR1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:27:18 -0500
-Message-ID: <496E2059.8010904@redhat.com>
-Date: Wed, 14 Jan 2009 11:26:49 -0600
-From: Eric Sandeen <sandeen@redhat.com>
+	Wed, 14 Jan 2009 12:27:52 -0500
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:63958 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763804AbZANR1u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:27:50 -0500
+Message-ID: <496E206A.6020003@cs.columbia.edu>
+Date: Wed, 14 Jan 2009 12:27:06 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Jan Kara <jack@suse.cz>, Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <496D1233.2060905@redhat.com> <20090114042402.GH14730@mit.edu>
-In-Reply-To: <20090114042402.GH14730@mit.edu>
+To: Nathan Lynch <ntl@pobox.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v12][PATCH 13/14] Checkpoint multiple processes
+References: <1230542187-10434-1-git-send-email-orenl@cs.columbia.edu> <1230542187-10434-14-git-send-email-orenl@cs.columbia.edu> <20090112231452.GC6850@localdomain>
+In-Reply-To: <20090112231452.GC6850@localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Tue, Jan 13, 2009 at 04:14:11PM -0600, Eric Sandeen wrote:
->> This looks sane to me, and it does fix the below testcase.
->>
->> Care to formally propose it?
+
+
+Nathan Lynch wrote:
+>> +/* count number of tasks in tree (and optionally fill pid's in array) */
+>> +static int cr_tree_count_tasks(struct cr_ctx *ctx)
+>> +{
+>> +	struct task_struct *root = ctx->root_task;
+>> +	struct task_struct *task = root;
+>> +	struct task_struct *parent = NULL;
+>> +	struct task_struct **tasks_arr = ctx->tasks_arr;
+>> +	int tasks_nr = ctx->tasks_nr;
+>> +	int nr = 0;
+>> +
+>> +	read_lock(&tasklist_lock);
+>> +
+>> +	/* count tasks via DFS scan of the tree */
+>> +	while (1) {
+>> +		if (tasks_arr) {
+>> +			/* unlikely, but ... */
+>> +			if (nr == tasks_nr)
+>> +				return -EBUSY;	/* cleanup in cr_ctx_free() */
 > 
-> Can we confirm what is being proposed?  From following this thread, I
-> think what folks are suggesting is:
+> Returns without unlocking tasklist_lock?
 > 
-> 1)  Revert the current "ext3/4: wait on all pending ocmmits in ext3/4_sync_fs"
-> 
-> 2)  Apply Jan's patch "jbd[2]: Fix return value of journal_start_commit()"
 
-The above seems like the right plan to me.  It should address the
-kernel.org bug about IO on idle partitions.
+Thanks. Will fix.
 
-> 3)  Also apply Jan's patch "jbd2: Skip commit of a transaction without
-> any buffers" since it appears to be a good optimization (although it's
-> not clear it would happen once we revert (1), above.
-
-Maybe not yet, it could probably use more testing/review/soak.
-
--Eric
-
->     	     	   	       	  	      - Ted
+Oren.
