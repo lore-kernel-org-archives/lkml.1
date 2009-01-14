@@ -1,58 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZANDbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbZANDbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbZANDbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Jan 2009 22:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZANDbK
+	id S1757581AbZANDbp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Jan 2009 22:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZANDbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 22:31:10 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:37407 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751952AbZANDbJ (ORCPT
+	Tue, 13 Jan 2009 22:31:34 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:47348 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbZANDbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 22:31:09 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=VsOVpn7lMGqlQ3oLYjkA:9 a=HORoOqQp9DHuxdKRS1Nvsl2xPIsA:4 a=kNAwe-3CODUA:10 a=XK7UU1QYhjMA:10
-Message-ID: <496D5C7A.9040505@shaw.ca>
-Date: Tue, 13 Jan 2009 21:31:06 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: RHubbell@iHubbell.com
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: USB memory card reader and 64MB SD card - 2.6.28-git14
-References: <1231621530.4495.36.camel@127> <49693575.2030007@shaw.ca> <1231829328.19241.3.camel@127>
-In-Reply-To: <1231829328.19241.3.camel@127>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 13 Jan 2009 22:31:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qGIuSMKCJCuKuk8NA48CVgPSGxwAswzY2tC55DHtFDGGqI/lv+Ce28GYabJKOZuwyg
+         rKOH6N181Lerc6udbGWKBnRDnhKy4cC5apeABZ+w8fBs2fhSnUy6CEqLipToMJpY9ZRN
+         UB18X9PzAyxf/UxSEiuisM8dYcdjKvbIkgFpc=
+Subject: Re: [PATCH 1/2] cris: introduce asm/swab.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1231903597.5756.4.camel@brick>
+References: <1231903597.5756.4.camel@brick>
+Content-Type: text/plain
+Date: Tue, 13 Jan 2009 19:31:29 -0800
+Message-Id: <1231903889.5756.7.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rhubbell wrote:
-> Darn, I meant to respond to the list also.
-> Anyway there is no dmesg output for the card. 
-> The dmesg output looks correct with the 128MB card.
-> 
-> Here's for the 128:
-> scsi0 : SCSI emulation for USB Mass Storage devices
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before scanning
-> scsi 0:0:0:0: Direct-Access              USB Card Reader  1.01 PQ: 0 ANSI: 0 CCS
-> sd 0:0:0:0: [sda] 251904 512-byte hardware sectors: (128 MB/123 MiB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 43 00 00 00
-> sd 0:0:0:0: [sda] Assuming drive cache: write through
-> sd 0:0:0:0: [sda] 251904 512-byte hardware sectors: (128 MB/123 MiB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 43 00 00 00
-> sd 0:0:0:0: [sda] Assuming drive cache: write through
->  sda: sda1
-> sd 0:0:0:0: [sda] Attached SCSI removable disk
-> sd 0:0:0:0: Attached scsi generic sg0 type 0
-> usb-storage: device scan complete
+Adjust the arch overrides to the new names as well.
 
-That output seems rather normal.. If you're not getting anything like 
-that with the other card though, I would tend to suspect some kind of 
-issue with the card, the reader or some kind of incompatibility between 
-them. Certainly all the USB resets from the other output would tend to 
-suggest the reader isn't responding properly with that card installed..
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Sorry, _this_ is the one that won't break anything.  Previous patch
+was incorrect in the defines in arch-v32/swab.h
+
+ arch/cris/include/arch-v10/arch/byteorder.h |   26 -----------------------
+ arch/cris/include/arch-v10/arch/swab.h      |   30 +++++++++++++++++++++++++++
+ arch/cris/include/arch-v32/arch/byteorder.h |   20 ------------------
+ arch/cris/include/arch-v32/arch/swab.h      |   24 +++++++++++++++++++++
+ arch/cris/include/asm/Kbuild                |    1 +
+ arch/cris/include/asm/byteorder.h           |   20 +-----------------
+ arch/cris/include/asm/swab.h                |    8 +++++++
+ 7 files changed, 64 insertions(+), 65 deletions(-)
+
+diff --git a/arch/cris/include/arch-v10/arch/byteorder.h b/arch/cris/include/arch-v10/arch/byteorder.h
+deleted file mode 100644
+index 255b646..0000000
+--- a/arch/cris/include/arch-v10/arch/byteorder.h
++++ /dev/null
+@@ -1,26 +0,0 @@
+-#ifndef _CRIS_ARCH_BYTEORDER_H
+-#define _CRIS_ARCH_BYTEORDER_H
+-
+-#include <asm/types.h>
+-#include <linux/compiler.h>
+-
+-/* we just define these two (as we can do the swap in a single
+- * asm instruction in CRIS) and the arch-independent files will put
+- * them together into ntohl etc.
+- */
+-
+-static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+-{
+-	__asm__ ("swapwb %0" : "=r" (x) : "0" (x));
+-  
+-	return(x);
+-}
+-
+-static inline __attribute_const__ __u16 ___arch__swab16(__u16 x)
+-{
+-	__asm__ ("swapb %0" : "=r" (x) : "0" (x));
+-	
+-	return(x);
+-}
+-
+-#endif
+diff --git a/arch/cris/include/arch-v10/arch/swab.h b/arch/cris/include/arch-v10/arch/swab.h
+new file mode 100644
+index 0000000..e4e847d
+--- /dev/null
++++ b/arch/cris/include/arch-v10/arch/swab.h
+@@ -0,0 +1,30 @@
++#ifndef _CRIS_ARCH_SWAB_H
++#define _CRIS_ARCH_SWAB_H
++
++#include <asm/types.h>
++#include <linux/compiler.h>
++
++#define __SWAB_64_THRU_32__
++
++/* we just define these two (as we can do the swap in a single
++ * asm instruction in CRIS) and the arch-independent files will put
++ * them together into ntohl etc.
++ */
++
++static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
++{
++	__asm__ ("swapwb %0" : "=r" (x) : "0" (x));
++
++	return(x);
++}
++#define __arch_swab32 __arch_swab32
++
++static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
++{
++	__asm__ ("swapb %0" : "=r" (x) : "0" (x));
++
++	return(x);
++}
++#define __arch_swab16 __arch_swab16
++
++#endif
+diff --git a/arch/cris/include/arch-v32/arch/byteorder.h b/arch/cris/include/arch-v32/arch/byteorder.h
+deleted file mode 100644
+index 6ef8fb4..0000000
+--- a/arch/cris/include/arch-v32/arch/byteorder.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#ifndef _ASM_CRIS_ARCH_BYTEORDER_H
+-#define _ASM_CRIS_ARCH_BYTEORDER_H
+-
+-#include <asm/types.h>
+-
+-static inline __const__ __u32
+-___arch__swab32(__u32 x)
+-{
+-	__asm__ __volatile__ ("swapwb %0" : "=r" (x) : "0" (x));
+-	return (x);
+-}
+-
+-static inline __const__ __u16
+-___arch__swab16(__u16 x)
+-{
+-	__asm__ __volatile__ ("swapb %0" : "=r" (x) : "0" (x));
+-	return (x);
+-}
+-
+-#endif /* _ASM_CRIS_ARCH_BYTEORDER_H */
+diff --git a/arch/cris/include/arch-v32/arch/swab.h b/arch/cris/include/arch-v32/arch/swab.h
+new file mode 100644
+index 0000000..9a4ea5e
+--- /dev/null
++++ b/arch/cris/include/arch-v32/arch/swab.h
+@@ -0,0 +1,24 @@
++#ifndef _ASM_CRIS_ARCH_SWAB_H
++#define _ASM_CRIS_ARCH_SWAB_H
++
++#include <asm/types.h>
++
++#define __SWAB_64_THRU_32__
++
++static inline __const__ __u32
++__arch_swab32(__u32 x)
++{
++	__asm__ __volatile__ ("swapwb %0" : "=r" (x) : "0" (x));
++	return (x);
++}
++#define __arch_swab32 __arch_swab32
++
++static inline __const__ __u16
++__arch_swab16(__u16 x)
++{
++	__asm__ __volatile__ ("swapb %0" : "=r" (x) : "0" (x));
++	return (x);
++}
++#define __arch_swab16 __arch_swab16
++
++#endif /* _ASM_CRIS_ARCH_SWAB_H */
+diff --git a/arch/cris/include/asm/Kbuild b/arch/cris/include/asm/Kbuild
+index d5b6319..b79b7c6 100644
+--- a/arch/cris/include/asm/Kbuild
++++ b/arch/cris/include/asm/Kbuild
+@@ -9,3 +9,4 @@ header-y += sync_serial.h
+ 
+ unifdef-y += etraxgpio.h
+ unifdef-y += rs485.h
++unifdef-y += swab.h
+diff --git a/arch/cris/include/asm/byteorder.h b/arch/cris/include/asm/byteorder.h
+index cc8e418..7678d86 100644
+--- a/arch/cris/include/asm/byteorder.h
++++ b/arch/cris/include/asm/byteorder.h
+@@ -1,25 +1,7 @@
+ #ifndef _CRIS_BYTEORDER_H
+ #define _CRIS_BYTEORDER_H
+ 
+-#ifdef __GNUC__
+-
+-#ifdef __KERNEL__
+-#include <arch/byteorder.h>
+-
+-/* defines are necessary because the other files detect the presence
+- * of a defined __arch_swab32, not an inline
+- */
+-#define __arch__swab32(x) ___arch__swab32(x)
+-#define __arch__swab16(x) ___arch__swab16(x)
+-#endif /* __KERNEL__ */
+-
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
+-
+-#endif /* __GNUC__ */
+-
++#include <asm/swab.h>
+ #include <linux/byteorder/little_endian.h>
+ 
+ #endif
+diff --git a/arch/cris/include/asm/swab.h b/arch/cris/include/asm/swab.h
+new file mode 100644
+index 0000000..80668e8
+--- /dev/null
++++ b/arch/cris/include/asm/swab.h
+@@ -0,0 +1,8 @@
++#ifndef _CRIS_SWAB_H
++#define _CRIS_SWAB_H
++
++#ifdef __KERNEL__
++#include <arch/swab.h>
++#endif /* __KERNEL__ */
++
++#endif /* _CRIS_SWAB_H */
+-- 
+1.6.1.212.g4b3ec
+
+
+
