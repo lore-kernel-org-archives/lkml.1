@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZANTtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZANTty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZANTtE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 14:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZANTsu
+	id S1757139AbZANTty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 14:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZANTtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 14:48:50 -0500
-Received: from mga11.intel.com ([192.55.52.93]:43441 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752237AbZANTst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 14:48:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,263,1231142400"; 
-   d="scan'208";a="422401450"
-Date: Wed, 14 Jan 2009 11:48:39 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: kernel BUG at fs/ext/super.c:428
-Message-ID: <20090114194838.GB18436@linux-os.sc.intel.com>
-References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com> <20090114044059.GA6222@mit.edu> <20090114191632.GA13114@linux-os.sc.intel.com> <1231961377.14825.51.camel@laptop> <20090114193844.GA18436@linux-os.sc.intel.com> <1231962169.14825.54.camel@laptop>
-Mime-Version: 1.0
+	Wed, 14 Jan 2009 14:49:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:41766 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755882AbZANTtm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 14:49:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=l6AoPBfdxN1FvNY0S0rp5x1vBz1XVrjf1LlR53bHQAsxS4D1ZgwbFbL2jGroOM/Vgb
+         tKZ2n4O9BABJgVVmCk1EMtAJHoPMypOHSnDQoI0l7gBHY2A6p0kGPVegMxLzAoflf85d
+         qa8h+LcIEDzZgOrs7FfnE+eG7ClGtcF8+eHPM=
+Date: Wed, 14 Jan 2009 22:49:33 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: [PATCH -tip] x86: headers - fix export private data to
+	userspace
+Message-ID: <20090114194933.GA8178@localhost>
+References: <20090113183456.GA14470@localhost> <496E4040.9080701@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231962169.14825.54.camel@laptop>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <496E4040.9080701@zytor.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 11:42:49AM -0800, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 11:38 -0800, Pallipadi, Venkatesh wrote:
-> 
-> > > > Below is the result of full bisect
-> 
-> > > >     futex: rely on get_user_pages() for shared futexes
-> 
-> > > However does a futex change make ext3 crap its pants?
-> > > 
-> > > Is there anything more to it than start the machine, and reboot?
-> > 
-> > Just system startup and reboot is enough to reproduce the problem. And 100%
-> > reproducible. So, does seem to be any timing involved either.
-> 
-> That's very odd indeed, non of my test systems nor Ingo's ever triggered
-> this, and that patch has been in -tip for a rather long time.
-> 
-> CommitDate: Tue Sep 30 12:35:20 2008 +0200
-> 
-> That's 3.5 months of test time.. most curious. What kind of userland do
-> you have that triggers this?
-> 
+[H. Peter Anvin - Wed, Jan 14, 2009 at 11:42:56AM -0800]
+> Cyrill Gorcunov wrote:
+>> Impact: cleanup
+>>
+>> 'make headers_check' warn us about leaking of kernel private
+>> (mostly compile time vars) data to userspace in headers. Fix it.
+>>
+>> More detailed report for easier reviewing:
+>>
+>> 1) boot.h - neither BOOT_HEAP_SIZE, BOOT_STACK_SIZE refs
+>>    was found by searching thru net (ie in user-space area).
+>>
+>> 2) prctl.h - sys_arch_prctl is completely removed from
+>>    header since frankly I don't even understand why we
+>>    describe it here. It is described like
+>>     __SYSCALL(__NR_arch_prctl, sys_arch_prctl) in unistd_64.h
+>>    and implemented in process_64.c. User-mode linux involved?
+>>    So this one in fact is suspicious.
+>>
+>> 3) ptrace-abi.h - ptrace_bts_config struct is wrapped
+>>    by __KERNEL__ -- not sure if it was ever proposed for
+>>    userland.
+>>
+>> 4) setup.h - COMMAND_LINE_SIZE saved for userspace, bootloaders
+>>    could use it.
+>>
+>> 5) sigcontext32.h - we really need linux/types.h here
+>>    since we use __u... types.
+>>
+>> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+>
+> Hi Cyrill; in addition to nonexporting COMMAND_LINE_SIZE, could you  
+> submit this as a patchset to make post-integration bisect easier?
+>
+> 	-hpa
+>
 
-This is a Core 2 (X5460) DP server system with SuSE SLES 10 installation.
-I have 3 ext3 partitions mounted; root, home and my own masterboot that I use to
-switch between different OS installations.
+Hi Peter, to be sure -- you mean to make patchset with 5 patches?
 
+		- Cyrill -
