@@ -1,62 +1,578 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764724AbZANQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764679AbZANRBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764724AbZANQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 11:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764626AbZANQ6W
+	id S1764679AbZANRBY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763092AbZANRBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 11:58:22 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:14083 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762845AbZANQ6U (ORCPT
+	Wed, 14 Jan 2009 12:01:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60795 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761123AbZANRBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 11:58:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OedbwsHpHoV6otHFLHnYskyX3yH2r+80RM7m8XTzAAUnckb6GZwKpSGrIyksVLo0TU
-         pktkTSqnKiCcxuppR4g3n4e9LGFJ9ivDPLFhLiX65cwcO5ISAJnrQa9nKjTmEsB5Psux
-         UvZZpYGepYKajvzsUdxjWMzekUx3lTJHEAfS0=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0901141732450.26663@anakin>
-References: <1231836016.3212.41.camel@jaswinder.satnam>
-	 <Pine.LNX.4.64.0901140954250.27308@anakin>
-	 <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com>
-	 <20090114153825.GB32082@uranus.ravnborg.org>
-	 <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com>
-	 <Pine.LNX.4.64.0901141732450.26663@anakin>
-Date: Wed, 14 Jan 2009 22:28:19 +0530
-Message-ID: <3f9a31f40901140858w3a024023h94ebb1a6e087d03e@mail.gmail.com>
-Subject: Re: [PULL -tip] fixed few make headers_check warnings
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Wed, 14 Jan 2009 12:01:06 -0500
+Subject: [PATCH -v11][RFC] mutex: implement adaptive spinning
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <1231867314.7141.16.camel@twins>
+References: <1231774622.4371.96.camel@laptop>
+	 <1231859742.442.128.camel@twins>
+	 <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain>
+	 <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 18:00:36 +0100
+Message-Id: <1231952436.14825.28.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 10:06 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> What Sam means is that the warnings about externs not making sense in userspace
-> are indicators that there may be other external declarations (without "extern")
-> in those files, and that you should fix those at the same time (i.e. either
-> don't fix any of them, or fix all of them (in the same file)). If you don't
-> fix them at the same time, people tend to forget about them.
->
-> So the warnings are just considered canaries in our coal mine. Killing only the
-> canaries doesn't help.
->
+Full series, including changelogs available at:
 
-If this is the case, then drop extern patches and let maintainers of
-those files should handle them then they will not forget and never
-repeat this mistake again.
+ http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/
 
---
-JSR
+and should shortly appear in a git tree near Ingo :-)
+
+ mutex: small cleanup
+ mutex: preemption fixes
+ mutex: implement adaptive spinning
+ mutex: set owner in mutex_lock() only
+ mutex: adaptive spin for debug too
+ mutex: adaptive spin performance tweaks
+
+---
+ include/linux/mutex.h   |    5 +-
+ include/linux/sched.h   |    2 
+ kernel/mutex-debug.c    |    9 ---
+ kernel/mutex-debug.h    |   18 ++++---
+ kernel/mutex.c          |  118 ++++++++++++++++++++++++++++++++++++++++--------
+ kernel/mutex.h          |   22 ++++++++
+ kernel/sched.c          |   71 +++++++++++++++++++++++++++-
+ kernel/sched_features.h |    1 
+ 8 files changed, 204 insertions(+), 42 deletions(-)
+
+Index: linux-2.6/kernel/mutex.c
+===================================================================
+--- linux-2.6.orig/kernel/mutex.c
++++ linux-2.6/kernel/mutex.c
+@@ -10,6 +10,11 @@
+  * Many thanks to Arjan van de Ven, Thomas Gleixner, Steven Rostedt and
+  * David Howells for suggestions and improvements.
+  *
++ *  - Adaptive spinning for mutexes by Peter Zijlstra. (Ported to mainline
++ *    from the -rt tree, where it was originally implemented for rtmutexes
++ *    by Steven Rostedt, based on work by Gregory Haskins, Peter Morreale
++ *    and Sven Dietrich.
++ *
+  * Also see Documentation/mutex-design.txt.
+  */
+ #include <linux/mutex.h>
+@@ -46,6 +51,7 @@ __mutex_init(struct mutex *lock, const c
+ 	atomic_set(&lock->count, 1);
+ 	spin_lock_init(&lock->wait_lock);
+ 	INIT_LIST_HEAD(&lock->wait_list);
++	mutex_clear_owner(lock);
+ 
+ 	debug_mutex_init(lock, name, key);
+ }
+@@ -91,6 +97,7 @@ void inline __sched mutex_lock(struct mu
+ 	 * 'unlocked' into 'locked' state.
+ 	 */
+ 	__mutex_fastpath_lock(&lock->count, __mutex_lock_slowpath);
++	mutex_set_owner(lock);
+ }
+ 
+ EXPORT_SYMBOL(mutex_lock);
+@@ -115,6 +122,14 @@ void __sched mutex_unlock(struct mutex *
+ 	 * The unlocking fastpath is the 0->1 transition from 'locked'
+ 	 * into 'unlocked' state:
+ 	 */
++#ifndef CONFIG_DEBUG_MUTEXES
++	/*
++	 * When debugging is enabled we must not clear the owner before time,
++	 * the slow path will always be taken, and that clears the owner field
++	 * after verifying that it was indeed current.
++	 */
++	mutex_clear_owner(lock);
++#endif
+ 	__mutex_fastpath_unlock(&lock->count, __mutex_unlock_slowpath);
+ }
+ 
+@@ -129,21 +144,71 @@ __mutex_lock_common(struct mutex *lock, 
+ {
+ 	struct task_struct *task = current;
+ 	struct mutex_waiter waiter;
+-	unsigned int old_val;
+ 	unsigned long flags;
+ 
++	preempt_disable();
++	mutex_acquire(&lock->dep_map, subclass, 0, ip);
++#ifdef CONFIG_SMP
++	/*
++	 * Optimistic spinning.
++	 *
++	 * We try to spin for acquisition when we find that there are no
++	 * pending waiters and the lock owner is currently running on a
++	 * (different) CPU.
++	 *
++	 * The rationale is that if the lock owner is running, it is likely to
++	 * release the lock soon.
++	 *
++	 * Since this needs the lock owner, and this mutex implementation
++	 * doesn't track the owner atomically in the lock field, we need to
++	 * track it non-atomically.
++	 */
++
++	for (;;) {
++		struct thread_info *owner;
++
++		/*
++		 * If there's an owner, wait for it to either
++		 * release the lock or go to sleep.
++		 */
++		owner = ACCESS_ONCE(lock->owner);
++		if (owner && !mutex_spin_on_owner(lock, owner))
++			break;
++
++		if (atomic_cmpxchg(&lock->count, 1, 0) == 1) {
++			lock_acquired(&lock->dep_map, ip);
++			preempt_enable();
++			return 0;
++		}
++
++		/*
++		 * When there's no owner, we might have preempted between the
++		 * owner acquiring the lock and setting the owner field. If
++		 * we're an RT task that will live-lock because we won't let
++		 * the owner complete.
++		 */
++		if (!owner && (need_resched() || rt_task(task)))
++			break;
++
++		/*
++		 * The cpu_relax() call is a compiler barrier which forces
++		 * everything in this loop to be re-loaded. We don't need
++		 * memory barriers as we'll eventually observe the right
++		 * values at the cost of a few extra spins.
++		 */
++		cpu_relax();
++	}
++#endif
+ 	spin_lock_mutex(&lock->wait_lock, flags);
+ 
+ 	debug_mutex_lock_common(lock, &waiter);
+-	mutex_acquire(&lock->dep_map, subclass, 0, ip);
+ 	debug_mutex_add_waiter(lock, &waiter, task_thread_info(task));
+ 
+ 	/* add waiting tasks to the end of the waitqueue (FIFO): */
+ 	list_add_tail(&waiter.list, &lock->wait_list);
+ 	waiter.task = task;
+ 
+-	old_val = atomic_xchg(&lock->count, -1);
+-	if (old_val == 1)
++	if (atomic_xchg(&lock->count, -1) == 1)
+ 		goto done;
+ 
+ 	lock_contended(&lock->dep_map, ip);
+@@ -158,8 +223,7 @@ __mutex_lock_common(struct mutex *lock, 
+ 		 * that when we release the lock, we properly wake up the
+ 		 * other waiters:
+ 		 */
+-		old_val = atomic_xchg(&lock->count, -1);
+-		if (old_val == 1)
++		if (atomic_xchg(&lock->count, -1) == 1)
+ 			break;
+ 
+ 		/*
+@@ -173,21 +237,21 @@ __mutex_lock_common(struct mutex *lock, 
+ 			spin_unlock_mutex(&lock->wait_lock, flags);
+ 
+ 			debug_mutex_free_waiter(&waiter);
++			preempt_enable();
+ 			return -EINTR;
+ 		}
+ 		__set_task_state(task, state);
+ 
+ 		/* didnt get the lock, go to sleep: */
+ 		spin_unlock_mutex(&lock->wait_lock, flags);
+-		schedule();
++		__schedule();
+ 		spin_lock_mutex(&lock->wait_lock, flags);
+ 	}
+ 
+ done:
+ 	lock_acquired(&lock->dep_map, ip);
+ 	/* got the lock - rejoice! */
+-	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
+-	debug_mutex_set_owner(lock, task_thread_info(task));
++	mutex_remove_waiter(lock, &waiter, current_thread_info());
+ 
+ 	/* set it to 0 if there are no waiters left: */
+ 	if (likely(list_empty(&lock->wait_list)))
+@@ -196,6 +260,7 @@ done:
+ 	spin_unlock_mutex(&lock->wait_lock, flags);
+ 
+ 	debug_mutex_free_waiter(&waiter);
++	preempt_enable();
+ 
+ 	return 0;
+ }
+@@ -222,7 +287,8 @@ int __sched
+ mutex_lock_interruptible_nested(struct mutex *lock, unsigned int subclass)
+ {
+ 	might_sleep();
+-	return __mutex_lock_common(lock, TASK_INTERRUPTIBLE, subclass, _RET_IP_);
++	return __mutex_lock_common(lock, TASK_INTERRUPTIBLE,
++				   subclass, _RET_IP_);
+ }
+ 
+ EXPORT_SYMBOL_GPL(mutex_lock_interruptible_nested);
+@@ -260,8 +326,6 @@ __mutex_unlock_common_slowpath(atomic_t 
+ 		wake_up_process(waiter->task);
+ 	}
+ 
+-	debug_mutex_clear_owner(lock);
+-
+ 	spin_unlock_mutex(&lock->wait_lock, flags);
+ }
+ 
+@@ -298,18 +362,30 @@ __mutex_lock_interruptible_slowpath(atom
+  */
+ int __sched mutex_lock_interruptible(struct mutex *lock)
+ {
++	int ret;
++
+ 	might_sleep();
+-	return __mutex_fastpath_lock_retval
++	ret =  __mutex_fastpath_lock_retval
+ 			(&lock->count, __mutex_lock_interruptible_slowpath);
++	if (!ret)
++		mutex_set_owner(lock);
++
++	return ret;
+ }
+ 
+ EXPORT_SYMBOL(mutex_lock_interruptible);
+ 
+ int __sched mutex_lock_killable(struct mutex *lock)
+ {
++	int ret;
++
+ 	might_sleep();
+-	return __mutex_fastpath_lock_retval
++	ret = __mutex_fastpath_lock_retval
+ 			(&lock->count, __mutex_lock_killable_slowpath);
++	if (!ret)
++		mutex_set_owner(lock);
++
++	return ret;
+ }
+ EXPORT_SYMBOL(mutex_lock_killable);
+ 
+@@ -351,10 +427,9 @@ static inline int __mutex_trylock_slowpa
+ 	spin_lock_mutex(&lock->wait_lock, flags);
+ 
+ 	prev = atomic_xchg(&lock->count, -1);
+-	if (likely(prev == 1)) {
+-		debug_mutex_set_owner(lock, current_thread_info());
++	if (likely(prev == 1))
+ 		mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
+-	}
++
+ 	/* Set it back to 0 if there are no waiters: */
+ 	if (likely(list_empty(&lock->wait_list)))
+ 		atomic_set(&lock->count, 0);
+@@ -380,8 +455,13 @@ static inline int __mutex_trylock_slowpa
+  */
+ int __sched mutex_trylock(struct mutex *lock)
+ {
+-	return __mutex_fastpath_trylock(&lock->count,
+-					__mutex_trylock_slowpath);
++	int ret;
++
++	ret = __mutex_fastpath_trylock(&lock->count, __mutex_trylock_slowpath);
++	if (ret)
++		mutex_set_owner(lock);
++
++	return ret;
+ }
+ 
+ EXPORT_SYMBOL(mutex_trylock);
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -328,7 +328,9 @@ extern signed long schedule_timeout(sign
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_killable(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
++asmlinkage void __schedule(void);
+ asmlinkage void schedule(void);
++extern int mutex_spin_on_owner(struct mutex *lock, struct thread_info *owner);
+ 
+ struct nsproxy;
+ struct user_namespace;
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -4535,15 +4535,13 @@ pick_next_task(struct rq *rq, struct tas
+ /*
+  * schedule() is the main scheduler function.
+  */
+-asmlinkage void __sched schedule(void)
++asmlinkage void __sched __schedule(void)
+ {
+ 	struct task_struct *prev, *next;
+ 	unsigned long *switch_count;
+ 	struct rq *rq;
+ 	int cpu;
+ 
+-need_resched:
+-	preempt_disable();
+ 	cpu = smp_processor_id();
+ 	rq = cpu_rq(cpu);
+ 	rcu_qsctr_inc(cpu);
+@@ -4600,13 +4598,80 @@ need_resched_nonpreemptible:
+ 
+ 	if (unlikely(reacquire_kernel_lock(current) < 0))
+ 		goto need_resched_nonpreemptible;
++}
+ 
++asmlinkage void __sched schedule(void)
++{
++need_resched:
++	preempt_disable();
++	__schedule();
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
+ }
+ EXPORT_SYMBOL(schedule);
+ 
++#ifdef CONFIG_SMP
++/*
++ * Look out! "owner" is an entirely speculative pointer
++ * access and not reliable.
++ */
++int mutex_spin_on_owner(struct mutex *lock, struct thread_info *owner)
++{
++	unsigned int cpu;
++	struct rq *rq;
++
++	if (!sched_feat(OWNER_SPIN))
++		return 0;
++
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	/*
++	 * Need to access the cpu field knowing that
++	 * DEBUG_PAGEALLOC could have unmapped it if
++	 * the mutex owner just released it and exited.
++	 */
++	if (probe_kernel_address(&owner->cpu, cpu))
++		goto out;
++#else
++	cpu = owner->cpu;
++#endif
++
++	/*
++	 * Even if the access succeeded (likely case),
++	 * the cpu field may no longer be valid.
++	 */
++	if (cpu >= nr_cpumask_bits)
++		goto out;
++
++	/*
++	 * We need to validate that we can do a
++	 * get_cpu() and that we have the percpu area.
++	 */
++	if (!cpu_online(cpu))
++		goto out;
++
++	rq = cpu_rq(cpu);
++
++	for (;;) {
++		/*
++		 * Owner changed, break to re-assess state.
++		 */
++		if (lock->owner != owner)
++			break;
++
++		/*
++		 * Is that owner really running on that cpu?
++		 */
++		if (task_thread_info(rq->curr) != owner || need_resched())
++			return 0;
++
++		cpu_relax();
++	}
++out:
++	return 1;
++}
++#endif
++
+ #ifdef CONFIG_PREEMPT
+ /*
+  * this is the entry point to schedule() from in-kernel preemption
+Index: linux-2.6/include/linux/mutex.h
+===================================================================
+--- linux-2.6.orig/include/linux/mutex.h
++++ linux-2.6/include/linux/mutex.h
+@@ -50,8 +50,10 @@ struct mutex {
+ 	atomic_t		count;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+-#ifdef CONFIG_DEBUG_MUTEXES
++#if defined(CONFIG_DEBUG_MUTEXES) || defined(CONFIG_SMP)
+ 	struct thread_info	*owner;
++#endif
++#ifdef CONFIG_DEBUG_MUTEXES
+ 	const char 		*name;
+ 	void			*magic;
+ #endif
+@@ -68,7 +70,6 @@ struct mutex_waiter {
+ 	struct list_head	list;
+ 	struct task_struct	*task;
+ #ifdef CONFIG_DEBUG_MUTEXES
+-	struct mutex		*lock;
+ 	void			*magic;
+ #endif
+ };
+Index: linux-2.6/kernel/mutex-debug.c
+===================================================================
+--- linux-2.6.orig/kernel/mutex-debug.c
++++ linux-2.6/kernel/mutex-debug.c
+@@ -26,11 +26,6 @@
+ /*
+  * Must be called with lock->wait_lock held.
+  */
+-void debug_mutex_set_owner(struct mutex *lock, struct thread_info *new_owner)
+-{
+-	lock->owner = new_owner;
+-}
+-
+ void debug_mutex_lock_common(struct mutex *lock, struct mutex_waiter *waiter)
+ {
+ 	memset(waiter, MUTEX_DEBUG_INIT, sizeof(*waiter));
+@@ -59,7 +54,6 @@ void debug_mutex_add_waiter(struct mutex
+ 
+ 	/* Mark the current thread as blocked on the lock: */
+ 	ti->task->blocked_on = waiter;
+-	waiter->lock = lock;
+ }
+ 
+ void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
+@@ -82,7 +76,7 @@ void debug_mutex_unlock(struct mutex *lo
+ 	DEBUG_LOCKS_WARN_ON(lock->magic != lock);
+ 	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
+ 	DEBUG_LOCKS_WARN_ON(!lock->wait_list.prev && !lock->wait_list.next);
+-	DEBUG_LOCKS_WARN_ON(lock->owner != current_thread_info());
++	mutex_clear_owner(lock);
+ }
+ 
+ void debug_mutex_init(struct mutex *lock, const char *name,
+@@ -95,7 +89,6 @@ void debug_mutex_init(struct mutex *lock
+ 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
+ 	lockdep_init_map(&lock->dep_map, name, key, 0);
+ #endif
+-	lock->owner = NULL;
+ 	lock->magic = lock;
+ }
+ 
+Index: linux-2.6/kernel/mutex-debug.h
+===================================================================
+--- linux-2.6.orig/kernel/mutex-debug.h
++++ linux-2.6/kernel/mutex-debug.h
+@@ -13,14 +13,6 @@
+ /*
+  * This must be called with lock->wait_lock held.
+  */
+-extern void
+-debug_mutex_set_owner(struct mutex *lock, struct thread_info *new_owner);
+-
+-static inline void debug_mutex_clear_owner(struct mutex *lock)
+-{
+-	lock->owner = NULL;
+-}
+-
+ extern void debug_mutex_lock_common(struct mutex *lock,
+ 				    struct mutex_waiter *waiter);
+ extern void debug_mutex_wake_waiter(struct mutex *lock,
+@@ -35,6 +27,16 @@ extern void debug_mutex_unlock(struct mu
+ extern void debug_mutex_init(struct mutex *lock, const char *name,
+ 			     struct lock_class_key *key);
+ 
++static inline void mutex_set_owner(struct mutex *lock)
++{
++	lock->owner = current_thread_info();
++}
++
++static inline void mutex_clear_owner(struct mutex *lock)
++{
++	lock->owner = NULL;
++}
++
+ #define spin_lock_mutex(lock, flags)			\
+ 	do {						\
+ 		struct mutex *l = container_of(lock, struct mutex, wait_lock); \
+Index: linux-2.6/kernel/mutex.h
+===================================================================
+--- linux-2.6.orig/kernel/mutex.h
++++ linux-2.6/kernel/mutex.h
+@@ -16,8 +16,26 @@
+ #define mutex_remove_waiter(lock, waiter, ti) \
+ 		__list_del((waiter)->list.prev, (waiter)->list.next)
+ 
+-#define debug_mutex_set_owner(lock, new_owner)		do { } while (0)
+-#define debug_mutex_clear_owner(lock)			do { } while (0)
++#ifdef CONFIG_SMP
++static inline void mutex_set_owner(struct mutex *lock)
++{
++	lock->owner = current_thread_info();
++}
++
++static inline void mutex_clear_owner(struct mutex *lock)
++{
++	lock->owner = NULL;
++}
++#else
++static inline void mutex_set_owner(struct mutex *lock)
++{
++}
++
++static inline void mutex_clear_owner(struct mutex *lock)
++{
++}
++#endif
++
+ #define debug_mutex_wake_waiter(lock, waiter)		do { } while (0)
+ #define debug_mutex_free_waiter(waiter)			do { } while (0)
+ #define debug_mutex_add_waiter(lock, waiter, ti)	do { } while (0)
+Index: linux-2.6/kernel/sched_features.h
+===================================================================
+--- linux-2.6.orig/kernel/sched_features.h
++++ linux-2.6/kernel/sched_features.h
+@@ -13,3 +13,4 @@ SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
+ SCHED_FEAT(ASYM_EFF_LOAD, 1)
+ SCHED_FEAT(WAKEUP_OVERLAP, 0)
+ SCHED_FEAT(LAST_BUDDY, 1)
++SCHED_FEAT(OWNER_SPIN, 1)
+
+
