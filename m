@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbZANJOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761105AbZANJQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761067AbZANJOO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 04:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZANJNz
+	id S1761105AbZANJQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 04:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZANJQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 04:13:55 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:46484 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753969AbZANJNw convert rfc822-to-8bit (ORCPT
+	Wed, 14 Jan 2009 04:16:32 -0500
+Received: from web53304.mail.re2.yahoo.com ([206.190.49.94]:31631 "HELO
+	web53304.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752805AbZANJQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 04:13:52 -0500
-Message-ID: <496DACBE.3030701@cosmosbay.com>
-Date: Wed, 14 Jan 2009 10:13:34 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 14 Jan 2009 04:16:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=ZeJYaRGba1ieu9qgV8pIwyNy7nJP1C+S6C/29wKeFcrJ+i4jCuLcN34AFXsa9Ob3yhQWCqxwg7KJ0TQ/pUgn8zeTi+YWbIGr9jsBGirnvERwXoaPyqktJA745iSBvQSrVlCgc0JMveGh4+/jGjJkvk7eSdA9TDCB4quvNwm1+Ak=;
+X-YMail-OSG: VcX8J2kVM1k6PIg6YIVyiIAYoyp9XogXTaw6bkI5JDHxz4zQtfQZVsbZQ.AFtEJt6nDL0jeFg9OqqJqR6MuLzqQLJXFt6ucqJ_8VD59y9TzdHPyDWf5ksVAP0nSScCLAuVYfFR6RN9A9TZfbAEqCBO9F9skgBv4U4x.2fZcNOjhFsGb43yE0PdMur851armR_n.3xvOKLKuos4Iu2BNXfDdyQQ--
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Wed, 14 Jan 2009 01:09:49 -0800 (PST)
+From: Alberto Gonzalez <luis6674@yahoo.com>
+Reply-To: luis6674@yahoo.com
+Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <nHCfeC0YLrE.A.AOC.uafaJB@chimera>
 MIME-Version: 1.0
-To: Volker.Lendecke@SerNet.DE
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven French <sfrench@us.ibm.com>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-References: <E1LKrp3-004Tub-IR@intern.SerNet.DE> <20090113123702.ad29cd13.akpm@linux-foundation.org> <496D2078.9080302@cosmosbay.com> <E1LN0MC-00DaJs-M2@intern.SerNet.DE>
-In-Reply-To: <E1LN0MC-00DaJs-M2@intern.SerNet.DE>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 14 Jan 2009 10:13:36 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <620527.41204.qm@web53304.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker Lendecke a écrit :
-> On Wed, Jan 14, 2009 at 12:15:04AM +0100, Eric Dumazet wrote:
->> Volker, your splice() is a blocking one, from tcp socket to a pipe ?
+
+--- On Sun, 1/11/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> The following bug entry is on the current list of known
+> regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it
+> still should
+> be listed and let me know (either way).
 > 
-> Yes, it is.
 > 
->> If no other thread is reading the pipe, then you might block forever
->> in splice_to_pipe() as soon pipe is full (16 pages).
-> 
-> Why does it block when the pipe is full? Why doesn't it
-> return a short read, just like the read(2) call does? We
-> need to cope with that behaviour anyway.
+> Bug-Entry	:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12337
+> Subject		: ~100 extra wakeups reported by powertop
+> Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
+> Date		: 2008-12-31 12:25 (12 days old)
 
-Well, check code in fs/splice.c, function splice_to_pipe().
+I was waiting for 2.6.28.1 to come out and test it, but since it's not yet out just to say that yes, the problem is still there.
 
-If SPLICE_F_NONBLOCK is not set, it is *expected* to block on pipe.
-
-In this mode, only another thread is able to drain the pipe and wakeup the blocked thread.
-
-Code review :
-
-When all pages are used "if (pipe->nrbufs == PIPE_BUFFERS)"
-
-                if (spd->flags & SPLICE_F_NONBLOCK) {
-                        if (!ret)
-                                ret = -EAGAIN;
-                        break;
-                }
-
-                if (signal_pending(current)) {
-                        if (!ret)
-                                ret = -ERESTARTSYS;
-                        break;
-                }
-
-                if (do_wakeup) {
-                        smp_mb();
-                        if (waitqueue_active(&pipe->wait))
-                                wake_up_interruptible_sync(&pipe->wait);
-                        kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-                        do_wakeup = 0;
-                }
-
-                pipe->waiting_writers++;
-HERE >>         pipe_wait(pipe);
-                pipe->waiting_writers--;
+Alberto.
 
 
-> 
->> As pages are not necessarly full (each skb will use at least one page, even if 
->> its length is small), it is not really possible to use splice() like this.
->>
->> In your case, only safe way with current kernel would be to call splice()
->> asking for no more than 16 bytes, that would be really insane for your needs.
->>
->> You may prefer a non blocking mode, at least when calling splice_to_pipe()
-> 
-> Which fd do I have to set the nonblocking flag on? The TCP
-> socket I read from, or the pipe I write to?
-
-I would say, use the SPLICE_F_NONBLOCK flag on splice() system call,
-but let tcp socket in blocking mode... But with current kernel it
-wont work. In order to avoid busy looping, you might add a poll()/select()
-to call splice(SPLICE_F_NONBLOCK) only when socket has data
-in its receive queue.
-
-for (;;) {
-	struct pollfd pfd;
-	pfd.fd = socket;
-	pfd.events = POLLIN;
-	if (poll(&pfd, 1, -1) != 1)
-		continue;
-	res = splice(socket, NULL, pipefds[1], NULL, 65536, SPLICE_F_MOVE|SPLICE_F_NONBLOCK);
-	if (res > 0)
-		nwritten = splice(pipefds[0], NULL, file_fd, NULL, res, SPLICE_F_MOVE|SPLICE_F_MORE);
-}
-
-splice() from tcp socket to pipe is not working as is unfortunatly if !SPLICE_F_NONBLOCK)
-and if using the same thread to write and read the pipe. Or risk deadlock.
-
-
+      
