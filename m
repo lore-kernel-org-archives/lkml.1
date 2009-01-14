@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZANH1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZANHcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbZANH1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 02:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZANH1M
+	id S1758679AbZANHcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 02:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZANHcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 02:27:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37793
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754412AbZANH1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 02:27:10 -0500
-Date: Tue, 13 Jan 2009 23:27:10 -0800 (PST)
-Message-Id: <20090113.232710.55011568.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: zbr@ioremap.net, dada1@cosmosbay.com, w@1wt.eu, ben@zeus.com,
-       jarkao2@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090114035124.GA8409@gondor.apana.org.au>
-References: <20090113.163705.130074998.davem@davemloft.net>
-	<20090114035124.GA8409@gondor.apana.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 02:32:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49115 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752978AbZANHcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 02:32:10 -0500
+Date: Wed, 14 Jan 2009 08:31:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090114073146.GA14767@elte.hu>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu> <1231848016.442.112.camel@twins> <20090113123317.GA29926@elte.hu> <20090113181311.GA8075@localdomain> <20090113183420.GB10065@elte.hu> <20090113184202.GB8075@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090113184202.GB8075@localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 14 Jan 2009 14:51:24 +1100
 
-> Unfortunately this won't work, not even for network destinations.
+* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+
+> On Tue, Jan 13, 2009 at 07:34:20PM +0100, Ingo Molnar wrote:
+> >
+> >* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+> >
+> >> On Tue, Jan 13, 2009 at 01:33:17PM +0100, Ingo Molnar wrote:
+> >> >
+> >> >
+> >> >VSMP is a clustering solution (default-disabled)
+> >> 
+> >> Small correction :)
+> >> Well, it is a virtualization solution creating single VM across multiple
+> >> systems.  Since it is shared memory, we would rather refer to it as SMP or
+> >> Virtual SMP rather than a clustering solution.
+> >
+> > You do have hardware help too to do efficient cross-node memory 
+> > traffic, dont you?
 > 
-> The reason is that this gets called as soon as the destination's
-> splice hook returns, for networking that means when sendpage returns.
-> 
-> So by that time we'll still be left with just a page reference
-> on a page where the slab memory may already have been freed.
-> 
-> To make this work we need to get the destination's splice hooks
-> to acquire this reference.
+> Of course.  A fast backplane interconnect.
 
-So while trying to figure out a sane way to fix this, I found
-another bug:
+... so it's PCs clustered together, and called vSMP, right? ;-)
 
-	/*
-	 * map the linear part
-	 */
-	if (__splice_segment(virt_to_page(skb->data),
-			     (unsigned long) skb->data & (PAGE_SIZE - 1),
-			     skb_headlen(skb),
-			     offset, len, skb, spd))
-		return 1;
+a neat hack in any case.
 
-This will explode if the SLAB cache for skb->head is using compound
-(ie. order > 0) pages.
-
-For example, if this is an order-1 page being used for the skb->head
-data (which would be true on most systems for jumbo MTU frames being
-received into a linear SKB), the offset will be wrong and depending
-upon skb_headlen() we could reference past the end of that
-non-compound page we will end up grabbing a reference to.
-
-And then we'll end up with a compound page in an skb_shinfo() frag
-array, which is illegal.
-
-Well, at least, I can list several drivers that will barf when
-trying to TX that (Acenic, atlx1, cassini, jme, sungem), since
-they use pci_map_page(... virt_to_page(skb->data)) or similar.
-
-The core KMAP'ing support for SKBs will also not be able to grok
-such a beastly SKB.
-
+	Ingo
