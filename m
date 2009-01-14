@@ -1,107 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764657AbZANRo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZANRqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764657AbZANRo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 12:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZANRor
+	id S1753854AbZANRqJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 12:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZANRpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 12:44:47 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:34842 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbZANRop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 12:44:45 -0500
-Subject: Re: regression: 295f000 breaks suspend to disk
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-In-Reply-To: <200901141816.47422.bzolnier@gmail.com>
-References: <1231797615.2797.5.camel@odie.local>
-	 <200901141816.47422.bzolnier@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 14 Jan 2009 18:44:25 +0100
-Message-Id: <1231955065.3246.0.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 14 Jan 2009 12:45:55 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:48069 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751316AbZANRpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 12:45:54 -0500
+Date: Wed, 14 Jan 2009 11:45:37 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLUB: Use WARN_ON instead of BUG_ON where appropriate
+In-Reply-To: <Pine.LNX.4.64.0901141719560.12990@melkki.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0901141117070.26507@quilx.com>
+References: <Pine.LNX.4.64.0901141719560.12990@melkki.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ons, 14 01 2009 kl. 18:16 +0100, skrev Bartlomiej Zolnierkiewicz:
-> On Monday 12 January 2009, Simon Holm Thøgersen wrote:
-> > commit 295f000 ("ide: don't execute the next queued command from the
-> > hard-IRQ context (v2)") breaks suspend to disk for me. On
-> > 'echo disk > /sys/power/state' the systems hangs, letting me switch
-> > virtual consoles, but not responding to Alt+SysRq
-> 
-> Thanks, please try the patch below (it fixes the problem for me):
+On Wed, 14 Jan 2009, Pekka J Enberg wrote:
 
-And for me as well. Thanks!
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>
+> It's better to WARN_ON and let the kernel limp along to increase the likelihood
+> of an user detecting the error and reporting it to us.
 
+That only works if a error condition can be signaled and be handled
+appropriately.
 
-Simon
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 6392ae5..e4404a1 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1119,7 +1119,8 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
+>  	void *last;
+>  	void *p;
+>
+> -	BUG_ON(flags & GFP_SLAB_BUG_MASK);
+> +	if (WARN_ON(flags & GFP_SLAB_BUG_MASK))
+> +		return NULL;
+>
+>  	page = allocate_slab(s,
+>  		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 
-> 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: fix suspend regression
-> 
-> On Monday 12 January 2009, Simon Holm Thøgersen wrote:
-> > commit 295f000 ("ide: don't execute the next queued command from the
-> > hard-IRQ context (v2)") breaks suspend to disk for me. On
-> > 'echo disk > /sys/power/state' the systems hangs, letting me switch
-> > virtual consoles, but not responding to Alt+SysRq
-> 
-> Restart the request queue early for REQ_TYPE_PM_RESUME requests
-> (though there is only one resume request for the whole resume
-> sequence it stays in the queue until is fully completed and now
-> depends on kblockd for processing consequential resume states).
-> 
-> Reported-and-bisected-by: Simon Holm Thøgersen <odie@cs.aau.dk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-pm.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> Index: b/drivers/ide/ide-pm.c
-> ===================================================================
-> --- a/drivers/ide/ide-pm.c
-> +++ b/drivers/ide/ide-pm.c
-> @@ -186,12 +186,10 @@ void ide_complete_pm_request(ide_drive_t
->  	       blk_pm_suspend_request(rq) ? "suspend" : "resume");
->  #endif
->  	spin_lock_irqsave(q->queue_lock, flags);
-> -	if (blk_pm_suspend_request(rq)) {
-> +	if (blk_pm_suspend_request(rq))
->  		blk_stop_queue(q);
-> -	} else {
-> +	else
->  		drive->dev_flags &= ~IDE_DFLAG_BLOCKED;
-> -		blk_start_queue(q);
-> -	}
->  	spin_unlock_irqrestore(q->queue_lock, flags);
->  
->  	drive->hwif->rq = NULL;
-> @@ -219,6 +217,8 @@ void ide_check_pm_state(ide_drive_t *dri
->  		 * point.
->  		 */
->  		ide_hwif_t *hwif = drive->hwif;
-> +		struct request_queue *q = drive->queue;
-> +		unsigned long flags;
->  		int rc;
->  #ifdef DEBUG_PM
->  		printk("%s: Wakeup request inited, waiting for !BSY...\n", drive->name);
-> @@ -231,5 +231,9 @@ void ide_check_pm_state(ide_drive_t *dri
->  		rc = ide_wait_not_busy(hwif, 100000);
->  		if (rc)
->  			printk(KERN_WARNING "%s: drive not ready on wakeup\n", drive->name);
-> +
-> +		spin_lock_irqsave(q->queue_lock, flags);
-> +		blk_start_queue(q);
-> +		spin_unlock_irqrestore(q->queue_lock, flags);
->  	}
+Ok. this relies on kmalloc returning NULL to the app.
+
+> @@ -4285,7 +4287,8 @@ static char *create_unique_id(struct kmem_cache *s)
+>  	char *name = kmalloc(ID_STR_LENGTH, GFP_KERNEL);
+>  	char *p = name;
+>
+> -	BUG_ON(!name);
+> +	if (WARN_ON(!name))
+> +		return NULL;
+>
+>  	*p++ = ':';
+>  	/*
+> @@ -4304,7 +4307,8 @@ static char *create_unique_id(struct kmem_cache *s)
+>  	if (p != name + 1)
+>  		*p++ = '-';
+>  	p += sprintf(p, "%07d", s->size);
+> -	BUG_ON(p > name + ID_STR_LENGTH - 1);
+> +	if (WARN_ON(p > name + ID_STR_LENGTH - 1))
+> +		return NULL;
+>  	return name;
 >  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+NULL name? Guess the kfree will just be a nop but what does
+kobject_init_and_add do with a NULL name?
+
+
+> @@ -4333,6 +4337,8 @@ static int sysfs_slab_add(struct kmem_cache *s)
+>  		 * for the symlinks.
+>  		 */
+>  		name = create_unique_id(s);
+> +		if (!name)
+> +			return -EINVAL;
+>  	}
+>
+>  	s->kobj.kset = slab_kset;
+>
+
+-EINVAL may cause a panic anyways if called from create_kmalloc_cache.
 
