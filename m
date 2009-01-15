@@ -1,134 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933328AbZAOV4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933451AbZAOV5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933328AbZAOV4c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbZAOVzg
+	id S933451AbZAOV5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbZAOV5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 16:55:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59503 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765134AbZAOVzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 16:55:33 -0500
-Date: Thu, 15 Jan 2009 22:54:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Howells <dhowells@redhat.com>,
-       Michael LeMay <mdlemay@epoch.ncsc.mil>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Paul Moore <paul.moore@hp.com>, Eric Paris <eparis@redhat.com>
-Subject: Re: [slab corruption] BUG key_jar: Poison overwritten
-Message-ID: <20090115215436.GA4314@elte.hu>
-References: <20090115181612.GA27762@elte.hu> <19f34abd0901151258u53232e89rac76c40334703fe2@mail.gmail.com> <20090115210105.GA22416@elte.hu> <19f34abd0901151317l7e4ef229t3dd4fdfdeffaffec@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <19f34abd0901151317l7e4ef229t3dd4fdfdeffaffec@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 15 Jan 2009 16:57:01 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:40648 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754378AbZAOV5A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 16:57:00 -0500
+Date: Thu, 15 Jan 2009 16:56:56 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: AE_ERROR, ACPI thermal trip point state changed
+In-reply-to: <48ABDF1E.3010101@freemail.hu>
+X-X-Sender: lenb@localhost.localdomain
+To: =?ISO-8859-15?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0901151655540.4737@localhost.localdomain>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_n1VZ5EvLrde/b4NIiQKO6A)"
+References: <47B328AA.1000800@freemail.hu> <47B3F147.7000704@freemail.hu>
+ <47CF96E2.9020302@freemail.hu>
+ <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com>
+ <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com>
+ <47D0E694.5050102@freemail.hu>
+ <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com>
+ <47D24341.5070908@freemail.hu>
+ <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com>
+ <48ABDF1E.3010101@freemail.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+--Boundary_(ID_n1VZ5EvLrde/b4NIiQKO6A)
+Content-type: TEXT/PLAIN; charset=UTF-8
+Content-transfer-encoding: 8BIT
 
-> On Thu, Jan 15, 2009 at 10:01 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> >
-> >> On Thu, Jan 15, 2009 at 7:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> >
-> >> > -tip testing found the rather scary looking slab corruption:
-> >> >
-> >> > [   35.419875] CPU0 attaching sched-domain:
-> >> > [   35.420101]  domain 0: span 0-1 level CPU
-> >> > [   35.425883]   groups: 0 1
-> >> > [   35.428527] CPU1 attaching sched-domain:
-> >> > [   35.432010]  domain 0: span 0-1 level CPU
-> >> > [   35.437729]   groups: 1 0
-> >> > [   37.380005] eth0: no IPv6 routers present
-> >> > [   44.478286] =============================================================================
-> >> > [   44.482064] BUG key_jar: Poison overwritten
-> >> > [   44.482064] -----------------------------------------------------------------------------
-> >> > [   44.482064]
-> >> > [   44.482064] INFO: 0xf5f320c0-0xf5f320c0. First byte 0x6a instead of 0x6b
-> >> > [   44.482064] INFO: Allocated in key_alloc+0xe7/0x30e age=291 cpu=1 pid=2815
-> >> > [   44.482064] INFO: Freed in key_cleanup+0xd8/0xdd age=292 cpu=1 pid=2520
-> >> > [   44.482064] INFO: Slab 0xc1f9cfb8 objects=21 used=2 fp=0xf5f320c0 flags=0x400000c3
-> >> > [   44.482064] INFO: Object 0xf5f320c0 @offset=192 fp=0xf5f32240
-> >> > [   44.482064]
-> >> > [   44.482064] Bytes b4 0xf5f320b0:  7c 05 ff ff 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a |.��ZZZZZZZZZZZZ
-> >> > [   44.482064]   Object 0xf5f320c0:  6a 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b jkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f320d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f320e0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f320f0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f32100:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f32110:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f32120:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f32130:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >> > [   44.482064]   Object 0xf5f32140:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b a5             kkkkkkkkkkk�
-> >> > [   44.482064]  Redzone 0xf5f3214c:  bb bb bb bb                                     ����
-> >> > [   44.482064]  Padding 0xf5f32174:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a             ZZZZZZZZZZZZ
-> >> > [   44.482064] Pid: 2832, comm: sudo Not tainted 2.6.29-rc1-tip-01097-gf5d0b1b-dirty #16445
-> >> > [   44.482064] Call Trace:
-> >> > [   44.482064]  [<c018e25c>] print_trailer+0xcd/0xd5
-> >> > [   44.482064]  [<c018e2dc>] check_bytes_and_report+0x78/0x94
-> >> > [   44.482064]  [<c018e55c>] check_object+0xa9/0x191
-> >> > [   44.482064]  [<c018eff3>] __slab_alloc+0x365/0x42c
-> >> > [   44.482064]  [<c0144dda>] ? trace_hardirqs_off+0xb/0xd
-> >> > [   44.482064]  [<c018f369>] kmem_cache_alloc+0x64/0xc1
-> >> > [   44.482064]  [<c02d040e>] ? key_alloc+0xe7/0x30e
-> >> > [   44.482064]  [<c02d040e>] ? key_alloc+0xe7/0x30e
-> >> > [   44.482064]  [<c02d040e>] key_alloc+0xe7/0x30e
-> >> > [   44.482064]  [<c02d1429>] keyring_alloc+0x24/0x58
-> >> > [   44.482064]  [<c02d2781>] install_session_keyring_to_cred+0x43/0x92
-> >> > [   44.482064]  [<c02d2d61>] lookup_user_key+0xe0/0x30b
-> >> > [   44.482064]  [<c02d17ab>] keyctl_get_keyring_ID+0x12/0x2e
-> >> > [   44.482064]  [<c02d22c2>] sys_keyctl+0x36/0xe3
-> >> > [   44.482064]  [<c0102d55>] sysenter_do_call+0x12/0x35
-> >> > [   44.482064] FIX key_jar: Restoring 0xf5f320c0-0xf5f320c0=0x6b
-> >> > [   44.482064]
-> >> > [   44.482064] FIX key_jar: Marking all objects used
-> >> >
-> >> > Config attached. The system seemed to stay intact after this incident.
+On Wed, 20 Aug 2008, Németh Márton wrote:
+
+> Zhang, Rui wrote:
+> > On Sat, 2008-03-08 at 15:41 +0800, Németh Márton wrote:
+> >> Zhang, Rui wrote:
+> >>> On Fri, 2008-03-07 at 14:54 +0800, Németh Márton wrote:
+> >>>> Hi,
+> >>>>
+> >>>> I downloaded pmtools from
+> >>>>
+> >> http://www.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/pmtools-20071116.tar.bz2 and
+> >>>> compiled: it created exactly the same result what my currently
+> >>>> installed acpidump Debian
+> >>>> package version 20071116-1. I think it is useless to send the same
+> >> log
+> >>>> again.
+> >>>>
+> >>>> After I boot the "Please send acpidump to
+> >> linux-acpi@vger.kernel.org"
+> >>>> message is already
+> >>>> there. So when I first get the prompt I checked for this message in
+> >>>> dmesg and executed
+> >>>> the given command. Here is my result:
+> >>>>
+> >>>> # cat /proc/acpi/thermal_zone/*/*
+> >>>> 0 - Active; 1 - Passive
+> >>>> <polling disabled>
+> >>>> state:                   ok
+> >>>> temperature:             42 C
+> >>>> critical (S5):           155 C
+> >>>> passive:                 84 C: tc1=2 tc2=5 tsp=0 devices=CPU0
+> >>>> active[0]:               70 C: devices=
+> >>>> # ls /proc/acpi/thermal_zone/*/*
+> >>>> /proc/acpi/thermal_zone/THRM/cooling_mode
+> >>>> /proc/acpi/thermal_zone/THRM/polling_frequency
+> >>>> /proc/acpi/thermal_zone/THRM/state
+> >>>> /proc/acpi/thermal_zone/THRM/temperature
+> >>>> /proc/acpi/thermal_zone/THRM/trip_points
+> >>>>
+> >>>> Maybe this is related to
+> >>>> http://bugzilla.kernel.org/show_bug.cgi?id=8544 ?
+> >>>>
+> >>> Hi, Németh,
+> >>>
+> >>> Please ignore the debug patch I sent and try this one.
+> >> I created both the dmesg logs:
 > >>
+> >> 1. Clevo-D410J-patch-debug-thermal2.txt: the patch-debug-thermal was
+> >> only
+> >> applied, (and added a missing "\n").
 > >>
-> >> Are you sure this is the right config?
+> >> 2. Clevo-D410J-thermal-fix.txt: the thermal-fix patch was also
+> >> applied.
+> >> In this case the AE_ERROR message is not there any more on Clevo D410J
+> >> laptop.
 > >>
-> >> # Security options
-> >> #
-> >> # CONFIG_KEYS is not set
-> >>
-> >> ...sys_keyctl() returns -ENOSYS...!?
-> >
-> > no, sorry. The right 'bad' config attached.
+> > Thanks for your help in debugging this.
+> > We will get the "thermal-fix" patch upstream soon.
 > 
-> Are you sure, is this expected?
+> As of 2.6.27-rc3 the patch is still not included in the mainstream. I
+> hope that this patch was not forgotten completely.
 > 
->   CC      kernel/printk.o
-> cc1: warnings being treated as errors
-> arch/x86/kernel/cpu/intel_cacheinfo.c: In function 'show_cache_disable':
-> arch/x86/kernel/cpu/intel_cacheinfo.c:710: error: unused variable 'mask'
-> arch/x86/kernel/cpu/intel_cacheinfo.c: In function 'store_cache_disable':
-> arch/x86/kernel/cpu/intel_cacheinfo.c:745: error: unused variable 'mask'
-> make[2]: *** [arch/x86/kernel/cpu/intel_cacheinfo.o] Error 1
-> make[1]: *** [arch/x86/kernel/cpu] Error 2
-> make: *** [arch/x86/kernel] Error 2
-> make: *** Waiting for unfinished jobs....
-> 
-> Will restart make with CONFIG_ALLOW_WARNINGS=y...
+> 	Márton Németh
 
-yes, i had that off via a local patch.
+Apparently it was dropped.
 
-	Ingo
+should have put the patch here:
+http://bugzilla.kernel.org/show_bug.cgi?id=8544
+
+I'll do it now.
+
+thanks,
+-Len
+
+--Boundary_(ID_n1VZ5EvLrde/b4NIiQKO6A)--
