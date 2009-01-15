@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbZAOJyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbZAOJzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbZAOJyB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 04:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbZAOJxt
+	id S1761968AbZAOJzY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 04:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbZAOJzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 04:53:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49211 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbZAOJxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 04:53:48 -0500
-Date: Thu, 15 Jan 2009 10:53:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090115095321.GC5833@elte.hu>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <1231958447.8269.30.camel@think.oraclecorp.com>
+	Thu, 15 Jan 2009 04:55:04 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:39734 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbZAOJzB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 04:55:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=yDUZQokwnIeiVHU0i2hohkS90T+lYGqdAZF5zXM548L/G6vuGkrhofH5rhmHRN8+8v
+         0AmRgM7uJJpT+bUG1WDzVkyg8Q1Ks3XM0i7SrLTkXn4qQaQ8aemExiwBH5+39M3AfmRD
+         qgoEE3XUqKSgFqekrfDR7dRmYXxq1PpfCViw8=
+Date: Thu, 15 Jan 2009 09:54:54 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+Message-ID: <20090115095454.GA5461@ff.dom.local>
+References: <20081010090426.GA6054@ff.dom.local> <496EE1D4.6010709@bigtelecom.ru> <20090115080921.GC4190@ff.dom.local> <200901151101.15397.denys@visp.net.lb> <20090115090650.GF4190@ff.dom.local> <496F04AB.2080705@bigtelecom.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231958447.8269.30.camel@think.oraclecorp.com>
+In-Reply-To: <496F04AB.2080705@bigtelecom.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 15, 2009 at 12:40:59PM +0300, Badalian Vyacheslav wrote:
+...
+> Jarek, i easy can test patch 4 without 2+3 if it needed at heavy
+> production server. I use dynamic routing and if server crashed - traffic
+> go to another pc after few seconds. I not test it because you say that
+> its not needed if for me help 3+2. I apply it today and test at few servers.
 
-* Chris Mason <chris.mason@oracle.com> wrote:
+Yes, I thought it's so rare we can wait till 2.6.29, while you had this
+patched, and Denys seemed to not see it after changing his sever. But
+I have changed my mind after seeing Chris's report...
 
-> On Wed, 2009-01-14 at 19:33 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > Full series, including changelogs available at:
-> > > 
-> > >  http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/
-> > > 
-> > > and should shortly appear in a git tree near Ingo :-)
-> > 
-> > Linus,
-> > 
-> > Please pull the adaptive-mutexes-for-linus git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git adaptive-mutexes-for-linus
-> > 
-> 
-> I was going to put this into the btrfs tree, but since you have a branch
-> just for adaptive mutexes, is it easier to put there?
-> 
-> From: Chris Mason <chris.mason@oracle.com>
-> 
-> Btrfs: stop spinning on mutex_trylock and let the adaptive code spin for us
-> 
-> Mutexes now spin internally and the btrfs spin is no longer required for
-> performance.
-> 
-> Signed-off-by: Chris Mason <chris.mason@oracle.com>
+I'm not sure if Peter would recomend something better yet, so I guess
+you could wait with this testing for his opinion.
 
-applied it to tip/core/locking, thanks Chris!
-
-	Ingo
+Thanks,
+Jarek P.
