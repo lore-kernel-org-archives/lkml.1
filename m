@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbZAOEzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbZAOE6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbZAOEzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 23:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZAOEzS
+	id S1760845AbZAOE6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 23:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbZAOE6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 23:55:18 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43245 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754374AbZAOEzQ (ORCPT
+	Wed, 14 Jan 2009 23:58:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47382
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753343AbZAOE6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 23:55:16 -0500
-Date: Thu, 15 Jan 2009 13:54:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
- obsolete
-Message-Id: <20090115135405.a15a6877.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115044557.GG21516@balbir.in.ibm.com>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<20090114135539.GA21516@balbir.in.ibm.com>
-	<20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115041750.GE21516@balbir.in.ibm.com>
-	<20090115134114.dba6b83a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115044557.GG21516@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 14 Jan 2009 23:58:38 -0500
+Date: Wed, 14 Jan 2009 20:58:39 -0800 (PST)
+Message-Id: <20090114.205839.20689555.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: akpm@linux-foundation.org, Volker.Lendecke@SerNet.DE,
+       linux-kernel@vger.kernel.org, sfrench@us.ibm.com, jens.axboe@oracle.com,
+       netdev@vger.kernel.org
+Subject: Re: maximum buffer size for splice(2) tcp->pipe?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <496D25F8.2080505@cosmosbay.com>
+References: <20090113123702.ad29cd13.akpm@linux-foundation.org>
+	<496D2078.9080302@cosmosbay.com>
+	<496D25F8.2080505@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 10:15:57 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Wed, 14 Jan 2009 00:38:32 +0100
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 13:41:14]:
+> [PATCH] net: splice() from tcp to socket should take into account O_NONBLOCK
 > 
-> > On Thu, 15 Jan 2009 09:47:50 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 12:24:16]:
-> > 
-> > > > But I don't like -EBUSY ;)
-> > > > 
-> > > > When rmdir() returns -EBUSY even if there are no (visible) children and tasks,
-> > > > our customer will take kdump and send it to me "please explain this kernel bug"
-> > > > 
-> > > > I'm sure it will happen ;)
-> > > >
-> > > 
-> > > OK, but memory.stat can show why the group is busy and with
-> > > move_to_parent() such issues should not occur right? I'll relook at
-> > > the code. Thanks for your input.
-> > > 
-> > 
-> > There was a design choice at swap_cgroup.
-> > 
-> > At rmdir, there may be used swap entry in memcg. (mem->memsw.usage can be > 0)
-> >   1. update all records in swap cgroup
-> >   2. just ignore account from swap, we can treat then at swap-in.
-> > 
-> > I implemented "2" by refcnt.
-> > 
-> > To do "1", we have to scan all used swap_cgroup but I don't want to scan all
-> > swap_cgroup entry at rmdir. It's heavy job.
-> > (*) To reduce memory usage by swap_cgroup, swap_cgroup just have a pointer to memcg
-> > (**) I implemented swap_cgroup as statically allocated array because I don't want
-> >     any dynamic memory allocation at swap-out and want to avoid unnecessary memory
-> >     usage.
+> Instead of using SPLICE_F_NONBLOCK to select a non blocking mode both on
+> source tcp socket and pipe destination, we use the underlying file flag (O_NONBLOCK)
+> for selecting a non blocking socket.
 > 
-> Fair enough, but I don't like that we don't have any checks for
-> 
-> If parent still has children, parent should not go away. The
-> problem that Daisuke-San is seeing.
-> 
-The parent has "no children" in cgroup layer. It just has children in
-"memory subsys" layer.
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
-It's better to add mem_cgroup_get()/put agaisnt the parent at create()/destroy().
-I'm now preparing a patch.
+This needs at least some more thought.
 
--Kame
+It seems, for one thing, that this change will interfere with the
+intentions of the code in splice_dirt_to_actor which goes:
 
-
-> -- 
-> 	Balbir
-> 
-
+	/*
+	 * Don't block on output, we have to drain the direct pipe.
+	 */
+	sd->flags &= ~SPLICE_F_NONBLOCK;
