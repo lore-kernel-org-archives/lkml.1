@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbZAOFfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZAOFgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528AbZAOFfM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 00:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZAOFe4
+	id S1757403AbZAOFgm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 00:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZAOFga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 00:34:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40454 "EHLO
+	Thu, 15 Jan 2009 00:36:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44177 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751498AbZAOFez (ORCPT
+	by vger.kernel.org with ESMTP id S1753394AbZAOFg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 00:34:55 -0500
-Date: Wed, 14 Jan 2009 21:34:51 -0800
+	Thu, 15 Jan 2009 00:36:28 -0500
+Date: Wed, 14 Jan 2009 21:36:18 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kyle Moffett" <kyle@moffetthome.net>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Another Seagate SATA drive with the NCQ+FLUSH_CACHE bug
-Message-Id: <20090114213451.3395e8d1.akpm@linux-foundation.org>
-In-Reply-To: <f73f7ab80901131154n2a734a50h21b0aeadf3daab9c@mail.gmail.com>
-References: <f73f7ab80901131154n2a734a50h21b0aeadf3daab9c@mail.gmail.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>,
+       netdev@vger.kernel.org, Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.28: r8169: NETDEV WATCHDOG: eth0 (r8169): transmit timed
+ out
+Message-Id: <20090114213618.a610d647.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0901131617550.6193@p34.internal.lan>
+References: <alpine.DEB.1.10.0901131617550.6193@p34.internal.lan>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,43 +28,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-ide)
+(cc's added)
 
-On Tue, 13 Jan 2009 14:54:51 -0500 "Kyle Moffett" <kyle@moffetthome.net> wrote:
+On Tue, 13 Jan 2009 16:19:22 -0500 (EST) Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 
-> I've got a 250GB Seagate Barracuda 7200.10 (ST3250820AS) with firmware
-> 3.AAE on it here that seems to suffer from the same problem hang
-> problem as a number of similar seagate drives.  What information do I
-> need to provide to get it added to the blacklist?  Beyond that I'm
-> also going through seagate support to try to get a firmware upgrade
-> for the thing, as performance without NCQ tends to be not-so-good.
+> Most likely disabling this (onboard-nic) and using Intel PCI-Express 1 
+> Gbps card but FYI:
 > 
-> Kernel messages of the SATA error below (it's on an ICH controller of
-> some variety).
+> [505628.695393] ------------[ cut here ]------------
+> [505628.695398] WARNING: at net/sched/sch_generic.c:226 dev_watchdog+0x22e/0x240()
+> [505628.695400] NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+> [505628.695403] Pid: 0, comm: swapper Not tainted 2.6.28 #1
+> [505628.695405] Call Trace:
+> [505628.695407]  <IRQ>  [<ffffffff8024f628>] warn_slowpath+0xc8/0x110
+> [505628.695416]  [<ffffffff805b9310>] ip_finish_output+0x0/0x2b0
+> [505628.695419]  [<ffffffff8059e3e4>] eth_header+0x34/0xd0
+> [505628.695423]  [<ffffffff804078c9>] __next_cpu+0x19/0x30
+> [505628.695427]  [<ffffffff802472dc>] find_busiest_group+0x1dc/0x970
+> [505628.695432]  [<ffffffff802308b9>] read_tsc+0x9/0x20
+> [505628.695436]  [<ffffffff802599c4>] lock_timer_base+0x34/0x70
+> [505628.695440]  [<ffffffff8026aa98>] getnstimeofday+0x48/0xc0
+> [505628.695443]  [<ffffffff8040d601>] strlcpy+0x41/0x50
+> [505628.695447]  [<ffffffff8059e9fe>] dev_watchdog+0x22e/0x240
+> [505628.695449]  [<ffffffff802308b9>] read_tsc+0x9/0x20
+> [505628.695453]  [<ffffffff8059e7d0>] dev_watchdog+0x0/0x240
+> [505628.695456]  [<ffffffff802594be>] run_timer_softirq+0x12e/0x200
+> [505628.695460]  [<ffffffff80238c35>] lapic_next_event+0x15/0x20
+> [505628.695463]  [<ffffffff80254e13>] __do_softirq+0x93/0x160
+> [505628.695467]  [<ffffffff802684c2>] hrtimer_interrupt+0x152/0x1c0
+> [505628.695471]  [<ffffffff8022aabc>] call_softirq+0x1c/0x30
+> [505628.695474]  [<ffffffff8022c455>] do_softirq+0x35/0x70
+> [505628.695477]  [<ffffffff802394f6>] smp_apic_timer_interrupt+0x86/0xd0
+> [505628.695480]  [<ffffffff8022a50b>] apic_timer_interrupt+0x6b/0x70
+> [505628.695482]  <EOI>  [<ffffffff805f0320>] unix_poll+0x0/0xb0
+> [505628.695489]  [<ffffffff8023147c>] mwait_idle+0x3c/0x50
+> [505628.695493]  [<ffffffff80228a1c>] cpu_idle+0x5c/0x90
+> [505628.695495] ---[ end trace eddb8da7fddd6198 ]---
+> [505628.700048] r8169: eth0: link up
 > 
-> Cheers,
-> Kyle Moffett
-> 
-> [100226.331199] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-> [100226.331241] ata1.01: cmd ea/00:00:00:00:00/00:00:00:00:00/b0 tag 0
-> [100226.331244]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
-> [100226.331821] ata1.01: status: { DRDY }
-> [100231.371102] ata1: link is slow to respond, please be patient (ready=0)
-> [100236.353120] ata1: device not ready (errno=-16), forcing hardreset
-> [100236.353156] ata1: soft resetting link
-> [100241.551827] ata1: link is slow to respond, please be patient (ready=0)
-> [100246.367827] ata1: SRST failed (errno=-16)
-> [100246.367859] ata1: soft resetting link
-> [100251.563827] ata1: link is slow to respond, please be patient (ready=0)
-> [100256.377083] ata1: SRST failed (errno=-16)
-> [100256.377116] ata1: soft resetting link
-> [100261.575827] ata1: link is slow to respond, please be patient (ready=0)
-> [100291.423827] ata1: SRST failed (errno=-16)
-> [100291.423861] ata1: soft resetting link
-> [100296.451826] ata1: SRST failed (errno=-16)
-> [100296.451855] ata1: reset failed, giving up
-> [100296.451881] ata1.00: disabled
-> [100296.451906] ata1.01: disabled
-> [100296.451950] ata1: EH complete
+> I believe this occured when trying to burn a DVD via Nero over a 1gbps 
+> connection.
 
+Is this new behaviour?  Was 2.6.27 OK?
+
+Thanks.
