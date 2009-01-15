@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbZAOJ5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZAOKAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760517AbZAOJ5h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 04:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZAOJ50
+	id S1755682AbZAOKAf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZAOKA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 04:57:26 -0500
-Received: from hosting.visp.net.lb ([194.146.153.11]:50816 "EHLO
-	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbZAOJ5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 04:57:25 -0500
-From: Denys Fedoryschenko <denys@visp.net.lb>
-Organization: VISP
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: deadlocks if use htb
-Date: Thu, 15 Jan 2009 11:57:13 +0200
-User-Agent: KMail/1.9.9
-Cc: Badalian Vyacheslav <slavon@bigtelecom.ru>, Chris Caputo <ccaputo@alt.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <20081010090426.GA6054@ff.dom.local> <496F04AB.2080705@bigtelecom.ru> <20090115095454.GA5461@ff.dom.local>
-In-Reply-To: <20090115095454.GA5461@ff.dom.local>
+	Thu, 15 Jan 2009 05:00:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44473 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753341AbZAOKAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:00:25 -0500
+Date: Thu, 15 Jan 2009 11:00:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Michal Hocko <mhocko@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
+Message-ID: <20090115100013.GE5833@elte.hu>
+References: <20090113122455.GA24824@dhcp35.suse.cz> <20090113123425.GB29926@elte.hu> <200901151754.58311.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901151157.13340.denys@visp.net.lb>
+In-Reply-To: <200901151754.58311.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I didn't notice a bug, just because all that time i was using it without 
-hrtimers (because of nmi_watchdog).
 
-On Thursday 15 January 2009 11:54:54 Jarek Poplawski wrote:
-> On Thu, Jan 15, 2009 at 12:40:59PM +0300, Badalian Vyacheslav wrote:
-> ...
->
-> > Jarek, i easy can test patch 4 without 2+3 if it needed at heavy
-> > production server. I use dynamic routing and if server crashed - traffic
-> > go to another pc after few seconds. I not test it because you say that
-> > its not needed if for me help 3+2. I apply it today and test at few
-> > servers.
->
-> Yes, I thought it's so rare we can wait till 2.6.29, while you had this
-> patched, and Denys seemed to not see it after changing his sever. But
-> I have changed my mind after seeing Chris's report...
->
-> I'm not sure if Peter would recomend something better yet, so I guess
-> you could wait with this testing for his opinion.
->
-> Thanks,
-> Jarek P.
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
+> On Tuesday 13 January 2009 23:34:25 Ingo Molnar wrote:
+> > * Michal Hocko <mhocko@suse.cz> wrote:
+> > > Hi,
+> > > I am not sure whether someone has already reported this, but
+> > > I can see the following early boot WARNING with the 2.6.29-rc1 kernel in
+> > > the serial console output:
+> > >
+> > > ------------[ cut here ]------------
+> > > WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
+> >
+> > That one should be fixed in tip/master and it is in the to-Linus queue of
+> > fixes:
+> >
+> >   http://people.redhat.com/mingo/tip.git/README
+> > 	
+> > it's this commit:
+> >
+> >   01e3eb8: Revert "sched: improve preempt debugging"
+> >
+> > if you want to cherry-pick the fix.
+> 
+> OK, but I still don't think this is the actual problem, but there is 
+> something amiss in the init code being exposed by it.
 
+the warnings triggered after a softirq, and there's already preempt-leak 
+checks in the softirq code - so we can exclude that.
+
+a hardirq might have leaked a preempt count - but that would have quite 
+bad effects [with quick atomic check asserts in schedule()], wouldnt it? 
+So i tend to think that this is a false positive.
+
+One problem i can think of (and which i outlined in the revert commit log) 
+is that if a hardirq hits this window in lock_kernel():
+
+void __lockfunc lock_kernel(void)
+{
+        int depth = current->lock_depth+1;
+                                           <-------------- HERE
+        if (likely(!depth))
+                __lock_kernel();
+        current->lock_depth = depth;
+}
+
+then we have kernel_locked() already true (it checks lock_depth), but the 
+preempt count is not elevated yet via __lock_kernel(). So if we return 
+from the hardirq [and run into softirqs that end with a preempt_enable() - 
+a pure hardirq exit has no preempt debug check] we'll incorrectly think 
+that there's a preempt leak going on.
+
+	Ingo
