@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765091AbZAONnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765492AbZAONna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765091AbZAONnE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 08:43:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbZAONmw
+	id S1765492AbZAONna (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 08:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765364AbZAONnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 08:42:52 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:46717 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757219AbZAONmv (ORCPT
+	Thu, 15 Jan 2009 08:43:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60596 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765260AbZAONnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 08:42:51 -0500
-Date: Thu, 15 Jan 2009 14:42:49 +0100
-To: linux-kernel@vger.kernel.org
-Subject: dri /dev node disappeared with 2.6.29-rc1
-Message-ID: <20090115134249.GP28392@gamma.logic.tuwien.ac.at>
+	Thu, 15 Jan 2009 08:43:07 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] mark_page_accessed() in do_swap_page() move latter than memcg charge
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       balbir@linux.vnet.ibm.com,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <20090115212030.EBE9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <Pine.LNX.4.64.0901151145470.11108@blonde.anvils> <20090115212030.EBE9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20090115224112.EBEC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 15 Jan 2009 22:43:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all, 
+> (CC to Rik and Nick)
+> 
+> Hi
+> 
+> Thank you reviewing.
+> 
+> > > mark_page_accessed() update reclaim_stat statics.
+> > > but currently, memcg charge is called after mark_page_accessed().
+> > > 
+> > > then, mark_page_accessed() don't update memcg statics correctly.
+> > 
+> > Statics?  "Stats" is a good abbreviation for statistics,
+> > but statics are something else.
+> 
+> Doh! your are definitly right. thanks.
+> 
+> > > ---
+> > >  mm/memory.c |    4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: b/mm/memory.c
+> > > ===================================================================
+> > > --- a/mm/memory.c
+> > > +++ b/mm/memory.c
+> > > @@ -2426,8 +2426,6 @@ static int do_swap_page(struct mm_struct
+> > >  		count_vm_event(PGMAJFAULT);
+> > >  	}
+> > >  
+> > > -	mark_page_accessed(page);
+> > > -
+> > >  	lock_page(page);
+> > >  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+> > >  
+> > > @@ -2480,6 +2478,8 @@ static int do_swap_page(struct mm_struct
+> > >  		try_to_free_swap(page);
+> > >  	unlock_page(page);
+> > >  
+> > > +	mark_page_accessed(page);
+> > > +
+> > >  	if (write_access) {
+> > >  		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
+> > >  		if (ret & VM_FAULT_ERROR)
+> > 
+> > This catches my eye, because I'd discussed with Nick and was going to
+> > send in a patch which entirely _removes_ this mark_page_accessed call
+> > from do_swap_page (and replaces follow_page's mark_page_accessed call
+> > by a pte_mkyoung): they seem inconsistent to me, in the light of
+> > bf3f3bc5e734706730c12a323f9b2068052aa1f0 mm: don't mark_page_accessed
+> > in fault path.
+> 
+> Actually, bf3f3bc5e734706730c12a323f9b2068052aa1f0 only remove 
+> the mark_page_accessed() in filemap_fault().
+> current mmotm's do_swap_page() still have mark_page_accessed().
+> 
+> but your suggestion is very worth.
+> ok, I'm thinking and sorting out again.
+> 
+> Rik's commit 9ff473b9a72942c5ac0ad35607cae28d8d59ed7a vmscan: evict streaming IO first
+> does "reclaim stastics don't only update at reclaim, but also at fault and read/write.
+> it makes proper anon/file reclaim balancing stastics value before starting actual reclaim".
+> and it depend on fault path calling mark_page_accessed(). 
+> 
+> Then, we need following change. I think.
+> 
+>   - Remove calling mark_page_accessed() in do_swap_page().
+>     it makes consistency against filemap_fault().
+>   - Add calling update_page_reclaim_stat() into do_swap_page() and 
+>     filemap_fault().
+> 
+> Am I overlooking something?
 
-(please Cc, and sorry, don't know where to cross post that one)
+Doh! please ignore last mail's patch. I forgot grab zone->lru_lock.
+it's perfectly buggy.
 
-switching from 2.6.28-rc9 to 2.6.29-rc1 my /dev/dri/* entries got lost.
-Hardware is intel GM45:
-[    1.225368] agpgart-intel 0000:00:00.0: Intel Mobile Intel® GM45 Express Chipset
-[    1.230650] agpgart-intel 0000:00:00.0: detected 65532K stolen memory
-[    1.239716] PM: Adding info for No Bus:agpgart
-[    1.239844] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
-[    1.240093] PM: Adding info for No Bus:tpm0
-[    1.564241] [drm] Initialized drm 1.1.0 20060810
+I'll make it again tommorow.
 
-but X tells me:
-(II) intel(0): Kernel reported 1264128 total, 1 used
-(II) intel(0): I830CheckAvailableMemory: 5056508 kB available
-drmOpenDevice: node name is /dev/dri/card0
-drmOpenDevice: open result is -1, (No such device)
-drmOpenDevice: open result is -1, (No such device)
-drmOpenDevice: Open failed
-drmOpenDevice: node name is /dev/dri/card0
-drmOpenDevice: open result is -1, (No such device)
-drmOpenDevice: open result is -1, (No such device)
-drmOpenDevice: Open failed
-[drm] failed to load kernel module "i915"
 
-...
-
-I see the post 
-	[PATCH] drm/i915: why does kconfig hate?
-but using that patch I still get:
-	drivers/gpu/drm/Kconfig:8:error: found recursive dependency: DRM
--> <choice> -> DRM_I915 -> FB -> FB_I810 -> AGP -> DRM
-
-Any chance to fix that, or some suggestion?
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-The major difference between a thing that might go wrong
-and a thing that cannot possibly go wrong is that when a
-thing that cannot possibly go wrong goes wrong it usually
-turns out to be impossible to get at or repair.
-                 --- One of the laws of computers and programming revealed.
-                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
