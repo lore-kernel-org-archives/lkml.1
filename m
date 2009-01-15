@@ -1,192 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbZAOUb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbZAOUcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933536AbZAOUb5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbZAOUBg
+	id S933556AbZAOUcb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZAOUBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:36 -0500
-Received: from kroah.org ([198.145.64.141]:49263 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:37 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:32990 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765999AbZAOUBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762624AbZAOUBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 15:01:13 -0500
-Date: Thu, 15 Jan 2009 11:59:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 49/94] [PATCH 18/44] [CVE-2009-0029] System call wrappers
-	part 08
-Message-ID: <20090115195903.GW14419@kroah.com>
-References: <20090115194806.804618825@mini.kroah.org>
+Message-ID: <496F9604.8020101@sgi.com>
+Date: Thu, 15 Jan 2009 12:01:08 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0018--CVE-2009-0029-System-call-wrappers-part-08.patch"
-In-Reply-To: <20090115195520.GA14403@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Dieter Ries <clip2@gmx.de>, "Maciej Rutecki" <maciej.rutecki@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc1 does not boot
+References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu> <496A3F62.8090902@gmx.de>
+In-Reply-To: <496A3F62.8090902@gmx.de>
+Content-Type: multipart/mixed;
+ boundary="------------030802040507010307000100"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+This is a multi-part message in MIME format.
+--------------030802040507010307000100
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-------------------
+* Dieter Ries wrote:
+> Hi,
+> 
+> Ingo Molnar schrieb:
+>>>> * Dieter Ries <clip2@gmx.de> wrote:
+>>>>
+>>>>> Hi,
+>>>>>
+>>>>> I just pulled 2.6.29-rc1, ran oldconfig with defaults and built it.
+>>>>> When I try to boot it, that kind of works until init should start. Then
+>>>>> nothing happens. I tried with init=/bin/bash, which sometimes works, and
+>>>>> sometimes gets me a bash without the prompt flashing.
+...
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+* Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
+> Revert this commit also solves problem on my laptoop.
 
-commit 17da2bd90abf428523de0fb98f7075e00e3ed42e upstream.
+Hi Dieter and Maciej,
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- kernel/exit.c   |    7 +++----
- kernel/fork.c   |    2 +-
- kernel/futex.c  |    6 +++---
- kernel/module.c |   10 ++++------
- kernel/sched.c  |    2 +-
- kernel/signal.c |   18 +++++++-----------
- 6 files changed, 19 insertions(+), 26 deletions(-)
+Can you try the attached patches on your system?  It boots on my system fine
+now, but wasn't there a problem with resume as well?  (My test systems are
+remote so suspending/resuming over the network is iffy.)
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1755,9 +1755,8 @@ end:
- 	return retval;
- }
- 
--asmlinkage long sys_waitid(int which, pid_t upid,
--			   struct siginfo __user *infop, int options,
--			   struct rusage __user *ru)
-+SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
-+		infop, int, options, struct rusage __user *, ru)
- {
- 	struct pid *pid = NULL;
- 	enum pid_type type;
-@@ -1834,7 +1833,7 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int 
-  * sys_waitpid() remains for compatibility. waitpid() should be
-  * implemented by calling sys_wait4() from libc.a.
-  */
--asmlinkage long sys_waitpid(pid_t pid, int __user *stat_addr, int options)
-+SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
- {
- 	return sys_wait4(pid, stat_addr, options, NULL);
- }
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -894,7 +894,7 @@ static void copy_flags(unsigned long clo
- 	clear_freeze_flag(p);
- }
- 
--asmlinkage long sys_set_tid_address(int __user *tidptr)
-+SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
- {
- 	current->clear_child_tid = tidptr;
- 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2039,9 +2039,9 @@ long do_futex(u32 __user *uaddr, int op,
- }
- 
- 
--asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
--			  struct timespec __user *utime, u32 __user *uaddr2,
--			  u32 val3)
-+SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
-+		struct timespec __user *, utime, u32 __user *, uaddr2,
-+		u32, val3)
- {
- 	struct timespec ts;
- 	ktime_t t, *tp = NULL;
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -743,8 +743,8 @@ static void wait_for_zero_refcount(struc
- 	mutex_lock(&module_mutex);
- }
- 
--asmlinkage long
--sys_delete_module(const char __user *name_user, unsigned int flags)
-+SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
-+		unsigned int, flags)
- {
- 	struct module *mod;
- 	char name[MODULE_NAME_LEN];
-@@ -2288,10 +2288,8 @@ static noinline struct module *load_modu
- }
- 
- /* This is where the real work happens */
--asmlinkage long
--sys_init_module(void __user *umod,
--		unsigned long len,
--		const char __user *uargs)
-+SYSCALL_DEFINE3(init_module, void __user *, umod,
-+		unsigned long, len, const char __user *, uargs)
- {
- 	struct module *mod;
- 	int ret = 0;
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5735,7 +5735,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, 
-  * this syscall writes the default timeslice value of a given process
-  * into the user-space timespec buffer. A value of '0' means infinity.
-  */
--SYSCALL_DEFINE4(sched_rr_get_interval, pid_t, pid,
-+SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 		struct timespec __user *, interval)
- {
- 	struct task_struct *p;
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1993,8 +1993,8 @@ int sigprocmask(int how, sigset_t *set, 
- 	return error;
- }
- 
--asmlinkage long
--sys_rt_sigprocmask(int how, sigset_t __user *set, sigset_t __user *oset, size_t sigsetsize)
-+SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, set,
-+		sigset_t __user *, oset, size_t, sigsetsize)
- {
- 	int error = -EINVAL;
- 	sigset_t old_set, new_set;
-@@ -2053,8 +2053,7 @@ out:
- 	return error;
- }	
- 
--asmlinkage long
--sys_rt_sigpending(sigset_t __user *set, size_t sigsetsize)
-+SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, set, size_t, sigsetsize)
- {
- 	return do_sigpending(set, sigsetsize);
- }
-@@ -2125,11 +2124,9 @@ int copy_siginfo_to_user(siginfo_t __use
- 
- #endif
- 
--asmlinkage long
--sys_rt_sigtimedwait(const sigset_t __user *uthese,
--		    siginfo_t __user *uinfo,
--		    const struct timespec __user *uts,
--		    size_t sigsetsize)
-+SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
-+		siginfo_t __user *, uinfo, const struct timespec __user *, uts,
-+		size_t, sigsetsize)
- {
- 	int ret, sig;
- 	sigset_t these;
-@@ -2202,8 +2199,7 @@ sys_rt_sigtimedwait(const sigset_t __use
- 	return ret;
- }
- 
--asmlinkage long
--sys_kill(pid_t pid, int sig)
-+SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
- {
- 	struct siginfo info;
- 
+The patches apply to the latest tip/cpus4096 branch:
 
+	http://people.redhat.com/mingo/tip.git/README
+
+(They may apply to linux-next as well, I'm not sure.)
+
+Thanks!
+Mike
+
+========================
+Subject: cpumask: don't try to get_online_cpus() in work_on_cpu.
+
+From: Rusty Russell <rusty@rustcorp.com.au>
+
+Impact: remove potential circular lock dependency with cpu hotplug lock
+
+This has caused more problems than it solved, with a pile of cpu
+hotplug locking issues.
+
+Followup patches will get_online_cpus() in callers that need it, but
+if they don't do it they're no worse than before when they were using
+set_cpus_allowed without locking.
+========================
+Subject: work_on_cpu: Use our own workqueue.
+
+From: Rusty Russell <rusty@rustcorp.com.au>
+
+Impact: remove potential circular lock dependency with generic kevent workqueue
+
+Annoyingly, some places we want to use work_on_cpu are already in
+workqueues.  As per Ingo's suggestion, we create a different workqueue
+for work_on_cpu.
+
+========================
+Subject: cpumask: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+
+Impact: use new work_on_cpu function to reduce stack usage
+
+Replace the saving of current->cpus_allowed and set_cpus_allowed_ptr() with
+a work_on_cpu function for drv_read() and drv_write().
+
+Basically converts do_drv_{read,write} into "work_on_cpu" functions that
+are now called by drv_read and drv_write.
+========================
+
+--------------030802040507010307000100
+Content-Type: application/x-bzip;
+ name="fix-work_on_cpu-in-acpi-cpufreq.tar.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="fix-work_on_cpu-in-acpi-cpufreq.tar.bz2"
+
+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
+--------------030802040507010307000100--
