@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936301AbZAOWgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933518AbZAOWhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936301AbZAOWgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764853AbZAOWDj
+	id S933518AbZAOWhi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761633AbZAOWDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:39 -0500
-Received: from kroah.org ([198.145.64.141]:38874 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:40 -0500
+Received: from kroah.org ([198.145.64.141]:38889 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933958AbZAOWDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:36 -0500
-Date: Thu, 15 Jan 2009 14:01:13 -0800
+	id S932455AbZAOWDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:37 -0500
+Date: Thu, 15 Jan 2009 14:01:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 61/85] [PATCH 41/44] [CVE-2009-0029] System call wrappers
-	part 31
-Message-ID: <20090115220113.GJ17227@kroah.com>
+Subject: [patch 62/85] [PATCH 42/44] [CVE-2009-0029] System call wrappers
+	part 32
+Message-ID: <20090115220115.GK17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0041--CVE-2009-0029-System-call-wrappers-part-31.patch"
+Content-Disposition: inline; filename="0042--CVE-2009-0029-System-call-wrappers-part-32.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,139 +42,143 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 836f92adf121f806e9beb5b6b88bd5c9c4ea3f24 upstream.
+commit d4e82042c4cfa87a7d51710b71f568fe80132551 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/signalfd.c  |    8 ++++----
- fs/splice.c    |   12 ++++++------
- fs/timerfd.c   |    8 ++++----
- kernel/futex.c |   11 +++++------
- kernel/sys.c   |    4 ++--
- 5 files changed, 21 insertions(+), 22 deletions(-)
+ fs/eventfd.c             |    5 ++---
+ fs/pipe.c                |    2 +-
+ fs/readdir.c             |    3 ++-
+ fs/select.c              |   11 ++++++-----
+ fs/timerfd.c             |    2 +-
+ include/linux/syscalls.h |    7 +++++++
+ kernel/signal.c          |   11 +++++------
+ 7 files changed, 24 insertions(+), 17 deletions(-)
 
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -205,8 +205,8 @@ static const struct file_operations sign
- 	.read		= signalfd_read,
- };
- 
--asmlinkage long sys_signalfd4(int ufd, sigset_t __user *user_mask,
--			      size_t sizemask, int flags)
-+SYSCALL_DEFINE4(signalfd4, int, ufd, sigset_t __user *, user_mask,
-+		size_t, sizemask, int, flags)
- {
- 	sigset_t sigmask;
- 	struct signalfd_ctx *ctx;
-@@ -259,8 +259,8 @@ asmlinkage long sys_signalfd4(int ufd, s
- 	return ufd;
- }
- 
--asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask,
--			     size_t sizemask)
-+SYSCALL_DEFINE3(signalfd, int, ufd, sigset_t __user *, user_mask,
-+		size_t, sizemask)
- {
- 	return sys_signalfd4(ufd, user_mask, sizemask, 0);
- }
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1434,8 +1434,8 @@ static long vmsplice_to_pipe(struct file
-  * Currently we punt and implement it as a normal copy, see pipe_to_user().
-  *
-  */
--asmlinkage long sys_vmsplice(int fd, const struct iovec __user *iov,
--			     unsigned long nr_segs, unsigned int flags)
-+SYSCALL_DEFINE4(vmsplice, int, fd, const struct iovec __user *, iov,
-+		unsigned long, nr_segs, unsigned int, flags)
- {
- 	struct file *file;
- 	long error;
-@@ -1460,9 +1460,9 @@ asmlinkage long sys_vmsplice(int fd, con
- 	return error;
- }
- 
--asmlinkage long sys_splice(int fd_in, loff_t __user *off_in,
--			   int fd_out, loff_t __user *off_out,
--			   size_t len, unsigned int flags)
-+SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
-+		int, fd_out, loff_t __user *, off_out,
-+		size_t, len, unsigned int, flags)
- {
- 	long error;
- 	struct file *in, *out;
-@@ -1684,7 +1684,7 @@ static long do_tee(struct file *in, stru
- 	return ret;
- }
- 
--asmlinkage long sys_tee(int fdin, int fdout, size_t len, unsigned int flags)
-+SYSCALL_DEFINE4(tee, int, fdin, int, fdout, size_t, len, unsigned int, flags)
- {
- 	struct file *in;
- 	int error, fput_in;
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -179,7 +179,7 @@ static struct file *timerfd_fget(int fd)
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -198,7 +198,7 @@ struct file *eventfd_fget(int fd)
  	return file;
  }
  
--asmlinkage long sys_timerfd_create(int clockid, int flags)
-+SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
+-asmlinkage long sys_eventfd2(unsigned int count, int flags)
++SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
  {
- 	int ufd;
- 	struct timerfd_ctx *ctx;
-@@ -210,9 +210,9 @@ asmlinkage long sys_timerfd_create(int c
- 	return ufd;
+ 	int fd;
+ 	struct eventfd_ctx *ctx;
+@@ -228,8 +228,7 @@ asmlinkage long sys_eventfd2(unsigned in
+ 	return fd;
  }
  
--asmlinkage long sys_timerfd_settime(int ufd, int flags,
--				    const struct itimerspec __user *utmr,
--				    struct itimerspec __user *otmr)
-+SYSCALL_DEFINE4(timerfd_settime, int, ufd, int, flags,
-+		const struct itimerspec __user *, utmr,
-+		struct itimerspec __user *, otmr)
+-asmlinkage long sys_eventfd(unsigned int count)
++SYSCALL_DEFINE1(eventfd, unsigned int, count)
+ {
+ 	return sys_eventfd2(count, 0);
+ }
+-
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -1051,7 +1051,7 @@ int do_pipe(int *fd)
+  * sys_pipe() is the normal C calling standard for creating
+  * a pipe. It's not the way Unix traditionally does this, though.
+  */
+-asmlinkage long sys_pipe2(int __user *fildes, int flags)
++SYSCALL_DEFINE2(pipe2, int __user *, fildes, int, flags)
+ {
+ 	int fd[2];
+ 	int error;
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -102,7 +102,8 @@ efault:
+ 	return -EFAULT;
+ }
+ 
+-asmlinkage long sys_old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
++SYSCALL_DEFINE3(old_readdir, unsigned int, fd,
++		struct old_linux_dirent __user *, dirent, unsigned int, count)
+ {
+ 	int error;
+ 	struct file * file;
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -513,8 +513,9 @@ sticky:
+  * which has a pointer to the sigset_t itself followed by a size_t containing
+  * the sigset size.
+  */
+-asmlinkage long sys_pselect6(int n, fd_set __user *inp, fd_set __user *outp,
+-	fd_set __user *exp, struct timespec __user *tsp, void __user *sig)
++SYSCALL_DEFINE6(pselect6, int, n, fd_set __user *, inp, fd_set __user *, outp,
++		fd_set __user *, exp, struct timespec __user *, tsp,
++		void __user *, sig)
+ {
+ 	size_t sigsetsize = 0;
+ 	sigset_t __user *up = NULL;
+@@ -761,9 +762,9 @@ SYSCALL_DEFINE3(poll, struct pollfd __us
+ }
+ 
+ #ifdef HAVE_SET_RESTORE_SIGMASK
+-asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
+-	struct timespec __user *tsp, const sigset_t __user *sigmask,
+-	size_t sigsetsize)
++SYSCALL_DEFINE5(ppoll, struct pollfd __user *, ufds, unsigned int, nfds,
++		struct timespec __user *, tsp, const sigset_t __user *, sigmask,
++		size_t, sigsetsize)
+ {
+ 	sigset_t ksigmask, sigsaved;
+ 	struct timespec ts;
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -267,7 +267,7 @@ SYSCALL_DEFINE4(timerfd_settime, int, uf
+ 	return 0;
+ }
+ 
+-asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr)
++SYSCALL_DEFINE2(timerfd_gettime, int, ufd, struct itimerspec __user *, otmr)
  {
  	struct file *file;
  	struct timerfd_ctx *ctx;
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1797,9 +1797,8 @@ pi_faulted:
-  * @head: pointer to the list-head
-  * @len: length of the list-head, as userspace expects
-  */
--asmlinkage long
--sys_set_robust_list(struct robust_list_head __user *head,
--		    size_t len)
-+SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
-+		size_t, len)
- {
- 	if (!futex_cmpxchg_enabled)
- 		return -ENOSYS;
-@@ -1820,9 +1819,9 @@ sys_set_robust_list(struct robust_list_h
-  * @head_ptr: pointer to a list-head pointer, the kernel fills it in
-  * @len_ptr: pointer to a length field, the kernel fills in the header size
-  */
--asmlinkage long
--sys_get_robust_list(int pid, struct robust_list_head __user * __user *head_ptr,
--		    size_t __user *len_ptr)
-+SYSCALL_DEFINE3(get_robust_list, int, pid,
-+		struct robust_list_head __user * __user *, head_ptr,
-+		size_t __user *, len_ptr)
- {
- 	struct robust_list_head __user *head;
- 	unsigned long ret;
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1736,8 +1736,8 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
- 	return error;
- }
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -679,6 +679,13 @@ asmlinkage long sys_eventfd(unsigned int
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+ asmlinkage long sys_old_readdir(unsigned int, struct old_linux_dirent __user *, unsigned int);
++asmlinkage long sys_pselect6(int, fd_set __user *, fd_set __user *,
++			     fd_set __user *, struct timespec __user *,
++			     void __user *);
++asmlinkage long sys_ppoll(struct pollfd __user *, unsigned int,
++			  struct timespec __user *, const sigset_t __user *,
++			  size_t);
++asmlinkage long sys_pipe2(int __user *, int);
  
--asmlinkage long sys_getcpu(unsigned __user *cpup, unsigned __user *nodep,
--			   struct getcpu_cache __user *unused)
-+SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
-+		struct getcpu_cache __user *, unused)
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2466,11 +2466,10 @@ out:
+ #endif /* __ARCH_WANT_SYS_SIGPROCMASK */
+ 
+ #ifdef __ARCH_WANT_SYS_RT_SIGACTION
+-asmlinkage long
+-sys_rt_sigaction(int sig,
+-		 const struct sigaction __user *act,
+-		 struct sigaction __user *oact,
+-		 size_t sigsetsize)
++SYSCALL_DEFINE4(rt_sigaction, int, sig,
++		const struct sigaction __user *, act,
++		struct sigaction __user *, oact,
++		size_t, sigsetsize)
  {
- 	int err = 0;
- 	int cpu = raw_smp_processor_id();
+ 	struct k_sigaction new_sa, old_sa;
+ 	int ret = -EINVAL;
+@@ -2553,7 +2552,7 @@ SYSCALL_DEFINE0(pause)
+ #endif
+ 
+ #ifdef __ARCH_WANT_SYS_RT_SIGSUSPEND
+-asmlinkage long sys_rt_sigsuspend(sigset_t __user *unewset, size_t sigsetsize)
++SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
+ {
+ 	sigset_t newset;
+ 
 
