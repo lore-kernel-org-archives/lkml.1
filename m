@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934101AbZAOUtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932974AbZAOUuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934101AbZAOUtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZAOUCr
+	id S932974AbZAOUuM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932316AbZAOUCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:47 -0500
-Received: from kroah.org ([198.145.64.141]:49661 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:48 -0500
+Received: from kroah.org ([198.145.64.141]:49744 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932222AbZAOUCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:42 -0500
-Date: Thu, 15 Jan 2009 12:00:17 -0800
+	id S1763359AbZAOUCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:44 -0500
+Date: Thu, 15 Jan 2009 12:00:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>,
+       alan@lxorguk.ukuu.org.uk,
+       Paulo Afonso Graner Fessel <pfessel@gmail.com>,
        Phil Dibowitz <phil@ipom.com>
-Subject: [patch 79/94] USB: storage: extend unusual range for 067b:3507
-Message-ID: <20090115200017.GA14419@kroah.com>
+Subject: [patch 80/94] USB: storage: recognizing and enabling Nokia 5200
+	cell phoes
+Message-ID: <20090115200019.GB14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-storage-extend-unusual-range-for-067b-3507.patch"
+Content-Disposition: inline; filename="usb-storage-recognizing-and-enabling-nokia-5200-cell-phoes.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +42,155 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Paulo Afonso Graner Fessel <pfessel@gmail.com>
 
-commit b16363991414a6025beb7269f9c1dd294f9b241f upstream.
+commit b8d23491f127aa0cd1863bd6cb58e771c558b762 upstream.
 
-This device has been released in a new revision which is still buggy.
+This patch corrects the issue when one connects a Nokia 5200 cell
+phone in data storage mode. If one uses an unpatched unusual_devs.h,
+the following messages appear on /var/log/messages:
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+Dec 12 01:03:24 alberich kernel: usb 4-2: new full speed USB device
+using uhci_hcd and address 3
+Dec 12 01:03:25 alberich kernel: usb 4-2: configuration #1 chosen from 1 choice
+Dec 12 01:03:25 alberich kernel: scsi10 : SCSI emulation for USB Mass
+Storage devices
+Dec 12 01:03:25 alberich kernel: usb 4-2: New USB device found,
+idVendor=0421, idProduct=04bd
+Dec 12 01:03:25 alberich kernel: usb 4-2: New USB device strings:
+Mfr=1, Product=2, SerialNumber=3
+Dec 12 01:03:25 alberich kernel: usb 4-2: Product: Nokia 5200
+Dec 12 01:03:25 alberich kernel: usb 4-2: Manufacturer: Nokia
+Dec 12 01:03:25 alberich kernel: usb 4-2: SerialNumber: 353930018354523
+Dec 12 01:03:25 alberich kernel: usbcore: registered new interface driver ub
+Dec 12 01:03:30 alberich kernel: scsi 10:0:0:0: Direct-Access
+Nokia    Nokia 5200       0000 PQ: 0 AN
+SI: 4
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] 3985409 512-byte
+hardware sectors (2041 MB)
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Write Protect is off
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Assuming drive
+cache: write through
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] 3985409 512-byte
+hardware sectors (2041 MB)
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Write Protect is off
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Assuming drive
+cache: write through
+Dec 12 01:03:30 alberich kernel:  sdg: sdg1
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Attached SCSI removable disk
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: Attached scsi generic sg9 type 0
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Add. Sense: No
+additional sense information
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Add. Sense: No
+additional sense information
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
+
+(...)
+
+The MicroSD card in the phone remains inaccessible and finally the
+cell phone turns itself off. The patch solves this problem and makes
+the cell phone fully accessible:
+
+[root@alberich kernel-linus-2.6.27.5-1mdv]# df -h
+Sist. Arq.            Tam   Usad Disp  Uso% Montado em
+/dev/sda6              31G  5,2G   26G  17% /
+/dev/sda1              92M   27M   61M  31% /boot
+/dev/mapper/homevg-homelv  240G  237G  3,5G  99% /home
+/dev/sda3              21G  7,9G   13G  40% /mnt/windows
+/dev/sdg1             2,0G  287M  1,7G  15% /media/disk <--------
+
+I've found necessary to use the FL_US_CAPACITY_FIX switch, as without
+it the cell phone is recognized but it went berserk when performing
+low-level functions on it (a fdisk -l /dev/uba for example).
+
+lsusb -v output follows:
+
+Bus 004 Device 004: ID 0421:04bd Nokia Mobile Phones
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x0421 Nokia Mobile Phones
+  idProduct          0x04bd
+  bcdDevice            6.03
+  iManufacturer           1 Nokia
+  iProduct                2 Nokia 5200
+  iSerial                 3 353930018354523
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk (Zip)
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+Device Status:     0x0001
+  Self Powered
+
+Signed-off-by: Paulo Afonso Graner Fessel <pfessel@gmail.com>
 Signed-off-by: Phil Dibowitz <phil@ipom.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/storage/unusual_devs.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
 --- a/drivers/usb/storage/unusual_devs.h
 +++ b/drivers/usb/storage/unusual_devs.h
-@@ -1040,7 +1040,7 @@ UNUSUAL_DEV( 0x067b, 0x2507, 0x0100, 0x0
- 		US_FL_FIX_CAPACITY | US_FL_GO_SLOW ),
- 
- /* Reported by Alex Butcher <alex.butcher@assursys.co.uk> */
--UNUSUAL_DEV( 0x067b, 0x3507, 0x0001, 0x0001,
-+UNUSUAL_DEV( 0x067b, 0x3507, 0x0001, 0x0101,
- 		"Prolific Technology Inc.",
- 		"ATAPI-6 Bridge Controller",
+@@ -260,6 +260,13 @@ UNUSUAL_DEV(  0x0421, 0x04b9, 0x0500, 0x
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY ),
+ 
++/* Reported by Paulo Fessel <pfessel@gmail.com> */
++UNUSUAL_DEV(  0x0421, 0x04bd, 0x0000, 0x9999,
++		"Nokia",
++		"5200",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY ),
++
+ /* Reported by Richard Nauber <RichardNauber@web.de> */
+ UNUSUAL_DEV(  0x0421, 0x04fa, 0x0550, 0x0660,
+ 		"Nokia",
 
