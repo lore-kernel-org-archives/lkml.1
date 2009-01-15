@@ -1,74 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764070AbZAOKcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbZAOKeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764070AbZAOKcf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760660AbZAOKcV
+	id S1763508AbZAOKeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZAOKdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:32:21 -0500
-Received: from mail-bw0-f20.google.com ([209.85.218.20]:38252 "EHLO
-	mail-bw0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761638AbZAOKcU (ORCPT
+	Thu, 15 Jan 2009 05:33:54 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55606 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754384AbZAOKdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:32:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BWjJEo/N6k2FDYDg+LDQZQ3P72ib8s86wkOAVPrLnJwLl0ebi3tYBkw7pjWk0I4Z8m
-         MqI2yHbHWSwfleQ4Ms4KbkSvZRjeBZ23lk3usNsBOSRE+O46dJ27xTm2JcTGgJ3TnvAs
-         RYGeziFUg3VTM1YydpC8mOGiDf832ZM4NV5W4=
-Message-ID: <c62985530901150232j5623ace0uc458dd3686ed105e@mail.gmail.com>
-Date: Thu, 15 Jan 2009 11:32:17 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] tracing/ftrace: add missing unlock in register_stat_tracer()
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <496E91CC.4020209@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 15 Jan 2009 05:33:53 -0500
+Date: Thu, 15 Jan 2009 19:32:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH 4/4] memcg : read_statistics update to show total score
+Message-Id: <20090115193243.0355840b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <496E91CC.4020209@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/15 Li Zefan <lizf@cn.fujitsu.com>:
-> We should unlock all_stat_sessions_mutex before returning failure.
+This is an demonstration for scan by CSS ID.
+word "hierachical" is better than "total" ?
 
+==
+From: KAMEZAWA Hiroyuki <kamzawa.hiroyu@jp.fujitsu.com>
 
-Ouch.... Thanks Li!
+Clean up memory.stat file routine and show "total" hierarchical stat.
 
+This patch does
+  - renamed get_all_zonestat to be get_local_zonestat.
+  - remove old mem_cgroup_stat_desc, which is only for per-cpu stat.
+  - add mcs_stat to cover both of per-cpu/per-lru stat.
+  - add "total" stat of hierarchy (*)
+  - add a callback system to scan all memcg under a root.
 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->
-> I noticed Ingo tend to delete the impact line from my changelog
-> if it added nothing new to the title, so no impact line for this
-> patch. :)
->
-> ---
->  kernel/trace/trace_stat.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-> index cb29282..8669f3c 100644
-> --- a/kernel/trace/trace_stat.c
-> +++ b/kernel/trace/trace_stat.c
-> @@ -73,8 +73,10 @@ int register_stat_tracer(struct tracer_stat *trace)
->        /* Already registered? */
->        mutex_lock(&all_stat_sessions_mutex);
->        list_for_each_entry_safe(node, tmp, &all_stat_sessions, session_list) {
-> -               if (node->ts == trace)
-> +               if (node->ts == trace) {
-> +                       mutex_unlock(all_stat_sessions_mutex);
->                        return -EINVAL;
-> +               }
->        }
->        mutex_unlock(&all_stat_sessions_mutex);
->
-> --
-> 1.5.4.rc3
->
+== "total_xxx" is added.
+[kamezawa@localhost ~]$ cat /opt/cgroup/xxx/memory.stat 
+cache 0
+rss 0
+pgpgin 0
+pgpgout 0
+inactive_anon 0
+active_anon 0
+inactive_file 0
+active_file 0
+unevictable 0
+hierarchical_memory_limit 50331648
+hierarchical_memsw_limit 9223372036854775807
+total_cache 65536
+total_rss 192512
+total_pgpgin 218
+total_pgpgout 155
+total_inactive_anon 0
+total_active_anon 135168
+total_inactive_file 61440
+total_active_file 4096
+total_unevictable 0
+==
+(*) maybe the user can do calc hierarchical stat by his own program
+   in userland but if it can be written in clean way, it's worth to be
+   shown, I think.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+Index: mmotm-2.6.29-Jan14/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Jan14.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Jan14/mm/memcontrol.c
+@@ -250,7 +250,7 @@ page_cgroup_zoneinfo(struct page_cgroup 
+ 	return mem_cgroup_zoneinfo(mem, nid, zid);
+ }
+ 
+-static unsigned long mem_cgroup_get_all_zonestat(struct mem_cgroup *mem,
++static unsigned long mem_cgroup_get_local_zonestat(struct mem_cgroup *mem,
+ 					enum lru_list idx)
+ {
+ 	int nid, zid;
+@@ -504,8 +504,8 @@ static int calc_inactive_ratio(struct me
+ 	unsigned long gb;
+ 	unsigned long inactive_ratio;
+ 
+-	inactive = mem_cgroup_get_all_zonestat(memcg, LRU_INACTIVE_ANON);
+-	active = mem_cgroup_get_all_zonestat(memcg, LRU_ACTIVE_ANON);
++	inactive = mem_cgroup_get_local_zonestat(memcg, LRU_INACTIVE_ANON);
++	active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_ANON);
+ 
+ 	gb = (inactive + active) >> (30 - PAGE_SHIFT);
+ 	if (gb)
+@@ -661,6 +661,41 @@ static unsigned int get_swappiness(struc
+ }
+ 
+ /*
++ * Call callback function against all cgroup under hierarchy tree.
++ */
++static int mem_cgroup_walk_tree(struct mem_cgroup *root, void *data,
++			  int (*func)(struct mem_cgroup *, void *))
++{
++	int found, ret, nextid;
++	struct cgroup_subsys_state *css;
++	struct mem_cgroup *mem;
++
++	if (!root->use_hierarchy)
++		return (*func)(root, data);
++
++	nextid = 1;
++	do {
++		ret = 0;
++		mem = NULL;
++
++		rcu_read_lock();
++		css = css_get_next(&mem_cgroup_subsys, nextid, &root->css,
++				   &found);
++		if (css && css_is_populated(css) && css_tryget(css))
++			mem = container_of(css, struct mem_cgroup, css);
++		rcu_read_unlock();
++
++		if (mem) {
++			ret = (*func)(mem, data);
++			css_put(&mem->css);
++		}
++		nextid = found + 1;
++	} while (!ret && css);
++
++	return ret;
++}
++
++/*
+  * Visit the first child (need not be the first child as per the ordering
+  * of the cgroup list, since we track last_scanned_child) of @mem and use
+  * that to reclaim free pages from.
+@@ -1843,54 +1878,90 @@ static int mem_cgroup_reset(struct cgrou
+ 	return 0;
+ }
+ 
+-static const struct mem_cgroup_stat_desc {
+-	const char *msg;
+-	u64 unit;
+-} mem_cgroup_stat_desc[] = {
+-	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
+-	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+-	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
+-	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
++
++/* For read statistics */
++enum {
++	MCS_CACHE,
++	MCS_RSS,
++	MCS_PGPGIN,
++	MCS_PGPGOUT,
++	MCS_INACTIVE_ANON,
++	MCS_ACTIVE_ANON,
++	MCS_INACTIVE_FILE,
++	MCS_ACTIVE_FILE,
++	MCS_UNEVICTABLE,
++	NR_MCS_STAT,
++};
++
++struct mcs_total_stat {
++	s64 stat[NR_MCS_STAT];
++};
++
++struct {
++	char *local_name;
++	char *total_name;
++} memcg_stat_strings[NR_MCS_STAT] = {
++	{"cache", "total_cache"},
++	{"rss", "total_rss"},
++	{"pgpgin", "total_pgpgin"},
++	{"pgpgout", "total_pgpgout"},
++	{"inactive_anon", "total_inactive_anon"},
++	{"active_anon", "total_active_anon"},
++	{"inactive_file", "total_inactive_file"},
++	{"active_file", "total_active_file"},
++	{"unevictable", "total_unevictable"}
+ };
+ 
++
++static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
++{
++	struct mcs_total_stat *s = data;
++	s64 val;
++
++	/* per cpu stat */
++	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_CACHE);
++	s->stat[MCS_CACHE] += val * PAGE_SIZE;
++	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_RSS);
++	s->stat[MCS_RSS] += val * PAGE_SIZE;
++	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGIN_COUNT);
++	s->stat[MCS_PGPGIN] += val;
++	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
++	s->stat[MCS_PGPGOUT] += val;
++
++	/* per zone stat */
++	val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_ANON);
++	s->stat[MCS_INACTIVE_ANON] += val * PAGE_SIZE;
++	val = mem_cgroup_get_local_zonestat(mem, LRU_ACTIVE_ANON);
++	s->stat[MCS_ACTIVE_ANON] += val * PAGE_SIZE;
++	val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_FILE);
++	s->stat[MCS_INACTIVE_FILE] += val * PAGE_SIZE;
++	val = mem_cgroup_get_local_zonestat(mem, LRU_ACTIVE_FILE);
++	s->stat[MCS_ACTIVE_FILE] += val * PAGE_SIZE;
++	val = mem_cgroup_get_local_zonestat(mem, LRU_UNEVICTABLE);
++	s->stat[MCS_UNEVICTABLE] += val * PAGE_SIZE;
++	return 0;
++}
++
++static void
++mem_cgroup_get_total_stat(struct mem_cgroup *mem, struct mcs_total_stat *s)
++{
++	mem_cgroup_walk_tree(mem, s, mem_cgroup_get_local_stat);
++}
++
+ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+ 				 struct cgroup_map_cb *cb)
+ {
+ 	struct mem_cgroup *mem_cont = mem_cgroup_from_cont(cont);
+-	struct mem_cgroup_stat *stat = &mem_cont->stat;
++	struct mcs_total_stat mystat;
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(stat->cpustat[0].count); i++) {
+-		s64 val;
++	memset(&mystat, 0, sizeof(mystat));
++	mem_cgroup_get_local_stat(mem_cont, &mystat);
+ 
+-		val = mem_cgroup_read_stat(stat, i);
+-		val *= mem_cgroup_stat_desc[i].unit;
+-		cb->fill(cb, mem_cgroup_stat_desc[i].msg, val);
+-	}
+-	/* showing # of active pages */
+-	{
+-		unsigned long active_anon, inactive_anon;
+-		unsigned long active_file, inactive_file;
+-		unsigned long unevictable;
+-
+-		inactive_anon = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_INACTIVE_ANON);
+-		active_anon = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_ACTIVE_ANON);
+-		inactive_file = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_INACTIVE_FILE);
+-		active_file = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_ACTIVE_FILE);
+-		unevictable = mem_cgroup_get_all_zonestat(mem_cont,
+-							LRU_UNEVICTABLE);
+-
+-		cb->fill(cb, "active_anon", (active_anon) * PAGE_SIZE);
+-		cb->fill(cb, "inactive_anon", (inactive_anon) * PAGE_SIZE);
+-		cb->fill(cb, "active_file", (active_file) * PAGE_SIZE);
+-		cb->fill(cb, "inactive_file", (inactive_file) * PAGE_SIZE);
+-		cb->fill(cb, "unevictable", unevictable * PAGE_SIZE);
++	for (i = 0; i < NR_MCS_STAT; i++)
++		cb->fill(cb, memcg_stat_strings[i].local_name, mystat.stat[i]);
+ 
+-	}
++	/* Hierarchical information */
+ 	{
+ 		unsigned long long limit, memsw_limit;
+ 		memcg_get_hierarchical_limit(mem_cont, &limit, &memsw_limit);
+@@ -1899,6 +1970,12 @@ static int mem_control_stat_show(struct 
+ 			cb->fill(cb, "hierarchical_memsw_limit", memsw_limit);
+ 	}
+ 
++	memset(&mystat, 0, sizeof(mystat));
++	mem_cgroup_get_total_stat(mem_cont, &mystat);
++	for (i = 0; i < NR_MCS_STAT; i++)
++		cb->fill(cb, memcg_stat_strings[i].total_name, mystat.stat[i]);
++
++
+ #ifdef CONFIG_DEBUG_VM
+ 	cb->fill(cb, "inactive_ratio", calc_inactive_ratio(mem_cont, NULL));
+ 
+
