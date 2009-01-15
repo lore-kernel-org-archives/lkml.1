@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbZAOIJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbZAOINT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762710AbZAOIJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757116AbZAOIJ3
+	id S1762136AbZAOINT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZAOINI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:09:29 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:64747 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756397AbZAOIJ2 (ORCPT
+	Thu, 15 Jan 2009 03:13:08 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:57900 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757295AbZAOINH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:09:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GgGcyujtz0h8AXyRhRpCRpRWYMJWbbVAIh8AShdiBYCxiFxSZd51n4xc0BYuMadve9
-         rnxOBuIBk8NOguDcS5luXXHWZZ2Vbcl4mIDFKccmlswxbPrD9Y6jYSVvfP7ogP1stDrp
-         hKsIx1SxQWVWbHZSYoCmeHjpoukGjegJXE7a8=
-Date: Thu, 15 Jan 2009 08:09:21 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Cc: Chris Caputo <ccaputo@alt.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Denys Fedoryschenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090115080921.GC4190@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <496EE1D4.6010709@bigtelecom.ru>
+	Thu, 15 Jan 2009 03:13:07 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Thu, 15 Jan 2009 13:35:27 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <1231444992.23462.138.camel@nimitz> <200901091637.24658.chandru@in.ibm.com>
+In-Reply-To: <200901091637.24658.chandru@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <496EE1D4.6010709@bigtelecom.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901151335.27649.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 10:12:20AM +0300, Badalian Vyacheslav wrote:
-...
-> Hello all.
-> I also can say this, maybe its help:
-> At old kernels my servers do 100% soft interupt if traffic more 600mbs.
-> Without your patches at new kernel i get crash only at heavy network
-> load PCs (more then 400mbs-500mbs). Servers that get 100-200 mbs not
-> crashed long time.
-> I remember that i not test patch #4, because you sat what its only
-> another way to temporary fix and mainline problem in hrtimer , but i try
-> turn on HiRes and Dynamic Tics in kernel - its not help for me.
+On Friday 09 January 2009 16:37:24 Chandru wrote:
+> On Friday 09 January 2009 01:33:12 Dave Hansen wrote:
+> > Now I'm even more confused.  Could you please send a fully changelogged
+> > patch that describes the problem, and how this fixes it?  This just
+> > seems like an off-by-one error, which isn't what I thought we had before
+> > at all.
+> > 
+> > I'm also horribly confused why PFN_UP is needed here.  Is 'physbase' not
+> > page aligned?  reserve_size looks like it *has* to be.  'end_pfn' is
+> > always (as far as I have ever seen in the kernel) the pfn of the page
+> > after the area we are interested in and we treat it as such in that
+> > function.  In the case of an unaligned physbase, that wouldn't be true.
+> > 
+> > Think of the case where we have a 1-byte reservation.  start_pfn will
+> > equal end_pfn and we won't go into that while loop at *all* and won't
+> > reserve anything.
+> > 
+> > Does 'end_pfn' need fixing?
+> > 
+> 
+> Attached is the console log with debug command line parameters enabled and 
+> with couple of more debug statements added to the code.  Please take a look at it. 
+> 
+> thanks,
+> Chandru
+> 
 
-Slavon, I'm very glad of your testing and reporting, and I never
-expected you test anything on production, when something else works
-for you. On the other hand, what works for you could be unacceptable
-for other users, who don't have such crashes, and prefer better
-exactness. So it's hard to recommend such patches if there is not
-enough people interested in them.
+Hello Dave, From the debug console output, if there is anything you can add here,
+pls let me know.
 
-Best regards,
-Jarek P.
+thanks 
