@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764570AbZAOLPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764643AbZAOLPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764570AbZAOLPK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbZAOLOz
+	id S1764643AbZAOLPt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbZAOLPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:14:55 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:1292 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756719AbZAOLOy (ORCPT
+	Thu, 15 Jan 2009 06:15:41 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:41483 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757911AbZAOLPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:14:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=PJ9MElt0cmNBgc9i0x7ME5vPnAeVp3zyiLZe4wDItHr9uYuErXlRCETDXJZpVu+QK
-	1dTZyr0cWfESV4tGIEDDg==
-Date: Thu, 15 Jan 2009 03:13:20 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: linux-kernel@vger.kernel.org, Bryan Donlan <bdonlan@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Matthias Andree <matthias.andree@gmx.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [take4] OOM documentation update [was: Linux killed Kenny,
- bastard!]
-In-Reply-To: <20090115085703.GD29586@ioremap.net>
-Message-ID: <alpine.DEB.2.00.0901150312580.22802@chino.kir.corp.google.com>
-References: <661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com> <20090113152106.GA1134@ioremap.net> <alpine.DEB.2.00.0901131140340.8522@chino.kir.corp.google.com> <20090113213316.GB27227@ioremap.net> <alpine.DEB.2.00.0901131336040.17683@chino.kir.corp.google.com>
- <20090114161225.GA9584@ioremap.net> <20090114170606.GB12102@ioremap.net> <3e8340490901141353u3990148ft1b20220a8317f7dc@mail.gmail.com> <20090114221420.GB6039@ioremap.net> <alpine.DEB.2.00.0901141655390.22699@chino.kir.corp.google.com>
- <20090115085703.GD29586@ioremap.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 15 Jan 2009 06:15:40 -0500
+Date: Thu, 15 Jan 2009 22:15:37 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Mihai =?utf-8?B?RG9uyJt1?= <mihai.dontu@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: b44 - swapper: page allocation failure
+Message-ID: <20090115111537.GA994@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.28.16.146
-X-GMailtapped: rientjes
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200901142034.55090.mihai.dontu@gmail.com>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009, Evgeniy Polyakov wrote:
-
-> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+Mihai Donțu <mihai.dontu@gmail.com> wrote:
+> Hi,
 > 
+> A friend of mine just booted 2.6.28 and when someone else tried to send 
+> something to him over ssh (scp), the transfer failed and the following 
+> appeared in dmesg:
 
-Acked-by: David Rientjes <rientjes@google.com>
+You missed the all important order line before the stack trace.
+If it's order 0, then you're just out of memory, if it's greater
+than order 0, then either you're using jumbo frames or b44 is
+broken.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
