@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbZAOWSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934971AbZAOWTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934183AbZAOWSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765292AbZAOWCc
+	id S934971AbZAOWTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763797AbZAOWCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:32 -0500
-Received: from kroah.org ([198.145.64.141]:38384 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:33 -0500
+Received: from kroah.org ([198.145.64.141]:38398 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765664AbZAOWCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:20 -0500
-Date: Thu, 15 Jan 2009 13:59:55 -0800
+	id S933687AbZAOWCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:21 -0500
+Date: Thu, 15 Jan 2009 13:59:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 30/85] [PATCH 10/44] [CVE-2009-0029] System call wrapper
-	special cases
-Message-ID: <20090115215955.GE17227@kroah.com>
+Subject: [patch 31/85] [PATCH 11/44] [CVE-2009-0029] System call wrappers
+	part 01
+Message-ID: <20090115215957.GF17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0010--CVE-2009-0029-System-call-wrapper-special-cases.patch"
+Content-Disposition: inline; filename="0011--CVE-2009-0029-System-call-wrappers-part-01.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,292 +42,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 6673e0c3fbeaed2cd08e2fd4a4aa97382d6fedb0 upstream.
-
-System calls with an unsigned long long argument can't be converted with
-the standard wrappers since that would include a cast to long, which in
-turn means that we would lose the upper 32 bit on 32 bit architectures.
-Also semctl can't use the standard wrapper since it has a 'union'
-parameter.
-
-So we handle them as special case and add some extra wrappers instead.
+commit 58fd3aa288939d3097fa04505b25c2f5e6e144d1 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/dcookies.c   |   10 ++++++++--
- fs/open.c       |   27 ++++++++++++++++++++++++---
- fs/read_write.c |   24 ++++++++++++++++++++----
- fs/sync.c       |   26 ++++++++++++++++++++++----
- ipc/sem.c       |    9 ++++++++-
- mm/fadvise.c    |   18 ++++++++++++++++--
- mm/filemap.c    |    9 ++++++++-
- 7 files changed, 106 insertions(+), 17 deletions(-)
+ kernel/hrtimer.c |    4 ++--
+ kernel/sys.c     |    2 +-
+ kernel/time.c    |   14 +++++++-------
+ kernel/timer.c   |    6 +++---
+ 4 files changed, 13 insertions(+), 13 deletions(-)
 
---- a/fs/dcookies.c
-+++ b/fs/dcookies.c
-@@ -140,7 +140,7 @@ out:
- /* And here is where the userspace process can look up the cookie value
-  * to retrieve the path.
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1560,8 +1560,8 @@ out:
+ 	return ret;
+ }
+ 
+-asmlinkage long
+-sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
++SYSCALL_DEFINE2(nanosleep, struct timespec __user *, rqtp,
++		struct timespec __user *, rmtp)
+ {
+ 	struct timespec tu;
+ 
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -853,7 +853,7 @@ asmlinkage long sys_setfsgid(gid_t gid)
+ 	return old_fsgid;
+ }
+ 
+-asmlinkage long sys_times(struct tms __user * tbuf)
++SYSCALL_DEFINE1(times, struct tms __user *, tbuf)
+ {
+ 	/*
+ 	 *	In the SMP world we might just be unlucky and have one of
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -59,7 +59,7 @@ EXPORT_SYMBOL(sys_tz);
+  * why not move it into the appropriate arch directory (for those
+  * architectures that need it).
   */
--asmlinkage long sys_lookup_dcookie(u64 cookie64, char __user * buf, size_t len)
-+SYSCALL_DEFINE(lookup_dcookie)(u64 cookie64, char __user * buf, size_t len)
+-asmlinkage long sys_time(time_t __user * tloc)
++SYSCALL_DEFINE1(time, time_t __user *, tloc)
  {
- 	unsigned long cookie = (unsigned long)cookie64;
- 	int err = -EINVAL;
-@@ -193,7 +193,13 @@ out:
- 	mutex_unlock(&dcookie_mutex);
- 	return err;
- }
--
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_lookup_dcookie(u64 cookie64, long buf, long len)
-+{
-+	return SYSC_lookup_dcookie(cookie64, (char __user *) buf, (size_t) len);
-+}
-+SYSCALL_ALIAS(sys_lookup_dcookie, SyS_lookup_dcookie);
-+#endif
+ 	time_t i = get_seconds();
  
- static int dcookie_init(void)
- {
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -346,21 +346,35 @@ asmlinkage long sys_ftruncate(unsigned i
- 
- /* LFS versions of truncate are only needed on 32 bit machines */
- #if BITS_PER_LONG == 32
--asmlinkage long sys_truncate64(const char __user * path, loff_t length)
-+SYSCALL_DEFINE(truncate64)(const char __user * path, loff_t length)
- {
- 	return do_sys_truncate(path, length);
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_truncate64(long path, loff_t length)
-+{
-+	return SYSC_truncate64((const char __user *) path, length);
-+}
-+SYSCALL_ALIAS(sys_truncate64, SyS_truncate64);
-+#endif
- 
--asmlinkage long sys_ftruncate64(unsigned int fd, loff_t length)
-+SYSCALL_DEFINE(ftruncate64)(unsigned int fd, loff_t length)
- {
- 	long ret = do_sys_ftruncate(fd, length, 0);
- 	/* avoid REGPARM breakage on x86: */
- 	asmlinkage_protect(2, ret, fd, length);
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_ftruncate64(long fd, loff_t length)
-+{
-+	return SYSC_ftruncate64((unsigned int) fd, length);
-+}
-+SYSCALL_ALIAS(sys_ftruncate64, SyS_ftruncate64);
- #endif
-+#endif /* BITS_PER_LONG == 32 */
- 
--asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-+SYSCALL_DEFINE(fallocate)(int fd, int mode, loff_t offset, loff_t len)
- {
- 	struct file *file;
- 	struct inode *inode;
-@@ -417,6 +431,13 @@ out_fput:
- out:
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_fallocate(long fd, long mode, loff_t offset, loff_t len)
-+{
-+	return SYSC_fallocate((int)fd, (int)mode, offset, len);
-+}
-+SYSCALL_ALIAS(sys_fallocate, SyS_fallocate);
-+#endif
- 
- /*
-  * access() needs to use the real uid/gid, not the effective uid/gid.
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -368,8 +368,8 @@ asmlinkage long sys_write(unsigned int f
- 	return ret;
- }
- 
--asmlinkage long sys_pread64(unsigned int fd, char __user *buf,
--			     size_t count, loff_t pos)
-+SYSCALL_DEFINE(pread64)(unsigned int fd, char __user *buf,
-+			size_t count, loff_t pos)
- {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -388,9 +388,17 @@ asmlinkage long sys_pread64(unsigned int
- 
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_pread64(long fd, long buf, long count, loff_t pos)
-+{
-+	return SYSC_pread64((unsigned int) fd, (char __user *) buf,
-+			    (size_t) count, pos);
-+}
-+SYSCALL_ALIAS(sys_pread64, SyS_pread64);
-+#endif
- 
--asmlinkage long sys_pwrite64(unsigned int fd, const char __user *buf,
--			      size_t count, loff_t pos)
-+SYSCALL_DEFINE(pwrite64)(unsigned int fd, const char __user *buf,
-+			 size_t count, loff_t pos)
- {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -409,6 +417,14 @@ asmlinkage long sys_pwrite64(unsigned in
- 
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_pwrite64(long fd, long buf, long count, loff_t pos)
-+{
-+	return SYSC_pwrite64((unsigned int) fd, (const char __user *) buf,
-+			     (size_t) count, pos);
-+}
-+SYSCALL_ALIAS(sys_pwrite64, SyS_pwrite64);
-+#endif
- 
- /*
-  * Reduce an iovec's length in-place.  Return the resulting number of segments
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -175,8 +175,8 @@ asmlinkage long sys_fdatasync(unsigned i
-  * already-instantiated disk blocks, there are no guarantees here that the data
-  * will be available after a crash.
+@@ -77,7 +77,7 @@ asmlinkage long sys_time(time_t __user *
+  * architectures that need it).
   */
--asmlinkage long sys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
--					unsigned int flags)
-+SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
-+				unsigned int flags)
+ 
+-asmlinkage long sys_stime(time_t __user *tptr)
++SYSCALL_DEFINE1(stime, time_t __user *, tptr)
  {
- 	int ret;
- 	struct file *file;
-@@ -236,14 +236,32 @@ out_put:
- out:
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_sync_file_range(long fd, loff_t offset, loff_t nbytes,
-+				    long flags)
-+{
-+	return SYSC_sync_file_range((int) fd, offset, nbytes,
-+				    (unsigned int) flags);
-+}
-+SYSCALL_ALIAS(sys_sync_file_range, SyS_sync_file_range);
-+#endif
+ 	struct timespec tv;
+ 	int err;
+@@ -97,8 +97,8 @@ asmlinkage long sys_stime(time_t __user 
  
- /* It would be nice if people remember that not all the world's an i386
-    when they introduce new system calls */
--asmlinkage long sys_sync_file_range2(int fd, unsigned int flags,
--				     loff_t offset, loff_t nbytes)
-+SYSCALL_DEFINE(sync_file_range2)(int fd, unsigned int flags,
-+				 loff_t offset, loff_t nbytes)
+ #endif /* __ARCH_WANT_SYS_TIME */
+ 
+-asmlinkage long sys_gettimeofday(struct timeval __user *tv,
+-				 struct timezone __user *tz)
++SYSCALL_DEFINE2(gettimeofday, struct timeval __user *, tv,
++		struct timezone __user *, tz)
  {
- 	return sys_sync_file_range(fd, offset, nbytes, flags);
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_sync_file_range2(long fd, long flags,
-+				     loff_t offset, loff_t nbytes)
-+{
-+	return SYSC_sync_file_range2((int) fd, (unsigned int) flags,
-+				     offset, nbytes);
-+}
-+SYSCALL_ALIAS(sys_sync_file_range2, SyS_sync_file_range2);
-+#endif
- 
- /*
-  * `endbyte' is inclusive
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -887,7 +887,7 @@ out_up:
- 	return err;
- }
- 
--asmlinkage long sys_semctl (int semid, int semnum, int cmd, union semun arg)
-+SYSCALL_DEFINE(semctl)(int semid, int semnum, int cmd, union semun arg)
- {
- 	int err = -EINVAL;
- 	int version;
-@@ -923,6 +923,13 @@ asmlinkage long sys_semctl (int semid, i
- 		return -EINVAL;
- 	}
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_semctl(int semid, int semnum, int cmd, union semun arg)
-+{
-+	return SYSC_semctl((int) semid, (int) semnum, (int) cmd, arg);
-+}
-+SYSCALL_ALIAS(sys_semctl, SyS_semctl);
-+#endif
- 
- /* If the task doesn't already have a undo_list, then allocate one
-  * here.  We guarantee there is only one thread using this undo list,
---- a/mm/fadvise.c
-+++ b/mm/fadvise.c
-@@ -24,7 +24,7 @@
-  * POSIX_FADV_WILLNEED could set PG_Referenced, and POSIX_FADV_NOREUSE could
-  * deactivate the pages and clear PG_Referenced.
-  */
--asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
-+SYSCALL_DEFINE(fadvise64_64)(int fd, loff_t offset, loff_t len, int advice)
- {
- 	struct file *file = fget(fd);
- 	struct address_space *mapping;
-@@ -126,12 +126,26 @@ out:
- 	fput(file);
- 	return ret;
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_fadvise64_64(long fd, loff_t offset, loff_t len, long advice)
-+{
-+	return SYSC_fadvise64_64((int) fd, offset, len, (int) advice);
-+}
-+SYSCALL_ALIAS(sys_fadvise64_64, SyS_fadvise64_64);
-+#endif
- 
- #ifdef __ARCH_WANT_SYS_FADVISE64
- 
--asmlinkage long sys_fadvise64(int fd, loff_t offset, size_t len, int advice)
-+SYSCALL_DEFINE(fadvise64)(int fd, loff_t offset, size_t len, int advice)
- {
- 	return sys_fadvise64_64(fd, offset, len, advice);
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_fadvise64(long fd, loff_t offset, long len, long advice)
-+{
-+	return SYSC_fadvise64((int) fd, offset, (size_t)len, (int)advice);
-+}
-+SYSCALL_ALIAS(sys_fadvise64, SyS_fadvise64);
-+#endif
- 
- #endif
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1353,7 +1353,7 @@ do_readahead(struct address_space *mappi
+ 	if (likely(tv != NULL)) {
+ 		struct timeval ktv;
+@@ -182,8 +182,8 @@ int do_sys_settimeofday(struct timespec 
  	return 0;
  }
  
--asmlinkage long sys_readahead(int fd, loff_t offset, size_t count)
-+SYSCALL_DEFINE(readahead)(int fd, loff_t offset, size_t count)
+-asmlinkage long sys_settimeofday(struct timeval __user *tv,
+-				struct timezone __user *tz)
++SYSCALL_DEFINE2(settimeofday, struct timeval __user *, tv,
++		struct timezone __user *, tz)
  {
- 	ssize_t ret;
- 	struct file *file;
-@@ -1372,6 +1372,13 @@ asmlinkage long sys_readahead(int fd, lo
- 	}
- 	return ret;
+ 	struct timeval user_tv;
+ 	struct timespec	new_ts;
+@@ -203,7 +203,7 @@ asmlinkage long sys_settimeofday(struct 
+ 	return do_sys_settimeofday(tv ? &new_ts : NULL, tz ? &new_tz : NULL);
  }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_readahead(long fd, loff_t offset, long count)
-+{
-+	return SYSC_readahead((int) fd, offset, (size_t) count);
-+}
-+SYSCALL_ALIAS(sys_readahead, SyS_readahead);
-+#endif
  
- #ifdef CONFIG_MMU
- /**
+-asmlinkage long sys_adjtimex(struct timex __user *txc_p)
++SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
+ {
+ 	struct timex txc;		/* Local copy of parameter */
+ 	int ret;
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -1074,7 +1074,7 @@ void do_timer(unsigned long ticks)
+  * For backwards compatibility?  This can be done in libc so Alpha
+  * and all newer ports shouldn't need it.
+  */
+-asmlinkage long sys_alarm(unsigned int seconds)
++SYSCALL_DEFINE1(alarm, unsigned int, seconds)
+ {
+ 	return alarm_setitimer(seconds);
+ }
+@@ -1097,7 +1097,7 @@ asmlinkage long sys_alarm(unsigned int s
+  *
+  * This is SMP safe as current->tgid does not change.
+  */
+-asmlinkage long sys_getpid(void)
++SYSCALL_DEFINE0(getpid)
+ {
+ 	return task_tgid_vnr(current);
+ }
+@@ -1253,7 +1253,7 @@ signed long __sched schedule_timeout_uni
+ EXPORT_SYMBOL(schedule_timeout_uninterruptible);
+ 
+ /* Thread ID - the internal kernel "pid" */
+-asmlinkage long sys_gettid(void)
++SYSCALL_DEFINE0(gettid)
+ {
+ 	return task_pid_vnr(current);
+ }
 
