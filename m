@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbZAOUa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZAOUba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932898AbZAOUa5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932150AbZAOUBe
+	id S1754638AbZAOUba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbZAOUBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:34 -0500
-Received: from kroah.org ([198.145.64.141]:49263 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:35 -0500
+Received: from kroah.org ([198.145.64.141]:49246 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765931AbZAOUBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:01:11 -0500
-Date: Thu, 15 Jan 2009 11:58:59 -0800
+	id S932114AbZAOUBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:01:12 -0500
+Date: Thu, 15 Jan 2009 11:59:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 47/94] [PATCH 16/44] [CVE-2009-0029] System call wrappers
-	part 06
-Message-ID: <20090115195859.GU14419@kroah.com>
+Subject: [patch 48/94] [PATCH 17/44] [CVE-2009-0029] System call wrappers
+	part 07
+Message-ID: <20090115195901.GV14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0016--CVE-2009-0029-System-call-wrappers-part-06.patch"
+Content-Disposition: inline; filename="0017--CVE-2009-0029-System-call-wrappers-part-07.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,110 +42,127 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 5add95d4f7cf08f6f62510f19576992912387501 upstream.
+commit 754fe8d297bfae7b77f7ce866e2fb0c5fb186506 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/sched.c |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ kernel/exit.c   |    8 ++++----
+ kernel/kexec.c  |    5 ++---
+ kernel/sched.c  |    4 ++--
+ kernel/signal.c |    2 +-
+ kernel/sys.c    |    7 ++++---
+ net/socket.c    |    2 +-
+ 6 files changed, 14 insertions(+), 14 deletions(-)
 
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1143,7 +1143,7 @@ NORET_TYPE void complete_and_exit(struct
+ 
+ EXPORT_SYMBOL(complete_and_exit);
+ 
+-asmlinkage long sys_exit(int error_code)
++SYSCALL_DEFINE1(exit, int, error_code)
+ {
+ 	do_exit((error_code&0xff)<<8);
+ }
+@@ -1184,7 +1184,7 @@ do_group_exit(int exit_code)
+  * wait4()-ing process will get the correct exit code - even if this
+  * thread is not the thread group leader.
+  */
+-asmlinkage long sys_exit_group(int error_code)
++SYSCALL_DEFINE1(exit_group, int, error_code)
+ {
+ 	do_group_exit((error_code & 0xff) << 8);
+ 	/* NOTREACHED */
+@@ -1796,8 +1796,8 @@ asmlinkage long sys_waitid(int which, pi
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_wait4(pid_t upid, int __user *stat_addr,
+-			  int options, struct rusage __user *ru)
++SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
++		int, options, struct rusage __user *, ru)
+ {
+ 	struct pid *pid = NULL;
+ 	enum pid_type type;
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -934,9 +934,8 @@ struct kimage *kexec_crash_image;
+ 
+ static DEFINE_MUTEX(kexec_mutex);
+ 
+-asmlinkage long sys_kexec_load(unsigned long entry, unsigned long nr_segments,
+-				struct kexec_segment __user *segments,
+-				unsigned long flags)
++SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
++		struct kexec_segment __user *, segments, unsigned long, flags)
+ {
+ 	struct kimage **dest_image, *image;
+ 	int result;
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -5025,7 +5025,7 @@ int can_nice(const struct task_struct *p
-  * sys_setpriority is a more generic, but much slower function that
-  * does similar things.
+@@ -5735,8 +5735,8 @@ SYSCALL_DEFINE1(sched_get_priority_min, 
+  * this syscall writes the default timeslice value of a given process
+  * into the user-space timespec buffer. A value of '0' means infinity.
   */
--asmlinkage long sys_nice(int increment)
-+SYSCALL_DEFINE1(nice, int, increment)
+-asmlinkage
+-long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
++SYSCALL_DEFINE4(sched_rr_get_interval, pid_t, pid,
++		struct timespec __user *, interval)
  {
- 	long nice, retval;
+ 	struct task_struct *p;
+ 	unsigned int time_slice;
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1940,7 +1940,7 @@ EXPORT_SYMBOL(unblock_all_signals);
+  * System call entry points.
+  */
  
-@@ -5317,8 +5317,8 @@ do_sched_setscheduler(pid_t pid, int pol
-  * @policy: new policy.
-  * @param: structure containing the new RT priority.
-  */
--asmlinkage long
--sys_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
-+SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy,
-+		struct sched_param __user *, param)
+-asmlinkage long sys_restart_syscall(void)
++SYSCALL_DEFINE0(restart_syscall)
  {
- 	/* negative values for policy are not valid */
- 	if (policy < 0)
-@@ -5332,7 +5332,7 @@ sys_sched_setscheduler(pid_t pid, int po
-  * @pid: the pid in question.
-  * @param: structure containing the new RT priority.
-  */
--asmlinkage long sys_sched_setparam(pid_t pid, struct sched_param __user *param)
-+SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
- {
- 	return do_sched_setscheduler(pid, -1, param);
+ 	struct restart_block *restart = &current_thread_info()->restart_block;
+ 	return restart->fn(restart);
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -137,7 +137,7 @@ out:
+ 	return error;
  }
-@@ -5341,7 +5341,7 @@ asmlinkage long sys_sched_setparam(pid_t
-  * sys_sched_getscheduler - get the policy (scheduling class) of a thread
-  * @pid: the pid in question.
-  */
--asmlinkage long sys_sched_getscheduler(pid_t pid)
-+SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
- {
- 	struct task_struct *p;
- 	int retval;
-@@ -5366,7 +5366,7 @@ asmlinkage long sys_sched_getscheduler(p
-  * @pid: the pid in question.
-  * @param: structure containing the RT priority.
-  */
--asmlinkage long sys_sched_getparam(pid_t pid, struct sched_param __user *param)
-+SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
- {
- 	struct sched_param lp;
- 	struct task_struct *p;
-@@ -5474,8 +5474,8 @@ static int get_user_cpu_mask(unsigned lo
-  * @len: length in bytes of the bitmask pointed to by user_mask_ptr
-  * @user_mask_ptr: user-space pointer to the new cpu mask
-  */
--asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
--				      unsigned long __user *user_mask_ptr)
-+SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
-+		unsigned long __user *, user_mask_ptr)
- {
- 	cpumask_t new_mask;
- 	int retval;
-@@ -5519,8 +5519,8 @@ out_unlock:
-  * @len: length in bytes of the bitmask pointed to by user_mask_ptr
-  * @user_mask_ptr: user-space pointer to hold the current cpu mask
-  */
--asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len,
--				      unsigned long __user *user_mask_ptr)
-+SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
-+		unsigned long __user *, user_mask_ptr)
- {
- 	int ret;
- 	cpumask_t mask;
-@@ -5544,7 +5544,7 @@ asmlinkage long sys_sched_getaffinity(pi
-  * This function yields the current CPU to other tasks. If there are no
-  * other threads running on this CPU then this function will return.
-  */
--asmlinkage long sys_sched_yield(void)
-+SYSCALL_DEFINE0(sched_yield)
- {
- 	struct rq *rq = this_rq_lock();
  
-@@ -5685,7 +5685,7 @@ long __sched io_schedule_timeout(long ti
-  * this syscall returns the maximum rt_priority that can be used
-  * by a given scheduling class.
-  */
--asmlinkage long sys_sched_get_priority_max(int policy)
-+SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
+-asmlinkage long sys_setpriority(int which, int who, int niceval)
++SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
  {
- 	int ret = -EINVAL;
- 
-@@ -5710,7 +5710,7 @@ asmlinkage long sys_sched_get_priority_m
-  * this syscall returns the minimum rt_priority that can be used
-  * by a given scheduling class.
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+@@ -201,7 +201,7 @@ out:
+  * has been offset by 20 (ie it returns 40..1 instead of -20..19)
+  * to stay compatible.
   */
--asmlinkage long sys_sched_get_priority_min(int policy)
-+SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
+-asmlinkage long sys_getpriority(int which, int who)
++SYSCALL_DEFINE2(getpriority, int, which, int, who)
  {
- 	int ret = -EINVAL;
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+@@ -347,7 +347,8 @@ EXPORT_SYMBOL_GPL(kernel_power_off);
+  *
+  * reboot doesn't sync: do that yourself before calling this.
+  */
+-asmlinkage long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user * arg)
++SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
++		void __user *, arg)
+ {
+ 	char buffer[256];
  
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1797,7 +1797,7 @@ out_put:
+  *	Shutdown a socket.
+  */
+ 
+-asmlinkage long sys_shutdown(int fd, int how)
++SYSCALL_DEFINE2(shutdown, int, fd, int, how)
+ {
+ 	int err, fput_needed;
+ 	struct socket *sock;
 
