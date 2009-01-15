@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbZAOArB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759008AbZAOAu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761721AbZAOArB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 19:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbZAOAqu
+	id S1759008AbZAOAu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 19:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZAOAur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 19:46:50 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33313 "EHLO mx2.suse.de"
+	Wed, 14 Jan 2009 19:50:47 -0500
+Received: from mx1.suse.de ([195.135.220.2]:42977 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758889AbZAOAqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 19:46:48 -0500
-Date: Thu, 15 Jan 2009 01:46:45 +0100
+	id S1753544AbZAOAup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 19:50:45 -0500
+Date: Thu, 15 Jan 2009 01:50:42 +0100
 From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
@@ -24,73 +25,55 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Morreale <pmorreale@novell.com>,
        Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH -v11][RFC] mutex: implement adaptive spinning
-Message-ID: <20090115004645.GB32044@wotan.suse.de>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114171800.GA18621@wotan.suse.de> <1231953757.14825.33.camel@laptop>
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [PATCH -v8][RFC] mutex: implement adaptive spinning
+Message-ID: <20090115005042.GC32044@wotan.suse.de>
+References: <1231774622.4371.96.camel@laptop> <496B6C23.8000808@redhat.com> <1231780388.4371.185.camel@laptop> <496B7EBC.6020208@redhat.com> <1231951599.14825.18.camel@laptop> <20090114170445.GA18964@wotan.suse.de> <496E1F80.20009@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231953757.14825.33.camel@laptop>
+In-Reply-To: <496E1F80.20009@redhat.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 06:22:36PM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-01-14 at 18:18 +0100, Nick Piggin wrote:
+On Wed, Jan 14, 2009 at 07:23:12PM +0200, Avi Kivity wrote:
+> Nick Piggin wrote:
+> >>(no they're not, Nick's ticket locks still spin on a shared cacheline
+> >>IIRC -- the MCS locks mentioned could fix this)
+> >>    
+> >
+> >It reminds me. I wrote a basic variation of MCS spinlocks a while back. And
+> >converted dcache lock to use it, which showed large dbench improvements on
+> >a big machine (of course for different reasons than the dbench improvements
+> >in this threaed).
+> >
+> >http://lkml.org/lkml/2008/8/28/24
+> >
+> >Each "lock" object is sane in size because given set of spin-local queues 
+> >may
+> >only be used once per lock stack. But any spinlocks within a mutex 
+> >acquisition
+> >will always be at the bottom of such a stack anyway, by definition.
+> >
+> >If you can use any code or concept for your code, that would be great.
+> >  
 > 
-> > > @@ -173,21 +237,21 @@ __mutex_lock_common(struct mutex *lock, 
-> > >  			spin_unlock_mutex(&lock->wait_lock, flags);
-> > >  
-> > >  			debug_mutex_free_waiter(&waiter);
-> > > +			preempt_enable();
-> > >  			return -EINTR;
-> > >  		}
-> > >  		__set_task_state(task, state);
-> > >  
-> > >  		/* didnt get the lock, go to sleep: */
-> > >  		spin_unlock_mutex(&lock->wait_lock, flags);
-> > > -		schedule();
-> > > +		__schedule();
-> > 
-> > Why does this need to do a preempt-disabled schedule? After we schedule
-> > away, the next task can do arbitrary things or reschedule itself, so if
-> > we have not anticipated such a condition here, then I can't see what
-> > __schedule protects. At least a comment is in order?
+> Does it make sense to replace 'nest' with a per-cpu counter that's 
+> incremented on each lock?  I guest you'd have to search for the value of 
+> nest on unlock, but it would a very short search (typically length 1, 2 
+> if lock sorting is used to avoid deadlocks).
 > 
-> From:
-> http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/mutex-preempt.patch
+> I think you'd need to make the lock store the actual node pointer, not 
+> the cpu number, since the values of nest would be different on each cpu.
 > 
-> Subject: mutex: preemption fixes
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Wed Jan 14 15:36:26 CET 2009
-> 
-> The problem is that dropping the spinlock right before schedule is a voluntary
-> preemption point and can cause a schedule, right after which we schedule again.
-> 
-> Fix this inefficiency by keeping preemption disabled until we schedule, do this
-> by explicitly disabling preemption and providing a schedule() variant that
-> assumes preemption is already disabled.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> > Pity to add the call overhead to schedule just for this case.
-> 
-> Good point, seeing any way around that?
+> That would allow you to replace spinlocks with mcs_locks wholesale.
 
-Hmm, well this is rather a slow path, I would say. I'd prefer not to
-modify schedule in this way (if we just get scheduled back on after
-being switched away, the subsequent call to schedule is going to be
-cache hot and not do too much work).
-
-preempt_enable_noresched maybe if you really care, would close up the
-window even more. But is it really worthwhile? We'd want to see numbers
-(when in doubt, keep it  simpler).
- 
-
-> >  BTW. __schedule shouldn't need to be asmlinkage?
-> 
-> TBH I've no clue, probably not, Ingo?
+nest could get quite large (and basically is unbounded), though. I
+think there would definitely be variations (NMCS locks is interesting).
+But OTOH I think that for _most_ spinlocks, optimising for spinning
+case is wrong. For some really tricky global spinlocks, yes I think
+MCS is a good idea. But moreso as a stopgap until hopefully more
+scalable algorithms are written.
 
