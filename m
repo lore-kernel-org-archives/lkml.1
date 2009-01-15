@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936483AbZAOXBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936790AbZAOXBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936483AbZAOXBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935657AbZAOWsL
+	id S936790AbZAOXBq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbZAOWtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:48:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44937 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760571AbZAOWsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:48:07 -0500
-Date: Thu, 15 Jan 2009 23:47:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: avoid early crash in disable_local_APIC()
-Message-ID: <20090115224751.GA1625@elte.hu>
-References: <496DE893.76E4.0078.0@novell.com> <20090115110528.GE16253@elte.hu> <20090115224710.GA1327@elte.hu>
+	Thu, 15 Jan 2009 17:49:33 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:7255 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935987AbZAOWta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:49:30 -0500
+X-IronPort-AV: E=Sophos;i="4.37,272,1231113600"; 
+   d="scan'208";a="129133269"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core: Convert '/' to '!' in dev_set_name()
+References: <adaljtjog90.fsf@cisco.com> <adad4evoeu9.fsf@cisco.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 15 Jan 2009 14:49:26 -0800
+In-Reply-To: <adad4evoeu9.fsf@cisco.com> (Roland Dreier's message of "Fri, 09
+	Jan 2009 22:27:42 -0800")
+Message-ID: <adafxjkfamh.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115224710.GA1327@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 15 Jan 2009 22:49:27.0493 (UTC) FILETIME=[85142F50:01C97763]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> hm, this gives a build failure on latest -tip:
-> 
-> arch/x86/kernel/apic.c: In function 'setup_local_APIC':
-> arch/x86/kernel/apic.c:1135: error: implicit declaration of function 'disable_ioapic_setup'
-
-i mean this one caused it:
-
-commit f11826385b63566d98c02d35f592232ee77cd791
-Author: Jan Beulich <jbeulich@novell.com>
-Date:   Wed Jan 14 12:27:35 2009 +0000
-
-    x86: fully honor "nolapic"
-
-	Ingo
+Greg, I still don't see this upstream; I think it should be merged
+expeditiously, since it makes some boxes panic on boot.  (One can
+generally recover by using dev=<major:minor> instead of dev=/dev/foo/bar
+but I still think having tester's boxes panic on boot because of a known
+fixed bug is not ideal)
