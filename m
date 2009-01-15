@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765319AbZAOTV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765154AbZAOT2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765319AbZAOTV6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 14:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765570AbZAOTVc
+	id S1765154AbZAOT2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 14:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbZAOT1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 14:21:32 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:44918 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765461AbZAOTVb (ORCPT
+	Thu, 15 Jan 2009 14:27:54 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:19562 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757155AbZAOT1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 14:21:31 -0500
-Date: Thu, 15 Jan 2009 11:21:29 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       shemminger@vyatta.com, netdev@vger.kernel.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115192129.GB9091@ovro.caltech.edu>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
-	netdev@vger.kernel.org
-References: <20090107195052.GA24981@ovro.caltech.edu> <200901151358.34250.arnd@arndb.de> <20090115165359.GA2230@ovro.caltech.edu> <200901151853.52202.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901151853.52202.arnd@arndb.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 11:21:30 -0800 (PST)
+	Thu, 15 Jan 2009 14:27:53 -0500
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain>
+References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
+	 <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>
+	 <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org>
+	 <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
+	 <20090115180844.GL22472@elte.hu>
+	 <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 14:26:58 -0500
+Message-Id: <1232047618.8269.93.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.496F8E09.0054:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 06:53:51PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
+On Thu, 2009-01-15 at 10:16 -0800, Linus Torvalds wrote:
+> 
+> On Thu, 15 Jan 2009, Ingo Molnar wrote:
 > > 
-> > These are PCI boards, not PCIe. The host computers are all Pentium3-M
-> > systems. I tried enabling MSI on the Freescale boards in the driver, by
-> > calling pci_enable_msi() during probe(), and it failed. 
+> > btw., i think spin-mutexes have a design advantage here: in a lot of code 
+> > areas it's quite difficult to use spinlocks - cannot allocate memory, 
+> > cannot call any code that can sporadically block (but does not _normally_ 
+> > block), etc.
+> > 
+> > With mutexes those atomicity constraints go away - and the performance 
+> > profile should now be quite close to that of spinlocks as well.
 > 
-> That doesn't really mean anything, just that the PCI endpoint doesn't
-> announce its capability to do MSI in the config space, or that it
-> does not have an interrupt line. Since you basically implement the
-> device on the FSL board, you should also be able to define the interrupt
-> capabilities by writing to the config space.
-> 
-> Do you know what kind of chipset the host uses? It should be fairly
-> simple to find out whether or not it can do MSI.
+> Umm. Except if you wrote the code nicely and used spinlocks, you wouldn't 
+> hold the lock over all those unnecessary and complex operations.
 > 
 
-I have another question for you Arnd.
+While this is true, there are examples of places we should expect
+speedups for this today.
 
-What did you use as the host and guest drivers when you ran virtio over
-PCI? Did you use two unmodified instances of virtio_net (one on host,
-one on guest) for networking, or did you write new virtio drivers for
-those? How about for virtio_console (if you ran it at all).
+Concurrent file creation/deletion in a single dir will often find things
+hot in cache and not have to block anywhere (mail spools).
 
-Thanks again,
-Ira
+Concurrent O_DIRECT aio writes to the same file, where i_mutex is
+dropped early on.
+
+pipes should see a huge improvement.
+
+I'll kick off some runs of my three benchmarks on ext3 for comparison.
+If there are things less synthetic people would like to see, please let
+me know.
+
+-chris
+
+
