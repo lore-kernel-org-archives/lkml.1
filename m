@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933720AbZAOUkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933465AbZAOUkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933720AbZAOUkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZAOUCW
+	id S933465AbZAOUkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbZAOUCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:22 -0500
-Received: from kroah.org ([198.145.64.141]:49508 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:23 -0500
+Received: from kroah.org ([198.145.64.141]:49527 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932251AbZAOUCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:17 -0500
-Date: Thu, 15 Jan 2009 11:59:40 -0800
+	id S932256AbZAOUCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:18 -0500
+Date: Thu, 15 Jan 2009 11:59:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 62/94] [PATCH 31/44] [CVE-2009-0029] System call wrappers
-	part 21
-Message-ID: <20090115195940.GJ14419@kroah.com>
+Subject: [patch 63/94] [PATCH 32/44] [CVE-2009-0029] System call wrappers
+	part 22
+Message-ID: <20090115195942.GK14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0031--CVE-2009-0029-System-call-wrappers-part-21.patch"
+Content-Disposition: inline; filename="0032--CVE-2009-0029-System-call-wrappers-part-22.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,123 +42,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 20f37034fb966a1c35894f9fe529fda0b6440101 upstream.
+commit 3e0fa65f8ba4fd24b3dcfaf14d5b15eaab0fdc61 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/readdir.c |    6 ++++--
- net/socket.c |   30 +++++++++++++++---------------
- 2 files changed, 19 insertions(+), 17 deletions(-)
+ net/socket.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -187,7 +187,8 @@ efault:
- 	return -EFAULT;
- }
- 
--asmlinkage long sys_getdents(unsigned int fd, struct linux_dirent __user * dirent, unsigned int count)
-+SYSCALL_DEFINE3(getdents, unsigned int, fd,
-+		struct linux_dirent __user *, dirent, unsigned int, count)
- {
- 	struct file * file;
- 	struct linux_dirent __user * lastdirent;
-@@ -268,7 +269,8 @@ efault:
- 	return -EFAULT;
- }
- 
--asmlinkage long sys_getdents64(unsigned int fd, struct linux_dirent64 __user * dirent, unsigned int count)
-+SYSCALL_DEFINE3(getdents64, unsigned int, fd,
-+		struct linux_dirent64 __user *, dirent, unsigned int, count)
- {
- 	struct file * file;
- 	struct linux_dirent64 __user * lastdirent;
 --- a/net/socket.c
 +++ b/net/socket.c
-@@ -1364,7 +1364,7 @@ out_fd:
-  *	the protocol layer (having also checked the address is ok).
-  */
- 
--asmlinkage long sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
-+SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
- {
- 	struct socket *sock;
- 	struct sockaddr_storage address;
-@@ -1426,8 +1426,8 @@ asmlinkage long sys_listen(int fd, int b
-  *	clean when we restucture accept also.
-  */
- 
--asmlinkage long sys_accept4(int fd, struct sockaddr __user *upeer_sockaddr,
--			    int __user *upeer_addrlen, int flags)
-+SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
-+		int __user *, upeer_addrlen, int, flags)
- {
- 	struct socket *sock, *newsock;
- 	struct file *newfile;
-@@ -1510,8 +1510,8 @@ out_fd:
- 	goto out_put;
+@@ -1215,7 +1215,7 @@ int sock_create_kern(int family, int typ
+ 	return __sock_create(&init_net, family, type, protocol, res, 1);
  }
  
--asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
--			   int __user *upeer_addrlen)
-+SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
-+		int __user *, upeer_addrlen)
+-asmlinkage long sys_socket(int family, int type, int protocol)
++SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
  {
- 	return sys_accept4(fd, upeer_sockaddr, upeer_addrlen, 0);
+ 	int retval;
+ 	struct socket *sock;
+@@ -1256,8 +1256,8 @@ out_release:
+  *	Create a pair of connected sockets.
+  */
+ 
+-asmlinkage long sys_socketpair(int family, int type, int protocol,
+-			       int __user *usockvec)
++SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
++		int __user *, usockvec)
+ {
+ 	struct socket *sock1, *sock2;
+ 	int fd1, fd2, err;
+@@ -1393,7 +1393,7 @@ SYSCALL_DEFINE3(bind, int, fd, struct so
+  *	ready for listening.
+  */
+ 
+-asmlinkage long sys_listen(int fd, int backlog)
++SYSCALL_DEFINE2(listen, int, fd, int, backlog)
+ {
+ 	struct socket *sock;
+ 	int err, fput_needed;
+@@ -1623,9 +1623,9 @@ SYSCALL_DEFINE3(getpeername, int, fd, st
+  *	the protocol.
+  */
+ 
+-asmlinkage long sys_sendto(int fd, void __user *buff, size_t len,
+-			   unsigned flags, struct sockaddr __user *addr,
+-			   int addr_len)
++SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
++		unsigned, flags, struct sockaddr __user *, addr,
++		int, addr_len)
+ {
+ 	struct socket *sock;
+ 	struct sockaddr_storage address;
+@@ -1668,7 +1668,8 @@ out:
+  *	Send a datagram down a socket.
+  */
+ 
+-asmlinkage long sys_send(int fd, void __user *buff, size_t len, unsigned flags)
++SYSCALL_DEFINE4(send, int, fd, void __user *, buff, size_t, len,
++		unsigned, flags)
+ {
+ 	return sys_sendto(fd, buff, len, flags, NULL, 0);
  }
-@@ -1528,8 +1528,8 @@ asmlinkage long sys_accept(int fd, struc
-  *	include the -EINPROGRESS status for such sockets.
+@@ -1679,9 +1680,9 @@ asmlinkage long sys_send(int fd, void __
+  *	sender address from kernel to user space.
   */
  
--asmlinkage long sys_connect(int fd, struct sockaddr __user *uservaddr,
--			    int addrlen)
-+SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr,
-+		int, addrlen)
+-asmlinkage long sys_recvfrom(int fd, void __user *ubuf, size_t size,
+-			     unsigned flags, struct sockaddr __user *addr,
+-			     int __user *addr_len)
++SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
++		unsigned, flags, struct sockaddr __user *, addr,
++		int __user *, addr_len)
  {
  	struct socket *sock;
- 	struct sockaddr_storage address;
-@@ -1560,8 +1560,8 @@ out:
-  *	name to user space.
+ 	struct iovec iov;
+@@ -1823,7 +1824,7 @@ SYSCALL_DEFINE2(shutdown, int, fd, int, 
+  *	BSD sendmsg interface
   */
  
--asmlinkage long sys_getsockname(int fd, struct sockaddr __user *usockaddr,
--				int __user *usockaddr_len)
-+SYSCALL_DEFINE3(getsockname, int, fd, struct sockaddr __user *, usockaddr,
-+		int __user *, usockaddr_len)
+-asmlinkage long sys_sendmsg(int fd, struct msghdr __user *msg, unsigned flags)
++SYSCALL_DEFINE3(sendmsg, int, fd, struct msghdr __user *, msg, unsigned, flags)
  {
- 	struct socket *sock;
- 	struct sockaddr_storage address;
-@@ -1591,8 +1591,8 @@ out:
-  *	name to user space.
+ 	struct compat_msghdr __user *msg_compat =
+ 	    (struct compat_msghdr __user *)msg;
+@@ -1929,8 +1930,8 @@ out:
+  *	BSD recvmsg interface
   */
  
--asmlinkage long sys_getpeername(int fd, struct sockaddr __user *usockaddr,
--				int __user *usockaddr_len)
-+SYSCALL_DEFINE3(getpeername, int, fd, struct sockaddr __user *, usockaddr,
-+		int __user *, usockaddr_len)
+-asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
+-			    unsigned int flags)
++SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
++		unsigned int, flags)
  {
- 	struct socket *sock;
- 	struct sockaddr_storage address;
-@@ -1733,8 +1733,8 @@ asmlinkage long sys_recv(int fd, void __
-  *	to pass the user mode parameter for the protocols to sort out.
+ 	struct compat_msghdr __user *msg_compat =
+ 	    (struct compat_msghdr __user *)msg;
+@@ -2053,7 +2054,7 @@ static const unsigned char nargs[19]={
+  *  it is set by the callees.
   */
  
--asmlinkage long sys_setsockopt(int fd, int level, int optname,
--			       char __user *optval, int optlen)
-+SYSCALL_DEFINE5(setsockopt, int, fd, int, level, int, optname,
-+		char __user *, optval, int, optlen)
+-asmlinkage long sys_socketcall(int call, unsigned long __user *args)
++SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
  {
- 	int err, fput_needed;
- 	struct socket *sock;
-@@ -1767,8 +1767,8 @@ out_put:
-  *	to pass a user mode parameter for the protocols to sort out.
-  */
- 
--asmlinkage long sys_getsockopt(int fd, int level, int optname,
--			       char __user *optval, int __user *optlen)
-+SYSCALL_DEFINE5(getsockopt, int, fd, int, level, int, optname,
-+		char __user *, optval, int __user *, optlen)
- {
- 	int err, fput_needed;
- 	struct socket *sock;
+ 	unsigned long a[6];
+ 	unsigned long a0, a1;
 
