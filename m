@@ -1,116 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761976AbZAOAga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbZAOArB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761976AbZAOAga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 19:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761138AbZAOAgU
+	id S1761721AbZAOArB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 19:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbZAOAqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 19:36:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45027 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757885AbZAOAgT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 19:36:19 -0500
-Date: Wed, 14 Jan 2009 16:35:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>
-Cc: chinang.ma@intel.com, linux-kernel@vger.kernel.org,
-       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
-       andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-Message-Id: <20090114163557.11e097f2.akpm@linux-foundation.org>
-In-Reply-To: <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	<CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 14 Jan 2009 19:46:50 -0500
+Received: from mx2.suse.de ([195.135.220.15]:33313 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758889AbZAOAqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 19:46:48 -0500
+Date: Thu, 15 Jan 2009 01:46:45 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH -v11][RFC] mutex: implement adaptive spinning
+Message-ID: <20090115004645.GB32044@wotan.suse.de>
+References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114171800.GA18621@wotan.suse.de> <1231953757.14825.33.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231953757.14825.33.camel@laptop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 15:44:17 -0700
-"Wilcox, Matthew R" <matthew.r.wilcox@intel.com> wrote:
->
-
-(top-posting repaired.  That @intel.com address is a bad influence ;))
-
-(cc linux-scsi)
-
-> > -----Original Message-----
-> > From: Ma, Chinang
-> > Sent: Tuesday, January 13, 2009 1:11 PM
-> > To: linux-kernel@vger.kernel.org
-> > Cc: Tripathi, Sharad C; arjan@linux.intel.com; Wilcox, Matthew R; Kleen,
-> > Andi; Siddha, Suresh B; Chilukuri, Harita; Styner, Douglas W; Wang, Peter
-> > Xihong; Nueckel, Hubert; Chris Mason
-> > Subject: Mainline kernel OLTP performance update
+On Wed, Jan 14, 2009 at 06:22:36PM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-01-14 at 18:18 +0100, Nick Piggin wrote:
+> 
+> > > @@ -173,21 +237,21 @@ __mutex_lock_common(struct mutex *lock, 
+> > >  			spin_unlock_mutex(&lock->wait_lock, flags);
+> > >  
+> > >  			debug_mutex_free_waiter(&waiter);
+> > > +			preempt_enable();
+> > >  			return -EINTR;
+> > >  		}
+> > >  		__set_task_state(task, state);
+> > >  
+> > >  		/* didnt get the lock, go to sleep: */
+> > >  		spin_unlock_mutex(&lock->wait_lock, flags);
+> > > -		schedule();
+> > > +		__schedule();
 > > 
-> > This is latest 2.6.29-rc1 kernel OLTP performance result. Compare to
-> > 2.6.24.2 the regression is around 3.5%.
-> > 
-> > Linux OLTP Performance summary
-> > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%  iowait%
-> > 2.6.24.2                1.000   21969   43425   76   24     0      0
-> > 2.6.27.2                0.973   30402   43523   74   25     0      1
-> > 2.6.29-rc1              0.965   30331   41970   74   26     0      0
-> > 
-> > Server configurations:
-> > Intel Xeon Quad-core 2.0GHz  2 cpus/8 cores/8 threads
-> > 64GB memory, 3 qle2462 FC HBA, 450 spindles (30 logical units)
->
+> > Why does this need to do a preempt-disabled schedule? After we schedule
+> > away, the next task can do arbitrary things or reschedule itself, so if
+> > we have not anticipated such a condition here, then I can't see what
+> > __schedule protects. At least a comment is in order?
 > 
-> One encouraging thing is that we don't see a significant drop-off between 2.6.28 and 2.6.29-rc1, which I think is the first time we've not seen a big problem with -rc1.
+> From:
+> http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/mutex-preempt.patch
 > 
-> To compare the top 30 functions between 2.6.28 and 2.6.29-rc1:
+> Subject: mutex: preemption fixes
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Wed Jan 14 15:36:26 CET 2009
 > 
-> 1.4257 qla24xx_start_scsi		1.0691 qla24xx_intr_handler
-> 0.8784 kmem_cache_alloc			0.7701 copy_user_generic_string
-> 0.6876 qla24xx_intr_handler		0.7339 qla24xx_wrt_req_reg
-> 0.5834 copy_user_generic_string	0.6458 kmem_cache_alloc
-> 0.4945 scsi_request_fn			0.5794 qla24xx_start_scsi
-> 0.4846 __blockdev_direct_IO		0.5505 unmap_vmas
-> 0.4187 try_to_wake_up			0.4869 __blockdev_direct_IO
-> 0.3518 aio_complete			0.4493 try_to_wake_up
-> 0.3513 __end_that_request_first	0.4291 scsi_request_fn
-> 0.3483 __switch_to			0.4118 clear_page_c
-> 0.3271 memset_c				0.4002 __switch_to
-> 0.2976 qla2x00_process_completed_re	0.3381 ring_buffer_consume
-> 0.2905 __list_add				0.3366 rb_get_reader_page
-> 0.2901 generic_make_request		0.3222 aio_complete
-> 0.2755 lock_timer_base			0.3135 memset_c
-> 0.2741 blk_queue_end_tag		0.2875 __list_add
-> 0.2593 kmem_cache_free			0.2673 task_rq_lock
-> 0.2445 disk_map_sector_rcu		0.2658 __end_that_request_first
-> 0.2370 pick_next_highest_task_rt	0.2615 qla2x00_process_completed_re
-> 0.2323 scsi_device_unbusy		0.2615 lock_timer_base
-> 0.2321 task_rq_lock			0.2456 disk_map_sector_rcu
-> 0.2316 scsi_dispatch_cmd		0.2427 tcp_sendmsg
-> 0.2239 kref_get				0.2413 e1000_xmit_frame
-> 0.2237 dio_bio_complete			0.2398 kmem_cache_free
-> 0.2194 push_rt_task			0.2384 pick_next_highest_task_rt
-> 0.2145 __aio_get_req			0.2225 blk_queue_end_tag
-> 0.2143 kfree				0.2211 sd_prep_fn
-> 0.2138 __mod_timer			0.2167 qla24xx_queuecommand
-> 0.2131 e1000_irq_enable			0.2109 scsi_device_unbusy
-> 0.2091 scsi_softirq_done		0.2095 kref_get
+> The problem is that dropping the spinlock right before schedule is a voluntary
+> preemption point and can cause a schedule, right after which we schedule again.
 > 
-> It looks like a number of functions in the qla2x00 driver were split up, so it's probably best to ignore all the changes in qla* functions.
+> Fix this inefficiency by keeping preemption disabled until we schedule, do this
+> by explicitly disabling preemption and providing a schedule() variant that
+> assumes preemption is already disabled.
 > 
-> unmap_vmas is a new hot function.  It's been around since before git history started, and hasn't changed substantially between 2.6.28 and 2.6.29-rc1, so I suspect we're calling it more often.  I don't know why we'd be doing that.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> clear_page_c is also new to the hot list.  I haven't tried to understand why this might be so.
+> > Pity to add the call overhead to schedule just for this case.
 > 
-> The ring_buffer_consume() and rb_get_reader_page() functions are part of the oprofile code.  This seems to indicate a bug -- they should not be the #12 and #13 hottest functions in the kernel when monitoring a database run!
-> 
-> That seems to be about it for regressions.
-> 
+> Good point, seeing any way around that?
 
-But the interrupt rate went through the roof.
+Hmm, well this is rather a slow path, I would say. I'd prefer not to
+modify schedule in this way (if we just get scheduled back on after
+being switched away, the subsequent call to schedule is going to be
+cache hot and not do too much work).
 
-A 3.5% slowdown in this workload is considered pretty serious, isn't it?
+preempt_enable_noresched maybe if you really care, would close up the
+window even more. But is it really worthwhile? We'd want to see numbers
+(when in doubt, keep it  simpler).
+ 
+
+> >  BTW. __schedule shouldn't need to be asmlinkage?
+> 
+> TBH I've no clue, probably not, Ingo?
+
