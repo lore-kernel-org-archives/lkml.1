@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZAOCN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbZAOCPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbZAOCN6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 21:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZAOCNs
+	id S1757144AbZAOCPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 21:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZAOCPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:13:48 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:30313 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbZAOCNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:13:47 -0500
-Subject: Re: Warning and BUG with btrfs and corrupted image
-From: Chris Mason <chris.mason@oracle.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-In-Reply-To: <20090113144307.GF16333@alice>
-References: <20090113142147.GE16333@alice>
-	 <1231857643.29164.28.camel@think.oraclecorp.com>
-	 <20090113144307.GF16333@alice>
-Content-Type: text/plain
-Date: Wed, 14 Jan 2009 21:13:37 -0500
-Message-Id: <1231985617.8269.68.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 14 Jan 2009 21:15:44 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:57414 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752770AbZAOCPn (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 21:15:43 -0500
+Date: Thu, 15 Jan 2009 13:15:36 +1100
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.29-rc2
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.496E9BD5.01EC:SCFSTAT928724,ss=1,fgs=0
+Message-Id: <20090115021536.BE17759391EC@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-13 at 15:43 +0100, Eric Sesterhenn wrote:
-> * Chris Mason (chris.mason@oracle.com) wrote:
-> > On Tue, 2009-01-13 at 15:21 +0100, Eric Sesterhenn wrote:
-> > > Hi,
-> > > 
-> > > when mounting an intentionally corrupted btrfs filesystem i get the
-> > > following warning and bug message. The image can be found here
-> > > www.cccmz.de/~snakebyte/btrfs.2.img.bck.bz2
-> > 
-> > Thanks for looking at things
-> > 
-> > Aside from catching checksumming errors, we're not quite ready for
-> > fuzzer style attacks.  The code will be hardened for this but it isn't
-> > yet.
-> 
-> Does this mean i should stop trying to break it for now or are you interested
-> in further reports?
+The following changes since commit a6525042bfdfcab128bd91fad264de10fd24a55e:
+  Linus Torvalds (1):
+        Merge branch 'x86-pat-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-For now, you'll be able to break it at will ;)  We'll send out a please
-send us corrupt notice release announcement when we've hardened things.
+are available in the git repository at:
 
--chris
+  git://oss.sgi.com/xfs/xfs for-linus
 
+Christoph Hellwig (4):
+      [XFS] pass XFS_IGET_BULKSTAT to xfs_iget for handle operations
+      [XFS] fix compile of xfs_btree_readahead_lblock on m68k
+      [XFS] truncate readdir offsets to signed 32 bit values
+      [XFS] make xfs_ino_t an unsigned long long
 
+Eric Sandeen (3):
+      [XFS] Remove several unused typedefs.
+      [XFS] Remove macro-to-function indirections in attr code
+      [XFS] Remove macro-to-function indirections in the mask code
+
+Lachlan McIlroy (2):
+      [XFS] Update maintainers
+      Merge git://git.kernel.org/.../torvalds/linux-2.6 into for-linus
+
+Nick Piggin (2):
+      [XFS] remove old vmap cache
+      [XFS] use scalable vmap API
+
+ MAINTAINERS                   |    4 +-
+ fs/xfs/linux-2.6/xfs_aops.h   |    2 -
+ fs/xfs/linux-2.6/xfs_buf.c    |   79 +-------------------------------------
+ fs/xfs/linux-2.6/xfs_export.c |   23 +++++++++--
+ fs/xfs/xfs_acl.h              |    1 -
+ fs/xfs/xfs_ag.h               |    2 +-
+ fs/xfs/xfs_attr_leaf.c        |   72 +++++++++++++++++-----------------
+ fs/xfs/xfs_attr_leaf.h        |   12 ------
+ fs/xfs/xfs_bit.h              |   10 +----
+ fs/xfs/xfs_bmap_btree.c       |   84 ++++++++++++++++++++--------------------
+ fs/xfs/xfs_btree.c            |    4 +-
+ fs/xfs/xfs_dir2_block.c       |    7 ++-
+ fs/xfs/xfs_dir2_leaf.c        |    6 +-
+ fs/xfs/xfs_dir2_sf.c          |   15 ++++---
+ fs/xfs/xfs_types.h            |    4 +-
+ 15 files changed, 122 insertions(+), 203 deletions(-)
