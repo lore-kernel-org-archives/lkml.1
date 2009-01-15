@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbZAOM1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762201AbZAOM2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762902AbZAOM1B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:27:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZAOM0t
+	id S1762201AbZAOM2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZAOM2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:26:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48356 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754324AbZAOM0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:26:48 -0500
-Date: Thu, 15 Jan 2009 13:26:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
-       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       steiner@sgi.com, hugh@veritas.com
-Subject: Re: [patch] add optimized generic percpu accessors
-Message-ID: <20090115122611.GJ22850@elte.hu>
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org> <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org>
+	Thu, 15 Jan 2009 07:28:33 -0500
+Received: from styx.suse.cz ([82.119.242.94]:60766 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755163AbZAOM2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:28:32 -0500
+Date: Thu, 15 Jan 2009 13:28:31 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Kaibin Li <kaibinlee@gmail.com>, trivial@kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] Remove a duplicated option of RCU_CPU_STALL_DETECTOR
+In-Reply-To: <20090113233450.GD6756@linux.vnet.ibm.com>
+Message-ID: <alpine.LNX.1.10.0901151327470.5377@jikos.suse.cz>
+References: <20090113140636.1515e11f@zenwalk.fortinet.com> <alpine.LNX.1.10.0901132346150.5377@jikos.suse.cz> <20090113233450.GD6756@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496F2032.5080502@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Jan 2009, Paul E. McKenney wrote:
 
-* Tejun Heo <tj@kernel.org> wrote:
+> > > There is a duplicated option of "Check for stalled CPUs delaying RCU
+> > > grace periods" in Kernel hacking.
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-> Hello,
-> 
-> Ingo Molnar wrote:
-> > The new ops are a pretty nice and clean solution i think.
+Thanks.
+
+> > > Signed-off-by: Kaibin Li <kaibinlee@gmail.com>
+> > > ---
+> > >  lib/Kconfig.debug |   13 -------------
+> > >  1 files changed, 0 insertions(+), 13 deletions(-)
+> > > 
+> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > > index 4c9ae60..e770e85 100644
+> > > --- a/lib/Kconfig.debug
+> > > +++ b/lib/Kconfig.debug
+> > > @@ -633,19 +633,6 @@ config RCU_TORTURE_TEST_RUNNABLE
+> > >  
+> > >  config RCU_CPU_STALL_DETECTOR
+> > >     bool "Check for stalled CPUs delaying RCU grace periods"
+> > > -   depends on CLASSIC_RCU
+> > > -   default n
+> > > -   help
+> > > -     This option causes RCU to printk information on which
+> > > -     CPUs are delaying the current grace period, but only when
+> > > -     the grace period extends for excessive time periods.
+> > > -
+> > > -     Say Y if you want RCU to perform such checks.
+> > > -
+> > > -     Say N if you are unsure.
+> > > -
+> > > -config RCU_CPU_STALL_DETECTOR
+> > > -   bool "Check for stalled CPUs delaying RCU grace periods"
+> > >     depends on CLASSIC_RCU || TREE_RCU
+> > >     default n
+> > >     help
 > > 
-> > Firstly, accessing the current CPU is the only safe shortcut anyway (there 
-> > is where we can do %fs/%gs / rip-relative addressing modes), and the 
-> > generic per_cpu() APIs dont really provide that guarantee for us. We might 
-> > be able to hook into __get_cpu_var() but those both require to be an 
-> > lvalue and are also relatively rarely used.
+> > The RCU_CPU_STALL_DETECTOR indeed is duplicate, but the entries themselves 
+> > are not identical, as they have different dependencies.
 > > 
-> > So introducing the new, rather straightforward APIs and using them 
-> > wherever they matter for performance is good. Your patchset already shaved 
-> > off an instruction from ordinary per_cpu() accesses, so it's all moving 
-> > rather close to the most-optimal situation already.
-> 
-> Yeah, I don't think we can do much better than those ops.  I have two
-> issues tho.
-> 
-> 1. percpu_and() is missing.  I added it for completeness's sake.
+> > Paul -- does Kaibin's patch remove the correct one? If so, I can take it 
+> > through trivial tree.
+> Indeed it is:  http://lkml.org/lkml/2008/12/23/167  ;-)
+> CCing Ingo in case he has it queued up.
 
-Sure - it would be commonly used as well. Perhaps we dont need 
-percpu_xor() at all? (or and and ops already give a complete algebra)
+It doesn't seem to be present in today's -next, so I have queued up in 
+trivial tree.
 
-> 2. The generic percpu_op() should be local to the cpu, so it should
->    expand to...
-> 
->    do { get_cpu_var(var) OP (val); put_cpu_var(var) } while (0)
-> 
->    as the original x86_OP_percpu() did.  Right?
-> 
-> Thanks.
+thanks,
 
-hm, that removes much of its appeal - a preempt off+on sequence is quite 
-bloaty. Most percpu usage sites are already within critical sections.
-
-I think they are more analogous to per_cpu(var, cpu), which does not 
-disable preemption either. There's no 'get/put' in them, which signals 
-that they dont auto-disable preemption.
-
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs
