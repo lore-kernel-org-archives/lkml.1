@@ -1,120 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbZAOLa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbZAOLb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762980AbZAOLa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZAOLas
+	id S1764227AbZAOLb2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZAOLbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:30:48 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:41996 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbZAOLar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:30:47 -0500
-Date: Thu, 15 Jan 2009 17:00:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] mark_page_accessed() in do_swap_page() move latter
-	than memcg charge
-Message-ID: <20090115113037.GH30358@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090109043257.GB9737@balbir.in.ibm.com> <20090109134736.a995fc49.kamezawa.hiroyu@jp.fujitsu.com> <20090115200545.EBE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 15 Jan 2009 06:31:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41259 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754215AbZAOLbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:31:17 -0500
+Date: Thu, 15 Jan 2009 12:30:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
+       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+Subject: Re: [patch] add optimized generic percpu accessors
+Message-ID: <20090115113045.GG22850@elte.hu>
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115200545.EBE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <496F0F50.6070200@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-01-15 20:08:36]:
 
+* Tejun Heo <tj@kernel.org> wrote:
+
+> Hello, Ingo.
 > 
-> sorry for late responce.
+> Ingo Molnar wrote:
+> > Tejun, could you please also add the patch below to your lineup too?
 > 
-> > > In this case we've hit a case where the page is valid and the pc is
-> > > not. This does fix the problem, but won't this impact us getting
-> > > correct reclaim stats and thus indirectly impact the working of
-> > > pressure?
-> > > 
-> >  - If retruns NULL, only global LRU's status is updated. 
+> Sure thing.
+> 
+> > It is an optimization and a cleanup, and adds the following new generic 
+> > percpu methods:
 > > 
-> > Because this page is not belongs to any memcg, we cannot update
-> > any counters. But yes, your point is a concern.
+> >   percpu_read()
+> >   percpu_write()
+> >   percpu_add()
+> >   percpu_sub()
+> >   percpu_or() 
+> >   percpu_xor()
 > > 
-> > Maybe moving acitvate_page() to
-> > ==
-> > do_swap_page()
-> > {
-> >     
-> > - activate_page()
-> >    mem_cgroup_try_charge()..
-> >    ....
-> >    mem_cgroup_commit_charge()....
-> >    ....
-> > +  activate_page()   
-> > }
-> > ==
-> > is necessary. How do you think, kosaki ?
+> > and implements support for them on x86. (other architectures will fall 
+> > back to a default implementation)
+> > 
+> > The advantage is that for example to read a local percpu variable, instead 
+> > of this sequence:
+> > 
+> >  return __get_cpu_var(var);
+> > 
+> >  ffffffff8102ca2b:	48 8b 14 fd 80 09 74 	mov    -0x7e8bf680(,%rdi,8),%rdx
+> >  ffffffff8102ca32:	81 
+> >  ffffffff8102ca33:	48 c7 c0 d8 59 00 00 	mov    $0x59d8,%rax
+> >  ffffffff8102ca3a:	48 8b 04 10          	mov    (%rax,%rdx,1),%rax
+> > 
+> > We can get a single instruction by using the optimized variants:
+> > 
+> >  return percpu_read(var);
+> > 
+> >  ffffffff8102ca3f:	65 48 8b 05 91 8f fd 	mov    %gs:0x7efd8f91(%rip),%rax
+> > 
+> > I also cleaned up the x86-specific APIs and made the x86 code use these 
+> > new generic percpu primitives.
+> > 
+> > It looks quite hard to convince the compiler to generate the optimized 
+> > single-instruction sequence for us out of __get_cpu_var(var) - or can you 
+> > perhaps see a way to do it?
 > 
-> 
-> OK. it makes sense. and my test found no bug.
-> 
-> ==
-> 
-> mark_page_accessed() update reclaim_stat statics.
-> but currently, memcg charge is called after mark_page_accessed().
-> 
-> then, mark_page_accessed() don't update memcg statics correctly.
-> 
-> fixing here.
-> 
+> Yeah, I thought about that too but couldn't think of a way to persuade 
+> the compiler because the compiler doesn't know how to access the 
+> address.  I'll play with it a bit more but the clumsy percpu_*() 
+> accessors probably might be the only way.  :-(
 
-Changelog needs to be a bit more elaborate, may be talk about invalid
-pointer we hit if mark_page_accessed is not moved, etc.
+the new ops are a pretty nice and clean solution i think.
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> ---
->  mm/memory.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: b/mm/memory.c
-> ===================================================================
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2426,8 +2426,6 @@ static int do_swap_page(struct mm_struct
->  		count_vm_event(PGMAJFAULT);
->  	}
-> 
-> -	mark_page_accessed(page);
-> -
->  	lock_page(page);
->  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-> 
-> @@ -2480,6 +2478,8 @@ static int do_swap_page(struct mm_struct
->  		try_to_free_swap(page);
->  	unlock_page(page);
-> 
-> +	mark_page_accessed(page);
-> +
->  	if (write_access) {
->  		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
->  		if (ret & VM_FAULT_ERROR)
-> 
-> 
->
+Firstly, accessing the current CPU is the only safe shortcut anyway (there 
+is where we can do %fs/%gs / rip-relative addressing modes), and the 
+generic per_cpu() APIs dont really provide that guarantee for us. We might 
+be able to hook into __get_cpu_var() but those both require to be an 
+lvalue and are also relatively rarely used.
 
-Looks good to me otherwise
+So introducing the new, rather straightforward APIs and using them 
+wherever they matter for performance is good. Your patchset already shaved 
+off an instruction from ordinary per_cpu() accesses, so it's all moving 
+rather close to the most-optimal situation already.
 
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
-
--- 
-	Balbir
+	Ingo
