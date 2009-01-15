@@ -1,63 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbZAOHwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762761AbZAOHxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762520AbZAOHwx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbZAOHwl
+	id S1762761AbZAOHxV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbZAOHwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:52:41 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47738 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755667AbZAOHwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:52:39 -0500
-Date: Thu, 15 Jan 2009 08:52:33 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH -v11][RFC] mutex: implement adaptive spinning
-Message-ID: <20090115075233.GD17810@wotan.suse.de>
-References: <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114171800.GA18621@wotan.suse.de> <1231953757.14825.33.camel@laptop> <20090115004645.GB32044@wotan.suse.de> <1232005443.14825.82.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232005443.14825.82.camel@laptop>
-User-Agent: Mutt/1.5.9i
+	Thu, 15 Jan 2009 02:52:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46979 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbZAOHwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 02:52:42 -0500
+Message-ID: <496EEB36.1010005@jp.fujitsu.com>
+Date: Thu, 15 Jan 2009 16:52:22 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] PCI PCIe portdrv: Fix allocation of interrupts (rev.
+ 3)
+References: <200901131457.58164.rjw@sisk.pl> <496EE4C5.7030802@jp.fujitsu.com>
+In-Reply-To: <496EE4C5.7030802@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 08:44:03AM +0100, Peter Zijlstra wrote:
-> On Thu, 2009-01-15 at 01:46 +0100, Nick Piggin wrote:
+Kenji Kaneshige wrote:
+> Rafael J. Wysocki wrote:
+>> Hi,
+>>
+>> The patch below fixes the problem with MSI-X vectors allocation by the PCIe
+>> port driver.  It applies on top of the series of PCIe port driver cleanups and
+>> bug fixes I've just sent.
+>>
+>> Please review.
+>>
 > 
-> > Hmm, well this is rather a slow path, I would say. I'd prefer not to
-> > modify schedule in this way (if we just get scheduled back on after
-> > being switched away, the subsequent call to schedule is going to be
-> > cache hot and not do too much work).
-> > 
-> > preempt_enable_noresched maybe if you really care, would close up the
-> > window even more. But is it really worthwhile? We'd want to see numbers
-> > (when in doubt, keep it  simpler).
+> The patch seems to still have the following assumptions.
 > 
-> I initially did the preempt_enable_no_resched() thing and that showed
-> some improvement for PREEMPT=y kernels (lost the numbers though).
-> 
-> When I redid all the patches I tried closing that last hole by doing
-> that __schedule() thing, never realizing that schedule() would then get
-> extra overhead,.. d'0h.
-> 
-> I agree that that isn't worth it. I shall revert to
-> preempt_enable_no_resched() and try to get some new numbers.
+>  - The number of MSI-X table entries is less than or equal to two.
+>  - MSI-X table entries are mapped only to PME/HP and/or AER.
 
-Thanks!
+It is not true.
+
+If any of PME/HP and AER requires entry other than first two ([0],[1]),
+this code will give up MSI-X and fall back to MSI (or INTx).
+
+In other words, the portdrv will use MSI-X only if entries for PME/PM
+and AER is in the first two entries of the MSI-X table.
+
+Thanks,
+H.Seto
+
+>> Thanks,
+>> Rafael
+>>
+>> ---
+>> Subject: PCI PCIe portdrv: Fix allocation of interrupts (rev. 3)
+>> From: Rafael J. Wysocki <rjw@sisk.pl>
+>>
+>> If MSI-X interrupt mode is used by the PCI Express port driver, too
+>> many vectors are allocated and it is not ensured that the right
+>> vectors will be used for the right services.  Namely, the PCI Express
+>> specification states that both PCI Express native PME and PCI Express
+>> hotplug will always use the same MSI or MSI-X message for signalling
+>> interrupts, which implies that the same vector will be used by both
+>> of them.  Also, the VC service does not use interrupts at all.
+>> Moreover, is not clear which of the vectors allocated by
+>> pci_enable_msix() will be used for PME and hotplug and which of them
+>> will be used for AER if all of these services are configured.
+>>
+>> For these reasons, rework the allocation of interrupts for PCI
+>> Express ports so that at most two vectors are allocated and ensure
+>> that the right vector will be used for the right purpose.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>> ---
+>>  drivers/pci/pcie/portdrv.h      |    2 
+>>  drivers/pci/pcie/portdrv_core.c |  142 +++++++++++++++++++++++++++++-----------
+>>  include/linux/pcieport_if.h     |   12 ++-
+>>  3 files changed, 114 insertions(+), 42 deletions(-)
+>>
+>> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
+>> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+>> @@ -31,6 +31,72 @@ static void release_pcie_device(struct d
+>>  }
+>>  
+>>  /**
+>> + * pcie_port_enable_msix - try to set up MSI-X as interrupt mode for given port
+>> + * @dev: PCI Express port to handle
+>> + * @vectors: Array of interrupt vectors to populate
+>> + * @nvec: Number of interrupt vectors to allocate
+>> + *
+>> + * Return value: 0 on success, error code on failure
+>> + */
+>> +static int pcie_port_enable_msix(struct pci_dev *dev, int *vectors, int nvec)
+>> +{
+>> +	struct msix_entry msix_entries[PCIE_PORT_DEVICE_MAXINTERRUPTS] = {
+>> +		{ 0, },
+>> +	};
+>> +	int status, pos, i;
+>> +	u16 reg16;
+>> +	u32 reg32;
+>> +
+>> +	for (i = 0; i < nvec; i++)
+>> +		msix_entries[i].entry = i;
+>> +
+>> +	status = pci_enable_msix(dev, msix_entries, nvec);
+>> +	if (status)
+>> +		return status;
+>> +
+>> +	/*
+>> +	 * The code below follows the PCI Express Base Specification 2.0 clearly
+>> +	 * stating in Section 6.1.6 that "PME and Hot-Plug Event interrupts
+>> +	 * (when both are implemented) always share the same MSI or MSI-X
+>> +	 * vector, as indicated by the Interrupt Message Number field in the PCI
+>> +	 * Express Capabilities register", where according to Section 7.8.2 of
+>> +	 * the Specification "For MSI-X, the value in this field indicates which
+>> +	 * MSI-X Table entry is used to generate the interrupt message."
+>> +	 */
+>> +	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+>> +	pci_read_config_word(dev, pos + PCIE_CAPABILITIES_REG, &reg16);
+>> +	i = (reg16 >> 9) & PCIE_PORT_MSI_VECTOR_MASK;
+>> +	if (i >= nvec) {
+>> +		goto Error;
+>> +	} else {
+>> +		vectors[PCIE_PORT_SERVICE_PME_SHIFT] = msix_entries[i].vector;
+>> +		vectors[PCIE_PORT_SERVICE_HP_SHIFT] = msix_entries[i].vector;
+>> +	}
+>> +
+>> +	/*
+>> +	 * The code below follows Section 7.10.10 of the PCI Express Base
+>> +	 * Specification 2.0 stating that bits 31-27 of the Root Error Status
+>> +	 * Register contain a value indicating which of the MSI/MSI-X vectors
+>> +	 * assigned to the port is going to be used for AER, where "For MSI-X,
+>> +	 * the value in this register indicates which MSI-X Table entry is used
+>> +	 * to generate the interrupt message."
+>> +	 */
+>> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+>> +	pci_read_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, &reg32);
+>> +	i = (reg32 >> 27) & PCIE_PORT_MSI_VECTOR_MASK;
+>> +	if (i >= nvec)
+>> +		goto Error;
+>> +	else
+>> +		vectors[PCIE_PORT_SERVICE_AER_SHIFT] = msix_entries[i].vector;
+>> +
+>> +	return 0;
+>> +
+>> + Error:
+>> +	pci_disable_msix(dev);
+>> +	return -EIO;
+>> +}
+>> +
+>> +/**
+>>   * assign_interrupt_mode - choose interrupt mode for PCI Express port services
+>>   *                         (INTx, MSI-X, MSI) and set up vectors
+>>   * @dev: PCI Express port to handle
+>> @@ -42,49 +108,49 @@ static void release_pcie_device(struct d
+>>  static int assign_interrupt_mode(struct pci_dev *dev, int *vectors, int mask)
+>>  {
+>>  	struct pcie_port_data *port_data = pci_get_drvdata(dev);
+>> -	int i, pos, nvec, status = -EINVAL;
+>> -	int interrupt_mode = PCIE_PORT_NO_IRQ;
+>> +	int nvec, irq, interrupt_mode = PCIE_PORT_NO_IRQ;
+>> +	int i;
+>>  
+>> -	/* Set INTx as default */
+>> -	for (i = 0, nvec = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++) {
+>> -		if (mask & (1 << i)) 
+>> -			nvec++;
+>> -		vectors[i] = dev->irq;
+>> -	}
+>> -	if (dev->pin)
+>> -		interrupt_mode = PCIE_PORT_INTx_MODE;
+>> +	/*
+>> +	 * Determine the number of vectors to allocate.
+>> +	 *
+>> +	 * According to the PCI Express specification both PME and PCI Express
+>> +	 * hotplug always use the same interrupt vector, while AER can use
+>> +	 * a different one.
+>> +	 */
+>> +	nvec = 0;
+>> +	if (mask & (PCIE_PORT_SERVICE_PME | PCIE_PORT_SERVICE_HP))
+>> +		nvec++;
+>> +	if (mask & PCIE_PORT_SERVICE_AER)
+>> +		nvec++;
+>> +	if (!nvec)
+>> +		return PCIE_PORT_NO_IRQ;
+>>  
+>>  	/* Check MSI quirk */
+>>  	if (port_data->port_type == PCIE_RC_PORT && pcie_mch_quirk)
+>> -		return interrupt_mode;
+>> +		goto Fallback;
+>> +
+>> +	/* For nvec > 1 use MSI-X if supported */
+>> +	if (nvec > 1 && !pcie_port_enable_msix(dev, vectors, nvec)) {
+>> +		interrupt_mode = PCIE_PORT_MSIX_MODE;
+>> +		goto Exit;
+>> +	}
+>> +
+>> +	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
+>> +	if (!pci_enable_msi(dev))
+>> +		interrupt_mode = PCIE_PORT_MSI_MODE;
+>> +
+>> + Fallback:
+>> +	if (interrupt_mode == PCIE_PORT_NO_IRQ && dev->pin)
+>> +		interrupt_mode = PCIE_PORT_INTx_MODE;
+>> +
+>> +	irq = interrupt_mode != PCIE_PORT_NO_IRQ ? dev->irq : -1;
+>> +	for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++)
+>> +		vectors[i] = irq;
+>> +
+>> + Exit:
+>> +	vectors[PCIE_PORT_SERVICE_VC_SHIFT] = -1;
+>>  
+>> -	/* Select MSI-X over MSI if supported */		
+>> -	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
+>> -	if (pos) {
+>> -		struct msix_entry msix_entries[PCIE_PORT_DEVICE_MAXSERVICES] = 
+>> -			{{0, 0}, {0, 1}, {0, 2}, {0, 3}};
+>> -		status = pci_enable_msix(dev, msix_entries, nvec);
+>> -		if (!status) {
+>> -			int j = 0;
+>> -
+>> -			interrupt_mode = PCIE_PORT_MSIX_MODE;
+>> -			for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++) {
+>> -				if (mask & (1 << i)) 
+>> -					vectors[i] = msix_entries[j++].vector;
+>> -			}
+>> -		}
+>> -	} 
+>> -	if (status) {
+>> -		pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
+>> -		if (pos) {
+>> -			status = pci_enable_msi(dev);
+>> -			if (!status) {
+>> -				interrupt_mode = PCIE_PORT_MSI_MODE;
+>> -				for (i = 0;i < PCIE_PORT_DEVICE_MAXSERVICES;i++)
+>> -					vectors[i] = dev->irq;
+>> -			}
+>> -		}
+>> -	} 
+>>  	return interrupt_mode;
+>>  }
+>>  
+>> Index: linux-2.6/include/linux/pcieport_if.h
+>> ===================================================================
+>> --- linux-2.6.orig/include/linux/pcieport_if.h
+>> +++ linux-2.6/include/linux/pcieport_if.h
+>> @@ -16,10 +16,14 @@
+>>  #define PCIE_ANY_PORT			7
+>>  
+>>  /* Service Type */
+>> -#define PCIE_PORT_SERVICE_PME		1	/* Power Management Event */
+>> -#define PCIE_PORT_SERVICE_AER		2	/* Advanced Error Reporting */
+>> -#define PCIE_PORT_SERVICE_HP		4	/* Native Hotplug */
+>> -#define PCIE_PORT_SERVICE_VC		8	/* Virtual Channel */
+>> +#define PCIE_PORT_SERVICE_PME_SHIFT	0	/* Power Management Event */
+>> +#define PCIE_PORT_SERVICE_PME		(1 << PCIE_PORT_SERVICE_PME_SHIFT)
+>> +#define PCIE_PORT_SERVICE_AER_SHIFT	1	/* Advanced Error Reporting */
+>> +#define PCIE_PORT_SERVICE_AER		(1 << PCIE_PORT_SERVICE_AER_SHIFT)
+>> +#define PCIE_PORT_SERVICE_HP_SHIFT	2	/* Native Hotplug */
+>> +#define PCIE_PORT_SERVICE_HP		(1 << PCIE_PORT_SERVICE_HP_SHIFT)
+>> +#define PCIE_PORT_SERVICE_VC_SHIFT	3	/* Virtual Channel */
+>> +#define PCIE_PORT_SERVICE_VC		(1 << PCIE_PORT_SERVICE_VC_SHIFT)
+>>  
+>>  /* Root/Upstream/Downstream Port's Interrupt Mode */
+>>  #define PCIE_PORT_NO_IRQ		(-1)
+>> Index: linux-2.6/drivers/pci/pcie/portdrv.h
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/pci/pcie/portdrv.h
+>> +++ linux-2.6/drivers/pci/pcie/portdrv.h
+>> @@ -25,6 +25,8 @@
+>>  #define PCIE_CAPABILITIES_REG		0x2
+>>  #define PCIE_SLOT_CAPABILITIES_REG	0x14
+>>  #define PCIE_PORT_DEVICE_MAXSERVICES	4
+>> +#define PCIE_PORT_DEVICE_MAXINTERRUPTS	2
+>> +#define PCIE_PORT_MSI_VECTOR_MASK	0x1f
+>>  
+>>  #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+>>  
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>>
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+
