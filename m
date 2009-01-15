@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbZAOSfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764710AbZAOSgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763565AbZAOSfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZAOSfX
+	id S1764710AbZAOSgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZAOSgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:35:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49262 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755049AbZAOSfW (ORCPT
+	Thu, 15 Jan 2009 13:36:22 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3168 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbZAOSgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:35:22 -0500
-Date: Thu, 15 Jan 2009 10:34:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
-       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Message-Id: <20090115103406.a85968f0.akpm@linux-foundation.org>
-In-Reply-To: <20090115180259.GJ22472@elte.hu>
-References: <496D8CEB.5060402@zytor.com>
-	<20090114093834.GA19799@elte.hu>
-	<496F0F50.6070200@kernel.org>
-	<20090115113045.GG22850@elte.hu>
-	<496F2032.5080502@kernel.org>
-	<20090115122611.GJ22850@elte.hu>
-	<496F346B.6020804@kernel.org>
-	<20090115130740.GE21839@elte.hu>
-	<496F38C7.5000403@kernel.org>
-	<20090115093007.4215b4b4.akpm@linux-foundation.org>
-	<20090115180259.GJ22472@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 13:36:21 -0500
+Date: Thu, 15 Jan 2009 18:36:14 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       Eric Miao <eric.y.miao@gmail.com>, Mike Rapoport <mike@compulab.co.il>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Samuel Ortiz <sameo@openedhand.com>, felipe.balbi@nokia.com,
+       Liam Girdwood <lrg@kernel.org>
+Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support within mfd driver.
+Message-ID: <20090115183613.GE12768@sirena.org.uk>
+References: <496E2BE5.1050803@cam.ac.uk> <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com> <496ED8F6.6030201@compulab.co.il> <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com> <496EE5A4.4010805@compulab.co.il> <f17812d70901150013v2c70047er829b1c884a1d7772@mail.gmail.com> <496F1C7A.5080202@gmail.com> <20090115130230.GG2147@sirena.org.uk> <496F3ABF.1020201@cam.ac.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496F3ABF.1020201@cam.ac.uk>
+X-Cookie: I will not forget you.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 19:02:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Jan 15, 2009 at 01:31:43PM +0000, Jonathan Cameron wrote:
+> Mark Brown wrote:
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 15 Jan 2009 22:23:19 +0900 Tejun Heo <tj@kernel.org> wrote:
-> > 
-> > > --- a/include/asm-generic/percpu.h
-> > > +++ b/include/asm-generic/percpu.h
-> > > @@ -80,4 +80,56 @@ extern void setup_per_cpu_areas(void);
-> > >  #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
-> > >  					__typeof__(type) per_cpu_var(name)
-> > >  
-> > > +/*
-> > > + * Optional methods for optimized non-lvalue per-cpu variable access.
-> > > + *
-> > > + * @var can be a percpu variable or a field of it and its size should
-> > > + * equal char, int or long.  percpu_read() evaluates to a lvalue and
-> > > + * all others to void.
-> > > + *
-> > > + * These operations are guaranteed to be atomic w.r.t. preemption.
-> > > + * The generic versions use plain get/put_cpu_var().  Archs are
-> > > + * encouraged to implement single-instruction alternatives which don't
-> > > + * require preemption protection.
-> > > + */
-> > > +#ifndef percpu_read
-> > > +# define percpu_read(var)						\
-> > > +  ({									\
-> > > +	typeof(per_cpu_var(var)) __tmp_var__;				\
-> > > +	__tmp_var__ = get_cpu_var(var);					\
-> > > +	put_cpu_var(var);						\
-> > > +	__tmp_var__;							\
-> > > +  })
-> > > +#endif
-> > 
-> > I wonder if the preempt_disable()/preempt_enable() in here actually
-> > does anything useful on any architecture.
-> 
-> Provides "this is IRQ safe"
+> > Having looked at this problem just this week for some other designs I'm
+> > thinking the regulator API might be a good fit for this.  It is a supply
+> > and the API provides a method to match up the supply with the USB
+> > controller (some designs have multiple options there so that's useful).
+> > I've not actually tried it yet to see what the pain is like, though.
 
-?
+> I did at one point.  The problem here is you aren't simply controlling the
+> current / voltage. You are switching it between various automatic modes
+> and a manual override.  Only in the manually overridden states is it
+> much like a regulator and then it's one with very odd properties.
 
-> and "this is preempt safe" semantics.
+Yes, they're rather different and would require additional APIs for
+controlling some of the features, though it may be that we can get away
+with doing a lot of the configuration in platform data or board init
+code with a more limited subset configured dynamically by the USB stack.
 
-Of course.  But do any architectures actually _need_ that for a single
-read?
+> If these are consistent enough across different pmic's I guess it could
+> be blugeoned in, but I'm not convinced this is true.
 
-Maybe.  And if so, they can interpose their arch-specific
-implementation.  But if the generic version is optimal for them, they
-wouldn't need to..
-
-
+Yes, that needs to be investigated.  I'd hope there's *some* similarity
+since at the end of the day it's all USB but I've not got to the point
+of looking at that yet.
