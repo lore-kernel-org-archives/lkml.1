@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZAODFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZAODJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbZAODFm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:05:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZAODFc
+	id S1758358AbZAODJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbZAODJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:05:32 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:48759 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752722AbZAODFb (ORCPT
+	Wed, 14 Jan 2009 22:09:37 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39155 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750825AbZAODJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:05:31 -0500
-Date: Thu, 15 Jan 2009 14:05:26 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: compress - Add pcomp interface
-Message-ID: <20090115030526.GA27726@gondor.apana.org.au>
-References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 14 Jan 2009 22:09:37 -0500
+Date: Thu, 15 Jan 2009 12:08:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
+ obsolete
+Message-Id: <20090115120829.e1d417e8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090115114846.388781a7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<20090114135539.GA21516@balbir.in.ibm.com>
+	<20090115114846.388781a7.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:01:34PM +0100, Geert Uytterhoeven wrote:
->
-> It's used by the pr_*() macros in <linux/kernel.h>.
-> 
-> Since commit d091c2f58ba32029495a933b721e8e02fbd12caa ("Add 'pr_fmt()' format
-> modifier to pr_xyz macros."), this is the new way to have a common prefix in
-> all printed output.
+On Thu, 15 Jan 2009 11:48:46 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-But you don't actually print anything out in the module :)
-
-> For compatibility with crypto_comp, we also need an alloc function for both
-> compress and decompress, so that makes 3 alloc functions.
-
-Couldn't crypto_comp just call both alloc functions? I don't see
-why we need a third function.
-
-> > 1) We know what the user wants to do without every algorithm
-> > reinventing their own signalling for it;
-> 
-> I guess you want to use the flags to indicate compress/decompress/both?
-> Unfortunately I'm still struggling to fully understand the type/mask handling,
-> so I would appreciate it if you could give me a hint how to handle that.
-
-No, I mean that whether you want compression or decompression
-is signified by the which function you're calling.  If you want
-to do both then you call both.
-
-> I assume "length" is the size of the passed params, so the algorithms can
-> return -EINVAL if they're passed the wrong size?
-
-Well with the netlink parameters these can have variable lengths
-depending on how many parameters the user supplies.
-
-> > > +static inline struct crypto_pcomp *crypto_alloc_pcomp(const char *alg_name,
-> > > +						      u32 type, u32 mask)
-> > > +{
-> > > +	type &= ~CRYPTO_ALG_TYPE_MASK;
-> > > +	type |= CRYPTO_ALG_TYPE_PCOMPRESS;
-> > > +	mask |= CRYPTO_ALG_TYPE_MASK;
-> > > +
-> > > +	return __crypto_pcomp_cast(crypto_alloc_base(alg_name, type, mask));
-> > > +}
+> On Wed, 14 Jan 2009 19:25:39 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > I liked the earlier, EBUSY approach that ensured that parents could
+> > not go away if children exist. IMHO, the code has gotten too complex
+> > and has too many corner cases. Time to revisit it.
 > > 
-> > That's the old way to allocate tfm's which won't work since pcomp
-> > is using the new type API.  You should do it the way that shash
-> > does it.
+> It's on my plan. 
+> I'll fix this by CSS-ID patch.
 > 
-> I tried to do this, but stumbled across a dependency problem: as
-> crypto_alloc_tfm() needs a pointer to crypto_pcomp_type(), crypto_alloc_pcomp()
-> can no longer be static inline, and must be moved to crypto/pcompress.c.
+> When I recored memcg's CSS-ID to swap_cgroup (not pointer to memcg), 
+> we never need memcg's refcnt.
+> 
+Sorry, ignore this. refcnt in memcg is necessary anyway to prevent reuse of ID.
 
-Ah yes because crypto_comp is one of the original types that's
-still built-in.  Because there are so few compression users and
-algorithms (exactly 3 if you include null compression), I think
-we can dispense with the compatibility stuff altogether since
-we'll likely rip out fairly soon anyway.
+-Kame
 
-So just create the new type, readd deflate using the new type
-alongside the existing deflate algorithm.  The system is capable
-of supporting two algorithms of the same name with different types.
-
-Then once the other algorithm (lzo) is taken care of and all the
-users are converted I'll just kill the old type and algorithms.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
