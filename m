@@ -1,109 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbZAOXjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935431AbZAOXjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934198AbZAOXjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZAOXjK
+	id S935431AbZAOXjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934254AbZAOXjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:39:10 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:45099 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753782AbZAOXjI (ORCPT
+	Thu, 15 Jan 2009 18:39:22 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:46691 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933914AbZAOXjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:39:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Z2aMXN0R0dxOhGyI17oCKfIpVVg7WUfmk/Ax3A6VcPSeuUzSBU9o02WytEeRbnd+z/
-         pGPbsLXdYcK7+dI6Jq25BlJHUTpapZ6PuHLb56qhBAtWPt+YPhlpQph/oP6ShTg4Hujn
-         wU+5pyK2QdIIWn5+EJTE8LZtnKmOmxii6IkNQ=
+	Thu, 15 Jan 2009 18:39:20 -0500
+Message-ID: <496FC91C.10806@linux.vnet.ibm.com>
+Date: Thu, 15 Jan 2009 17:39:08 -0600
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <496FBF2B.4010809@linux.intel.com>
-References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>
-	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>
-	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>
-	 <496DB067.6060402@linux.intel.com>
-	 <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>
-	 <496E297B.6010100@linux.intel.com>
-	 <b3ece790901141132u28ba2482h2e7af7bd51224f2a@mail.gmail.com>
-	 <496FBF2B.4010809@linux.intel.com>
-Date: Thu, 15 Jan 2009 15:39:07 -0800
-Message-ID: <b3ece790901151539s1c470472x5255688477d54d7f@mail.gmail.com>
-Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
-From: Tim Hockin <thockin@gmail.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
-       priyankag@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: hooanon05@yahoo.co.jp, linux-fsdevel@vger.kernel.org,
+       ecryptfs-devel@lists.launchpad.net, linux-kernel@vger.kernel.org,
+       mhalcrow@us.ibm.com
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question
+References: <7471.1231827621@jrobl> <20090115150332.f72ad0f8.akpm@linux-foundation.org>
+In-Reply-To: <20090115150332.f72ad0f8.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=5D35E502
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig667C64A7FCAC845DBCD1AA8D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 2:56 PM, Andi Kleen <ak@linux.intel.com> wrote:
-> Tim Hockin wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig667C64A7FCAC845DBCD1AA8D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Andrew Morton wrote:
+> On Tue, 13 Jan 2009 15:20:21 +0900
+> hooanon05@yahoo.co.jp wrote:
+>=20
+>> Here are several fixes for linux-2.6.27/fs/ecryptfs.
 >>
->> Yeah, no offense, but that's horrible :)
->
-> I'm not sure it's worse than the XML like format proposals that seem to
-> get thrown around. That is I am the only one who mentioned the
-> X word yet, but the structured ASCII records that have been hinted
-> at would be exactly like that.
+>> - The ecryptfs inode holds a reference to the lower inode, but doesn't=
 
-Yeah, if anyone proposes XML, I'll punch them :)  I'm not that firm on
-it being ASCII myself, but it would be OK.  Google's protocol buffers
-are a good example of a very efficient encoding of flexible data.
-This is not an unsolvable problem.
+>>   increment the reference counter. When a user sets inotify to the
+>>   ecryptfs inode, it may live without the corresponding dentry. In thi=
+s
+>>   case the referecen to the lower inode may be broken.
+>>   This patch maintains the reference of the lower inode.
+>>
+>> - follow the VFS unlink sequence in ecryptfs_unlink() which is
+>>   inrementing and decrementing the inode->i_count and the reference
+>>   counter for the dentry.
+>>
+>> - maintain the link count and ctime in ecryptfs_rmdir() because a user=
 
->> SATA
->> disk timeouts.
->
-> Now that's a different issue. Generalized driver error reporting for
-> everyone.
->
-> There was a lot of discussion some years ago from a IBM proposal to do
-> in general structured error reporting. But that was quite unpopular
-> and no-one really liked it.
->
-> What came out of it was the dev_printk() stuff that allows
-> to match error messages to devices. So you already have some
-> baby steps in this direction.
+>>   may issue fstat(2) later.
+>>
+>> - remove the unnecessary d_drop()s in ecryptfs_link().
+>>
+>> And I have experienced a strange behaviour. When ecryptfs gets -ENOSPC=
 
-I remember - I was at Sun at the time.  We wanted the same thing.
+>> from the lower fs, it converts and returns EINVAL to the userspace. Is=
 
-> I suspect doing this fully generalized would be quite difficult
-> because there would be so many people you have to convince.
+>> this an intended behaviour?
+>>
+>=20
+> I am puzzled by the current ecryptfs maintenance situation.
+>=20
 
-Yes, it will be hard.  But I think it will not be impossible.
+http://article.gmane.org/gmane.linux.kernel/768122
 
->> Now I know there are different conduits for some events - netlink
->> tells me about netif link up/down events I think.  I would settle for
->> a small number of interfaces.  What I don't want is what we have today
->> - EVERYTHING has a different interface.  Some are poll()-able.  Some
->> have to be actively polled.  Some have to have a daemon listening or
->> else messages are dropped.
->
-> Well the kernel will always have limited buffers, so the someone
-> needs to listen problem will be always there.
+The torch has been passed to me.  :)
 
-Sure, but just having a small buffer, like mcelog, and being
-poll()able goes a log way.
+> I queued this for 2.6.30.  It could be bumped up for 2.6.29 (and even
+> backported to 2.6.28 and earlier) with suitable acks from the
+> maintainer(?)
+>=20
 
->> Put it this way:  Given a thousand machines, I want to gather,
->> collate, and correlate all these events.  I want to be able to produce
->> a "life story" of sorts for a machine and for a data center.  Once I
->> can do that, I can start to make predictive diagnoses more accurately,
->> and I can know how much these things actually COST us.
->
-> Sure sounds nice. But frankly I don't see it happening. It would
-> be just too radical a change of too much code.
+The changes to ecryptfs_rmdir() are valid, but not the rest of the patch.=
 
-We do a lot of this now, but it's far less accurate than it could be,
-because we drop so many events.  And programming to all the different
-interfaces is difficult and error-prone.
 
-I'm hoping we can find a solution that makes everyone only a little bit unhappy.
+>> ...
+>>
+>> +	atomic_inc_return(&lower_dentry->d_inode->i_count);
+>> +	atomic_inc_return(&lower_inode->i_count);
+>=20
+> atomic_inc() would suffice here, yes?
+>=20
+> From: Andrew Morton <akpm@linux-foundation.org>
+>=20
+> s/atomic_inc_return/atomic_inc/
+>=20
+> Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> Cc: J. R. Okajima <hooanon05@yahoo.co.jp>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>=20
+>  fs/ecryptfs/inode.c |    2 +-
+>  fs/ecryptfs/super.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff -puN fs/ecryptfs/inode.c~ecryptfs-some-inode-attr-fixes-fix fs/ecr=
+yptfs/inode.c
+> --- a/fs/ecryptfs/inode.c~ecryptfs-some-inode-attr-fixes-fix
+> +++ a/fs/ecryptfs/inode.c
+> @@ -479,7 +479,7 @@ static int ecryptfs_unlink(struct inode=20
+>=20
+>  	lower_dir_dentry =3D lock_parent(lower_dentry);
+>  	dget(lower_dentry);
+> -	atomic_inc_return(&lower_dentry->d_inode->i_count);
+> +	atomic_inc(&lower_dentry->d_inode->i_count);
+>  	rc =3D vfs_unlink(lower_dir_inode, lower_dentry);
+>  	dput(lower_dentry);
+>  	if (rc) {
+> diff -puN fs/ecryptfs/super.c~ecryptfs-some-inode-attr-fixes-fix fs/ecr=
+yptfs/super.c
+> --- a/fs/ecryptfs/super.c~ecryptfs-some-inode-attr-fixes-fix
+> +++ a/fs/ecryptfs/super.c
+> @@ -102,7 +102,7 @@ static void ecryptfs_destroy_inode(struc
+>   */
+>  void ecryptfs_init_inode(struct inode *inode, struct inode *lower_inod=
+e)
+>  {
+> -	atomic_inc_return(&lower_inode->i_count);
+> +	atomic_inc(&lower_inode->i_count);
+>  	ecryptfs_set_inode_lower(inode, lower_inode);
+>  	inode->i_ino =3D lower_inode->i_ino;
+>  	inode->i_version++;
+> _
+>=20
+>=20
+> _______________________________________________
+> Mailing list: https://launchpad.net/~ecryptfs-devel
+> Post to     : ecryptfs-devel@lists.launchpad.net
+> Unsubscribe : https://launchpad.net/~ecryptfs-devel
+> More help   : https://help.launchpad.net/ListHelp
 
-Tim
+
+
+--------------enig667C64A7FCAC845DBCD1AA8D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iEYEARECAAYFAklvyR8ACgkQqDCb9l015QL+dQCaA0lPf3c1UNYzs7JulqzaEwPZ
+0bsAnipoxOBKPAH59fv7hpvqLOJQE8XD
+=T6Df
+-----END PGP SIGNATURE-----
+
+--------------enig667C64A7FCAC845DBCD1AA8D--
