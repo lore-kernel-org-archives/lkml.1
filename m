@@ -1,148 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZAOCoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbZAOCr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbZAOCoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 21:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887AbZAOCod
+	id S1759082AbZAOCr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 21:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZAOCrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:44:33 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:11657 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753230AbZAOCob (ORCPT
+	Wed, 14 Jan 2009 21:47:45 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54763 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbZAOCro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:44:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wT+L69c5tntLnl4aFs52JHys6OFo/oVeAEJKgrqIuqGybbgK7HCjq0w0heQgfjSycy
-         SuHGq7M6DB3oMouzbKR/Fgm6gcvLj8jpHWyfzbBz7lkUvF5NxbGBaieAACLIrCRs4Axq
-         euFudOohmf0Y446tScZ8kEKz4hax7PgOCG2EY=
-Message-ID: <496EA2EC.7030602@gmail.com>
-Date: Wed, 14 Jan 2009 18:43:56 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 14 Jan 2009 21:47:44 -0500
+Date: Wed, 14 Jan 2009 19:47:40 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Subject: Re: Mainline kernel OLTP performance update
+Message-ID: <20090115024740.GX29283@parisc-linux.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com> <20090114163557.11e097f2.akpm@linux-foundation.org> <20090115012147.GW29283@parisc-linux.org> <20090114180431.f4a96543.akpm@linux-foundation.org> <874p01fg3a.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>
-CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       SE-Linux <selinux@tycho.nsa.gov>
-Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
-References: <496D759A.7010401@gmail.com> <200901141508.58174.paul.moore@hp.com> <496E5A9D.3050105@gmail.com> <200901141736.43805.paul.moore@hp.com>
-In-Reply-To: <200901141736.43805.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874p01fg3a.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Wednesday 14 January 2009 4:35:25 pm Justin P. Mattock wrote:
->   
->> Anyways heres what I'm trying to achieve:
->>
->> default looks like this:
->> Configured NetLabel domain mappings(1)
->> domain: DEFAULT
->>     protocol: UNLABELED
->>
->> I want to try and have three of these for the
->> different types of media:
->> (in theory)
->> Configured NetLabel domain mappings(3)
->> domain:radio
->>    protocol: UNLABELED
->> domain:T.V.
->>    protocol: UNLABELED
->> domain:web
->>    protocol: UNLABELED
->> (and if possible three different tags(either 1,2,5), but probably can
->> only do that with cipsov4);
->>     
->
-> Actually, in your case you are probably always going to want to send 
-> network traffic without any labels attached to the packets (no labeled 
-> IPsec or CIPSO) so you can stick with the default domain mapping 
-> configuration which sends all packets "unlabeled".  The part you should 
-> be concerned about is the static/fallback configuration which assigns 
-> network peer labels to packets which do not have labels attached to 
-> them by the remote host.
->
-> NOTE: the domain mapping configuration only controls how outbound 
-> network traffic is labeled on-the-wire; it "maps" the 
-> LSM/SELinux "domains" to a specific labeling protocol configuration, 
-> e.g. all apache_t traffic should be labeled with CIPSO DOI 3 while all 
-> firefox_t traffic should not be labeled at all.
->
->   
->> heres what I've come up with so far:
->>
->> netlabelctl -p map del default
->>
->> netlabelctl unlbl add domain:radio interface:wlan0 address:<myadd>
->> label:system_u:object_r:netlabel_peer_t:s0
->> netlabelctl unlbl add domain:radio interface:wlan0 address:<radioadd>
->> label:system_u:object_r:netlabel_peer_t:s0
->>
->> netlabelctl unlbl add domain:T.V. interface:wlan0 address:<myadd>
->> label:system_u:object_r:netlabel_peer_t:s0
->> netlabelctl unlbl add domain:T.V. interface:wlan0 address:<t.v.add>
->> label:system_u:object_r:netlabel_peer_t:s0
->>     
->
-> I think what you mean to type is the following:
->
->  # netlabelctl unlbl add interface:wlan0 address:<radioadd> \
->        label:system_u:object_r:netlabel_peer_t:s0
->
-> ... note there is no "domain" argument, that only exists 
-> for "netlabelctl map ..." commands.
->
-> NOTE: if you really want to get fancy you can create new SELinux domains 
-> for each type of media and add NetLabel configurations for those new 
-> domains.  Imagine you create a new "internet_radio_t" domain/type and 
-> only allow the "netplayer_t" domain (yeah, I made that up but you get 
-> the point) access to network traffic labeled with internet_radio_t.  
-> You would then use the following command to label your incoming traffic 
-> with NetLabel:
->
->  # netlabelctl unlbl add interface:wlan0 address:<radioadd> \
->        label:system_u:object_r:internet_radio_t:s0
->
-> NOTE: you can also skip the "interface:wlan0" argument and just 
-> use "default" instead if you want the configuration to apply to all 
-> your network interfaces; although bear in mind that the "default" 
-> configuration can be overridden by the interface specific 
-> configurations.
->
->   
->> As for the new capabilities, I don't mind trying that out when
->> the time comes(but first I need to figure the this out before any
->> other ways);
->>     
->
-> No problem, I understand.  Let me know if you have any more problems.
->
->   
->> here is what the error looks like:
->>
->> netlabel_tools-0.19# make
->> INFO: creating the version header file
->> .: 10: version_info: not found
->> make: *** [include/version.h] Error 2
->>     
->
-> Huh, can you try the following:
->
->  1. Open the netlabel_tools-0.19/Makefile in your favorite editor
->  2. Change the ". version_info; \" line to "source ./version_info; \"
->  3. Save your changes
->  4. Try running "make" again
->
-> Thanks.
->
->   
-O.k. changed . version like how you had posted.
-The package compiled like a charm.
+On Thu, Jan 15, 2009 at 03:39:05AM +0100, Andi Kleen wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> >>    some of that back, but not as much as taking them out (even when
+> >>    the sysctl'd variable is in a __read_mostly section).  We tried a
+> >>    patch from Jens to speed up the search for a new partition, but it
+> >>    had no effect.
+> >
+> > I find this surprising.
+> 
+> The test system has thousands of disks/LUNs which it writes to
+> all the time, in addition to a workload which is a real cache pig. 
+> So any increase in the per LUN overhead directly leads to a lot
+> more cache misses in the kernel because it increases the working set
+> there sigificantly.
 
-regards;
+This particular system has 450 spindles, but they're amalgamated into
+30 logical volumes by the hardware or firmware.  Linux sees 30 LUNs.
+Each one, though, has fifteen partitions on it, so that brings us back
+up to 450 partitions.
 
-Justin P. Mattock
+This system, btw, is a scale model of the full system that would be used
+to get published results.  If I remember correctly, a 1% performance
+regression on this system is likely to translate to a 2% regression on
+the full-scale system.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
