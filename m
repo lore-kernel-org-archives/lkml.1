@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763324AbZAOSu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764586AbZAOSwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763324AbZAOSu3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbZAOSuQ
+	id S1764586AbZAOSwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZAOSwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:50:16 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:34266 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbZAOSuO (ORCPT
+	Thu, 15 Jan 2009 13:52:30 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:53507 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754289AbZAOSw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:50:14 -0500
-Date: Thu, 15 Jan 2009 18:50:09 +0000
-From: Andy Whitcroft <apw@canonical.com>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Cc: davej@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: scripts/checkpatch.pl: WARNING: patch prefix 'arch' exists,
-	appears to be a -p0 patch
-Message-ID: <20090115185009.GE6896@shadowen.org>
-References: <3f9a31f40901120903yc6a85e0w4c2fe57352f1f482@mail.gmail.com>
+	Thu, 15 Jan 2009 13:52:29 -0500
+Date: Thu, 15 Jan 2009 18:52:24 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Message-ID: <20090115185224.GB5440@shareable.org>
+References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <20090102094934.GB17841@infradead.org> <495DE995.1070002@opensde.org> <yw1x3ag2t2gd.fsf@thrashbarg.mansr.com> <496F3344.9060104@draigBrady.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <3f9a31f40901120903yc6a85e0w4c2fe57352f1f482@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <496F3344.9060104@draigBrady.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 12, 2009 at 10:33:40PM +0530, Jaswinder Singh Rajput wrote:
-> Hello Andy,
+Pádraig Brady wrote:
+> > The $(( ... )) construct is standard POSIX shell syntax, see
+> > http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html#tag_02_06_04
+> > 
+> > Bash supports $[ ... ] as an alternate syntax for the same thing.
+> > Perhaps you were thinking of that.
 > 
-> How to get rid of this warning:
-> 
->  #./scripts/checkpatch.pl --file arch/x86/kernel/module_32.c
-> WARNING: patch prefix 'arch' exists, appears to be a -p0 patch
-> 
-> total: 0 errors, 1 warnings, 152 lines checked
-> 
-> arch/x86/kernel/module_32.c has style problems, please review.  If any
-> of these errors
-> are false positives report them to the maintainer, see
-> CHECKPATCH in MAINTAINERS.
+> I think the misconception that $(( ... )) is a bashism is caused by
+> the wrong highlighting defaults chosen by vim.
 
-That looks wrong to me.  Will have a look at it.
+I think the misconception is because traditional unix bourne shells
+don't implement that construct.  I just tried it on a few machines,
+and it failed on 4 of them.  Admittedly, the only up to date one is
+running Solaris 10; the others are older unixes that you're unlikely
+to build Linux on.
 
-Ahh yes, thats just wrong.  Should be fixed in the tip of my tree, and
-will be in the next block of updates.  You can check against the version
-at:
-
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
-
--apw
+-- Jamie
