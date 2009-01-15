@@ -1,46 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZAOCDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZAOCFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZAOCDc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 21:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZAOCDW
+	id S1757874AbZAOCFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 21:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZAOCFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:03:22 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:52735 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbZAOCDV (ORCPT
+	Wed, 14 Jan 2009 21:05:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58870 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753303AbZAOCFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:03:21 -0500
-Date: Thu, 15 Jan 2009 02:03:11 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Michlmayr <tbm@cyrius.com>, elendil@planet.nl,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
-Message-ID: <20090115020311.GA18740@srcf.ucam.org>
-References: <200901121356.46236.elendil@planet.nl> <20090113123056.GA2464@deprecation.cyrius.com> <20090114162603.c632d82e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114162603.c632d82e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 14 Jan 2009 21:05:36 -0500
+Date: Wed, 14 Jan 2009 18:04:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Subject: Re: Mainline kernel OLTP performance update
+Message-Id: <20090114180431.f4a96543.akpm@linux-foundation.org>
+In-Reply-To: <20090115012147.GW29283@parisc-linux.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	<CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	<20090114163557.11e097f2.akpm@linux-foundation.org>
+	<20090115012147.GW29283@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:26:03PM -0800, Andrew Morton wrote:
+On Wed, 14 Jan 2009 18:21:47 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
 
-> It'd be a very special BIOS bug if it can reach out and make the kernel
-> oops.
+> On Wed, Jan 14, 2009 at 04:35:57PM -0800, Andrew Morton wrote:
+> > On Tue, 13 Jan 2009 15:44:17 -0700
+> > "Wilcox, Matthew R" <matthew.r.wilcox@intel.com> wrote:
+> > >
+> > 
+> > (top-posting repaired.  That @intel.com address is a bad influence ;))
+> 
+> Alas, that email address goes to an Outlook client.  Not much to be done
+> about that.
 
-Lid actions typically trigger SMI code, so it's entirely capable of 
-destroying CPU state in such a way that the kernel falls over (and 
-probably even in ways that cause the kernel to turn green, emit pleasing 
-warbling noises or invade neighbouring pieces of hardware). In this case 
-it seems to be SMP specific - the system's entirely stable in UP mode. 
-It's greatly vexing.
+aspirin?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> > (cc linux-scsi)
+> > 
+> > > > This is latest 2.6.29-rc1 kernel OLTP performance result. Compare to
+> > > > 2.6.24.2 the regression is around 3.5%.
+> > > > 
+> > > > Linux OLTP Performance summary
+> > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%  iowait%
+> > > > 2.6.24.2                1.000   21969   43425   76   24     0      0
+> > > > 2.6.27.2                0.973   30402   43523   74   25     0      1
+> > > > 2.6.29-rc1              0.965   30331   41970   74   26     0      0
+> 
+> > But the interrupt rate went through the roof.
+> 
+> Yes.  I forget why that was; I'll have to dig through my archives for
+> that.
+
+Oh.  I'd have thought that this alone could account for 3.5%.
+
+> > A 3.5% slowdown in this workload is considered pretty serious, isn't it?
+> 
+> Yes.  Anything above 0.3% is statistically significant.  1% is a big
+> deal.  The fact that we've lost 3.5% in the last year doesn't make
+> people happy.  There's a few things we've identified that have a big
+> effect:
+> 
+>  - Per-partition statistics.  Putting in a sysctl to stop doing them gets
+>    some of that back, but not as much as taking them out (even when
+>    the sysctl'd variable is in a __read_mostly section).  We tried a
+>    patch from Jens to speed up the search for a new partition, but it
+>    had no effect.
+
+I find this surprising.
+
+>  - The RT scheduler changes.  They're better for some RT tasks, but not
+>    the database benchmark workload.  Chinang has posted about
+>    this before, but the thread didn't really go anywhere.
+>    http://marc.info/?t=122903815000001&r=1&w=2
+
+Well.  It's more a case that it wasn't taken anywhere.  I appear to
+have recently been informed that there have never been any
+CPU-scheduler-caused regressions.  Please persist!
+
+> SLUB would have had a huge negative effect if we were using it -- on the
+> order of 7% iirc.  SLQB is at least performance-neutral with SLAB.
+
+We really need to unblock that problem somehow.  I assume that
+enterprise distros are shipping slab?
+
