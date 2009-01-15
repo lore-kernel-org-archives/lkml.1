@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935195AbZAOXb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935156AbZAOXc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935195AbZAOXb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbZAOXbe
+	id S935156AbZAOXc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764130AbZAOXcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:31:34 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:53134 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935062AbZAOXbd (ORCPT
+	Thu, 15 Jan 2009 18:32:36 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:55104 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761318AbZAOXce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:31:33 -0500
-Date: Thu, 15 Jan 2009 15:31:31 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Jan-Bernd Themann <themann@de.ibm.com>,
-       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115233131.GE9091@ovro.caltech.edu>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
-	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-	shemminger@vyatta.com, David Miller <davem@davemloft.net>
-References: <20090107195052.GA24981@ovro.caltech.edu> <200901152222.55006.arnd@arndb.de> <20090115214056.GC9091@ovro.caltech.edu> <200901152353.25052.arnd@arndb.de>
+	Thu, 15 Jan 2009 18:32:34 -0500
+Date: Fri, 16 Jan 2009 10:32:05 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: w@1wt.eu, jarkao2@gmail.com, zbr@ioremap.net, dada1@cosmosbay.com,
+       ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090115233205.GA8474@gondor.apana.org.au>
+References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901152353.25052.arnd@arndb.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 15:31:33 -0800 (PST)
+In-Reply-To: <20090115.152608.89323697.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:53:24PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
-> > I do have mailboxes (two inbound, two outbound) which can generate
-> > interrupts, as well as doorbell registers (one inbound, one outbound).
-> > The doorbell register's bits are "write 1 to clear", and can only be
-> > cleared by the opposite side.
-> > 
-> 
-> Ok, in this case, you should be able to use one of these to implement
-> the DMA complete interrupt, but adding an extra DMA transfer to the
-> mailbox after each transfer that you want to get notified for.
+On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
+>
+> New patch, this has the SKB clone removal as well:
 
-Yep. I wouldn't have come up with that idea on my own, but it seems
-obvious now :)
+Thanks Dave!
 
-It seems a little strange to keep the DMA descriptors host memory (the
-DMA controller will need to issue a PCI read to get them) but I guess
-that is how real network cards work.
+Something else just came to mind though.
 
-Thanks,
-Ira
+> +static inline struct page *linear_to_page(struct page *page, unsigned int len,
+> +					  unsigned int offset)
+> +{
+> +	struct page *p = alloc_pages(GFP_KERNEL, 0);
+> +
+> +	if (!p)
+> +		return NULL;
+> +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
+
+This won't work very well if skb->head is longer than a page.
+
+We'll need to divide it up into individual pages.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
