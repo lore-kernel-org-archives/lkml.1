@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbZAOUxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934258AbZAOUxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbZAOUxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932100AbZAOUDI
+	id S934258AbZAOUxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932229AbZAOUDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:03:08 -0500
-Received: from kroah.org ([198.145.64.141]:49817 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:03:10 -0500
+Received: from kroah.org ([198.145.64.141]:49831 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932359AbZAOUDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:03:00 -0500
-Date: Thu, 15 Jan 2009 12:00:33 -0800
+	id S1765852AbZAOUDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:03:03 -0500
+Date: Thu, 15 Jan 2009 12:00:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 86/94] x86: avoid theoretical vmalloc fault loop
-Message-ID: <20090115200033.GH14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 87/94] ath9k: enable RXing of beacons on STA/IBSS
+Message-ID: <20090115200035.GI14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-avoid-theoretical-vmalloc-fault-loop.patch"
+Content-Disposition: inline; filename="ath9k-enable-rxing-of-beacons-on-sta-ibss.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,48 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Luis R. Rodriguez <lrodriguez@atheros.com>
 
-commit f313e12308f7c5ea645f18e759d104d088b18615 upstream.
+commit ffb826767bffda61426d964a8fc24a216a14b0bd upstream.
 
-Ajith Kumar noticed:
+This enables beacons to come through on STA/IBSS.
+It should fix sporadic connection issues. Right now
+mac80211 expect beacons so give it beacons.
 
- I was going through the vmalloc fault handling for x86_64 and am unclear
- about the following lines in the vmalloc_fault() function.
-
- pgd = pgd_offset(current->mm ?: &init_mm, address);
- pgd_ref = pgd_offset_k(address);
-
- Here the intention is to get the pgd corresponding to the current process
- and sync it up with the pgd in init_mm(obtained from pgd_offset_k).
- However, for kernel threads current->mm is NULL and hence pgd =
- pgd_offset(init_mm, address) = pgd_ref which means the fault handler
- returns without setting the pgd entry in the MM structure in the context
- of which the kernel thread has faulted.  This could lead to never-ending
- faults and busy looping of kernel threads like pdflush.  So, shouldn't the
- pgd = pgd_offset(current->mm ?: &init_mm, address); be pgd =
- pgd_offset(current->active_mm ?: &init_mm, address);
-
-We can use active_mm unconditionally because it should be always set.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/fault.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wireless/ath9k/recv.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -533,7 +533,7 @@ static int vmalloc_fault(unsigned long a
- 	   happen within a race in page table update. In the later
- 	   case just flush. */
+--- a/drivers/net/wireless/ath9k/recv.c
++++ b/drivers/net/wireless/ath9k/recv.c
+@@ -627,9 +627,8 @@ u32 ath_calcrxfilter(struct ath_softc *s
+ 		rfilt &= ~ATH9K_RX_FILTER_UCAST;
+ 	}
  
--	pgd = pgd_offset(current->mm ?: &init_mm, address);
-+	pgd = pgd_offset(current->active_mm, address);
- 	pgd_ref = pgd_offset_k(address);
- 	if (pgd_none(*pgd_ref))
- 		return -1;
+-	if (((sc->sc_ah->ah_opmode == ATH9K_M_STA) &&
+-	     (sc->rx_filter & FIF_BCN_PRBRESP_PROMISC)) ||
+-	    (sc->sc_ah->ah_opmode == ATH9K_M_IBSS))
++	if (sc->sc_ah->ah_opmode == ATH9K_M_STA ||
++			sc->sc_ah->ah_opmode == ATH9K_M_IBSS)
+ 		rfilt |= ATH9K_RX_FILTER_BEACON;
+ 
+ 	/* If in HOSTAP mode, want to enable reception of PSPOLL frames
 
