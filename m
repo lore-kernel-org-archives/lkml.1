@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936234AbZAOWsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936275AbZAOWtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936234AbZAOWsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934138AbZAOWEH
+	id S936275AbZAOWtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934144AbZAOWEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:04:07 -0500
-Received: from kroah.org ([198.145.64.141]:39149 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:04:08 -0500
+Received: from kroah.org ([198.145.64.141]:39161 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932233AbZAOWD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:56 -0500
-Date: Thu, 15 Jan 2009 14:02:01 -0800
+	id S934077AbZAOWD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:57 -0500
+Date: Thu, 15 Jan 2009 14:02:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Suresh Siddha <suresh.b.siddha@intel.com>,
-       arjan@linux.intel.com, venkatesh.pallipadi@intel.com, jeremy@goop.org,
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 80/85] x86, cpa: dont use large pages for kernel identity
-	mapping with DEBUG_PAGEALLOC
-Message-ID: <20090115220201.GC17227@kroah.com>
+Subject: [patch 81/85] x86: fix RIP printout in early_idt_handler
+Message-ID: <20090115220204.GD17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-cpa-dont-use-large-pages-for-kernel-identity-mapping-with-debug_pagealloc.patch"
+Content-Disposition: inline; filename="x86-fix-rip-printout-in-early_idt_handler.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,151 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 0b8fdcbcd287a1fbe66817491e6149841ae25705 upstream.
+commit 7aed55d1085f71241284a30af0300feea48c36db upstream.
 
-Don't use large pages for kernel identity mapping with DEBUG_PAGEALLOC.
-This will remove the need to split the large page for the
-allocated kernel page in the interrupt context.
+Impact: fix debug/crash printout
 
-This will simplify cpa code(as we don't do the split any more from the
-interrupt context). cpa code simplication in the subsequent patches.
+Since errorcode is popped out, RIP is on the top of the stack.
+Use real RIP value instead of wrong CS.
 
-Tested-by: Tony Battersby <tonyb@cybernetics.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: arjan@linux.intel.com
-Cc: venkatesh.pallipadi@intel.com
-Cc: jeremy@goop.org
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/init_32.c |   18 ++++++++++++++----
- arch/x86/mm/init_64.c |   26 ++++++++++++++++++++------
- 2 files changed, 34 insertions(+), 10 deletions(-)
+ arch/x86/kernel/head_64.S |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -718,7 +718,7 @@ void __init setup_bootmem_allocator(void
- 	after_init_bootmem = 1;
- }
- 
--static void __init find_early_table_space(unsigned long end)
-+static void __init find_early_table_space(unsigned long end, int use_pse)
- {
- 	unsigned long puds, pmds, ptes, tables, start;
- 
-@@ -728,7 +728,7 @@ static void __init find_early_table_spac
- 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
- 	tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
- 
--	if (cpu_has_pse) {
-+	if (use_pse) {
- 		unsigned long extra;
- 
- 		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
-@@ -768,12 +768,22 @@ unsigned long __init_refok init_memory_m
- 	pgd_t *pgd_base = swapper_pg_dir;
- 	unsigned long start_pfn, end_pfn;
- 	unsigned long big_page_start;
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	/*
-+	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
-+	 * This will simplify cpa(), which otherwise needs to support splitting
-+	 * large pages into small in interrupt context, etc.
-+	 */
-+	int use_pse = 0;
-+#else
-+	int use_pse = cpu_has_pse;
-+#endif
- 
- 	/*
- 	 * Find space for the kernel direct mapping tables.
- 	 */
- 	if (!after_init_bootmem)
--		find_early_table_space(end);
-+		find_early_table_space(end, use_pse);
- 
- #ifdef CONFIG_X86_PAE
- 	set_nx();
-@@ -819,7 +829,7 @@ unsigned long __init_refok init_memory_m
- 	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
- 	if (start_pfn < end_pfn)
- 		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
--						cpu_has_pse);
-+					     use_pse);
- 
- 	/* tail is not big page alignment ? */
- 	start_pfn = end_pfn;
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -446,13 +446,14 @@ phys_pud_update(pgd_t *pgd, unsigned lon
- 	return phys_pud_init(pud, addr, end, page_size_mask);
- }
- 
--static void __init find_early_table_space(unsigned long end)
-+static void __init find_early_table_space(unsigned long end, int use_pse,
-+					  int use_gbpages)
- {
- 	unsigned long puds, pmds, ptes, tables, start;
- 
- 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
- 	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE);
--	if (direct_gbpages) {
-+	if (use_gbpages) {
- 		unsigned long extra;
- 		extra = end - ((end>>PUD_SHIFT) << PUD_SHIFT);
- 		pmds = (extra + PMD_SIZE - 1) >> PMD_SHIFT;
-@@ -460,7 +461,7 @@ static void __init find_early_table_spac
- 		pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
- 	tables += round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
- 
--	if (cpu_has_pse) {
-+	if (use_pse) {
- 		unsigned long extra;
- 		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
- 		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
-@@ -571,6 +572,7 @@ unsigned long __init_refok init_memory_m
- 
- 	struct map_range mr[NR_RANGE_MR];
- 	int nr_range, i;
-+	int use_pse, use_gbpages;
- 
- 	printk(KERN_INFO "init_memory_mapping\n");
- 
-@@ -584,9 +586,21 @@ unsigned long __init_refok init_memory_m
- 	if (!after_bootmem)
- 		init_gbpages();
- 
--	if (direct_gbpages)
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	/*
-+	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
-+	 * This will simplify cpa(), which otherwise needs to support splitting
-+	 * large pages into small in interrupt context, etc.
-+	 */
-+	use_pse = use_gbpages = 0;
-+#else
-+	use_pse = cpu_has_pse;
-+	use_gbpages = direct_gbpages;
-+#endif
-+
-+	if (use_gbpages)
- 		page_size_mask |= 1 << PG_LEVEL_1G;
--	if (cpu_has_pse)
-+	if (use_pse)
- 		page_size_mask |= 1 << PG_LEVEL_2M;
- 
- 	memset(mr, 0, sizeof(mr));
-@@ -647,7 +661,7 @@ unsigned long __init_refok init_memory_m
- 			 (mr[i].page_size_mask & (1<<PG_LEVEL_2M))?"2M":"4k"));
- 
- 	if (!after_bootmem)
--		find_early_table_space(end);
-+		find_early_table_space(end, use_pse, use_gbpages);
- 
- 	for (i = 0; i < nr_range; i++)
- 		last_map_addr = kernel_physical_mapping_init(
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -305,7 +305,7 @@ ENTRY(early_idt_handler)
+ 	call dump_stack
+ #ifdef CONFIG_KALLSYMS	
+ 	leaq early_idt_ripmsg(%rip),%rdi
+-	movq 8(%rsp),%rsi	# get rip again
++	movq 0(%rsp),%rsi	# get rip again
+ 	call __print_symbol
+ #endif
+ #endif /* EARLY_PRINTK */
 
