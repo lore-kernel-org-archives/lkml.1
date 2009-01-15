@@ -1,85 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbZAOOHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765163AbZAOOJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765044AbZAOOHs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZAOOHj
+	id S1765163AbZAOOJJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZAOOIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:07:39 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:51063 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754247AbZAOOHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:07:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dUacL0usy6Ox1UpB3tu34xVd05jk0IuQZAEBs08SKRJead3vE8qD6GH06oktMQeJpr
-         CaPYL+rp/keEggpHqWi8YyODL44LzBSepSePln376hO18DkbpgtC8FYXvy1QzbRNK/6k
-         05G3Y5Fb2QiVWuC2Jg0yWh5flgEVXuabOOU+w=
-Message-ID: <25e057c00901150559t14fd3becn5cea005895dacdc4@mail.gmail.com>
-Date: Thu, 15 Jan 2009 14:59:35 +0100
-From: "roel kluin" <roel.kluin@gmail.com>
-To: "Tejun Heo" <tj@kernel.org>
-Subject: Re: [patch] add optimized generic percpu accessors
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Brian Gerst" <brgerst@gmail.com>, ebiederm@xmission.com,
-       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       steiner@sgi.com, hugh@veritas.com
-In-Reply-To: <496F346B.6020804@kernel.org>
+	Thu, 15 Jan 2009 09:08:52 -0500
+Received: from ns.suse.de ([195.135.220.2]:50405 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756333AbZAOOIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 09:08:51 -0500
+Message-ID: <496F4370.4010406@suse.de>
+Date: Thu, 15 Jan 2009 15:08:48 +0100
+From: Stefan Assmann <sassmann@suse.de>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Olaf Dabrunz <od@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Jon Masters <jcm@redhat.com>
+Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
+ interrupt equivalent
+References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain> <496C788C.9050305@suse.de> <20090113155717.GM25512@suse.de> <200901141710.33859.bjorn.helgaas@hp.com>
+In-Reply-To: <200901141710.33859.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1231843097-18003-1-git-send-email-tj@kernel.org>
-	 <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com>
-	 <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com>
-	 <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org>
-	 <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org>
-	 <20090115122611.GJ22850@elte.hu> <496F346B.6020804@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#ifndef percpu_read
-> +# define percpu_read(var)                                              \
-> +  ({                                                                   \
-> +       typeof(per_cpu_var(var)) __tmp_var__;                           \
-> +       __tmp_var__ = get_cpu_var(var);                                 \
-> +       put_cpu_var(var);                                               \
-> +       __tmp_var__;                                                    \
-> +  })
-> +#endif
+Bjorn Helgaas wrote:
+> On Tuesday 13 January 2009 08:57:17 am Olaf Dabrunz wrote:
+>> On 13-Jan-09, Stefan Assmann wrote:
+>>> Bjorn Helgaas wrote:
+>>>> (I added Eric, Maciej, and Jon because they participated in
+>>>> previous discussion here: http://lkml.org/lkml/2008/6/2/269)
+>>>>
+>>>> On Monday 12 January 2009 04:09:25 am Stefan Assmann wrote:
+>>>>> Len Brown wrote:
+>>>>>> Stefan,
+>>>>>> I had to exclude your changes to drivers/acpi/pci_irq.c from
+>>>>>> e1d3a90846b40ad3160bf4b648d36c6badad39ac
+>>>>>> in order to get some other changes to that file upstream in the
+>>>>>> 2.6.29 merge window. ...
+>>>>> Let me try to give you a short overview of what's happening there.
+>>>>>
+>>>>> If an IRQ arrives at line X of a non-primary IO-APIC and that line is
+>>>>> masked a new IRQ will be generated on the primary IO-APIC/PIC. This is
+>>>>> called a "Boot Interrupt" by Intel. It's purpose is, as the name
+>>>>> suggests, to ensure that the IRQ is handled at boot time (when the
+>>>>> non-primary) IO-APIC is still disabled.
+>>>>>
+>>>>> Condition to be met for "Boot Interrupts":
+>>>>> - line X on non-primary IO-APIC interrupt line is masked
+>>>>> - line X is asserted
+>>>> Thanks.  Let me replay this to see whether I understand.  Please
+>>>> correct any of my misapprehensions :-)
+>>>>
+>>>> Since your patch doesn't look at the IOxAPIC RDL register to see
+>>>> whether the pin is masked, you must be assuming that Linux is
+>>>> *always* using boot interrupts, and never unmasking the non-primary
+>>>> IOxAPIC entry.
+>>> Yes, for this special case that is correct.
+>> Right. The current reroute code assumes that all interrupts use masking.
+> 
+> I'm not an expert in the "classic x86 ioapic behaviour" or in RT
+> interrupt handling.  My main objections are that the patch as proposed
+> is a gross hack in the ACPI _PRT lookup path, and that it didn't touch
+> the non-ACPI lookup path, which should have the same problem.  Now that
 
-I'm sorry for your eyes, but since var occurs twice, isn't it better to do:
+I guess by non-ACPI path you refer to the MP_TABLE. So in case you boot
+with "acpi=off" the system falls back to the MP_TABLE information and
+this is not covered yet.
 
-# define percpu_read(var)                                              \
-  ({                                                                   \
-       typeof(var) __pcpu_read_var__ = var;
-               \
-       typeof(per_cpu_var(__pcpu_read_var__)) __tmp_var__;                    \
-       __tmp_var__ = get_cpu_var(__pcpu_read_var__);                           \
-       put_cpu_var(__pcpu_read_var__);                                         \
-       __tmp_var__;                                                    \
-  })
+> Eric pointed out this is just classic behavior, I also wonder why the
+> quirk doesn't list more devices.
 
-> +
-> +#define __percpu_generic_to_op(var, val, op)                           \
-> +do {                                                                   \
-> +       get_cpu_var(var) op val;                                        \
-> +       put_cpu_var(var);                                               \
-> +} while (0)
+The reason why the list of quirks isn't larger is that there's no
+documentation available in public for some of the chipsets. For example
+for Nvidia and VIA chipsets. Note that there is only a problem if more
+than one IO-APIC exists in the system. Additional IO-APICs usually
+appear on PCI bridges. We have not encountered any systems yet that are
+Nvidia or VIA based with more than one IO-APIC. But your mileage may
+vary.
 
-and:
+> The effect of the patch sounds sort of similar to using "noapic" --
+> you're basically ignoring the IOAPIC and using only the "boot interrupt"
+> or legacy PIC interrupt or whatever it is.  Can you contrast it with
+> that?
 
-#define __percpu_generic_to_op(var, val, op)                           \
-do {                                                                   \
-       typeof(var) __pcpu_gto_var__ = var;
-              \
-       get_cpu_var(__pcpu_gto_var__) op val;
-             \
-       put_cpu_var(__pcpu_gto_var__);
-             \
-} while (0)
+The main difference here is that "noapic" disables any IO-APIC in the
+system, whereas the patch leaves them intact. We won't be falling back
+to the PIC instead we fall back to the first IO-APIC.
+
+What difference does this make? We won't lose all the enhancements of
+the IO-APIC over the PIC. What comes to mind first is that, when using
+the PIC all non-MSI interrupts have to be dealt with by CPU0. You have
+no IRQ balancing, pinning and such things.
+
+> 
+> Bjorn
+> 
+> 
+
+  Stefan
+
+-- 
+Stefan Assmann          | SUSE LINUX Products GmbH
+Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
+Mail: sassmann@suse.de  | GF: Markus Rex, HRB 16746 (AG Nuernberg)
