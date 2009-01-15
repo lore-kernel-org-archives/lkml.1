@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764480AbZAOOGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbZAOOHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764480AbZAOOGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbZAOOG2
+	id S1765044AbZAOOHs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZAOOHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:06:28 -0500
-Received: from ee.oulu.fi ([130.231.61.23]:35929 "EHLO ee.oulu.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754645AbZAOOG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:06:28 -0500
-X-Greylist: delayed 1519 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 09:06:27 EST
-Date: Thu, 15 Jan 2009 15:40:55 +0200
-From: Pekka Pietikainen <pp@ee.oulu.fi>
-To: Mihai =?utf-8?B?RG9uyJt1?= <mihai.dontu@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: b44 - swapper: page allocation failure
-Message-ID: <20090115134055.GA15551@ee.oulu.fi>
-References: <20090115111537.GA994@gondor.apana.org.au> <200901151527.43646.mihai.dontu@gmail.com>
+	Thu, 15 Jan 2009 09:07:39 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:51063 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754247AbZAOOHi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 09:07:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dUacL0usy6Ox1UpB3tu34xVd05jk0IuQZAEBs08SKRJead3vE8qD6GH06oktMQeJpr
+         CaPYL+rp/keEggpHqWi8YyODL44LzBSepSePln376hO18DkbpgtC8FYXvy1QzbRNK/6k
+         05G3Y5Fb2QiVWuC2Jg0yWh5flgEVXuabOOU+w=
+Message-ID: <25e057c00901150559t14fd3becn5cea005895dacdc4@mail.gmail.com>
+Date: Thu, 15 Jan 2009 14:59:35 +0100
+From: "roel kluin" <roel.kluin@gmail.com>
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: [patch] add optimized generic percpu accessors
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Brian Gerst" <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+In-Reply-To: <496F346B.6020804@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901151527.43646.mihai.dontu@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1231843097-18003-1-git-send-email-tj@kernel.org>
+	 <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com>
+	 <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com>
+	 <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org>
+	 <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org>
+	 <20090115122611.GJ22850@elte.hu> <496F346B.6020804@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 03:27:43PM +0200, Mihai Donțu wrote:
-> > > A friend of mine just booted 2.6.28 and when someone else tried to send
-> > > something to him over ssh (scp), the transfer failed and the following
-> > > appeared in dmesg:
-> > You missed the all important order line before the stack trace.
-> Right, sorry for that. Here it is:
-> swapper: page allocation failure. order:0, mode:0x21
-> > If it's order 0, then you're just out of memory, if it's greater
-> > than order 0, then either you're using jumbo frames or b44 is
-> > broken.
-> It is order zero, but he's not out of memory. He has just booted 2.6.28 (no X, 
-> no thing), has 3GB of RAM and 2GB of swap.
-b44 uses GFP_DMA bounce buffers in some situations (x86_64 with > 1GB of
-memory would do the trick I think, as does x86 with 4:4 memory split),
-and that's a very limited resource (Memory < 16MB ). 
+> +#ifndef percpu_read
+> +# define percpu_read(var)                                              \
+> +  ({                                                                   \
+> +       typeof(per_cpu_var(var)) __tmp_var__;                           \
+> +       __tmp_var__ = get_cpu_var(var);                                 \
+> +       put_cpu_var(var);                                               \
+> +       __tmp_var__;                                                    \
+> +  })
+> +#endif
 
-Lovely hardware feature requiring nasty workarounds
-(the chip can't do DMA for addresses > 1GB).
+I'm sorry for your eyes, but since var occurs twice, isn't it better to do:
 
-Maybe something else sucks up GFP_DMA memory with 2.6.28?
+# define percpu_read(var)                                              \
+  ({                                                                   \
+       typeof(var) __pcpu_read_var__ = var;
+               \
+       typeof(per_cpu_var(__pcpu_read_var__)) __tmp_var__;                    \
+       __tmp_var__ = get_cpu_var(__pcpu_read_var__);                           \
+       put_cpu_var(__pcpu_read_var__);                                         \
+       __tmp_var__;                                                    \
+  })
+
+> +
+> +#define __percpu_generic_to_op(var, val, op)                           \
+> +do {                                                                   \
+> +       get_cpu_var(var) op val;                                        \
+> +       put_cpu_var(var);                                               \
+> +} while (0)
+
+and:
+
+#define __percpu_generic_to_op(var, val, op)                           \
+do {                                                                   \
+       typeof(var) __pcpu_gto_var__ = var;
+              \
+       get_cpu_var(__pcpu_gto_var__) op val;
+             \
+       put_cpu_var(__pcpu_gto_var__);
+             \
+} while (0)
