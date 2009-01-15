@@ -1,128 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763480AbZAOVLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZAOVLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763480AbZAOVLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933971AbZAOVD3
+	id S1753173AbZAOVLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933800AbZAOVFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 16:03:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33310 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934793AbZAOVD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 16:03:26 -0500
-X-Authenticated: #6028172
-X-Provags-ID: V01U2FsdGVkX1+EBy85dl2Eb2OHuAGYpb9CIteMlC3qUhmlgR12Hj
-	R7z1AQU/iH5OlB
-Message-ID: <496FA4B6.3000607@gmx.de>
-Date: Thu, 15 Jan 2009 22:03:50 +0100
-From: Dieter Ries <clip2@gmx.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Maciej Rutecki <maciej.rutecki@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc1 does not boot
-References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu> <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu> <496A3F62.8090902@gmx.de> <496F9604.8020101@sgi.com>
-In-Reply-To: <496F9604.8020101@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 15 Jan 2009 16:05:43 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:30437 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934147AbZAOVFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 16:05:40 -0500
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+In-Reply-To: <alpine.LFD.2.00.0901151208310.6528@localhost.localdomain>
+References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
+	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
+	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
+	 <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>
+	 <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org>
+	 <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
+	 <20090115180844.GL22472@elte.hu>
+	 <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain>
+	 <1232047618.8269.93.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0901151208310.6528@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 16:04:18 -0500
+Message-Id: <1232053458.8269.139.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.496FA4D8.01B3:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis schrieb:
-> Hi Dieter and Maciej,
-
-Hi Mike,
-
+On Thu, 2009-01-15 at 12:13 -0800, Linus Torvalds wrote:
 > 
-> Can you try the attached patches on your system?  It boots on my system fine
-> now, but wasn't there a problem with resume as well?  (My test systems are
-> remote so suspending/resuming over the network is iffy.)
-
-I just tested it. The kernel does boot up, suspending to ram works
-perfectly, hibernating did also work, but I found an inconsistent lock
-state in dmesg afterwards. System is still fully functional
-
-May or may not be related, I don't know.
-
-But the original problem is solved by your patches. Thank you!
-
-
-[   97.475165] =================================
-[   97.475165] [ INFO: inconsistent lock state ]
-[   97.475165] 2.6.29-rc1-00256-g0f0f4af #147
-[   97.475165] ---------------------------------
-[   97.475165] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-[   97.475165] echo/5817 [HC0[0]:SC0[0]:HE1:SE1] takes:
-[   97.475165]  (&cpu_base->lock){++..}, at: [<ffffffff8025b4fd>]
-retrigger_next_event+0x7d/0xd0
-[   97.475165] {in-hardirq-W} state was registered at:
-[   97.475165]   [<ffffffffffffffff>] 0xffffffffffffffff
-[   97.475165] irq event stamp: 88679
-[   97.475165] hardirqs last  enabled at (88679): [<ffffffff8069be05>]
-_spin_unlock_irqrestore+0x55/0x60
-[   97.475165] hardirqs last disabled at (88678): [<ffffffff8069bcac>]
-_spin_lock_irqsave+0x1c/0x60
-[   97.475165] softirqs last  enabled at (88466): [<ffffffff802478c2>]
-__do_softirq+0x132/0x190
-[   97.475165] softirqs last disabled at (88461): [<ffffffff8020c97c>]
-call_softirq+0x1c/0x40
-[   97.475165]
-[   97.475165] other info that might help us debug this:
-[   97.475165] 3 locks held by echo/5817:
-[   97.475165]  #0:  (&buffer->mutex){--..}, at: [<ffffffff8030dff3>]
-sysfs_write_file+0x43/0x140
-[   97.475165]  #1:  (pm_mutex){--..}, at: [<ffffffff802755a5>]
-enter_state+0x55/0x190
-[   97.475165]  #2:  (dpm_list_mtx){--..}, at: [<ffffffff80499212>]
-device_pm_lock+0x12/0x20
-[   97.475165]
-[   97.475165] stack backtrace:
-[   97.475165] Pid: 5817, comm: echo Not tainted
-2.6.29-rc1-00256-g0f0f4af #147
-[   97.475165] Call Trace:
-[   97.475165]  [<ffffffff80266f86>] print_usage_bug+0x1a6/0x200
-[   97.475165]  [<ffffffff80268647>] mark_lock+0xab7/0xe90
-[   97.475165]  [<ffffffff8026ae8a>] __lock_acquire+0x80a/0xa50
-[   97.475165]  [<ffffffff8026b128>] lock_acquire+0x58/0x80
-[   97.475165]  [<ffffffff8025b4fd>] ? retrigger_next_event+0x7d/0xd0
-[   97.475165]  [<ffffffff8069b8bc>] _spin_lock+0x2c/0x40
-[   97.475165]  [<ffffffff8025b4fd>] ? retrigger_next_event+0x7d/0xd0
-[   97.475165]  [<ffffffff8025b4fd>] retrigger_next_event+0x7d/0xd0
-[   97.475165]  [<ffffffff8025b55b>] hres_timers_resume+0xb/0x10
-[   97.475165]  [<ffffffff80260973>] timekeeping_resume+0xc3/0x100
-[   97.475165]  [<ffffffff80493730>] __sysdev_resume+0x20/0x60
-[   97.475165]  [<ffffffff804937ba>] sysdev_resume+0x4a/0x80
-[   97.475165]  [<ffffffff80499db0>] device_power_up+0x10/0x20
-[   97.475165]  [<ffffffff802754c8>] suspend_devices_and_enter+0x158/0x170
-[   97.475165]  [<ffffffff802756a5>] enter_state+0x155/0x190
-[   97.475165]  [<ffffffff8027578e>] state_store+0xae/0xe0
-[   97.475165]  [<ffffffff804009e7>] kobj_attr_store+0x17/0x20
-[   97.475165]  [<ffffffff8030e07e>] sysfs_write_file+0xce/0x140
-[   97.475165]  [<ffffffff802bd4d7>] vfs_write+0xc7/0x170
-[   97.475165]  [<ffffffff802bda90>] sys_write+0x50/0x90
-[   97.475165]  [<ffffffff8020b81b>] system_call_fastpath+0x16/0x1b
-
-
-
+> On Thu, 15 Jan 2009, Chris Mason wrote:
 > 
-> The patches apply to the latest tip/cpus4096 branch:
+> > On Thu, 2009-01-15 at 10:16 -0800, Linus Torvalds wrote:
+> > > 
+> > > Umm. Except if you wrote the code nicely and used spinlocks, you wouldn't 
+> > > hold the lock over all those unnecessary and complex operations.
+> > 
+> > While this is true, there are examples of places we should expect
+> > speedups for this today.
 > 
-> 	http://people.redhat.com/mingo/tip.git/README
-
-Thanks for that link. Could one of you hint me to some documentation
-about what tip is? I searched a bit, but didn't find it.
-
+> Sure. There are cases where we do have to use sleeping things, because the 
+> code is generic and really can't control what lower levels do, and those 
+> lower levels have to be able to sleep.
 > 
-> (They may apply to linux-next as well, I'm not sure.)
+> So:
 > 
-> Thanks!
-> Mike
+> > Concurrent file creation/deletion in a single dir will often find things
+> > hot in cache and not have to block anywhere (mail spools).
+> 
+> The inode->i_mutex thing really does need to use a mutex, and spinning 
+> will help. Of course, it should only help when you really have lots of 
+> concurrent create/delete/readdir in the same directory, and that hopefully 
+> is a very rare load in real life, but hey, it's a valid one.
 > 
 
-cu
+Mail server deletes is the common one I can think of.  Mail server
+creates end up bound by fsync in my testing here, so it doesn't quite
+show up unless your IO subsystem is much faster than your kernel.
 
-Dieter
+
+> > Concurrent O_DIRECT aio writes to the same file, where i_mutex is
+> > dropped early on.
+> 
+> Won't the actual IO costs generally dominate in everything but trivial 
+> benchmarks?
+
+Benchmarks in the past on large IO rigs have shown it.  It isn't
+something you're going to see on a regular sized server, but for AIO +
+O_DIRECT, the pieces that hold i_mutex can be seen in real life.
+
+[ re: pipes, ok I don't know of realistic pipe benchmarks but I'll run
+them if people can suggest one ]
+
+I ran a mailserver delivery simulation (fs_mark), and then my standard
+dbench/4k creates/4k stats on ext3 and ext4.
+
+ext3 had very similar scores with spinning on and off.
+
+ext4 scored the same on mailserver delivery (fsync bound apparently)
+
+For the others:
+
+dbench no spin: 1970MB/s
+dbench spin:    3036MB/s
+
+(4k creates in file/sec, higher is better)
+4k creates no spin: avg 418.91 median 346.12 std 306.37 high 2025.80 low 338.11
+4k creates spin:    avg 406.09 median 344.27 std 179.95 high 1249.78 low 336.10
+
+Somehow the spinning mutex made ext4 more fair.  The 4k create test had
+50 procs doing file creates in parallel, but each proc was operating in
+its own directory.  So, they shouldn't actually be competing for any of
+the VFS mutexes.
+
+The stat run was the same patched/unpatched, probably for the same
+reason.
+
+None of this is very earth shattering, apparently my canned benchmarks
+for btrfs pain points don't apply that well to ext34.  
+
+-chris
+
 
