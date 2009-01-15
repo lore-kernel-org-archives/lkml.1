@@ -1,125 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbZAOQsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbZAOQtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbZAOQsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 11:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZAOQsb
+	id S1761419AbZAOQtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 11:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZAOQta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 11:48:31 -0500
-Received: from mga02.intel.com ([134.134.136.20]:45688 "EHLO mga02.intel.com"
+	Thu, 15 Jan 2009 11:49:30 -0500
+Received: from gw2.cosmosbay.com ([86.64.20.130]:37196 "EHLO gw2.cosmosbay.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbZAOQsa convert rfc822-to-8bit (ORCPT
+	id S1753135AbZAOQt3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 11:48:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,270,1231142400"; 
-   d="scan'208";a="481958582"
-From: "Ma, Chinang" <chinang.ma@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>
-CC: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "srostedt@redhat.com" <srostedt@redhat.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Date: Thu, 15 Jan 2009 09:48:12 -0700
-Subject: RE: Mainline kernel OLTP performance update
-Thread-Topic: Mainline kernel OLTP performance update
-Thread-Index: Acl2r8XsWrB1aSUFSqiW7cxXvJzbWQAfvg0A
-Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E80031752B45E@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
- <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
- <20090114163557.11e097f2.akpm@linux-foundation.org>
- <20090115012147.GW29283@parisc-linux.org>
-In-Reply-To: <20090115012147.GW29283@parisc-linux.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 15 Jan 2009 11:49:29 -0500
+Message-ID: <496F690A.2090606@cosmosbay.com>
+Date: Thu, 15 Jan 2009 17:49:14 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
+To: Pekka Pietikainen <pp@ee.oulu.fi>
+CC: =?UTF-8?B?TWloYWkgRG9uyJt1?= <mihai.dontu@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] b44: GFP_DMA skb should not escape from driver
+References: <20090115111537.GA994@gondor.apana.org.au> <200901151527.43646.mihai.dontu@gmail.com> <20090115134055.GA15551@ee.oulu.fi> <496F4AD4.9080201@cosmosbay.com>
+In-Reply-To: <496F4AD4.9080201@cosmosbay.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw2.cosmosbay.com [127.0.0.1]); Thu, 15 Jan 2009 17:49:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
->-----Original Message-----
->From: Matthew Wilcox [mailto:matthew@wil.cx]
->Sent: Wednesday, January 14, 2009 5:22 PM
->To: Andrew Morton
->Cc: Wilcox, Matthew R; Ma, Chinang; linux-kernel@vger.kernel.org; Tripathi,
->Sharad C; arjan@linux.intel.com; Kleen, Andi; Siddha, Suresh B; Chilukuri,
->Harita; Styner, Douglas W; Wang, Peter Xihong; Nueckel, Hubert;
->chris.mason@oracle.com; srostedt@redhat.com; linux-scsi@vger.kernel.org;
->Andrew Vasquez; Anirban Chakraborty
->Subject: Re: Mainline kernel OLTP performance update
->
->On Wed, Jan 14, 2009 at 04:35:57PM -0800, Andrew Morton wrote:
->> On Tue, 13 Jan 2009 15:44:17 -0700
->> "Wilcox, Matthew R" <matthew.r.wilcox@intel.com> wrote:
->> >
+Eric Dumazet a écrit :
+> Pekka Pietikainen a écrit :
+>> On Thu, Jan 15, 2009 at 03:27:43PM +0200, Mihai Donțu wrote:
+>>>>> A friend of mine just booted 2.6.28 and when someone else tried to send
+>>>>> something to him over ssh (scp), the transfer failed and the following
+>>>>> appeared in dmesg:
+>>>> You missed the all important order line before the stack trace.
+>>> Right, sorry for that. Here it is:
+>>> swapper: page allocation failure. order:0, mode:0x21
+>>>> If it's order 0, then you're just out of memory, if it's greater
+>>>> than order 0, then either you're using jumbo frames or b44 is
+>>>> broken.
+>>> It is order zero, but he's not out of memory. He has just booted 2.6.28 (no X, 
+>>> no thing), has 3GB of RAM and 2GB of swap.
+>> b44 uses GFP_DMA bounce buffers in some situations (x86_64 with > 1GB of
+>> memory would do the trick I think, as does x86 with 4:4 memory split),
+>> and that's a very limited resource (Memory < 16MB ). 
 >>
->> (top-posting repaired.  That @intel.com address is a bad influence ;))
->
->Alas, that email address goes to an Outlook client.  Not much to be done
->about that.
->
->> (cc linux-scsi)
+>> Lovely hardware feature requiring nasty workarounds
+>> (the chip can't do DMA for addresses > 1GB).
 >>
->> > > This is latest 2.6.29-rc1 kernel OLTP performance result. Compare to
->> > > 2.6.24.2 the regression is around 3.5%.
->> > >
->> > > Linux OLTP Performance summary
->> > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
->iowait%
->> > > 2.6.24.2                1.000   21969   43425   76   24     0      0
->> > > 2.6.27.2                0.973   30402   43523   74   25     0      1
->> > > 2.6.29-rc1              0.965   30331   41970   74   26     0      0
->
->> But the interrupt rate went through the roof.
->
->Yes.  I forget why that was; I'll have to dig through my archives for
->that.
+>> Maybe something else sucks up GFP_DMA memory with 2.6.28?
+> 
+> Normal tcp queues (in this case, since a single scp is enough
+> to trigger the bug)
+> 
+> If a rx buffer was allocated using GFP_DMA, then b44_rx()
+> should copy it to a new skb, (like done by copybreak algo),
+> regardless of frame size, to not consume DMA memory in protocol
+> queues.
+> 
+> Better be slow (because of extra copy) then risking exhausting DMA zone
+> 
+> easy way to test would be to redefine RX_COPY_THRESHOLD to 16000
 
-I took a quick look at the interrupts figure between 2.6.24 and 2.6.27. i/o interuputs is slightly down in 2.6.27 (due to reduce throughput). But both NMI and reschedule interrupt increased.  Reschedule interrupts is 2x of 2.6.24.
+Or try following patch (I dont have this hardware)
 
->
->> A 3.5% slowdown in this workload is considered pretty serious, isn't it?
->
->Yes.  Anything above 0.3% is statistically significant.  1% is a big
->deal.  The fact that we've lost 3.5% in the last year doesn't make
->people happy.  There's a few things we've identified that have a big
->effect:
->
-> - Per-partition statistics.  Putting in a sysctl to stop doing them gets
->   some of that back, but not as much as taking them out (even when
->   the sysctl'd variable is in a __read_mostly section).  We tried a
->   patch from Jens to speed up the search for a new partition, but it
->   had no effect.
->
-> - The RT scheduler changes.  They're better for some RT tasks, but not
->   the database benchmark workload.  Chinang has posted about
->   this before, but the thread didn't really go anywhere.
->   http://marc.info/?t=122903815000001&r=1&w=2
->
->SLUB would have had a huge negative effect if we were using it -- on the
->order of 7% iirc.  SLQB is at least performance-neutral with SLAB.
->
->--
->Matthew Wilcox				Intel Open Source Technology Centre
->"Bill, look, we understand that you're interested in selling us this
->operating system, but compare it to ours.  We can't possibly take such
->a retrograde step."
+[PATCH] b44: GFP_DMA skb should not escape from driver
 
--Chinang
+b44 chip has some hardware limitations, that need GFP_DMA bounce
+buffers in some situations.
+
+In order to not deplete DMA zone, we should keep allocated GFP_DMA skb
+only for driver use. At rx time, we copy such skb to newly allocated
+skb, reusing existing copybreak infrastructure.
+
+On machines with low amount of memory, all skb meet the hardware limitation,
+so no copy is needed. We detect this situation using a new device flag, set
+to one if one GFP_DMA skb was ever allocated by b44_alloc_rx_skb().
+
+Previously allocated skb, even outside from DMA zone will then be recycled,
+to have minimal impact on DMA zone use.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index 5ae131c..c38512e 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -679,6 +679,7 @@ static int b44_alloc_rx_skb(struct b44 *bp, int src_idx, u32 dest_idx_unmasked)
+ 			dev_kfree_skb_any(skb);
+ 			return -ENOMEM;
+ 		}
++		bp->force_copybreak = 1;
+ 	}
+ 
+ 	rh = (struct rx_header *) skb->data;
+@@ -800,7 +801,7 @@ static int b44_rx(struct b44 *bp, int budget)
+ 		/* Omit CRC. */
+ 		len -= 4;
+ 
+-		if (len > RX_COPY_THRESHOLD) {
++		if (!bp->force_copybreak && len > RX_COPY_THRESHOLD) {
+ 			int skb_size;
+ 			skb_size = b44_alloc_rx_skb(bp, cons, bp->rx_prod);
+ 			if (skb_size < 0)
+@@ -2152,6 +2153,7 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
+ 	bp = netdev_priv(dev);
+ 	bp->sdev = sdev;
+ 	bp->dev = dev;
++	bp->force_copybreak = 0;
+ 
+ 	bp->msg_enable = netif_msg_init(b44_debug, B44_DEF_MSG_ENABLE);
+ 
+diff --git a/drivers/net/b44.h b/drivers/net/b44.h
+index 7db0c84..e678498 100644
+--- a/drivers/net/b44.h
++++ b/drivers/net/b44.h
+@@ -395,7 +395,7 @@ struct b44 {
+ 	u32			rx_pending;
+ 	u32			tx_pending;
+ 	u8			phy_addr;
+-
++	u8			force_copybreak;
+ 	struct mii_if_info	mii_if;
+ };
+ 
+
