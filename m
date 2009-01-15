@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936373AbZAOWpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935619AbZAOWqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936373AbZAOWpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934102AbZAOWEA
+	id S935619AbZAOWqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934112AbZAOWEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:04:00 -0500
-Received: from kroah.org ([198.145.64.141]:39085 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:04:02 -0500
+Received: from kroah.org ([198.145.64.141]:39117 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934024AbZAOWDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:52 -0500
-Date: Thu, 15 Jan 2009 14:01:53 -0800
+	id S934042AbZAOWDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:54 -0500
+Date: Thu, 15 Jan 2009 14:01:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kuniyasu Suzaki <k.suzaki@aist.go.jp>,
-       Nguyen Anh Quynh <aquynh@gmail.com>
-Subject: [patch 76/85] USB: another unusual_devs entry for another bad
-	Argosy storage device
-Message-ID: <20090115220153.GY17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Paulo Afonso Graner Fessel <pfessel@gmail.com>,
+       Phil Dibowitz <phil@ipom.com>
+Subject: [patch 78/85] USB: storage: recognizing and enabling Nokia 5200
+	cell phoes
+Message-ID: <20090115220157.GA17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-another-unusual_devs-entry-for-another-bad-argosy-storage-device.patch"
+Content-Disposition: inline; filename="usb-storage-recognizing-and-enabling-nokia-5200-cell-phoes.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,23 +42,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nguyen Anh Quynh <aquynh@gmail.com>
+From: Paulo Afonso Graner Fessel <pfessel@gmail.com>
 
-commit e2673b28911a43257265523e3672861be6e44093 upstream.
+commit b8d23491f127aa0cd1863bd6cb58e771c558b762 upstream.
 
-I have another Argosy USB storage device, which has the same problem
-with the Argosy USB storage device already fixed in 2.6.27.7. But this
-device has another product ID (840:84), so this patch adds a new entry
-into unusual_devs to fix the mount problem.
+This patch corrects the issue when one connects a Nokia 5200 cell
+phone in data storage mode. If one uses an unpatched unusual_devs.h,
+the following messages appear on /var/log/messages:
 
-I enclose here two patches: one against 2.6.27.8, and another against
-the latest linus-git tree.
+Dec 12 01:03:24 alberich kernel: usb 4-2: new full speed USB device
+using uhci_hcd and address 3
+Dec 12 01:03:25 alberich kernel: usb 4-2: configuration #1 chosen from 1 choice
+Dec 12 01:03:25 alberich kernel: scsi10 : SCSI emulation for USB Mass
+Storage devices
+Dec 12 01:03:25 alberich kernel: usb 4-2: New USB device found,
+idVendor=0421, idProduct=04bd
+Dec 12 01:03:25 alberich kernel: usb 4-2: New USB device strings:
+Mfr=1, Product=2, SerialNumber=3
+Dec 12 01:03:25 alberich kernel: usb 4-2: Product: Nokia 5200
+Dec 12 01:03:25 alberich kernel: usb 4-2: Manufacturer: Nokia
+Dec 12 01:03:25 alberich kernel: usb 4-2: SerialNumber: 353930018354523
+Dec 12 01:03:25 alberich kernel: usbcore: registered new interface driver ub
+Dec 12 01:03:30 alberich kernel: scsi 10:0:0:0: Direct-Access
+Nokia    Nokia 5200       0000 PQ: 0 AN
+SI: 4
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] 3985409 512-byte
+hardware sectors (2041 MB)
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Write Protect is off
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Assuming drive
+cache: write through
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] 3985409 512-byte
+hardware sectors (2041 MB)
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Write Protect is off
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Assuming drive
+cache: write through
+Dec 12 01:03:30 alberich kernel:  sdg: sdg1
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Attached SCSI removable disk
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: Attached scsi generic sg9 type 0
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Add. Sense: No
+additional sense information
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Add. Sense: No
+additional sense information
+Dec 12 01:03:30 alberich kernel: sd 10:0:0:0: [sdg] Sense Key : No
+Sense [current]
 
+(...)
 
-The information about the Argosy device is like below:
+The MicroSD card in the phone remains inaccessible and finally the
+cell phone turns itself off. The patch solves this problem and makes
+the cell phone fully accessible:
 
-#lsusb -v -d 840:84
-Bus 005 Device 005: ID 0840:0084 Argosy Research, Inc.
+[root@alberich kernel-linus-2.6.27.5-1mdv]# df -h
+Sist. Arq.            Tam   Usad Disp  Uso% Montado em
+/dev/sda6              31G  5,2G   26G  17% /
+/dev/sda1              92M   27M   61M  31% /boot
+/dev/mapper/homevg-homelv  240G  237G  3,5G  99% /home
+/dev/sda3              21G  7,9G   13G  40% /mnt/windows
+/dev/sdg1             2,0G  287M  1,7G  15% /media/disk <--------
+
+I've found necessary to use the FL_US_CAPACITY_FIX switch, as without
+it the cell phone is recognized but it went berserk when performing
+low-level functions on it (a fdisk -l /dev/uba for example).
+
+lsusb -v output follows:
+
+Bus 004 Device 004: ID 0421:04bd Nokia Mobile Phones
 Device Descriptor:
   bLength                18
   bDescriptorType         1
@@ -66,12 +119,12 @@ Device Descriptor:
   bDeviceSubClass         0
   bDeviceProtocol         0
   bMaxPacketSize0        64
-  idVendor           0x0840 Argosy Research, Inc.
-  idProduct          0x0084
-  bcdDevice            0.01
-  iManufacturer           1 Generic
-  iProduct                2 USB 2.0 Storage Device
-  iSerial                 3 8400000000002549
+  idVendor           0x0421 Nokia Mobile Phones
+  idProduct          0x04bd
+  bcdDevice            6.03
+  iManufacturer           1 Nokia
+  iProduct                2 Nokia 5200
+  iSerial                 3 353930018354523
   bNumConfigurations      1
   Configuration Descriptor:
     bLength                 9
@@ -82,7 +135,7 @@ Device Descriptor:
     iConfiguration          0
     bmAttributes         0xc0
       Self Powered
-    MaxPower                2mA
+    MaxPower              100mA
     Interface Descriptor:
       bLength                 9
       bDescriptorType         4
@@ -96,73 +149,28 @@ Device Descriptor:
       Endpoint Descriptor:
         bLength                 7
         bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
         bEndpointAddress     0x01  EP 1 OUT
         bmAttributes            2
           Transfer Type            Bulk
           Synch Type               None
           Usage Type               Data
-        wMaxPacketSize     0x0200  1x 512 bytes
+        wMaxPacketSize     0x0040  1x 64 bytes
         bInterval               0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x82  EP 2 IN
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0200  1x 512 bytes
-        bInterval               0
-Device Qualifier (for other device speed):
-  bLength                10
-  bDescriptorType         6
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0
-  bDeviceProtocol         0
-  bMaxPacketSize0        64
-  bNumConfigurations      1
-Device Status:     0x0000
-  (Bus Powered)
+Device Status:     0x0001
+  Self Powered
 
-Before the patch, dmesg returns a lot of information like below (my
-dmesg is overflown):
-....
-[  138.833390] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
-[  138.877631] sd 7:0:0:0: [sdb] Sense Key : No Sense [current]
-[  138.877643] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
-[  138.921906] sd 7:0:0:0: [sdb] Sense Key : No Sense [current]
-[  138.921923] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
-....
-
-After the fix, dmesg returns below information:
-....
-usb 5-1: new high speed USB device using ehci_hcd and address 5
-usb 5-1: configuration #1 chosen from 1 choice
-scsi7 : SCSI emulation for USB Mass Storage devices
-usb-storage: device found at 5
-usb-storage: waiting for device to settle before scanning
-usb-storage: device scan complete
-scsi 7:0:0:0: Direct-Access     HTS54808 0M9AT00          MG4O PQ: 0 ANSI: 0
-sd 7:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
-sd 7:0:0:0: [sdb] Write Protect is off
-sd 7:0:0:0: [sdb] Mode Sense: 03 00 00 00
-sd 7:0:0:0: [sdb] Assuming drive cache: write through
-sd 7:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
-sd 7:0:0:0: [sdb] Write Protect is off
-sd 7:0:0:0: [sdb] Mode Sense: 03 00 00 00
-sd 7:0:0:0: [sdb] Assuming drive cache: write through
- sdb: sdb1
-sd 7:0:0:0: [sdb] Attached SCSI disk
-sd 7:0:0:0: Attached scsi generic sg1 type 0
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb1, internal journal
-EXT3-fs: recovery complete.
-EXT3-fs: mounted filesystem with ordered data mode.
-
-Cc: Kuniyasu Suzaki <k.suzaki@aist.go.jp>
-Signed-off-by: Nguyen Anh Quynh <aquynh@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Paulo Afonso Graner Fessel <pfessel@gmail.com>
+Signed-off-by: Phil Dibowitz <phil@ipom.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
@@ -171,18 +179,18 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/drivers/usb/storage/unusual_devs.h
 +++ b/drivers/usb/storage/unusual_devs.h
-@@ -1320,6 +1320,13 @@ UNUSUAL_DEV( 0x0840, 0x0082, 0x0001, 0x0
+@@ -246,6 +246,13 @@ UNUSUAL_DEV(  0x0421, 0x04b9, 0x0500, 0x
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
+ 		US_FL_FIX_CAPACITY ),
  
-+/* Reported and patched by Nguyen Anh Quynh <aquynh@gmail.com> */
-+UNUSUAL_DEV( 0x0840, 0x0084, 0x0001, 0x0001,
-+		"Argosy",
-+		"Storage",
++/* Reported by Paulo Fessel <pfessel@gmail.com> */
++UNUSUAL_DEV(  0x0421, 0x04bd, 0x0000, 0x9999,
++		"Nokia",
++		"5200",
 +		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY),
++		US_FL_FIX_CAPACITY ),
 +
- /* Entry and supporting patch by Theodore Kilgore <kilgota@auburn.edu>.
-  * Flag will support Bulk devices which use a standards-violating 32-byte
-  * Command Block Wrapper. Here, the "DC2MEGA" cameras (several brands) with
+ /* Reported by Richard Nauber <RichardNauber@web.de> */
+ UNUSUAL_DEV(  0x0421, 0x04fa, 0x0550, 0x0660,
+ 		"Nokia",
 
