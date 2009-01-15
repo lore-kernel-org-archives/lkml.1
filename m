@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765336AbZAOSxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbZAOS4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765336AbZAOSxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZAOSxd
+	id S1763451AbZAOS4F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZAOSzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:53:33 -0500
-Received: from mx04.mailboxcop.com ([206.125.223.74]:44978 "EHLO
-	mx04.mailboxcop.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755791AbZAOSxc (ORCPT
+	Thu, 15 Jan 2009 13:55:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:63278 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755524AbZAOSzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:53:32 -0500
-Message-ID: <496F8631.3070902@jaysonking.com>
-Date: Thu, 15 Jan 2009 12:53:37 -0600
-From: Jayson King <dev@jaysonking.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 15 Jan 2009 13:55:52 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=ZiK0RHh8oggC0SnOrKMcJtvVXgfFubfJGqWNN/ZTDQdsOxKDl+corft0TCzCXsmJZ
+	7u/V7HbVwSCz1XONKzwSw==
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Lin Ming <ming.m.lin@intel.com>, Mike Galbraith <efault@gmx.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Performance regression of specjbb2005/aim7 with 2.6.29-rc1
-References: <1231837036.11429.27.camel@ymzhang>	 <1231839464.14655.12.camel@marge.simson.net>	 <1231986636.10565.159.camel@minggr.sh.intel.com> <1232036235.8870.75.camel@laptop>
-In-Reply-To: <1232036235.8870.75.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <1232035561.5966.48.camel@localhost.localdomain>
+References: <200901051952.58029.bzolnier@gmail.com>
+	 <20090105185428.GS32491@kernel.dk>
+	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>
+	 <20090106073515.GY32491@kernel.dk> <4964866D.8010503@msgid.tls.msk.ru>
+	 <1231342473.3282.19.camel@localhost.localdomain>
+	 <496ECBA0.60209@gmail.com>
+	 <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
+	 <1232035561.5966.48.camel@localhost.localdomain>
+Date: Thu, 15 Jan 2009 10:55:45 -0800
+Message-ID: <da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com>
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
+From: Grant Grundler <grundler@google.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Canit-CHI2: 0.04
-X-Bayes-Prob: 0.0001 (Score 0, tokens from: @@RPTN, outgoing)
-X-Spam-Score: 0.10 () [Hold at 5.20] RDNS_NONE,2(1.2),6947(-1.2)
-X-CanItPRO-Stream: outgoing (inherits from default)
-X-Canit-Stats-ID: 341642990 - 59b5111924c9
-X-Antispam-Training-Forget: http://mailboxcop.com/canit/b.php?i=341642990&m=59b5111924c9&c=f
-X-Antispam-Training-Nonspam: http://mailboxcop.com/canit/b.php?i=341642990&m=59b5111924c9&c=n
-X-Antispam-Training-Spam: http://mailboxcop.com/canit/b.php?i=341642990&m=59b5111924c9&c=s
+X-GMailtapped-By: 172.28.16.142
+X-GMailtapped: grundler
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-01-15 at 10:30 +0800, Lin Ming wrote:
-> 
->> Below patch fixes aim7 regression and specjbb2005 regression becomes
->> less than 1.5% on 8-core stokley.
-> 
-> Ingo, please apply the below.
-> 
-> Ming, would you also provide a S-o-b line?
-> 
-> ---
-> Subject: sched_slice fixlet
-> From: Lin Ming <ming.m.lin@intel.com>
-> Date: Thu Jan 15 17:10:02 CET 2009
-> 
-> Mike's change: 0a582440f -- sched: fix sched_slice())
-> Broke group scheduling by forgetting to reload cfs_rq on each loop.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched_fair.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/sched_fair.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched_fair.c
-> +++ linux-2.6/kernel/sched_fair.c
-> @@ -429,7 +429,10 @@ static u64 sched_slice(struct cfs_rq *cf
->  	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
->  
->  	for_each_sched_entity(se) {
-> -		struct load_weight *load = &cfs_rq->load;
-> +		struct load_weight *load;
-> +
-> +		cfs_rq = cfs_rq_of(se);
-> +		load = &cfs_rq->load;
->  
->  		if (unlikely(!se->on_rq)) {
->  			struct load_weight lw = cfs_rq->load;
-> 
-> 
-> 
+On Thu, Jan 15, 2009 at 8:06 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+...
+> Right, this is the flash cache idea that's been floating around for a
+> while.  It's even been suggested as a way of avoiding the IDE barrier
+> flush penalties.  I think Seagate went as far as making hybrid drives
+> that were a large flash cache backed by rotational storage.
 
+"inline" RAM caches  were implemented 10+ years ago for SCSI devices
+to avoid seek *and* rotational delay penalties. These were transperent
+SCSI devices that would cache and prefetch content from disks.
+For the given dataset size, the seek cost was effectively zero. This is
+mostly true today for high-end disk arrays which have large RAM
+front-end's (TB) and very smart data placement strategies (reduced seek).
 
-That still works for me. You may add:
+Back to the bikeshed painting: I prefer two flags: "AVGREADCOST" and
+"AVGWRITECOST as the flag. This isn't just about seek. Rotational delay
+@7200 RPM is 8.3ms. Making both non-zero implies rotational media.
+Different devices have different read and write characteristics.
+Flash typically has a much higher write cost than read cost.
+Disks (because of WCE) can be the opposite.
 
-Tested-by: Jayson King <dev@jaysonking.com>
+Code can test for zero/nonzero or (preferably) more fine grained.
+e.g. "avgreadcost > 1ms" or "avgwritecost". I'm hoping this test
+can be abstracted into a macro.
 
+I'm hoping longterm, the values could be "self tuning" but don't know
+how that might work - e.g. 1 minute avg? 10 minute avg? Cost
+of collecting/maintaining the stats? Feels like a CONFIG option.
 
-
+hth,
+grant
