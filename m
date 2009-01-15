@@ -1,60 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZAOPft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZAOPn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbZAOPft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 10:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZAOPfd
+	id S1758068AbZAOPn1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 10:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZAOPnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 10:35:33 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:45616 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754524AbZAOPfb (ORCPT
+	Thu, 15 Jan 2009 10:43:14 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:34451 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbZAOPnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 10:35:31 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Wq8dWv3VV4nXiW9L5QFHP/mkOYTiTzXfU0Q9RX6In92PqCcaGdxpqlrELYyuCYBqjYPFh/t7GdVatJw/ZiqDXJkEIpQ8ra+kmLwuFsoSRkdyFZf8O1uySy/f9Fg+wImU3kGXdNUW/HklKZq+0ckuZxwhQDFUMQzdhNW3e7Ixcdg=  ;
-X-YMail-OSG: JE0WzboVM1mHY8WWYzmJPv5QGFe19Gs56ZYp95VZqOzL.l3mQsQNzxS_1tX7B67AcGidIpgtpjECQxsvB9u_MTQLTCxIk.3.6p94H4zirQqKMx.5sgtGxUdYhEdVKM1VxfpgKa8mQJrskHQEbJYymSD.a8H5vDB1S3pfVVUvd_x2HkBhM7iI9D_au2z3
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc] regulator: add get_status()
-Date: Thu, 15 Jan 2009 07:35:29 -0800
+	Thu, 15 Jan 2009 10:43:13 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Christian Eggers" <ceggers@gmx.de>, netdev@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: Buffer allocation for USB transfers
+Date: Thu, 15 Jan 2009 16:43:49 +0100
 User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <200811091531.46003.david-b@pacbell.net> <20090115124007.GD2147@sirena.org.uk> <1232023845.4934.368.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1232023845.4934.368.camel@vega.slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org
+References: <496E43F4.24792.158F9B@ceggers.gmx.de>
+In-Reply-To: <496E43F4.24792.158F9B@ceggers.gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901150735.29883.david-b@pacbell.net>
+Message-Id: <200901151643.50635.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009, Liam Girdwood wrote:
-> 
-> > > +   /* report regulator status ... most other accessors report
-> > > +    * control inputs, this reports results of combining inputs
-> > > +    * from Linux (and other sources) with the actual load.
-> > > +    */
-> > > +   int (*get_status)(struct regulator_dev *);
-> > > +
-> > 
-> > ...this needs kerneldoc adding.
-> 
-> Please send a separate patch for the kerneldoc as I've already applied.
+Am Wednesday 14 January 2009 19:58:44 schrieb Christian Eggers:
+> At least the latter does not work on my SH-4 platform. It seems that other 
+> variables on the stack are overwritten after calling usb_control_msg(), probably as 
+> result of incorrect alignment.
 
-So that will be the first member of "struct regulator_ops" to
-grow kerneldoc ... out of a total of fifteen (now) members.
-Hmm...
+Does this make it run on SH-4?
 
-Maybe I'm not understanding what's meant by "kerneldoc adding".
-Perhaps it's nothing more than a sentence resembling "returns
-REGULATOR_STATUS_* code or negative errno", and not real
-kerneldoc?
+	Regards
+		Oliver
 
-- Dave
+---
 
+--- a/drivers/net/usb/mcs7830.c
++++ b/drivers/net/usb/mcs7830.c
+@@ -181,12 +181,17 @@ static int mcs7830_read_phy(struct usbnet *dev, u8 index)
+ {
+ 	int ret;
+ 	int i;
+-	__le16 val;
+-
+-	u8 cmd[2] = {
+-		HIF_REG_PHY_CMD1_READ | HIF_REG_PHY_CMD1_PHYADDR,
+-		HIF_REG_PHY_CMD2_PEND_FLAG_BIT | index,
+-	};
++	__le16 *val;
++	u8 *cmd;
++
++	cmd = kmalloc(2, GFP_NOIO);
++	if (!cmd)
++		return -ENOMEM;
++	cmd[0] = HIF_REG_PHY_CMD1_READ | HIF_REG_PHY_CMD1_PHYADDR;
++	cmd[1] = HIF_REG_PHY_CMD2_PEND_FLAG_BIT | index;
++	val = kzalloc(sizeof(__le16), GFP_NOIO);
++	if (!val)
++		goto out2;
+ 
+ 	mutex_lock(&dev->phy_mutex);
+ 	/* write the MII command */
+@@ -206,7 +211,7 @@ static int mcs7830_read_phy(struct usbnet *dev, u8 index)
+ 		goto out;
+ 
+ 	/* read actual register contents */
+-	ret = mcs7830_get_reg(dev, HIF_REG_PHY_DATA, 2, &val);
++	ret = mcs7830_get_reg(dev, HIF_REG_PHY_DATA, 2, val);
+ 	if (ret < 0)
+ 		goto out;
+ 	ret = le16_to_cpu(val);
+@@ -214,6 +219,9 @@ static int mcs7830_read_phy(struct usbnet *dev, u8 index)
+ 		index, val, i);
+ out:
+ 	mutex_unlock(&dev->phy_mutex);
++	kfree(val);
++out2:
++	kfree(cmd);
+ 	return ret;
+ }
+ 
+@@ -221,18 +229,24 @@ static int mcs7830_write_phy(struct usbnet *dev, u8 index, u16 val)
+ {
+ 	int ret;
+ 	int i;
+-	__le16 le_val;
++	__le16 *le_val;
++	u8 *cmd;
++
++	cmd = kmalloc(2, GFP_NOIO);
++	if (!cmd)
++		return -ENOMEM;
++	cmd[0] = HIF_REG_PHY_CMD1_WRITE | HIF_REG_PHY_CMD1_PHYADDR;
++	cmd[1] = HIF_REG_PHY_CMD2_PEND_FLAG_BIT | (index & 0x1F);
+ 
+-	u8 cmd[2] = {
+-		HIF_REG_PHY_CMD1_WRITE | HIF_REG_PHY_CMD1_PHYADDR,
+-		HIF_REG_PHY_CMD2_PEND_FLAG_BIT | (index & 0x1F),
+-	};
++	le_val = kmalloc(sizeof(__le16), GFP_NOIO);
++	if (!le_val)
++		goto out2;
+ 
+ 	mutex_lock(&dev->phy_mutex);
+ 
+ 	/* write the new register contents */
+ 	le_val = cpu_to_le16(val);
+-	ret = mcs7830_set_reg(dev, HIF_REG_PHY_DATA, 2, &le_val);
++	ret = mcs7830_set_reg(dev, HIF_REG_PHY_DATA, 2, le_val);
+ 	if (ret < 0)
+ 		goto out;
+ 
+@@ -257,6 +271,9 @@ static int mcs7830_write_phy(struct usbnet *dev, u8 index, u16 val)
+ 		index, val, i);
+ out:
+ 	mutex_unlock(&dev->phy_mutex);
++	kfree(le_val);
++out2:
++	kfree(cmd);
+ 	return ret;
+ }
+ 
+@@ -289,9 +306,14 @@ static int mcs7830_set_autoneg(struct usbnet *dev, int ptrUserPhyMode)
+  */
+ static int mcs7830_get_rev(struct usbnet *dev)
+ {
+-	u8 dummy[2];
++	u8 *dummy;
+ 	int ret;
++
++	dummy = kmalloc(2, GFP_NOIO);
++	if (!dummy)
++		return 1;
+ 	ret = mcs7830_get_reg(dev, HIF_REG_22, 2, dummy);
++	kfree(dummy);
+ 	if (ret > 0)
+ 		return 2; /* Rev C or later */
+ 	return 1; /* earlier revision */
+@@ -302,17 +324,22 @@ static int mcs7830_get_rev(struct usbnet *dev)
+  */
+ static void mcs7830_rev_C_fixup(struct usbnet *dev)
+ {
+-	u8 pause_threshold = HIF_REG_PAUSE_THRESHOLD_DEFAULT;
++	u8 *pause_threshold;
+ 	int retry;
+ 
++	pause_threshold = kmalloc(sizeof(u8), GFP_NOIO);
++	if (!pause_threshold)
++		return;
++	*pause_threshold = HIF_REG_PAUSE_THRESHOLD_DEFAULT;
+ 	for (retry = 0; retry < 2; retry++) {
+ 		if (mcs7830_get_rev(dev) == 2) {
+ 			dev_info(&dev->udev->dev, "applying rev.C fixup\n");
+ 			mcs7830_set_reg(dev, HIF_REG_PAUSE_THRESHOLD,
+-					1, &pause_threshold);
++					1, pause_threshold);
+ 		}
+ 		msleep(1);
+ 	}
++	kfree(pause_threshold);
+ }
+ 
+ static int mcs7830_init_dev(struct usbnet *dev)
