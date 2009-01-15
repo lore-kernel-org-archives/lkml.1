@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbZAOWQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935273AbZAOWQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbZAOWQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbZAOWCX
+	id S935273AbZAOWQz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765911AbZAOWCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:23 -0500
-Received: from kroah.org ([198.145.64.141]:38330 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:24 -0500
+Received: from kroah.org ([198.145.64.141]:38343 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933563AbZAOWCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933633AbZAOWCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 17:02:15 -0500
-Date: Thu, 15 Jan 2009 13:59:45 -0800
+Date: Thu, 15 Jan 2009 13:59:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 25/85] [PATCH 05/44] [CVE-2009-0029] Make sys_pselect7
-	static
-Message-ID: <20090115215945.GZ17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kyle McMartin <kyle@redhat.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 26/85] [PATCH 06/44] [CVE-2009-0029] Make sys_syslog a
+	conditional system call
+Message-ID: <20090115215947.GA17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0005--CVE-2009-0029-Make-sys_pselect7-static.patch"
+Content-Disposition: inline; filename="0006--CVE-2009-0029-Make-sys_syslog-a-conditional-system.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,63 +43,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit c9da9f2129d6a421c32e334a83770a9e67f7feac upstream.
+commit f627a741d24f12955fa2d9f8831c3b12860635bd upstream.
 
-Not a single architecture has wired up sys_pselect7 plus it is the
-only system call with seven parameters. Just make it static and
-rename it to do_pselect which will do the work for sys_pselect6.
+Remove the -ENOSYS implementation for !CONFIG_PRINTK and use
+the cond_syscall infrastructure instead.
 
+Acked-by: Kyle McMartin <kyle@redhat.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/compat.c |    6 +++---
- fs/select.c |    8 ++++----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ kernel/printk.c |    5 -----
+ kernel/sys_ni.c |    1 +
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1640,7 +1640,7 @@ sticky:
- }
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -782,11 +782,6 @@ EXPORT_SYMBOL(vprintk);
  
- #ifdef HAVE_SET_RESTORE_SIGMASK
--asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
-+static long do_compat_pselect(int n, compat_ulong_t __user *inp,
- 	compat_ulong_t __user *outp, compat_ulong_t __user *exp,
- 	struct compat_timespec __user *tsp, compat_sigset_t __user *sigmask,
- 	compat_size_t sigsetsize)
-@@ -1748,8 +1748,8 @@ asmlinkage long compat_sys_pselect6(int 
- 				(compat_size_t __user *)(sig+sizeof(up))))
- 			return -EFAULT;
- 	}
--	return compat_sys_pselect7(n, inp, outp, exp, tsp, compat_ptr(up),
--					sigsetsize);
-+	return do_compat_pselect(n, inp, outp, exp, tsp, compat_ptr(up),
-+				 sigsetsize);
- }
+ #else
  
- asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -427,9 +427,9 @@ sticky:
- }
- 
- #ifdef HAVE_SET_RESTORE_SIGMASK
--asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
--		fd_set __user *exp, struct timespec __user *tsp,
--		const sigset_t __user *sigmask, size_t sigsetsize)
-+static long do_pselect(int n, fd_set __user *inp, fd_set __user *outp,
-+		       fd_set __user *exp, struct timespec __user *tsp,
-+		       const sigset_t __user *sigmask, size_t sigsetsize)
+-asmlinkage long sys_syslog(int type, char __user *buf, int len)
+-{
+-	return -ENOSYS;
+-}
+-
+ static void call_console_drivers(unsigned start, unsigned end)
  {
- 	s64 timeout = MAX_SCHEDULE_TIMEOUT;
- 	sigset_t ksigmask, sigsaved;
-@@ -527,7 +527,7 @@ asmlinkage long sys_pselect6(int n, fd_s
- 			return -EFAULT;
- 	}
- 
--	return sys_pselect7(n, inp, outp, exp, tsp, up, sigsetsize);
-+	return do_pselect(n, inp, outp, exp, tsp, up, sigsetsize);
  }
- #endif /* HAVE_SET_RESTORE_SIGMASK */
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -125,6 +125,7 @@ cond_syscall(sys_vm86old);
+ cond_syscall(sys_vm86);
+ cond_syscall(compat_sys_ipc);
+ cond_syscall(compat_sys_sysctl);
++cond_syscall(sys_syslog);
  
+ /* arch-specific weak syscall entries */
+ cond_syscall(sys_pciconfig_read);
 
