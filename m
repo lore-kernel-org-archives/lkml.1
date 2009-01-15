@@ -1,89 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZAOLhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbZAOLjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbZAOLhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZAOLhO
+	id S1757912AbZAOLjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZAOLjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:37:14 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34093 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751505AbZAOLhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:37:12 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/SJGICyODSQPKqXGJCIKaOMf0foXLmg7LszdOio+
-	kR3IevidUZ/KbG
-Subject: Re: [BUG] How to get real-time priority using idle priority
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Brian Rogers <brian@xyzw.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1232015423.13856.5.camel@marge.simson.net>
-References: <4969D0D7.2060401@xyzw.org>
-	 <1231736941.6003.7.camel@marge.simson.net>
-	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
-	 <496BE8F6.1040308@xyzw.org>  <1232011723.26761.36.camel@marge.simson.net>
-	 <1232014456.8870.26.camel@laptop>
-	 <1232015423.13856.5.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 12:37:08 +0100
-Message-Id: <1232019428.5720.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 15 Jan 2009 06:39:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33567 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751505AbZAOLjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:39:42 -0500
+Message-ID: <496F2032.5080502@kernel.org>
+Date: Thu, 15 Jan 2009 20:38:26 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
+       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+Subject: Re: [patch] add optimized generic percpu accessors
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org> <20090115113045.GG22850@elte.hu>
+In-Reply-To: <20090115113045.GG22850@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Jan 2009 11:38:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 11:30 +0100, Mike Galbraith wrote:
-> On Thu, 2009-01-15 at 11:14 +0100, Peter Zijlstra wrote:
-> >
-> > Which leads me to suggest the following
-> > 
-> > ---
-> > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> > index 8e1352c..f2d2d94 100644
-> > --- a/kernel/sched_fair.c
-> > +++ b/kernel/sched_fair.c
-> > @@ -283,7 +283,7 @@ static void update_min_vruntime(struct cfs_rq
-> > *cfs_rq)
-> >  						   struct sched_entity,
-> >  						   run_node);
-> >  
-> > -		if (vruntime == cfs_rq->min_vruntime)
-> > +		if (!cfs_rq->curr)
-> >  			vruntime = se->vruntime;
-> >  		else
-> >  			vruntime = min_vruntime(vruntime, se->vruntime);
+Hello,
+
+Ingo Molnar wrote:
+> The new ops are a pretty nice and clean solution i think.
 > 
-> Aha.  Yeah, I'll re-test with that instead.
-
-Works a treat.
-
-> > The below can be split into 3 patches:
-> > 
-> >  - the idle weight change (do we really need that? why?)
+> Firstly, accessing the current CPU is the only safe shortcut anyway (there 
+> is where we can do %fs/%gs / rip-relative addressing modes), and the 
+> generic per_cpu() APIs dont really provide that guarantee for us. We might 
+> be able to hook into __get_cpu_var() but those both require to be an 
+> lvalue and are also relatively rarely used.
 > 
-> I saw idle tasks slamming extremely far.  I'll verify, less is more.
+> So introducing the new, rather straightforward APIs and using them 
+> wherever they matter for performance is good. Your patchset already shaved 
+> off an instruction from ordinary per_cpu() accesses, so it's all moving 
+> rather close to the most-optimal situation already.
 
-time advanced in 100ms
-weight=2
-64765.988352
-67012.881408
-88501.412352
+Yeah, I don't think we can do much better than those ops.  I have two
+issues tho.
 
-weight=3
-35496.181411
-34130.971298
-35497.411573
+1. percpu_and() is missing.  I added it for completeness's sake.
 
-Measured from an RT shell doing..
-   while sleep .1; do cat /proc/sched_debug >> /debug; done
-..for a pinned chew.  Not necessarily gnats-arse accurate, but good
-enough to see the margin of error is pretty high with weight=2.
+2. The generic percpu_op() should be local to the cpu, so it should
+   expand to...
 
-Your call.
+   do { get_cpu_var(var) OP (val); put_cpu_var(var) } while (0)
 
-	-Mike
+   as the original x86_OP_percpu() did.  Right?
 
+Thanks.
+
+-- 
+tejun
