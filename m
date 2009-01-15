@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934381AbZAOUzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZAOUzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934381AbZAOUzO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932361AbZAOUDQ
+	id S932409AbZAOUzr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932362AbZAOUDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:03:16 -0500
-Received: from kroah.org ([198.145.64.141]:49866 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:03:18 -0500
+Received: from kroah.org ([198.145.64.141]:49876 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765878AbZAOUDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:03:07 -0500
-Date: Thu, 15 Jan 2009 12:00:42 -0800
+	id S932192AbZAOUDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:03:08 -0500
+Date: Thu, 15 Jan 2009 12:00:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Brian King <brking@linux.vnet.ibm.com>,
        James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 90/94] [SCSI] ibmvfc: Delay NPIV login retry and add retries
-Message-ID: <20090115200042.GL14419@kroah.com>
+Subject: [patch 91/94] [SCSI] ibmvfc: Improve async event handling
+Message-ID: <20090115200044.GM14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ibmvfc-delay-npiv-login-retry-and-add-retries.patch"
+Content-Disposition: inline; filename="ibmvfc-improve-async-event-handling.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,93 +42,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Brian King <brking@linux.vnet.ibm.com>
 
-commit 1c41fa8288277e76785acb50f52bb2f39509f903 upstream.
+commit d2131b33c7e07c2905ee2f2321cc4dae1928c483 upstream.
 
-Adds a delay prior to retrying a failed NPIV login. This fixes
-a scenario if the backing fibre channel adapter is getting reset
-due to an EEH event, NPIV login will fail. Currently, ibmvfc
-retries three times very quickly, resets the CRQ and tries one
-more time. If the adapter is getting reset due to EEH, this isn't
-enough time. This adds a delay prior to retrying a failed NPIV
-login and also increments the number of retries.
+While doing various error injection testing, such as cable
+pulls and target moves, some issues were observed in handling
+these events. This patch improves the way these events are handled
+by increasing the delay waiting for the fabric to settle and also
+changes the behavior of Link Up to break the CRQ to ensure everything
+gets cleaned up properly on the VIOS.
 
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c |   17 ++++++++++++-----
- drivers/scsi/ibmvscsi/ibmvfc.h |    4 +++-
- 2 files changed, 15 insertions(+), 6 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c |   10 ++++++----
+ drivers/scsi/ibmvscsi/ibmvfc.h |    2 +-
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -566,7 +566,7 @@ static void ibmvfc_init_host(struct ibmv
- 	struct ibmvfc_target *tgt;
- 
- 	if (vhost->action == IBMVFC_HOST_ACTION_INIT_WAIT) {
--		if (++vhost->init_retries > IBMVFC_MAX_INIT_RETRIES) {
-+		if (++vhost->init_retries > IBMVFC_MAX_HOST_INIT_RETRIES) {
- 			dev_err(vhost->dev,
- 				"Host initialization retries exceeded. Taking adapter offline\n");
- 			ibmvfc_link_down(vhost, IBMVFC_HOST_OFFLINE);
-@@ -847,11 +847,12 @@ static void ibmvfc_reset_host(struct ibm
- static void ibmvfc_retry_host_init(struct ibmvfc_host *vhost)
- {
- 	if (vhost->action == IBMVFC_HOST_ACTION_INIT_WAIT) {
--		if (++vhost->init_retries > IBMVFC_MAX_INIT_RETRIES) {
+@@ -2090,15 +2090,17 @@ static void ibmvfc_handle_async(struct i
+ 	case IBMVFC_AE_LINK_UP:
+ 	case IBMVFC_AE_RESUME:
+ 		vhost->events_to_log |= IBMVFC_AE_LINKUP;
+-		ibmvfc_init_host(vhost, 1);
 +		vhost->delay_init = 1;
-+		if (++vhost->init_retries > IBMVFC_MAX_HOST_INIT_RETRIES) {
- 			dev_err(vhost->dev,
- 				"Host initialization retries exceeded. Taking adapter offline\n");
- 			ibmvfc_link_down(vhost, IBMVFC_HOST_OFFLINE);
--		} else if (vhost->init_retries == IBMVFC_MAX_INIT_RETRIES)
-+		} else if (vhost->init_retries == IBMVFC_MAX_HOST_INIT_RETRIES)
- 			__ibmvfc_reset_host(vhost);
- 		else
- 			ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_INIT);
-@@ -2669,7 +2670,7 @@ static void ibmvfc_init_tgt(struct ibmvf
- static void ibmvfc_retry_tgt_init(struct ibmvfc_target *tgt,
- 				  void (*job_step) (struct ibmvfc_target *))
- {
--	if (++tgt->init_retries > IBMVFC_MAX_INIT_RETRIES) {
-+	if (++tgt->init_retries > IBMVFC_MAX_TGT_INIT_RETRIES) {
- 		ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_DEL_RPORT);
- 		wake_up(&tgt->vhost->work_wait_q);
- 	} else
-@@ -3519,7 +3520,13 @@ static void ibmvfc_do_work(struct ibmvfc
++		__ibmvfc_reset_host(vhost);
  		break;
- 	case IBMVFC_HOST_ACTION_INIT:
- 		BUG_ON(vhost->state != IBMVFC_INITIALIZING);
--		vhost->job_step(vhost);
-+		if (vhost->delay_init) {
-+			vhost->delay_init = 0;
-+			spin_unlock_irqrestore(vhost->host->host_lock, flags);
-+			ssleep(5);
-+			return;
-+		} else
-+			vhost->job_step(vhost);
+ 	case IBMVFC_AE_SCN_FABRIC:
++	case IBMVFC_AE_SCN_DOMAIN:
+ 		vhost->events_to_log |= IBMVFC_AE_RSCN;
+-		ibmvfc_init_host(vhost, 1);
++		vhost->delay_init = 1;
++		__ibmvfc_reset_host(vhost);
  		break;
- 	case IBMVFC_HOST_ACTION_QUERY:
- 		list_for_each_entry(tgt, &vhost->targets, queue)
+ 	case IBMVFC_AE_SCN_NPORT:
+ 	case IBMVFC_AE_SCN_GROUP:
+-	case IBMVFC_AE_SCN_DOMAIN:
+ 		vhost->events_to_log |= IBMVFC_AE_RSCN;
+ 	case IBMVFC_AE_ELS_LOGO:
+ 	case IBMVFC_AE_ELS_PRLO:
+@@ -3523,7 +3525,7 @@ static void ibmvfc_do_work(struct ibmvfc
+ 		if (vhost->delay_init) {
+ 			vhost->delay_init = 0;
+ 			spin_unlock_irqrestore(vhost->host->host_lock, flags);
+-			ssleep(5);
++			ssleep(15);
+ 			return;
+ 		} else
+ 			vhost->job_step(vhost);
 --- a/drivers/scsi/ibmvscsi/ibmvfc.h
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.h
-@@ -43,7 +43,8 @@
- #define IBMVFC_MAX_DISC_THREADS	4
- #define IBMVFC_TGT_MEMPOOL_SZ		64
- #define IBMVFC_MAX_CMDS_PER_LUN	64
--#define IBMVFC_MAX_INIT_RETRIES	3
-+#define IBMVFC_MAX_HOST_INIT_RETRIES	6
-+#define IBMVFC_MAX_TGT_INIT_RETRIES		3
- #define IBMVFC_DEV_LOSS_TMO		(5 * 60)
- #define IBMVFC_DEFAULT_LOG_LEVEL	2
- #define IBMVFC_MAX_CDB_LEN		16
-@@ -671,6 +672,7 @@ struct ibmvfc_host {
- 	int discovery_threads;
- 	int client_migrated;
- 	int reinit;
-+	int delay_init;
- 	int events_to_log;
- #define IBMVFC_AE_LINKUP	0x0001
- #define IBMVFC_AE_LINKDOWN	0x0002
+@@ -33,7 +33,7 @@
+ #define IBMVFC_DRIVER_DATE		"(August 14, 2008)"
+ 
+ #define IBMVFC_DEFAULT_TIMEOUT	15
+-#define IBMVFC_INIT_TIMEOUT		30
++#define IBMVFC_INIT_TIMEOUT		120
+ #define IBMVFC_MAX_REQUESTS_DEFAULT	100
+ 
+ #define IBMVFC_DEBUG			0
 
