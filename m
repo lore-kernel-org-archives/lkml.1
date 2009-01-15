@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbZAOG4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbZAOHCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbZAOG4w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZAOG4o
+	id S1761401AbZAOHCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZAOHCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:56:44 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:61978 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbZAOG4n convert rfc822-to-8bit (ORCPT
+	Thu, 15 Jan 2009 02:02:07 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:65361 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbZAOHCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:56:43 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 15 Jan 2009 02:02:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SeklfTWZqKi417Yiibf6F/LdQo5fssEYXhIkyUT/3c5w5l+pPaKzxEY+cyha/A1GX6
+         s9MrJse3ZUXo5SJPNQo03bUCXlOFltkRouKo5PlUl6uNKa/yX6I/ANWZntXJ4SuUdxlE
+         h86rI5Lp4UCYz/1d/pCR1+BA5kL2GXuHSLsSk=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Date: Thu, 15 Jan 2009 14:56:40 +0800
-Message-ID: <D7CCA83BB0796C49BC0BB53B6AB1208907AD14@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20090115073955.11d20734@mjolnir.drzeus.cx>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Thread-Index: Acl23DwNLc9rglBoTK+2a9RUaD+boQAAhD5g
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru><D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net><20090114235605.GA13531@oksana.dev.rtsoft.ru><20090115065502.1b719b06@mjolnir.drzeus.cx><D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net> <20090115073955.11d20734@mjolnir.drzeus.cx>
-From: "Liu Dave" <DaveLiu@freescale.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Cc: <avorontsov@ru.mvista.com>, <linuxppc-dev@ozlabs.org>,
-       "Lai Kon-LKL001" <Konjin.Lai@freescale.com>,
-       <linux-kernel@vger.kernel.org>,
-       "Xie Xiaobo-R63061" <X.Xie@freescale.com>,
-       "D'Abbraccio Joe-LJD015" <Joe.D'abbraccio@freescale.com>
+In-Reply-To: <496ED8F6.6030201@compulab.co.il>
+References: <496E2BE5.1050803@cam.ac.uk>
+	 <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com>
+	 <496ED8F6.6030201@compulab.co.il>
+Date: Thu, 15 Jan 2009 15:02:05 +0800
+Message-ID: <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support 
+	within mfd driver.
+From: Eric Miao <eric.y.miao@gmail.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
+       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm afraid I haven't seen any readily available sources for their
-> driver. If you meant Ben's version, you can find the latest revision
-> here:
-> 
-> http://marc.info/?t=122823266100005
-> 
-> Unfortunately marc.info didn't sort out the threading, but you should
-> be able to find all the patches there or some other LKML archive.
+On Thu, Jan 15, 2009 at 2:34 PM, Mike Rapoport <mike@compulab.co.il> wrote:
+>
+>
+> Eric Miao wrote:
+>> On Thu, Jan 15, 2009 at 2:16 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+>>> From: Jonathan Cameron <jic23@cam.ac.uk>
+>>>
+>>> Add support for changing the mode of the da9030 usb charge pump
+>>>
+>>
+>> Well, if it is totally USB charger related, I'd suggest to move this into
+>> the dedicated driver. This mfd/da903x.c serves as a common code
+>> base for all sub-peripherals.
+>
+> It's not exactly related to the charger, it's rather related to the USB voltage
+> supplied to USB devices attached to PXA OHCI.
+> Indeed the mfd/da903x.c serves as a common core for sub-peripherals, but IMHO
+> adding a subdevice driver because of single method doesn't worth the overhead.
+> I'm for the solution Jonathan proposes.
+>
 
-Thanks Pierre, That is my needs.
+Mmm... then who will be the invoker? I'm a bit upset about this
+being exported while called out of control. If it works as the
+name suggested, setting some mode, maybe we can have a
+platform data field specifying this, and hide this totally within
+the driver. I didn't look into this too much, just a concern here.
