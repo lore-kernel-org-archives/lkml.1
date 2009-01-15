@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934278AbZAOUws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbZAOUxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934278AbZAOUws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:52:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762842AbZAOUC4
+	id S934281AbZAOUxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932100AbZAOUDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:56 -0500
-Received: from kroah.org ([198.145.64.141]:49801 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:03:08 -0500
+Received: from kroah.org ([198.145.64.141]:49817 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932343AbZAOUCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:54 -0500
-Date: Thu, 15 Jan 2009 12:00:31 -0800
+	id S932359AbZAOUDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:03:00 -0500
+Date: Thu, 15 Jan 2009 12:00:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Reinhard Nissl <rnissl@gmx.de>,
-       Ke Wei <kewei@marvell.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 85/94] [SCSI] mvsas: increase port type detection delay to
-	suit Seagates 10k6 drive ST3450856SS 0003
-Message-ID: <20090115200031.GG14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 86/94] x86: avoid theoretical vmalloc fault loop
+Message-ID: <20090115200033.GH14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mvsas-increase-port-type-detection-delay-to-suit-seagate-s-10k6-drive-st3450856ss-0003.patch"
+Content-Disposition: inline; filename="x86-avoid-theoretical-vmalloc-fault-loop.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,34 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Reinhard Nissl <rnissl@gmx.de>
+From: Andi Kleen <andi@firstfloor.org>
 
-commit ddccf307a3599e452804e228d8ed30fba578923e upstream.
+commit f313e12308f7c5ea645f18e759d104d088b18615 upstream.
 
-I increased the delay step by step until loading of mvsas
-reliably detected the drive 200 times in sequence. A much better
-approach would be to monitor the hardware for some flag which
-indicates that port detection has finished, but I do not have any
-hardware documentation.
+Ajith Kumar noticed:
 
-Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
-Cc: Ke Wei <kewei@marvell.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+ I was going through the vmalloc fault handling for x86_64 and am unclear
+ about the following lines in the vmalloc_fault() function.
+
+ pgd = pgd_offset(current->mm ?: &init_mm, address);
+ pgd_ref = pgd_offset_k(address);
+
+ Here the intention is to get the pgd corresponding to the current process
+ and sync it up with the pgd in init_mm(obtained from pgd_offset_k).
+ However, for kernel threads current->mm is NULL and hence pgd =
+ pgd_offset(init_mm, address) = pgd_ref which means the fault handler
+ returns without setting the pgd entry in the MM structure in the context
+ of which the kernel thread has faulted.  This could lead to never-ending
+ faults and busy looping of kernel threads like pdflush.  So, shouldn't the
+ pgd = pgd_offset(current->mm ?: &init_mm, address); be pgd =
+ pgd_offset(current->active_mm ?: &init_mm, address);
+
+We can use active_mm unconditionally because it should be always set.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mvsas.c |    2 +-
+ arch/x86/mm/fault.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/scsi/mvsas.c
-+++ b/drivers/scsi/mvsas.c
-@@ -2959,7 +2959,7 @@ static int __devinit mvs_hw_init(struct 
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -533,7 +533,7 @@ static int vmalloc_fault(unsigned long a
+ 	   happen within a race in page table update. In the later
+ 	   case just flush. */
  
- 	/* enable auto port detection */
- 	mw32(GBL_PORT_TYPE, MODE_AUTO_DET_EN);
--	msleep(100);
-+	msleep(1100);
- 	/* init and reset phys */
- 	for (i = 0; i < mvi->chip->n_phy; i++) {
- 		u32 lo = be32_to_cpu(*(u32 *)&mvi->sas_addr[4]);
+-	pgd = pgd_offset(current->mm ?: &init_mm, address);
++	pgd = pgd_offset(current->active_mm, address);
+ 	pgd_ref = pgd_offset_k(address);
+ 	if (pgd_none(*pgd_ref))
+ 		return -1;
 
