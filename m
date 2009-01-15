@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbZAOGps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbZAOGxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbZAOGps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZAOGph
+	id S1761389AbZAOGxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 01:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZAOGxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:45:37 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45198 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754141AbZAOGpg (ORCPT
+	Thu, 15 Jan 2009 01:53:31 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:65259 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755652AbZAOGxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:45:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=M+UkNp5hFka+hUOe7AhN95itHRASns/18eEYcKOOsUpjfllrNsLyCsrBhr+OBkNQyuTWFAzA4s4TQcdKhG6+yzNX5SQN4yJlz8hvI3d/6eUaryA2G7JhIAzwMlcJ/B3KOxC6dpA55RoTqNOOmdYwcs/GpOljbvio1EFvrj2FQIM=  ;
-X-YMail-OSG: VJpi26IVM1lo7.V_tlZc0aZH300n3jVTpOZkgQ8vjZ4KeF5ohp2Q9tRr7tBn0rrO3_HYv44euSgtJj_GVTj3JprnAfLn.BtlzuCFVyuA.MGWdevQeoxHrUl8kTgNWdASV6c_mKj7btsfyBVS47I9YlASPF9qO34XLyTKQDD7CF5xyH50E_UNXAziRCTcuQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: 2.6.29 -mm merge plans
-Date: Thu, 15 Jan 2009 17:45:13 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org,
-       konishi.ryusuke@lab.ntt.co.jp
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <200901071321.43068.nickpiggin@yahoo.com.au> <E1LKqPt-000287-U3@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1LKqPt-000287-U3@pomaz-ex.szeredi.hu>
+	Thu, 15 Jan 2009 01:53:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kBcnm07ubS9+x1wj7hzI+0VcJoNattFO+UsJozcSoMu5UvVBT+j3LvHU+v9m8DtcbV
+         ceOvcPr79rE6ll+4AQPlJpguqVdFsQ6K46+Q22ts16Qds86QOhV30wuNycCRBAC4UoiT
+         Jrku7/897gvKeJEI1cUrIj15YnMRCefUSfhNc=
+Date: Thu, 15 Jan 2009 06:53:22 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Chris Caputo <ccaputo@alt.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Denys Fedoryschenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+Message-ID: <20090115065322.GA4190@ff.dom.local>
+References: <20081010090426.GA6054@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901151745.14610.nickpiggin@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 January 2009 19:39:02 Miklos Szeredi wrote:
-> On Wed, 7 Jan 2009, Nick Piggin wrote:
-> > I don't know how stable fuse APIs are (ie. whether we'd just be handing
-> > the anchors to FUSE), but if it is very stable, then it would be nice to
-> > push a lot of them out of the kernel (although OTOH the old ones tend not
-> > to have complex interactions with mm or block layer).
->
-> Fuse APIs are very stable, so pushing old filesystems out to userspace
-> makes sense.  Porting them, however, is not entirely trivial.  Amit
-> Singh (of MacFUSE) got minix, ufs and sysvfs to work on OSX using only
-> lightly modified linux source code.  That framework could probably be
-> used to port other filesystems to userspace.
+On Wed, Jan 14, 2009 at 06:02:04PM +0000, Chris Caputo wrote:
+...
+> That said, I would not recommend just the three for -stable unless they 
+> get a much wider amount of testing, on multiple platforms.  I don't see 
+> that as likely to happen, plus Peter says they are incomplete, so maybe it 
+> is just best to recommend that 2.6.28 users getting crashes while using 
+> HTB try these specific patches at first, and then the rest of the patches 
+> if they do not work.
 
-That might be nice. OTOH it is just a random suggestion from me. I don't
-know what core fs developers think about requiring fuse and user code to
-mount these old things...
+The main problem is my patches, at least the tested ones, harm htb's
+exactness, and I doubt I could convince anybody to merege them, at
+least before your case. It was only reported by two users here (plus
+one more on private), and looked like something very rare. After your
+report it looks much more necessary.
 
-Would we have to distribute the user code with the kernel? I guess then
-we would still need to maintain it, but I guess the key improvement would
-be that fuse APIs are very stable.
+If there is nothing better, I can recommend it, but IMHO the best
+candidate for this is the testing patch #4 from this thread, which
+alas wasn't even tested... So, Chris, if you could give it a try in
+the meantime (without any other patches)?
 
+Thanks,
+Jarek P.
+
+(resend testing patch #4 - for 2.6.27 or 2.6.28)
+---
+
+diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
+--- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
++++ b2.6.27.7/net/sched/sch_htb.c	2008-12-15 10:44:32.000000000 +0000
+@@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
+ 		}
+ 	}
+ 	sch->qstats.overlimits++;
++	qdisc_watchdog_cancel(&q->watchdog);
+ 	qdisc_watchdog_schedule(&q->watchdog, next_event);
+ fin:
+ 	return skb;
