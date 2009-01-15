@@ -1,109 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762904AbZAOKQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763210AbZAOKRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762904AbZAOKQw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:16:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbZAOKQj
+	id S1763210AbZAOKRU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZAOKQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:16:39 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54698 "EHLO mx2.suse.de"
+	Thu, 15 Jan 2009 05:16:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58349 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754600AbZAOKQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:16:37 -0500
-Message-ID: <496F0D02.1090402@suse.de>
-Date: Thu, 15 Jan 2009 11:16:34 +0100
-From: Stefan Assmann <sassmann@suse.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	id S1757634AbZAOKQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:16:43 -0500
+Date: Thu, 15 Jan 2009 11:16:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Tony Luck <tony.luck@intel.com>, IA64 <linux-ia64@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       David Howells <dhowells@redhat.com>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       linux-am33-list@redhat.com, "David S. Miller" <davem@davemloft.net>,
+       SPARC <sparclinux@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: crash: IP: [<ffffffff80478092>] __bitmap_intersects+0x48/0x73
+	[PATCH supplied]
+Message-ID: <20090115101617.GH5833@elte.hu>
+References: <496BF6D5.9030403@sgi.com> <20090113130048.GB31147@elte.hu> <496CAF5A.3010304@sgi.com> <496D0F46.2010907@sgi.com> <496D2172.6030608@sgi.com> <20090114165431.GA18826@elte.hu> <20090114165524.GA21742@elte.hu> <20090114175126.GA21078@elte.hu> <496E78BA.5040609@sgi.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jon Masters <jcm@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
- interrupt equivalent
-References: <alpine.LFD.2.00.0901091743310.20020@localhost.localdomain>	<496B24E5.1070804@suse.de> <200901121151.53195.bjorn.helgaas@hp.com>	<m1d4esxfk2.fsf@frodo.ebiederm.org>	<1231806563.4094.25.camel@perihelion.bos.jonmasters.org>	<20090113014723.GA11366@elte.hu> <m1prirx3xn.fsf@frodo.ebiederm.org>	<1231820798.4094.34.camel@perihelion.bos.jonmasters.org>	<20090114114006.GF8625@elte.hu>	<1231960709.23174.0.camel@londonpacket.bos.redhat.com> <m11vv5wlug.fsf@frodo.ebiederm.org>
-In-Reply-To: <m11vv5wlug.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496E78BA.5040609@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4106]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Jon Masters <jcm@redhat.com> writes:
-> 
->> On Wed, 2009-01-14 at 12:40 +0100, Ingo Molnar wrote:
->>
->>> it's not just -rt, but it is also needed for the concept of threaded IRQ 
->>> handlers - which was discussed at the Kernel Summit to be desired for 
->>> mainline.
->> Right. I'm poking at Thomas' patches and hope to post something soon on
->> that front - I'm acutely aware that this will be impacted aswell but
->> because it's vaguely RT related had banded it under that banner.
-> 
-> Stepping back a moment.  The only way I can see this working reliably
-> is if we disable the boot interrupt.  Anything that leaves the boot interrupt
-> enabled means that when we disable the primary interrupt the boot interrupt
-> will scream, and thus we must disable it as well.
 
-Disabling Boot Interrupts is our goal, if they don't appear everything
-is fine. Now if you take a closer look at United States Patent 6466998
-you can read that there has to be a way to disable Boot Interrupts on
-APIC aware OSes.
+* Mike Travis <travis@sgi.com> wrote:
 
-Let me back this up with a quote from that patent:
-"Therefore, 8259 PIC may be incorporated into a system board along with
-the APIC system to ensure proper operation of an operating system (OS)
-regardless whether such an operating system (OS) may or may not support
-an APIC system. However, external logic devices are required to route
-particular interrupts from a non-legacy peripheral bus to the 8259 PIC.
-General purpose I/O pins are then needed to enable/disable this
-functionality once an operating system (OS) which understands the APIC
-system is loaded."
+> Subject: irq: fix build errors referencing old kstat.irqs array
 
-We already managed to successfully disable Boot Interrupt generation on
-several chipsets. See the following posts:
+i've picked this up into tip/cpus4096, thanks Mike,
 
-http://lkml.org/lkml/2008/7/8/213
-http://lkml.org/lkml/2008/7/8/215
-http://lkml.org/lkml/2008/6/2/270
-
-What makes things complicated is that we have to deal with buggy
-hardware which can't disable the generation of Boot Interrupts, that's
-why we introduced the reroute to legacy interrupt patch.
-
-> Which leads to my problem with the entire development process of this feature.
-> 
->  People want the feature.
->  People don't want to pay attention to the limits of the hardware.
->  Which leads to countless broken patches proposed.
-
-Sorry if you feel that way, really trying to pay attention to
-hardware limitations here. I bet you have a lot more experience in this
-field than I have, so please let me know what technical reasons you
-see for this being a dead end.
-
-> Which leads me to conclude.
-> - IRQ handling in the RT kernel is hopelessly broken.
-> - IRQ threads are a bad idea.
-> 
-> Because it is all leading to stupid patches and stupid development.
-> 
-> None of this works reliably on level triggered ioapic irqs.
-
-We're trying really hard to make it work reliably, but this is a
-complicated matter and it sure needs a lot of research.
-
-> 
-> Eric
-
-  Stefan
-
--- 
-Stefan Assmann          | SUSE LINUX Products GmbH
-Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
-Mail: sassmann@suse.de  | GF: Markus Rex, HRB 16746 (AG Nuernberg)
+	Ingo
