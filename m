@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbZAOUl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbZAOUmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbZAOUl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:41:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZAOUC0
+	id S933971AbZAOUmX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766013AbZAOUC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:26 -0500
-Received: from kroah.org ([198.145.64.141]:49552 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:29 -0500
+Received: from kroah.org ([198.145.64.141]:49564 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932269AbZAOUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:20 -0500
-Date: Thu, 15 Jan 2009 11:59:46 -0800
+	id S932272AbZAOUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:21 -0500
+Date: Thu, 15 Jan 2009 11:59:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 65/94] [PATCH 34/44] [CVE-2009-0029] System call wrappers
-	part 24
-Message-ID: <20090115195946.GM14419@kroah.com>
+Subject: [patch 66/94] [PATCH 35/44] [CVE-2009-0029] System call wrappers
+	part 25
+Message-ID: <20090115195949.GN14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0034--CVE-2009-0029-System-call-wrappers-part-24.patch"
+Content-Disposition: inline; filename="0035--CVE-2009-0029-System-call-wrappers-part-25.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,112 +42,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit e48fbb699f82ef1e80bd7126046394d2dc9ca7e6 upstream.
+commit d5460c9974a321a194aded4a8c4daaac68ea8171 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- ipc/msg.c    |   12 ++++++------
- kernel/sys.c |   13 +++++++------
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ ipc/mqueue.c |    6 +++---
+ ipc/sem.c    |    9 +++++----
+ ipc/shm.c    |    8 ++++----
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -309,7 +309,7 @@ static inline int msg_security(struct ke
- 	return security_msg_queue_associate(msq, msgflg);
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -655,8 +655,8 @@ static int oflag2acc[O_ACCMODE] = { MAY_
+ 	return dentry_open(dentry, mqueue_mnt, oflag);
  }
  
--asmlinkage long sys_msgget(key_t key, int msgflg)
-+SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
+-asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
+-				struct mq_attr __user *u_attr)
++SYSCALL_DEFINE4(mq_open, const char __user *, u_name, int, oflag, mode_t, mode,
++		struct mq_attr __user *, u_attr)
+ {
+ 	struct dentry *dentry;
+ 	struct file *filp;
+@@ -723,7 +723,7 @@ out_putname:
+ 	return fd;
+ }
+ 
+-asmlinkage long sys_mq_unlink(const char __user *u_name)
++SYSCALL_DEFINE1(mq_unlink, const char __user *, u_name)
+ {
+ 	int err;
+ 	char *name;
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -308,7 +308,7 @@ static inline int sem_more_checks(struct
+ 	return 0;
+ }
+ 
+-asmlinkage long sys_semget(key_t key, int nsems, int semflg)
++SYSCALL_DEFINE3(semget, key_t, key, int, nsems, int, semflg)
  {
  	struct ipc_namespace *ns;
- 	struct ipc_ops msg_ops;
-@@ -466,7 +466,7 @@ out_up:
+ 	struct ipc_ops sem_ops;
+@@ -1055,8 +1055,8 @@ out:
+ 	return un;
+ }
+ 
+-asmlinkage long sys_semtimedop(int semid, struct sembuf __user *tsops,
+-			unsigned nsops, const struct timespec __user *timeout)
++SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
++		unsigned, nsops, const struct timespec __user *, timeout)
+ {
+ 	int error = -EINVAL;
+ 	struct sem_array *sma;
+@@ -1233,7 +1233,8 @@ out_free:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_semop (int semid, struct sembuf __user *tsops, unsigned nsops)
++SYSCALL_DEFINE3(semop, int, semid, struct sembuf __user *, tsops,
++		unsigned, nsops)
+ {
+ 	return sys_semtimedop(semid, tsops, nsops, NULL);
+ }
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -440,7 +440,7 @@ static inline int shm_more_checks(struct
+ 	return 0;
+ }
+ 
+-asmlinkage long sys_shmget (key_t key, size_t size, int shmflg)
++SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
+ {
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops shm_ops;
+@@ -621,7 +621,7 @@ out_up:
  	return err;
  }
  
--asmlinkage long sys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
-+SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
+-asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
++SYSCALL_DEFINE3(shmctl, int, shmid, int, cmd, struct shmid_ds __user *, buf)
  {
- 	struct msg_queue *msq;
+ 	struct shmid_kernel *shp;
  	int err, version;
-@@ -723,8 +723,8 @@ out_free:
- 	return err;
+@@ -945,7 +945,7 @@ out_put_dentry:
+ 	goto out_nattch;
  }
  
--asmlinkage long
--sys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz, int msgflg)
-+SYSCALL_DEFINE4(msgsnd, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
-+		int, msgflg)
+-asmlinkage long sys_shmat(int shmid, char __user *shmaddr, int shmflg)
++SYSCALL_DEFINE3(shmat, int, shmid, char __user *, shmaddr, int, shmflg)
  {
- 	long mtype;
- 
-@@ -904,8 +904,8 @@ out_unlock:
- 	return msgsz;
- }
- 
--asmlinkage long sys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
--			   long msgtyp, int msgflg)
-+SYSCALL_DEFINE5(msgrcv, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
-+		long, msgtyp, int, msgflg)
- {
- 	long err, mtype;
- 
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1317,7 +1317,7 @@ EXPORT_SYMBOL(in_egroup_p);
- 
- DECLARE_RWSEM(uts_sem);
- 
--asmlinkage long sys_newuname(struct new_utsname __user * name)
-+SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
- {
- 	int errno = 0;
- 
-@@ -1400,7 +1400,7 @@ SYSCALL_DEFINE2(setdomainname, char __us
- 	return errno;
- }
- 
--asmlinkage long sys_getrlimit(unsigned int resource, struct rlimit __user *rlim)
-+SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
- {
- 	if (resource >= RLIM_NLIMITS)
- 		return -EINVAL;
-@@ -1419,7 +1419,8 @@ asmlinkage long sys_getrlimit(unsigned i
-  *	Back compatibility for getrlimit. Needed for some apps.
+ 	unsigned long ret;
+ 	long err;
+@@ -961,7 +961,7 @@ asmlinkage long sys_shmat(int shmid, cha
+  * detach and kill segment if marked destroyed.
+  * The work is done in shm_close.
   */
-  
--asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim)
-+SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
-+		struct rlimit __user *, rlim)
+-asmlinkage long sys_shmdt(char __user *shmaddr)
++SYSCALL_DEFINE1(shmdt, char __user *, shmaddr)
  {
- 	struct rlimit x;
- 	if (resource >= RLIM_NLIMITS)
-@@ -1437,7 +1438,7 @@ asmlinkage long sys_old_getrlimit(unsign
- 
- #endif
- 
--asmlinkage long sys_setrlimit(unsigned int resource, struct rlimit __user *rlim)
-+SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
- {
- 	struct rlimit new_rlim, *old_rlim;
- 	int retval;
-@@ -1608,7 +1609,7 @@ int getrusage(struct task_struct *p, int
- 	return copy_to_user(ru, &r, sizeof(r)) ? -EFAULT : 0;
- }
- 
--asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
-+SYSCALL_DEFINE2(getrusage, int, who, struct rusage __user *, ru)
- {
- 	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
- 	    who != RUSAGE_THREAD)
-@@ -1616,7 +1617,7 @@ asmlinkage long sys_getrusage(int who, s
- 	return getrusage(current, who, ru);
- }
- 
--asmlinkage long sys_umask(int mask)
-+SYSCALL_DEFINE1(umask, int, mask)
- {
- 	mask = xchg(&current->fs->umask, mask & S_IRWXUGO);
- 	return mask;
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma, *next;
 
