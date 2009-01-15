@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934962AbZAOWba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936105AbZAOWb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934962AbZAOWba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933534AbZAOWD2
+	id S936105AbZAOWb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933543AbZAOWD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:28 -0500
-Received: from kroah.org ([198.145.64.141]:38754 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:29 -0500
+Received: from kroah.org ([198.145.64.141]:38763 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933087AbZAOWD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:26 -0500
-Date: Thu, 15 Jan 2009 14:00:54 -0800
+	id S1765303AbZAOWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:27 -0500
+Date: Thu, 15 Jan 2009 14:00:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 52/85] [PATCH 32/44] [CVE-2009-0029] System call wrappers
-	part 22
-Message-ID: <20090115220054.GA17227@kroah.com>
+Subject: [patch 53/85] [PATCH 33/44] [CVE-2009-0029] System call wrappers
+	part 23
+Message-ID: <20090115220056.GB17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0032--CVE-2009-0029-System-call-wrappers-part-22.patch"
+Content-Disposition: inline; filename="0033--CVE-2009-0029-System-call-wrappers-part-23.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,108 +42,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 3e0fa65f8ba4fd24b3dcfaf14d5b15eaab0fdc61 upstream.
+commit 5a8a82b1d306a325d899b67715618413657efda4 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/socket.c |   31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ fs/eventpoll.c |   18 +++++++++---------
+ fs/select.c    |    8 ++++----
+ kernel/sys.c   |    6 +++---
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1216,7 +1216,7 @@ int sock_create_kern(int family, int typ
- 	return __sock_create(&init_net, family, type, protocol, res, 1);
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1106,7 +1106,7 @@ retry:
+ /*
+  * Open an eventpoll file descriptor.
+  */
+-asmlinkage long sys_epoll_create1(int flags)
++SYSCALL_DEFINE1(epoll_create1, int, flags)
+ {
+ 	int error, fd = -1;
+ 	struct eventpoll *ep;
+@@ -1146,7 +1146,7 @@ error_return:
+ 	return fd;
  }
  
--asmlinkage long sys_socket(int family, int type, int protocol)
-+SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
+-asmlinkage long sys_epoll_create(int size)
++SYSCALL_DEFINE1(epoll_create, int, size)
  {
- 	int retval;
- 	struct socket *sock;
-@@ -1257,8 +1257,8 @@ out_release:
-  *	Create a pair of connected sockets.
+ 	if (size < 0)
+ 		return -EINVAL;
+@@ -1159,8 +1159,8 @@ asmlinkage long sys_epoll_create(int siz
+  * the eventpoll file that enables the insertion/removal/change of
+  * file descriptors inside the interest set.
   */
- 
--asmlinkage long sys_socketpair(int family, int type, int protocol,
--			       int __user *usockvec)
-+SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
-+		int __user *, usockvec)
+-asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
+-			      struct epoll_event __user *event)
++SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
++		struct epoll_event __user *, event)
  {
- 	struct socket *sock1, *sock2;
- 	int fd1, fd2, err;
-@@ -1394,7 +1394,7 @@ SYSCALL_DEFINE3(bind, int, fd, struct so
-  *	ready for listening.
+ 	int error;
+ 	struct file *file, *tfile;
+@@ -1257,8 +1257,8 @@ error_return:
+  * Implement the event wait interface for the eventpoll file. It is the kernel
+  * part of the user space epoll_wait(2).
   */
- 
--asmlinkage long sys_listen(int fd, int backlog)
-+SYSCALL_DEFINE2(listen, int, fd, int, backlog)
+-asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
+-			       int maxevents, int timeout)
++SYSCALL_DEFINE4(epoll_wait, int, epfd, struct epoll_event __user *, events,
++		int, maxevents, int, timeout)
  {
- 	struct socket *sock;
- 	int err, fput_needed;
-@@ -1680,9 +1680,9 @@ SYSCALL_DEFINE3(getpeername, int, fd, st
-  *	the protocol.
+ 	int error;
+ 	struct file *file;
+@@ -1315,9 +1315,9 @@ error_return:
+  * Implement the event wait interface for the eventpoll file. It is the kernel
+  * part of the user space epoll_pwait(2).
   */
- 
--asmlinkage long sys_sendto(int fd, void __user *buff, size_t len,
--			   unsigned flags, struct sockaddr __user *addr,
--			   int addr_len)
-+SYSCALL_DEFINE6(sendto, int, fd, void __user *, buff, size_t, len,
-+		unsigned, flags, struct sockaddr __user *, addr,
-+		int, addr_len)
+-asmlinkage long sys_epoll_pwait(int epfd, struct epoll_event __user *events,
+-		int maxevents, int timeout, const sigset_t __user *sigmask,
+-		size_t sigsetsize)
++SYSCALL_DEFINE6(epoll_pwait, int, epfd, struct epoll_event __user *, events,
++		int, maxevents, int, timeout, const sigset_t __user *, sigmask,
++		size_t, sigsetsize)
  {
- 	struct socket *sock;
- 	struct sockaddr_storage address;
-@@ -1725,7 +1725,8 @@ out:
-  *	Send a datagram down a socket.
-  */
- 
--asmlinkage long sys_send(int fd, void __user *buff, size_t len, unsigned flags)
-+SYSCALL_DEFINE4(send, int, fd, void __user *, buff, size_t, len,
-+		unsigned, flags)
- {
- 	return sys_sendto(fd, buff, len, flags, NULL, 0);
+ 	int error;
+ 	sigset_t ksigmask, sigsaved;
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -374,8 +374,8 @@ out_nofds:
+ 	return ret;
  }
-@@ -1736,9 +1737,9 @@ asmlinkage long sys_send(int fd, void __
-  *	sender address from kernel to user space.
-  */
  
--asmlinkage long sys_recvfrom(int fd, void __user *ubuf, size_t size,
--			     unsigned flags, struct sockaddr __user *addr,
--			     int __user *addr_len)
-+SYSCALL_DEFINE6(recvfrom, int, fd, void __user *, ubuf, size_t, size,
-+		unsigned, flags, struct sockaddr __user *, addr,
-+		int __user *, addr_len)
+-asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+-			fd_set __user *exp, struct timeval __user *tvp)
++SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
++		fd_set __user *, exp, struct timeval __user *, tvp)
  {
- 	struct socket *sock;
- 	struct iovec iov;
-@@ -1880,7 +1881,7 @@ SYSCALL_DEFINE2(shutdown, int, fd, int, 
-  *	BSD sendmsg interface
-  */
+ 	s64 timeout = -1;
+ 	struct timeval tv;
+@@ -727,8 +727,8 @@ static long do_restart_poll(struct resta
+ 	return ret;
+ }
  
--asmlinkage long sys_sendmsg(int fd, struct msghdr __user *msg, unsigned flags)
-+SYSCALL_DEFINE3(sendmsg, int, fd, struct msghdr __user *, msg, unsigned, flags)
+-asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+-			long timeout_msecs)
++SYSCALL_DEFINE3(poll, struct pollfd __user *, ufds, unsigned int, nfds,
++		long, timeout_msecs)
  {
- 	struct compat_msghdr __user *msg_compat =
- 	    (struct compat_msghdr __user *)msg;
-@@ -1986,8 +1987,8 @@ out:
-  *	BSD recvmsg interface
-  */
+ 	s64 timeout_jiffies;
+ 	int ret;
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1340,7 +1340,7 @@ asmlinkage long sys_newuname(struct new_
+ 	return errno;
+ }
  
--asmlinkage long sys_recvmsg(int fd, struct msghdr __user *msg,
--			    unsigned int flags)
-+SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
-+		unsigned int, flags)
+-asmlinkage long sys_sethostname(char __user *name, int len)
++SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
  {
- 	struct compat_msghdr __user *msg_compat =
- 	    (struct compat_msghdr __user *)msg;
-@@ -2110,7 +2111,7 @@ static const unsigned char nargs[19]={
-  *  it is set by the callees.
-  */
+ 	int errno;
+ 	char tmp[__NEW_UTS_LEN];
+@@ -1362,7 +1362,7 @@ asmlinkage long sys_sethostname(char __u
  
--asmlinkage long sys_socketcall(int call, unsigned long __user *args)
-+SYSCALL_DEFINE2(socketcall, int, call, unsigned long __user *, args)
+ #ifdef __ARCH_WANT_SYS_GETHOSTNAME
+ 
+-asmlinkage long sys_gethostname(char __user *name, int len)
++SYSCALL_DEFINE2(gethostname, char __user *, name, int, len)
  {
- 	unsigned long a[6];
- 	unsigned long a0, a1;
+ 	int i, errno;
+ 
+@@ -1385,7 +1385,7 @@ asmlinkage long sys_gethostname(char __u
+  * Only setdomainname; getdomainname can be implemented by calling
+  * uname()
+  */
+-asmlinkage long sys_setdomainname(char __user *name, int len)
++SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
+ {
+ 	int errno;
+ 	char tmp[__NEW_UTS_LEN];
 
