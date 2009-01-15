@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbZAOUlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbZAOUl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897AbZAOUlX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbZAOUCZ
+	id S933673AbZAOUl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:41:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZAOUC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:25 -0500
-Received: from kroah.org ([198.145.64.141]:49535 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:26 -0500
+Received: from kroah.org ([198.145.64.141]:49552 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932263AbZAOUCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:19 -0500
-Date: Thu, 15 Jan 2009 11:59:44 -0800
+	id S932269AbZAOUCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:20 -0500
+Date: Thu, 15 Jan 2009 11:59:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 64/94] [PATCH 33/44] [CVE-2009-0029] System call wrappers
-	part 23
-Message-ID: <20090115195944.GL14419@kroah.com>
+Subject: [patch 65/94] [PATCH 34/44] [CVE-2009-0029] System call wrappers
+	part 24
+Message-ID: <20090115195946.GM14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0033--CVE-2009-0029-System-call-wrappers-part-23.patch"
+Content-Disposition: inline; filename="0034--CVE-2009-0029-System-call-wrappers-part-24.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,122 +42,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 5a8a82b1d306a325d899b67715618413657efda4 upstream.
+commit e48fbb699f82ef1e80bd7126046394d2dc9ca7e6 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/eventpoll.c |   18 +++++++++---------
- fs/select.c    |    8 ++++----
- kernel/sys.c   |    6 +++---
- 3 files changed, 16 insertions(+), 16 deletions(-)
+ ipc/msg.c    |   12 ++++++------
+ kernel/sys.c |   13 +++++++------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -1110,7 +1110,7 @@ retry:
- /*
-  * Open an eventpoll file descriptor.
-  */
--asmlinkage long sys_epoll_create1(int flags)
-+SYSCALL_DEFINE1(epoll_create1, int, flags)
- {
- 	int error, fd = -1;
- 	struct eventpoll *ep;
-@@ -1150,7 +1150,7 @@ error_return:
- 	return fd;
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -309,7 +309,7 @@ static inline int msg_security(struct ke
+ 	return security_msg_queue_associate(msq, msgflg);
  }
  
--asmlinkage long sys_epoll_create(int size)
-+SYSCALL_DEFINE1(epoll_create, int, size)
+-asmlinkage long sys_msgget(key_t key, int msgflg)
++SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
  {
- 	if (size < 0)
- 		return -EINVAL;
-@@ -1163,8 +1163,8 @@ asmlinkage long sys_epoll_create(int siz
-  * the eventpoll file that enables the insertion/removal/change of
-  * file descriptors inside the interest set.
-  */
--asmlinkage long sys_epoll_ctl(int epfd, int op, int fd,
--			      struct epoll_event __user *event)
-+SYSCALL_DEFINE4(epoll_ctl, int, epfd, int, op, int, fd,
-+		struct epoll_event __user *, event)
- {
- 	int error;
- 	struct file *file, *tfile;
-@@ -1261,8 +1261,8 @@ error_return:
-  * Implement the event wait interface for the eventpoll file. It is the kernel
-  * part of the user space epoll_wait(2).
-  */
--asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
--			       int maxevents, int timeout)
-+SYSCALL_DEFINE4(epoll_wait, int, epfd, struct epoll_event __user *, events,
-+		int, maxevents, int, timeout)
- {
- 	int error;
- 	struct file *file;
-@@ -1319,9 +1319,9 @@ error_return:
-  * Implement the event wait interface for the eventpoll file. It is the kernel
-  * part of the user space epoll_pwait(2).
-  */
--asmlinkage long sys_epoll_pwait(int epfd, struct epoll_event __user *events,
--		int maxevents, int timeout, const sigset_t __user *sigmask,
--		size_t sigsetsize)
-+SYSCALL_DEFINE6(epoll_pwait, int, epfd, struct epoll_event __user *, events,
-+		int, maxevents, int, timeout, const sigset_t __user *, sigmask,
-+		size_t, sigsetsize)
- {
- 	int error;
- 	sigset_t ksigmask, sigsaved;
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -507,8 +507,8 @@ out_nofds:
- 	return ret;
+ 	struct ipc_namespace *ns;
+ 	struct ipc_ops msg_ops;
+@@ -466,7 +466,7 @@ out_up:
+ 	return err;
  }
  
--asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
--			fd_set __user *exp, struct timeval __user *tvp)
-+SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
-+		fd_set __user *, exp, struct timeval __user *, tvp)
+-asmlinkage long sys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
++SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
  {
- 	struct timespec end_time, *to = NULL;
- 	struct timeval tv;
-@@ -806,8 +806,8 @@ static long do_restart_poll(struct resta
- 	return ret;
+ 	struct msg_queue *msq;
+ 	int err, version;
+@@ -723,8 +723,8 @@ out_free:
+ 	return err;
  }
  
--asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
--			long timeout_msecs)
-+SYSCALL_DEFINE3(poll, struct pollfd __user *, ufds, unsigned int, nfds,
-+		long, timeout_msecs)
+-asmlinkage long
+-sys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz, int msgflg)
++SYSCALL_DEFINE4(msgsnd, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
++		int, msgflg)
  {
- 	struct timespec end_time, *to = NULL;
- 	int ret;
+ 	long mtype;
+ 
+@@ -904,8 +904,8 @@ out_unlock:
+ 	return msgsz;
+ }
+ 
+-asmlinkage long sys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
+-			   long msgtyp, int msgflg)
++SYSCALL_DEFINE5(msgrcv, int, msqid, struct msgbuf __user *, msgp, size_t, msgsz,
++		long, msgtyp, int, msgflg)
+ {
+ 	long err, mtype;
+ 
 --- a/kernel/sys.c
 +++ b/kernel/sys.c
-@@ -1328,7 +1328,7 @@ asmlinkage long sys_newuname(struct new_
+@@ -1317,7 +1317,7 @@ EXPORT_SYMBOL(in_egroup_p);
+ 
+ DECLARE_RWSEM(uts_sem);
+ 
+-asmlinkage long sys_newuname(struct new_utsname __user * name)
++SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
+ {
+ 	int errno = 0;
+ 
+@@ -1400,7 +1400,7 @@ SYSCALL_DEFINE2(setdomainname, char __us
  	return errno;
  }
  
--asmlinkage long sys_sethostname(char __user *name, int len)
-+SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
+-asmlinkage long sys_getrlimit(unsigned int resource, struct rlimit __user *rlim)
++SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
  {
- 	int errno;
- 	char tmp[__NEW_UTS_LEN];
-@@ -1352,7 +1352,7 @@ asmlinkage long sys_sethostname(char __u
- 
- #ifdef __ARCH_WANT_SYS_GETHOSTNAME
- 
--asmlinkage long sys_gethostname(char __user *name, int len)
-+SYSCALL_DEFINE2(gethostname, char __user *, name, int, len)
- {
- 	int i, errno;
- 	struct new_utsname *u;
-@@ -1377,7 +1377,7 @@ asmlinkage long sys_gethostname(char __u
-  * Only setdomainname; getdomainname can be implemented by calling
-  * uname()
+ 	if (resource >= RLIM_NLIMITS)
+ 		return -EINVAL;
+@@ -1419,7 +1419,8 @@ asmlinkage long sys_getrlimit(unsigned i
+  *	Back compatibility for getrlimit. Needed for some apps.
   */
--asmlinkage long sys_setdomainname(char __user *name, int len)
-+SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
+  
+-asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim)
++SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
++		struct rlimit __user *, rlim)
  {
- 	int errno;
- 	char tmp[__NEW_UTS_LEN];
+ 	struct rlimit x;
+ 	if (resource >= RLIM_NLIMITS)
+@@ -1437,7 +1438,7 @@ asmlinkage long sys_old_getrlimit(unsign
+ 
+ #endif
+ 
+-asmlinkage long sys_setrlimit(unsigned int resource, struct rlimit __user *rlim)
++SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ {
+ 	struct rlimit new_rlim, *old_rlim;
+ 	int retval;
+@@ -1608,7 +1609,7 @@ int getrusage(struct task_struct *p, int
+ 	return copy_to_user(ru, &r, sizeof(r)) ? -EFAULT : 0;
+ }
+ 
+-asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
++SYSCALL_DEFINE2(getrusage, int, who, struct rusage __user *, ru)
+ {
+ 	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
+ 	    who != RUSAGE_THREAD)
+@@ -1616,7 +1617,7 @@ asmlinkage long sys_getrusage(int who, s
+ 	return getrusage(current, who, ru);
+ }
+ 
+-asmlinkage long sys_umask(int mask)
++SYSCALL_DEFINE1(umask, int, mask)
+ {
+ 	mask = xchg(&current->fs->umask, mask & S_IRWXUGO);
+ 	return mask;
 
