@@ -1,111 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbZAOU6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbZAOU66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934635AbZAOU6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932662AbZAOUMg
+	id S934487AbZAOU66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932889AbZAOUOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:12:36 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:38144 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932692AbZAOUMd (ORCPT
+	Thu, 15 Jan 2009 15:14:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56995 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932834AbZAOUOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:12:33 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, shaohua.li@intel.com
-In-Reply-To: <1232049269.5966.64.camel@localhost.localdomain>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-	 <1231807693.27151.21.camel@localhost.localdomain>
-	 <1232046108.5966.57.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>
-	 <1232049269.5966.64.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 15:12:27 -0500
-Message-Id: <1232050347.5966.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 15:14:33 -0500
+Date: Thu, 15 Jan 2009 12:13:17 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Chris Mason <chris.mason@oracle.com>
+cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+In-Reply-To: <1232047618.8269.93.camel@think.oraclecorp.com>
+Message-ID: <alpine.LFD.2.00.0901151208310.6528@localhost.localdomain>
+References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>  <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>  <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>  <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>
+  <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org>  <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>  <20090115180844.GL22472@elte.hu>  <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain>
+ <1232047618.8269.93.camel@think.oraclecorp.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 14:54 -0500, James Bottomley wrote:
-> On Thu, 2009-01-15 at 14:22 -0500, Len Brown wrote:
-> > On Thu, 15 Jan 2009, James Bottomley wrote:
+
+
+On Thu, 15 Jan 2009, Chris Mason wrote:
+
+> On Thu, 2009-01-15 at 10:16 -0800, Linus Torvalds wrote:
 > > 
-> > > On Mon, 2009-01-12 at 18:48 -0600, James Bottomley wrote:
-> > > > On Mon, 2009-01-12 at 16:16 -0500, Len Brown wrote:
-> > > > > > This is on an IBM Maia system with the calgary IOMMU enabled. It's a
-> > > > > > fatal boot up panic.
-> > > > > > 
-> > > > > 
-> > > > > James,
-> > > > > A guided bisect...
-> > > > > Please let me know which of these fail
-> > > > > 
-> > > > > a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2 is 2.6.29 at ACPI merge
-> > > > > efcb3cf7f00c3c424db012380a8a974c2676a3c8 is 2.6.29 before ACPI merge
-> > > > 
-> > > > Didn't try these (being after the failure)
-> > > > 
-> > > > > ec9f168fcc344d2ffec1c8c822076bf22dab5c33 is 2.6.28 with most ACPI
-> > > > 
-> > > > This is the failing one.
-> > > > 
-> > > > > e8443c358c34f3fe65236e24147ddf0cd0e61b08 is 2.6.28 plus just ACPICA
-> > > > 
-> > > > This one boots fine.
-> > > > 
-> > > > > Please test the "2.6.28+ACPICA" one first.
-> > > > > If it fails, we are close so you can skip the others above
-> > > > > and bisect between that and 2.6.28.
-> > > > 
-> > > > I'll try bisecting between ec9f168fcc344d2ffec1c8c822076bf22dab5c33 and
-> > > > e8443c358c34f3fe65236e24147ddf0cd0e61b08.
-> > > 
-> > > OK, bisection complete.  It's not actually coming from the ACPI tree but
-> > > from the PCI one (appropriate CC's added).
-> > > 
-> > > The commit causing the boot panic is:
-> > > 
-> > > commit e8c331e963c58b83db24b7d0e39e8c07f687dbc6
-> > > Author: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> > > Date:   Wed Dec 17 12:09:12 2008 +0900
-> > > 
-> > >     PCI hotplug: introduce functions for ACPI slot detection
-> > > 
-> > > I'm still not sure why, though
-> > 
-> > Nothing jumped out at me in the patch.
-> > Does reverting e8c331e963c58b83db24b7d0e39e8c07f687dbc6
-> > make the boot crash go away?
+> > Umm. Except if you wrote the code nicely and used spinlocks, you wouldn't 
+> > hold the lock over all those unnecessary and complex operations.
 > 
-> Yes, but then it would ... the call sequence is through the reverted
-> code.
+> While this is true, there are examples of places we should expect
+> speedups for this today.
 
-It looks like acpi_pci_get_bridge_handle() is returning NULL, so this is
-the fix that works for me.
+Sure. There are cases where we do have to use sleeping things, because the 
+code is generic and really can't control what lower levels do, and those 
+lower levels have to be able to sleep.
 
-James
+So:
 
----
+> Concurrent file creation/deletion in a single dir will often find things
+> hot in cache and not have to block anywhere (mail spools).
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index f09b101..803d9dd 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -266,6 +266,8 @@ static int detect_ejectable_slots(struct pci_bus *pbus)
- 	int found = acpi_pci_detect_ejectable(pbus);
- 	if (!found) {
- 		acpi_handle bridge_handle = acpi_pci_get_bridge_handle(pbus);
-+		if (!bridge_handle)
-+			return 0;
- 		acpi_walk_namespace(ACPI_TYPE_DEVICE, bridge_handle, (u32)1,
- 				    is_pci_dock_device, (void *)&found, NULL);
- 	}
+The inode->i_mutex thing really does need to use a mutex, and spinning 
+will help. Of course, it should only help when you really have lots of 
+concurrent create/delete/readdir in the same directory, and that hopefully 
+is a very rare load in real life, but hey, it's a valid one.
 
+> Concurrent O_DIRECT aio writes to the same file, where i_mutex is
+> dropped early on.
 
+Won't the actual IO costs generally dominate in everything but trivial 
+benchmarks?
+
+> pipes should see a huge improvement.
+
+Hmm. Pipes may be interesting, but on the other hand, the cases that would 
+see huge improvements would tend to be the cases where the biggest 
+performance gain is from running both sides on the same CPU. The only case 
+where a pipe gets really contended is when both producer and consumer 
+basically do nothing with the data, so the biggest costs is the copy in 
+kernel space (read: pure benchmarking, no real load), and then you often 
+get better performance by scheduling on a single CPU due to cache effects 
+and no lock bouncing. 
+
+			Linus
