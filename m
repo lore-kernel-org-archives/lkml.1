@@ -1,81 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934397AbZAOXDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936934AbZAOXDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934397AbZAOXDE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935593AbZAOWyq
+	id S936934AbZAOXDh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936398AbZAOW4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:54:46 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:65125 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935020AbZAOWyn (ORCPT
+	Thu, 15 Jan 2009 17:56:24 -0500
+Received: from mga05.intel.com ([192.55.52.89]:24993 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936371AbZAOW4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:54:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:organization:message-id:references
-         :in-reply-to:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=CqYXh/Hd2T9l3OE5jiqSlv+rsVLa8jSVB5mqEYT1U96KPhA2w0DmxWO/k2KnzPib8W
-         lEQ03Anpk1ccFNvRu3OV00Q9GfsWlYufDVd7SO3JHD/qWWLau1IpsFcuwvzQz45vPm6D
-         DnvP85H71b4NMXAe+m3ywJrsLELE7fvRwwZZg=
-From: Grant Coady <gcoady.lk@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/85] 2.6.27.12-stable review
-Date: Fri, 16 Jan 2009 09:54:31 +1100
-Organization: scattered
-Message-ID: <vifvm49imd48dmmsbg34d44on2hevn6a6q@4ax.com>
-References: <20090115215812.GA17227@kroah.com>
-In-Reply-To: <20090115215812.GA17227@kroah.com>
-X-Mailer: Forte Agent 5.00/32.1171
+	Thu, 15 Jan 2009 17:56:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,272,1231142400"; 
+   d="scan'208";a="422784462"
+Message-ID: <496FBF2B.4010809@linux.intel.com>
+Date: Thu, 15 Jan 2009 23:56:43 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tim Hockin <thockin@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       ying.huang@intel.com, Aaron Durbin <adurbin@gmail.com>,
+       priyankag@google.com
+Subject: Re: x86/mce merge, integration hickup + crash, design thoughts
+References: <20081227155019.GA15493@elte.hu> <20081227225102.GA17822@elte.hu>	 <49594411.60000@linux.intel.com> <20090113174522.GA26965@elte.hu>	 <b3ece790901131057w4c76a428p4308b494675d69aa@mail.gmail.com>	 <496DB067.6060402@linux.intel.com>	 <b3ece790901140818i183bc30n2de01b5edaa6a2c7@mail.gmail.com>	 <496E297B.6010100@linux.intel.com> <b3ece790901141132u28ba2482h2e7af7bd51224f2a@mail.gmail.com>
+In-Reply-To: <b3ece790901141132u28ba2482h2e7af7bd51224f2a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 13:58:12 -0800, you wrote:
+Tim Hockin wrote:
+> Yeah, no offense, but that's horrible :)
 
->This is the start of the stable review cycle for the 2.6.27.12 release.
->There are 85 patches in this series, all will be posted as a response to
->this one.  If anyone has any issues with these being applied, please let
->us know.  If anyone is a maintainer of the proper subsystem, and wants
->to add a Signed-off-by: line to the patch, please respond with it.
->
->These patches are sent out with a number of different people on the Cc:
->line.  If you wish to be a reviewer, please email stable@kernel.org to
->add your name to the list.  If you want to be off the reviewer list,
->also email us.
->
->Responses should be made by Saturday, January 17, 20:00:00 UTC.
->Anything received after that time might be too late.
->
->The whole patch series can be found in one patch at:
->	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
->and the diffstat can be found below.
+I'm not sure it's worse than the XML like format proposals that seem to
+get thrown around. That is I am the only one who mentioned the
+X word yet, but the structured ASCII records that have been hinted
+at would be exactly like that.
 
-Hey Greg, you hid the file?
+> 
+> Ideally, I'd rather see a more generic conduit for all sorts of
+> events.  Polled and exception MCEs.  Thermal interrupts.  MCE
+> threshold interrupts. 
 
-$ wget http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
---09:52:29--  http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
-           => `patch-2.6.27.12-rc1.gz'
-Resolving kernel.org... 149.20.20.133, 204.152.191.37
-Connecting to kernel.org|149.20.20.133|:80... connected.
-HTTP request sent, awaiting response... 404 Not Found
-09:52:29 ERROR 404: Not Found.
+Actually I think now MCE threshold interrupts should have never been
+separate events. That was a design mistake in the AMD implementation
+(together with all the sysfs complications)
 
-Grant.
--- 
-http://bugsplatter.id.au
+An MCE threshold interrupt is just a slightly different internal
+notification mechanism and it should only trigger the events it reads
+from the MCE banks. Nothing more.
+My upcoming CMCI code works exactly this way.
+
+> PCI-express errors. 
+
+Yes we need some mechanism for those. Fortunately that's easier
+because it doesn't need to handle NMIs.
+
+> SATA
+> disk timeouts.
+
+Now that's a different issue. Generalized driver error reporting for everyone.
+
+There was a lot of discussion some years ago from a IBM proposal to do
+in general structured error reporting. But that was quite unpopular
+and no-one really liked it.
+
+What came out of it was the dev_printk() stuff that allows
+to match error messages to devices. So you already have some
+baby steps in this direction.
+
+I suspect doing this fully generalized would be quite difficult
+because there would be so many people you have to convince.
+
+
+
+> Now I know there are different conduits for some events - netlink
+> tells me about netif link up/down events I think.  I would settle for
+> a small number of interfaces.  What I don't want is what we have today
+> - EVERYTHING has a different interface.  Some are poll()-able.  Some
+> have to be actively polled.  Some have to have a daemon listening or
+> else messages are dropped.  
+
+Well the kernel will always have limited buffers, so the someone
+needs to listen problem will be always there.
+
+There are not __that__ many I think.
+
+Also whatever code handles this has to have special code for
+all of these anyways, so having a variety of interfaces for them
+doesn't seem like the end of the world to me.
+
+> 
+> Put it this way:  Given a thousand machines, I want to gather,
+> collate, and correlate all these events.  I want to be able to produce
+> a "life story" of sorts for a machine and for a data center.  Once I
+> can do that, I can start to make predictive diagnoses more accurately,
+> and I can know how much these things actually COST us.
+
+Sure sounds nice. But frankly I don't see it happening. It would
+be just too radical a change of too much code.
+
+-Andi
+
