@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbZAOUSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZAOUS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932870AbZAOUSb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762415AbZAOUA5
+	id S932862AbZAOUS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766008AbZAOUA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:57 -0500
-Received: from kroah.org ([198.145.64.141]:48984 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:00:59 -0500
+Received: from kroah.org ([198.145.64.141]:49011 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765963AbZAOUAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:43 -0500
-Date: Thu, 15 Jan 2009 11:58:16 -0800
+	id S1761594AbZAOUAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:44 -0500
+Date: Thu, 15 Jan 2009 11:58:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
+       alan@lxorguk.ukuu.org.uk, Karl Bongers <kbongers@jged.com>,
        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [patch 28/94] USB: isp1760: use a specific PLX bridge instead of
-	any bdridge
-Message-ID: <20090115195816.GB14419@kroah.com>
+Subject: [patch 29/94] USB: isp1760: Fix probe in PCI glue code
+Message-ID: <20090115195818.GC14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-isp1760-use-a-specific-plx-bridge-instead-of-any-bdridge.patch"
+Content-Disposition: inline; filename="usb-isp1760-fix-probe-in-pci-glue-code.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,45 +40,185 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+From: Karl Bongers <kbongers@jged.com>
 
-commit 6c0735687d37e25a65866823881bcbf39a6a023f upstream.
+commit 6013bbbab0dcbc43bcf9dd70beeab2a0b1ec5ea7 upstream.
 
-this driver can't handle (of course) any brdige class devices. So we
-now are just active on one specific bridge which should be only the
-isp1761 chip behind a PLX bridge.
+Contains fixes so probe on x86 PCI runs, apparently I'm first to try
+this. Several fixes to memory access to probe host scratch register.
+Previously would bug check on chip_addr var used uninitialized.
+Scratch reg write failed in one instance due to 16-bit initial access
+mode, so added "& 0x0000ffff" to the readl as fix.
+Includes some general cleanup - remove global vars, organize memory map
+resource use.
 
+Signed-off-by: Karl Bongers <kbongers@jged.com>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Tested-by: Karl Bongers <kblists08@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/isp1760-if.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/usb/host/isp1760-if.c |   97 +++++++++++++++++++++++-------------------
+ 1 file changed, 55 insertions(+), 42 deletions(-)
 
 --- a/drivers/usb/host/isp1760-if.c
 +++ b/drivers/usb/host/isp1760-if.c
-@@ -268,12 +268,16 @@ static void isp1761_pci_shutdown(struct 
- 	printk(KERN_ERR "ips1761_pci_shutdown\n");
+@@ -129,23 +129,23 @@ static struct of_platform_driver isp1760
+ #endif
+ 
+ #ifdef CONFIG_PCI
+-static u32 nxp_pci_io_base;
+-static u32 iolength;
+-static u32 pci_mem_phy0;
+-static u32 length;
+-static u8 __iomem *chip_addr;
+-static u8 __iomem *iobase;
+-
+ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 		const struct pci_device_id *id)
+ {
+ 	u8 latency, limit;
+ 	__u32 reg_data;
+ 	int retry_count;
+-	int length;
+-	int status = 1;
+ 	struct usb_hcd *hcd;
+ 	unsigned int devflags = 0;
++	int ret_status = 0;
++
++	resource_size_t pci_mem_phy0;
++	resource_size_t memlength;
++
++	u8 __iomem *chip_addr;
++	u8 __iomem *iobase;
++	resource_size_t nxp_pci_io_base;
++	resource_size_t iolength;
+ 
+ 	if (usb_disabled())
+ 		return -ENODEV;
+@@ -168,26 +168,30 @@ static int __devinit isp1761_pci_probe(s
+ 	iobase = ioremap_nocache(nxp_pci_io_base, iolength);
+ 	if (!iobase) {
+ 		printk(KERN_ERR "ioremap #1\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		return -ENOMEM;
++		ret_status = -ENOMEM;
++		goto cleanup1;
+ 	}
+ 	/* Grab the PLX PCI shared memory of the ISP 1761 we need  */
+ 	pci_mem_phy0 = pci_resource_start(dev, 3);
+-	length = pci_resource_len(dev, 3);
+-
+-	if (length < 0xffff) {
+-		printk(KERN_ERR "memory length for this resource is less than "
+-				"required\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		iounmap(iobase);
+-		return  -ENOMEM;
++	memlength = pci_resource_len(dev, 3);
++	if (memlength < 0xffff) {
++		printk(KERN_ERR "memory length for this resource is wrong\n");
++		ret_status = -ENOMEM;
++		goto cleanup2;
+ 	}
+ 
+-	if (!request_mem_region(pci_mem_phy0, length, "ISP-PCI")) {
++	if (!request_mem_region(pci_mem_phy0, memlength, "ISP-PCI")) {
+ 		printk(KERN_ERR "host controller already in use\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		iounmap(iobase);
+-		return -EBUSY;
++		ret_status = -EBUSY;
++		goto cleanup2;
++	}
++
++	/* map available memory */
++	chip_addr = ioremap_nocache(pci_mem_phy0,memlength);
++	if (!chip_addr) {
++		printk(KERN_ERR "Error ioremap failed\n");
++		ret_status = -ENOMEM;
++		goto cleanup3;
+ 	}
+ 
+ 	/* bad pci latencies can contribute to overruns */
+@@ -210,39 +214,54 @@ static int __devinit isp1761_pci_probe(s
+ 		 * */
+ 		writel(0xface, chip_addr + HC_SCRATCH_REG);
+ 		udelay(100);
+-		reg_data = readl(chip_addr + HC_SCRATCH_REG);
++		reg_data = readl(chip_addr + HC_SCRATCH_REG) & 0x0000ffff;
+ 		retry_count--;
+ 	}
+ 
++	iounmap(chip_addr);
++
+ 	/* Host Controller presence is detected by writing to scratch register
+ 	 * and reading back and checking the contents are same or not
+ 	 */
+ 	if (reg_data != 0xFACE) {
+ 		dev_err(&dev->dev, "scratch register mismatch %x\n", reg_data);
+-		goto clean;
++		ret_status = -ENOMEM;
++		goto cleanup3;
+ 	}
+ 
+ 	pci_set_master(dev);
+ 
+-	status = readl(iobase + 0x68);
+-	status |= 0x900;
+-	writel(status, iobase + 0x68);
++	/* configure PLX PCI chip to pass interrupts */
++#define PLX_INT_CSR_REG 0x68
++	reg_data = readl(iobase + PLX_INT_CSR_REG);
++	reg_data |= 0x900;
++	writel(reg_data, iobase + PLX_INT_CSR_REG);
+ 
+ 	dev->dev.dma_mask = NULL;
+-	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
++	hcd = isp1760_register(pci_mem_phy0, memlength, dev->irq,
+ 		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
+ 		devflags);
+-	if (!IS_ERR(hcd)) {
+-		pci_set_drvdata(dev, hcd);
+-		return 0;
++	if (IS_ERR(hcd)) {
++		ret_status = -ENODEV;
++		goto cleanup3;
+ 	}
+-clean:
+-	status = -ENODEV;
++
++	/* done with PLX IO access */
+ 	iounmap(iobase);
+-	release_mem_region(pci_mem_phy0, length);
+ 	release_mem_region(nxp_pci_io_base, iolength);
+-	return status;
++
++	pci_set_drvdata(dev, hcd);
++	return 0;
++
++cleanup3:
++	release_mem_region(pci_mem_phy0, memlength);
++cleanup2:
++	iounmap(iobase);
++cleanup1:
++	release_mem_region(nxp_pci_io_base, iolength);
++	return ret_status;
+ }
++
+ static void isp1761_pci_remove(struct pci_dev *dev)
+ {
+ 	struct usb_hcd *hcd;
+@@ -255,12 +274,6 @@ static void isp1761_pci_remove(struct pc
+ 	usb_put_hcd(hcd);
+ 
+ 	pci_disable_device(dev);
+-
+-	iounmap(iobase);
+-	iounmap(chip_addr);
+-
+-	release_mem_region(nxp_pci_io_base, iolength);
+-	release_mem_region(pci_mem_phy0, length);
  }
  
--static const struct pci_device_id isp1760_plx [] = { {
--	/* handle any USB 2.0 EHCI controller */
--	PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_OTHER << 8) | (0x06 << 16)), ~0),
--		.driver_data = 0,
--},
--{ /* end: all zeroes */ }
-+static const struct pci_device_id isp1760_plx [] = {
-+	{
-+		.class          = PCI_CLASS_BRIDGE_OTHER << 8,
-+		.class_mask     = ~0,
-+		.vendor		= PCI_VENDOR_ID_PLX,
-+		.device		= 0x5406,
-+		.subvendor	= PCI_VENDOR_ID_PLX,
-+		.subdevice	= 0x9054,
-+	},
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, isp1760_plx);
- 
+ static void isp1761_pci_shutdown(struct pci_dev *dev)
 
