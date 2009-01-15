@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934190AbZAOUup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbZAOUvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934190AbZAOUup (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:50:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbZAOUCt
+	id S934199AbZAOUvX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbZAOUCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 15 Jan 2009 15:02:49 -0500
 Received: from kroah.org ([198.145.64.141]:49753 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932306AbZAOUCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:45 -0500
-Date: Thu, 15 Jan 2009 12:00:21 -0800
+	id S932311AbZAOUCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:46 -0500
+Date: Thu, 15 Jan 2009 12:00:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 81/94] HID: fix error condition propagation in hid-sony
-	driver
-Message-ID: <20090115200021.GC14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 82/94] fix switch_names() breakage in short-to-short case
+Message-ID: <20090115200023.GD14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hid-fix-error-condition-propagation-in-hid-sony-driver.patch"
+Content-Disposition: inline; filename="fix-switch_names-breakage-in-short-to-short-case.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,31 +39,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Kosina <jkosina@suse.cz>
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-commit 4dfdc46468a142216b284eea66040f49df3f7191 upstream.
+commit dc711ca35f9d95a1eec02118e0c298b5e3068315 upstream.
 
-sony_set_operational() only propagates return value from
-usb_control_msg(), which returns negative on error and number
-of transferred bytes otherwise.
+We want ->name.len to match the resulting name on *both*
+source and target
 
-Reported-by: Marcin Tolysz <tolysz@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/hid-sony.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/dcache.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/hid/hid-sony.c
-+++ b/drivers/hid/hid-sony.c
-@@ -102,7 +102,7 @@ static int sony_probe(struct hid_device 
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1620,8 +1620,11 @@ static void switch_names(struct dentry *
+ 			 */
+ 			memcpy(dentry->d_iname, target->d_name.name,
+ 					target->d_name.len + 1);
++			dentry->d_name.len = target->d_name.len;
++			return;
+ 		}
  	}
++	do_switch(dentry->d_name.len, target->d_name.len);
+ }
  
- 	ret = sony_set_operational(hdev);
--	if (ret)
-+	if (ret < 0)
- 		goto err_stop;
+ /*
+@@ -1681,7 +1684,6 @@ already_unhashed:
  
- 	return 0;
+ 	/* Switch the names.. */
+ 	switch_names(dentry, target);
+-	do_switch(dentry->d_name.len, target->d_name.len);
+ 	do_switch(dentry->d_name.hash, target->d_name.hash);
+ 
+ 	/* ... and switch the parents */
+@@ -1791,7 +1793,6 @@ static void __d_materialise_dentry(struc
+ 	struct dentry *dparent, *aparent;
+ 
+ 	switch_names(dentry, anon);
+-	do_switch(dentry->d_name.len, anon->d_name.len);
+ 	do_switch(dentry->d_name.hash, anon->d_name.hash);
+ 
+ 	dparent = dentry->d_parent;
 
