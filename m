@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZAOKAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZAOKCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbZAOKAf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZAOKA0
+	id S1757730AbZAOKCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:02:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZAOKCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:00:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44473 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Jan 2009 05:02:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48197 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341AbZAOKAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:00:25 -0500
-Date: Thu, 15 Jan 2009 11:00:13 +0100
+	id S1752658AbZAOKCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:02:30 -0500
+Date: Thu, 15 Jan 2009 11:02:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Michal Hocko <mhocko@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
-Message-ID: <20090115100013.GE5833@elte.hu>
-References: <20090113122455.GA24824@dhcp35.suse.cz> <20090113123425.GB29926@elte.hu> <200901151754.58311.nickpiggin@yahoo.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] tracing/ftrace: add missing unlock in
+	register_stat_tracer()
+Message-ID: <20090115100220.GF5833@elte.hu>
+References: <alpine.DEB.1.10.0901142056470.22004@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901151754.58311.nickpiggin@yahoo.com.au>
+In-Reply-To: <alpine.DEB.1.10.0901142056470.22004@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,55 +38,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Tuesday 13 January 2009 23:34:25 Ingo Molnar wrote:
-> > * Michal Hocko <mhocko@suse.cz> wrote:
-> > > Hi,
-> > > I am not sure whether someone has already reported this, but
-> > > I can see the following early boot WARNING with the 2.6.29-rc1 kernel in
-> > > the serial console output:
-> > >
-> > > ------------[ cut here ]------------
-> > > WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
-> >
-> > That one should be fixed in tip/master and it is in the to-Linus queue of
-> > fixes:
-> >
-> >   http://people.redhat.com/mingo/tip.git/README
-> > 	
-> > it's this commit:
-> >
-> >   01e3eb8: Revert "sched: improve preempt debugging"
-> >
-> > if you want to cherry-pick the fix.
 > 
-> OK, but I still don't think this is the actual problem, but there is 
-> something amiss in the init code being exposed by it.
+> Ingo,
+> 
+> The following patch is in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: tip/devel
+> 
+> 
+> Li Zefan (1):
+>       tracing/ftrace: add missing unlock in register_stat_tracer()
 
-the warnings triggered after a softirq, and there's already preempt-leak 
-checks in the softirq code - so we can exclude that.
-
-a hardirq might have leaked a preempt count - but that would have quite 
-bad effects [with quick atomic check asserts in schedule()], wouldnt it? 
-So i tend to think that this is a false positive.
-
-One problem i can think of (and which i outlined in the revert commit log) 
-is that if a hardirq hits this window in lock_kernel():
-
-void __lockfunc lock_kernel(void)
-{
-        int depth = current->lock_depth+1;
-                                           <-------------- HERE
-        if (likely(!depth))
-                __lock_kernel();
-        current->lock_depth = depth;
-}
-
-then we have kernel_locked() already true (it checks lock_depth), but the 
-preempt count is not elevated yet via __lock_kernel(). So if we return 
-from the hardirq [and run into softirqs that end with a preempt_enable() - 
-a pure hardirq exit has no preempt debug check] we'll incorrectly think 
-that there's a preempt leak going on.
+hm, not there yet - forgot to push out?
 
 	Ingo
