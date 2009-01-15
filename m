@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765169AbZAONbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbZAONb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765169AbZAONbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 08:31:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbZAONan
+	id S1765316AbZAONb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 08:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764862AbZAONav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 08:30:43 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:43671 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764791AbZAONam (ORCPT
+	Thu, 15 Jan 2009 08:30:51 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60785 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764845AbZAONau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 08:30:42 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Christian Eggers" <ceggers@gmx.de>
-Subject: Re: Buffer allocation for USB transfers
-Date: Thu, 15 Jan 2009 14:31:19 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <496E43F4.24792.158F9B@ceggers.gmx.de>
-In-Reply-To: <496E43F4.24792.158F9B@ceggers.gmx.de>
+	Thu, 15 Jan 2009 08:30:50 -0500
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 5/8] ftdi_sio: fix kref leak
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Thu, 15 Jan 2009 13:31:07 +0000
+Message-ID: <20090115133101.21366.66605.stgit@localhost.localdomain>
+In-Reply-To: <20090115132718.21366.56187.stgit@localhost.localdomain>
+References: <20090115132718.21366.56187.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151431.20204.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 14 January 2009 19:58:44 schrieb Christian Eggers:
-> For some reason the second example (kmalloc()) doesn't seem to cause problems (on 
-> my platform) but is there are guarantee that kmalloc() 
-> without GFP_DMA does always return a DMA capable buffer?
+From: Jim Paris <jim@jtan.com>
 
-We depend on memory returned for GFP_KERNEL capable of DMA on PCI.
-GFP_DMA is for ISA dma.
+Commit 4a90f09b20f4622dcbff1f0e1e6bae1704f8ad8c added kref stuff to
+ftdi_sio, but missed tty_kref_put at one exit point in
+ftdi_process_read.
 
-	Regards
-		Oliver
+Signed-off-by: Jim Paris <jim@jtan.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
+
+ drivers/usb/serial/ftdi_sio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index ef6cfa5..c70a8f6 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -2030,7 +2030,7 @@ static void ftdi_process_read(struct work_struct *work)
+ 			spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 			dbg("%s - deferring remainder until unthrottled",
+ 					__func__);
+-			return;
++			goto out;
+ 		}
+ 		spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 		/* if the port is closed stop trying to read */
 
