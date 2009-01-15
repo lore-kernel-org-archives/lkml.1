@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbZAOCPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbZAOCQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbZAOCPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 21:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZAOCPo
+	id S1758824AbZAOCQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 21:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZAOCQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:15:44 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:57414 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752770AbZAOCPn (ORCPT
-	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:15:43 -0500
-Date: Thu, 15 Jan 2009 13:15:36 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.29-rc2
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Jan 2009 21:16:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56895 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752485AbZAOCQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 21:16:07 -0500
+Date: Wed, 14 Jan 2009 18:15:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Martin Michlmayr <tbm@cyrius.com>, elendil@planet.nl,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
+Message-Id: <20090114181542.34614acf.akpm@linux-foundation.org>
+In-Reply-To: <20090115020311.GA18740@srcf.ucam.org>
+References: <200901121356.46236.elendil@planet.nl>
+	<20090113123056.GA2464@deprecation.cyrius.com>
+	<20090114162603.c632d82e.akpm@linux-foundation.org>
+	<20090115020311.GA18740@srcf.ucam.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090115021536.BE17759391EC@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit a6525042bfdfcab128bd91fad264de10fd24a55e:
-  Linus Torvalds (1):
-        Merge branch 'x86-pat-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+On Thu, 15 Jan 2009 02:03:11 +0000 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-are available in the git repository at:
+> On Wed, Jan 14, 2009 at 04:26:03PM -0800, Andrew Morton wrote:
+> 
+> > It'd be a very special BIOS bug if it can reach out and make the kernel
+> > oops.
+> 
+> Lid actions typically trigger SMI code, so it's entirely capable of 
+> destroying CPU state in such a way that the kernel falls over (and 
+> probably even in ways that cause the kernel to turn green, emit pleasing 
+> warbling noises or invade neighbouring pieces of hardware). In this case 
+> it seems to be SMP specific - the system's entirely stable in UP mode. 
+> It's greatly vexing.
 
-  git://oss.sgi.com/xfs/xfs for-linus
+Does it always crash in the same way?
 
-Christoph Hellwig (4):
-      [XFS] pass XFS_IGET_BULKSTAT to xfs_iget for handle operations
-      [XFS] fix compile of xfs_btree_readahead_lblock on m68k
-      [XFS] truncate readdir offsets to signed 32 bit values
-      [XFS] make xfs_ino_t an unsigned long long
+If so, we can put crash-avoidance code at the offending callsite and
+back out gracefully?
 
-Eric Sandeen (3):
-      [XFS] Remove several unused typedefs.
-      [XFS] Remove macro-to-function indirections in attr code
-      [XFS] Remove macro-to-function indirections in the mask code
-
-Lachlan McIlroy (2):
-      [XFS] Update maintainers
-      Merge git://git.kernel.org/.../torvalds/linux-2.6 into for-linus
-
-Nick Piggin (2):
-      [XFS] remove old vmap cache
-      [XFS] use scalable vmap API
-
- MAINTAINERS                   |    4 +-
- fs/xfs/linux-2.6/xfs_aops.h   |    2 -
- fs/xfs/linux-2.6/xfs_buf.c    |   79 +-------------------------------------
- fs/xfs/linux-2.6/xfs_export.c |   23 +++++++++--
- fs/xfs/xfs_acl.h              |    1 -
- fs/xfs/xfs_ag.h               |    2 +-
- fs/xfs/xfs_attr_leaf.c        |   72 +++++++++++++++++-----------------
- fs/xfs/xfs_attr_leaf.h        |   12 ------
- fs/xfs/xfs_bit.h              |   10 +----
- fs/xfs/xfs_bmap_btree.c       |   84 ++++++++++++++++++++--------------------
- fs/xfs/xfs_btree.c            |    4 +-
- fs/xfs/xfs_dir2_block.c       |    7 ++-
- fs/xfs/xfs_dir2_leaf.c        |    6 +-
- fs/xfs/xfs_dir2_sf.c          |   15 ++++---
- fs/xfs/xfs_types.h            |    4 +-
- 15 files changed, 122 insertions(+), 203 deletions(-)
