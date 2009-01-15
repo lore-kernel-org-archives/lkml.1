@@ -1,75 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762028AbZAOAV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbZAOA0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762028AbZAOAV6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 19:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbZAOAVp
+	id S1761853AbZAOA0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 19:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760088AbZAOA0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 19:21:45 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:2409 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757102AbZAOAVo (ORCPT
+	Wed, 14 Jan 2009 19:26:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42926 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759166AbZAOA0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 19:21:44 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=xGaRqZLFcBn2p9D80oQA:9 a=lO0OHRiouRUFJoXzd4YA:7 a=O7sLJ6TtepeSOyOM6BgT3yGrO0MA:4 a=_RhRFcbxBZMA:10
-Message-ID: <496E8193.9070603@shaw.ca>
-Date: Wed, 14 Jan 2009 18:21:39 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Christian Eggers <ceggers@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Buffer allocation for USB transfers
-References: <496E43F4.24792.158F9B@ceggers.gmx.de>
-In-Reply-To: <496E43F4.24792.158F9B@ceggers.gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 Jan 2009 19:26:13 -0500
+Date: Wed, 14 Jan 2009 16:26:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: elendil@planet.nl, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
+Message-Id: <20090114162603.c632d82e.akpm@linux-foundation.org>
+In-Reply-To: <20090113123056.GA2464@deprecation.cyrius.com>
+References: <200901121356.46236.elendil@planet.nl>
+	<20090113123056.GA2464@deprecation.cyrius.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Eggers wrote:
-> In different drivers I've found several methods for allocating buffers 
-> transfered with usb_control_msg() or usb_submit_urb():
-> 
-> - usb_stor_msg_common() in "drivers/usb/storage/transport.c" uses buffers 
-> allocated with usb_buffer_alloc(). These buffers are used with 
-> URB_NO_xxx_DMA_MAP in urb->transfer_flags.
-> 
-> - asix_read_cmd() in "drivers/net/usb/asix.c" uses kmalloc(GFP_KERNEL).
-> 
-> - mcs7830_get_reg() in "drivers/net/usb/mcs7830.c" uses buffers from 
-> the stack.
-> 
-> At least the latter does not work on my SH-4 platform. It seems that other 
-> variables on the stack are overwritten after calling usb_control_msg(), probably as 
-> result of incorrect alignment.
+(cc linux-acpi)
 
-Indeed, DMA to/from the stack is not allowed (on some platforms it may 
-invalidate other data in the same cache line, etc. which is likely what 
-you are seeing). Assuming that the USB core is DMAing directly to/from 
-that memory, it's a bug in that mcs7830 driver.
+On Tue, 13 Jan 2009 13:30:56 +0100
+Martin Michlmayr <tbm@cyrius.com> wrote:
 
+> * Frans Pop <elendil@planet.nl> [2009-01-12 13:56]:
+> > I got the following series of errors while closing the lid of my notebook.
+> > The end result was a frozen system that needed a hard power off.
+> ...
+> > System is HP 2510p notebook running 2.6.28 (x86_64, Debian amd64/lenny)
+> > with a few additional patches on top. 
 > 
-> For some reason the second example (kmalloc()) doesn't seem to cause problems (on 
-> my platform) but is there are guarantee that kmalloc() 
-> without GFP_DMA does always return a DMA capable buffer?
+> This came up on lkml and elsewhere before.  It's probably a BIOS bug.
+> You can work around it with:
+> 
+>   echo 7 > /proc/acpi/video/C09A/DOS
+> 
 
-Yes, as long as the DMA mapping API is used properly to map the buffer 
-(which I'm assuming it is, not being a USB core expert.) GFP_DMA is not 
-intended for this, drivers should not be using that flag, unless maybe 
-they are doing ISA transfers which is not the case with USB.
+It'd be a very special BIOS bug if it can reach out and make the kernel
+oops.
 
+
+> I got the following series of errors while closing the lid of my notebook.
+> The end result was a frozen system that needed a hard power off.
 > 
-> Shall all buffers used for usb_control_msg() and usb_submit_urb() be 
-> allocated with usb_buffer_alloc()? It seems that usb_control_msg() doesn't 
-> offer a way to set the URB_NO_xxx_DMA_MAP in urb->transfer_flags so that 
-> usb_buffer_alloc() can not be used here???
+> The notebook was docked and connected to external monitor. Closing the lid
+> will only power off both displays, not suspend.
 > 
-> regards
-> Christian Eggers
+> I possibly tried to do a few things too quickly in succession, but
+> AFAIK that should still not result in the kernel crapping out on me ;-)
 > 
-> Please CC to ceggers@gmx.de
+> System is HP 2510p notebook running 2.6.28 (x86_64, Debian amd64/lenny)
+> with a few additional patches on top. 
 > 
+> Cheers,
+> FJP
+> 
+> Errors in kern.log after rebooting:
+> 
+> BUG: unable to handle kernel paging request at ffff88007ceeb5a0
+> IP: [<ffffffff8034e077>] acpi_ex_field_datum_io+0xec/0x17e
+> PGD 202063 PUD 8067 PMD 6ff52163 PTE 800000007ceeb163
+> Oops: 0011 [#1] SMP
+> last sysfs file: /sys/class/power_supply/C23D/charge_full
+> CPU 1
+> Modules linked in: iwlagn iwlcore mac80211 cfg80211 isofs zlib_inflate usbhid hid vboxdrv tcp_diag inet_diag i915 
+> drm ppdev parport_pc lp parport nfs lockd nfs_acl sunrpc ipv6 ext2 coretemp hp_wmi acpi_cpufreq loop joydev 
+> snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm arc4 snd_seq_dummy ecb snd_seq_oss snd_seq_midi snd_rawmidi 
+> snd_seq_midi_event snd_seq snd_timer rfkill snd_seq_device pcmcia snd soundcore psmouse yenta_socket 
+> rsrc_nonstatic iTCO_wdt snd_page_alloc serio_raw pcspkr pcmcia_core intel_agp battery video output wmi 
+> leds_hp_disk led_class container ac button evdev ext3 jbd mbcache sha256_generic aes_x86_64 aes_generic cbc 
+> dm_crypt dm_mirror dm_region_hash dm_log dm_snapshot dm_mod sg sr_mod cdrom sd_mod piix ata_piix ide_pci_generic 
+> ide_core pata_acpi ricoh_mmc sdhci_pci sdhci mmc_core ohci1394 ieee1394 ata_generic ehci_hcd libata uhci_hcd 
+> e1000e scsi_mod thermal processor fan thermal_sys [last unloaded: cfg80211]
+> Pid: 70, comm: kacpid Not tainted 2.6.28-rjw #83
+> RIP: 61a0:[<ffffffff803534ed>]  [<ffffffff803534ed>] acpi_ns_search_one_scope+0x1d/0x46
+> RSP: ffffffff8028fbf2:ffff88007e1d7b10  EFLAGS: 00000005
+> RAX: ffff88007e046510 RBX: ffff88007ceeb5a0 RCX: ffff88007e1d7b70
+> RDX: 0000000000000000 RSI: ffff88007e1d7ae0 RDI: ffffffff8028fbf2
+> RBP: ffff88007e1d7b80 R08: 00000003000000b2 R09: ffff88007e1d7b70
+> R10: 0000000000000000 R11: ffff88007e1d7c60 R12: ffff88007e1d7b10
+> R13: ffffffff8034df7e R14: ffff88007e1d7ad0 R15: ffff88007e046510
+> FS:  0000000000000000(0000) GS:ffff88007e002a80(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: ffff88007ceeb5a0 CR3: 0000000063b35000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process kacpid (pid: 70, threadinfo ffff88007e1d6000, task ffff88007e1d95f0)
+> Stack:
+> BUG: unable to handle kernel paging request at 000000007e1d7b00
+> IP: [<ffffffff8020f140>] show_stack_log_lvl+0xb0/0x125
+> PGD 63b00067 PUD 73867067 PMD 0
+
+If the BIOS is bad then the kernel would ideally report that fact and
+then take some sort of avoiding action.  It shouldn't oops!
+
+Frans, please raise a bugzilla against acpi for this if nothing happens
+in the next few days, thanks.
 
