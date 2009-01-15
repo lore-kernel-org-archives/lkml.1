@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZAOPqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbZAOPq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbZAOPqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 10:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZAOPqO
+	id S1760091AbZAOPq7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 10:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZAOPqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 10:46:14 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:17693 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754976AbZAOPqL (ORCPT
+	Thu, 15 Jan 2009 10:46:49 -0500
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:32920 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755159AbZAOPqs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 10:46:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=oD+YYlm4PC4tUAxlzb0pbw1vx2yq7bb7vzUNBDxE/Z+1H7z5BhPPAbl8jacjW0cIpQ
-         6YZznCQRlxQU0UkYMa2pIPdKAQgh4pTVVo/cLXPxbkxVWmqyIwFh3WJYWSLQN+oTzih6
-         UnICtuuvVuNRUvSIRkGIvis8MM671jmbT1ydY=
-Message-ID: <496F5A3C.2070600@gmail.com>
-Date: Fri, 16 Jan 2009 00:46:04 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Greg Freemyer <greg.freemyer@gmail.com>
-CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Jens Axboe <jens.axboe@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
-References: <200901051952.58029.bzolnier@gmail.com>	 <20090105185428.GS32491@kernel.dk>	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>	 <20090106073515.GY32491@kernel.dk> <4964866D.8010503@msgid.tls.msk.ru>	 <1231342473.3282.19.camel@localhost.localdomain>	 <496ECBA0.60209@gmail.com> <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
-In-Reply-To: <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 10:46:48 -0500
+X-Greylist: delayed 624 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 10:46:48 EST
+Date: Thu, 15 Jan 2009 16:34:06 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: linux kernel without file system
+Message-ID: <20090115153405.GA31634@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <20090114083024.GA30573@frolo.macqel> <20090114101521.5364c04d@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114101521.5364c04d@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Freemyer wrote:
->> Or just compare prices per byte of memory, flash and rotation disk.
->> They haven't had changed too much during last several years.
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-I meant the ratio of prices here.
+Hi,
 
->> Secondary storage which is only slightly cheaper than the primary
->> storage doesn't have much chance of flying high and far.
->> tejun
+> > Is there a way to access devices that does not require a file-system ?
 > 
-> Have you seen the new pricing Samsung has announced for their 3rd
-> generation SSD.  It is about 1/3 of the Intel' SSD price if I recall
-> correctly and the performance is approaching Intel's from what I've
-> seen.
+> No: but you can run with just your own programs and bits needed loaded
+> off an initial ramdisk or a romfs image.
 
-I compare the prices from time to time (about once a year I think) and
-the difference has been usually much higher than 20 times if my memory
-serves me right.  Intel SSDs are on pretty expensive side, even 1/3 of
-that price means > 20 times price difference per byte.  If you compare
-that price with main memory, it's only ~3.5 times cheaper.
+Well, it (IMHO) depends on what you call a filesystem. If you're 
+talking about something that stores files (= byte streams with
+some assigned name) on some medium, you *could* come around this
+(in theory, no idea if it really makes sense): put everything you
+need into one big static executable, let the bootloader load it
+before the kernel is started (just like initrd ?) and hack up
+the kernel to get that damn thing started. 
 
-> I've been talking to the OpenHSM (Hierachical Storage Manager) team
-> about their project.  They are working on getting the logic in place
-> now to move data blocks from one class of storage to another while
-> leaving the filesystem itself un-affected from the users perspective.
-> 
-> http://code.google.com/p/fscops/
-> 
-> They have a very long way to go with their code/project, but it is
-> conceptually similar to the ext4_defrag patch that already exists.
-> The big difference is the data block allocation algorithm will have to
-> be totally different.
-> 
-> If and when that get their code done, I would love to have 500 GB of
-> SSD teamed with several TB of rotational HDD and have the HSM move my
-> files between fast SSD and slow rotational.  I typically know which
-> datasets I will be working with heavily, so even a simple user space
-> tool that would let me adjust which tier of storage my files were
-> sitting on would suffice.
+BUT: it you're talking about the VFS stuff - it's a fundamental
+building block of the OS, required in many many places (from 
+socket operations to kernel runtime config, ...) - if you *really*
+want an OS w/o VFS, you better look at certain embedded-specific
+OS'es ;-P
 
-I'd love that too.  For areas where data size doesn't grow
-exponentially, it is and will continue to be great and be getting even
-better, but I'm just not sure whether it will rise as the mainstream
-secondary storage in foreseeable future given the price discrepancy
-but I'll be happy to be taken by surprise.  :-)
+BTW: I'd really like to see much more things handled through the
+filesystem (eg. networking API through some /net filesystem, like
+on Plan9 ;-p) and let the dozens of syscalls, nelink socket, etc, 
+etc die out.
 
-Thanks.
 
+cu
 -- 
-tejun
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
