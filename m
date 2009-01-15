@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZAOLrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZAOLr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbZAOLrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbZAOLrG
+	id S1759922AbZAOLr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZAOLro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:47:06 -0500
-Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:2472 "EHLO
-	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbZAOLrE (ORCPT
+	Thu, 15 Jan 2009 06:47:44 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:48558 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753156AbZAOLrn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:47:04 -0500
-Date: Thu, 15 Jan 2009 12:45:21 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
-       andi@firstfloor.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org, tglx@linutronix.de, npiggin@suse.de,
-       pmorreale@novell.com, SDietrich@novell.com, dmitry.adamushko@gmail.com,
-       hannes@cmpxchg.org
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090115114518.GT23674@vanheusden.com>
-References: <20090114190008.GA13203@elte.hu> <20090114113638.c818fcf8.akpm@linux-foundation.org> <20090114201435.GA6519@elte.hu> <20090114123017.9acf42d7.akpm@linux-foundation.org> <20090114205122.GC6519@elte.hu> <20090114130642.cf2b18b2.akpm@linux-foundation.org> <20090114211458.GD6519@elte.hu> <20090114214158.GA9992@elte.hu> <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com> <20090114223408.GA19173@elte.hu>
+	Thu, 15 Jan 2009 06:47:43 -0500
+Message-ID: <496F224A.9080100@cosmosbay.com>
+Date: Thu, 15 Jan 2009 12:47:22 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090114223408.GA19173@elte.hu>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu Jan 15 09:10:29 CET 2009
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, Volker.Lendecke@SerNet.DE,
+       linux-kernel@vger.kernel.org, sfrench@us.ibm.com, jens.axboe@oracle.com,
+       netdev@vger.kernel.org
+Subject: Re: maximum buffer size for splice(2) tcp->pipe?
+References: <20090113123702.ad29cd13.akpm@linux-foundation.org>	<496D2078.9080302@cosmosbay.com>	<496D25F8.2080505@cosmosbay.com> <20090114.205839.20689555.davem@davemloft.net>
+In-Reply-To: <20090114.205839.20689555.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 15 Jan 2009 12:47:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >> > You just disproved your own case :(
-> > >>
-> > >> how so? 80% is not enough? I also checked Fedora and it has
-> > >> SCHED_DEBUG=y in its kernel rpms.
-> > >
-> > > Ubuntu has CONFIG_SCHED_DEBUG=y as well in their kernels.
+David Miller a écrit :
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Wed, 14 Jan 2009 00:38:32 +0100
+> 
+>> [PATCH] net: splice() from tcp to socket should take into account O_NONBLOCK
+>>
+>> Instead of using SPLICE_F_NONBLOCK to select a non blocking mode both on
+>> source tcp socket and pipe destination, we use the underlying file flag (O_NONBLOCK)
+>> for selecting a non blocking socket.
+>>
+>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> This needs at least some more thought.
+> 
+> It seems, for one thing, that this change will interfere with the
+> intentions of the code in splice_dirt_to_actor which goes:
+> 
+> 	/*
+> 	 * Don't block on output, we have to drain the direct pipe.
+> 	 */
+> 	sd->flags &= ~SPLICE_F_NONBLOCK;
 
-Debian too:
+Reading splice_direct_to_actor() I see nothing wrong with the patch
 
-mauer:~/bin# grep CONFIG_SCHED_DEBUG /boot/config-2.6.2*
-/boot/config-2.6.24-1-amd64:# CONFIG_SCHED_DEBUG is not set
-/boot/config-2.6.25-2-amd64:CONFIG_SCHED_DEBUG=y
-/boot/config-2.6.26-1-amd64:CONFIG_SCHED_DEBUG=y
+(Patch is about splice from socket to pipe, while the sd->flags you mention
+in splice_direct_to_actor() only applies to the splice from internal pipe to
+something else, as splice_direct_to_actor() allocates an internal pipe to perform
+its work.
 
-> > $ zgrep DEBUG_MUTEX /proc/config.gz
-> > # CONFIG_DEBUG_MUTEXES is not set
+Also, the meaning of SPLICE_F_NONBLOCK, as explained in include/linux/splice.h is :
 
-mauer:~/bin# grep DEBUG_MUTEX /boot/config-2.6.2*
-/boot/config-2.6.22-3-amd64:# CONFIG_DEBUG_MUTEXES is not set
-/boot/config-2.6.24-1-amd64:# CONFIG_DEBUG_MUTEXES is not set
-/boot/config-2.6.25-2-amd64:# CONFIG_DEBUG_MUTEXES is not set
-/boot/config-2.6.26-1-amd64:# CONFIG_DEBUG_MUTEXES is not set
+#define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
+	/* we may still block on the fd we splice */
+	/* from/to, of course */
+
+If the comment is still correct, SPLICE_F_NONBLOCK only applies to the pipe implied in
+splice() syscall.
+
+For the other file, either its :
+- A regular file : nonblocking mode is not available, like a normal read()/write() syscall
+
+- A socket : We should be able to specify if its blocking or not, independantly from
+             the SPLICE_F_NONBLOCK flag that only applies to the pipe. Normal way
+             is using ioctl(FIONBIO) or other fcntl() call to change file->f_flags O_NONBLOCK
 
 
-Folkert van Heusden
+In order to be able to efficiently use splice() from a socket to a file, we need
+to do a loop of :
 
--- 
-Looking for a cheap but fast webhoster with an excellent helpdesk?
-http://keetweej.vanheusden.com/redir.php?id=1001
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+{
+splice(from blocking tcp socket to non blocking pipe, SPLICE_F_NONBLOCK); /* nonblocking pipe or risk deadlock */
+splice(from pipe to file)
+}
+
+
