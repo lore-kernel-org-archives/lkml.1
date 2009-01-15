@@ -1,103 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZAOGhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbZAOGjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbZAOGhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758407AbZAOGhf
+	id S1761032AbZAOGjL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 01:39:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZAOGi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:37:35 -0500
-Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:48019 "HELO
-	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753986AbZAOGhe (ORCPT
+	Thu, 15 Jan 2009 01:38:56 -0500
+Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:57013 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbZAOGiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:37:34 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tWsLxZQdi0n0haNl9JxMZ79PB1iAMkz/9B8jc6P1SU8ylOyBhTMEkq4ZxN/vvHlo2vl7yD7zMtt/qFmfv7uuyGKeGvOgk7noNa7B9st20KB04QdcwflH0GtbB3kOcyTV6r+a8ex5rqEAbGwsxYINi8gn5XvRoM1YcvOAVxdEMok=  ;
-X-YMail-OSG: 1K7lSEgVM1lSxFs6Sc_t_iySGQzZETTBZq2DsGCfKAA7kOFRF4hgx8MPTIJVAu8Uqjf9Z8vve88chxgUnSFXKMc6_yCIO6d8UaJdlrHC_DUbHAEJTjxRNaajKHr86803H8qXNmDG.UU3zDOhUBYCda41GKrGLtXSgnmxJUfEx4brKNadOKqeG.iYIH0p7yK0dKEhTKIlvrOTyX1Y1RN.mag8nM53mVmW
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29 -mm merge plans
-Date: Thu, 15 Jan 2009 17:37:03 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20090105004300.19ed52d1.akpm@linux-foundation.org> <200901052328.26630.nickpiggin@yahoo.com.au> <20090112140606.cd6f208c.akpm@linux-foundation.org>
-In-Reply-To: <20090112140606.cd6f208c.akpm@linux-foundation.org>
+	Thu, 15 Jan 2009 01:38:55 -0500
+Message-ID: <496ED9EF.2050507@compulab.co.il>
+Date: Thu, 15 Jan 2009 08:38:39 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jonathan Cameron <jic23@cam.ac.uk>
+CC: LKML <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>,
+       Samuel Ortiz <sameo@openedhand.com>, eric miao <eric.y.miao@gmail.com>,
+       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
+Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support within
+ mfd driver.
+References: <496E2BE5.1050803@cam.ac.uk>
+In-Reply-To: <496E2BE5.1050803@cam.ac.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151737.03600.nickpiggin@yahoo.com.au>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 January 2009 09:06:06 Andrew Morton wrote:
-> On Mon, 5 Jan 2009 23:28:26 +1100
->
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Monday 05 January 2009 19:43:00 Andrew Morton wrote:
-> > > The individual patches are mostly at
-> > > http://userweb.kernel.org/~akpm/mmotm/broken-out/
-> > >
-> > >
-> > > mm-remove-the-might_sleep-from-lock_page.patch
-> > >
-> > >   Need to think about this.
-> >
-> > Removing this reduces a lot of might_sleep coverage scope. Page
-> > lock isn't contended in a lot of cases. Why would you drop a
-> > good debugging feature?
->
-> For the reasons described in the changelog, of course.
->
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/mm-remove-the-might_sleep-
->from-lock_page.patch
+Jonathan,
+Below are my two cents :)
 
-Yeah, but that's because voluntary preempt is somewhat of a hack.
-In fact, we recently decided to turn this off in SLES11 because it
-was causing a measurable performance slowdown.
+Jonathan Cameron wrote:
+> From: Jonathan Cameron <jic23@cam.ac.uk>
+> 
+> Add support for changing the mode of the da9030 usb charge pump
+> 
+> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+> 
+> ---
+> 
+> Minor changes from previous version to reflect changes in the
+> driver being patched. Addtional cc's as per Mark's suggestion.
+> 
+> This version simply adds the functionality to the da903x mfd driver
+> core. If anyone can suggest a way round simply maintaining a
+> global pointer to the device it would be good.
 
-If you are actually debugging a page lock problem or writing new
-code, you would be very very happy to have a problem caught here
-rather than the potentially much harder task of causing a
-schedule on this lock.
+I don't think the global pointer here is real problem. It should be *really*
+weird design with two da903x.
 
+> To be able to call this from a board config file the driver must be
+> built in rather than a module but enforcing that is down to the
+> board Kconfig entry.
 
-> > > make-sure-nobodys-leaking-resources.patch
-> > > releasing-resources-with-children.patch
-> >
-> > Any reason why not to add these upstream?
->
-> Dunno.  Are they valuable?  I've never had a report of them triggering,
-> I don't think.
+Most probably the board with da9030 will anyway have it built-in...
 
-I don't really know the code, but if it gives extra help to
-people writing or testing new devices... is it difficult to
-carry around? If not, then why *not* have it upstream? ;)
+> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+> index 99f8dcf..70ec3b0 100644
+> --- a/drivers/mfd/da903x.c
+> +++ b/drivers/mfd/da903x.c
+> @@ -30,6 +30,7 @@
+>  #define DA9030_SYS_CTRL_A	0x08
+>  #define DA9030_SYS_CTRL_B	0x09
+>  #define DA9030_FAULT_LOG	0x0a
+> +#define DA9030_USBPUMP_REG	0x19
+>  
+>  #define DA9034_CHIP_ID		0x00
+>  #define DA9034_EVENT_A		0x01
+> @@ -484,6 +485,32 @@ failed:
+>  	return ret;
+>  }
+>  
+> +/* Single device assumption */
+> +struct device *da9030_mfd_dev;
+> +
+> +int da9030_set_usb_charge_pump_mode(int mode)
+> +{
+> +	uint8_t val = 0;
+> +
+> +	if (da9030_mfd_dev == NULL)
+> +		return -EINVAL;
+> +
+> +	switch (mode) {
+> +	case DA9030_USBPUMP_AUTO:
+> +		val = 0;
+> +		break;
+> +	case DA9030_USBPUMP_CHARGE_PUMP:
+> +		val = 0x40;
+> +		break;
+> +	case DA9030_USBPUMP_CURRENT_SOURCE:
+> +		val = 0x80;
+> +		break;
+> +	}
+> +
+> +	return da903x_write(da9030_mfd_dev, DA9030_USBPUMP_REG, val);
+> +}
+> +EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
+> +
 
+Maybe we want to have 'da9030_set_usb_charge_pump_mode' as well?
 
-> > > put_bh-debug.patch
-> >
-> > This could just be implemented with a VM_BUG_ON (or FS_BUG_ON) like the
-> > pagecache refcounting. Wouldn't be a bad idea.
->
-> yup, I guess so.  Again, no reports of it triggering in ages.
+>  static int __devinit da903x_probe(struct i2c_client *client,
+>  				  const struct i2c_device_id *id)
+>  {
+> @@ -499,6 +526,7 @@ static int __devinit da903x_probe(struct i2c_client *client,
+>  	chip->client = client;
+>  	chip->dev = &client->dev;
+>  	chip->ops = &da903x_ops[id->driver_data];
+> +	da9030_mfd_dev = &client->dev;
+>  
+>  	mutex_init(&chip->lock);
+>  	INIT_WORK(&chip->irq_work, da903x_irq_work);
+> @@ -559,6 +587,7 @@ static struct i2c_driver da903x_driver = {
+>  
+>  static int __init da903x_init(void)
+>  {
+> +	da9030_mfd_dev = NULL;
+>  	return i2c_add_driver(&da903x_driver);
+>  }
+>  module_init(da903x_init);
+> diff --git a/include/linux/mfd/da903x.h b/include/linux/mfd/da903x.h
+> index 115dbe9..5e15305 100644
+> --- a/include/linux/mfd/da903x.h
+> +++ b/include/linux/mfd/da903x.h
+> @@ -227,6 +227,11 @@ extern int da903x_unregister_notifier(struct device *dev,
+>  
+>  extern int da903x_query_status(struct device *dev, unsigned int status);
+>  
+> +#define DA9030_USBPUMP_AUTO		1
+> +#define DA9030_USBPUMP_CHARGE_PUMP	2
+> +#define DA9030_USBPUMP_CURRENT_SOURCE	3
+> +
+> +int da9030_set_usb_charge_pump_mode(int mode);
+>  
+>  /* NOTE: the functions below are not intended for use outside
+>   * of the DA903x sub-device drivers
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Maybe I'll go through and add some such assertions for fs developers.
-fsblock is riddled with them and it really really helps catching weird
-and wonderful problems in the buffer layer, the pagecache layer, or
-the filesystem, or some combination of them ;) Maybe that's just
-because I write a lot of bugs though!
-
-
-> > > add-a-refcount-check-in-dput.patch
-> >
-> > Again, why not an FS_BUG_ON for things like this too?
->
-> Ditto.
-
-OK.
+-- 
+Sincerely yours,
+Mike.
 
