@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbZAOWHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbZAOWEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761767AbZAOWHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932974AbZAOWB7
+	id S1761617AbZAOWEK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764007AbZAOWBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:01:59 -0500
-Received: from kroah.org ([198.145.64.141]:38126 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:01:53 -0500
+Received: from kroah.org ([198.145.64.141]:38069 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765453AbZAOWB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:01:57 -0500
-Date: Thu, 15 Jan 2009 13:59:11 -0800
+	id S1763493AbZAOWBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:01:52 -0500
+Date: Thu, 15 Jan 2009 13:58:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
-Subject: [patch 09/85] md: fix bitmap-on-external-file bug.
-Message-ID: <20090115215911.GJ17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pavel Emelyanov <xemul@openvz.org>,
+       Paul Menage <menage@google.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       James Morris <jmorris@namei.org>
+Subject: [patch 04/85] devices cgroup: allow mkfifo
+Message-ID: <20090115215855.GE17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-fix-bitmap-on-external-file-bug.patch"
+Content-Disposition: inline; filename="devices-cgroup-allow-mkfifo.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,38 +43,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-commit 538452700d95480c16e7aa6b10ff77cd937d33f4 upstream.
+commit 0b82ac37b889ec881b645860da3775118effb3ca upstream.
 
-commit a2ed9615e3222645007fc19991aedf30eed3ecfd
-fixed a bug with 'internal' bitmaps, but in the process broke
-'in a file' bitmaps.  So they are broken in 2.6.28
+The devcgroup_inode_permission() hook in the devices whitelist cgroup has
+always bypassed access checks on fifos.  But the mknod hook did not.  The
+devices whitelist is only about block and char devices, and fifos can't
+even be added to the whitelist, so fifos can't be created at all except by
+tasks which have 'a' in their whitelist (meaning they have access to all
+devices).
 
-This fixes it, and needs to go in 2.6.28-stable.
+Fix the behavior by bypassing access checks to mkfifo.
 
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>
+Cc: Paul Menage <menage@google.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: James Morris <jmorris@namei.org>
+Reported-by: Daniel Lezcano <dlezcano@fr.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/bitmap.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ security/device_cgroup.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -964,9 +964,11 @@ static int bitmap_init_from_disk(struct 
- 				 */
- 				page = bitmap->sb_page;
- 				offset = sizeof(bitmap_super_t);
--				read_sb_page(bitmap->mddev, bitmap->offset,
--					     page,
--					     index, count);
-+				if (!file)
-+					read_sb_page(bitmap->mddev,
-+						     bitmap->offset,
-+						     page,
-+						     index, count);
- 			} else if (file) {
- 				page = read_page(file, index, bitmap, count);
- 				offset = 0;
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -543,6 +543,9 @@ int devcgroup_inode_mknod(int mode, dev_
+ 	struct dev_cgroup *dev_cgroup;
+ 	struct dev_whitelist_item *wh;
+ 
++	if (!S_ISBLK(mode) && !S_ISCHR(mode))
++		return 0;
++
+ 	rcu_read_lock();
+ 
+ 	dev_cgroup = task_devcgroup(current);
 
