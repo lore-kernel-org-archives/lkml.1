@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762887AbZAOSc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbZAOSfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762887AbZAOSc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbZAOScV
+	id S1763565AbZAOSfb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbZAOSfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:32:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:26472 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbZAOScU (ORCPT
+	Thu, 15 Jan 2009 13:35:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49262 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755049AbZAOSfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:32:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ikkh3M9PvtDJtl77FEdTZMsLctBvAs4dpbXxePrHeVmUaMPjc3szZx1TuaAIfGyIex
-         TQ0lMmJPGcDQOSMd+ZXU7iFe/4SZGkxGpSQ7MQV8DGYPA4nULeHsjJF/ETZ7N7mkTliA
-         HsfdLc8zKSsLW9MAFmY0OhmiWeZczeNmJBeHI=
-Date: Thu, 15 Jan 2009 21:32:19 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "harvey.harrison@gmail.com" <harvey.harrison@gmail.com>,
-       "sam@ravnborg.org" <sam@ravnborg.org>,
-       "jaswinderrajput@gmail.com" <jaswinderrajput@gmail.com>
-Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-Message-ID: <20090115183219.GD9032@localhost>
-References: <20090114203745.285473388@gmail.com>> <496e4e23.0c07560a.5e4e.529c@mx.google.com> <496E6585.8050505@zytor.com> <928CFBE8E7CB0040959E56B4EA41A77E0CD9CD33@irsmsx504.ger.corp.intel.com> <20090115084110.GB9032@localhost> <496F69C8.2040103@zytor.com> <20090115173324.GC9032@localhost> <496F788B.3090104@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496F788B.3090104@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 15 Jan 2009 13:35:22 -0500
+Date: Thu, 15 Jan 2009 10:34:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tejun Heo <tj@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Message-Id: <20090115103406.a85968f0.akpm@linux-foundation.org>
+In-Reply-To: <20090115180259.GJ22472@elte.hu>
+References: <496D8CEB.5060402@zytor.com>
+	<20090114093834.GA19799@elte.hu>
+	<496F0F50.6070200@kernel.org>
+	<20090115113045.GG22850@elte.hu>
+	<496F2032.5080502@kernel.org>
+	<20090115122611.GJ22850@elte.hu>
+	<496F346B.6020804@kernel.org>
+	<20090115130740.GE21839@elte.hu>
+	<496F38C7.5000403@kernel.org>
+	<20090115093007.4215b4b4.akpm@linux-foundation.org>
+	<20090115180259.GJ22472@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Thu, Jan 15, 2009 at 09:55:23AM -0800]
-... 
-| The point was that if we were using #if instead of #ifdef, then -Wundef
-| could be used to complain instead of silently ignoring sections.
+On Thu, 15 Jan 2009 19:02:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-Ah, I see now what you mean.
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 15 Jan 2009 22:23:19 +0900 Tejun Heo <tj@kernel.org> wrote:
+> > 
+> > > --- a/include/asm-generic/percpu.h
+> > > +++ b/include/asm-generic/percpu.h
+> > > @@ -80,4 +80,56 @@ extern void setup_per_cpu_areas(void);
+> > >  #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
+> > >  					__typeof__(type) per_cpu_var(name)
+> > >  
+> > > +/*
+> > > + * Optional methods for optimized non-lvalue per-cpu variable access.
+> > > + *
+> > > + * @var can be a percpu variable or a field of it and its size should
+> > > + * equal char, int or long.  percpu_read() evaluates to a lvalue and
+> > > + * all others to void.
+> > > + *
+> > > + * These operations are guaranteed to be atomic w.r.t. preemption.
+> > > + * The generic versions use plain get/put_cpu_var().  Archs are
+> > > + * encouraged to implement single-instruction alternatives which don't
+> > > + * require preemption protection.
+> > > + */
+> > > +#ifndef percpu_read
+> > > +# define percpu_read(var)						\
+> > > +  ({									\
+> > > +	typeof(per_cpu_var(var)) __tmp_var__;				\
+> > > +	__tmp_var__ = get_cpu_var(var);					\
+> > > +	put_cpu_var(var);						\
+> > > +	__tmp_var__;							\
+> > > +  })
+> > > +#endif
+> > 
+> > I wonder if the preempt_disable()/preempt_enable() in here actually
+> > does anything useful on any architecture.
+> 
+> Provides "this is IRQ safe"
 
-| 
-| 	-hpa
-| 
-| -- 
-| H. Peter Anvin, Intel Open Source Technology Center
-| I work for Intel.  I don't speak on their behalf.
-| 
+?
 
-		- Cyrill -
+> and "this is preempt safe" semantics.
+
+Of course.  But do any architectures actually _need_ that for a single
+read?
+
+Maybe.  And if so, they can interpose their arch-specific
+implementation.  But if the generic version is optimal for them, they
+wouldn't need to..
+
+
