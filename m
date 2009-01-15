@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbZAOOdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765593AbZAOOfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765350AbZAOOdQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbZAOOdA
+	id S1765593AbZAOOfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbZAOOfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:33:00 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:3452 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754732AbZAOOc7 (ORCPT
+	Thu, 15 Jan 2009 09:35:38 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:58219 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757314AbZAOOfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:32:59 -0500
-Date: Thu, 15 Jan 2009 17:32:57 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sdhci: Fix potential spinlock recursion
-Message-ID: <20090115143257.GA2192@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090114194159.GA25017@oksana.dev.rtsoft.ru> <20090115070521.25c3bda7@mjolnir.drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Thu, 15 Jan 2009 09:35:37 -0500
+Date: Thu, 15 Jan 2009 15:37:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: [PULL -tip] fixed few make headers_check warnings
+Message-ID: <20090115143717.GA11991@uranus.ravnborg.org>
+References: <1231836016.3212.41.camel@jaswinder.satnam> <Pine.LNX.4.64.0901140954250.27308@anakin> <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com> <20090114153825.GB32082@uranus.ravnborg.org> <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com> <Pine.LNX.4.64.0901141732450.26663@anakin> <20090114201513.GC1556@uranus.ravnborg.org> <20090115111134.GB22850@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115070521.25c3bda7@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090115111134.GB22850@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 07:05:21AM +0100, Pierre Ossman wrote:
-> On Wed, 14 Jan 2009 22:41:59 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On Thu, Jan 15, 2009 at 12:11:34PM +0100, Ingo Molnar wrote:
 > 
-> > 
-> > This happens because plain spin_lock() won't protect us from
-> > softirqs (tasklets). So in the sdhci interrupt handler we must
-> > grab the _irq version of the lock.
-> > 
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> ?! The docs I've read state that softirq:s are not executed until all
-> the hardirq:s have finished processing. And looking at your code, that
-> seems to still hold true. A softirq running esdhc_tasklet_card() gets
-> preempted by a hard irq and we have the lockup.
+> > So when I see "capability.h: extern's make no sense in userspace" the 
+> > perfect approach would be that the whole file was checked.
+> > 
+> > This is a much bigger task that just removing the warning.
+> 
+> The problem is, you just littered the kernel with a ton of warnings and 
+> declared that fixing them is a 'much bigger task'.
+> 
+> It's not good to start projects like this, because they simply never 
+> finish. It's _much_ better to first reach a zero baseline via minimal 
+> fixes, then enforce 'look at the whole thing' for all _NEW_ files and 
+> changes.
+> 
+> That's how we are using checkpatch in the -tip topics, and it's working 
+> very nicely.
+> 
+> Could we please start it like that?
 
-Right you are. That was a total brain fart on my part, I apologize.
+I would have done such have I had more time to do this stuff.
+Real life just hit me after vacation finished and deadline approaching.
 
-> If you're running the code you sent a few minutes later, then something
-> is broken with your platform as esdhc_tasklet_card() clearly tries to
-> disable interrupts when it grabs the lock.
+I can disable the warnings around -rc7 if we think they are too noisy
+when we release the next kernel.
 
-Luckily the platform isn't broken. It's just that sdhci driver
-doesn't have this bug, I was a bit confused by two these drivers
-instead.
-
-Here is the original patch that has this bug:
-
-http://www.bitshrine.org/gpp/kernel-2.6.25-MPC837xE-RDB-add-esdhc-support.patch
-
-Notice that esdhc_tasklet_card() grabs spin_lock(), not
-spin_lock_irqsave() as sdhci driver. I fixed this in the esdhc patch
-that I sent, but then I decided to "fix" irq handler too, which
-wasn't necessary, of course. And that's it.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+	Sam
