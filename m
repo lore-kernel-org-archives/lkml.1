@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbZAOHCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbZAOHD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761401AbZAOHCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZAOHCH
+	id S1757509AbZAOHD3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZAOHDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:02:07 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:65361 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753540AbZAOHCF (ORCPT
+	Thu, 15 Jan 2009 02:03:20 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:27710 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755807AbZAOHDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:02:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SeklfTWZqKi417Yiibf6F/LdQo5fssEYXhIkyUT/3c5w5l+pPaKzxEY+cyha/A1GX6
-         s9MrJse3ZUXo5SJPNQo03bUCXlOFltkRouKo5PlUl6uNKa/yX6I/ANWZntXJ4SuUdxlE
-         h86rI5Lp4UCYz/1d/pCR1+BA5kL2GXuHSLsSk=
+	Thu, 15 Jan 2009 02:03:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=tdUoFdPdSdqL4b3cGpqqGgvbDIKZmF40s2LbMXai8DePqUnLgMhYCI/Fq7qKMUVHmITCpffkuV2nWll+gT9yXgnxtT1ZKxE1aA3Iv1tscG17pHhvtykhVzLIzGqLVy2e41wcQPUGv27NDsglrA4PV+Tmr1ae91sZeyIlSG07Ze4=  ;
+X-YMail-OSG: EMDienAVM1nkYamHmljcjXBNpqo94rgzbtrHqYx68RJqENsamY8mtd_buty0vvnqElaX3NtheJ8BW4q8XWr6BTx6.DBkXxMDlnqeWkJvRWGyvzFaiuz1MkGV7KNYT_Q3c8GwYgfaXoxqkaPuNtetuX0d
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+Date: Wed, 14 Jan 2009 23:03:09 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+References: <200811091531.46003.david-b@pacbell.net> <200811161458.17212.david-b@pacbell.net> <20081117015127.GA10883@sirena.org.uk>
+In-Reply-To: <20081117015127.GA10883@sirena.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <496ED8F6.6030201@compulab.co.il>
-References: <496E2BE5.1050803@cam.ac.uk>
-	 <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com>
-	 <496ED8F6.6030201@compulab.co.il>
-Date: Thu, 15 Jan 2009 15:02:05 +0800
-Message-ID: <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support 
-	within mfd driver.
-From: Eric Miao <eric.y.miao@gmail.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
-       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901142303.09217.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 2:34 PM, Mike Rapoport <mike@compulab.co.il> wrote:
->
->
-> Eric Miao wrote:
->> On Thu, Jan 15, 2009 at 2:16 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
->>> From: Jonathan Cameron <jic23@cam.ac.uk>
->>>
->>> Add support for changing the mode of the da9030 usb charge pump
->>>
->>
->> Well, if it is totally USB charger related, I'd suggest to move this into
->> the dedicated driver. This mfd/da903x.c serves as a common code
->> base for all sub-peripherals.
->
-> It's not exactly related to the charger, it's rather related to the USB voltage
-> supplied to USB devices attached to PXA OHCI.
-> Indeed the mfd/da903x.c serves as a common core for sub-peripherals, but IMHO
-> adding a subdevice driver because of single method doesn't worth the overhead.
-> I'm for the solution Jonathan proposes.
->
+On Sunday 16 November 2008, Mark Brown wrote:
+> > Are you arguing that there should be some new regulator_ops call to
+> > expose the actual regulator state?  If so, then what should happen to
+> 
+> Yes, exactly - possibly multiple calls.
 
-Mmm... then who will be the invoker? I'm a bit upset about this
-being exported while called out of control. If it works as the
-name suggested, setting some mode, maybe we can have a
-platform data field specifying this, and hide this totally within
-the driver. I didn't look into this too much, just a concern here.
+OK, so I finally got back to this issue.  I'll post a patch
+with such a separate call in a moment ... just a single status
+value, sufficient for the need I observe, and only exposed
+through sysfs since it's more useful just now as a kind of
+introspection.  Example:  troubleshooting, as we previously
+discussed; or, I can see some regulators that are wrongly
+enabled, primarily because of bootloader goofage.
+
+That raises an issue:  how can Linux get such regulators to
+turn off?  Clock frameworks have the same issue, and they
+tend to resolve this with a SoC-specific Kconfig option to
+disable unused clocks (in a late_initcall, after everthing
+has had a chance to start up).  That conserves power.
+
+I'm thinking it'd be worth having a similar Kconfig option
+for regulators too.  It could kick in regulator core code to
+call regulator_ops.disable() whenever regulator_dev.use_count
+is zero, possibly warning if !regulator_ops.is_disabled().
+(Handling constraints.always_on too.)
+
+Comments?
+
+- Dave
+
