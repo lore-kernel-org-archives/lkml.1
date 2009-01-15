@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936260AbZAOXCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZAOXCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936260AbZAOXCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935581AbZAOWwO
+	id S1757053AbZAOXCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936628AbZAOWyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:52:14 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:32593 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935608AbZAOWwJ (ORCPT
+	Thu, 15 Jan 2009 17:54:08 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:50962 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936629AbZAOWyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:52:09 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
-Date: Thu, 15 Jan 2009 17:52:06 -0500
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       "SE-Linux" <selinux@tycho.nsa.gov>
-References: <496D759A.7010401@gmail.com> <200901151246.38396.paul.moore@hp.com> <dd18b0c30901151400t68dfc54cu67a378ba71a2edc9@mail.gmail.com>
-In-Reply-To: <dd18b0c30901151400t68dfc54cu67a378ba71a2edc9@mail.gmail.com>
+	Thu, 15 Jan 2009 17:54:05 -0500
+X-Greylist: delayed 18002 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 17:54:04 EST
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Date: Thu, 15 Jan 2009 23:53:24 +0100
+User-Agent: KMail/1.9.9
+Cc: Ira Snyder <iws@ovro.caltech.edu>, Jan-Bernd Themann <themann@de.ibm.com>,
+       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
+References: <20090107195052.GA24981@ovro.caltech.edu> <200901152222.55006.arnd@arndb.de> <20090115214056.GC9091@ovro.caltech.edu>
+In-Reply-To: <20090115214056.GC9091@ovro.caltech.edu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901151752.06622.paul.moore@hp.com>
+Message-Id: <200901152353.25052.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+FJLreOtGGi508kX6XNUVH6y7Nun70GXx2wI4
+ eZMueTVp6ju4w/DBt2ESQ+X0SDeZNJJBxJ9gms1iXUQ+mj4IW5
+ yqn7IzYjdkQu/XOA4eHTg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009 5:00:55 pm Justin Mattock wrote:
-> On Thu, Jan 15, 2009 at 9:46 AM, Paul Moore <paul.moore@hp.com> wrote:
-> > On Wednesday 14 January 2009 9:43:56 pm Justin P. Mattock wrote:
-> >> Paul Moore wrote:
-> >> > On Wednesday 14 January 2009 4:35:25 pm Justin P. Mattock wrote:
-> >> >> here is what the error looks like:
-> >> >>
-> >> >> netlabel_tools-0.19# make
-> >> >> INFO: creating the version header file
-> >> >> .: 10: version_info: not found
-> >> >> make: *** [include/version.h] Error 2
-> >> >
-> >> > Huh, can you try the following:
-> >> >
-> >> >  1. Open the netlabel_tools-0.19/Makefile in your favorite
-> >> > editor 2. Change the ". version_info; \" line to "source
-> >> > ./version_info; \" 3. Save your changes
-> >> >  4. Try running "make" again
-> >> >
-> >> > Thanks.
-> >>
-> >> O.k. changed . version like how you had posted.
-> >> The package compiled like a charm.
-> >
-> > Great, I'll change the Makefile(s) in SVN ... I don't quite
-> > understand the reason (what is your /bin/sh?  I'm guessing not
-> > bash?) but at least we now have a solution :)
-> >
-> > --
-> > paul moore
-> > linux @ hp
->
-> hmm..
-> under ps auxZ
-> I see:
-> 2896 tty1 S+ 0:00 /bin/bash /usr/bin/startx
-> then open aterm for navigating.
->
-> Thankfully it works(this people can install
-> it a test it out.)
+On Thursday 15 January 2009, Ira Snyder wrote:
+> I do have mailboxes (two inbound, two outbound) which can generate
+> interrupts, as well as doorbell registers (one inbound, one outbound).
+> The doorbell register's bits are "write 1 to clear", and can only be
+> cleared by the opposite side.
+> 
 
-Well, it is possible that /bin/sh points to a non-bash shell but maybe 
-not (I'm pretty sure the make command executes the scripts 
-with /bin/sh).  Either way, I checked in the fix to the SVN tree 
-earlier today so newer releases will have the fix; if needed I can 
-release a 0.19.1 or similar but I want to wait and see how widespread 
-the problem is ...
+Ok, in this case, you should be able to use one of these to implement
+the DMA complete interrupt, but adding an extra DMA transfer to the
+mailbox after each transfer that you want to get notified for.
 
--- 
-paul moore
-linux @ hp
+	Arnd <><
