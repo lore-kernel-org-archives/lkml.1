@@ -1,30 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbZAOGkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761747AbZAOGkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761549AbZAOGkM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZAOGj7
+	id S1761747AbZAOGkt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 01:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbZAOGkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:39:59 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:50378 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbZAOGj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:39:58 -0500
-Date: Thu, 15 Jan 2009 07:39:55 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "Liu Dave" <DaveLiu@freescale.com>
-Cc: avorontsov@ru.mvista.com, linuxppc-dev@ozlabs.org,
-       "Lai Kon-LKL001" <Konjin.Lai@freescale.com>,
-       linux-kernel@vger.kernel.org, "Xie Xiaobo-R63061" <X.Xie@freescale.com>,
-       "D'Abbraccio Joe-LJD015" <Joe.D'abbraccio@freescale.com>
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Message-ID: <20090115073955.11d20734@mjolnir.drzeus.cx>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-	<D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net>
-	<20090114235605.GA13531@oksana.dev.rtsoft.ru>
-	<20090115065502.1b719b06@mjolnir.drzeus.cx>
-	<D7CCA83BB0796C49BC0BB53B6AB1208907ACF9@zch01exm21.fsl.freescale.net>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+	Thu, 15 Jan 2009 01:40:40 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43574 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbZAOGkj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 01:40:39 -0500
+Date: Thu, 15 Jan 2009 15:39:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>
+Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
+ obsolete
+Message-Id: <20090115153931.85b56d94.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,33 +38,176 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 14:11:09 +0800
-"Liu Dave" <DaveLiu@freescale.com> wrote:
+On Thu, 15 Jan 2009 13:38:14 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> > Probably because it was quicker. Samsung did the same thing, but now
-> > Ben Dooks has patches to properly support it via sdhci.
+> On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > To handle the problem "parent may be obsolete",
+> > > > > 
+> > > > > call mem_cgroup_get(parent) at create()
+> > > > > call mem_cgroup_put(parent) at freeing memcg.
+> > > > >      (regardless of use_hierarchy.)
+> > > > > 
+> > > > > is clearer way to go, I think.
+> > > > > 
+> > > > > I wonder whether there is  mis-accounting problem or not..
+> > > > > 
+> hmm, after more consideration, although this patch can prevent the BUG,
+> it can leak memsw accounting of parents because memsw of parents, which
+> have been incremented by charge, does not decremented.
 > 
-> Pierre,
-> What samsung driver are you talking? Could you point it to me?
+> I'll try pet/put parent approach..
+> Or any other good ideas ?
+> 
+"don't free parent's css_id until all chilredn are freed" is necessary for my
+CSS ID. I'll rebase my patch on to yours.
+
+thanks,
+-Kame
+
+
+
+
+> 
+> Thanks,
+> Daisuke Nishimura.
+> 
+> > > > > So, adding css_tryget() around problematic code can be a fix.
+> > > > > --
+> > > > >   mem = swap_cgroup_record();
+> > > > >   if (css_tryget(&mem->css)) {
+> > > > >       res_counter_uncharge(&mem->memsw, PAZE_SIZE);
+> > > > >       css_put(&mem->css)
+> > > > >   }
+> > > > > --
+> > > > > I like css_tryget() rather than mem_cgroup_obsolete().
+> > > > I agree.
+> > > > The updated version is attached.
+> > > > 
+> > > > 
+> > > > Thanks,
+> > > > Daisuke nishimura.
+> > > > 
+> > > > > To be honest, I'd like to remove memcg special stuff when I can.
+> > > > > 
+> > > > > Thanks,
+> > > > > -Kame
+> > > > > 
+> > > > ===
+> > > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > > 
+> > > > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > > > even after the directory has been removed, but it doesn't ensure that parents
+> > > > of it can be accessed: parents might have been freed already by rmdir.
+> > > > 
+> > > > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > > > climb up the tree.
+> > > > 
+> > > > Check if the memcg is obsolete by css_tryget, and don't call
+> > > > res_counter_uncharge when obsole.
+> > > > 
+> > > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > seems nice loock.
+> > > 
+> > > 
+> > > > ---
+> > > >  mm/memcontrol.c |   15 ++++++++++++---
+> > > >  1 files changed, 12 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > > > index fb62b43..4e3b100 100644
+> > > > --- a/mm/memcontrol.c
+> > > > +++ b/mm/memcontrol.c
+> > > > @@ -1182,7 +1182,10 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+> > > >  		/* avoid double counting */
+> > > >  		mem = swap_cgroup_record(ent, NULL);
+> > > >  		if (mem) {
+> > > > -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> > > > +			if (!css_tryget(&mem->css)) {
+> > > > +				res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> > > > +				css_put(&mem->css);
+> > > > +			}
+> > > >  			mem_cgroup_put(mem);
+> > > >  		}
+> > > >  	}
+> > > 
+> > > I think css_tryget() returns "ture" at success....
+> > > 
+> > > So,
+> > > ==
+> > > 	if (mem && css_tryget(&mem->css))
+> > > 		res_counter....
+> > > 
+> > > is correct.
+> > > 
+> > > -Kame
+> > > 
+> > Ooops! you are right.
+> > Sorry for my silly mistake..
+> > 
+> > "mem" is checked beforehand, so I think css_tryget would be enough.
+> > I'm now testing the attached one.
+> > 
+> > 
+> > Thanks,
+> > Daisuke Nishimura.
+> > ===
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > even after the directory has been removed, but it doesn't ensure that parents
+> > of it can be accessed: parents might have been freed already by rmdir.
+> > 
+> > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > climb up the tree.
+> > 
+> > Check if the memcg is obsolete by css_tryget, and don't call
+> > res_counter_uncharge when obsole.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > ---
+> >  mm/memcontrol.c |   15 ++++++++++++---
+> >  1 files changed, 12 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index fb62b43..b9d5271 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -1182,7 +1182,10 @@ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+> >  		/* avoid double counting */
+> >  		mem = swap_cgroup_record(ent, NULL);
+> >  		if (mem) {
+> > -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> > +			if (css_tryget(&mem->css)) {
+> > +				res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> > +				css_put(&mem->css);
+> > +			}
+> >  			mem_cgroup_put(mem);
+> >  		}
+> >  	}
+> > @@ -1252,7 +1255,10 @@ void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+> >  		struct mem_cgroup *memcg;
+> >  		memcg = swap_cgroup_record(ent, NULL);
+> >  		if (memcg) {
+> > -			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+> > +			if (css_tryget(&memcg->css)) {
+> > +				res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+> > +				css_put(&memcg->css);
+> > +			}
+> >  			mem_cgroup_put(memcg);
+> >  		}
+> >  
+> > @@ -1397,7 +1403,10 @@ void mem_cgroup_uncharge_swap(swp_entry_t ent)
+> >  
+> >  	memcg = swap_cgroup_record(ent, NULL);
+> >  	if (memcg) {
+> > -		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+> > +		if (css_tryget(&memcg->css)) {
+> > +			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+> > +			css_put(&memcg->css);
+> > +		}
+> >  		mem_cgroup_put(memcg);
+> >  	}
+> >  }
 > 
 
-I'm afraid I haven't seen any readily available sources for their
-driver. If you meant Ben's version, you can find the latest revision
-here:
-
-http://marc.info/?t=122823266100005
-
-Unfortunately marc.info didn't sort out the threading, but you should
-be able to find all the patches there or some other LKML archive.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
