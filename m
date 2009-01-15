@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934528AbZAOWJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934998AbZAOWJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934528AbZAOWJe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbZAOWCH
+	id S934998AbZAOWJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbZAOWCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:07 -0500
-Received: from kroah.org ([198.145.64.141]:38188 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:08 -0500
+Received: from kroah.org ([198.145.64.141]:38169 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765116AbZAOWCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758080AbZAOWCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 17:02:04 -0500
-Date: Thu, 15 Jan 2009 13:59:24 -0800
+Date: Thu, 15 Jan 2009 13:59:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [patch 15/85] USB: isp1760: use a specific PLX bridge instead of
-	any bdridge
-Message-ID: <20090115215924.GP17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Daniel Drake <dsd@gentoo.org>,
+       Kadianakis George <desnacked@gmail.com>, Phil Dibowitz <phil@ipom.com>
+Subject: [patch 16/85] USB: unusual_devs.h additions for Pentax K10D
+Message-ID: <20090115215926.GQ17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-isp1760-use-a-specific-plx-bridge-instead-of-any-bdridge.patch"
+Content-Disposition: inline; filename="usb-unusual_devs.h-additions-for-pentax-k10d.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,45 +40,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+From: Daniel Drake <dsd@gentoo.org>
 
-commit 6c0735687d37e25a65866823881bcbf39a6a023f upstream.
+commit e3f47f89a57ef115755184a8b3f03a47ee227418 upstream.
 
-this driver can't handle (of course) any brdige class devices. So we
-now are just active on one specific bridge which should be only the
-isp1761 chip behind a PLX bridge.
+Jaak Ristioja reported problems with his Pentax K10D camera:
+https://bugs.gentoo.org/show_bug.cgi?id=250406
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Tested-by: Karl Bongers <kblists08@gmail.com>
+/proc/bus/usb/devices:
+T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12  MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=0a17 ProdID=006e Rev= 1.00
+S:  Manufacturer=PENTAX Corporation
+S:  Product=K10D
+C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
+I:* If#= 0 Alt= 0 #EPs= 3 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=02(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=83(I) Atr=03(Int.) MxPS=  64 Ivl=100ms
+The number of reported sectors is off-by-one.
+
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+Cc: Kadianakis George <desnacked@gmail.com>
+Signed-off-by: Phil Dibowitz <phil@ipom.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/isp1760-if.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/usb/storage/unusual_devs.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/drivers/usb/host/isp1760-if.c
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -267,12 +267,16 @@ static void isp1761_pci_shutdown(struct 
- 	printk(KERN_ERR "ips1761_pci_shutdown\n");
- }
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1425,6 +1425,13 @@ UNUSUAL_DEV( 0x0a17, 0x006, 0x0000, 0xff
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
--static const struct pci_device_id isp1760_plx [] = { {
--	/* handle any USB 2.0 EHCI controller */
--	PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_OTHER << 8) | (0x06 << 16)), ~0),
--		.driver_data = 0,
--},
--{ /* end: all zeroes */ }
-+static const struct pci_device_id isp1760_plx [] = {
-+	{
-+		.class          = PCI_CLASS_BRIDGE_OTHER << 8,
-+		.class_mask     = ~0,
-+		.vendor		= PCI_VENDOR_ID_PLX,
-+		.device		= 0x5406,
-+		.subvendor	= PCI_VENDOR_ID_PLX,
-+		.subdevice	= 0x9054,
-+	},
-+	{ }
- };
- MODULE_DEVICE_TABLE(pci, isp1760_plx);
- 
++/* Reported by Jaak Ristioja <Ristioja@gmail.com> */
++UNUSUAL_DEV( 0x0a17, 0x006e, 0x0100, 0x0100,
++		"Pentax",
++		"K10D",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY ),
++
+ /* These are virtual windows driver CDs, which the zd1211rw driver
+  * automatically converts into WLAN devices. */
+ UNUSUAL_DEV( 0x0ace, 0x2011, 0x0101, 0x0101,
 
