@@ -1,89 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbZAOINs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZAOIS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762864AbZAOINs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757991AbZAOINi
+	id S1758676AbZAOIS4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:18:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZAOISp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:13:38 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:3380 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757667AbZAOINh (ORCPT
+	Thu, 15 Jan 2009 03:18:45 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61956 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753136AbZAOISp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:13:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cXVhLU1DEu2quWIuyoXeBDzcS8u5vfNaDE5xpMkTAgPrRZwqbf0aees1gwVFEVhMGv
-         PeFv1GYSX8aQ5OnnfAMouWem7NBb7dpNnAE9iBlvu1qpWTKiJvg7b/mQ8wJ46U8IcYcW
-         ihey5A0QAr+xPwXCyEB2X16gjtvjacCQQRWr0=
-MIME-Version: 1.0
-In-Reply-To: <496EE5A4.4010805@compulab.co.il>
-References: <496E2BE5.1050803@cam.ac.uk>
-	 <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com>
-	 <496ED8F6.6030201@compulab.co.il>
-	 <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
-	 <496EE5A4.4010805@compulab.co.il>
-Date: Thu, 15 Jan 2009 16:13:36 +0800
-Message-ID: <f17812d70901150013v2c70047er829b1c884a1d7772@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support 
-	within mfd driver.
-From: Eric Miao <eric.y.miao@gmail.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
-       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 15 Jan 2009 03:18:45 -0500
+Date: Thu, 15 Jan 2009 17:13:15 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>
+Subject: Re: [RFC][PATCH] memcg: get/put parents at create/free
+Message-Id: <20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 3:28 PM, Mike Rapoport <mike@compulab.co.il> wrote:
->
->
-> Eric Miao wrote:
->> On Thu, Jan 15, 2009 at 2:34 PM, Mike Rapoport <mike@compulab.co.il> wrote:
->>>
->>> Eric Miao wrote:
->>>> On Thu, Jan 15, 2009 at 2:16 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
->>>>> From: Jonathan Cameron <jic23@cam.ac.uk>
->>>>>
->>>>> Add support for changing the mode of the da9030 usb charge pump
->>>>>
->>>> Well, if it is totally USB charger related, I'd suggest to move this into
->>>> the dedicated driver. This mfd/da903x.c serves as a common code
->>>> base for all sub-peripherals.
->>> It's not exactly related to the charger, it's rather related to the USB voltage
->>> supplied to USB devices attached to PXA OHCI.
->>> Indeed the mfd/da903x.c serves as a common core for sub-peripherals, but IMHO
->>> adding a subdevice driver because of single method doesn't worth the overhead.
->>> I'm for the solution Jonathan proposes.
->>>
->>
->> Mmm... then who will be the invoker? I'm a bit upset about this
->> being exported while called out of control. If it works as the
->> name suggested, setting some mode, maybe we can have a
->> platform data field specifying this, and hide this totally within
->> the driver. I didn't look into this too much, just a concern here.
->
-> The USB charge pump should be enabled if DA9030 should supply USB VBUS for USB
-> devices connected to PXA OHCI port. In the most simple case, when the USB port
-> is configured to be host only the platform data can be used to setup the charge
-> pump once and forget about it. However, if the USB port is configured as OTG,
-> the charge pump should be toggled depending on OTG ID.
-> In EM-X270 I have a GPIO connected to OTG ID pin of the connector and according
-> to the GPIO state I toggle the da9030 USB charge pump.
->
+On Thu, 15 Jan 2009 16:54:53 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 15 Jan 2009 16:45:37 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > On Thu, 15 Jan 2009 13:38:14 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > > > To handle the problem "parent may be obsolete",
+> > > > > > > 
+> > > > > > > call mem_cgroup_get(parent) at create()
+> > > > > > > call mem_cgroup_put(parent) at freeing memcg.
+> > > > > > >      (regardless of use_hierarchy.)
+> > > > > > > 
+> > > > > > > is clearer way to go, I think.
+> > > > > > > 
+> > > > > > > I wonder whether there is  mis-accounting problem or not..
+> > > > > > > 
+> > > hmm, after more consideration, although this patch can prevent the BUG,
+> > > it can leak memsw accounting of parents because memsw of parents, which
+> > > have been incremented by charge, does not decremented.
+> > > 
+> > > I'll try pet/put parent approach..
+> > > Or any other good ideas ?
+> > > 
+> > I attach a tryial patch.
+> > 
+> > It has been working fine so far(for about 1 hour).
+> > 
+> > Thanks,
+> > Daisuke Nishimura.
+> > ===
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > even after the directory has been removed, but it doesn't ensure that parents
+> > of it can be accessed: parents might have been freed already by rmdir.
+> > 
+> > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > climb up the tree.
+> > 
+> > This patch tries to fix this probrem by getting parents at create, and
+> > putting them at freeing.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > ---
+> >  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
+> >  1 files changed, 32 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index fb62b43..b4aed07 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+> >  
+> >  static void mem_cgroup_get(struct mem_cgroup *mem);
+> >  static void mem_cgroup_put(struct mem_cgroup *mem);
+> > +static void mem_cgroup_get_parents(struct mem_cgroup *mem);
+> > +static void mem_cgroup_put_parents(struct mem_cgroup *mem);
+> >  
+> >  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+> >  					 struct page_cgroup *pc,
+> > @@ -2185,10 +2187,38 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+> >  
+> >  static void mem_cgroup_put(struct mem_cgroup *mem)
+> >  {
+> > -	if (atomic_dec_and_test(&mem->refcnt))
+> > +	if (atomic_dec_and_test(&mem->refcnt)) {
+> > +		mem_cgroup_put_parents(mem);
+> >  		__mem_cgroup_free(mem);
+> > +	}
+> > +}
+> > +
+> > +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
+> > +{
+> > +	if (!mem->res.parent)
+> > +		return NULL;
+> > +	return mem_cgroup_from_res_counter(mem->res.parent, res);
+> > +}
+> > +
+> > +static void mem_cgroup_get_parents(struct mem_cgroup *mem)
+> > +{
+> > +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> > +
+> > +	while (parent) {
+> > +		mem_cgroup_get(parent);
+> > +		parent = parent_mem_cgroup(parent);
+> > +	}
+> >  }
+> >  
+> 
+> does we have to add refcnt to all ancestors ?
+> 
+Ah, no need.
 
-OK, now I understand the problem. The optimal way would be to invent
-an abstraction for this external charge pump (in terms of PXA27x OTG
-controller) and make DA9030 a derived class of it. But the PXA27x OTG
-solution is really a hybrid one, and the existing OTG code is in a mess
-(without a clear abstraction), the sub-optimal way would let platform code
-do this trick. Yet the platform code is currently suffering from a missed
-API to retreive this dynamically scanned I2C device. Mmm...stumped.
+Just ensureing "a parent memcg is not freed while it has child memcg unfreed"
+would be enough, because a parent is a child of parent of the parent.
 
-I would expect the final solution to be clean enough, that requires some
-dependent stuffs to be modified, and the final look of this patch may be a
-bit different.
+This is the updated version.
+
+Thanks,
+Daisuke Nishimura.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+mem_cgroup_get ensures that the memcg that has been got can be accessed
+even after the directory has been removed, but it doesn't ensure that parents
+of it can be accessed: parents might have been freed already by rmdir.
+
+This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+climb up the tree.
+
+This patch tries to fix this probrem by getting the parent at create, and
+putting it at freeing.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/memcontrol.c |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fb62b43..a80ba68 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+ 
+ static void mem_cgroup_get(struct mem_cgroup *mem);
+ static void mem_cgroup_put(struct mem_cgroup *mem);
++static void mem_cgroup_get_parent(struct mem_cgroup *mem);
++static void mem_cgroup_put_parent(struct mem_cgroup *mem);
+ 
+ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+ 					 struct page_cgroup *pc,
+@@ -2185,10 +2187,34 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+ 
+ static void mem_cgroup_put(struct mem_cgroup *mem)
+ {
+-	if (atomic_dec_and_test(&mem->refcnt))
++	if (atomic_dec_and_test(&mem->refcnt)) {
++		mem_cgroup_put_parent(mem);
+ 		__mem_cgroup_free(mem);
++	}
++}
++
++static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
++{
++	if (!mem->res.parent)
++		return NULL;
++	return mem_cgroup_from_res_counter(mem->res.parent, res);
++}
++
++static void mem_cgroup_get_parent(struct mem_cgroup *mem)
++{
++	struct mem_cgroup *parent = parent_mem_cgroup(mem);
++
++	if (parent)
++		mem_cgroup_get(parent);
+ }
+ 
++static void mem_cgroup_put_parent(struct mem_cgroup *mem)
++{
++	struct mem_cgroup *parent = parent_mem_cgroup(mem);
++
++	if (parent)
++		mem_cgroup_put(parent);
++}
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ static void __init enable_swap_cgroup(void)
+@@ -2237,6 +2263,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if (parent)
+ 		mem->swappiness = get_swappiness(parent);
+ 	atomic_set(&mem->refcnt, 1);
++	mem_cgroup_get_parent(mem);
+ 	return &mem->css;
+ free_out:
+ 	__mem_cgroup_free(mem);
