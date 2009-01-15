@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932482AbZAOUTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764866AbZAOUT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932482AbZAOUTa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760574AbZAOUBA
+	id S1764866AbZAOUT4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765969AbZAOUBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:00 -0500
-Received: from kroah.org ([198.145.64.141]:48984 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:02 -0500
+Received: from kroah.org ([198.145.64.141]:49037 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765969AbZAOUAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761354AbZAOUAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 15:00:45 -0500
-Date: Thu, 15 Jan 2009 11:58:20 -0800
+Date: Thu, 15 Jan 2009 11:58:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Daniel Drake <dsd@gentoo.org>,
-       Kadianakis George <desnacked@gmail.com>, Phil Dibowitz <phil@ipom.com>
-Subject: [patch 30/94] USB: unusual_devs.h additions for Pentax K10D
-Message-ID: <20090115195820.GD14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Robert Love <rlove@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 31/94] inotify: fix type errors in interfaces
+Message-ID: <20090115195823.GE14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-unusual_devs.h-additions-for-pentax-k10d.patch"
+Content-Disposition: inline; filename="inotify-fix-type-errors-in-interfaces.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,49 +41,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Daniel Drake <dsd@gentoo.org>
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 
-commit e3f47f89a57ef115755184a8b3f03a47ee227418 upstream.
+commit 4ae8978cf92a96257cd8998a49e781be83571d64 upstream.
 
-Jaak Ristioja reported problems with his Pentax K10D camera:
-https://bugs.gentoo.org/show_bug.cgi?id=250406
+The problems lie in the types used for some inotify interfaces, both at the kernel level and at the glibc level. This mail addresses the kernel problem. I will follow up with some suggestions for glibc changes.
 
-/proc/bus/usb/devices:
-T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12  MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-P:  Vendor=0a17 ProdID=006e Rev= 1.00
-S:  Manufacturer=PENTAX Corporation
-S:  Product=K10D
-C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
-I:* If#= 0 Alt= 0 #EPs= 3 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-E:  Ad=02(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-E:  Ad=83(I) Atr=03(Int.) MxPS=  64 Ivl=100ms
-The number of reported sectors is off-by-one.
+For the sys_inotify_rm_watch() interface, the type of the 'wd' argument is
+currently 'u32', it should be '__s32' .  That is Robert's suggestion, and
+is consistent with the other declarations of watch descriptors in the
+kernel source, in particular, the inotify_event structure in
+include/linux/inotify.h:
 
-Signed-off-by: Daniel Drake <dsd@gentoo.org>
-Cc: Kadianakis George <desnacked@gmail.com>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+struct inotify_event {
+        __s32           wd;             /* watch descriptor */
+        __u32           mask;           /* watch mask */
+        __u32           cookie;         /* cookie to synchronize two events */
+        __u32           len;            /* length (including nulls) of name */
+        char            name[0];        /* stub for possible name */
+};
+
+The patch makes the changes needed for inotify_rm_watch().
+
+Signed-off-by: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Robert Love <rlove@google.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ fs/inotify_user.c        |    2 +-
+ include/linux/syscalls.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1425,6 +1425,13 @@ UNUSUAL_DEV( 0x0a17, 0x006, 0x0000, 0xff
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_INQUIRY ),
+--- a/fs/inotify_user.c
++++ b/fs/inotify_user.c
+@@ -704,7 +704,7 @@ fput_and_out:
+ 	return ret;
+ }
  
-+/* Reported by Jaak Ristioja <Ristioja@gmail.com> */
-+UNUSUAL_DEV( 0x0a17, 0x006e, 0x0100, 0x0100,
-+		"Pentax",
-+		"K10D",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY ),
-+
- /* These are virtual windows driver CDs, which the zd1211rw driver
-  * automatically converts into WLAN devices. */
- UNUSUAL_DEV( 0x0ace, 0x2011, 0x0101, 0x0101,
+-asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
++asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
+ {
+ 	struct file *filp;
+ 	struct inotify_device *dev;
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -549,7 +549,7 @@ asmlinkage long sys_inotify_init(void);
+ asmlinkage long sys_inotify_init1(int flags);
+ asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
+ 					u32 mask);
+-asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
++asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
+ 
+ asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
+ 				 __u32 __user *ustatus);
 
