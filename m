@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761666AbZAOQyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbZAOQyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761666AbZAOQyU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 11:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZAOQyD
+	id S1762207AbZAOQyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 11:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZAOQym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 11:54:03 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:33826 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbZAOQyC (ORCPT
+	Thu, 15 Jan 2009 11:54:42 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46389 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750825AbZAOQyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 11:54:02 -0500
-Date: Thu, 15 Jan 2009 08:54:00 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       shemminger@vyatta.com, netdev@vger.kernel.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Message-ID: <20090115165359.GA2230@ovro.caltech.edu>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
-	netdev@vger.kernel.org
-References: <20090107195052.GA24981@ovro.caltech.edu> <200901131842.54688.arnd@arndb.de> <20090115001251.GA10745@ovro.caltech.edu> <200901151358.34250.arnd@arndb.de>
+	Thu, 15 Jan 2009 11:54:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KCTYYGQG4o99WR2EaCeZPC5Lztg8lvM356MtDm6n5evhBYIqZGxFaiGld2eV7eYdOU2WpMfg8VpZwI5knQtXEK5ombVRMJwCVdNf3kYy6GxhSeGIzlNn+B/qlBxltAiOEvNgSHebUdcBM9MC1uVqYX0AwFzAoIeTY2pF0Td8uV8=  ;
+X-YMail-OSG: megg2CQVM1kI83YMRzH7bkZywXEn_0wuJqMi9D0JNvc5j7l75BX3BO.jk1TL_jZ3vr5bnkBGpmMEIpw06vUilehO52kSsxViyv8FXq0aNJEcix9K1xEloCThR4MNk5EVzWZPa3O7NBnzAXUyxAuV2PMQ
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc] regulator: add get_status()
+Date: Thu, 15 Jan 2009 08:54:38 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+References: <200811091531.46003.david-b@pacbell.net> <200901150735.29883.david-b@pacbell.net> <20090115160517.GA12768@sirena.org.uk>
+In-Reply-To: <20090115160517.GA12768@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <200901151358.34250.arnd@arndb.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 08:54:01 -0800 (PST)
+Message-Id: <200901150854.38686.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 01:58:33PM +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Ira Snyder wrote:
-> 
-> > The only problem with that is that you cannot route interrupts from the
-> > DMA controller over PCI with the PowerPC core running. Which makes it
-> > mostly useless for this case.
-> 
-> If the host supports MSI, you can simply program the DMA controller to
-> write the correct message to the inbound address of the MSI interrupt
-> controller!
-> 
-> All modern host systems should have MSI, as this is required by the
-> PCIe specification, but it still somewhat limits the choice of your
-> hosts.
-> 
+On Thursday 15 January 2009, Mark Brown wrote:
+> No, real kerneldoc - this was added recently, check current mainline
+> (eg, commit c8e7e4640facbe99d10a6e262523b25be129b9b9).  I'm not saying
+> it's great but it's there.
 
-These are PCI boards, not PCIe. The host computers are all Pentium3-M
-systems. I tried enabling MSI on the Freescale boards in the driver, by
-calling pci_enable_msi() during probe(), and it failed. I'm pretty sure
-I can't do MSI.
+Ah, I see.  Makes sense now -- I just didn't think this routine
+should have been the first!  ;)
 
-I'll keep thinking about how to manage the DMA. Feel free to toss around
-any ideas you have, though.
+Will do.  Gotta update some trees first.
 
-Ira
+- Dave
+
+
+
