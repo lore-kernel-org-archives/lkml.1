@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763836AbZAOKbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764014AbZAOKcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763836AbZAOKbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759900AbZAOKbg
+	id S1764014AbZAOKcF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761223AbZAOKbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:31:36 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:60156 "EHLO
-	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759302AbZAOKbg (ORCPT
+	Thu, 15 Jan 2009 05:31:37 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59041 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755983AbZAOKbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 05:31:36 -0500
-Date: Thu, 15 Jan 2009 16:01:13 +0530
-From: Balaji Rao <balajirrao@openmoko.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CONFIG_MFD_PCF50633=m breaks the kernel build
-Message-ID: <20090115103112.GC3199@fedora.yogi>
-References: <20090115100653.509416fb@hyperion.delvare> <20090115091107.GB3199@fedora.yogi> <20090115110955.4a8e9c5b@hyperion.delvare>
+Message-ID: <496F1078.5040904@jp.fujitsu.com>
+Date: Thu, 15 Jan 2009 19:31:20 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115110955.4a8e9c5b@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+References: <200901042346.42723.rjw@sisk.pl> <496D815E.8010107@jp.fujitsu.com> <200901141135.31165.rjw@sisk.pl> <200901141157.32720.rjw@sisk.pl> <496EE7ED.10408@jp.fujitsu.com>
+In-Reply-To: <496EE7ED.10408@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:09:55AM +0100, Jean Delvare wrote:
-> On Thu, 15 Jan 2009 14:41:08 +0530, Balaji Rao wrote:
-> > On Thu, Jan 15, 2009 at 10:06:53AM +0100, Jean Delvare wrote:
-> > > Hi Balaji,
-> > > 
-> > > Building kernel 2.6.29-rc1-git4 on x86_64 with CONFIG_MFD_PCF50633=m
-> > > fails at linking time with:
-> > > 
-> > > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
-> > > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
-> > 
-> > Yes, I've seen this. The fix is waiting on linux-mfd to be pulled
-> > anytime soon.
+Hidetoshi Seto wrote:
+> Rafael J. Wysocki wrote:
+>> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
+>>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
+>> [...]
+>>>> I'm sorry but I don't understand what the problem is.
+>>>> Do you mean pci_disable_msix() doesn't work on some platforms?
+>>> No, I don't.  It was just confusion on my side, sorry.
+>>>
+>>> Please have a look at the new version of the patch I sent yesterday
+>>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
+>> BTW, in your patch the first dummy pci_enable_msix() allocates just one
+>> vector, which means that the contents of both
+>> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
+>> if my reading of the spec (PCI 3.0 in this case) is correct.
 > 
-> Where is linux-mfd? And what is it, a git tree, a mailing list? I
-> couldn't find any reference.
-
-It's a git tree at http://git.o-hand.com/cgit.cgi/linux-mfd/
-
+> According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
+> it seems your reading is not correct.
 > 
-> Can you please send me the patch now, so that I can fix my build
-> locally right now?
+> Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
+> for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
+> Spec says that the port could be designed for software to configure entries
+> assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
+> 
+> So if there is just one vector, it could be AAAA.
 > 
 
-    pcf50633: Remove references to non-exported functions
-    
-    Remove references to set_irq_type and handle_level_irq which are not
-    exported to modules.
-    
-    Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+BTW, I don't think pci_enable_msix() allows this kind of configuration.
+With the dummy pci_enable_msix() in my patch, it would be A---, I think.
 
-diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-index 24508e2..ea9488e 100644
---- a/drivers/mfd/pcf50633-core.c
-+++ b/drivers/mfd/pcf50633-core.c
-@@ -626,7 +626,6 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
- 	}
- 
- 	if (client->irq) {
--		set_irq_handler(client->irq, handle_level_irq);
- 		ret = request_irq(client->irq, pcf50633_irq,
- 				IRQF_TRIGGER_LOW, "pcf50633", pcf);
- 
+Thanks,
+Kenji Kaneshige
+
+
