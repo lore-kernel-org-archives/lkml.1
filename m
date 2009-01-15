@@ -1,127 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZAOVLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935068AbZAOVMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZAOVLn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933800AbZAOVFn
+	id S935068AbZAOVMM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764283AbZAOVJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 16:05:43 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:30437 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934147AbZAOVFk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 16:05:40 -0500
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-In-Reply-To: <alpine.LFD.2.00.0901151208310.6528@localhost.localdomain>
-References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>
-	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>
-	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>
-	 <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>
-	 <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org>
-	 <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
-	 <20090115180844.GL22472@elte.hu>
-	 <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain>
-	 <1232047618.8269.93.camel@think.oraclecorp.com>
-	 <alpine.LFD.2.00.0901151208310.6528@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 16:04:18 -0500
-Message-Id: <1232053458.8269.139.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.496FA4D8.01B3:SCFSTAT928724,ss=1,fgs=0
+	Thu, 15 Jan 2009 16:09:40 -0500
+Received: from kroah.org ([198.145.64.141]:56297 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934937AbZAOVJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 16:09:37 -0500
+Date: Thu, 15 Jan 2009 13:08:28 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       "alan@lxorguk.ukuu.org.uk John Stanley" <jpsinthemix@verizon.net>,
+       Christoph Hellwig <hch@lst.de>, Dave Chinner <david@fromorbit.com>,
+       Lachlan McIlroy <lachlan@sgi.com>
+Subject: [patch 95/94] XFS: truncate readdir offsets to signed 32 bit values
+Message-ID: <20090115210828.GA28054@kroah.com>
+References: <20090115195520.GA14403@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090115195520.GA14403@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 12:13 -0800, Linus Torvalds wrote:
-> 
-> On Thu, 15 Jan 2009, Chris Mason wrote:
-> 
-> > On Thu, 2009-01-15 at 10:16 -0800, Linus Torvalds wrote:
-> > > 
-> > > Umm. Except if you wrote the code nicely and used spinlocks, you wouldn't 
-> > > hold the lock over all those unnecessary and complex operations.
-> > 
-> > While this is true, there are examples of places we should expect
-> > speedups for this today.
-> 
-> Sure. There are cases where we do have to use sleeping things, because the 
-> code is generic and really can't control what lower levels do, and those 
-> lower levels have to be able to sleep.
-> 
-> So:
-> 
-> > Concurrent file creation/deletion in a single dir will often find things
-> > hot in cache and not have to block anywhere (mail spools).
-> 
-> The inode->i_mutex thing really does need to use a mutex, and spinning 
-> will help. Of course, it should only help when you really have lots of 
-> concurrent create/delete/readdir in the same directory, and that hopefully 
-> is a very rare load in real life, but hey, it's a valid one.
-> 
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-Mail server deletes is the common one I can think of.  Mail server
-creates end up bound by fsync in my testing here, so it doesn't quite
-show up unless your IO subsystem is much faster than your kernel.
+---------------------
 
+From: Christoph Hellwig <hch@infradead.org>
 
-> > Concurrent O_DIRECT aio writes to the same file, where i_mutex is
-> > dropped early on.
-> 
-> Won't the actual IO costs generally dominate in everything but trivial 
-> benchmarks?
+commit 15440319767942a363f282d6585303d3d75088ba upstream.
 
-Benchmarks in the past on large IO rigs have shown it.  It isn't
-something you're going to see on a regular sized server, but for AIO +
-O_DIRECT, the pieces that hold i_mutex can be seen in real life.
+John Stanley reported EOVERFLOW errors in readdir from his self-build
+glibc.  I traced this down to glibc enabling d_off overflow checks
+in one of the about five million different getdents implementations.
 
-[ re: pipes, ok I don't know of realistic pipe benchmarks but I'll run
-them if people can suggest one ]
+In 2.6.28 Dave Woodhouse moved our readdir double buffering required
+for NFS4 readdirplus into nfsd and at that point we lost the capping
+of the directory offsets to 32 bit signed values.  Johns glibc used
+getdents64 to even implement readdir for normal 32 bit offset dirents,
+and failed with EOVERFLOW only if this happens on the first dirent in
+a getdents call.  I managed to come up with a testcase that uses
+raw getdents and does the EOVERFLOW check manually.  We always hit
+it with our last entry due to the special end of directory marker.
 
-I ran a mailserver delivery simulation (fs_mark), and then my standard
-dbench/4k creates/4k stats on ext3 and ext4.
+The patch below is a dumb version of just putting back the masking,
+to make sure we have the same behavior as in 2.6.27 and earlier.
 
-ext3 had very similar scores with spinning on and off.
+I will work on a better and cleaner fix for 2.6.30.
 
-ext4 scored the same on mailserver delivery (fsync bound apparently)
+Reported-by: John Stanley <jpsinthemix@verizon.net>
+Tested-by: John Stanley <jpsinthemix@verizon.net>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Dave Chinner <david@fromorbit.com>
+Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-For the others:
+---
+ fs/xfs/xfs_dir2_block.c |    7 ++++---
+ fs/xfs/xfs_dir2_leaf.c  |    6 +++---
+ fs/xfs/xfs_dir2_sf.c    |   15 ++++++++-------
+ 3 files changed, 15 insertions(+), 13 deletions(-)
 
-dbench no spin: 1970MB/s
-dbench spin:    3036MB/s
-
-(4k creates in file/sec, higher is better)
-4k creates no spin: avg 418.91 median 346.12 std 306.37 high 2025.80 low 338.11
-4k creates spin:    avg 406.09 median 344.27 std 179.95 high 1249.78 low 336.10
-
-Somehow the spinning mutex made ext4 more fair.  The 4k create test had
-50 procs doing file creates in parallel, but each proc was operating in
-its own directory.  So, they shouldn't actually be competing for any of
-the VFS mutexes.
-
-The stat run was the same patched/unpatched, probably for the same
-reason.
-
-None of this is very earth shattering, apparently my canned benchmarks
-for btrfs pain points don't apply that well to ext34.  
-
--chris
-
-
+--- a/fs/xfs/xfs_dir2_block.c
++++ b/fs/xfs/xfs_dir2_block.c
+@@ -517,9 +517,9 @@ xfs_dir2_block_getdents(
+ 		/*
+ 		 * If it didn't fit, set the final offset to here & return.
+ 		 */
+-		if (filldir(dirent, dep->name, dep->namelen, cook,
++		if (filldir(dirent, dep->name, dep->namelen, cook & 0x7fffffff,
+ 			    ino, DT_UNKNOWN)) {
+-			*offset = cook;
++			*offset = cook & 0x7fffffff;
+ 			xfs_da_brelse(NULL, bp);
+ 			return 0;
+ 		}
+@@ -529,7 +529,8 @@ xfs_dir2_block_getdents(
+ 	 * Reached the end of the block.
+ 	 * Set the offset to a non-existent block 1 and return.
+ 	 */
+-	*offset = xfs_dir2_db_off_to_dataptr(mp, mp->m_dirdatablk + 1, 0);
++	*offset = xfs_dir2_db_off_to_dataptr(mp, mp->m_dirdatablk + 1, 0) &
++			0x7fffffff;
+ 	xfs_da_brelse(NULL, bp);
+ 	return 0;
+ }
+--- a/fs/xfs/xfs_dir2_leaf.c
++++ b/fs/xfs/xfs_dir2_leaf.c
+@@ -1092,7 +1092,7 @@ xfs_dir2_leaf_getdents(
+ 		 * Won't fit.  Return to caller.
+ 		 */
+ 		if (filldir(dirent, dep->name, dep->namelen,
+-			    xfs_dir2_byte_to_dataptr(mp, curoff),
++			    xfs_dir2_byte_to_dataptr(mp, curoff) & 0x7fffffff,
+ 			    ino, DT_UNKNOWN))
+ 			break;
+ 
+@@ -1108,9 +1108,9 @@ xfs_dir2_leaf_getdents(
+ 	 * All done.  Set output offset value to current offset.
+ 	 */
+ 	if (curoff > xfs_dir2_dataptr_to_byte(mp, XFS_DIR2_MAX_DATAPTR))
+-		*offset = XFS_DIR2_MAX_DATAPTR;
++		*offset = XFS_DIR2_MAX_DATAPTR & 0x7fffffff;
+ 	else
+-		*offset = xfs_dir2_byte_to_dataptr(mp, curoff);
++		*offset = xfs_dir2_byte_to_dataptr(mp, curoff) & 0x7fffffff;
+ 	kmem_free(map);
+ 	if (bp)
+ 		xfs_da_brelse(NULL, bp);
+--- a/fs/xfs/xfs_dir2_sf.c
++++ b/fs/xfs/xfs_dir2_sf.c
+@@ -752,8 +752,8 @@ xfs_dir2_sf_getdents(
+ #if XFS_BIG_INUMS
+ 		ino += mp->m_inoadd;
+ #endif
+-		if (filldir(dirent, ".", 1, dot_offset, ino, DT_DIR)) {
+-			*offset = dot_offset;
++		if (filldir(dirent, ".", 1, dot_offset & 0x7fffffff, ino, DT_DIR)) {
++			*offset = dot_offset & 0x7fffffff;
+ 			return 0;
+ 		}
+ 	}
+@@ -766,8 +766,8 @@ xfs_dir2_sf_getdents(
+ #if XFS_BIG_INUMS
+ 		ino += mp->m_inoadd;
+ #endif
+-		if (filldir(dirent, "..", 2, dotdot_offset, ino, DT_DIR)) {
+-			*offset = dotdot_offset;
++		if (filldir(dirent, "..", 2, dotdot_offset & 0x7fffffff, ino, DT_DIR)) {
++			*offset = dotdot_offset & 0x7fffffff;
+ 			return 0;
+ 		}
+ 	}
+@@ -791,14 +791,15 @@ xfs_dir2_sf_getdents(
+ #endif
+ 
+ 		if (filldir(dirent, sfep->name, sfep->namelen,
+-					    off, ino, DT_UNKNOWN)) {
+-			*offset = off;
++			    off & 0x7fffffff, ino, DT_UNKNOWN)) {
++			*offset = off & 0x7fffffff;
+ 			return 0;
+ 		}
+ 		sfep = xfs_dir2_sf_nextentry(sfp, sfep);
+ 	}
+ 
+-	*offset = xfs_dir2_db_off_to_dataptr(mp, mp->m_dirdatablk + 1, 0);
++	*offset = xfs_dir2_db_off_to_dataptr(mp, mp->m_dirdatablk + 1, 0) &
++			0x7fffffff;
+ 	return 0;
+ }
+ 
