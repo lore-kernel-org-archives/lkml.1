@@ -1,51 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763210AbZAOKRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762860AbZAOKT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763210AbZAOKRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZAOKQp
+	id S1762860AbZAOKT3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:19:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZAOKTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:16:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58349 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757634AbZAOKQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:16:43 -0500
-Date: Thu, 15 Jan 2009 11:16:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tony Luck <tony.luck@intel.com>, IA64 <linux-ia64@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       David Howells <dhowells@redhat.com>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-       linux-am33-list@redhat.com, "David S. Miller" <davem@davemloft.net>,
-       SPARC <sparclinux@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: crash: IP: [<ffffffff80478092>] __bitmap_intersects+0x48/0x73
-	[PATCH supplied]
-Message-ID: <20090115101617.GH5833@elte.hu>
-References: <496BF6D5.9030403@sgi.com> <20090113130048.GB31147@elte.hu> <496CAF5A.3010304@sgi.com> <496D0F46.2010907@sgi.com> <496D2172.6030608@sgi.com> <20090114165431.GA18826@elte.hu> <20090114165524.GA21742@elte.hu> <20090114175126.GA21078@elte.hu> <496E78BA.5040609@sgi.com>
+	Thu, 15 Jan 2009 05:19:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61513 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753709AbZAOKTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:19:20 -0500
+Message-ID: <496F0D9B.9010906@cn.fujitsu.com>
+Date: Thu, 15 Jan 2009 18:19:07 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496E78BA.5040609@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4106]
+To: Jason Baron <jbaron@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] ftrace: show ftrace_bprintk()'s formats
+References: <495ADF57.8030008@cn.fujitsu.com> <20090113231617.GD3210@redhat.com> <496D52D4.70202@cn.fujitsu.com> <20090114142546.GA3141@redhat.com>
+In-Reply-To: <20090114142546.GA3141@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jason Baron wrote:
+> On Wed, Jan 14, 2009 at 10:49:56AM +0800, Lai Jiangshan wrote:
+>> Jason Baron wrote:
+>>> On Wed, Dec 31, 2008 at 10:56:23AM +0800, Lai Jiangshan wrote:
+>>>> Impact: let user knows the format
+>>>>
+>>>> Create a file on <debugfs-dir>/tracing/ to show ftrace_bprintk()'s formats.
+>>>>
+>>>> This formats will help for these condition:
+>>>> 1) User get binary data from core file.(formats are backup before coredump)
+>>>> 2) User splice ring_buffer to a file.
+>>>> User can use formats for parsing the binary data in userspace.
+>>>>
+>>> When I 'cat' trace_bprintk_formats on my system the file is empty. This
+>>> seems to be b/c 'ftrace_bprintk' is not being used in this patchset. It
+>>> can't be used in patch #5 during marker register b/c the format wouldn't
+>>> be known at runtime. Thus, as it currently stands this patch, patch 4/5,
+>>> isn't adding much?
+>> If you don't use ftrace_bprintk(), the file trace_bprintk_formats is empty.
+>> This file record all formats which ftrace_bprintk() uses.
+>>
+>> You can use ftrace_bprintk() everywhere as another printk().
+>>
+>> Patch #5 enables binary printk for markers, this is another additional tool
+>> for tracing markers.
+>>
+>>> A thought on how this might be resolved would be to have the core marker
+>>> code pass us its address so this could be recorded in the trace buffer.
+>>> Then, also add some debug file that displays the markers and maps marker
+>>> addresses with format strings.
+>>>
+>> Patch#5 does it as you said.
+>>
+>>
+>>
+> 
+> hmm...i'm still not clear on this. in patch #5 you have:
+> 
+> 
+> +static void marker_bprintk_probe(void *probe_private, void *call_private,
+> +		const char *fmt, va_list *args)
+> +{
+> +	struct marker_bprintk_struct *p = probe_private;
+> +
+> +	if (p->fmt_state == MARKER_FMT_LACK) {
+> +		int flen = strlen(fmt);
+> +		if (p->fmt - p->name + flen < MARKER_NAME_FMT_LEN) {
+> +			memcpy(p->fmt, fmt, flen + 1);
+> +			p->fmt_state = MARKER_FMT_OK;
+> +		} else
+> +			p->fmt_state = MARKER_FMT_INVALID;
+> +	}
+> +
+> +	if (p->fmt_state == MARKER_FMT_OK)
+> +		trace_vbprintk(0, p->name, *args);
+> +}
+> +
+> 
+> trace_vbprintk first argument is 'ip'. So I don't see how we are
+> associating instruction pointers with each 'ftrace' record? Aren't we
+> just recording each entry with '0' for the 'ip'?
+> 
+argument 'ip' is used for ftrace_bprintk(), the caller of ftrace_bprintk()
+will be output in the message.
 
-* Mike Travis <travis@sgi.com> wrote:
+argument 'ip' is not used when trace markers.
+we may can use:
+trace_vbprintk(CALLER_ADDR2, p->name, *args);
+but this cannot work for !CONFIG_FRAME_POINTER.
 
-> Subject: irq: fix build errors referencing old kstat.irqs array
+I will remove argument 'ip' in next version.(if users need know the call_addr
+when he use ftrace_bprintk(), just use "%pS":
+ftrace_bprintk("%pS: msgfmt example %d, %d", _THIS_IP_, msgarg1, msgarg2);)
 
-i've picked this up into tip/cpus4096, thanks Mike,
+Thanks for pointed it out.
 
-	Ingo
+Lai.
+
