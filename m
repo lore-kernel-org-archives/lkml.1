@@ -1,185 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935941AbZAOWxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936195AbZAOWxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935941AbZAOWxB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934583AbZAOWIU
+	id S936195AbZAOWxi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933825AbZAOWJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:08:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38929 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934579AbZAOWIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:08:18 -0500
-Date: Thu, 15 Jan 2009 23:08:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20090115220809.GA7793@elte.hu>
+	Thu, 15 Jan 2009 17:09:41 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:50047 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934914AbZAOWJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:09:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=L1eTn5nJqL05SiOv6iOqOHRwMgbcYViIiDDV3zF4l4nKq8UHFuyXDxtE+KYDPw3YVA
+         87AukW7w9+m/Et4Ox8wYPlVwb6rwzyHclaQri/N2t23nLNYYCG5dB/FJOgbHEXqon2rZ
+         GYkC0WFQjzK0xI/PKZ8PX1aXkHbqyH3x9pvAs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1231944602.24082.42.camel@pc1117.cambridge.arm.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20090108144538.e5195575.akpm@linux-foundation.org>
+	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
+	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
+	 <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
+	 <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
+	 <1231944602.24082.42.camel@pc1117.cambridge.arm.com>
+Date: Thu, 15 Jan 2009 17:09:35 -0500
+Message-ID: <170fa0d20901151409p5ce88a4cqb3686d600ac6190e@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+From: Mike Snitzer <snitzer@gmail.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On 1/14/09, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> On Thu, 2009-01-15 at 01:01 +1100, Stephen Rothwell wrote:
+>  > On Wed, 14 Jan 2009 12:30:20 +0000 Catalin Marinas <catalin.marinas@arm.com> wrote:
+>
+> > > Are you OK with applying patches to linux-next (git am) rather than
+>  > > using git merge? This way I can rebase kmemleak on top of linux-next.
+>  >
+>  > I would much prefer a few conflicts to carrying a post linux-next patch
+>  > because linux-next can change radically day to day - especially since we
+>  > know there will be clashes in the areas of files you would be patching.
+>  >
+>  > So lets use the above git tree and see how we go. OK?
+>
+>
+> It sounds fine. Thanks.
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Hi Catalin,
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+I figured I'd post here so others can weigh in on what I'm seeing with
+kmemleak (especially the section mismatch warnings during modpost).
 
- Thanks,
+When running your latest git kmemleak branch (as is being pulled into
+linux-next AFAIK) I'm still seeing that kmemleak fails to initialize
+with:
 
-	Ingo
+kmemleak: Early log buffer exceeded
+Pid: 0, comm: swapper Not tainted 2.6.29-rc1.devel #2
+Call Trace:
+ [<ffffffff80803276>] log_early+0x26/0x74
+ [<ffffffff802ad983>] kfree+0x94/0x1eb
+ [<ffffffff802adefd>] do_tune_cpucache+0x1b1/0x422
+ [<ffffffff802ae32c>] enable_cpucache+0x63/0xaa
+ [<ffffffff808031f8>] kmem_cache_init+0x402/0x45a
+ [<ffffffff8025dd3b>] __mutex_init+0x21/0x32
+ [<ffffffff807e8b86>] start_kernel+0x297/0x337
+ [<ffffffff807e8392>] x86_64_start_kernel+0xde/0xe2
+Kernel memory leak detector disabled
 
------------------->
-Ingo Molnar (1):
-      Revert "sched: improve preempt debugging"
+Now when I built the kernel I got the following:
 
-Lin Ming (1):
-      sched: sched_slice() fixlet
+WARNING: modpost: Found 6 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
 
-Peter Zijlstra (4):
-      sched: fix bandwidth validation for UID grouping
-      sched: SCHED_IDLE weight change
-      sched: SCHED_OTHER vs SCHED_IDLE isolation
-      sched: fix update_min_vruntime
+Doing so yields:
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0xaed80): Section mismatch in reference from
+the function kmemleak_free() to the function .init.text:log_early()
+The function kmemleak_free() references
+the function __init log_early().
+This is often because kmemleak_free lacks a __init
+annotation or the annotation of log_early is wrong.
 
+WARNING: vmlinux.o(.text+0xaf0b0): Section mismatch in reference from
+the function kmemleak_no_scan() to the function .init.text:log_early()
+The function kmemleak_no_scan() references
+the function __init log_early().
+This is often because kmemleak_no_scan lacks a __init
+annotation or the annotation of log_early is wrong.
 
- kernel/sched.c      |   13 ++++++++++---
- kernel/sched_fair.c |   37 +++++++++++++++++++++++++++----------
- 2 files changed, 37 insertions(+), 13 deletions(-)
+WARNING: vmlinux.o(.text+0xaf13e): Section mismatch in reference from
+the function kmemleak_ignore() to the function .init.text:log_early()
+The function kmemleak_ignore() references
+the function __init log_early().
+This is often because kmemleak_ignore lacks a __init
+annotation or the annotation of log_early is wrong.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8be2c13..6acfb3c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1323,8 +1323,8 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
-  * slice expiry etc.
-  */
- 
--#define WEIGHT_IDLEPRIO		2
--#define WMULT_IDLEPRIO		(1 << 31)
-+#define WEIGHT_IDLEPRIO                3
-+#define WMULT_IDLEPRIO         1431655765
- 
- /*
-  * Nice levels are multiplicative, with a gentle 10% change for every
-@@ -4440,7 +4440,7 @@ void __kprobes sub_preempt_count(int val)
- 	/*
- 	 * Underflow?
- 	 */
--       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
-+	if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
- 		return;
- 	/*
- 	 * Is the spinlock portion underflowing?
-@@ -9050,6 +9050,13 @@ static int tg_schedulable(struct task_group *tg, void *data)
- 		runtime = d->rt_runtime;
- 	}
- 
-+#ifdef CONFIG_USER_SCHED
-+	if (tg == &root_task_group) {
-+		period = global_rt_period();
-+		runtime = global_rt_runtime();
-+	}
-+#endif
-+
- 	/*
- 	 * Cannot have more runtime than the period.
- 	 */
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 8e1352c..5cc1c16 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -283,7 +283,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
- 						   struct sched_entity,
- 						   run_node);
- 
--		if (vruntime == cfs_rq->min_vruntime)
-+		if (!cfs_rq->curr)
- 			vruntime = se->vruntime;
- 		else
- 			vruntime = min_vruntime(vruntime, se->vruntime);
-@@ -429,7 +429,10 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
- 
- 	for_each_sched_entity(se) {
--		struct load_weight *load = &cfs_rq->load;
-+		struct load_weight *load;
-+
-+		cfs_rq = cfs_rq_of(se);
-+		load = &cfs_rq->load;
- 
- 		if (unlikely(!se->on_rq)) {
- 			struct load_weight lw = cfs_rq->load;
-@@ -677,9 +680,13 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 			unsigned long thresh = sysctl_sched_latency;
- 
- 			/*
--			 * convert the sleeper threshold into virtual time
-+			 * Convert the sleeper threshold into virtual time.
-+			 * SCHED_IDLE is a special sub-class.  We care about
-+			 * fairness only relative to other SCHED_IDLE tasks,
-+			 * all of which have the same weight.
- 			 */
--			if (sched_feat(NORMALIZED_SLEEPER))
-+			if (sched_feat(NORMALIZED_SLEEPER) &&
-+					task_of(se)->policy != SCHED_IDLE)
- 				thresh = calc_delta_fair(thresh, se);
- 
- 			vruntime -= thresh;
-@@ -1340,14 +1347,18 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
- 
- static void set_last_buddy(struct sched_entity *se)
- {
--	for_each_sched_entity(se)
--		cfs_rq_of(se)->last = se;
-+	if (likely(task_of(se)->policy != SCHED_IDLE)) {
-+		for_each_sched_entity(se)
-+			cfs_rq_of(se)->last = se;
-+	}
- }
- 
- static void set_next_buddy(struct sched_entity *se)
- {
--	for_each_sched_entity(se)
--		cfs_rq_of(se)->next = se;
-+	if (likely(task_of(se)->policy != SCHED_IDLE)) {
-+		for_each_sched_entity(se)
-+			cfs_rq_of(se)->next = se;
-+	}
- }
- 
- /*
-@@ -1393,12 +1404,18 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
- 		return;
- 
- 	/*
--	 * Batch tasks do not preempt (their preemption is driven by
-+	 * Batch and idle tasks do not preempt (their preemption is driven by
- 	 * the tick):
- 	 */
--	if (unlikely(p->policy == SCHED_BATCH))
-+	if (unlikely(p->policy != SCHED_NORMAL))
- 		return;
- 
-+	/* Idle tasks are by definition preempted by everybody. */
-+	if (unlikely(curr->policy == SCHED_IDLE)) {
-+		resched_task(curr);
-+		return;
-+	}
-+
- 	if (!sched_feat(WAKEUP_PREEMPT))
- 		return;
- 
+WARNING: vmlinux.o(.text+0xaf1ca): Section mismatch in reference from
+the function kmemleak_not_leak() to the function
+.init.text:log_early()
+The function kmemleak_not_leak() references
+the function __init log_early().
+This is often because kmemleak_not_leak lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: vmlinux.o(.text+0xafaba): Section mismatch in reference from
+the function kmemleak_scan_area() to the function
+.init.text:log_early()
+The function kmemleak_scan_area() references
+the function __init log_early().
+This is often because kmemleak_scan_area lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: vmlinux.o(.text+0xafd77): Section mismatch in reference from
+the function kmemleak_alloc() to the function .init.text:log_early()
+The function kmemleak_alloc() references
+the function __init log_early().
+This is often because kmemleak_alloc lacks a __init
+annotation or the annotation of log_early is wrong.
