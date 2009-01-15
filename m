@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZAOWt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936064AbZAOWux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbZAOWt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:49:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbZAOWEK
+	id S936064AbZAOWux (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:50:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765664AbZAOWEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:04:10 -0500
-Received: from kroah.org ([198.145.64.141]:39174 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:04:11 -0500
+Received: from kroah.org ([198.145.64.141]:39200 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932341AbZAOWD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:58 -0500
-Date: Thu, 15 Jan 2009 14:02:06 -0800
+	id S934099AbZAOWEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:04:00 -0500
+Date: Thu, 15 Jan 2009 14:02:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 82/85] PCI: Rework default handling of suspend and resume
-Message-ID: <20090115220206.GE17227@kroah.com>
+Subject: [patch 83/85] PCI: Suspend and resume PCI Express ports with
+	interrupts disabled
+Message-ID: <20090115220208.GF17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-rework-default-handling-of-suspend-and-resume.patch"
+Content-Disposition: inline; filename="pci-suspend-and-resume-pci-express-ports-with-interrupts-disabled.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,261 +43,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 355a72d75b3b4f4877db4c9070c798238028ecb5 upstream.
+commit 90d25f246ddefbb743764f8d45ae97e545a6ee86 upstream
 
-Rework the handling of suspend and resume of PCI devices which have
-no drivers or the drivers of which do not provide any suspend-resume
-callbacks in such a way that their standard PCI configuration
-registers will be saved and restored with interrupts disabled.  This
-should prevent such devices, including PCI bridges, from being
-resumed too late to be able to function correctly during the resume
-of the other PCI devices that may depend on them.
-
-Also, to remove one possible source of future confusion, drop the
-default handling of suspend and resume for PCI devices with drivers
-providing the 'pm' object introduced by the new suspend-resume
-framework (there are no such PCI drivers at the moment).
+I don't see why the suspend and resume of PCI Express ports should be
+handled with interrupts enabled and it may even lead to problems in
+some situations.  For this reason, move the suspending and resuming
+of PCI Express ports into ->suspend_late() and ->resume_early()
+callbacks executed with interrupts disabled.
 
 This patch addresses the regression from 2.6.26 tracked as
 http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
 
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pci-driver.c |   90 ++++++++++++++++++++++++++++++-----------------
- 1 file changed, 59 insertions(+), 31 deletions(-)
+ drivers/pci/pcie/portdrv_pci.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -287,6 +287,14 @@ static void pci_device_shutdown(struct d
- 
- #ifdef CONFIG_PM_SLEEP
- 
-+static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
-+{
-+	struct pci_driver *drv = pci_dev->driver;
-+
-+	return drv && (drv->suspend || drv->suspend_late || drv->resume
-+		|| drv->resume_early);
-+}
-+
- /*
-  * Default "suspend" method for devices that have no driver provided suspend,
-  * or not even a driver at all.
-@@ -304,14 +312,22 @@ static void pci_default_pm_suspend(struc
- 
- /*
-  * Default "resume" method for devices that have no driver provided resume,
-- * or not even a driver at all.
-+ * or not even a driver at all (first part).
-  */
--static int pci_default_pm_resume(struct pci_dev *pci_dev)
-+static void pci_default_pm_resume_early(struct pci_dev *pci_dev)
- {
--	int retval = 0;
--
- 	/* restore the PCI config space */
- 	pci_restore_state(pci_dev);
-+}
-+
-+/*
-+ * Default "resume" method for devices that have no driver provided resume,
-+ * or not even a driver at all (second part).
-+ */
-+static int pci_default_pm_resume_late(struct pci_dev *pci_dev)
-+{
-+	int retval;
-+
- 	/* if the device was enabled before suspend, reenable */
- 	retval = pci_reenable_device(pci_dev);
- 	/*
-@@ -358,10 +374,12 @@ static int pci_legacy_resume(struct devi
- 	struct pci_dev * pci_dev = to_pci_dev(dev);
- 	struct pci_driver * drv = pci_dev->driver;
- 
--	if (drv && drv->resume)
-+	if (drv && drv->resume) {
- 		error = drv->resume(pci_dev);
--	else
--		error = pci_default_pm_resume(pci_dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
-+		error = pci_default_pm_resume_late(pci_dev);
-+	}
- 	return error;
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -50,7 +50,7 @@ static int pcie_portdrv_restore_config(s
  }
  
-@@ -407,10 +425,8 @@ static int pci_pm_suspend(struct device 
- 		if (drv->pm->suspend) {
- 			error = drv->pm->suspend(dev);
- 			suspend_report_result(drv->pm->suspend, error);
--		} else {
--			pci_default_pm_suspend(pci_dev);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_SUSPEND);
- 	}
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
-@@ -429,8 +445,10 @@ static int pci_pm_suspend_noirq(struct d
- 			error = drv->pm->suspend_noirq(dev);
- 			suspend_report_result(drv->pm->suspend_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend_late(dev, PMSG_SUSPEND);
-+	} else {
-+		pci_default_pm_suspend(pci_dev);
- 	}
- 
- 	return error;
-@@ -440,15 +458,17 @@ static int pci_pm_resume(struct device *
+ #ifdef CONFIG_PM
+-static int pcie_portdrv_suspend(struct pci_dev *dev, pm_message_t state)
++static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
  {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error;
-+	int error = 0;
+ 	int ret = pcie_port_device_suspend(dev, state);
  
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
+@@ -59,14 +59,14 @@ static int pcie_portdrv_suspend(struct p
+ 	return ret;
+ }
  
- 	if (drv && drv->pm) {
--		error = drv->pm->resume ? drv->pm->resume(dev) :
--			pci_default_pm_resume(pci_dev);
--	} else {
-+		if (drv->pm->resume)
-+			error = drv->pm->resume(dev);
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume(dev);
-+	} else {
-+		error = pci_default_pm_resume_late(pci_dev);
- 	}
- 
- 	return error;
-@@ -465,8 +485,10 @@ static int pci_pm_resume_noirq(struct de
- 	if (drv && drv->pm) {
- 		if (drv->pm->resume_noirq)
- 			error = drv->pm->resume_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume_early(dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
- 	}
- 
- 	return error;
-@@ -493,10 +515,8 @@ static int pci_pm_freeze(struct device *
- 		if (drv->pm->freeze) {
- 			error = drv->pm->freeze(dev);
- 			suspend_report_result(drv->pm->freeze, error);
--		} else {
--			pci_default_pm_suspend(pci_dev);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_FREEZE);
- 		pci_fixup_device(pci_fixup_suspend, pci_dev);
- 	}
-@@ -515,8 +535,10 @@ static int pci_pm_freeze_noirq(struct de
- 			error = drv->pm->freeze_noirq(dev);
- 			suspend_report_result(drv->pm->freeze_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend_late(dev, PMSG_FREEZE);
-+	} else {
-+		pci_default_pm_suspend(pci_dev);
- 	}
- 
- 	return error;
-@@ -524,14 +546,15 @@ static int pci_pm_freeze_noirq(struct de
- 
- static int pci_pm_thaw(struct device *dev)
+-static int pcie_portdrv_resume(struct pci_dev *dev)
++static int pcie_portdrv_resume_early(struct pci_dev *dev)
  {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
+ 	pcie_portdrv_restore_config(dev);
+ 	return pcie_port_device_resume(dev);
+ }
+ #else
+-#define pcie_portdrv_suspend NULL
+-#define pcie_portdrv_resume NULL
++#define pcie_portdrv_suspend_late NULL
++#define pcie_portdrv_resume_early NULL
+ #endif
  
- 	if (drv && drv->pm) {
- 		if (drv->pm->thaw)
- 			error =  drv->pm->thaw(dev);
--	} else {
--		pci_fixup_device(pci_fixup_resume, to_pci_dev(dev));
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
-+		pci_fixup_device(pci_fixup_resume, pci_dev);
- 		error = pci_legacy_resume(dev);
- 	}
+ /*
+@@ -282,8 +282,8 @@ static struct pci_driver pcie_portdriver
+ 	.probe		= pcie_portdrv_probe,
+ 	.remove		= pcie_portdrv_remove,
  
-@@ -547,7 +570,7 @@ static int pci_pm_thaw_noirq(struct devi
- 	if (drv && drv->pm) {
- 		if (drv->pm->thaw_noirq)
- 			error = drv->pm->thaw_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		pci_fixup_device(pci_fixup_resume_early, pci_dev);
- 		error = pci_legacy_resume_early(dev);
- 	}
-@@ -557,17 +580,18 @@ static int pci_pm_thaw_noirq(struct devi
+-	.suspend	= pcie_portdrv_suspend,
+-	.resume		= pcie_portdrv_resume,
++	.suspend_late	= pcie_portdrv_suspend_late,
++	.resume_early	= pcie_portdrv_resume_early,
  
- static int pci_pm_poweroff(struct device *dev)
- {
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
--	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
- 	if (drv && drv->pm) {
- 		if (drv->pm->poweroff) {
- 			error = drv->pm->poweroff(dev);
- 			suspend_report_result(drv->pm->poweroff, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 	}
- 
-@@ -585,7 +609,7 @@ static int pci_pm_poweroff_noirq(struct 
- 			error = drv->pm->poweroff_noirq(dev);
- 			suspend_report_result(drv->pm->poweroff_noirq, error);
- 		}
--	} else {
-+	} else if (pci_has_legacy_pm_support(to_pci_dev(dev))) {
- 		error = pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
- 	}
- 
-@@ -596,13 +620,15 @@ static int pci_pm_restore(struct device 
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
--	int error;
-+	int error = 0;
- 
- 	if (drv && drv->pm) {
--		error = drv->pm->restore ? drv->pm->restore(dev) :
--			pci_default_pm_resume(pci_dev);
--	} else {
-+		if (drv->pm->restore)
-+			error = drv->pm->restore(dev);
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume(dev);
-+	} else {
-+		error = pci_default_pm_resume_late(pci_dev);
- 	}
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
-@@ -620,8 +646,10 @@ static int pci_pm_restore_noirq(struct d
- 	if (drv && drv->pm) {
- 		if (drv->pm->restore_noirq)
- 			error = drv->pm->restore_noirq(dev);
--	} else {
-+	} else if (pci_has_legacy_pm_support(pci_dev)) {
- 		error = pci_legacy_resume_early(dev);
-+	} else {
-+		pci_default_pm_resume_early(pci_dev);
- 	}
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- 
+ 	.err_handler 	= &pcie_portdrv_err_handler,
+ };
 
