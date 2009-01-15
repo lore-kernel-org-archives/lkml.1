@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935977AbZAOWak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936043AbZAOWa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935977AbZAOWak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZAOWCz
+	id S936043AbZAOWa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933753AbZAOWD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:55 -0500
-Received: from kroah.org ([198.145.64.141]:38634 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:27 -0500
+Received: from kroah.org ([198.145.64.141]:38732 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933765AbZAOWCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:45 -0500
-Date: Thu, 15 Jan 2009 14:00:35 -0800
+	id S933326AbZAOWDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:25 -0500
+Date: Thu, 15 Jan 2009 14:00:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 50/85] [PATCH 30/44] [CVE-2009-0029] System call wrappers
-	part 20
-Message-ID: <20090115220035.GY17227@kroah.com>
+Subject: [patch 51/85] [PATCH 31/44] [CVE-2009-0029] System call wrappers
+	part 21
+Message-ID: <20090115220047.GZ17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0030--CVE-2009-0029-System-call-wrappers-part-20.patch"
+Content-Disposition: inline; filename="0031--CVE-2009-0029-System-call-wrappers-part-21.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,122 +42,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 3cdad42884bbd95d5aa01297e8236ea1bad70053 upstream.
+commit 20f37034fb966a1c35894f9fe529fda0b6440101 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/dcache.c     |    2 +-
- fs/namei.c      |    4 ++--
- fs/open.c       |    4 ++--
- fs/quota.c      |    3 ++-
- fs/read_write.c |   13 +++++++------
- 5 files changed, 14 insertions(+), 12 deletions(-)
+ fs/readdir.c |    6 ++++--
+ net/socket.c |   26 +++++++++++++-------------
+ 2 files changed, 17 insertions(+), 15 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -2085,7 +2085,7 @@ Elong:
-  *		return NULL;
-  *	}
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -187,7 +187,8 @@ efault:
+ 	return -EFAULT;
+ }
+ 
+-asmlinkage long sys_getdents(unsigned int fd, struct linux_dirent __user * dirent, unsigned int count)
++SYSCALL_DEFINE3(getdents, unsigned int, fd,
++		struct linux_dirent __user *, dirent, unsigned int, count)
+ {
+ 	struct file * file;
+ 	struct linux_dirent __user * lastdirent;
+@@ -271,7 +272,8 @@ efault:
+ 	return -EFAULT;
+ }
+ 
+-asmlinkage long sys_getdents64(unsigned int fd, struct linux_dirent64 __user * dirent, unsigned int count)
++SYSCALL_DEFINE3(getdents64, unsigned int, fd,
++		struct linux_dirent64 __user *, dirent, unsigned int, count)
+ {
+ 	struct file * file;
+ 	struct linux_dirent64 __user * lastdirent;
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1365,7 +1365,7 @@ out_fd:
+  *	the protocol layer (having also checked the address is ok).
   */
--asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
-+SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
- {
- 	int error;
- 	struct path pwd, root;
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2101,7 +2101,7 @@ out_err:
- 	return error;
- }
  
--asmlinkage long sys_mkdir(const char __user *pathname, int mode)
-+SYSCALL_DEFINE2(mkdir, const char __user *, pathname, int, mode)
+-asmlinkage long sys_bind(int fd, struct sockaddr __user *umyaddr, int addrlen)
++SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
  {
- 	return sys_mkdirat(AT_FDCWD, pathname, mode);
- }
-@@ -2208,7 +2208,7 @@ exit1:
- 	return error;
- }
+ 	struct socket *sock;
+ 	struct sockaddr_storage address;
+@@ -1567,8 +1567,8 @@ asmlinkage long sys_paccept(int fd, stru
+ #endif
+ #endif
  
--asmlinkage long sys_rmdir(const char __user *pathname)
-+SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
+-asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+-			   int __user *upeer_addrlen)
++SYSCALL_DEFINE3(accept, int, fd, struct sockaddr __user *, upeer_sockaddr,
++		int __user *, upeer_addrlen)
  {
- 	return do_rmdir(AT_FDCWD, pathname);
+ 	return do_accept(fd, upeer_sockaddr, upeer_addrlen, 0);
  }
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -527,7 +527,7 @@ SYSCALL_DEFINE2(access, const char __use
- 	return sys_faccessat(AT_FDCWD, filename, mode);
- }
- 
--asmlinkage long sys_chdir(const char __user * filename)
-+SYSCALL_DEFINE1(chdir, const char __user *, filename)
- {
- 	struct path path;
- 	int error;
-@@ -548,7 +548,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long sys_fchdir(unsigned int fd)
-+SYSCALL_DEFINE1(fchdir, unsigned int, fd)
- {
- 	struct file *file;
- 	struct inode *inode;
---- a/fs/quota.c
-+++ b/fs/quota.c
-@@ -368,7 +368,8 @@ static inline struct super_block *quotac
-  * calls. Maybe we need to add the process quotas etc. in the future,
-  * but we probably should use rlimits for that.
+@@ -1585,8 +1585,8 @@ asmlinkage long sys_accept(int fd, struc
+  *	include the -EINPROGRESS status for such sockets.
   */
--asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t id, void __user *addr)
-+SYSCALL_DEFINE4(quotactl, unsigned int, cmd, const char __user *, special,
-+		qid_t, id, void __user *, addr)
- {
- 	uint cmds, type;
- 	struct super_block *sb = NULL;
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -334,7 +334,7 @@ static inline void file_pos_write(struct
- 	file->f_pos = pos;
- }
  
--asmlinkage long sys_read(unsigned int fd, char __user * buf, size_t count)
-+SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
+-asmlinkage long sys_connect(int fd, struct sockaddr __user *uservaddr,
+-			    int addrlen)
++SYSCALL_DEFINE3(connect, int, fd, struct sockaddr __user *, uservaddr,
++		int, addrlen)
  {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -351,7 +351,8 @@ asmlinkage long sys_read(unsigned int fd
- 	return ret;
- }
+ 	struct socket *sock;
+ 	struct sockaddr_storage address;
+@@ -1617,8 +1617,8 @@ out:
+  *	name to user space.
+  */
  
--asmlinkage long sys_write(unsigned int fd, const char __user * buf, size_t count)
-+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
-+		size_t, count)
+-asmlinkage long sys_getsockname(int fd, struct sockaddr __user *usockaddr,
+-				int __user *usockaddr_len)
++SYSCALL_DEFINE3(getsockname, int, fd, struct sockaddr __user *, usockaddr,
++		int __user *, usockaddr_len)
  {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -653,8 +654,8 @@ ssize_t vfs_writev(struct file *file, co
+ 	struct socket *sock;
+ 	struct sockaddr_storage address;
+@@ -1648,8 +1648,8 @@ out:
+  *	name to user space.
+  */
  
- EXPORT_SYMBOL(vfs_writev);
- 
--asmlinkage long
--sys_readv(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
-+SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
-+		unsigned long, vlen)
+-asmlinkage long sys_getpeername(int fd, struct sockaddr __user *usockaddr,
+-				int __user *usockaddr_len)
++SYSCALL_DEFINE3(getpeername, int, fd, struct sockaddr __user *, usockaddr,
++		int __user *, usockaddr_len)
  {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -674,8 +675,8 @@ sys_readv(unsigned long fd, const struct
- 	return ret;
- }
+ 	struct socket *sock;
+ 	struct sockaddr_storage address;
+@@ -1790,8 +1790,8 @@ asmlinkage long sys_recv(int fd, void __
+  *	to pass the user mode parameter for the protocols to sort out.
+  */
  
--asmlinkage long
--sys_writev(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
-+SYSCALL_DEFINE3(writev, unsigned long, fd, const struct iovec __user *, vec,
-+		unsigned long, vlen)
+-asmlinkage long sys_setsockopt(int fd, int level, int optname,
+-			       char __user *optval, int optlen)
++SYSCALL_DEFINE5(setsockopt, int, fd, int, level, int, optname,
++		char __user *, optval, int, optlen)
  {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
+ 	int err, fput_needed;
+ 	struct socket *sock;
+@@ -1824,8 +1824,8 @@ out_put:
+  *	to pass a user mode parameter for the protocols to sort out.
+  */
+ 
+-asmlinkage long sys_getsockopt(int fd, int level, int optname,
+-			       char __user *optval, int __user *optlen)
++SYSCALL_DEFINE5(getsockopt, int, fd, int, level, int, optname,
++		char __user *, optval, int __user *, optlen)
+ {
+ 	int err, fput_needed;
+ 	struct socket *sock;
 
