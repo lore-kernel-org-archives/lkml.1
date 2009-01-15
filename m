@@ -1,68 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbZAOGQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbZAOGTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbZAOGQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZAOGQ3
+	id S1759567AbZAOGTn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 01:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZAOGTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:16:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753375AbZAOGQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:16:29 -0500
-Date: Wed, 14 Jan 2009 22:16:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Hunter, Jon" <jon-hunter@ti.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [RFC] Dynamic Tick and Deferrable Timer Support
-Message-Id: <20090114221624.76ee8aa4.akpm@linux-foundation.org>
-In-Reply-To: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
-References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 15 Jan 2009 01:19:35 -0500
+Received: from ns2.suse.de ([195.135.220.15]:44434 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755198AbZAOGTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 01:19:35 -0500
+Date: Thu, 15 Jan 2009 07:19:31 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Message-ID: <20090115061931.GC17810@wotan.suse.de>
+References: <84144f020901140253s72995188vb35a79501c38eaa3@mail.gmail.com> <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de> <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com> <20090114155923.GC1616@wotan.suse.de> <Pine.LNX.4.64.0901141219140.26507@quilx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901141219140.26507@quilx.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 14:03:09 -0600 "Hunter, Jon" <jon-hunter@ti.com> wrote:
+On Wed, Jan 14, 2009 at 12:40:12PM -0600, Christoph Lameter wrote:
+> On Wed, 14 Jan 2009, Nick Piggin wrote:
+> 
+> > Well if you would like to consider SLQB as a fix for SLUB, that's
+> > fine by me ;) Actually I guess it is a valid way to look at the problem:
+> > SLQB solves the OLTP regression, so the only question is "what is the
+> > downside of it?".
+> 
+> The downside is that it brings the SLAB stuff back that SLUB was
+> designed to avoid. Queue expiration.
 
-> Hello All,
-> 
-> I have been working to maximise the kernel sleep time on an embedded device by utilising the dynamic tick and deferrable timer features.
-> 
-> During the course of this work I found that although timers were configured as deferrable, only timers for time interval tv1 were actually being deferred. Reviewing the deferrable timer patch [1], it does appear that the code is written to only defer timers for interval tv1. Therefore, I wanted to ask if this is intentional or not?
-> 
-> I have applied the below patch to defer all deferrable timers regardless of interval and so far it is working on the embedded device. I wanted to share this in case this could be something that could be applied to the mainline.
-> 
-> Please excuse any foolish mistakes I may have made here as this is my first post to your mailing list. Any feedback you could offer would be appreciated.
-> 
-> Cheers
-> Jon
-> 
-> [1] Deferrable timer patch: http://marc.info/?l=linux-kernel&m=117512286417320&w=2
-> 
-> 
-> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
-> ---
->  kernel/timer.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index dee3f64..76a3ac6 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -930,6 +930,9 @@ cascade:
->                 index = slot = timer_jiffies & TVN_MASK;
->                 do {
->                         list_for_each_entry(nte, varp->vec + slot, entry) {
-> +                               if (tbase_get_deferrable(nte->base))
-> +                                       continue;
-> +
->                                 found = 1;
->                                 if (time_before(nte->expires, expires))
->                                         expires = nte->expires;
+What's this mean? Something distinct from periodic timer?
 
-Venki, could you please take a look?
+> The use of timers to expire at
+> uncontrollable intervals for user space.
+
+I am not convinced this is a problem. I would like to see evidence
+that it is a problem, but I have only seen assertions.
+
+Definitely it is not uncontrollable. And not unchangeable. It is
+about the least sensitive part of the allocator because in a serious
+workload, the queues will continually be bounded by watermarks rather
+than timer reaping.
+
+
+> Object dispersal
+> in the kernel address space.
+
+You mean due to lower order allocations?
+1. I have not seen any results showing this gives a practical performance
+   increase, let alone one that offsets the downsides of using higher
+   order allocations.
+2. Increased internal fragmentation may also have the opposite effect and
+   result in worse packing.
+3. There is no reason why SLQB can't use higher order allocations if this
+   is a significant win.
+
+
+> Memory policy handling in the slab
+> allocator.
+
+I see no reason why this should be a problem. The SLUB merge just asserted
+it would be a problem. But actually SLAB seems to handle it just fine, and
+SLUB also doesn't always obey memory policies, so I consider that to be a
+worse problem, at least until it is justified by performance numbers that
+show otherwise.
+
+
+> Even seems to include periodic moving of objects between
+> queues.
+
+The queues expire slowly. Same as SLAB's arrays. You are describing the
+implementation, and not the problems it has.
+
+
+> The NUMA stuff is still a bit foggy to me since it seems to assume
+> a mapping between cpus and nodes. There are cpuless nodes as well as
+> memoryless cpus.
+
+That needs a little bit of work, but my primary focus is to come up
+with a design that has competitive performance in the most important
+cases.
+
+There needs to be some fallback cases added to slowpaths to handle
+these things, but I don't see why it would take much work.
+
+ 
+> SLQB maybe a good cleanup for SLAB. Its good that it is based on the
+> cleaned up code in SLUB but the fundamental design is SLAB (or rather the
+> Solaris allocator from which we got the design for all the queuing stuff
+> in the first place). It preserves many of the drawbacks of that code.
+
+It is _like_ slab. It avoids the major drawbacks of large footprint of
+array caches, and O(N^2) memory consumption behaviour, and corner cases
+where scalability is poor. The queueing behaviour of SLAB IMO is not
+a drawback and it is a big reaon why SLAB is so good.
+
+ 
+> If SLQB would replace SLAB then there would be a lot of shared code
+> (debugging for example). Having a generic slab allocator framework may
+> then be possible within which a variety of algorithms may be implemented.
+
+The goal is to replace SLAB and SLUB. Anything less would be a failure
+on behalf of SLQB. Shared code is not a bad thing, but the major problem
+is the actual core behaviour of the allocator because it affects almost
+everywhere in the kernel and splitting userbase is not a good thing.
+
