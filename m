@@ -1,97 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbZAOHOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZAOHPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbZAOHOQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZAOHN7
+	id S1758848AbZAOHPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZAOHPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:13:59 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:44735 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbZAOHN6 (ORCPT
+	Thu, 15 Jan 2009 02:15:08 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:49885 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754833AbZAOHPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:13:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:bcc:subject:date:user-agent;
-        b=C5CXrZc8B+9mVZNx6nR8mSL6ijsxqyFxehP74U3X5khictqYmXBrm3xCmRRFQ2dNCc
-         UV3srtm0sW7WnNW7w/UAgPF+7PyE2h3wV2tXaU5RiASh21yM7xLGhWTx6DK64BRikNP4
-         EsUclBlUs/FcLg971HO2OLEGNH/gxs1LD4jew=
-Message-ID: <496ee22e.04686e0a.3cf0.5e40@mx.google.com>
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: chris.mason@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: [PATCH] BTRFS: Mark '__init' for btrfs_init_cachep,
- btrfs_init_sysfs,btrfs_interface_init 
-Date: Thu, 15 Jan 2009 15:13:45 +0800
-User-Agent: sniper-patch-carrier/1.06
+	Thu, 15 Jan 2009 02:15:07 -0500
+Date: Wed, 14 Jan 2009 23:15:00 -0800
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederik Deweerdt <frederik.deweerdt@xprog.eu>, andi@firstfloor.org,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] tlb flush_data: replace per_cpu with an array
+Message-ID: <20090115071500.GA23269@localdomain>
+References: <20090112213539.GA10720@gambetta> <20090112223421.GA20594@localdomain> <20090112230052.GB18771@elte.hu> <1231848016.442.112.camel@twins> <20090113123317.GA29926@elte.hu> <20090113181311.GA8075@localdomain> <20090113183420.GB10065@elte.hu> <20090113184202.GB8075@localdomain> <20090114073146.GA14767@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114073146.GA14767@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There functions are only called by 'static int __init init_btrfs_fs(void)',
-so also mark them as '__init'.
+On Wed, Jan 14, 2009 at 08:31:46AM +0100, Ingo Molnar wrote:
+>
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> > You do have hardware help too to do efficient cross-node memory 
+>> > traffic, dont you?
+>> 
+>> Of course.  A fast backplane interconnect.
+>
+>... so it's PCs clustered together, and called vSMP, right? ;-)
+>
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
-index eee060f..7e03ec8 100644
---- a/fs/btrfs/ctree.h
-+++ b/fs/btrfs/ctree.h
-@@ -2045,7 +2045,7 @@ int btrfs_write_inode(struct inode *inode, int wait);
- void btrfs_dirty_inode(struct inode *inode);
- struct inode *btrfs_alloc_inode(struct super_block *sb);
- void btrfs_destroy_inode(struct inode *inode);
--int btrfs_init_cachep(void);
-+int __init btrfs_init_cachep(void);
- void btrfs_destroy_cachep(void);
- long btrfs_ioctl_trans_end(struct file *file);
- struct inode *btrfs_ilookup(struct super_block *s, u64 objectid,
-@@ -2089,7 +2089,7 @@ int btrfs_defrag_leaves(struct btrfs_trans_handle *trans,
- 			struct btrfs_root *root, int cache_only);
- 
- /* sysfs.c */
--int btrfs_init_sysfs(void);
-+int __init btrfs_init_sysfs(void);
- void btrfs_exit_sysfs(void);
- int btrfs_sysfs_add_super(struct btrfs_fs_info *fs);
- int btrfs_sysfs_add_root(struct btrfs_root *root);
-diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-index 8adfe05..7170c4a 100644
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -4521,7 +4521,7 @@ struct kmem_cache *btrfs_cache_create(const char *name, size_t size,
- 				 SLAB_MEM_SPREAD | extra_flags), ctor);
- }
- 
--int btrfs_init_cachep(void)
-+int __init btrfs_init_cachep(void)
- {
- 	btrfs_inode_cachep = btrfs_cache_create("btrfs_inode_cache",
- 					  sizeof(struct btrfs_inode),
-diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
-index 0a14b49..0a3fc0d 100644
---- a/fs/btrfs/super.c
-+++ b/fs/btrfs/super.c
-@@ -649,7 +649,7 @@ static struct miscdevice btrfs_misc = {
- 	.fops		= &btrfs_ctl_fops
- };
- 
--static int btrfs_interface_init(void)
-+static int __init btrfs_interface_init(void)
- {
- 	return misc_register(&btrfs_misc);
- }
-diff --git a/fs/btrfs/sysfs.c b/fs/btrfs/sysfs.c
-index a240b6f..bd73c97 100644
---- a/fs/btrfs/sysfs.c
-+++ b/fs/btrfs/sysfs.c
-@@ -254,7 +254,7 @@ void btrfs_sysfs_del_super(struct btrfs_fs_info *fs)
- 	wait_for_completion(&fs->kobj_unregister);
- }
- 
--int btrfs_init_sysfs(void)
-+int __init btrfs_init_sysfs(void)
- {
- 	btrfs_kset = kset_create_and_add("btrfs", NULL, fs_kobj);
- 	if (!btrfs_kset)
+Well, it depends on how you define a cluster.  You can even call a
+SMP  mother board a cluster of cpus :).  In that case even Sequent NUMA were
+clusters, and so are some of the large core count shared memory systems
+made of multiple similar boards/bricks/books (based on vendor terminology)
+with a custom interconnect for cache coherency.
 
+A vSMP system is multiple similar cpu mother boards, usually dual socket,
+each board having  multiple cpus and a commodity fast interconnect for cache
+coherency.  There is a VMM which  among other tasks also takes care of the
+coherency, and each 'board' or 'node' can access physical memory from
+another board.  There is one instance of OS running on the entire system
+unlike the classical cluster where there are multiple instances of OS
+and the apps under the OS have to work together as a cluster.
