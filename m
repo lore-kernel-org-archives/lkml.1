@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbZAOMQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbZAOMSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764190AbZAOMQk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZAOMQa
+	id S1760700AbZAOMSW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZAOMSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:16:30 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:62504 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754111AbZAOMQ3 (ORCPT
+	Thu, 15 Jan 2009 07:18:09 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:61595 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752791AbZAOMSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:16:29 -0500
-Subject: Re: [BUILD_FAILURE] next-20090115 - s390x - mm/kmemleak.c
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com
-In-Reply-To: <20090115121347.GE5093@osiris.boeblingen.de.ibm.com>
-References: <20090115170415.3edc1df6.sfr@canb.auug.org.au>
-	 <20090115103504.GA5178@linux.vnet.ibm.com>
-	 <20090115112001.GC5093@osiris.boeblingen.de.ibm.com>
-	 <1232020540.32016.19.camel@pc1117.cambridge.arm.com>
-	 <1232021280.11860.0.camel@penberg-laptop>
-	 <20090115121347.GE5093@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 15 Jan 2009 12:16:21 +0000
-Message-Id: <1232021781.32016.32.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jan 2009 12:16:22.0014 (UTC) FILETIME=[13F811E0:01C9770B]
+	Thu, 15 Jan 2009 07:18:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LXcZX9SVb0L62zylz1WYejn1heoh8TEy18QMjdyiCZk/5/Q4qWaP+azWGqwTsfbk6z
+         /k0UQ+ntJ9tjpbj1pCeKnux7P78Ml+mpAP0mT8kMFV09FfstNaeC3QOiZ1Nm3vEXRgNg
+         bjGPklTS6lPJI1vSPu+iw3ErXuwN8HS4yJBnE=
+Date: Thu, 15 Jan 2009 12:18:01 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Chris Caputo <ccaputo@alt.net>
+Cc: Denys Fedoryschenko <denys@visp.net.lb>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+Message-ID: <20090115121801.GH5461@ff.dom.local>
+References: <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <Pine.LNX.4.64.0901150724000.20461@nacho.alt.net> <20090115075450.GB4190@ff.dom.local> <20090115094530.GG4190@ff.dom.local> <Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 13:13 +0100, Heiko Carstens wrote:
-> On Thu, Jan 15, 2009 at 02:08:00PM +0200, Pekka Enberg wrote:
-> > On Thu, 2009-01-15 at 11:55 +0000, Catalin Marinas wrote:
-> > > On Thu, 2009-01-15 at 12:20 +0100, Heiko Carstens wrote:
-> > > > On Thu, Jan 15, 2009 at 04:05:04PM +0530, Kamalesh Babulal wrote:
-> > > > > Hi Stephen,
-> > > > > 
-> > > > > 	next-20090115 allyesconfig build fails on s390x
-> > > > > 
-> > > > > mm/built-in.o: In function `kmemleak_scan':
-> > > > > mm/kmemleak.c:977: undefined reference to `_sdata'
-> > > > > make: *** [.tmp_vmlinux1] Error 1
-> > > > 
-> > > > A lot of architectures don't have _sdata definined in their linker scripts.
-> > > > On s390 _sdata would be the same as _etext. But that is not necessarily true
-> > > > for all architectures.
-> > > 
-> > > Kmemleak has only been tested on ARM and x86. I can add patches for the
-> > > other architectures so that the compilation is fine but can't really run
-> > > such kernels.
-> > 
-> > Yeah, but you could just depend on X86 || ARM in Kconfig, no?
-> 
-> CONFIG_HAVE_KMEMLEAK_SUPPORT ?
-> Is there actually more arch specific that needs to be done?
-> Haven't checked yet.
+On Thu, Jan 15, 2009 at 12:00:50PM +0000, Chris Caputo wrote:
+...
+> I wish I had a repro scenario in a non-production environment, so I could 
+> help out further with this.  If I did, I would test without nmi_watchdog 
+> while trying just 2.6.28 and Jarek's #4 patch.
 
-Not in the latter kmemleak versions, just the vmlinux.lds _sdata,
-_edata, __bss_start, __bss_stop entries.
+I think this watchdog doesn't matter too much yet. Probably it's more
+about hardware (smp, maybe kind of hw timer), and high traffic vs. htb
+rules.
 
--- 
-Catalin
-
+Jarek P.
