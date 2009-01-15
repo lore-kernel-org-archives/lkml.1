@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbZAOVH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934753AbZAOVHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbZAOVH0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933835AbZAOUv4
+	id S934753AbZAOVHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbZAOUxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:51:56 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:12501 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934057AbZAOUvy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:51:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=CS+T269RpCTPModsaW1k3cjomHe/JpZNp0UeTMnaFTCBVgRCvlLBFwAVEwSbhiCTnu
-         GYscLpssloBhuGZvRoBy+FFxbZQMaoP8G/pKnJvE3ABsQfvRzZFnQhx9cOSPnOrRKsa9
-         DBBhH7Jr8lGYN5eKdD1X0VYIQRJkY29/d45Ek=
+	Thu, 15 Jan 2009 15:53:37 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:43729 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934088AbZAOUxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:53:35 -0500
+Message-ID: <496FA24B.5050306@sgi.com>
+Date: Thu, 15 Jan 2009 12:53:31 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <baeb34bc0901151150w4ad88du78d91f6db50983e1@mail.gmail.com>
-References: <baeb34bc0901131746n33cd536co331e32361df2fb72@mail.gmail.com>
-	 <adaeiz6k4o4.fsf@cisco.com>
-	 <baeb34bc0901131910n55cae670qc9d02c9f78c6432@mail.gmail.com>
-	 <86802c440901132207l433227d9nf149506012a5721e@mail.gmail.com>
-	 <baeb34bc0901151150w4ad88du78d91f6db50983e1@mail.gmail.com>
-Date: Thu, 15 Jan 2009 12:51:53 -0800
-X-Google-Sender-Auth: 6d4c0146882dce48
-Message-ID: <86802c440901151251t58077af9v783503cd7994cab1@mail.gmail.com>
-Subject: Re: memory beyond4GB invisible to the system even though 
-	CONFIG_HIGHMEM64G=y
-From: Yinghai Lu <yinghai@kernel.org>
-To: James Kirin <james.kirin40@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: arch_probe_nr_irqs
+References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu> <496B9FC3.7080306@kernel.org> <496BCD14.3020201@sgi.com> <20090114111949.GO2913@elte.hu> <496E4211.6040503@sgi.com> <20090114201152.GA31581@elte.hu> <496E587E.6010503@sgi.com> <20090115094938.GB5833@elte.hu>
+In-Reply-To: <20090115094938.GB5833@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:50 AM, James Kirin <james.kirin40@gmail.com> wrote:
-> Hi Yinghai,
->
->> please do
->> 1. boot linux with "disable_mtrr_trim" in grub.conf etc
->> 2. after booting input:
->> echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
->
-> Thank you for your suggestion.
->
-> Unfortunately, booting with disable_mtrr_trim leads to a kernel panic:
->
-> [<c0103abb>] kernel_thread_helper+0x7/0x1c
-> ===========
-> Code: 0c 31 d2 89 e8 e8 c2 f4 ff ff 89 c3 eb 8e 8b 85 cc 00 00 00 89 44 24 10 83
-> bd ec 00 01 00 04 0f 84 cf 00 00 00 8b 9d f0 00 01 00 <8b> 43 10 3b 43 0c 0f 84
-> d5 00 00 00 8b 53 10 8b 85 ec 00 01 00
-> EIP: [<c026bc2f] hid_parser_main+0xcf/0x290 SS:ESP 0068:f7c2bd7c
-> ---[ end trace 34615b445589fbb6 ]---
-> Kernel panic - not syncing: Attempted to kill init!
->
-> I am attaching the kernel config file. The system boots fine if I
-> remove "disable_mtrr_trim" from lilo.conf (and rerun lilo).
->
-can you try mem=4g , .., and then mem=6g ...
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>> Very cool, thanks!!
+>>
+>> The one thing I always get hung up on is what args to use with the git 
+>> rebase -i command.  Say I want to edit 4a046d1 (which I do ;-), I see it 
+>> in my repo with git-log (3rd one down):
+> 
+> You shouldnt edit 4a046d1 anymore as i already pulled it - you can queue 
+> up a fix commit. (Or we can decide to drop the whole tree and re-pull 
+> yours - but that is an emergency path not to be taken lightly.)
+> 
 
-YH
+... rebase description deleted (thanks!)
+
+> 
+> Ok?
+
+Yes.
+
+> 
+> ( Or if you are sure you can fix the bug via a single pass, you can change 
+>   the 'pick' line to 'edit' and do the editing and 'git commit --amend' 
+>   right during the rebase. If it's still not perfect it needs another 
+>   rebase though and it's easy to mess up rebases. )
+> 
+> 	Ingo
+
+This all started because you wanted a more descriptive changelog for Yinghai's
+probe_nr_irqs() patch.  I was attempting to do this, and is why I sent the
+full text to you, in case I couldn't do it (as you explained above).
+
+I'm guessing this subject is now closed?
+
+Thanks,
+Mike
