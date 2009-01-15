@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbZAOMu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZAOMx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759687AbZAOMu4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZAOMus
+	id S1754887AbZAOMx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZAOMxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:50:48 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:38742 "EHLO slimlogic.co.uk"
+	Thu, 15 Jan 2009 07:53:15 -0500
+Received: from csamuel.org ([207.210.213.14]:44446 "EHLO csamuel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752422AbZAOMur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:50:47 -0500
-Subject: Re: [patch 2.6.29-rc] regulator: add get_status()
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-In-Reply-To: <20090115124007.GD2147@sirena.org.uk>
-References: <200811091531.46003.david-b@pacbell.net>
-	 <200811161458.17212.david-b@pacbell.net>
-	 <20081117015127.GA10883@sirena.org.uk>
-	 <200901142303.17906.david-b@pacbell.net>
-	 <20090115124007.GD2147@sirena.org.uk>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 12:50:45 +0000
-Message-Id: <1232023845.4934.368.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	id S1750937AbZAOMxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:53:14 -0500
+From: Chris Samuel <chris@csamuel.org>
+To: linux-btrfs@vger.kernel.org
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Date: Thu, 15 Jan 2009 23:53:02 +1100
+User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
+       andi@firstfloor.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       tglx@linutronix.de, npiggin@suse.de, pmorreale@novell.com,
+       SDietrich@novell.com, dmitry.adamushko@gmail.com, hannes@cmpxchg.org
+References: <20090114105300.66bd014d.akpm@linux-foundation.org> <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com> <20090114223408.GA19173@elte.hu>
+In-Reply-To: <20090114223408.GA19173@elte.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart5190305.3EItt4FeP3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200901152353.05990.chris@csamuel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 12:40 +0000, Mark Brown wrote:
+--nextPart5190305.3EItt4FeP3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> but...
-> 
-> > +enum regulator_status {
-> > +	REGULATOR_STATUS_OFF,
-> > +	REGULATOR_STATUS_ON,
-> > +	REGULATOR_STATUS_ERROR,
-> > +	/* fast/normal/idle/standby are flavors of "on" */
-> > +	REGULATOR_STATUS_FAST,
-> > +	REGULATOR_STATUS_NORMAL,
-> > +	REGULATOR_STATUS_IDLE,
-> > +	REGULATOR_STATUS_STANDBY,
-> > +};
-> > +
-> 
-> > +	/* report regulator status ... most other accessors report
-> > +	 * control inputs, this reports results of combining inputs
-> > +	 * from Linux (and other sources) with the actual load.
-> > +	 */
-> > +	int (*get_status)(struct regulator_dev *);
-> > +
-> 
-> ...this needs kerneldoc adding.
+On Thu, 15 Jan 2009 9:34:08 am Ingo Molnar wrote:
 
-Please send a separate patch for the kerneldoc as I've already applied.
+> So the 3 main Linux distros, generating ~95% of the kerneloops.org
+> feedback traffic, all have SCHED_DEBUG=3Dy, and at least two have
+> !DEBUG_MUTEXES. (possibly Ubuntu has that disabled it too)
 
-Thanks
+That looks correct for Ubuntu:
 
-Liam
+chris@mythtv:~$ grep CONFIG_DEBUG_MUTEXES /boot/config-2.6.2*
+/boot/config-2.6.24-21-generic:# CONFIG_DEBUG_MUTEXES is not set
+/boot/config-2.6.27-7-generic:# CONFIG_DEBUG_MUTEXES is not set
+/boot/config-2.6.27-9-generic:# CONFIG_DEBUG_MUTEXES is not set
 
+
+=2D-=20
+ Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
+
+This email may come with a PGP signature as a file. Do not panic.
+=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+
+
+--nextPart5190305.3EItt4FeP3
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQEVAwUASW8xsY1yjaOTJg85AQJttggAjdGnncYFLUopmVOqSR1+znnTz4IoAGGz
+5B58r35VpgvlIqZoldWMzCqK99aDyt2eLc4I+vcpr54za29UgAytrquGR1S9MzDv
+VC/Mm4SfYPAPZ9anbowMUEKQD+rSXXq02yEprcSEE3TyWH9EoqMZoehVkkegJFzd
+ZSXtU/vhZQ4DJavu0FF6xRwvGR2IlDBqCNeDbTFxQAUuXe1HEFqsdqHlLgRKbk2v
+JNB8s+Q3QpGugElMEdK/bXbxm5V3lWioKHM7jOjJWtvYuUGlCXR8ZY5ajHHiTkE2
+VnmqiTEiuBPfKK+wZVkcmGdwyWkqCXUy2+dT6AV4LQwXCbQxr6gANA==
+=bTVt
+-----END PGP SIGNATURE-----
+
+--nextPart5190305.3EItt4FeP3--
