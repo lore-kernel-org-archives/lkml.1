@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbZAOIrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbZAOIsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762842AbZAOIrp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZAOIrT
+	id S1762932AbZAOIsR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbZAOIr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:47:19 -0500
-Received: from genesysrack.ru ([195.178.208.66]:56737 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758411AbZAOIrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:47:18 -0500
-Date: Thu, 15 Jan 2009 11:47:16 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net,
-       Arjan van de Ven <arjan@infradead.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [4/7] dst: thread pool.
-Message-ID: <20090115084716.GB29586@ioremap.net>
-References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <1231887933-17843-2-git-send-email-zbr@ioremap.net> <1231887933-17843-3-git-send-email-zbr@ioremap.net> <1231887933-17843-4-git-send-email-zbr@ioremap.net> <1231887933-17843-5-git-send-email-zbr@ioremap.net> <20090114215810.674569fc.akpm@linux-foundation.org>
+	Thu, 15 Jan 2009 03:47:56 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:38407 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752205AbZAOIr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 03:47:56 -0500
+Date: Thu, 15 Jan 2009 19:47:50 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH crypto -v4 1/2] AES-NI: Add support to access
+	underlying blkcipher under cryptd ablkcipher
+Message-ID: <20090115084750.GA32239@gondor.apana.org.au>
+References: <1232008113.5937.199.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090114215810.674569fc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1232008113.5937.199.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+On Thu, Jan 15, 2009 at 04:28:33PM +0800, Huang Ying wrote:
+>
+> +	tfm = crypto_alloc_ablkcipher(cryptd_alg_name, type, mask);
+> +	BUG_ON(crypto_ablkcipher_tfm(tfm)->__crt_alg->cra_module !=
+> +	       THIS_MODULE);
 
-On Wed, Jan 14, 2009 at 09:58:10PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > Kernel currently does not allow to queue work into some entity which
-> > will perform it in the process context and have simple way to extend
-> > number of worker and work with them not as separate objects, but with
-> > pool as a whole. So thread pool model was implemented in the DST.
-> > 
-> > Thread pool abstraction allows to schedule a work to be performed
-> > on behalf of kernel thread. One does not operate with threads itself,
-> > instead user provides setup and cleanup callbacks for thread pool itself,
-> > and action and cleanup callbacks for each submitted work.
-> > 
-> > Each worker has private data initialized at creation time and data,
-> > provided by user at scheduling time.
-> > 
-> > When action is being performed, thread can not be used by other users,
-> > instead they will sleep until there is free thread to pick their work.
-> > 
-> > Thread pool is used for crypto processing of incoming and outgoing IO
-> > requests to reduce the overall overhead.
-> 
-> This is at least our fourth thread pool implementation, not counting
-> kernel/workqueue.c:
-> 
-> 1: pdflush
+You need to check whether tfm is an error before dereferencing it.
+Also it's probably better to free the tfm and return an error rather
+than invoking BUG.
 
-It is not really a pool of threads. But its works is somewhat similar.
+> --- a/include/crypto/algapi.h
+> +++ b/include/crypto/algapi.h
 
-> 2: David Howells' "slow work" infrastructure
+Please create a new file for this, e.g., include/crypto/cryptd.h.
 
-I did not check it, it was not sent to fsdevel and only couple of
-replies sneaked, according to them there are questionable cases (like
-lots of global variables), but overall I can not say more.
-
-> 3: Arjan van de Ven's kernel/async.c
-
-Arjan does not answer to the mails. I sent him a review with
-constructive critics, but it got lost in the void :)
-
-> 4: Your "dst thread pool"
-
-This one is rather simple case: set of thrads and blocking callbacks to
-add the work.
-
+Thanks,
 -- 
-	Evgeniy Polyakov
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
