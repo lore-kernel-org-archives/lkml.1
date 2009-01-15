@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbZAONvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764879AbZAONww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764704AbZAONvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 08:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZAONvh
+	id S1764879AbZAONww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 08:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbZAONwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 08:51:37 -0500
-Received: from mail150.ix.emailantidote.com ([89.167.219.150]:2364 "EHLO
-	iamp03.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753798AbZAONvh convert rfc822-to-8bit (ORCPT
+	Thu, 15 Jan 2009 08:52:41 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:35176 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754589AbZAONwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 08:51:37 -0500
-X-Greylist: delayed 533 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 08:51:36 EST
-Message-ID: <496F3344.9060104@draigBrady.com>
-Date: Thu, 15 Jan 2009 12:59:48 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 15 Jan 2009 08:52:41 -0500
+Date: Thu, 15 Jan 2009 06:52:36 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Subject: Re: Mainline kernel OLTP performance update
+Message-ID: <20090115135236.GB29283@parisc-linux.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <20090115012147.GW29283@parisc-linux.org> <20090114180431.f4a96543.akpm@linux-foundation.org> <200901151824.38658.nickpiggin@yahoo.com.au> <84144f020901150146x72402ec4p7636d583cfd55b3e@mail.gmail.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-CC: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-References: <200901020207.30359.rob@landley.net> <200901021026.37905.a.miskiewicz@gmail.com> <20090102094934.GB17841@infradead.org> <495DE995.1070002@opensde.org> <yw1x3ag2t2gd.fsf@thrashbarg.mansr.com>
-In-Reply-To: <yw1x3ag2t2gd.fsf@thrashbarg.mansr.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 15 Jan 2009 13:42:09.0743 (UTC) FILETIME=[10412DF0:01C97717]
-x-MXSweep-KeywordsCount: 0
-x-MXSweep-MetaScanResult: Clean
-x-MXSweep-MetaScanThreat: 
-x-MXPurifier-SpamScore: 0
-x-MXPurifier-VirusScore: 0
-X-MXSweep-Threat: Clean
-X-MXUniqueID: f2d7b3ff-8a65-452b-b745-24694424aec8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020901150146x72402ec4p7636d583cfd55b3e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Måns Rullgård wrote:
-> Alejandro Mery <amery@opensde.org> writes:
+On Thu, Jan 15, 2009 at 11:46:09AM +0200, Pekka Enberg wrote:
+> It would also be nice if someone could do the performance analysis on
+> the SLUB bug. I ran sysbench in oltp mode here and the results look
+> like this:
 > 
->> I think the $(( ... )) bash-ism can be replaced with a simple .c helper toy.
+>   [ number of transactions per second from 10 runs. ]
 > 
-> The $(( ... )) construct is standard POSIX shell syntax, see
-> http://www.opengroup.org/onlinepubs/000095399/utilities/xcu_chap02.html#tag_02_06_04
+>                    min      max      avg      sd
+>   2.6.29-rc1-slab  833.77   852.32   845.10   4.72
+>   2.6.29-rc1-slub  823.61   851.94   836.74   8.57
 > 
-> Bash supports $[ ... ] as an alternate syntax for the same thing.
-> Perhaps you were thinking of that.
+> And no, the numbers are not flipped, SLUB beats SLAB here. :(
 
-I think the misconception that $(( ... )) is a bashism is caused by
-the wrong highlighting defaults chosen by vim. To fix this add this to ~/.vimrc
+Um.  More transactions per second is good.  Your numbers show SLAB
+beating SLUB (even on your dual-CPU system).  And SLAB shows a lower
+standard deviation, which is also good.
 
-let g:is_posix = 1
-
-That will also allow you to use the $(command) POSIX construct.
-BTW, the vim syntax maintainers don't agree with changing this default:
-http://groups.google.com/group/vim_dev/browse_thread/thread/41139a32772b2f5f
-
-cheers,
-Pádraig.
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
