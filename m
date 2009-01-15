@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934878AbZAOWPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbZAOWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934878AbZAOWPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933688AbZAOWCW
+	id S1758413AbZAOWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbZAOWCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:22 -0500
-Received: from kroah.org ([198.145.64.141]:38305 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:23 -0500
+Received: from kroah.org ([198.145.64.141]:38330 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933613AbZAOWCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:14 -0500
-Date: Thu, 15 Jan 2009 13:59:43 -0800
+	id S933563AbZAOWCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:15 -0500
+Date: Thu, 15 Jan 2009 13:59:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Richard Henderson <rth@twiddle.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Tony Luck <tony.luck@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 24/85] [PATCH 04/44] [CVE-2009-0029] Remove
-	__attribute__((weak)) from sys_pipe/sys_pipe2
-Message-ID: <20090115215943.GY17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 25/85] [PATCH 05/44] [CVE-2009-0029] Make sys_pselect7
+	static
+Message-ID: <20090115215945.GZ17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0004--CVE-2009-0029-Remove-__attribute__-weak-from-sy.patch"
+Content-Disposition: inline; filename="0005--CVE-2009-0029-Make-sys_pselect7-static.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,220 +42,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 1134723e96f6e2abcf8bfd7a2d1c96fcc323ef35 upstream.
+commit c9da9f2129d6a421c32e334a83770a9e67f7feac upstream.
 
-Remove __attribute__((weak)) from common code sys_pipe implemantation.
-IA64, ALPHA, SUPERH (32bit) and SPARC (32bit) have own implemantations
-with the same name. Just rename them.
-For sys_pipe2 there is no architecture specific implementation.
+Not a single architecture has wired up sys_pselect7 plus it is the
+only system call with seven parameters. Just make it static and
+rename it to do_pselect which will do the work for sys_pselect6.
 
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/alpha/kernel/entry.S      |    8 ++++----
- arch/alpha/kernel/systbls.S    |    2 +-
- arch/ia64/ia32/ia32_entry.S    |    2 +-
- arch/ia64/include/asm/unistd.h |    2 +-
- arch/ia64/kernel/entry.S       |    2 +-
- arch/ia64/kernel/sys_ia64.c    |    2 +-
- arch/s390/kernel/entry.h       |    1 -
- arch/sh/kernel/sys_sh32.c      |    2 +-
- arch/sh/kernel/syscalls_32.S   |    2 +-
- arch/sparc/kernel/entry.S      |    4 ++--
- arch/sparc/kernel/systbls.S    |    2 +-
- arch/sparc64/kernel/syscalls.S |    2 +-
- arch/sparc64/kernel/systbls.S  |    4 ++--
- fs/pipe.c                      |    4 ++--
- 14 files changed, 19 insertions(+), 20 deletions(-)
+ fs/compat.c |    6 +++---
+ fs/select.c |    8 ++++----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
---- a/arch/alpha/kernel/entry.S
-+++ b/arch/alpha/kernel/entry.S
-@@ -894,9 +894,9 @@ sys_getxpid:
- .end sys_getxpid
- 
- 	.align	4
--	.globl	sys_pipe
--	.ent	sys_pipe
--sys_pipe:
-+	.globl	sys_alpha_pipe
-+	.ent	sys_alpha_pipe
-+sys_alpha_pipe:
- 	lda	$sp, -16($sp)
- 	stq	$26, 0($sp)
- 	.prologue 0
-@@ -914,7 +914,7 @@ sys_pipe:
- 	stq	$1, 80+16($sp)
- 1:	lda	$sp, 16($sp)
- 	ret
--.end sys_pipe
-+.end sys_alpha_pipe
- 
- 	.align	4
- 	.globl	sys_execve
---- a/arch/alpha/kernel/systbls.S
-+++ b/arch/alpha/kernel/systbls.S
-@@ -52,7 +52,7 @@ sys_call_table:
- 	.quad sys_setpgid
- 	.quad alpha_ni_syscall			/* 40 */
- 	.quad sys_dup
--	.quad sys_pipe
-+	.quad sys_alpha_pipe
- 	.quad osf_set_program_attributes
- 	.quad alpha_ni_syscall
- 	.quad sys_open				/* 45 */
---- a/arch/ia64/ia32/ia32_entry.S
-+++ b/arch/ia64/ia32/ia32_entry.S
-@@ -215,7 +215,7 @@ ia32_syscall_table:
- 	data8 sys_mkdir
- 	data8 sys_rmdir		  /* 40 */
- 	data8 sys_dup
--	data8 sys32_pipe
-+	data8 sys_ia64_pipe
- 	data8 compat_sys_times
- 	data8 sys_ni_syscall	  /* old prof syscall holder */
- 	data8 sys32_brk		  /* 45 */
---- a/arch/ia64/include/asm/unistd.h
-+++ b/arch/ia64/include/asm/unistd.h
-@@ -363,7 +363,7 @@ struct pt_regs;
- struct sigaction;
- long sys_execve(char __user *filename, char __user * __user *argv,
- 			   char __user * __user *envp, struct pt_regs *regs);
--asmlinkage long sys_pipe(void);
-+asmlinkage long sys_ia64_pipe(void);
- asmlinkage long sys_rt_sigaction(int sig,
- 				 const struct sigaction __user *act,
- 				 struct sigaction __user *oact,
---- a/arch/ia64/kernel/entry.S
-+++ b/arch/ia64/kernel/entry.S
-@@ -1436,7 +1436,7 @@ sys_call_table:
- 	data8 sys_mkdir				// 1055
- 	data8 sys_rmdir
- 	data8 sys_dup
--	data8 sys_pipe
-+	data8 sys_ia64_pipe
- 	data8 sys_times
- 	data8 ia64_brk				// 1060
- 	data8 sys_setgid
---- a/arch/ia64/kernel/sys_ia64.c
-+++ b/arch/ia64/kernel/sys_ia64.c
-@@ -154,7 +154,7 @@ out:
-  * and r9) as this is faster than doing a copy_to_user().
-  */
- asmlinkage long
--sys_pipe (void)
-+sys_ia64_pipe (void)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	int fd[2];
---- a/arch/s390/kernel/entry.h
-+++ b/arch/s390/kernel/entry.h
-@@ -30,7 +30,6 @@ struct fadvise64_64_args;
- struct old_sigaction;
- struct sel_arg_struct;
- 
--long sys_pipe(unsigned long __user *fildes);
- long sys_mmap2(struct mmap_arg_struct __user  *arg);
- long old_mmap(struct mmap_arg_struct __user *arg);
- long sys_ipc(uint call, int first, unsigned long second,
---- a/arch/sh/kernel/syscalls_32.S
-+++ b/arch/sh/kernel/syscalls_32.S
-@@ -58,7 +58,7 @@ ENTRY(sys_call_table)
- 	.long sys_mkdir
- 	.long sys_rmdir		/* 40 */
- 	.long sys_dup
--	.long sys_pipe
-+	.long sys_sh_pipe
- 	.long sys_times
- 	.long sys_ni_syscall	/* old prof syscall holder */
- 	.long sys_brk		/* 45 */
---- a/arch/sh/kernel/sys_sh32.c
-+++ b/arch/sh/kernel/sys_sh32.c
-@@ -21,7 +21,7 @@
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way Unix traditionally does this, though.
-  */
--asmlinkage int sys_pipe(unsigned long r4, unsigned long r5,
-+asmlinkage int sys_sh_pipe(unsigned long r4, unsigned long r5,
- 	unsigned long r6, unsigned long r7,
- 	struct pt_regs __regs)
- {
---- a/arch/sparc64/kernel/syscalls.S
-+++ b/arch/sparc64/kernel/syscalls.S
-@@ -20,7 +20,7 @@ execve_merge:
- 	 add	%sp, PTREGS_OFF, %o0
- 
- 	.align	32
--sys_pipe:
-+sys_sparc_pipe:
- 	ba,pt	%xcc, sparc_pipe
- 	 add	%sp, PTREGS_OFF, %o0
- sys_nis_syscall:
---- a/arch/sparc64/kernel/systbls.S
-+++ b/arch/sparc64/kernel/systbls.S
-@@ -26,7 +26,7 @@ sys_call_table32:
- /*25*/	.word sys32_vmsplice, compat_sys_ptrace, sys_alarm, sys32_sigaltstack, sys32_pause
- /*30*/	.word compat_sys_utime, sys_lchown, sys_fchown, sys32_access, sys32_nice
- 	.word sys_chown, sys_sync, sys32_kill, compat_sys_newstat, sys32_sendfile
--/*40*/	.word compat_sys_newlstat, sys_dup, sys_pipe, compat_sys_times, sys_getuid
-+/*40*/	.word compat_sys_newlstat, sys_dup, sys_sparc_pipe, compat_sys_times, sys_getuid
- 	.word sys32_umount, sys_setgid16, sys_getgid16, sys32_signal, sys_geteuid16
- /*50*/	.word sys_getegid16, sys_acct, sys_nis_syscall, sys_getgid, compat_sys_ioctl
- 	.word sys32_reboot, sys32_mmap2, sys_symlink, sys32_readlink, sys32_execve
-@@ -100,7 +100,7 @@ sys_call_table:
- /*25*/	.word sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_nis_syscall
- /*30*/	.word sys_utime, sys_nis_syscall, sys_nis_syscall, sys_access, sys_nice
- 	.word sys_nis_syscall, sys_sync, sys_kill, sys_newstat, sys_sendfile64
--/*40*/	.word sys_newlstat, sys_dup, sys_pipe, sys_times, sys_nis_syscall
-+/*40*/	.word sys_newlstat, sys_dup, sys_sparc_pipe, sys_times, sys_nis_syscall
- 	.word sys_umount, sys_setgid, sys_getgid, sys_signal, sys_geteuid
- /*50*/	.word sys_getegid, sys_acct, sys_memory_ordering, sys_nis_syscall, sys_ioctl
- 	.word sys_reboot, sys_nis_syscall, sys_symlink, sys_readlink, sys_execve
---- a/arch/sparc/kernel/entry.S
-+++ b/arch/sparc/kernel/entry.S
-@@ -1142,8 +1142,8 @@ sunos_execv:
- 	 ld	[%sp + STACKFRAME_SZ + PT_I0], %o0
- 
- 	.align	4
--	.globl	sys_pipe
--sys_pipe:
-+	.globl	sys_sparc_pipe
-+sys_sparc_pipe:
- 	mov	%o7, %l5
- 	add	%sp, STACKFRAME_SZ, %o0		! pt_regs *regs arg
- 	call	sparc_pipe
---- a/arch/sparc/kernel/systbls.S
-+++ b/arch/sparc/kernel/systbls.S
-@@ -24,7 +24,7 @@ sys_call_table:
- /*25*/	.long sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_pause
- /*30*/	.long sys_utime, sys_lchown, sys_fchown, sys_access, sys_nice
- /*35*/	.long sys_chown, sys_sync, sys_kill, sys_newstat, sys_sendfile
--/*40*/	.long sys_newlstat, sys_dup, sys_pipe, sys_times, sys_getuid
-+/*40*/	.long sys_newlstat, sys_dup, sys_sparc_pipe, sys_times, sys_getuid
- /*45*/	.long sys_umount, sys_setgid16, sys_getgid16, sys_signal, sys_geteuid16
- /*50*/	.long sys_getegid16, sys_acct, sys_nis_syscall, sys_getgid, sys_ioctl
- /*55*/	.long sys_reboot, sys_mmap2, sys_symlink, sys_readlink, sys_execve
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1051,7 +1051,7 @@ int do_pipe(int *fd)
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way Unix traditionally does this, though.
-  */
--asmlinkage long __weak sys_pipe2(int __user *fildes, int flags)
-+asmlinkage long sys_pipe2(int __user *fildes, int flags)
- {
- 	int fd[2];
- 	int error;
-@@ -1067,7 +1067,7 @@ asmlinkage long __weak sys_pipe2(int __u
- 	return error;
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1640,7 +1640,7 @@ sticky:
  }
  
--asmlinkage long __weak sys_pipe(int __user *fildes)
-+asmlinkage long sys_pipe(int __user *fildes)
- {
- 	return sys_pipe2(fildes, 0);
+ #ifdef HAVE_SET_RESTORE_SIGMASK
+-asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
++static long do_compat_pselect(int n, compat_ulong_t __user *inp,
+ 	compat_ulong_t __user *outp, compat_ulong_t __user *exp,
+ 	struct compat_timespec __user *tsp, compat_sigset_t __user *sigmask,
+ 	compat_size_t sigsetsize)
+@@ -1748,8 +1748,8 @@ asmlinkage long compat_sys_pselect6(int 
+ 				(compat_size_t __user *)(sig+sizeof(up))))
+ 			return -EFAULT;
+ 	}
+-	return compat_sys_pselect7(n, inp, outp, exp, tsp, compat_ptr(up),
+-					sigsetsize);
++	return do_compat_pselect(n, inp, outp, exp, tsp, compat_ptr(up),
++				 sigsetsize);
  }
+ 
+ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -427,9 +427,9 @@ sticky:
+ }
+ 
+ #ifdef HAVE_SET_RESTORE_SIGMASK
+-asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
+-		fd_set __user *exp, struct timespec __user *tsp,
+-		const sigset_t __user *sigmask, size_t sigsetsize)
++static long do_pselect(int n, fd_set __user *inp, fd_set __user *outp,
++		       fd_set __user *exp, struct timespec __user *tsp,
++		       const sigset_t __user *sigmask, size_t sigsetsize)
+ {
+ 	s64 timeout = MAX_SCHEDULE_TIMEOUT;
+ 	sigset_t ksigmask, sigsaved;
+@@ -527,7 +527,7 @@ asmlinkage long sys_pselect6(int n, fd_s
+ 			return -EFAULT;
+ 	}
+ 
+-	return sys_pselect7(n, inp, outp, exp, tsp, up, sigsetsize);
++	return do_pselect(n, inp, outp, exp, tsp, up, sigsetsize);
+ }
+ #endif /* HAVE_SET_RESTORE_SIGMASK */
+ 
 
