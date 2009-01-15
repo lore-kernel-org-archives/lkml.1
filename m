@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbZAORow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbZAORpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762436AbZAORow (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 12:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbZAORoo
+	id S1762868AbZAORpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 12:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbZAORpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 12:44:44 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:59411 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbZAORom (ORCPT
+	Thu, 15 Jan 2009 12:45:16 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19504 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbZAORpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 12:44:42 -0500
-Date: Thu, 15 Jan 2009 10:44:40 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090115174440.GF29283@parisc-linux.org>
-References: <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu>
+	Thu, 15 Jan 2009 12:45:14 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: netlabel: UNLABELED ath9k not denying unlabeled traffic
+Date: Thu, 15 Jan 2009 12:45:05 -0500
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       "SE-Linux" <selinux@tycho.nsa.gov>
+References: <496D759A.7010401@gmail.com> <200901141736.43805.paul.moore@hp.com> <496E974E.1040806@gmail.com>
+In-Reply-To: <496E974E.1040806@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090114192811.GA19691@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200901151245.05494.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 08:28:11PM +0100, Ingo Molnar wrote:
->                       [v2.6.14]     [v2.6.29]
-> 
->                       Semaphores  | Mutexes
->             ----------------------------------------------
->                                   | no-spin           spin
->                                   |
->   [tmpfs]   ops/sec:       50713  |  291038         392865       (+34.9%)
->   [ext3]    ops/sec:       45214  |  283291         435674       (+53.7%)
-> 
-> A 10x macro-performance improvement on ext3, compared to 2.6.14 :-)
-> 
-> While lots of other details got changed meanwhile, i'm sure most of the 
-> performance win on this particular VFS workload comes from mutexes.
+On Wednesday 14 January 2009 8:54:22 pm Justin P. Mattock wrote:
+> Paul Moore wrote:
+> apologize for the slow response
+> (had to do some external activities);
 
-I asked a couple of our benchmarking teams to try -v9.  Neither the OLTP
-benchmark, nor the kernel-perf test suite found any significant
-performance change.  I suspect mutex contention isn't a significant
-problem for most workloads.
+No problem, I've got a day job too :)
 
-Has anyone found a non-synthetic benchmark where this makes a
-significant difference?  Aside from btrfs, I mean.
+> > NOTE: the domain mapping configuration only controls how outbound
+> > network traffic is labeled on-the-wire; it "maps" the
+> > LSM/SELinux "domains" to a specific labeling protocol
+> > configuration, e.g. all apache_t traffic should be labeled with
+> > CIPSO DOI 3 while all firefox_t traffic should not be labeled at
+> > all.
+
+...
+
+> > I think what you mean to type is the following:
+> >
+> >  # netlabelctl unlbl add interface:wlan0 address:<radioadd> \
+> >        label:system_u:object_r:netlabel_peer_t:s0
+> >
+> > ... note there is no "domain" argument, that only exists
+> > for "netlabelctl map ..." commands.
+> >
+> > NOTE: if you really want to get fancy you can create new SELinux
+> > domains for each type of media and add NetLabel configurations for
+> > those new domains.  Imagine you create a new "internet_radio_t"
+> > domain/type and only allow the "netplayer_t" domain (yeah, I made
+> > that up but you get the point) access to network traffic labeled
+> > with internet_radio_t. You would then use the following command to
+> > label your incoming traffic with NetLabel:
+> >
+> >  # netlabelctl unlbl add interface:wlan0 address:<radioadd> \
+> >        label:system_u:object_r:internet_radio_t:s0
+> >
+> > NOTE: you can also skip the "interface:wlan0" argument and just
+> > use "default" instead if you want the configuration to apply to all
+> > your network interfaces; although bear in mind that the "default"
+> > configuration can be overridden by the interface specific
+> > configurations.
+>
+> Alright, I thought you could use the map option for unlbl.
+
+Yes, you can use configure the LSM/SELinux domain mapping to send 
+unlabeled/"unlbl" packets (the default configuration maps all outbound 
+traffic to "unlbl") but since you only really care about inbound 
+traffic you can ignore the "map" option.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+paul moore
+linux @ hp
