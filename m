@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbZAOP45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbZAOQES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759778AbZAOP45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 10:56:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZAOP4s
+	id S1760265AbZAOQES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 11:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbZAOQD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 10:56:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:23209 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbZAOP4q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 10:56:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=LPxw5HhpkoAJXR9Un05kjdFUxAIaquasxt3KBK9YtM0aRHTSBKd8XAx9AixMGFOUmK
-         eAMFsyLMYK/GeKRaYX/Ktw/kMujdTcrOiX5RGC2LFrOIt6iGGZQXNtWYAuFwIGJUSU5Z
-         Ckd3elSUEjEhL4hwQs33Csjqa3bDgwIV+zmzY=
+	Thu, 15 Jan 2009 11:03:57 -0500
+Received: from squawk.glines.org ([72.36.206.66]:37274 "EHLO squawk.glines.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755177AbZAOQD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 11:03:56 -0500
+Message-ID: <496F5DA0.3060001@glines.org>
+Date: Thu, 15 Jan 2009 08:00:32 -0800
+From: Mark Glines <mark@glines.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090112)
 MIME-Version: 1.0
-In-Reply-To: <3f9a31f40901120903yc6a85e0w4c2fe57352f1f482@mail.gmail.com>
-References: <3f9a31f40901120903yc6a85e0w4c2fe57352f1f482@mail.gmail.com>
-Date: Thu, 15 Jan 2009 21:26:46 +0530
-Message-ID: <3f9a31f40901150756t2e62a640hdad6ccf6cef89b0b@mail.gmail.com>
-Subject: Re: scripts/checkpatch.pl: WARNING: patch prefix 'arch' exists, 
-	appears to be a -p0 patch
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Andy Whitcroft <apw@canonical.com>, davej@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: L-K <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28 has unconfigurable group sched?
+References: <496CDDE9.3050008@glines.org> <1231926992.7141.23.camel@twins>	 <496DFACE.10403@glines.org> <1232004544.14825.75.camel@laptop>
+In-Reply-To: <1232004544.14825.75.camel@laptop>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Andy,
+Peter Zijlstra wrote:
+> On Wed, 2009-01-14 at 06:46 -0800, Mark Glines wrote:
+>> Thanks.  Sadly, this doesn't seem to change anything for me.  I applied
+>> it to 2.6.28, rebuilt and reinstalled, and got the same result.  I did a
+>> clean rebuild to be sure; and got the same behavior again.
 
-On Mon, Jan 12, 2009 at 10:33 PM, Jaswinder Singh Rajput
-<jaswinderlinux@gmail.com> wrote:
->
->  #./scripts/checkpatch.pl --file arch/x86/kernel/module_32.c
-> WARNING: patch prefix 'arch' exists, appears to be a -p0 patch
->
-> total: 0 errors, 1 warnings, 152 lines checked
->
+> Most strange, I did the patch on .28 just to be sure (my initial testing
+> was done on -linus since I couldn't remember it having changed in a
+> while), and it still works for me.
 
-The problem is on my side or this is a BUG ?
+No, I'm sorry, you're right.  It does work beautifully now with your
+patch.  I just hadn't been testing the correct kernel image (oops).
 
-Thanks
---
-JSR
+Thanks!
+
+Mark
