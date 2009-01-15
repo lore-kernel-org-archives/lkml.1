@@ -1,268 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765649AbZAOOjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765726AbZAOOkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765649AbZAOOjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbZAOOjO
+	id S1765726AbZAOOkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbZAOOk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:39:14 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41190 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756336AbZAOOjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:39:12 -0500
-Date: Thu, 15 Jan 2009 15:38:27 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kosaki.motohiro@jp.fujitsu.com, <oleg@redhat.com>
-Subject: [PATCH] getrusage: fill ru_ixrss, ru_idrss and ru_isrss values
-Message-ID: <20090115153827.459ec787@psychotron.englab.brq.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 09:40:29 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:54552 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756003AbZAOOk2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 09:40:28 -0500
+Message-ID: <496F4AD4.9080201@cosmosbay.com>
+Date: Thu, 15 Jan 2009 15:40:20 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Pekka Pietikainen <pp@ee.oulu.fi>
+CC: =?UTF-8?B?TWloYWkgRG9uyJt1?= <mihai.dontu@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: b44 - swapper: page allocation failure
+References: <20090115111537.GA994@gondor.apana.org.au> <200901151527.43646.mihai.dontu@gmail.com> <20090115134055.GA15551@ee.oulu.fi>
+In-Reply-To: <20090115134055.GA15551@ee.oulu.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 15 Jan 2009 15:40:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes three values in rusage structure filled in getrusage
-syscall. These values are in KB units so as the ->ru_maxrss value. They
-are ru_ixrss, ru_idrss and ru_isrss. Note that also these values are
-wrongly converted from pages to KBs by GNU time application (patch
-posted to app. maintainer).
+Pekka Pietikainen a écrit :
+> On Thu, Jan 15, 2009 at 03:27:43PM +0200, Mihai Donțu wrote:
+>>>> A friend of mine just booted 2.6.28 and when someone else tried to send
+>>>> something to him over ssh (scp), the transfer failed and the following
+>>>> appeared in dmesg:
+>>> You missed the all important order line before the stack trace.
+>> Right, sorry for that. Here it is:
+>> swapper: page allocation failure. order:0, mode:0x21
+>>> If it's order 0, then you're just out of memory, if it's greater
+>>> than order 0, then either you're using jumbo frames or b44 is
+>>> broken.
+>> It is order zero, but he's not out of memory. He has just booted 2.6.28 (no X, 
+>> no thing), has 3GB of RAM and 2GB of swap.
+> b44 uses GFP_DMA bounce buffers in some situations (x86_64 with > 1GB of
+> memory would do the trick I think, as does x86 with 4:4 memory split),
+> and that's a very limited resource (Memory < 16MB ). 
+> 
+> Lovely hardware feature requiring nasty workarounds
+> (the chip can't do DMA for addresses > 1GB).
+> 
+> Maybe something else sucks up GFP_DMA memory with 2.6.28?
 
-These three values are actually accumulated memory usages. It means
-that each (in the ideal case) jiffy we need to add appropriate mm->xxx
-value to the counter. For this I'm using acct_update_integrals()
-function that is already accumulating total_vm and rss accumulated
-values for taskstats. I've extended this function to accumulate also
-vm_shared and vm_stack values from mm->. In the same fashion the
-task_struct is extended. I've also changed the accumulation time
-measure interval from USECs to jiffies. That's correct because there
-can't by lesser time interval then jiffy and we also achieve later
-potential u64 overflow (I do not see why this was not done this way in
-the first place). Three macros are added under the tast_struct
-definition in sched.h (I'm not sure this is the right place). These
-macros are actually getting appropriate i[xds]rss values from fields
-added to task_struct.
+Normal tcp queues (in this case, since a single scp is enough
+to trigger the bug)
 
-The struct signal_struct was extended by six fields. These refer to
-i[xds]rss values and i[xds]rss of childs. These are filled up in the
-similar way as other near fields in __exit_signal() and
-wait_task_zombie().
+If a rx buffer was allocated using GFP_DMA, then b44_rx()
+should copy it to a new skb, (like done by copybreak algo),
+regardless of frame size, to not consume DMA memory in protocol
+queues.
 
-Note that taskstats can be possibly extended to pass accumulated
-vm_shared and vm_stack too.
+Better be slow (because of extra copy) then risking exhausting DMA zone
 
+easy way to test would be to redefine RX_COPY_THRESHOLD to 16000
 
-Please review and comment this patch - all comments are highly welcomed.
-
-Btw wouldn't it be nice to have macro like K() (PAGEs->KBs) globally
-defined instead of defining it on each spot in kernel where we need it?
-FreeBSD has this - pgtok().
-
-Thanks
-
-Jirka
-
-Applied after: getrusage-fill-ru_maxrss-value.patch
-
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
----
- include/linux/sched.h |   22 +++++++++++++++++++---
- kernel/exit.c         |    9 +++++++++
- kernel/fork.c         |    1 +
- kernel/sys.c          |   17 ++++++++++++++++-
- kernel/tsacct.c       |   24 ++++++++++++------------
- 5 files changed, 57 insertions(+), 16 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4da3b86..9303bc0 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -561,6 +561,7 @@ struct signal_struct {
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
- 	unsigned long inblock, oublock, cinblock, coublock;
- 	unsigned long maxrss, cmaxrss;
-+	unsigned long ixrss, idrss, isrss, cixrss, cidrss, cisrss;
- 	struct task_io_accounting ioac;
- 
- 	/*
-@@ -1327,9 +1328,11 @@ struct task_struct {
- 	siginfo_t *last_siginfo; /* For ptrace use.  */
- 	struct task_io_accounting ioac;
- #if defined(CONFIG_TASK_XACCT)
--	u64 acct_rss_mem1;	/* accumulated rss usage */
--	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
--	cputime_t acct_timexpd;	/* stime + utime since last update */
-+	u64 acct_rss_mem1;		/* accumulated rss usage */
-+	u64 acct_total_vm_mem1;		/* accumulated virtual memory usage */
-+	u64 acct_shared_vm_mem1;	/* accumulated shared virtual memory usage */
-+	u64 acct_stack_vm_mem1;		/* accumulated stack virtual memory usage */
-+	cputime_t acct_timexpd;		/* stime + utime since last update */
- #endif
- #ifdef CONFIG_CPUSETS
- 	nodemask_t mems_allowed;
-@@ -1399,6 +1402,19 @@ struct task_struct {
- #endif
- };
- 
-+#if defined(CONFIG_TASK_XACCT)
-+#define get_task_ixrss(tsk) jiffies_to_clock_t((tsk)->acct_shared_vm_mem1)
-+#define get_task_idrss(tsk) jiffies_to_clock_t( \
-+			(tsk)->acct_total_vm_mem1 - \
-+			(tsk)->acct_shared_vm_mem1 - \
-+			(tsk)->acct_stack_vm_mem1)
-+#define get_task_isrss(tsk) jiffies_to_clock_t((tsk)->acct_stack_vm_mem1)
-+#else
-+#define get_task_ixrss(tsk) 0UL
-+#define get_task_idrss(tsk) 0UL
-+#define get_task_isrss(tsk) 0UL
-+#endif
-+
- /*
-  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
-  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 088b7a8..17309e1 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -123,6 +123,9 @@ static void __exit_signal(struct task_struct *tsk)
- 		sig->maj_flt += tsk->maj_flt;
- 		sig->nvcsw += tsk->nvcsw;
- 		sig->nivcsw += tsk->nivcsw;
-+		sig->ixrss += get_task_ixrss(tsk);
-+		sig->idrss += get_task_idrss(tsk);
-+		sig->isrss += get_task_isrss(tsk);
- 		sig->inblock += task_io_get_inblock(tsk);
- 		sig->oublock += task_io_get_oublock(tsk);
- 		task_io_accounting_add(&sig->ioac, &tsk->ioac);
-@@ -1362,6 +1365,12 @@ static int wait_task_zombie(struct task_struct *p, int options,
- 		maxrss = max(sig->maxrss, sig->cmaxrss);
- 		if (psig->cmaxrss < maxrss)
- 			psig->cmaxrss = maxrss;
-+		psig->cixrss +=
-+			get_task_ixrss(p) + sig->ixrss + sig->cixrss;
-+		psig->cidrss +=
-+			get_task_idrss(p) + sig->idrss + sig->cidrss;
-+		psig->cisrss +=
-+			get_task_isrss(p) + sig->isrss + sig->cisrss;
- 		task_io_accounting_add(&psig->ioac, &p->ioac);
- 		task_io_accounting_add(&psig->ioac, &sig->ioac);
- 		spin_unlock_irq(&p->parent->sighand->siglock);
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 4b50de3..62ce9ee 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -858,6 +858,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
- 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
- 	sig->maxrss = sig->cmaxrss = 0;
-+	sig->ixrss = sig->idrss = sig->isrss = sig->cixrss = sig->cidrss = sig->cisrss = 0;
- 	task_io_accounting_init(&sig->ioac);
- 	taskstats_tgid_init(sig);
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index e442d38..96d0cc5 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1618,6 +1618,9 @@ static void accumulate_thread_rusage(struct task_struct *t, struct rusage *r)
- 	r->ru_majflt += t->maj_flt;
- 	r->ru_inblock += task_io_get_inblock(t);
- 	r->ru_oublock += task_io_get_oublock(t);
-+	r->ru_ixrss += get_task_ixrss(t);
-+	r->ru_idrss += get_task_idrss(t);
-+	r->ru_isrss += get_task_isrss(t);
- }
- 
- static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
-@@ -1654,6 +1657,9 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- 			r->ru_inblock = p->signal->cinblock;
- 			r->ru_oublock = p->signal->coublock;
- 			maxrss = p->signal->cmaxrss;
-+			r->ru_ixrss = p->signal->cixrss;
-+			r->ru_idrss = p->signal->cidrss;
-+			r->ru_isrss = p->signal->cisrss;
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -1670,6 +1676,9 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- 			r->ru_oublock += p->signal->oublock;
- 			if (maxrss < p->signal->maxrss)
- 				maxrss = p->signal->maxrss;
-+			r->ru_ixrss += p->signal->ixrss;
-+			r->ru_idrss += p->signal->idrss;
-+			r->ru_isrss += p->signal->isrss;
- 			t = p;
- 			do {
- 				accumulate_thread_rusage(t, r);
-@@ -1696,7 +1705,13 @@ out:
- 			mmput(mm);
- 		}
- 	}
--	r->ru_maxrss = maxrss * (PAGE_SIZE / 1024); /* convert pages to KBs */
-+
-+/* convert pages to KBs */
-+#define K(x) ((x) << (PAGE_SHIFT - 10))
-+	r->ru_maxrss = K(maxrss);
-+	r->ru_ixrss = K(r->ru_ixrss);
-+	r->ru_idrss = K(r->ru_idrss);
-+	r->ru_isrss = K(r->ru_isrss);
- }
- 
- int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
-diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-index 43f891b..9543870 100644
---- a/kernel/tsacct.c
-+++ b/kernel/tsacct.c
-@@ -86,9 +86,9 @@ void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
- {
- 	struct mm_struct *mm;
- 
--	/* convert pages-usec to Mbyte-usec */
--	stats->coremem = p->acct_rss_mem1 * PAGE_SIZE / MB;
--	stats->virtmem = p->acct_vm_mem1 * PAGE_SIZE / MB;
-+	/* convert pages-jiffy to Mbyte-usec */
-+	stats->coremem = p->acct_rss_mem1 * jiffies_to_usecs(1) * PAGE_SIZE / MB;
-+	stats->virtmem = p->acct_total_vm_mem1 * jiffies_to_usecs(1) * PAGE_SIZE / MB;
- 	mm = get_task_mm(p);
- 	if (mm) {
- 		/* adjust to KB unit */
-@@ -120,21 +120,19 @@ void xacct_add_tsk(struct taskstats *stats, struct task_struct *p)
- void acct_update_integrals(struct task_struct *tsk)
- {
- 	if (likely(tsk->mm)) {
--		cputime_t time, dtime;
--		struct timeval value;
--		u64 delta;
-+		cputime_t time;
-+		unsigned long delta; /* delta in jiffies */
- 
- 		time = tsk->stime + tsk->utime;
--		dtime = cputime_sub(time, tsk->acct_timexpd);
--		jiffies_to_timeval(cputime_to_jiffies(dtime), &value);
--		delta = value.tv_sec;
--		delta = delta * USEC_PER_SEC + value.tv_usec;
-+		delta = cputime_to_jiffies(cputime_sub(time, tsk->acct_timexpd));
- 
- 		if (delta == 0)
- 			return;
- 		tsk->acct_timexpd = time;
- 		tsk->acct_rss_mem1 += delta * get_mm_rss(tsk->mm);
--		tsk->acct_vm_mem1 += delta * tsk->mm->total_vm;
-+		tsk->acct_total_vm_mem1 += delta * tsk->mm->total_vm;
-+		tsk->acct_shared_vm_mem1 += delta * tsk->mm->shared_vm;
-+		tsk->acct_stack_vm_mem1 += delta * tsk->mm->stack_vm;
- 	}
- }
- 
-@@ -146,6 +144,8 @@ void acct_clear_integrals(struct task_struct *tsk)
- {
- 	tsk->acct_timexpd = 0;
- 	tsk->acct_rss_mem1 = 0;
--	tsk->acct_vm_mem1 = 0;
-+	tsk->acct_total_vm_mem1 = 0;
-+	tsk->acct_shared_vm_mem1 = 0;
-+	tsk->acct_stack_vm_mem1 = 0;
- }
- #endif
--- 
-1.6.0.3
 
