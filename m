@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbZAOUoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbZAOUpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934066AbZAOUoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZAOUCf
+	id S933831AbZAOUpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbZAOUCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:35 -0500
-Received: from kroah.org ([198.145.64.141]:49616 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:37 -0500
+Received: from kroah.org ([198.145.64.141]:49636 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932285AbZAOUC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:26 -0500
-Date: Thu, 15 Jan 2009 11:59:57 -0800
+	id S932291AbZAOUC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:28 -0500
+Date: Thu, 15 Jan 2009 12:00:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 70/94] [PATCH 39/44] [CVE-2009-0029] System call wrappers
-	part 29
-Message-ID: <20090115195957.GR14419@kroah.com>
+Subject: [patch 71/94] [PATCH 40/44] [CVE-2009-0029] System call wrappers
+	part 30
+Message-ID: <20090115200000.GS14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0039--CVE-2009-0029-System-call-wrappers-part-29.patch"
+Content-Disposition: inline; filename="0040--CVE-2009-0029-System-call-wrappers-part-30.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,99 +42,126 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 2e4d0924eb0c403ce4014fa139d1d61bf2c44fee upstream.
+commit 6559eed8ca7db0531a207cd80be5e28cd6f213c5 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/inotify_user.c |    5 +++--
- fs/namei.c        |   21 ++++++++++-----------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+ fs/open.c     |   13 ++++++-------
+ fs/stat.c     |   12 ++++++------
+ fs/utimes.c   |    6 ++++--
+ kernel/fork.c |    2 +-
+ 4 files changed, 17 insertions(+), 16 deletions(-)
 
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -660,7 +660,8 @@ SYSCALL_DEFINE0(inotify_init)
- 	return sys_inotify_init1(0);
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -442,7 +442,7 @@ SYSCALL_ALIAS(sys_fallocate, SyS_falloca
+  * We do this by temporarily clearing all FS-related capabilities and
+  * switching the fsuid/fsgid around to the real ones.
+  */
+-asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
++SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ {
+ 	struct path path;
+ 	struct inode *inode;
+@@ -633,8 +633,7 @@ out:
+ 	return err;
  }
  
--asmlinkage long sys_inotify_add_watch(int fd, const char __user *pathname, u32 mask)
-+SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
-+		u32, mask)
+-asmlinkage long sys_fchmodat(int dfd, const char __user *filename,
+-			     mode_t mode)
++SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename, mode_t, mode)
  {
+ 	struct path path;
  	struct inode *inode;
- 	struct inotify_device *dev;
-@@ -704,7 +705,7 @@ fput_and_out:
+@@ -712,8 +711,8 @@ out:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_fchownat(int dfd, const char __user *filename, uid_t user,
+-			     gid_t group, int flag)
++SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
++		gid_t, group, int, flag)
+ {
+ 	struct path path;
+ 	int error = -EINVAL;
+@@ -1060,8 +1059,8 @@ SYSCALL_DEFINE3(open, const char __user 
  	return ret;
  }
  
--asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
-+SYSCALL_DEFINE2(inotify_rm_watch, int, fd, __s32, wd)
+-asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+-			   int mode)
++SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
++		int, mode)
  {
- 	struct file *filp;
- 	struct inotify_device *dev;
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1969,8 +1969,8 @@ static int may_mknod(mode_t mode)
- 	}
+ 	long ret;
+ 
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -260,8 +260,8 @@ SYSCALL_DEFINE2(newlstat, char __user *,
  }
  
--asmlinkage long sys_mknodat(int dfd, const char __user *filename, int mode,
--				unsigned dev)
-+SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, int, mode,
-+		unsigned, dev)
+ #if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)
+-asmlinkage long sys_newfstatat(int dfd, char __user *filename,
+-				struct stat __user *statbuf, int flag)
++SYSCALL_DEFINE4(newfstatat, int, dfd, char __user *, filename,
++		struct stat __user *, statbuf, int, flag)
  {
- 	int error;
- 	char *tmp;
-@@ -2047,7 +2047,7 @@ int vfs_mkdir(struct inode *dir, struct 
+ 	struct kstat stat;
+ 	int error = -EINVAL;
+@@ -293,8 +293,8 @@ SYSCALL_DEFINE2(newfstat, unsigned int, 
  	return error;
  }
  
--asmlinkage long sys_mkdirat(int dfd, const char __user *pathname, int mode)
-+SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, int, mode)
+-asmlinkage long sys_readlinkat(int dfd, const char __user *pathname,
+-				char __user *buf, int bufsiz)
++SYSCALL_DEFINE4(readlinkat, int, dfd, const char __user *, pathname,
++		char __user *, buf, int, bufsiz)
  {
- 	int error = 0;
- 	char * tmp;
-@@ -2282,7 +2282,7 @@ slashes:
- 	goto exit2;
- }
- 
--asmlinkage long sys_unlinkat(int dfd, const char __user *pathname, int flag)
-+SYSCALL_DEFINE3(unlinkat, int, dfd, const char __user *, pathname, int, flag)
- {
- 	if ((flag & ~AT_REMOVEDIR) != 0)
- 		return -EINVAL;
-@@ -2319,8 +2319,8 @@ int vfs_symlink(struct inode *dir, struc
+ 	struct path path;
+ 	int error;
+@@ -400,8 +400,8 @@ SYSCALL_DEFINE2(fstat64, unsigned long, 
  	return error;
  }
  
--asmlinkage long sys_symlinkat(const char __user *oldname,
--			      int newdfd, const char __user *newname)
-+SYSCALL_DEFINE3(symlinkat, const char __user *, oldname,
-+		int, newdfd, const char __user *, newname)
+-asmlinkage long sys_fstatat64(int dfd, char __user *filename,
+-			       struct stat64 __user *statbuf, int flag)
++SYSCALL_DEFINE4(fstatat64, int, dfd, char __user *, filename,
++		struct stat64 __user *, statbuf, int, flag)
  {
- 	int error;
- 	char *from;
-@@ -2409,9 +2409,8 @@ int vfs_link(struct dentry *old_dentry, 
-  * with linux 2.0, and to avoid hard-linking to directories
-  * and other special files.  --ADM
+ 	struct kstat stat;
+ 	int error = -EINVAL;
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -170,7 +170,8 @@ out:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_utimensat(int dfd, char __user *filename, struct timespec __user *utimes, int flags)
++SYSCALL_DEFINE4(utimensat, int, dfd, char __user *, filename,
++		struct timespec __user *, utimes, int, flags)
+ {
+ 	struct timespec tstimes[2];
+ 
+@@ -187,7 +188,8 @@ asmlinkage long sys_utimensat(int dfd, c
+ 	return do_utimes(dfd, filename, utimes ? tstimes : NULL, flags);
+ }
+ 
+-asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
++SYSCALL_DEFINE3(futimesat, int, dfd, char __user *, filename,
++		struct timeval __user *, utimes)
+ {
+ 	struct timeval times[2];
+ 	struct timespec tstimes[2];
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1589,7 +1589,7 @@ static int unshare_fd(unsigned long unsh
+  * constructed. Here we are modifying the current, active,
+  * task_struct.
   */
--asmlinkage long sys_linkat(int olddfd, const char __user *oldname,
--			   int newdfd, const char __user *newname,
--			   int flags)
-+SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname,
-+		int, newdfd, const char __user *, newname, int, flags)
+-asmlinkage long sys_unshare(unsigned long unshare_flags)
++SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
  {
- 	struct dentry *new_dentry;
- 	struct nameidata nd;
-@@ -2607,8 +2606,8 @@ int vfs_rename(struct inode *old_dir, st
- 	return error;
- }
- 
--asmlinkage long sys_renameat(int olddfd, const char __user *oldname,
--			     int newdfd, const char __user *newname)
-+SYSCALL_DEFINE4(renameat, int, olddfd, const char __user *, oldname,
-+		int, newdfd, const char __user *, newname)
- {
- 	struct dentry *old_dir, *new_dir;
- 	struct dentry *old_dentry, *new_dentry;
+ 	int err = 0;
+ 	struct fs_struct *fs, *new_fs = NULL;
 
