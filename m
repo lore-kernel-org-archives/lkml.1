@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765593AbZAOOfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765677AbZAOOgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765593AbZAOOfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbZAOOfi
+	id S1765677AbZAOOgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:36:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbZAOOgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:35:38 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58219 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757314AbZAOOfh (ORCPT
+	Thu, 15 Jan 2009 09:36:05 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:48702 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765436AbZAOOgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:35:37 -0500
-Date: Thu, 15 Jan 2009 15:37:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: [PULL -tip] fixed few make headers_check warnings
-Message-ID: <20090115143717.GA11991@uranus.ravnborg.org>
-References: <1231836016.3212.41.camel@jaswinder.satnam> <Pine.LNX.4.64.0901140954250.27308@anakin> <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com> <20090114153825.GB32082@uranus.ravnborg.org> <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com> <Pine.LNX.4.64.0901141732450.26663@anakin> <20090114201513.GC1556@uranus.ravnborg.org> <20090115111134.GB22850@elte.hu>
-Mime-Version: 1.0
+	Thu, 15 Jan 2009 09:36:04 -0500
+Date: Thu, 15 Jan 2009 14:35:35 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Liu Dave <DaveLiu@freescale.com>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linuxppc-dev@ozlabs.org, Lai Kon-LKL001 <Konjin.Lai@freescale.com>,
+       linux-kernel@vger.kernel.org, Xie Xiaobo-R63061 <X.Xie@freescale.com>,
+       "D'Abbraccio Joe-LJD015" <Joe.D'abbraccio@freescale.com>
+Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
+Message-ID: <20090115143535.GT12431@fluff.org.uk>
+References: <20090114194631.GA25978@oksana.dev.rtsoft.ru> <D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net> <20090114235605.GA13531@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115111134.GB22850@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090114235605.GA13531@oksana.dev.rtsoft.ru>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 12:11:34PM +0100, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > So when I see "capability.h: extern's make no sense in userspace" the 
-> > perfect approach would be that the whole file was checked.
+On Thu, Jan 15, 2009 at 02:56:05AM +0300, Anton Vorontsov wrote:
+> On Thu, Jan 15, 2009 at 07:37:00AM +0800, Liu Dave wrote:
+> > > This patch adds support for the Freescale Enhanced Secure Digital
+> > > Host Controller Interface as found in some Freescale PowerPC
+> > > microprocessors (e.g. MPC837x SOCs).
 > > 
-> > This is a much bigger task that just removing the warning.
+> > The Freescale ESDHC controller is basically compatible with the
+> > standard SDHC controller. but the eshdc expand some bits.
+> > 
+> > The esdhc.c is much like the orignal sdhci.c.
+> > it is possible to merge them.
 > 
-> The problem is, you just littered the kernel with a ton of warnings and 
-> declared that fixing them is a 'much bigger task'.
-> 
-> It's not good to start projects like this, because they simply never 
-> finish. It's _much_ better to first reach a zero baseline via minimal 
-> fixes, then enforce 'look at the whole thing' for all _NEW_ files and 
-> changes.
-> 
-> That's how we are using checkpatch in the -tip topics, and it's working 
-> very nicely.
-> 
-> Could we please start it like that?
+> Ah. I wonder why Freescale just didn't write some patches for sdhci,
+> but copied the code instead...
 
-I would have done such have I had more time to do this stuff.
-Real life just hit me after vacation finished and deadline approaching.
+For the same reasons earthmen like tea.
 
-I can disable the warnings around -rc7 if we think they are too noisy
-when we release the next kernel.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-	Sam
+  'a smiley only costs 4 bytes'
