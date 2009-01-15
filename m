@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933004AbZAOURU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbZAOURq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933004AbZAOURU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762230AbZAOUAz
+	id S933061AbZAOURq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766005AbZAOUA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:55 -0500
-Received: from kroah.org ([198.145.64.141]:48984 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:00:56 -0500
+Received: from kroah.org ([198.145.64.141]:49011 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765945AbZAOUAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:41 -0500
-Date: Thu, 15 Jan 2009 11:58:11 -0800
+	id S1765956AbZAOUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:42 -0500
+Date: Thu, 15 Jan 2009 11:58:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 26/94] SCSI: aha152x_cs: Fix regression that keeps driver
-	from using shared interrupts
-Message-ID: <20090115195811.GZ14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 27/94] ioat: fix self test for multi-channel case
+Message-ID: <20090115195813.GA14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-aha152x_cs-fix-regression-that-keeps-driver-from-using-shared-interrupts.patch"
+Content-Disposition: inline; filename="ioat-fix-self-test-for-multi-channel-case.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,35 +40,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Dan Williams <dan.j.williams@intel.com>
 
-commit 58607b30fc0f2230a189500112c7a7cca02804cf upstream.
+commit b9bdcbba010c2e49c8f837ea7a49fe006b636f41 upstream.
 
-At some point since 2.6.22, the aha152x_cs driver stopped working and
-started erring on load with the following messages:
+In the multiple device case we need to re-arm the completion and protect
+against concurrent self-tests.  The printk from the test callback is
+removed as it can arbitrarily delay completion of the test.
 
-kernel: pcmcia: request for exclusive IRQ could not be fulfilled.
-kernel: pcmcia: the driver needs updating to supported shared IRQ lines.
-
-With the following change, the driver works with shared IRQs.
-
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/pcmcia/aha152x_stub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/dma/ioat_dma.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---- a/drivers/scsi/pcmcia/aha152x_stub.c
-+++ b/drivers/scsi/pcmcia/aha152x_stub.c
-@@ -114,7 +114,7 @@ static int aha152x_probe(struct pcmcia_d
-     link->io.NumPorts1 = 0x20;
-     link->io.Attributes1 = IO_DATA_PATH_WIDTH_AUTO;
-     link->io.IOAddrLines = 10;
--    link->irq.Attributes = IRQ_TYPE_EXCLUSIVE;
-+    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING;
-     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
-     link->conf.Attributes = CONF_ENABLE_IRQ;
-     link->conf.IntType = INT_MEMORY_AND_IO;
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -1341,12 +1341,11 @@ static void ioat_dma_start_null_desc(str
+  */
+ #define IOAT_TEST_SIZE 2000
+ 
+-DECLARE_COMPLETION(test_completion);
+ static void ioat_dma_test_callback(void *dma_async_param)
+ {
+-	printk(KERN_ERR "ioatdma: ioat_dma_test_callback(%p)\n",
+-		dma_async_param);
+-	complete(&test_completion);
++	struct completion *cmp = dma_async_param;
++
++	complete(cmp);
+ }
+ 
+ /**
+@@ -1363,6 +1362,7 @@ static int ioat_dma_self_test(struct ioa
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+ 	int err = 0;
++	struct completion cmp;
+ 
+ 	src = kzalloc(sizeof(u8) * IOAT_TEST_SIZE, GFP_KERNEL);
+ 	if (!src)
+@@ -1402,8 +1402,9 @@ static int ioat_dma_self_test(struct ioa
+ 	}
+ 
+ 	async_tx_ack(tx);
++	init_completion(&cmp);
+ 	tx->callback = ioat_dma_test_callback;
+-	tx->callback_param = (void *)0x8086;
++	tx->callback_param = &cmp;
+ 	cookie = tx->tx_submit(tx);
+ 	if (cookie < 0) {
+ 		dev_err(&device->pdev->dev,
+@@ -1413,7 +1414,7 @@ static int ioat_dma_self_test(struct ioa
+ 	}
+ 	device->common.device_issue_pending(dma_chan);
+ 
+-	wait_for_completion_timeout(&test_completion, msecs_to_jiffies(3000));
++	wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
+ 
+ 	if (device->common.device_is_tx_complete(dma_chan, cookie, NULL, NULL)
+ 					!= DMA_SUCCESS) {
 
