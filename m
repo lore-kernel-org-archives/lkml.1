@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZAOUsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbZAOUtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbZAOUsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932302AbZAOUCp
+	id S1762592AbZAOUtN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbZAOUCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:45 -0500
+	Thu, 15 Jan 2009 15:02:46 -0500
 Received: from kroah.org ([198.145.64.141]:49661 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763452AbZAOUCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:40 -0500
-Date: Thu, 15 Jan 2009 12:00:13 -0800
+	id S932188AbZAOUCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:41 -0500
+Date: Thu, 15 Jan 2009 12:00:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bernd Schmidt <bernd.schmidt@analog.com>
-Subject: [patch 77/94] Fix timeouts in sys_pselect7
-Message-ID: <20090115200013.GY14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kuniyasu Suzaki <k.suzaki@aist.go.jp>,
+       Nguyen Anh Quynh <aquynh@gmail.com>
+Subject: [patch 78/94] USB: another unusual_devs entry for another bad
+	Argosy storage device
+Message-ID: <20090115200015.GZ14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-timeouts-in-sys_pselect7.patch"
+Content-Disposition: inline; filename="usb-another-unusual_devs-entry-for-another-bad-argosy-storage-device.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,43 +41,148 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bernd Schmidt <bernds_cb1@t-online.de>
+From: Nguyen Anh Quynh <aquynh@gmail.com>
 
-commit 62568510b8e2679cbc331d7de10ea9ba81ae8b3d upstream.
+commit e2673b28911a43257265523e3672861be6e44093 upstream.
 
-Since we (Analog Devices) updated our Blackfin kernel to 2.6.28, we've
-seen occasional 5-second hangs from telnet.  telnetd calls select with a
-NULL timeout, but with the new kernel, the system call occasionally
-returns 0, which causes telnet to call sleep (5).  This did not happen
-with earlier kernels.
+I have another Argosy USB storage device, which has the same problem
+with the Argosy USB storage device already fixed in 2.6.27.7. But this
+device has another product ID (840:84), so this patch adds a new entry
+into unusual_devs to fix the mount problem.
 
-The code in sys_pselect7 looks a bit strange, in particular the variable
-"to" is initialized to NULL, then changed if a non-null timeout was
-passed in, but not used further.  It needs to be passed to
-core_sys_select instead of &end_time.
+I enclose here two patches: one against 2.6.27.8, and another against
+the latest linus-git tree.
 
-This bug was introduced by 8ff3e8e85fa6c312051134b3953e397feb639f51
-("select: switch select() and poll() over to hrtimers").
 
-Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
-Reviewed-by: Ulrich Drepper <drepper@redhat.com>
-Tested-by: Robin Getz <rgetz@blackfin.uclinux.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The information about the Argosy device is like below:
+
+#lsusb -v -d 840:84
+Bus 005 Device 005: ID 0840:0084 Argosy Research, Inc.
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x0840 Argosy Research, Inc.
+  idProduct          0x0084
+  bcdDevice            0.01
+  iManufacturer           1 Generic
+  iProduct                2 USB 2.0 Storage Device
+  iSerial                 3 8400000000002549
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower                2mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk (Zip)
+      iInterface              0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0200  1x 512 bytes
+        bInterval               0
+Device Qualifier (for other device speed):
+  bLength                10
+  bDescriptorType         6
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  bNumConfigurations      1
+Device Status:     0x0000
+  (Bus Powered)
+
+Before the patch, dmesg returns a lot of information like below (my
+dmesg is overflown):
+....
+[  138.833390] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
+[  138.877631] sd 7:0:0:0: [sdb] Sense Key : No Sense [current]
+[  138.877643] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
+[  138.921906] sd 7:0:0:0: [sdb] Sense Key : No Sense [current]
+[  138.921923] sd 7:0:0:0: [sdb] Add. Sense: No additional sense information
+....
+
+After the fix, dmesg returns below information:
+....
+usb 5-1: new high speed USB device using ehci_hcd and address 5
+usb 5-1: configuration #1 chosen from 1 choice
+scsi7 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 5
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+scsi 7:0:0:0: Direct-Access     HTS54808 0M9AT00          MG4O PQ: 0 ANSI: 0
+sd 7:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
+sd 7:0:0:0: [sdb] Write Protect is off
+sd 7:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 7:0:0:0: [sdb] Assuming drive cache: write through
+sd 7:0:0:0: [sdb] 156301488 512-byte hardware sectors (80026 MB)
+sd 7:0:0:0: [sdb] Write Protect is off
+sd 7:0:0:0: [sdb] Mode Sense: 03 00 00 00
+sd 7:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 7:0:0:0: [sdb] Attached SCSI disk
+sd 7:0:0:0: Attached scsi generic sg1 type 0
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sdb1, internal journal
+EXT3-fs: recovery complete.
+EXT3-fs: mounted filesystem with ordered data mode.
+
+Cc: Kuniyasu Suzaki <k.suzaki@aist.go.jp>
+Signed-off-by: Nguyen Anh Quynh <aquynh@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/select.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/storage/unusual_devs.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -560,7 +560,7 @@ static long do_pselect(int n, fd_set __u
- 		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
- 	}
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1320,6 +1320,13 @@ UNUSUAL_DEV( 0x0840, 0x0082, 0x0001, 0x0
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY),
  
--	ret = core_sys_select(n, inp, outp, exp, &end_time);
-+	ret = core_sys_select(n, inp, outp, exp, to);
- 	ret = poll_select_copy_remaining(&end_time, tsp, 0, ret);
- 
- 	if (ret == -ERESTARTNOHAND) {
++/* Reported and patched by Nguyen Anh Quynh <aquynh@gmail.com> */
++UNUSUAL_DEV( 0x0840, 0x0084, 0x0001, 0x0001,
++		"Argosy",
++		"Storage",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY),
++
+ /* Entry and supporting patch by Theodore Kilgore <kilgota@auburn.edu>.
+  * Flag will support Bulk devices which use a standards-violating 32-byte
+  * Command Block Wrapper. Here, the "DC2MEGA" cameras (several brands) with
 
