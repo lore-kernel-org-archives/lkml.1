@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937386AbZAPTNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937202AbZAPTOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937386AbZAPTNz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 14:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937136AbZAPTLS
+	id S937202AbZAPTOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 14:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937135AbZAPTMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 14:11:18 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:55276 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937109AbZAPTLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 14:11:10 -0500
-Message-Id: <20090116191108.533053000@polaris-admin.engr.sgi.com>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 16 Jan 2009 11:11:10 -0800
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@redhat.com>, Dave Jones <davej@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Content-Disposition: inline; filename=separate-work-queue.patch
+	Fri, 16 Jan 2009 14:12:31 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36249 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937024AbZAPTM2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 14:12:28 -0500
+Date: Thu, 15 Jan 2009 08:40:44 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dmitry.torokhov@gmail.com,
+       linux-input@vger.kernel.org
+Subject: Re: Re (hello?): [PATCH] Let keyboard notifiers modify key codes
+Message-ID: <20090115074044.GA1599@ucw.cz>
+References: <20090107005813.GA4987@const.famille.thibault.fr> <20090109212358.GG5073@const.famille.thibault.fr> <20090109213555.7f9275c9@lxorguk.ukuu.org.uk> <20090109214357.GH5073@const.famille.thibault.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090109214357.GH5073@const.famille.thibault.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+On Fri 2009-01-09 22:43:57, Samuel Thibault wrote:
+> Alan Cox, le Fri 09 Jan 2009 21:35:55 +0000, a écrit :
+> > Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+> > 
+> > > Came somebody have a look at this?  The need is real, the only question
+> > > that comes to my mind is whether notifiers are allowed to modify the
+> > > param they are given.  Since they are not marked const, I'd guess it'd
+> > > be ok?
+> > 
+> > The notifier code doesn't care.
+> 
+> I know, but I'm asking about current practice.
+> 
+> > > Make kbd_keycode() read param.value after calling the keyboard notification
+> > > chain, to let the callee change the translation on the fly. This for instance
+> > > permits to remap the physical positions of the keys independently of the
+> > > configured keymap, for e.g. single-handed people.
+> > 
+> > Surely that is just a new keymap ?
+> 
+> No. That would mean a lot of keymapSSS. Doing it the keymap way
+> would require to have us, us-revert-left, us-revert-right, en-uk,
+> uk-revert-left, uk-revert-right, etc. I really don't like that approach,
+> thus the "independently of the configured keymap".
 
-Impact: remove potential clashes with generic kevent workqueue
-
-Annoyingly, some places we want to use work_on_cpu are already in
-workqueues.  As per Ingo's suggestion, we create a different workqueue
-for work_on_cpu.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- kernel/workqueue.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
---- linux-2.6-for-ingo.orig/kernel/workqueue.c
-+++ linux-2.6-for-ingo/kernel/workqueue.c
-@@ -971,6 +971,8 @@ undo:
- }
- 
- #ifdef CONFIG_SMP
-+static struct workqueue_struct *work_on_cpu_wq __read_mostly;
-+
- struct work_for_cpu {
- 	struct work_struct work;
- 	long (*fn)(void *);
-@@ -1001,7 +1003,7 @@ long work_on_cpu(unsigned int cpu, long 
- 	INIT_WORK(&wfc.work, do_work_for_cpu);
- 	wfc.fn = fn;
- 	wfc.arg = arg;
--	schedule_work_on(cpu, &wfc.work);
-+	queue_work_on(cpu, work_on_cpu_wq, &wfc.work);
- 	flush_work(&wfc.work);
- 
- 	return wfc.ret;
-@@ -1019,4 +1021,8 @@ void __init init_workqueues(void)
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 	keventd_wq = create_workqueue("events");
- 	BUG_ON(!keventd_wq);
-+#ifdef CONFIG_SMP
-+	work_on_cpu_wq = create_workqueue("work_on_cpu");
-+	BUG_ON(!work_on_cpu_wq);
-+#endif
- }
-
+...and that is ok if you autogenerate those keymaps, right?
+									Pavel
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
