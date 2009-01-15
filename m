@@ -1,101 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbZAOHg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbZAOHgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbZAOHg3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZAOHgU
+	id S1762418AbZAOHgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762251AbZAOHgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:36:20 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40100 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756761AbZAOHgT (ORCPT
+	Thu, 15 Jan 2009 02:36:31 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:3886 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762168AbZAOHg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:36:19 -0500
-Subject: Re: Performance regression of specjbb2005/aim7 with 2.6.29-rc1
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Mike Galbraith <efault@gmx.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, dev@jaysonking.com,
+	Thu, 15 Jan 2009 02:36:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=VcxYXIZqeHyBgG0z1JTaCwDj/ASIVAnsWkyFPVvzfHRxlMsvOtHDtJhkLu7jN0wZDG
+         3U3VG48MYy8IS8GqE2m3pvPjqS8Rdg9dmNt59Yfxok3ld1baq/f2pj5Ya5moOFOULOuo
+         WkOlhCFdSXiK8wVW66MahXz7ce7MGyT7738zw=
+Subject: [PATCH 1/7] byteorder: add load/store_{endian} api
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1231986636.10565.159.camel@minggr.sh.intel.com>
-References: <1231837036.11429.27.camel@ymzhang>
-	 <1231839464.14655.12.camel@marge.simson.net>
-	 <1231986636.10565.159.camel@minggr.sh.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Jan 2009 08:36:13 +0100
-Message-Id: <1232004974.14825.79.camel@laptop>
+Content-Type: text/plain
+Date: Wed, 14 Jan 2009 23:36:25 -0800
+Message-Id: <1232004985.5819.56.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 10:30 +0800, Lin Ming wrote:
-> On Tue, 2009-01-13 at 17:37 +0800, Mike Galbraith wrote:
-> > On Tue, 2009-01-13 at 16:57 +0800, Zhang, Yanmin wrote:
-> > > Comparing with 2.6.28's results, specjbb2005 has about 7% regression with 2.6.29-rc1
-> > > on my a couple of x86_64 machines. aim7 has about 1.7% regression.
-> > > 
-> > > Ming did a quick bisect with aim7 and located below patch.
-> > > 
-> > > ﻿commit 0a582440ff546e2c6610d1acec325e91b4efd313
-> > > Author: Mike Galbraith <efault@gmx.de>
-> > > Date:   Fri Jan 2 12:16:42 2009 +0100
-> > > 
-> > >     sched: fix sched_slice()
-> > >     
-> > >     Impact: fix bad-interactivity buglet
-> > >     
-> > >     Fix sched_slice() to emit a sane result whether a task is currently
-> > >     enqueued or not.
-> > >     
-> > >     Signed-off-by: Mike Galbraith <efault@gmx.de>
-> > >     Tested-by: Jayson King <dev@jaysonking.com>
-> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > > 
-> > > After we revert the patch, aim7 regression disappeared. specjbb2005 regression becomes
-> > > less than 1.5% on 8-core stokley and disappears on 16-core tigerton. I don't know what
-> > > causes the last 1.5% regression.
-> > > 
-> > > As tbench has about 5% improvement and oltp(mysql+sysbench) has 5% improvement, we also tested
-> > > to make sure such improvement isn't related to above patch. volanoMark's improvement is also not
-> > > related to the patch. So it seems safe to revert it.
-> > 
-> > No, it's not safe to just revert.  You can replace it with something
-> > else, but as long as sched_slice() is called for unqueued tasks, it must
-> > emit sane slices, otherwise you can experience a latency-hit-from-hell.
-> > 
-> > See thread: problem with "sched: revert back to per-rq vruntime"?
-> 
-> Below patch fixes aim7 regression and specjbb2005 regression becomes
-> less than 1.5% on 8-core stokley.
-> 
-> Jayson,
-> Mike's patch fixed the latency problem you reported
-> would you please help to test this patch to see if it still works fine now?
-> 
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 8e1352c..617e54c 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -429,10 +429,10 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
->  
->  	for_each_sched_entity(se) {
-> -		struct load_weight *load = &cfs_rq->load;
-> +		struct load_weight *load = &cfs_rq_of(se)->load;
->  
->  		if (unlikely(!se->on_rq)) {
-> -			struct load_weight lw = cfs_rq->load;
-> +			struct load_weight lw = cfs_rq_of(se)->load;
->  
->  			update_load_add(&lw, se->load.weight);
->  			load = &lw;
-> 
+load_le16 is a synonym for the existing le16_to_cpup and is added to be
+symmetric with the load_le16_noalign API.  On arches where unaligned
+access is OK, the unaligned calls are replaced with aligned calls.
 
-Ugh, that's not making sense, the thing is, if !se->on_rq it doesn't yet
-have a sensible cfs_rq_of().
+store_le16 is a new API and is added to be symmetric with the unaligned
+functions.  It is implemented as a macro to allow compile-time
+byteswapping when the value is a constant.  This will also allow use in
+many places currently that are of the form:
 
+*(__le16 *)ptr = cpu_to_le16(foo);
+
+In addition, some drivers/filesystems/arches already provide this API
+privately, which will allow them to be consolidated into this common code.
+
+Also, on arches where load-swapped through a pointer is available, load_le16
+is more efficient than le16_to_cpu(*ptr), and no worse on arches that don't
+provide the load-swapped.  load_le16 is a shorter name and hopefully will
+encourage more use of this API.  It will also make the aligned/unaligned
+cases have a consistent namespace, making it easier to remember.
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Linus, this set was in -mm for awhile and was only dropped recently due to the
+byteorder churn (conditional include you disliked)
+
+ include/linux/byteorder/generic.h |   25 +++++++++++++++++++------
+ 1 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index 0846e6b..621a506 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -119,6 +119,19 @@
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+ 
++#define load_le16 __le16_to_cpup
++#define load_le32 __le32_to_cpup
++#define load_le64 __le64_to_cpup
++#define load_be16 __be16_to_cpup
++#define load_be32 __be32_to_cpup
++#define load_be64 __be64_to_cpup
++#define store_le16(p, val) (*(__le16 *)(p) = cpu_to_le16(val))
++#define store_le32(p, val) (*(__le32 *)(p) = cpu_to_le32(val))
++#define store_le64(p, val) (*(__le64 *)(p) = cpu_to_le64(val))
++#define store_be16(p, val) (*(__be16 *)(p) = cpu_to_be16(val))
++#define store_be32(p, val) (*(__be32 *)(p) = cpu_to_be32(val))
++#define store_be64(p, val) (*(__be64 *)(p) = cpu_to_be64(val))
++
+ /*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+@@ -142,32 +155,32 @@
+ 
+ static inline void le16_add_cpu(__le16 *var, u16 val)
+ {
+-	*var = cpu_to_le16(le16_to_cpu(*var) + val);
++	store_le16(var, load_le16(var) + val);
+ }
+ 
+ static inline void le32_add_cpu(__le32 *var, u32 val)
+ {
+-	*var = cpu_to_le32(le32_to_cpu(*var) + val);
++	store_le32(var, load_le32(var) + val);
+ }
+ 
+ static inline void le64_add_cpu(__le64 *var, u64 val)
+ {
+-	*var = cpu_to_le64(le64_to_cpu(*var) + val);
++	store_le64(var, load_le64(var) + val);
+ }
+ 
+ static inline void be16_add_cpu(__be16 *var, u16 val)
+ {
+-	*var = cpu_to_be16(be16_to_cpu(*var) + val);
++	store_be16(var, load_be16(var) + val);
+ }
+ 
+ static inline void be32_add_cpu(__be32 *var, u32 val)
+ {
+-	*var = cpu_to_be32(be32_to_cpu(*var) + val);
++	store_be32(var, load_be32(var) + val);
+ }
+ 
+ static inline void be64_add_cpu(__be64 *var, u64 val)
+ {
+-	*var = cpu_to_be64(be64_to_cpu(*var) + val);
++	store_be64(var, load_be64(var) + val);
+ }
+ 
+ #endif /* _LINUX_BYTEORDER_GENERIC_H */
+-- 
+1.6.1.212.g4b3ec
 
 
