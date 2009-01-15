@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbZAOXPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbZAOXRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbZAOXPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbZAOXPF
+	id S932348AbZAOXRi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZAOXRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:15:05 -0500
-Received: from are.twiddle.net ([75.149.56.221]:39103 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754698AbZAOXPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:15:03 -0500
-Message-ID: <496FC375.90408@twiddle.net>
-Date: Thu, 15 Jan 2009 15:15:01 -0800
-From: Richard Henderson <rth@twiddle.net>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       andi@firstfloor.org, ak@linux.intel.com, sfr@canb.auug.org.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] compiler-gcc.h: add more comments to RELOC_HIDE
-References: <200901100040.n0A0eruc013680@imap1.linux-foundation.org> <20090110122945.GA28033@elte.hu> <Pine.LNX.4.64.0901121128470.30369@quilx.com> <200901151227.27935.rusty@rustcorp.com.au> <Pine.LNX.4.64.0901151428020.28153@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0901151428020.28153@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 15 Jan 2009 18:17:17 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:40165 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752662AbZAOXRP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 18:17:15 -0500
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through
+	sysfs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Grant Grundler <grundler@google.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com>
+References: <200901051952.58029.bzolnier@gmail.com>
+	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>
+	 <20090106073515.GY32491@kernel.dk> <4964866D.8010503@msgid.tls.msk.ru>
+	 <1231342473.3282.19.camel@localhost.localdomain> <496ECBA0.60209@gmail.com>
+	 <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
+	 <1232035561.5966.48.camel@localhost.localdomain>
+	 <da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com>
+	 <1232046039.5966.54.camel@localhost.localdomain>
+	 <da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 18:17:09 -0500
+Message-Id: <1232061429.5966.87.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 15 Jan 2009, Rusty Russell wrote:
+On Thu, 2009-01-15 at 14:45 -0800, Grant Grundler wrote:
+> On Thu, Jan 15, 2009 at 11:00 AM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> ...
+> >> Code can test for zero/nonzero or (preferably) more fine grained.
+> >> e.g. "avgreadcost > 1ms" or "avgwritecost". I'm hoping this test
+> >> can be abstracted into a macro.
+> >
+> > Um these really have to be things we can get out of the device at boot
+> > time without effort (as in part of the data the device can give in a
+> > single command).  I'll be shot for increasing boot time so we can work
+> > out these parameters ...
 > 
->>> The cast should cause the C compiler to drop all assumptions about size.
->> No, and that's the point.  Sorry, at this point you need to talk to a gcc expert.  As I have said, I did and I believe what he told me.
+> No. The whole point is we should not care what it is at boot time.
+> It should be based on recent history of what is going on.
+> At boot time we read the partition table and we superblocks to mount
+> file systems.
+> That's fine to start with. So I don't see any need to add some synthetic test
+> to establish initial values.
 > 
-> The gcc expert that created this measss is cced on this thread and so
-> far he not spoken up. Richard?
+> The rest of the code should work regardless of what the values start out to be.
+> This is true for the previous proposed patch too when user space has
+> to decide what the right policy is.
 
-It has been a long time, and I don't recall all of the assumptions 
-involved from the time.
+OK, so they could be calculated on the fly in the elevators, I suppose.
+But what would the value be?  Right now we use the nonrotational flag to
+basically not bother with plugging (no point if no seek penalty) on
+certain events where we'd previously have waited for other I/O to join.
+But that's really a seek penalty parameter rather than the idea of read
+or write costing (although the elevators usually track these dynamically
+anyway ... as part of the latency calculations but not explicitly).
 
-It was probably a combination of object size assumptions, as well as 
-problems with relocations.  Stuff like "int foo" is known to be 
-allocated within the small data structure, and thus various types of 
-small-data-section relocations are valid for it.  Then we do stuff like 
-"(void *)&foo - large_constant" which don't work with those sorts of 
-relocations.
-
-I didn't explore the space of possible solutions, merely gave Rusty a 
-solution that I knew would work, and would never fail because the 
-compiler would never look through the asm.
-
-I wouldn't be surprised if the compiler thought "(long)&foo - 
-large_constant" could be put back together into a small-data relocation, 
-simply because at the level at which that optimization is performed, 
-we've thrown away type data like long and void*; we only have modes.
-
-Why are you wanting to change this at all?  It works as it is.
+James
 
 
-r~
