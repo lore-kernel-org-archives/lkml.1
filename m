@@ -1,131 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbZAOUXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbZAOUYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933182AbZAOUXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765632AbZAOUBP
+	id S933051AbZAOUYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762596AbZAOUBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:15 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:44426 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761795AbZAOUAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Ag9YXhP162MkCGmemctLVCgwVpXR18zrDXR9JBm/CGvXkFuVVLr9cag6b4l1KmZdZ7
-         EO9HYF84OF1eM2eqMAcQHKMrnN2BXjNasKWg9szy+ohjkiRXlNmZrQl0KUlSiUXZwMy3
-         rn+p9C06JQUkHoPZQaAgHrkY4Y/cZMmcqFN5s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 15 Jan 2009 21:01:08 +0100
-Message-Id: <20090115200108.17294.11783.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
-References: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/9] ide: remove ide_do_drive_cmd()
+	Thu, 15 Jan 2009 15:01:16 -0500
+Received: from kroah.org ([198.145.64.141]:49174 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765956AbZAOUA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:58 -0500
+Date: Thu, 15 Jan 2009 11:58:37 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Kyle McMartin <kyle@redhat.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 37/94] [PATCH 06/44] [CVE-2009-0029] Make sys_syslog a
+	conditional system call
+Message-ID: <20090115195837.GK14419@kroah.com>
+References: <20090115194806.804618825@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0006--CVE-2009-0029-Make-sys_syslog-a-conditional-system.patch"
+In-Reply-To: <20090115195520.GA14403@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove ide_do_drive_cmd()
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-* Use elv_add_request() instead of __elv_add_request() in ide_do_drive_cmd().
+------------------
 
-* ide_do_drive_cmd() is used only in ide-{atapi,cd}.c so inline it there.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-There should be no functional changes caused by this patch.
+commit f627a741d24f12955fa2d9f8831c3b12860635bd upstream.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Remove the -ENOSYS implementation for !CONFIG_PRINTK and use
+the cond_syscall infrastructure instead.
+
+Acked-by: Kyle McMartin <kyle@redhat.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/ide/ide-atapi.c |    5 ++++-
- drivers/ide/ide-cd.c    |    4 +++-
- drivers/ide/ide-io.c    |   28 ----------------------------
- include/linux/ide.h     |    2 --
- 4 files changed, 7 insertions(+), 32 deletions(-)
+ kernel/printk.c |    5 -----
+ kernel/sys_ni.c |    1 +
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
-Index: b/drivers/ide/ide-atapi.c
-===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -143,7 +143,10 @@ static void ide_queue_pc_head(ide_drive_
- 	memcpy(rq->cmd, pc->c, 12);
- 	if (drive->media == ide_tape)
- 		rq->cmd[13] = REQ_IDETAPE_PC1;
--	ide_do_drive_cmd(drive, rq);
-+
-+	drive->hwif->rq = NULL;
-+
-+	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
- }
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -742,11 +742,6 @@ EXPORT_SYMBOL(vprintk);
  
- /*
-Index: b/drivers/ide/ide-cd.c
-===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -234,7 +234,9 @@ static void cdrom_queue_request_sense(id
- 		ide_debug_log(IDE_DBG_SENSE, "failed_cmd: 0x%x\n",
- 			      failed_command->cmd[0]);
+ #else
  
--	ide_do_drive_cmd(drive, rq);
-+	drive->hwif->rq = NULL;
-+
-+	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
- }
- 
- static void cdrom_end_request(ide_drive_t *drive, int uptodate)
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -1125,34 +1125,6 @@ out_early:
- 	return irq_ret;
- }
- 
--/**
-- *	ide_do_drive_cmd	-	issue IDE special command
-- *	@drive: device to issue command
-- *	@rq: request to issue
-- *
-- *	This function issues a special IDE device request
-- *	onto the request queue.
-- *
-- *	the rq is queued at the head of the request queue, displacing
-- *	the currently-being-processed request and this function
-- *	returns immediately without waiting for the new rq to be
-- *	completed.  This is VERY DANGEROUS, and is intended for
-- *	careful use by the ATAPI tape/cdrom driver code.
-- */
--
--void ide_do_drive_cmd(ide_drive_t *drive, struct request *rq)
+-asmlinkage long sys_syslog(int type, char __user *buf, int len)
 -{
--	struct request_queue *q = drive->queue;
--	unsigned long flags;
--
--	drive->hwif->rq = NULL;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	__elv_add_request(q, rq, ELEVATOR_INSERT_FRONT, 0);
--	spin_unlock_irqrestore(q->queue_lock, flags);
+-	return -ENOSYS;
 -}
--EXPORT_SYMBOL(ide_do_drive_cmd);
 -
- void ide_pad_transfer(ide_drive_t *drive, int write, int len)
+ static void call_console_drivers(unsigned start, unsigned end)
  {
- 	ide_hwif_t *hwif = drive->hwif;
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1172,8 +1172,6 @@ extern ide_startstop_t ide_do_reset (ide
- extern int ide_devset_execute(ide_drive_t *drive,
- 			      const struct ide_devset *setting, int arg);
+ }
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -131,6 +131,7 @@ cond_syscall(sys_io_destroy);
+ cond_syscall(sys_io_submit);
+ cond_syscall(sys_io_cancel);
+ cond_syscall(sys_io_getevents);
++cond_syscall(sys_syslog);
  
--extern void ide_do_drive_cmd(ide_drive_t *, struct request *);
--
- extern void ide_end_drive_cmd(ide_drive_t *, u8, u8);
- 
- void ide_tf_dump(const char *, struct ide_taskfile *);
+ /* arch-specific weak syscall entries */
+ cond_syscall(sys_pciconfig_read);
+
