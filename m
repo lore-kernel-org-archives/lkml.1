@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZAOUS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932482AbZAOUTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932862AbZAOUS4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766008AbZAOUA7
+	id S932482AbZAOUTa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760574AbZAOUBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:59 -0500
-Received: from kroah.org ([198.145.64.141]:49011 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:00 -0500
+Received: from kroah.org ([198.145.64.141]:48984 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761594AbZAOUAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:44 -0500
-Date: Thu, 15 Jan 2009 11:58:18 -0800
+	id S1765969AbZAOUAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:45 -0500
+Date: Thu, 15 Jan 2009 11:58:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karl Bongers <kbongers@jged.com>,
-       Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [patch 29/94] USB: isp1760: Fix probe in PCI glue code
-Message-ID: <20090115195818.GC14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Daniel Drake <dsd@gentoo.org>,
+       Kadianakis George <desnacked@gmail.com>, Phil Dibowitz <phil@ipom.com>
+Subject: [patch 30/94] USB: unusual_devs.h additions for Pentax K10D
+Message-ID: <20090115195820.GD14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-isp1760-fix-probe-in-pci-glue-code.patch"
+Content-Disposition: inline; filename="usb-unusual_devs.h-additions-for-pentax-k10d.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,185 +40,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karl Bongers <kbongers@jged.com>
+From: Daniel Drake <dsd@gentoo.org>
 
-commit 6013bbbab0dcbc43bcf9dd70beeab2a0b1ec5ea7 upstream.
+commit e3f47f89a57ef115755184a8b3f03a47ee227418 upstream.
 
-Contains fixes so probe on x86 PCI runs, apparently I'm first to try
-this. Several fixes to memory access to probe host scratch register.
-Previously would bug check on chip_addr var used uninitialized.
-Scratch reg write failed in one instance due to 16-bit initial access
-mode, so added "& 0x0000ffff" to the readl as fix.
-Includes some general cleanup - remove global vars, organize memory map
-resource use.
+Jaak Ristioja reported problems with his Pentax K10D camera:
+https://bugs.gentoo.org/show_bug.cgi?id=250406
 
-Signed-off-by: Karl Bongers <kbongers@jged.com>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+/proc/bus/usb/devices:
+T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12  MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=0a17 ProdID=006e Rev= 1.00
+S:  Manufacturer=PENTAX Corporation
+S:  Product=K10D
+C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
+I:* If#= 0 Alt= 0 #EPs= 3 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=02(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=83(I) Atr=03(Int.) MxPS=  64 Ivl=100ms
+The number of reported sectors is off-by-one.
+
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+Cc: Kadianakis George <desnacked@gmail.com>
+Signed-off-by: Phil Dibowitz <phil@ipom.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/isp1760-if.c |   97 +++++++++++++++++++++++-------------------
- 1 file changed, 55 insertions(+), 42 deletions(-)
+ drivers/usb/storage/unusual_devs.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/drivers/usb/host/isp1760-if.c
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -129,23 +129,23 @@ static struct of_platform_driver isp1760
- #endif
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1425,6 +1425,13 @@ UNUSUAL_DEV( 0x0a17, 0x006, 0x0000, 0xff
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
- #ifdef CONFIG_PCI
--static u32 nxp_pci_io_base;
--static u32 iolength;
--static u32 pci_mem_phy0;
--static u32 length;
--static u8 __iomem *chip_addr;
--static u8 __iomem *iobase;
--
- static int __devinit isp1761_pci_probe(struct pci_dev *dev,
- 		const struct pci_device_id *id)
- {
- 	u8 latency, limit;
- 	__u32 reg_data;
- 	int retry_count;
--	int length;
--	int status = 1;
- 	struct usb_hcd *hcd;
- 	unsigned int devflags = 0;
-+	int ret_status = 0;
++/* Reported by Jaak Ristioja <Ristioja@gmail.com> */
++UNUSUAL_DEV( 0x0a17, 0x006e, 0x0100, 0x0100,
++		"Pentax",
++		"K10D",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_FIX_CAPACITY ),
 +
-+	resource_size_t pci_mem_phy0;
-+	resource_size_t memlength;
-+
-+	u8 __iomem *chip_addr;
-+	u8 __iomem *iobase;
-+	resource_size_t nxp_pci_io_base;
-+	resource_size_t iolength;
- 
- 	if (usb_disabled())
- 		return -ENODEV;
-@@ -168,26 +168,30 @@ static int __devinit isp1761_pci_probe(s
- 	iobase = ioremap_nocache(nxp_pci_io_base, iolength);
- 	if (!iobase) {
- 		printk(KERN_ERR "ioremap #1\n");
--		release_mem_region(nxp_pci_io_base, iolength);
--		return -ENOMEM;
-+		ret_status = -ENOMEM;
-+		goto cleanup1;
- 	}
- 	/* Grab the PLX PCI shared memory of the ISP 1761 we need  */
- 	pci_mem_phy0 = pci_resource_start(dev, 3);
--	length = pci_resource_len(dev, 3);
--
--	if (length < 0xffff) {
--		printk(KERN_ERR "memory length for this resource is less than "
--				"required\n");
--		release_mem_region(nxp_pci_io_base, iolength);
--		iounmap(iobase);
--		return  -ENOMEM;
-+	memlength = pci_resource_len(dev, 3);
-+	if (memlength < 0xffff) {
-+		printk(KERN_ERR "memory length for this resource is wrong\n");
-+		ret_status = -ENOMEM;
-+		goto cleanup2;
- 	}
- 
--	if (!request_mem_region(pci_mem_phy0, length, "ISP-PCI")) {
-+	if (!request_mem_region(pci_mem_phy0, memlength, "ISP-PCI")) {
- 		printk(KERN_ERR "host controller already in use\n");
--		release_mem_region(nxp_pci_io_base, iolength);
--		iounmap(iobase);
--		return -EBUSY;
-+		ret_status = -EBUSY;
-+		goto cleanup2;
-+	}
-+
-+	/* map available memory */
-+	chip_addr = ioremap_nocache(pci_mem_phy0,memlength);
-+	if (!chip_addr) {
-+		printk(KERN_ERR "Error ioremap failed\n");
-+		ret_status = -ENOMEM;
-+		goto cleanup3;
- 	}
- 
- 	/* bad pci latencies can contribute to overruns */
-@@ -210,39 +214,54 @@ static int __devinit isp1761_pci_probe(s
- 		 * */
- 		writel(0xface, chip_addr + HC_SCRATCH_REG);
- 		udelay(100);
--		reg_data = readl(chip_addr + HC_SCRATCH_REG);
-+		reg_data = readl(chip_addr + HC_SCRATCH_REG) & 0x0000ffff;
- 		retry_count--;
- 	}
- 
-+	iounmap(chip_addr);
-+
- 	/* Host Controller presence is detected by writing to scratch register
- 	 * and reading back and checking the contents are same or not
- 	 */
- 	if (reg_data != 0xFACE) {
- 		dev_err(&dev->dev, "scratch register mismatch %x\n", reg_data);
--		goto clean;
-+		ret_status = -ENOMEM;
-+		goto cleanup3;
- 	}
- 
- 	pci_set_master(dev);
- 
--	status = readl(iobase + 0x68);
--	status |= 0x900;
--	writel(status, iobase + 0x68);
-+	/* configure PLX PCI chip to pass interrupts */
-+#define PLX_INT_CSR_REG 0x68
-+	reg_data = readl(iobase + PLX_INT_CSR_REG);
-+	reg_data |= 0x900;
-+	writel(reg_data, iobase + PLX_INT_CSR_REG);
- 
- 	dev->dev.dma_mask = NULL;
--	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
-+	hcd = isp1760_register(pci_mem_phy0, memlength, dev->irq,
- 		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
- 		devflags);
--	if (!IS_ERR(hcd)) {
--		pci_set_drvdata(dev, hcd);
--		return 0;
-+	if (IS_ERR(hcd)) {
-+		ret_status = -ENODEV;
-+		goto cleanup3;
- 	}
--clean:
--	status = -ENODEV;
-+
-+	/* done with PLX IO access */
- 	iounmap(iobase);
--	release_mem_region(pci_mem_phy0, length);
- 	release_mem_region(nxp_pci_io_base, iolength);
--	return status;
-+
-+	pci_set_drvdata(dev, hcd);
-+	return 0;
-+
-+cleanup3:
-+	release_mem_region(pci_mem_phy0, memlength);
-+cleanup2:
-+	iounmap(iobase);
-+cleanup1:
-+	release_mem_region(nxp_pci_io_base, iolength);
-+	return ret_status;
- }
-+
- static void isp1761_pci_remove(struct pci_dev *dev)
- {
- 	struct usb_hcd *hcd;
-@@ -255,12 +274,6 @@ static void isp1761_pci_remove(struct pc
- 	usb_put_hcd(hcd);
- 
- 	pci_disable_device(dev);
--
--	iounmap(iobase);
--	iounmap(chip_addr);
--
--	release_mem_region(nxp_pci_io_base, iolength);
--	release_mem_region(pci_mem_phy0, length);
- }
- 
- static void isp1761_pci_shutdown(struct pci_dev *dev)
+ /* These are virtual windows driver CDs, which the zd1211rw driver
+  * automatically converts into WLAN devices. */
+ UNUSUAL_DEV( 0x0ace, 0x2011, 0x0101, 0x0101,
 
