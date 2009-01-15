@@ -1,105 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbZAOLIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbZAOLLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764182AbZAOLIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbZAOLIl
+	id S1763666AbZAOLLq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZAOLLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:08:41 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56881 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756660AbZAOLIk (ORCPT
+	Thu, 15 Jan 2009 06:11:38 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:44846 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbZAOLLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:08:40 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH] mark_page_accessed() in do_swap_page() move latter than memcg charge
-Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20090109134736.a995fc49.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090109043257.GB9737@balbir.in.ibm.com> <20090109134736.a995fc49.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20090115200545.EBE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 15 Jan 2009 06:11:37 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <496F19E2.8070306@gmail.com>
+Date: Thu, 15 Jan 2009 11:11:30 +0000
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Mike Rapoport <mike@compulab.co.il>
+CC: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
+       eric miao <eric.y.miao@gmail.com>, felipe.balbi@nokia.com,
+       Liam Girdwood <lrg@kernel.org>
+Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support within
+ mfd driver.
+References: <496E2BE5.1050803@cam.ac.uk> <496ED9EF.2050507@compulab.co.il>
+In-Reply-To: <496ED9EF.2050507@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 15 Jan 2009 20:08:36 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-sorry for late responce.
-
-> > In this case we've hit a case where the page is valid and the pc is
-> > not. This does fix the problem, but won't this impact us getting
-> > correct reclaim stats and thus indirectly impact the working of
-> > pressure?
-> > 
->  - If retruns NULL, only global LRU's status is updated. 
-> 
-> Because this page is not belongs to any memcg, we cannot update
-> any counters. But yes, your point is a concern.
-> 
-> Maybe moving acitvate_page() to
-> ==
-> do_swap_page()
-> {
->     
-> - activate_page()
->    mem_cgroup_try_charge()..
->    ....
->    mem_cgroup_commit_charge()....
->    ....
-> +  activate_page()   
-> }
-> ==
-> is necessary. How do you think, kosaki ?
-
-
-OK. it makes sense. and my test found no bug.
-
-==
-
-mark_page_accessed() update reclaim_stat statics.
-but currently, memcg charge is called after mark_page_accessed().
-
-then, mark_page_accessed() don't update memcg statics correctly.
-
-fixing here.
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-
----
- mm/memory.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: b/mm/memory.c
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2426,8 +2426,6 @@ static int do_swap_page(struct mm_struct
- 		count_vm_event(PGMAJFAULT);
- 	}
- 
--	mark_page_accessed(page);
--
- 	lock_page(page);
- 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 
-@@ -2480,6 +2478,8 @@ static int do_swap_page(struct mm_struct
- 		try_to_free_swap(page);
- 	unlock_page(page);
- 
-+	mark_page_accessed(page);
-+
- 	if (write_access) {
- 		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
- 		if (ret & VM_FAULT_ERROR)
-
-
+Mike Rapoport wrote:
+> Jonathan,
+> Below are my two cents :)
+>   
+Thanks,
+> Jonathan Cameron wrote:
+>   
+>> From: Jonathan Cameron <jic23@cam.ac.uk>
+>>
+>> Add support for changing the mode of the da9030 usb charge pump
+>>
+>> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+>>
+>> ---
+>>
+>> Minor changes from previous version to reflect changes in the
+>> driver being patched. Addtional cc's as per Mark's suggestion.
+>>
+>> This version simply adds the functionality to the da903x mfd driver
+>> core. If anyone can suggest a way round simply maintaining a
+>> global pointer to the device it would be good.
+>>     
+>
+> I don't think the global pointer here is real problem. It should be *really*
+> weird design with two da903x.
+>
+>   
+>> To be able to call this from a board config file the driver must be
+>> built in rather than a module but enforcing that is down to the
+>> board Kconfig entry.
+>>     
+>
+> Most probably the board with da9030 will anyway have it built-in...
+>
+>   
+>> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+>> index 99f8dcf..70ec3b0 100644
+>> --- a/drivers/mfd/da903x.c
+>> +++ b/drivers/mfd/da903x.c
+>> @@ -30,6 +30,7 @@
+>>  #define DA9030_SYS_CTRL_A	0x08
+>>  #define DA9030_SYS_CTRL_B	0x09
+>>  #define DA9030_FAULT_LOG	0x0a
+>> +#define DA9030_USBPUMP_REG	0x19
+>>  
+>>  #define DA9034_CHIP_ID		0x00
+>>  #define DA9034_EVENT_A		0x01
+>> @@ -484,6 +485,32 @@ failed:
+>>  	return ret;
+>>  }
+>>  
+>> +/* Single device assumption */
+>> +struct device *da9030_mfd_dev;
+>> +
+>> +int da9030_set_usb_charge_pump_mode(int mode)
+>> +{
+>> +	uint8_t val = 0;
+>> +
+>> +	if (da9030_mfd_dev == NULL)
+>> +		return -EINVAL;
+>> +
+>> +	switch (mode) {
+>> +	case DA9030_USBPUMP_AUTO:
+>> +		val = 0;
+>> +		break;
+>> +	case DA9030_USBPUMP_CHARGE_PUMP:
+>> +		val = 0x40;
+>> +		break;
+>> +	case DA9030_USBPUMP_CURRENT_SOURCE:
+>> +		val = 0x80;
+>> +		break;
+>> +	}
+>> +
+>> +	return da903x_write(da9030_mfd_dev, DA9030_USBPUMP_REG, val);
+>> +}
+>> +EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
+>> +
+>>     
+>
+> Maybe we want to have 'da9030_set_usb_charge_pump_mode' as well?
+>   
+(get?)
+Possibly though not sure under what circumstances it would be needed
+other than debugging?
 
