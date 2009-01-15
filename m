@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935830AbZAOWk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935569AbZAOWll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935830AbZAOWk4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbZAOWDv
+	id S935569AbZAOWll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933900AbZAOWDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:51 -0500
-Received: from kroah.org ([198.145.64.141]:38961 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:52 -0500
+Received: from kroah.org ([198.145.64.141]:38973 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932667AbZAOWDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:43 -0500
-Date: Thu, 15 Jan 2009 14:01:34 -0800
+	id S1763344AbZAOWDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:44 -0500
+Date: Thu, 15 Jan 2009 14:01:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 67/85] fix switch_names() breakage in short-to-short case
-Message-ID: <20090115220134.GP17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [patch 68/85] fs: symlink write_begin allocation context fix
+Message-ID: <20090115220136.GQ17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-switch_names-breakage-in-short-to-short-case.patch"
+Content-Disposition: inline; filename="fs-symlink-write_begin-allocation-context-fix.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,48 +40,418 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Al Viro <viro@zeniv.linux.org.uk>
+From: Nick Piggin <npiggin@suse.de>
 
-commit dc711ca35f9d95a1eec02118e0c298b5e3068315 upstream.
+commit 54566b2c1594c2326a645a3551f9d989f7ba3c5e upstream.
 
-We want ->name.len to match the resulting name on *both*
-source and target
+With the write_begin/write_end aops, page_symlink was broken because it
+could no longer pass a GFP_NOFS type mask into the point where the
+allocations happened.  They are done in write_begin, which would always
+assume that the filesystem can be entered from reclaim.  This bug could
+cause filesystem deadlocks.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+The funny thing with having a gfp_t mask there is that it doesn't really
+allow the caller to arbitrarily tinker with the context in which it can be
+called.  It couldn't ever be GFP_ATOMIC, for example, because it needs to
+take the page lock.  The only thing any callers care about is __GFP_FS
+anyway, so turn that into a single flag.
+
+Add a new flag for write_begin, AOP_FLAG_NOFS.  Filesystems can now act on
+this flag in their write_begin function.  Change __grab_cache_page to
+accept a nofs argument as well, to honour that flag (while we're there,
+change the name to grab_cache_page_write_begin which is more instructive
+and does away with random leading underscores).
+
+This is really a more flexible way to go in the end anyway -- if a
+filesystem happens to want any extra allocations aside from the pagecache
+ones in ints write_begin function, it may now use GFP_KERNEL (rather than
+GFP_NOFS) for common case allocations (eg.  ocfs2_alloc_write_ctxt, for a
+random example).
+
+[kosaki.motohiro@jp.fujitsu.com: fix ubifs]
+[kosaki.motohiro@jp.fujitsu.com: fix fuse]
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: <stable@kernel.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+[ Cleaned up the calling convention: just pass in the AOP flags
+  untouched to the grab_cache_page_write_begin() function.  That
+  just simplifies everybody, and may even allow future expansion of the
+  logic.   - Linus ]
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/dcache.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ fs/affs/file.c          |    2 +-
+ fs/buffer.c             |    4 ++--
+ fs/ext3/inode.c         |    2 +-
+ fs/ext3/namei.c         |    3 +--
+ fs/ext4/inode.c         |    4 ++--
+ fs/ext4/namei.c         |    3 +--
+ fs/fuse/file.c          |    4 ++--
+ fs/gfs2/ops_address.c   |    2 +-
+ fs/hostfs/hostfs_kern.c |    2 +-
+ fs/jffs2/file.c         |    2 +-
+ fs/libfs.c              |    2 +-
+ fs/namei.c              |   13 +++++++++----
+ fs/nfs/file.c           |    2 +-
+ fs/reiserfs/inode.c     |    2 +-
+ fs/smbfs/file.c         |    2 +-
+ fs/ubifs/file.c         |    9 +++++----
+ include/linux/fs.h      |    5 ++++-
+ include/linux/pagemap.h |    3 ++-
+ mm/filemap.c            |   17 +++++++++++------
+ 19 files changed, 48 insertions(+), 35 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1615,8 +1615,11 @@ static void switch_names(struct dentry *
- 			 */
- 			memcpy(dentry->d_iname, target->d_name.name,
- 					target->d_name.len + 1);
-+			dentry->d_name.len = target->d_name.len;
-+			return;
- 		}
+--- a/fs/affs/file.c
++++ b/fs/affs/file.c
+@@ -628,7 +628,7 @@ static int affs_write_begin_ofs(struct f
  	}
-+	do_switch(dentry->d_name.len, target->d_name.len);
+ 
+ 	index = pos >> PAGE_CACHE_SHIFT;
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 	*pagep = page;
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1988,7 +1988,7 @@ int block_write_begin(struct file *file,
+ 	page = *pagep;
+ 	if (page == NULL) {
+ 		ownpage = 1;
+-		page = __grab_cache_page(mapping, index);
++		page = grab_cache_page_write_begin(mapping, index, flags);
+ 		if (!page) {
+ 			status = -ENOMEM;
+ 			goto out;
+@@ -2494,7 +2494,7 @@ int nobh_write_begin(struct file *file, 
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 	*pagep = page;
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1152,7 +1152,7 @@ static int ext3_write_begin(struct file 
+ 	to = from + len;
+ 
+ retry:
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 	*pagep = page;
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -2187,8 +2187,7 @@ retry:
+ 		 * We have a transaction open.  All is sweetness.  It also sets
+ 		 * i_size in generic_commit_write().
+ 		 */
+-		err = __page_symlink(inode, symname, l,
+-				mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS);
++		err = __page_symlink(inode, symname, l, 1);
+ 		if (err) {
+ 			drop_nlink(inode);
+ 			ext3_mark_inode_dirty(handle, inode);
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1370,7 +1370,7 @@ retry:
+   		goto out;
+ 	}
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
+ 		ext4_journal_stop(handle);
+ 		ret = -ENOMEM;
+@@ -2421,7 +2421,7 @@ retry:
+ 		goto out;
+ 	}
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
+ 		ext4_journal_stop(handle);
+ 		ret = -ENOMEM;
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -2216,8 +2216,7 @@ retry:
+ 		 * We have a transaction open.  All is sweetness.  It also sets
+ 		 * i_size in generic_commit_write().
+ 		 */
+-		err = __page_symlink(inode, symname, l,
+-				mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS);
++		err = __page_symlink(inode, symname, l, 1);
+ 		if (err) {
+ 			clear_nlink(inode);
+ 			ext4_mark_inode_dirty(handle, inode);
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -644,7 +644,7 @@ static int fuse_write_begin(struct file 
+ {
+ 	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
+ 
+-	*pagep = __grab_cache_page(mapping, index);
++	*pagep = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!*pagep)
+ 		return -ENOMEM;
+ 	return 0;
+@@ -777,7 +777,7 @@ static ssize_t fuse_fill_write_pages(str
+ 			break;
+ 
+ 		err = -ENOMEM;
+-		page = __grab_cache_page(mapping, index);
++		page = grab_cache_page_write_begin(mapping, index, 0);
+ 		if (!page)
+ 			break;
+ 
+--- a/fs/gfs2/ops_address.c
++++ b/fs/gfs2/ops_address.c
+@@ -675,7 +675,7 @@ static int gfs2_write_begin(struct file 
+ 		goto out_trans_fail;
+ 
+ 	error = -ENOMEM;
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	*pagep = page;
+ 	if (unlikely(!page))
+ 		goto out_endtrans;
+--- a/fs/hostfs/hostfs_kern.c
++++ b/fs/hostfs/hostfs_kern.c
+@@ -500,7 +500,7 @@ int hostfs_write_begin(struct file *file
+ {
+ 	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
+ 
+-	*pagep = __grab_cache_page(mapping, index);
++	*pagep = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!*pagep)
+ 		return -ENOMEM;
+ 	return 0;
+--- a/fs/jffs2/file.c
++++ b/fs/jffs2/file.c
+@@ -132,7 +132,7 @@ static int jffs2_write_begin(struct file
+ 	uint32_t pageofs = index << PAGE_CACHE_SHIFT;
+ 	int ret = 0;
+ 
+-	pg = __grab_cache_page(mapping, index);
++	pg = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!pg)
+ 		return -ENOMEM;
+ 	*pagep = pg;
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -360,7 +360,7 @@ int simple_write_begin(struct file *file
+ 	index = pos >> PAGE_CACHE_SHIFT;
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2796,18 +2796,23 @@ void page_put_link(struct dentry *dentry
+ 	}
  }
  
+-int __page_symlink(struct inode *inode, const char *symname, int len,
+-		gfp_t gfp_mask)
++/*
++ * The nofs argument instructs pagecache_write_begin to pass AOP_FLAG_NOFS
++ */
++int __page_symlink(struct inode *inode, const char *symname, int len, int nofs)
+ {
+ 	struct address_space *mapping = inode->i_mapping;
+ 	struct page *page;
+ 	void *fsdata;
+ 	int err;
+ 	char *kaddr;
++	unsigned int flags = AOP_FLAG_UNINTERRUPTIBLE;
++	if (nofs)
++		flags |= AOP_FLAG_NOFS;
+ 
+ retry:
+ 	err = pagecache_write_begin(NULL, mapping, 0, len-1,
+-				AOP_FLAG_UNINTERRUPTIBLE, &page, &fsdata);
++				flags, &page, &fsdata);
+ 	if (err)
+ 		goto fail;
+ 
+@@ -2831,7 +2836,7 @@ fail:
+ int page_symlink(struct inode *inode, const char *symname, int len)
+ {
+ 	return __page_symlink(inode, symname, len,
+-			mapping_gfp_mask(inode->i_mapping));
++			!(mapping_gfp_mask(inode->i_mapping) & __GFP_FS));
+ }
+ 
+ const struct inode_operations page_symlink_inode_operations = {
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -351,7 +351,7 @@ static int nfs_write_begin(struct file *
+ 		file->f_path.dentry->d_name.name,
+ 		mapping->host->i_ino, len, (long long) pos);
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 	*pagep = page;
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2565,7 +2565,7 @@ static int reiserfs_write_begin(struct f
+ 	}
+ 
+ 	index = pos >> PAGE_CACHE_SHIFT;
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page)
+ 		return -ENOMEM;
+ 	*pagep = page;
+--- a/fs/smbfs/file.c
++++ b/fs/smbfs/file.c
+@@ -297,7 +297,7 @@ static int smb_write_begin(struct file *
+ 			struct page **pagep, void **fsdata)
+ {
+ 	pgoff_t index = pos >> PAGE_CACHE_SHIFT;
+-	*pagep = __grab_cache_page(mapping, index);
++	*pagep = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!*pagep)
+ 		return -ENOMEM;
+ 	return 0;
+--- a/fs/ubifs/file.c
++++ b/fs/ubifs/file.c
+@@ -213,7 +213,8 @@ static void release_existing_page_budget
+ }
+ 
+ static int write_begin_slow(struct address_space *mapping,
+-			    loff_t pos, unsigned len, struct page **pagep)
++			    loff_t pos, unsigned len, struct page **pagep,
++			    unsigned flags)
+ {
+ 	struct inode *inode = mapping->host;
+ 	struct ubifs_info *c = inode->i_sb->s_fs_info;
+@@ -241,7 +242,7 @@ static int write_begin_slow(struct addre
+ 	if (unlikely(err))
+ 		return err;
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (unlikely(!page)) {
+ 		ubifs_release_budget(c, &req);
+ 		return -ENOMEM;
+@@ -432,7 +433,7 @@ static int ubifs_write_begin(struct file
+ 		return -EROFS;
+ 
+ 	/* Try out the fast-path part first */
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (unlikely(!page))
+ 		return -ENOMEM;
+ 
+@@ -477,7 +478,7 @@ static int ubifs_write_begin(struct file
+ 		unlock_page(page);
+ 		page_cache_release(page);
+ 
+-		return write_begin_slow(mapping, pos, len, pagep);
++		return write_begin_slow(mapping, pos, len, pagep, flags);
+ 	}
+ 
+ 	/*
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -403,6 +403,9 @@ enum positive_aop_returns {
+ 
+ #define AOP_FLAG_UNINTERRUPTIBLE	0x0001 /* will not do a short write */
+ #define AOP_FLAG_CONT_EXPAND		0x0002 /* called from cont_expand */
++#define AOP_FLAG_NOFS			0x0004 /* used by filesystem to direct
++						* helper code (eg buffer layer)
++						* to clear GFP_FS from alloc */
+ 
  /*
-@@ -1676,7 +1679,6 @@ already_unhashed:
+  * oh the beauties of C type declarations.
+@@ -1959,7 +1962,7 @@ extern int page_readlink(struct dentry *
+ extern void *page_follow_link_light(struct dentry *, struct nameidata *);
+ extern void page_put_link(struct dentry *, struct nameidata *, void *);
+ extern int __page_symlink(struct inode *inode, const char *symname, int len,
+-		gfp_t gfp_mask);
++		int nofs);
+ extern int page_symlink(struct inode *inode, const char *symname, int len);
+ extern const struct inode_operations page_symlink_inode_operations;
+ extern int generic_readlink(struct dentry *, char __user *, int);
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -213,7 +213,8 @@ unsigned find_get_pages_contig(struct ad
+ unsigned find_get_pages_tag(struct address_space *mapping, pgoff_t *index,
+ 			int tag, unsigned int nr_pages, struct page **pages);
  
- 	/* Switch the names.. */
- 	switch_names(dentry, target);
--	do_switch(dentry->d_name.len, target->d_name.len);
- 	do_switch(dentry->d_name.hash, target->d_name.hash);
+-struct page *__grab_cache_page(struct address_space *mapping, pgoff_t index);
++struct page *grab_cache_page_write_begin(struct address_space *mapping,
++			pgoff_t index, unsigned flags);
  
- 	/* ... and switch the parents */
-@@ -1781,7 +1783,6 @@ static void __d_materialise_dentry(struc
- 	struct dentry *dparent, *aparent;
+ /*
+  * Returns locked page at given index in given cache, creating it if needed.
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2033,7 +2033,7 @@ int pagecache_write_begin(struct file *f
+ 		struct inode *inode = mapping->host;
+ 		struct page *page;
+ again:
+-		page = __grab_cache_page(mapping, index);
++		page = grab_cache_page_write_begin(mapping, index, flags);
+ 		*pagep = page;
+ 		if (!page)
+ 			return -ENOMEM;
+@@ -2197,19 +2197,24 @@ EXPORT_SYMBOL(generic_file_direct_write)
+  * Find or create a page at the given pagecache position. Return the locked
+  * page. This function is specifically for buffered writes.
+  */
+-struct page *__grab_cache_page(struct address_space *mapping, pgoff_t index)
++struct page *grab_cache_page_write_begin(struct address_space *mapping,
++					pgoff_t index, unsigned flags)
+ {
+ 	int status;
+ 	struct page *page;
++	gfp_t gfp_notmask = 0;
++	if (flags & AOP_FLAG_NOFS)
++		gfp_notmask = __GFP_FS;
+ repeat:
+ 	page = find_lock_page(mapping, index);
+ 	if (likely(page))
+ 		return page;
  
- 	switch_names(dentry, anon);
--	do_switch(dentry->d_name.len, anon->d_name.len);
- 	do_switch(dentry->d_name.hash, anon->d_name.hash);
+-	page = page_cache_alloc(mapping);
++	page = __page_cache_alloc(mapping_gfp_mask(mapping) & ~gfp_notmask);
+ 	if (!page)
+ 		return NULL;
+-	status = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
++	status = add_to_page_cache_lru(page, mapping, index,
++						GFP_KERNEL & ~gfp_notmask);
+ 	if (unlikely(status)) {
+ 		page_cache_release(page);
+ 		if (status == -EEXIST)
+@@ -2218,7 +2223,7 @@ repeat:
+ 	}
+ 	return page;
+ }
+-EXPORT_SYMBOL(__grab_cache_page);
++EXPORT_SYMBOL(grab_cache_page_write_begin);
  
- 	dparent = dentry->d_parent;
+ static ssize_t generic_perform_write_2copy(struct file *file,
+ 				struct iov_iter *i, loff_t pos)
+@@ -2263,7 +2268,7 @@ static ssize_t generic_perform_write_2co
+ 			break;
+ 		}
+ 
+-		page = __grab_cache_page(mapping, index);
++		page = grab_cache_page_write_begin(mapping, index, GFP_KERNEL);
+ 		if (!page) {
+ 			status = -ENOMEM;
+ 			break;
 
