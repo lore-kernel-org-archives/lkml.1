@@ -1,178 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZAOGEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbZAOGEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbZAOGEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 01:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZAOGD6
+	id S1760649AbZAOGEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 01:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZAOGE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 01:03:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49049 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762AbZAOGD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 01:03:56 -0500
-Date: Thu, 15 Jan 2009 01:03:50 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Takashi Iwai <tiwai@suse.de>, Kyle McMartin <kyle@infradead.org>,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] module: kzalloc mod->ref
-Message-ID: <20090115060350.GA7488@bombadil.infradead.org>
-References: <20090114033533.GL25103@bombadil.infradead.org> <s5hmydufe3c.wl%tiwai@suse.de> <200901151521.47326.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901151521.47326.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 01:04:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60723 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756544AbZAOGEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 01:04:25 -0500
+Date: Thu, 15 Jan 2009 17:04:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 15
+Message-Id: <20090115170415.3edc1df6.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__15_Jan_2009_17_04_15_+1100_CfdS2HF/.apOaeph"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 03:21:46PM +1030, Rusty Russell wrote:
-> In fact, I've decided to go back and add Eric's patch.  Since alloc_percpu
-> isn't going to be fixed this merge window, we'll do this now, then simply
-> use alloc_percpu once that is merged.
+--Signature=_Thu__15_Jan_2009_17_04_15_+1100_CfdS2HF/.apOaeph
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Er, what do you mean by "fixed"? ;-) Perhaps I'm just being thick, but
-this seems to be working for me. At least, the refcnts seem to be the
-same as the version without and unloading is fine...
+Hi all,
 
-Possibly I'm just being dense though. :)
+Changes since 20090114:
 
-regards, Kyle
+New trees:
+	omap
+	kmemleak
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 4f7ea12..61f97a2 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -219,11 +219,6 @@ void *__symbol_get_gpl(const char *symbol);
- 
- #endif
- 
--struct module_ref
--{
--	local_t count;
--} ____cacheline_aligned;
--
- enum module_state
- {
- 	MODULE_STATE_LIVE,
-@@ -345,7 +340,7 @@ struct module
- 	void (*exit)(void);
- 
- 	/* Reference counts */
--	struct module_ref ref[NR_CPUS];
-+	local_t *ref;	/* percpu */
- #endif
- };
- #ifndef MODULE_ARCH_INIT
-@@ -400,8 +395,9 @@ void symbol_put_addr(void *addr);
- static inline void __module_get(struct module *module)
- {
- 	if (module) {
-+		int cpu = get_cpu();
- 		BUG_ON(module_refcount(module) == 0);
--		local_inc(&module->ref[get_cpu()].count);
-+		local_inc(per_cpu_ptr(module->ref, cpu));
- 		put_cpu();
- 	}
- }
-@@ -412,9 +408,9 @@ static inline int try_module_get(struct module *module)
- 
- 	if (module) {
- 		unsigned int cpu = get_cpu();
--		if (likely(module_is_live(module)))
--			local_inc(&module->ref[cpu].count);
--		else
-+		if (likely(module_is_live(module))) {
-+			local_inc(per_cpu_ptr(module->ref, cpu));
-+		} else
- 			ret = 0;
- 		put_cpu();
- 	}
-diff --git a/kernel/module.c b/kernel/module.c
-index c9332c9..e504f49 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -571,17 +571,19 @@ static char last_unloaded_module[MODULE_NAME_LEN+1];
- 
- #ifdef CONFIG_MODULE_UNLOAD
- /* Init the unload section of the module. */
--static void module_unload_init(struct module *mod)
-+static int module_unload_init(struct module *mod)
- {
--	unsigned int i;
-+	mod->ref = percpu_alloc(sizeof(*mod->ref), GFP_KERNEL);
-+	if (!mod->ref)
-+		return -ENOMEM;
- 
- 	INIT_LIST_HEAD(&mod->modules_which_use_me);
--	for (i = 0; i < NR_CPUS; i++)
--		local_set(&mod->ref[i].count, 0);
- 	/* Hold reference count during initialization. */
--	local_set(&mod->ref[raw_smp_processor_id()].count, 1);
-+	local_set(per_cpu_ptr(mod->ref, raw_smp_processor_id()), 1);
- 	/* Backwards compatibility macros put refcount during init. */
- 	mod->waiter = current;
-+
-+	return 0;
- }
- 
- /* modules using other modules */
-@@ -661,6 +663,8 @@ static void module_unload_free(struct module *mod)
- 			}
- 		}
- 	}
-+
-+	percpu_free(mod->ref);
- }
- 
- #ifdef CONFIG_MODULE_FORCE_UNLOAD
-@@ -717,10 +721,12 @@ static int try_stop_module(struct module *mod, int flags, int *forced)
- 
- unsigned int module_refcount(struct module *mod)
- {
--	unsigned int i, total = 0;
-+	unsigned int cpu, total = 0;
-+
-+	for_each_possible_cpu(cpu) {
-+		total += local_read(per_cpu_ptr(mod->ref, cpu));
-+	}
- 
--	for (i = 0; i < NR_CPUS; i++)
--		total += local_read(&mod->ref[i].count);
- 	return total;
- }
- EXPORT_SYMBOL(module_refcount);
-@@ -894,7 +900,8 @@ void module_put(struct module *module)
- {
- 	if (module) {
- 		unsigned int cpu = get_cpu();
--		local_dec(&module->ref[cpu].count);
-+
-+		local_dec(per_cpu_ptr(module->ref, cpu));
- 		/* Maybe they're waiting for us to drop reference? */
- 		if (unlikely(!module_is_live(module)))
- 			wake_up_process(module->waiter);
-@@ -919,8 +926,9 @@ static inline int use_module(struct module *a, struct module *b)
- 	return strong_try_module_get(b) == 0;
- }
- 
--static inline void module_unload_init(struct module *mod)
-+static inline int module_unload_init(struct module *mod)
- {
-+	return 0;
- }
- #endif /* CONFIG_MODULE_UNLOAD */
- 
-@@ -2071,7 +2079,9 @@ static noinline struct module *load_module(void __user *umod,
- 	mod = (void *)sechdrs[modindex].sh_addr;
- 
- 	/* Now we've moved module, initialize linked lists, etc. */
--	module_unload_init(mod);
-+	err = module_unload_init(mod);
-+	if (err < 0)
-+		goto free_unload;
- 
- 	/* add kobject, so we can reference it. */
- 	err = mod_sysfs_init(mod);
+Undropped tree:
+	quota
+
+Dropped trees (temporarily):
+	cpu_alloc (build problem)
+	audit (difficult conflicts)
+
+The quota tree lost its build failure.
+
+The kmemleak tree gained 3 conflicts against the kmemcheck tree and 2
+conflicts against the ftrace tree (not unexpectedly).
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 132 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Applying: linux-next: mfd tree build failure
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in kernel/rcuclassic.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+CONFLICT (content): Merge conflict in kernel/time/tick-common.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Thu__15_Jan_2009_17_04_15_+1100_CfdS2HF/.apOaeph
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklu0d8ACgkQjjKRsyhoI8yX0wCfagUg1Z/weN+xQQJsyZ5DfXgq
+kw4AoLLc3YbTuuZJC8o3nIW8zIO8Q0yf
+=EYuW
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__15_Jan_2009_17_04_15_+1100_CfdS2HF/.apOaeph--
