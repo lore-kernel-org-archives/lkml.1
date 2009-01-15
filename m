@@ -1,148 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763347AbZAOKaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763623AbZAOKam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763347AbZAOKaP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbZAOK34
+	id S1763623AbZAOKam (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760657AbZAOKac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:29:56 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:59354 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbZAOK3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:29:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=V5E5hdH86kITxsOpaC3ELsGcl+l+6EHFQ0hRLsOeRazW3ylwBK7tMM3EoLFD2VX6Zk
-         2lt5YaXzXFScgAcP+fHR7UZhTgFiCTB84vtaOg0ilcy9oF6I5ZoPEFicnX51NYRqH9OR
-         kNqqLaC2zEU6KE08wU3hlsWKFPAhXOHMI2Y68=
-Message-ID: <25e057c00901150229g35d8e9bdn6a19585cbc9d15bd@mail.gmail.com>
-Date: Thu, 15 Jan 2009 11:29:53 +0100
-From: "roel kluin" <roel.kluin@gmail.com>
-To: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [RESEND][PATCH] early platform drivers V2
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       lethal@linux-sh.org, johnstul@us.ibm.com, gregkh@suse.de,
-       mingo@redhat.com, tglx@linutronix.de
-In-Reply-To: <20090114105436.18974.45429.sendpatchset@rx1.opensource.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 15 Jan 2009 05:30:32 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36907 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754638AbZAOKaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:30:30 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX183SjVo1GE3kit+Kad/B6OACe8SF7h6g0EdRO7e5i
+	6q0YN9RtA9gOlK
+Subject: Re: [BUG] How to get real-time priority using idle priority
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Brian Rogers <brian@xyzw.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1232014456.8870.26.camel@laptop>
+References: <4969D0D7.2060401@xyzw.org>
+	 <1231736941.6003.7.camel@marge.simson.net>
+	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>
+	 <496BE8F6.1040308@xyzw.org>  <1232011723.26761.36.camel@marge.simson.net>
+	 <1232014456.8870.26.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 11:30:23 +0100
+Message-Id: <1232015423.13856.5.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090114105436.18974.45429.sendpatchset@rx1.opensource.se>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static int __init early_platform_match(struct early_platform_driver *epdrv,
-> +                                      struct platform_device **pdevs,
-> +                                      int nr_pdevs, int id,
-> +                                      struct platform_device **match)
-> +{
-> +       struct platform_device *pdev;
-> +       int k, n, match_id;
-> +
-> +       if (id == -2)
-> +               match_id = epdrv->requested_id;
-> +       else
-> +               match_id = id;
-> +
-> +       n = 0;
-> +       *match = NULL;
-> +       for (k = 0; k < nr_pdevs; k++) {
-> +               pdev = pdevs[k];
-> +               if (platform_match(&pdev->dev, &epdrv->pdrv->driver)) {
+On Thu, 2009-01-15 at 11:14 +0100, Peter Zijlstra wrote:
+> On Thu, 2009-01-15 at 10:28 +0100, Mike Galbraith wrote:
 
-> +                       if (id != -2) /* skip previously checked device */
-> +                               if (match_id == epdrv->requested_id)
-> +                                       goto skip;
-> +
-> +                       if (pdev->id == match_id)
-> +                               *match = pdev;
-> +
-> +skip:
-> +                       if (pdev->id > match_id)
-> +                               n++;
+> OK, so why did I write it like that to begin with...
+> 
+> Aah, yes.
+> 
+> Say we've just dequeued current
+> 
+> schedule
+>   deactivate_task(prev)
+>     dequeue_entity
+>       update_min_vruntime
+> 
+> Then we'll set
+> 
+>   vruntime = cfs_rq->min_vruntime;
+> 
+> we find !cfs_rq->curr, but do find someone in the tree. Then we _must_
+> do vruntime = se->vruntime, because
+> 
+>  vruntime = min_vruntime(vruntime := cfs_rq->min_vruntime, se->vruntime)
+> 
+> will not advance vruntime, and cause lags the other way around (which we
+> fixed with that initial patch: 1af5f730fc1bf7c62ec9fb2d307206e18bf40a69
+> (sched: more accurate min_vruntime accounting).
+> 
+> Which leads me to suggest the following
+> 
+> ---
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 8e1352c..f2d2d94 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -283,7 +283,7 @@ static void update_min_vruntime(struct cfs_rq
+> *cfs_rq)
+>  						   struct sched_entity,
+>  						   run_node);
+>  
+> -		if (vruntime == cfs_rq->min_vruntime)
+> +		if (!cfs_rq->curr)
+>  			vruntime = se->vruntime;
+>  		else
+>  			vruntime = min_vruntime(vruntime, se->vruntime);
 
-you can replace the 10 lines above by:
+Aha.  Yeah, I'll re-test with that instead.
 
-/* skip previously checked device */
-if ((id == -2 || match_id != epdrv->requested_id) && pdev->id == match_id)
-        *match = pdev;
-else if (pdev->id > match_id)
-        n++;
+> The below can be split into 3 patches:
+> 
+>  - the idle weight change (do we really need that? why?)
 
-> +               }
-> +       }
-> +
-> +       return n;
-> +}
+I saw idle tasks slamming extremely far.  I'll verify, less is more.
 
-> +/**
-> + * early_platform_driver_probe
-> + * @class_str: string to identify early platform driver class
-> + * @pdevs: platform devices to match against
-> + * @nr_pdevs: number of platform devices to match against
-> + * @nr_probe: number of platform devices to successfully probe before exiting
-> + */
-> +int __init early_platform_driver_probe(char *class_str,
-> +                                      struct platform_device **pdevs,
-> +                                      int nr_pdevs, int nr_probe)
-> +{
-> +       struct early_platform_driver *epdrv;
-> +       struct platform_device *match;
-> +       int k, n, i;
-> +
-> +       /* The "class_str" parameter may or may not be present on the kernel
-> +        * command line. If it is present then there may be more than one
-> +        * matching parameter.
-> +        *
-> +        * Since we register our early platform drivers using early_param()
-> +        * we need to make sure that they also get registered in the case
-> +        * when the parameter is missing from the kernel command line.
-> +        *
-> +        * We use parse_early_options() to make sure the early_param() gets
-> +        * called at least once. The early_param() may be called more than
-> +        * once since the name of the preferred device may be specified on
-> +        * the kernel command line. early_platform_driver_register() handles
-> +        * this case for us.
-> +        */
-> +       parse_early_options(class_str);
-> +
-> +       n = 0;
-> +       list_for_each_entry(epdrv, &early_platform_driver_list, list) {
-> +               /* only use drivers matching our class_str */
-> +               if (strcmp(class_str, epdrv->class_str))
-> +                       continue;
-> +
-> +               /* start with exact device match, continue with any device */
-> +               k = 1;
-> +               for (i = -2; k && n < nr_probe; i++) {
-> +                       k = early_platform_match(epdrv, pdevs, nr_pdevs,
-> +                                                i, &match);
-> +                       if (!match)
-> +                               continue;
-> +
-> +                       if (epdrv->pdrv->probe(match)) {
+	-Mike
 
-shouldn't this be
-
-if (!epdrv->pdrv->probe(match)) {
-
-> +                               pr_warning("%s: unable to probe %s early.\n",
-> +                                          class_str, match->name);
-> +                               continue;
-> +                       }
-> +                       n++;
-> +               }
-> +       }
-> +
-> +       if (!n)
-> +               pr_warning("%s: no early platform devices found.\n", class_str);
-> +
-> +       return n;
-> +}
-
-I think k, n and i could get more descriptive names
