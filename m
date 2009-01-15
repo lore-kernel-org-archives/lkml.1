@@ -1,58 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762714AbZAOHzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbZAOH4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762714AbZAOHzU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:55:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZAOHy7
+	id S1756546AbZAOH4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZAOH4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:54:59 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:61632 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755376AbZAOHy6 (ORCPT
+	Thu, 15 Jan 2009 02:56:07 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51532 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbZAOH4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:54:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GaWBwXrqM7RlZMHuR+/dOkaw/1SlNi//aQ5pTgij+7yhwrru43sDBdEWSFGksQVoWw
-         xrJNfg9X45vE61sfhKpo0eoBSEItW4aW/lpYiGcNC+GNM8iaSmnXPsR7m1nkSzTdikTs
-         1LleVaLkZ/F1O4tQGWJRhl3Ip8CKBKbQxSbw8=
-Date: Thu, 15 Jan 2009 07:54:51 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Chris Caputo <ccaputo@alt.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Denys Fedoryschenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090115075450.GB4190@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <Pine.LNX.4.64.0901150724000.20461@nacho.alt.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901150724000.20461@nacho.alt.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 02:56:04 -0500
+Date: Thu, 15 Jan 2009 16:54:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>
+Subject: Re: [RFC][PATCH] memcg: get/put parents at create/free
+Message-Id: <20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 07:26:28AM +0000, Chris Caputo wrote:
-> On Thu, 15 Jan 2009, Jarek Poplawski wrote:
-> > On Wed, Jan 14, 2009 at 06:02:04PM +0000, Chris Caputo wrote:
-> > ...
-> > > That said, I would not recommend just the three for -stable unless they 
-> > > get a much wider amount of testing, on multiple platforms.  I don't see 
-> > > that as likely to happen, plus Peter says they are incomplete, so maybe it 
-> > > is just best to recommend that 2.6.28 users getting crashes while using 
-> > > HTB try these specific patches at first, and then the rest of the patches 
-> > > if they do not work.
-...
-> I hope you can forgive me, but since I have something that works on a 
-> production machine, I am not in a position in which I can test this.
+On Thu, 15 Jan 2009 16:45:37 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-So, IOW, you don't recommend Peter's patches but prefere to use them,
-and recommend my patches, but you are afraid of using them...
-Of course I forgive you!-)
+> On Thu, 15 Jan 2009 13:38:14 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > > To handle the problem "parent may be obsolete",
+> > > > > > 
+> > > > > > call mem_cgroup_get(parent) at create()
+> > > > > > call mem_cgroup_put(parent) at freeing memcg.
+> > > > > >      (regardless of use_hierarchy.)
+> > > > > > 
+> > > > > > is clearer way to go, I think.
+> > > > > > 
+> > > > > > I wonder whether there is  mis-accounting problem or not..
+> > > > > > 
+> > hmm, after more consideration, although this patch can prevent the BUG,
+> > it can leak memsw accounting of parents because memsw of parents, which
+> > have been incremented by charge, does not decremented.
+> > 
+> > I'll try pet/put parent approach..
+> > Or any other good ideas ?
+> > 
+> I attach a tryial patch.
+> 
+> It has been working fine so far(for about 1 hour).
+> 
+> Thanks,
+> Daisuke Nishimura.
+> ===
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> mem_cgroup_get ensures that the memcg that has been got can be accessed
+> even after the directory has been removed, but it doesn't ensure that parents
+> of it can be accessed: parents might have been freed already by rmdir.
+> 
+> This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> climb up the tree.
+> 
+> This patch tries to fix this probrem by getting parents at create, and
+> putting them at freeing.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
+>  1 files changed, 32 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index fb62b43..b4aed07 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+>  
+>  static void mem_cgroup_get(struct mem_cgroup *mem);
+>  static void mem_cgroup_put(struct mem_cgroup *mem);
+> +static void mem_cgroup_get_parents(struct mem_cgroup *mem);
+> +static void mem_cgroup_put_parents(struct mem_cgroup *mem);
+>  
+>  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+>  					 struct page_cgroup *pc,
+> @@ -2185,10 +2187,38 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+>  
+>  static void mem_cgroup_put(struct mem_cgroup *mem)
+>  {
+> -	if (atomic_dec_and_test(&mem->refcnt))
+> +	if (atomic_dec_and_test(&mem->refcnt)) {
+> +		mem_cgroup_put_parents(mem);
+>  		__mem_cgroup_free(mem);
+> +	}
+> +}
+> +
+> +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
+> +{
+> +	if (!mem->res.parent)
+> +		return NULL;
+> +	return mem_cgroup_from_res_counter(mem->res.parent, res);
+> +}
+> +
+> +static void mem_cgroup_get_parents(struct mem_cgroup *mem)
+> +{
+> +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> +
+> +	while (parent) {
+> +		mem_cgroup_get(parent);
+> +		parent = parent_mem_cgroup(parent);
+> +	}
+>  }
+>  
 
-Jarek P.
+does we have to add refcnt to all ancestors ?
+
+Thanks,
+-Kame
+
+> +static void mem_cgroup_put_parents(struct mem_cgroup *mem)
+> +{
+> +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> +
+> +	while (parent) {
+> +		mem_cgroup_put(parent);
+> +		parent = parent_mem_cgroup(parent);
+> +	}
+> +}
+>  
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  static void __init enable_swap_cgroup(void)
+> @@ -2237,6 +2267,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+>  	if (parent)
+>  		mem->swappiness = get_swappiness(parent);
+>  	atomic_set(&mem->refcnt, 1);
+> +	mem_cgroup_get_parents(mem);
+>  	return &mem->css;
+>  free_out:
+>  	__mem_cgroup_free(mem);
+> 
+
