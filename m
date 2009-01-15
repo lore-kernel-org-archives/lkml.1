@@ -1,192 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZAOJqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbZAOJtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756341AbZAOJqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 04:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbZAOJqX
+	id S1760078AbZAOJtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 04:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZAOJtC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 04:46:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:35516 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755091AbZAOJqM (ORCPT
+	Thu, 15 Jan 2009 04:49:02 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:41698 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986AbZAOJs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 04:46:12 -0500
+	Thu, 15 Jan 2009 04:48:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=gqCz0nKY0VaRUHbc+DNBrmH9DLQILp4S/R3+JrCtdjWtTUW18VtcBLikOcoFqKxMD3
-         Al928QuOvnyaeH7kROBOIApJqswxgMFj2CIcZoKJCgA6bQrhQZly2aYQ1CEykqUMMnUz
-         5UqeHdnSs4uhZwVUxtYxPnLjs5gIoqxtARtLU=
-Message-ID: <84144f020901150146x72402ec4p7636d583cfd55b3e@mail.gmail.com>
-Date: Thu, 15 Jan 2009 11:46:09 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: Mainline kernel OLTP performance update
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matthew Wilcox" <matthew@wil.cx>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
-       "Anirban Chakraborty" <anirban.chakraborty@qlogic.com>
-In-Reply-To: <200901151824.38658.nickpiggin@yahoo.com.au>
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=kJ9+JqsmGRq13ALfYuc9ik78hdACtx+DeOi4J0xZFCrBJKkDr0EjzQOP4Ohfk6RJ3N
+         eAi3HOwdHUK+6gciYhCCWK8Vn+EzYKabUx0g6J8xTKzpkEGeKQIQ4JlzyTqXyrzJk506
+         RMCvlYj20mu8+og0z2aGQHGGY/4kXCseZa2wQ=
 MIME-Version: 1.0
+Date: Thu, 15 Jan 2009 09:48:55 +0000
+Message-ID: <8b67d60901150148k1a7a5f63u2f01d9b0a0650aa1@mail.gmail.com>
+Subject: pipe_read oops
+From: Adrian McMenamin <lkmladrian@gmail.com>
+To: linux-sh <linux-sh@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <20090115012147.GW29283@parisc-linux.org>
-	 <20090114180431.f4a96543.akpm@linux-foundation.org>
-	 <200901151824.38658.nickpiggin@yahoo.com.au>
-X-Google-Sender-Auth: 1b1044f8a8cb93bd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 9:24 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> SLES11 will ship with SLAB, FWIW. As I said in the SLQB thread, this was
-> not due to my input. But I think it was probably the right choice to make
-> in that situation.
->
-> The biggest problem with SLAB for SGI I think is alien caches bloating the
-> kmem cache footprint to many GB each on their huge systems, but SLAB has a
-> parameter to turn off alien caches anyway so I think that is a reasonable
-> workaround.
->
-> Given the OLTP regression, and also I'd hate to have to deal with even
-> more reports of people's order-N allocations failing... basically with the
-> regression potential there, I don't think there was a compelling case
-> found to use SLUB (ie. where does it actually help?).
->
-> I'm going to propose to try to unblock the problem by asking to merge SLQB
-> with a plan to end up picking just one general allocator (and SLOB).
+Anyone else seen this? I haven't had time to investigate it - from a
+pre 2.6.29-rc1 kernel (on my topic branch - but can see no signs of my
+code being involved).
 
-It would also be nice if someone could do the performance analysis on
-the SLUB bug. I ran sysbench in oltp mode here and the results look
-like this:
+Unfortunately I was testing this to see if my code worked with out
+memory allocation debugging on, so quite a lot of debugging stuff
+switched off.
 
-  [ number of transactions per second from 10 runs. ]
+Will investigate further, later.
 
-                   min      max      avg      sd
-  2.6.29-rc1-slab  833.77   852.32   845.10   4.72
-  2.6.29-rc1-slub  823.61   851.94   836.74   8.57
 
-I used the following sysbench parameters:
-
-  sysbench --test=oltp \
-         --oltp-table-size=1000000 \
-         --mysql-socket=/var/run/mysqld/mysqld.sock \
-         prepare
-
-  sysbench --num-threads=16 \
-         --max-requests=100000 \
-         --test=oltp --oltp-table-size=1000000 \
-         --mysql-socket=/var/run/mysqld/mysqld.sock \
-         --oltp-read-only run
-
-And no, the numbers are not flipped, SLUB beats SLAB here. :(
-
-		Pekka
-
-$ mysql --version
-mysql  Ver 14.12 Distrib 5.0.51a, for debian-linux-gnu (x86_64) using
-readline 5.2
-
-$ cat /proc/cpuinfo
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
-stepping	: 6
-cpu MHz		: 1000.000
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64 monitor
-ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-bogomips	: 3989.99
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz
-stepping	: 6
-cpu MHz		: 1000.000
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 2
-core id		: 1
-cpu cores	: 2
-apicid		: 1
-initial apicid	: 1
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx
-lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64 monitor
-ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-bogomips	: 3990.04
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-$ lspci
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML
-and 945GT Express Memory Controller Hub (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,
-943/940GML Express Integrated Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-943/940GML Express Integrated Graphics Controller (rev 03)
-00:07.0 Performance counters: Intel Corporation Unknown device 27a3 (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
-Definition Audio Controller (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-Port 1 (rev 02)
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-Port 2 (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #3 (rev 02)
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #4 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2
-EHCI Controller (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface
-Bridge (rev 02)
-00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
-Controller (rev 02)
-00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family)
-SATA IDE Controller (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-01:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053
-PCI-E Gigabit Ethernet Controller (rev 22)
-02:00.0 Network controller: Atheros Communications Inc. AR5418
-802.11abgn Wireless PCI Express Adapter (rev 01)
-03:03.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61)
+[   43.495753] Unable to handle kernel NULL pointer dereference at
+virtual address 0000000c
+[   43.509964] pc = 8c08938a
+[   43.512441] *pde = 00000000
+[   43.517075] Oops: 0000 [#1]
+[   43.519187] Modules linked in:
+[   43.522239]
+[   43.523861] Pid : 816, Comm:                 rc
+[   43.527281] CPU : 0                  Not tainted
+(2.6.28-06145-g8874d26 #211)
+[   43.527308]
+[   43.535560] PC is at pipe_read+0xca/0x3e0
+[   43.539685] PR is at pipe_read+0x54/0x3e0
+[   43.543805] PC  : 8c08938a SP  : 8c849e60 SR  : 40008000 TEA : 004c8028
+[   43.550632] R0  : 55555555 R1  : 00000000 R2  : 00000000 R3  : 8cf3222c
+[   43.557460] R4  : 8cf32200 R5  : 8cf3222c R6  : 00000001 R7  : 55555555
+[   43.564287] R8  : 8c5286c0 R9  : 8c849ebc R10 : 8c849efc R11 : fffffdee
+[   43.571111] R12 : 8cf3222c R13 : 8c080000 R14 : 8cf32200
+[   43.576503] MACH: 00000000 MACL: fffffff8 GBR : 296e4440 PR  : 8c089314
+[   43.583319]
+[   43.583332] Call trace:
+[   43.587479] [<8c05eb52>] do_wp_page+0x4d2/0x800
+[   43.592155] [<8c08035c>] do_sync_read+0x9c/0x100
+[   43.596823] [<8c080000>] wait_on_retry_sync_kiocb+0x0/0xc0
+[   43.602587] [<8c031800>] autoremove_wake_function+0x0/0x40
+[   43.608141] [<8c2499e8>] preempt_schedule+0x28/0x60
+[   43.613164] [<8c249360>] __sched_text_start+0x0/0x560
+[   43.618380] [<8c080c1e>] vfs_read+0x7e/0x160
+[   43.622862] [<8c08119a>] sys_read+0x3a/0x80
+[   43.627182] [<8c008236>] syscall_call+0xc/0x10
+[   43.631663] [<8c081160>] sys_read+0x0/0x80
+[   43.635965]
+[   43.637401] Process: rc (pid: 816, stack limit = 8c848001)
+[   43.643148] Stack: (0x8c849e60 to 0x8c84a000)
+[   43.647632] 9e60: 8cf3222c 8c52872c 8c849f40 55555555 8c8f0480
+00000000 00000000 00000080
+[   43.656075] 9e80: 55555555 00000000 8c05eb52 8c87d0a8 8c08035c
+8c849f40 8c080000 8c8f0480
+[   43.664698] 9ea0: fffffdee 8c849efc 8c849ebc 00000000 00000000
+00000000 8c849f7c 8c84a004
+[   43.673142] 9ec0: 8c8af3c0 00000000 00000001 ffffffff 8c8f0480
+00000000 00000000 00000000
+[   43.681764] 9ee0: 00000000 8cc1a080 00000000 00000000 8c8af380
+8cc1a080 8c031800 8c849efc
+[   43.690208] 9f00: 8c849efc 00000000 00000000 8cc1a250 8cc1a24c
+8cc1a1d4 8cc1a0fc 00000080
+[   43.698830] 9f20: 8c2499e8 8c849f40 00000638 00000000 00000000
+00000000 8c249360 10000000
+[   43.707274] 9f40: 7ba70cb4 00000080 8c080c1e 7ba70c84 00000638
+fffffff7 8c849f7c 7ba70cb4
+[   43.715897] 9f60: 00000080 8c8f0480 8c08119a 00000080 7ba70cb4
+8c8f0480 8c849f48 00000000
+[   43.724340] 9f80: 00000000 00000000 8c008236 00000000 00000000
+00000071 0000007f 8c081160
+[   43.732963] 9fa0: 00000000 00000440 7ba70d3c 00000003 00000003
+7ba70cb4 00000080 00000118
+[   43.741406] 9fc0: 00000000 00000080 7ba70cb4 00000003 00000000
+00000638 7ba70c84 7ba70c84
+[   43.750029] 9fe0: 29675174 00457bf2 00008001 296e4440 00000000
+000003c0 0000004c 00000160
+[   43.766583] ---[ end trace 42b96aa1b3d1820b ]---
