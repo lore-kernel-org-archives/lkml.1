@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764227AbZAOLb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbZAOLdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764227AbZAOLb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZAOLbT
+	id S1763649AbZAOLdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZAOLdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:31:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41259 "EHLO mx3.mail.elte.hu"
+	Thu, 15 Jan 2009 06:33:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41600 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754215AbZAOLbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:31:17 -0500
-Date: Thu, 15 Jan 2009 12:30:45 +0100
+	id S1752448AbZAOLdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:33:09 -0500
+Date: Thu, 15 Jan 2009 12:32:30 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
-       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+Cc: roel kluin <roel.kluin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        steiner@sgi.com, hugh@veritas.com
 Subject: Re: [patch] add optimized generic percpu accessors
-Message-ID: <20090115113045.GG22850@elte.hu>
-References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org>
+Message-ID: <20090115113230.GH22850@elte.hu>
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496C717F.70204@kernel.org> <73c1f2160901130527s2d61f4ewf0725c3bf1b36a1a@mail.gmail.com> <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <25e057c00901150204x61c54d9fl91afe23477d1f12f@mail.gmail.com> <496F0F5E.3080404@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496F0F50.6070200@kernel.org>
+In-Reply-To: <496F0F5E.3080404@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,65 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Tejun Heo <tj@kernel.org> wrote:
 
-> Hello, Ingo.
-> 
-> Ingo Molnar wrote:
-> > Tejun, could you please also add the patch below to your lineup too?
-> 
-> Sure thing.
-> 
-> > It is an optimization and a cleanup, and adds the following new generic 
-> > percpu methods:
+> roel kluin wrote:
+> >> Index: linux/include/asm-generic/percpu.h
+> >> ===================================================================
+> >> --- linux.orig/include/asm-generic/percpu.h
+> >> +++ linux/include/asm-generic/percpu.h
+> >> @@ -80,4 +80,32 @@ extern void setup_per_cpu_areas(void);
+> >>  #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
+> >>                                        __typeof__(type) per_cpu_var(name)
+> >>
+> >> +/*
+> >> + * Optional methods for optimized non-lvalue per-cpu variable access:
+> >> + */
+> >> +
+> >> +#ifndef percpu_read
+> >> +# define percpu_read(var)              __get_cpu_var(var)
+> >> +#endif
+> >> +
+> >> +#ifndef percpu_write
+> >> +# define percpu_write(var, val)                ({ __get_cpu_var(var) = (val); })
+> >> +#endif
+> >> +
+> >> +#ifndef percpu_add
+> >> +# define percpu_add(var, val)          ({ __get_cpu_var(var) += (val); })
+> >> +#endif
+> >> +
+> >> +#ifndef percpu_sub
+> >> +# define percpu_add(var, val)          ({ __get_cpu_var(var) += (val); })
 > > 
-> >   percpu_read()
-> >   percpu_write()
-> >   percpu_add()
-> >   percpu_sub()
-> >   percpu_or() 
-> >   percpu_xor()
+> > this should be:
 > > 
-> > and implements support for them on x86. (other architectures will fall 
-> > back to a default implementation)
-> > 
-> > The advantage is that for example to read a local percpu variable, instead 
-> > of this sequence:
-> > 
-> >  return __get_cpu_var(var);
-> > 
-> >  ffffffff8102ca2b:	48 8b 14 fd 80 09 74 	mov    -0x7e8bf680(,%rdi,8),%rdx
-> >  ffffffff8102ca32:	81 
-> >  ffffffff8102ca33:	48 c7 c0 d8 59 00 00 	mov    $0x59d8,%rax
-> >  ffffffff8102ca3a:	48 8b 04 10          	mov    (%rax,%rdx,1),%rax
-> > 
-> > We can get a single instruction by using the optimized variants:
-> > 
-> >  return percpu_read(var);
-> > 
-> >  ffffffff8102ca3f:	65 48 8b 05 91 8f fd 	mov    %gs:0x7efd8f91(%rip),%rax
-> > 
-> > I also cleaned up the x86-specific APIs and made the x86 code use these 
-> > new generic percpu primitives.
-> > 
-> > It looks quite hard to convince the compiler to generate the optimized 
-> > single-instruction sequence for us out of __get_cpu_var(var) - or can you 
-> > perhaps see a way to do it?
-> 
-> Yeah, I thought about that too but couldn't think of a way to persuade 
-> the compiler because the compiler doesn't know how to access the 
-> address.  I'll play with it a bit more but the clumsy percpu_*() 
-> accessors probably might be the only way.  :-(
+> > define percpu_sub(var, val)          ({ __get_cpu_var(var) -= (val); })
 
-the new ops are a pretty nice and clean solution i think.
+well spotted!
 
-Firstly, accessing the current CPU is the only safe shortcut anyway (there 
-is where we can do %fs/%gs / rip-relative addressing modes), and the 
-generic per_cpu() APIs dont really provide that guarantee for us. We might 
-be able to hook into __get_cpu_var() but those both require to be an 
-lvalue and are also relatively rarely used.
+> Thanks.  Will fold into the patch.
 
-So introducing the new, rather straightforward APIs and using them 
-wherever they matter for performance is good. Your patchset already shaved 
-off an instruction from ordinary per_cpu() accesses, so it's all moving 
-rather close to the most-optimal situation already.
+thanks!
+
+Is there any interim tree for us to pull into -tip? I'd rather not let 
+this grow too big, it will be harder and harder to debug any regressions. 
+Gradual progress is a lot more debuggable. Your initial patchset is 
+fantastic already (gives a ~0.2% kernel image size saving for defconfig), 
+so it's a very good start.
 
 	Ingo
