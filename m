@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbZAODXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbZAODZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbZAODXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZAODW7
+	id S1760135AbZAODZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZAODZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:22:59 -0500
-Received: from ozlabs.org ([203.10.76.45]:34462 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260AbZAODW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:22:58 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: regarding the x86_64 zero-based percpu patches
-Date: Thu, 15 Jan 2009 12:19:02 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, travis@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-References: <49649814.4040005@kernel.org> <496C071F.3000408@kernel.org> <m1k58zx305.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1k58zx305.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Jan 2009 22:25:27 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34456 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbZAODZ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 22:25:26 -0500
+Date: Thu, 15 Jan 2009 12:24:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
+ obsolete
+Message-Id: <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090114135539.GA21516@balbir.in.ibm.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<20090114135539.GA21516@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151219.03403.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 January 2009 14:37:38 Eric W. Biederman wrote:
-> It isn't incompatible with a per-cpu virtual mapping.  It allows the
-> possibility of each cpu reusing the same chunk of virtual address
-> space for per cpu memory.
+On Wed, 14 Jan 2009 19:25:39 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-This can be done (IA64 does it today), but it's not generically useful.  You can use it to frob a few simple values, but it means you can't store any pointers, and that just doesn't fly in general kernel code.
+> * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-14 17:51:21]:
+> 
+> > This is a new one. Please review.
+> > 
+> > ===
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > even after the directory has been removed, but it doesn't ensure that parents
+> > of it can be accessed: parents might have been freed already by rmdir.
+> > 
+> > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > climb up the tree.
+> > 
+> > Check if the memcg is obsolete, and don't call res_counter_uncharge when obsole.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> I liked the earlier, EBUSY approach that ensured that parents could
+> not go away if children exist. IMHO, the code has gotten too complex
+> and has too many corner cases. Time to revisit it.
+> 
 
-> I think it would be nice if the percpu area could grow and would not be
-> a fixed size at boot time, I'm not particularly convinced it has to.
+But I don't like -EBUSY ;)
 
-I used to be convinced it had to grow, but Christoph showed otherwise.  Nonetheless, it's an annoying restriction which is going to bite us in the ass repeatedly as coders use per_cpu on random sizes.
+When rmdir() returns -EBUSY even if there are no (visible) children and tasks,
+our customer will take kdump and send it to me "please explain this kernel bug"
 
-Rusty.
+I'm sure it will happen ;)
+
+-Kame
+
+
+
+> -- 
+> 	Balbir
+> 
+
