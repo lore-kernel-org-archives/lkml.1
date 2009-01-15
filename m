@@ -1,108 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935162AbZAOXFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936172AbZAOXG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935162AbZAOXFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936322AbZAOXEN
+	id S936172AbZAOXG1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936520AbZAOXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:04:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59521 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936281AbZAOXEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:04:08 -0500
-Date: Thu, 15 Jan 2009 15:03:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mhalcrow@us.ibm.com, ecryptfs-devel@lists.launchpad.net
-Subject: Re: [PATCH] ecryptfs: some inode attrs, and a question
-Message-Id: <20090115150332.f72ad0f8.akpm@linux-foundation.org>
-In-Reply-To: <7471.1231827621@jrobl>
-References: <7471.1231827621@jrobl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 15 Jan 2009 18:04:14 -0500
+Received: from 1wt.eu ([62.212.114.60]:1511 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936283AbZAOXEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 18:04:11 -0500
+Date: Fri, 16 Jan 2009 00:03:31 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: jarkao2@gmail.com, herbert@gondor.apana.org.au, zbr@ioremap.net,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090115230331.GB1123@1wt.eu>
+References: <20090113.232710.55011568.davem@davemloft.net> <20090114082630.GB16692@gondor.apana.org.au> <20090114085308.GB4234@ff.dom.local> <20090114.012919.117682429.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114.012919.117682429.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Jan 2009 15:20:21 +0900
-hooanon05@yahoo.co.jp wrote:
+On Wed, Jan 14, 2009 at 01:29:19AM -0800, David Miller wrote:
+> Therefore what I'll likely do is push Jarek's copy based cure,
+> and meanwhile we can brainstorm some more on how to fix this
+> properly in the long term.
+> 
+> So, I've put together a full commit message and Jarek's patch
+> below.  One thing I notice is that the silly skb_clone() done
+> by SKB splicing is no longer necessary.
+> 
+> We could get rid of that to offset (some) of the cost we are
+> adding with this bug fix.
+> 
+> Comments?
+
+David,
+
+please don't merge it as-is. I've just tried it and got an OOM
+in __alloc_pages_internal after a few seconds of data transfer.
+
+I'm leaving the patch below for comments, maybe someone will spot
+something ? Don't we need at least one kfree() somewhere to match
+alloc_pages() ?
+
+Regards,
+Willy
+
+--
 
 > 
-> Here are several fixes for linux-2.6.27/fs/ecryptfs.
+> net: Fix data corruption when splicing from sockets.
 > 
-> - The ecryptfs inode holds a reference to the lower inode, but doesn't
->   increment the reference counter. When a user sets inotify to the
->   ecryptfs inode, it may live without the corresponding dentry. In this
->   case the referecen to the lower inode may be broken.
->   This patch maintains the reference of the lower inode.
+> From: Jarek Poplawski <jarkao2@gmail.com>
 > 
-> - follow the VFS unlink sequence in ecryptfs_unlink() which is
->   inrementing and decrementing the inode->i_count and the reference
->   counter for the dentry.
+> The trick in socket splicing where we try to convert the skb->data
+> into a page based reference using virt_to_page() does not work so
+> well.
 > 
-> - maintain the link count and ctime in ecryptfs_rmdir() because a user
->   may issue fstat(2) later.
+> The idea is to pass the virt_to_page() reference via the pipe
+> buffer, and refcount the buffer using a SKB reference.
 > 
-> - remove the unnecessary d_drop()s in ecryptfs_link().
+> But if we are splicing from a socket to a socket (via sendpage)
+> this doesn't work.
 > 
-> And I have experienced a strange behaviour. When ecryptfs gets -ENOSPC
-> from the lower fs, it converts and returns EINVAL to the userspace. Is
-> this an intended behaviour?
+> The from side processing will grab the page (and SKB) references.
+> The sendpage() calls will grab page references only, return, and
+> then the from side processing completes and drops the SKB ref.
 > 
-
-I am puzzled by the current ecryptfs maintenance situation.
-
-I queued this for 2.6.30.  It could be bumped up for 2.6.29 (and even
-backported to 2.6.28 and earlier) with suitable acks from the
-maintainer(?)
-
+> The page based reference to skb->data is not enough to keep the
+> kmalloc() buffer backing it from being reused.  Yet, that is
+> all that the socket send side has at this point.
 > 
-> ...
->
-> +	atomic_inc_return(&lower_dentry->d_inode->i_count);
-> +	atomic_inc_return(&lower_inode->i_count);
-
-atomic_inc() would suffice here, yes?
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-s/atomic_inc_return/atomic_inc/
-
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: J. R. Okajima <hooanon05@yahoo.co.jp>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/ecryptfs/inode.c |    2 +-
- fs/ecryptfs/super.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -puN fs/ecryptfs/inode.c~ecryptfs-some-inode-attr-fixes-fix fs/ecryptfs/inode.c
---- a/fs/ecryptfs/inode.c~ecryptfs-some-inode-attr-fixes-fix
-+++ a/fs/ecryptfs/inode.c
-@@ -479,7 +479,7 @@ static int ecryptfs_unlink(struct inode 
- 
- 	lower_dir_dentry = lock_parent(lower_dentry);
- 	dget(lower_dentry);
--	atomic_inc_return(&lower_dentry->d_inode->i_count);
-+	atomic_inc(&lower_dentry->d_inode->i_count);
- 	rc = vfs_unlink(lower_dir_inode, lower_dentry);
- 	dput(lower_dentry);
- 	if (rc) {
-diff -puN fs/ecryptfs/super.c~ecryptfs-some-inode-attr-fixes-fix fs/ecryptfs/super.c
---- a/fs/ecryptfs/super.c~ecryptfs-some-inode-attr-fixes-fix
-+++ a/fs/ecryptfs/super.c
-@@ -102,7 +102,7 @@ static void ecryptfs_destroy_inode(struc
-  */
- void ecryptfs_init_inode(struct inode *inode, struct inode *lower_inode)
- {
--	atomic_inc_return(&lower_inode->i_count);
-+	atomic_inc(&lower_inode->i_count);
- 	ecryptfs_set_inode_lower(inode, lower_inode);
- 	inode->i_ino = lower_inode->i_ino;
- 	inode->i_version++;
-_
-
+> This leads to data corruption if the skb->data buffer is reused
+> by SLAB before the send side socket actually gets the TX packet
+> out to the device.
+> 
+> The fix employed here is to simply allocate a page and copy the
+> skb->data bytes into that page.
+> 
+> This will hurt performance, but there is no clear way to fix this
+> properly without a copy at the present time, and it is important
+> to get rid of the data corruption.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index 5110b35..6e43d52 100644
+> --- a/net/core/skbuff.c
+> +++ b/net/core/skbuff.c
+> @@ -73,17 +73,13 @@ static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+>  static void sock_pipe_buf_release(struct pipe_inode_info *pipe,
+>  				  struct pipe_buffer *buf)
+>  {
+> -	struct sk_buff *skb = (struct sk_buff *) buf->private;
+> -
+> -	kfree_skb(skb);
+> +	put_page(buf->page);
+>  }
+>  
+>  static void sock_pipe_buf_get(struct pipe_inode_info *pipe,
+>  				struct pipe_buffer *buf)
+>  {
+> -	struct sk_buff *skb = (struct sk_buff *) buf->private;
+> -
+> -	skb_get(skb);
+> +	get_page(buf->page);
+>  }
+>  
+>  static int sock_pipe_buf_steal(struct pipe_inode_info *pipe,
+> @@ -1334,9 +1330,19 @@ fault:
+>   */
+>  static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+>  {
+> -	struct sk_buff *skb = (struct sk_buff *) spd->partial[i].private;
+> +	put_page(spd->pages[i]);
+> +}
+>  
+> -	kfree_skb(skb);
+> +static inline struct page *linear_to_page(struct page *page, unsigned int len,
+> +					  unsigned int offset)
+> +{
+> +	struct page *p = alloc_pages(GFP_KERNEL, 0);
+> +
+> +	if (!p)
+> +		return NULL;
+> +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
+> +
+> +	return p;
+>  }
+>  
+>  /*
+> @@ -1344,16 +1350,23 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+>   */
+>  static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+>  				unsigned int len, unsigned int offset,
+> -				struct sk_buff *skb)
+> +				struct sk_buff *skb, int linear)
+>  {
+>  	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
+>  		return 1;
+>  
+> +	if (linear) {
+> +		page = linear_to_page(page, len, offset);
+> +		if (!page)
+> +			return 1;
+> +	}
+> +
+>  	spd->pages[spd->nr_pages] = page;
+>  	spd->partial[spd->nr_pages].len = len;
+>  	spd->partial[spd->nr_pages].offset = offset;
+> -	spd->partial[spd->nr_pages].private = (unsigned long) skb_get(skb);
+>  	spd->nr_pages++;
+> +	get_page(page);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -1369,7 +1382,7 @@ static inline void __segment_seek(struct page **page, unsigned int *poff,
+>  static inline int __splice_segment(struct page *page, unsigned int poff,
+>  				   unsigned int plen, unsigned int *off,
+>  				   unsigned int *len, struct sk_buff *skb,
+> -				   struct splice_pipe_desc *spd)
+> +				   struct splice_pipe_desc *spd, int linear)
+>  {
+>  	if (!*len)
+>  		return 1;
+> @@ -1392,7 +1405,7 @@ static inline int __splice_segment(struct page *page, unsigned int poff,
+>  		/* the linear region may spread across several pages  */
+>  		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
+>  
+> -		if (spd_fill_page(spd, page, flen, poff, skb))
+> +		if (spd_fill_page(spd, page, flen, poff, skb, linear))
+>  			return 1;
+>  
+>  		__segment_seek(&page, &poff, &plen, flen);
+> @@ -1419,7 +1432,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+>  	if (__splice_segment(virt_to_page(skb->data),
+>  			     (unsigned long) skb->data & (PAGE_SIZE - 1),
+>  			     skb_headlen(skb),
+> -			     offset, len, skb, spd))
+> +			     offset, len, skb, spd, 1))
+>  		return 1;
+>  
+>  	/*
+> @@ -1429,7 +1442,7 @@ static int __skb_splice_bits(struct sk_buff *skb, unsigned int *offset,
+>  		const skb_frag_t *f = &skb_shinfo(skb)->frags[seg];
+>  
+>  		if (__splice_segment(f->page, f->page_offset, f->size,
+> -				     offset, len, skb, spd))
+> +				     offset, len, skb, spd, 0))
+>  			return 1;
+>  	}
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
