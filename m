@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbZAOUDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932171AbZAOUGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932385AbZAOUDc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762653AbZAOUAW
+	id S932171AbZAOUGo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765675AbZAOUAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:22 -0500
-Received: from kroah.org ([198.145.64.141]:48743 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:00:31 -0500
+Received: from kroah.org ([198.145.64.141]:48804 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761672AbZAOUAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:18 -0500
-Date: Thu, 15 Jan 2009 11:57:25 -0800
+	id S1762950AbZAOUAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:24 -0500
+Date: Thu, 15 Jan 2009 11:57:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 06/94] x86: default to SWIOTLB=y on x86_64
-Message-ID: <20090115195725.GF14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       sshtylyov@ru.mvista.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [patch 11/94] tx493[89]ide: Fix length for __ide_flush_dcache_range
+Message-ID: <20090115195736.GK14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-default-to-swiotlb-y-on-x86_64.patch"
+Content-Disposition: inline; filename="tx493ide-fix-length-for-__ide_flush_dcache_range.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +40,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-commit a1afd01c175324656d0e8f1c82ea94b474953c04 upstream.
+commit f26f6ceacaaf017a677138cbca7ab076b565ca87 upstream.
 
-Impact: fixes korg bugzilla 11980
+This fixes data corruption on PIO mode.
 
-A kernel for a 64bit x86 system should always contain the swiotlb code
-in case it is booted on a machine without any hardware IOMMU supported
-by the kernel and more than 4GB of RAM. This patch changes Kconfig to
-always compile swiotlb into the kernel for x86_64.
-
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: sshtylyov@ru.mvista.com
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ide/tx4938ide.c |    4 ++--
+ drivers/ide/tx4939ide.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -569,7 +569,7 @@ config AMD_IOMMU
+--- a/drivers/ide/tx4938ide.c
++++ b/drivers/ide/tx4938ide.c
+@@ -181,7 +181,7 @@ static void tx4938ide_input_data_swap(id
  
- # need this always selected by IOMMU for the VIA workaround
- config SWIOTLB
--	bool
-+	def_bool y if X86_64
- 	help
- 	  Support for software bounce buffers used on x86-64 systems
- 	  which don't have a hardware IOMMU (e.g. the current generation
+ 	while (count--)
+ 		*ptr++ = cpu_to_le16(__raw_readw((void __iomem *)port));
+-	__ide_flush_dcache_range((unsigned long)buf, count * 2);
++	__ide_flush_dcache_range((unsigned long)buf, roundup(len, 2));
+ }
+ 
+ static void tx4938ide_output_data_swap(ide_drive_t *drive, struct request *rq,
+@@ -195,7 +195,7 @@ static void tx4938ide_output_data_swap(i
+ 		__raw_writew(le16_to_cpu(*ptr), (void __iomem *)port);
+ 		ptr++;
+ 	}
+-	__ide_flush_dcache_range((unsigned long)buf, count * 2);
++	__ide_flush_dcache_range((unsigned long)buf, roundup(len, 2));
+ }
+ 
+ static const struct ide_tp_ops tx4938ide_tp_ops = {
+--- a/drivers/ide/tx4939ide.c
++++ b/drivers/ide/tx4939ide.c
+@@ -558,7 +558,7 @@ static void tx4939ide_input_data_swap(id
+ 
+ 	while (count--)
+ 		*ptr++ = cpu_to_le16(__raw_readw((void __iomem *)port));
+-	__ide_flush_dcache_range((unsigned long)buf, count * 2);
++	__ide_flush_dcache_range((unsigned long)buf, roundup(len, 2));
+ }
+ 
+ static void tx4939ide_output_data_swap(ide_drive_t *drive, struct request *rq,
+@@ -572,7 +572,7 @@ static void tx4939ide_output_data_swap(i
+ 		__raw_writew(le16_to_cpu(*ptr), (void __iomem *)port);
+ 		ptr++;
+ 	}
+-	__ide_flush_dcache_range((unsigned long)buf, count * 2);
++	__ide_flush_dcache_range((unsigned long)buf, roundup(len, 2));
+ }
+ 
+ static const struct ide_tp_ops tx4939ide_tp_ops = {
 
