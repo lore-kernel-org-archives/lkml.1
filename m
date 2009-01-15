@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbZAOIvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbZAOIw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760885AbZAOIvz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZAOIvr
+	id S1762272AbZAOIw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZAOIwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:51:47 -0500
-Received: from cs-studio.ru ([195.178.208.66]:34849 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135AbZAOIvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:51:46 -0500
-Date: Thu, 15 Jan 2009 11:51:44 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, Bryan Donlan <bdonlan@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Matthias Andree <matthias.andree@gmx.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [take3] OOM documentation update [was: Linux killed Kenny, bastard!]
-Message-ID: <20090115085144.GC29586@ioremap.net>
-References: <661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com> <20090113152106.GA1134@ioremap.net> <alpine.DEB.2.00.0901131140340.8522@chino.kir.corp.google.com> <20090113213316.GB27227@ioremap.net> <alpine.DEB.2.00.0901131336040.17683@chino.kir.corp.google.com> <20090114161225.GA9584@ioremap.net> <20090114170606.GB12102@ioremap.net> <3e8340490901141353u3990148ft1b20220a8317f7dc@mail.gmail.com> <20090114221420.GB6039@ioremap.net> <alpine.DEB.2.00.0901141655390.22699@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Jan 2009 03:52:50 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:42364 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757207AbZAOIwt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 03:52:49 -0500
+Message-Id: <496F0796.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 15 Jan 2009 08:53:26 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: simplify HIGHMEM-related Kconfig entries
+References: <496DE927.76E4.0078.0@novell.com> <496E3F7D.2060908@zytor.com>
+In-Reply-To: <496E3F7D.2060908@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901141655390.22699@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 04:58:41PM -0800, David Rientjes (rientjes@google.com) wrote:
-> > +
-> > +The task with the highest badness score is then killed.
-> > +
-> 
-> Not quite, even after a task is selected for oom kill, the oom killer 
-> still prefers to kill one of its children first if any have a different 
-> mm.  See oom_kill_process().
+>>> "H. Peter Anvin" <hpa@zytor.com> 14.01.09 20:39 >>>
+>Jan Beulich wrote:
+>> Additionally remove the dependency of X86_PAE on !HIGHMEM4G - at least
+>> I can't understand why that dependency existed.
+>
+>At least originally, the meaning of the x86 highmem entries were:
+>
+>	No highmem	- No highmem, no PAE
+>	HIGHMEM4G	- Highmem, no PAE
+>	HIGHMEM64G	- Highmem, PAE
+>
+>So X86_PAE and HIGHMEM4G is a bit of a contradiction.  I haven't looked 
+>at the logic in detail, or remember offhand if there have been any 
+>weakening of the definitions above; e.g. someone could have implemented 
+>a way to do PAE without highmem, to get access to the NX bits.
 
-Ok, if it was not clear from the description.
+Exactly - .23 made PAE an independently selectable option (in particular,
+the no-highmem+PAE combination is now valid), but I can't see why it
+added the !HIGHMEM4G dependency.
 
-> You also don't mention the exception of OOM_DISABLE (oom_adj score of -17) 
-> in your formula for how oom_adj impacts the points value.  Although its 
-> already explained earlier, it should be mentioned here since a oom_adj is 
-> an int and a right shift of 17 does not guarantee `points' will be 0.
+Jan
 
-It is written several lines above.
-
--- 
-	Evgeniy Polyakov
