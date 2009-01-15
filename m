@@ -1,81 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZAOMx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZAOMzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbZAOMx1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZAOMxP
+	id S1758190AbZAOMzU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZAOMzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:53:15 -0500
-Received: from csamuel.org ([207.210.213.14]:44446 "EHLO csamuel.org"
+	Thu, 15 Jan 2009 07:55:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52866 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbZAOMxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:53:14 -0500
-From: Chris Samuel <chris@csamuel.org>
-To: linux-btrfs@vger.kernel.org
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Date: Thu, 15 Jan 2009 23:53:02 +1100
-User-Agent: KMail/1.10.1 (Linux/2.6.28-cs1; KDE/4.1.2; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       paulmck@linux.vnet.ibm.com, ghaskins@novell.com, matthew@wil.cx,
-       andi@firstfloor.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       tglx@linutronix.de, npiggin@suse.de, pmorreale@novell.com,
-       SDietrich@novell.com, dmitry.adamushko@gmail.com, hannes@cmpxchg.org
-References: <20090114105300.66bd014d.akpm@linux-foundation.org> <ac3eb2510901141350x16c0f67cp46376e57062eaef9@mail.gmail.com> <20090114223408.GA19173@elte.hu>
-In-Reply-To: <20090114223408.GA19173@elte.hu>
+	id S1752454AbZAOMy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:54:59 -0500
+Date: Thu, 15 Jan 2009 13:54:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>, Brian Rogers <brian@xyzw.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] How to get real-time priority using idle priority
+Message-ID: <20090115125451.GB21839@elte.hu>
+References: <4969D0D7.2060401@xyzw.org> <1231736941.6003.7.camel@marge.simson.net> <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu> <496BE8F6.1040308@xyzw.org> <1232011723.26761.36.camel@marge.simson.net> <1232014456.8870.26.camel@laptop> <1232015423.13856.5.camel@marge.simson.net> <1232019428.5720.8.camel@marge.simson.net> <1232019686.8870.45.camel@laptop>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5190305.3EItt4FeP3";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901152353.05990.chris@csamuel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232019686.8870.45.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5190305.3EItt4FeP3
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Thu, 15 Jan 2009 9:34:08 am Ingo Molnar wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> So the 3 main Linux distros, generating ~95% of the kerneloops.org
-> feedback traffic, all have SCHED_DEBUG=3Dy, and at least two have
-> !DEBUG_MUTEXES. (possibly Ubuntu has that disabled it too)
+> > > Aha.  Yeah, I'll re-test with that instead.
+> > 
+> > Works a treat.
+> 
+> *cheer* lets get this merged asap, and CC -stable as well.
 
-That looks correct for Ubuntu:
+I've created the delta patch below for sched/urgent - i've been testing 
+the previous version already. Mike, do you agree with this splitup?
 
-chris@mythtv:~$ grep CONFIG_DEBUG_MUTEXES /boot/config-2.6.2*
-/boot/config-2.6.24-21-generic:# CONFIG_DEBUG_MUTEXES is not set
-/boot/config-2.6.27-7-generic:# CONFIG_DEBUG_MUTEXES is not set
-/boot/config-2.6.27-9-generic:# CONFIG_DEBUG_MUTEXES is not set
+	Ingo
 
+--------------->
+>From 7bad8c0618dc32ecf7632b7d5abfb21645ee6b60 Mon Sep 17 00:00:00 2001
+From: Mike Galbraith <efault@gmx.de>
+Date: Thu, 15 Jan 2009 10:28:43 +0100
+Subject: [PATCH] sched: fix SCHED_IDLE latency/starvation, v2
 
-=2D-=20
- Chris Samuel  :  http://www.csamuel.org/  :  Melbourne, VIC
+The below seems to cure all of the problems I've encountered.
 
-This email may come with a PGP signature as a file. Do not panic.
-=46or more info see: http://en.wikipedia.org/wiki/OpenPGP
+The rate of advance thing in set_task_cpu() seems to have been a case of
+fixing the symptom instead of the problem.  Perhaps this needs more
+thought, but my box says "Red-Herring" ;-)
 
+The real problem (excluding the SCHED_IDLE specific problems), is that
+update_min_vruntime() doesn't work quite as intended, and will slam
+min_vruntime far right if load balancing etc places a task which is far
+right of the currently running task on the runqueue.  If the currently
+running, and up to this point the min_vruntime pace setter, is a hog,
+any task waking to this runqueue after min_vruntime leaps forward has to
+wait for the hog to consume the gap.  In the case of SCHED_IDLE tasks,
+that gap can be huge, but even with a nice 19 tasks it can be quite
+large and painful.
 
---nextPart5190305.3EItt4FeP3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Removing the if (vruntime == cfs_rq->min_vruntime) test, which will be
+true if the currently running task is the pace setter, cured it for me.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: <stable@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c      |   23 ++++-------------------
+ kernel/sched_fair.c |   13 +++++++------
+ 2 files changed, 11 insertions(+), 25 deletions(-)
 
-iQEVAwUASW8xsY1yjaOTJg85AQJttggAjdGnncYFLUopmVOqSR1+znnTz4IoAGGz
-5B58r35VpgvlIqZoldWMzCqK99aDyt2eLc4I+vcpr54za29UgAytrquGR1S9MzDv
-VC/Mm4SfYPAPZ9anbowMUEKQD+rSXXq02yEprcSEE3TyWH9EoqMZoehVkkegJFzd
-ZSXtU/vhZQ4DJavu0FF6xRwvGR2IlDBqCNeDbTFxQAUuXe1HEFqsdqHlLgRKbk2v
-JNB8s+Q3QpGugElMEdK/bXbxm5V3lWioKHM7jOjJWtvYuUGlCXR8ZY5ajHHiTkE2
-VnmqiTEiuBPfKK+wZVkcmGdwyWkqCXUy2+dT6AV4LQwXCbQxr6gANA==
-=bTVt
------END PGP SIGNATURE-----
-
---nextPart5190305.3EItt4FeP3--
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e551bb6..b087c7f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1323,8 +1323,8 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
+  * slice expiry etc.
+  */
+ 
+-#define WEIGHT_IDLEPRIO		2
+-#define WMULT_IDLEPRIO		(1 << 31)
++#define WEIGHT_IDLEPRIO		3
++#define WMULT_IDLEPRIO		1431655765
+ 
+ /*
+  * Nice levels are multiplicative, with a gentle 10% change for every
+@@ -1891,23 +1891,8 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+ 			schedstat_inc(p, se.nr_forced2_migrations);
+ 	}
+ #endif
+-	if (old_cpu != new_cpu) {
+-		s64 delta = p->se.vruntime - old_cfsrq->min_vruntime;
+-
+-		/*
+-		 * min_vruntimes may be advancing at wildly different
+-		 * rates, so we must scale the delta accordingly.
+-		 */
+-		if (new_cfsrq->load.weight != old_cfsrq->load.weight) {
+-			int negative = delta < 0;
+-
+-			delta = negative ? -delta : delta;
+-			delta = calc_delta_mine(delta,
+-				new_cfsrq->load.weight, &old_cfsrq->load);
+-			delta = negative ? -delta : delta;
+-		}
+-		p->se.vruntime = new_cfsrq->min_vruntime + delta;
+-	}
++	p->se.vruntime -= old_cfsrq->min_vruntime -
++					 new_cfsrq->min_vruntime;
+ 
+ 	__set_task_cpu(p, new_cpu);
+ }
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 500ed14..761071d 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -283,10 +283,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
+ 						   struct sched_entity,
+ 						   run_node);
+ 
+-		if (vruntime == cfs_rq->min_vruntime)
+-			vruntime = se->vruntime;
+-		else
+-			vruntime = min_vruntime(vruntime, se->vruntime);
++		vruntime = min_vruntime(vruntime, se->vruntime);
+ 	}
+ 
+ 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
+@@ -677,9 +674,13 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 			unsigned long thresh = sysctl_sched_latency;
+ 
+ 			/*
+-			 * convert the sleeper threshold into virtual time
++			 * Convert the sleeper threshold into virtual time.
++			 * SCHED_IDLE is a special sub-class.  We care about
++			 * fairness only relative to other SCHED_IDLE tasks,
++			 * all of which have the same weight.
+ 			 */
+-			if (sched_feat(NORMALIZED_SLEEPER))
++			if (sched_feat(NORMALIZED_SLEEPER) &&
++					task_of(se)->policy != SCHED_IDLE)
+ 				thresh = calc_delta_fair(thresh, se);
+ 
+ 			vruntime -= thresh;
