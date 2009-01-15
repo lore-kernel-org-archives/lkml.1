@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761723AbZAOHje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762597AbZAOHl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761723AbZAOHje (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762821AbZAOHik
+	id S1762597AbZAOHl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbZAOHlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:38:40 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50704 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762812AbZAOHij (ORCPT
+	Thu, 15 Jan 2009 02:41:47 -0500
+Received: from sorrow.cyrius.com ([65.19.161.204]:37330 "EHLO
+	sorrow.cyrius.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756086AbZAOHlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:38:39 -0500
-Message-ID: <496EE7ED.10408@jp.fujitsu.com>
-Date: Thu, 15 Jan 2009 16:38:21 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 15 Jan 2009 02:41:47 -0500
+Date: Thu, 15 Jan 2009 08:41:34 +0100
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "elendil@planet.nl" <elendil@planet.nl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       fengguang.wu@intel.com
+Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
+Message-ID: <20090115074134.GA22704@deprecation.cyrius.com>
+References: <200901121356.46236.elendil@planet.nl> <20090113123056.GA2464@deprecation.cyrius.com> <20090114162603.c632d82e.akpm@linux-foundation.org> <20090115020311.GA18740@srcf.ucam.org> <20090114181542.34614acf.akpm@linux-foundation.org> <20090115022106.GA19069@srcf.ucam.org> <1231988103.20746.149.camel@rzhang-dt>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-References: <200901042346.42723.rjw@sisk.pl> <496D815E.8010107@jp.fujitsu.com> <200901141135.31165.rjw@sisk.pl> <200901141157.32720.rjw@sisk.pl>
-In-Reply-To: <200901141157.32720.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231988103.20746.149.camel@rzhang-dt>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
->> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
-> [...]
->>> I'm sorry but I don't understand what the problem is.
->>> Do you mean pci_disable_msix() doesn't work on some platforms?
->> No, I don't.  It was just confusion on my side, sorry.
->>
->> Please have a look at the new version of the patch I sent yesterday
->> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
-> 
-> BTW, in your patch the first dummy pci_enable_msix() allocates just one
-> vector, which means that the contents of both
-> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
-> if my reading of the spec (PCI 3.0 in this case) is correct.
+* Zhang Rui <rui.zhang@intel.com> [2009-01-15 10:55]:
+> please check if this is a duplicate of bug #11259.
+> http://bugzilla.kernel.org/show_bug.cgi?id=11259
 
-According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
-it seems your reading is not correct.
+It certainly sounds so.
 
-Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
-for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
-Spec says that the port could be designed for software to configure entries
-assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
+BTW, here is my original bug report which contains an easy recipe to
+reproduce the problem: http://lkml.org/lkml/2008/6/16/157
+And here's a bug report from Ubuntu that shows that the HP 6710b,
+HP 6510b and HP 2510p laptops are affected:
+https://bugs.launchpad.net/ubuntu/+source/acpid/+bug/157691
 
-So if there is just one vector, it could be AAAA.
-
-Thanks,
-H.Seto
-
+Thanks for looking into this issue.
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
