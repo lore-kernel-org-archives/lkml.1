@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935640AbZAOWWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZAOWX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935640AbZAOWWn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933739AbZAOWCn
+	id S1756186AbZAOWX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933749AbZAOWCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:43 -0500
-Received: from kroah.org ([198.145.64.141]:38488 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:44 -0500
+Received: from kroah.org ([198.145.64.141]:38510 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932400AbZAOWC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:28 -0500
-Date: Thu, 15 Jan 2009 14:00:09 -0800
+	id S1763673AbZAOWCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:30 -0500
+Date: Thu, 15 Jan 2009 14:00:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 37/85] [PATCH 17/44] [CVE-2009-0029] System call wrappers
-	part 07
-Message-ID: <20090115220009.GL17227@kroah.com>
+Subject: [patch 38/85] [PATCH 18/44] [CVE-2009-0029] System call wrappers
+	part 08
+Message-ID: <20090115220011.GM17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0017--CVE-2009-0029-System-call-wrappers-part-07.patch"
+Content-Disposition: inline; filename="0018--CVE-2009-0029-System-call-wrappers-part-08.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,127 +42,151 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 754fe8d297bfae7b77f7ce866e2fb0c5fb186506 upstream.
+commit 17da2bd90abf428523de0fb98f7075e00e3ed42e upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/exit.c   |    8 ++++----
- kernel/kexec.c  |    5 ++---
- kernel/sched.c  |    4 ++--
- kernel/signal.c |    2 +-
- kernel/sys.c    |    7 ++++---
- net/socket.c    |    2 +-
- 6 files changed, 14 insertions(+), 14 deletions(-)
+ kernel/exit.c   |    7 +++----
+ kernel/fork.c   |    2 +-
+ kernel/futex.c  |    6 +++---
+ kernel/module.c |   10 ++++------
+ kernel/sched.c  |    2 +-
+ kernel/signal.c |   18 +++++++-----------
+ 6 files changed, 19 insertions(+), 26 deletions(-)
 
 --- a/kernel/exit.c
 +++ b/kernel/exit.c
-@@ -1145,7 +1145,7 @@ NORET_TYPE void complete_and_exit(struct
- 
- EXPORT_SYMBOL(complete_and_exit);
- 
--asmlinkage long sys_exit(int error_code)
-+SYSCALL_DEFINE1(exit, int, error_code)
- {
- 	do_exit((error_code&0xff)<<8);
- }
-@@ -1186,7 +1186,7 @@ do_group_exit(int exit_code)
-  * wait4()-ing process will get the correct exit code - even if this
-  * thread is not the thread group leader.
-  */
--asmlinkage long sys_exit_group(int error_code)
-+SYSCALL_DEFINE1(exit_group, int, error_code)
- {
- 	do_group_exit((error_code & 0xff) << 8);
- 	/* NOTREACHED */
-@@ -1792,8 +1792,8 @@ asmlinkage long sys_waitid(int which, pi
- 	return ret;
+@@ -1751,9 +1751,8 @@ end:
+ 	return retval;
  }
  
--asmlinkage long sys_wait4(pid_t upid, int __user *stat_addr,
--			  int options, struct rusage __user *ru)
-+SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
-+		int, options, struct rusage __user *, ru)
+-asmlinkage long sys_waitid(int which, pid_t upid,
+-			   struct siginfo __user *infop, int options,
+-			   struct rusage __user *ru)
++SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
++		infop, int, options, struct rusage __user *, ru)
  {
  	struct pid *pid = NULL;
  	enum pid_type type;
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -933,9 +933,8 @@ struct kimage *kexec_crash_image;
- 
- static DEFINE_MUTEX(kexec_mutex);
- 
--asmlinkage long sys_kexec_load(unsigned long entry, unsigned long nr_segments,
--				struct kexec_segment __user *segments,
--				unsigned long flags)
-+SYSCALL_DEFINE4(kexec_load, unsigned long, entry, unsigned long, nr_segments,
-+		struct kexec_segment __user *, segments, unsigned long, flags)
+@@ -1830,7 +1829,7 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int 
+  * sys_waitpid() remains for compatibility. waitpid() should be
+  * implemented by calling sys_wait4() from libc.a.
+  */
+-asmlinkage long sys_waitpid(pid_t pid, int __user *stat_addr, int options)
++SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
  {
- 	struct kimage **dest_image, *image;
- 	int result;
+ 	return sys_wait4(pid, stat_addr, options, NULL);
+ }
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -865,7 +865,7 @@ static void copy_flags(unsigned long clo
+ 	clear_freeze_flag(p);
+ }
+ 
+-asmlinkage long sys_set_tid_address(int __user *tidptr)
++SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
+ {
+ 	current->clear_child_tid = tidptr;
+ 
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2036,9 +2036,9 @@ long do_futex(u32 __user *uaddr, int op,
+ }
+ 
+ 
+-asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
+-			  struct timespec __user *utime, u32 __user *uaddr2,
+-			  u32 val3)
++SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
++		struct timespec __user *, utime, u32 __user *, uaddr2,
++		u32, val3)
+ {
+ 	struct timespec ts;
+ 	ktime_t t, *tp = NULL;
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -715,8 +715,8 @@ static void wait_for_zero_refcount(struc
+ 	mutex_lock(&module_mutex);
+ }
+ 
+-asmlinkage long
+-sys_delete_module(const char __user *name_user, unsigned int flags)
++SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
++		unsigned int, flags)
+ {
+ 	struct module *mod;
+ 	char name[MODULE_NAME_LEN];
+@@ -2257,10 +2257,8 @@ static noinline struct module *load_modu
+ }
+ 
+ /* This is where the real work happens */
+-asmlinkage long
+-sys_init_module(void __user *umod,
+-		unsigned long len,
+-		const char __user *uargs)
++SYSCALL_DEFINE3(init_module, void __user *, umod,
++		unsigned long, len, const char __user *, uargs)
+ {
+ 	struct module *mod;
+ 	int ret = 0;
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -5651,8 +5651,8 @@ SYSCALL_DEFINE1(sched_get_priority_min, 
+@@ -5651,7 +5651,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, 
   * this syscall writes the default timeslice value of a given process
   * into the user-space timespec buffer. A value of '0' means infinity.
   */
--asmlinkage
--long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
-+SYSCALL_DEFINE4(sched_rr_get_interval, pid_t, pid,
-+		struct timespec __user *, interval)
+-SYSCALL_DEFINE4(sched_rr_get_interval, pid_t, pid,
++SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
+ 		struct timespec __user *, interval)
  {
  	struct task_struct *p;
- 	unsigned int time_slice;
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -1936,7 +1936,7 @@ EXPORT_SYMBOL(unblock_all_signals);
-  * System call entry points.
-  */
- 
--asmlinkage long sys_restart_syscall(void)
-+SYSCALL_DEFINE0(restart_syscall)
- {
- 	struct restart_block *restart = &current_thread_info()->restart_block;
- 	return restart->fn(restart);
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -137,7 +137,7 @@ out:
+@@ -1989,8 +1989,8 @@ int sigprocmask(int how, sigset_t *set, 
  	return error;
  }
  
--asmlinkage long sys_setpriority(int which, int who, int niceval)
-+SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+-asmlinkage long
+-sys_rt_sigprocmask(int how, sigset_t __user *set, sigset_t __user *oset, size_t sigsetsize)
++SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, set,
++		sigset_t __user *, oset, size_t, sigsetsize)
  {
- 	struct task_struct *g, *p;
- 	struct user_struct *user;
-@@ -201,7 +201,7 @@ out:
-  * has been offset by 20 (ie it returns 40..1 instead of -20..19)
-  * to stay compatible.
-  */
--asmlinkage long sys_getpriority(int which, int who)
-+SYSCALL_DEFINE2(getpriority, int, which, int, who)
- {
- 	struct task_struct *g, *p;
- 	struct user_struct *user;
-@@ -347,7 +347,8 @@ EXPORT_SYMBOL_GPL(kernel_power_off);
-  *
-  * reboot doesn't sync: do that yourself before calling this.
-  */
--asmlinkage long sys_reboot(int magic1, int magic2, unsigned int cmd, void __user * arg)
-+SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
-+		void __user *, arg)
- {
- 	char buffer[256];
+ 	int error = -EINVAL;
+ 	sigset_t old_set, new_set;
+@@ -2049,8 +2049,7 @@ out:
+ 	return error;
+ }	
  
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1854,7 +1854,7 @@ out_put:
-  *	Shutdown a socket.
-  */
- 
--asmlinkage long sys_shutdown(int fd, int how)
-+SYSCALL_DEFINE2(shutdown, int, fd, int, how)
+-asmlinkage long
+-sys_rt_sigpending(sigset_t __user *set, size_t sigsetsize)
++SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, set, size_t, sigsetsize)
  {
- 	int err, fput_needed;
- 	struct socket *sock;
+ 	return do_sigpending(set, sigsetsize);
+ }
+@@ -2121,11 +2120,9 @@ int copy_siginfo_to_user(siginfo_t __use
+ 
+ #endif
+ 
+-asmlinkage long
+-sys_rt_sigtimedwait(const sigset_t __user *uthese,
+-		    siginfo_t __user *uinfo,
+-		    const struct timespec __user *uts,
+-		    size_t sigsetsize)
++SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
++		siginfo_t __user *, uinfo, const struct timespec __user *, uts,
++		size_t, sigsetsize)
+ {
+ 	int ret, sig;
+ 	sigset_t these;
+@@ -2198,8 +2195,7 @@ sys_rt_sigtimedwait(const sigset_t __use
+ 	return ret;
+ }
+ 
+-asmlinkage long
+-sys_kill(pid_t pid, int sig)
++SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
+ {
+ 	struct siginfo info;
+ 
 
