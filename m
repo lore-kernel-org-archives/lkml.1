@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbZAOLOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764570AbZAOLPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764470AbZAOLOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759978AbZAOLOV
+	id S1764570AbZAOLPK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbZAOLOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:14:21 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:34219 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759901AbZAOLOU (ORCPT
+	Thu, 15 Jan 2009 06:14:55 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:1292 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756719AbZAOLOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:14:20 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <496F1A85.6030304@gmail.com>
-Date: Thu, 15 Jan 2009 11:14:13 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 15 Jan 2009 06:14:54 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=PJ9MElt0cmNBgc9i0x7ME5vPnAeVp3zyiLZe4wDItHr9uYuErXlRCETDXJZpVu+QK
+	1dTZyr0cWfESV4tGIEDDg==
+Date: Thu, 15 Jan 2009 03:13:20 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Evgeniy Polyakov <zbr@ioremap.net>
+cc: linux-kernel@vger.kernel.org, Bryan Donlan <bdonlan@gmail.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Matthias Andree <matthias.andree@gmx.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [take4] OOM documentation update [was: Linux killed Kenny,
+ bastard!]
+In-Reply-To: <20090115085703.GD29586@ioremap.net>
+Message-ID: <alpine.DEB.2.00.0901150312580.22802@chino.kir.corp.google.com>
+References: <661de9470901130700m34c4938cm6feeb6fc561d605a@mail.gmail.com> <20090113152106.GA1134@ioremap.net> <alpine.DEB.2.00.0901131140340.8522@chino.kir.corp.google.com> <20090113213316.GB27227@ioremap.net> <alpine.DEB.2.00.0901131336040.17683@chino.kir.corp.google.com>
+ <20090114161225.GA9584@ioremap.net> <20090114170606.GB12102@ioremap.net> <3e8340490901141353u3990148ft1b20220a8317f7dc@mail.gmail.com> <20090114221420.GB6039@ioremap.net> <alpine.DEB.2.00.0901141655390.22699@chino.kir.corp.google.com>
+ <20090115085703.GD29586@ioremap.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Mike Rapoport <mike@compulab.co.il>
-CC: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
-       eric miao <eric.y.miao@gmail.com>, felipe.balbi@nokia.com,
-       Liam Girdwood <lrg@kernel.org>
-Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support within
- mfd driver.
-References: <496E2BE5.1050803@cam.ac.uk> <496ED9EF.2050507@compulab.co.il>
-In-Reply-To: <496ED9EF.2050507@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.28.16.146
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Rapoport wrote:
-> Jonathan,
-> Below are my two cents :)
-Thanks. 
-> Jonathan Cameron wrote:
->> From: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> Add support for changing the mode of the da9030 usb charge pump
->>
->> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> ---
->>
->> Minor changes from previous version to reflect changes in the
->> driver being patched. Addtional cc's as per Mark's suggestion.
->>
->> This version simply adds the functionality to the da903x mfd driver
->> core. If anyone can suggest a way round simply maintaining a
->> global pointer to the device it would be good.
-> 
-> I don't think the global pointer here is real problem. It should be *really*
-> weird design with two da903x.
-Would be 'unusual'!
- 
->> To be able to call this from a board config file the driver must be
->> built in rather than a module but enforcing that is down to the
->> board Kconfig entry.
-> 
-> Most probably the board with da9030 will anyway have it built-in...
-Agreed.
->> +EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
->> +
-> 
-> Maybe we want to have 'da9030_set_usb_charge_pump_mode' as well?
-(get?)
-Possibly, though only purpose I can think of for this would be debugging
-and from the datasheet I can't see any case under which the set can fail?
+On Thu, 15 Jan 2009, Evgeniy Polyakov wrote:
 
+> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+> 
 
+Acked-by: David Rientjes <rientjes@google.com>
