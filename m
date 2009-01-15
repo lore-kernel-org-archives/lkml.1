@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbZAOWZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935534AbZAOW0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932654AbZAOWZW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbZAOWCr
+	id S935534AbZAOW0J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933799AbZAOWCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:47 -0500
+	Thu, 15 Jan 2009 17:02:48 -0500
 Received: from kroah.org ([198.145.64.141]:38510 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756476AbZAOWCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:33 -0500
-Date: Thu, 15 Jan 2009 14:00:17 -0800
+	id S1765960AbZAOWCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:34 -0500
+Date: Thu, 15 Jan 2009 14:00:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 41/85] [PATCH 21/44] [CVE-2009-0029] System call wrappers
-	part 11
-Message-ID: <20090115220017.GP17227@kroah.com>
+Subject: [patch 42/85] [PATCH 22/44] [CVE-2009-0029] System call wrappers
+	part 12
+Message-ID: <20090115220019.GQ17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0021--CVE-2009-0029-System-call-wrappers-part-11.patch"
+Content-Disposition: inline; filename="0022--CVE-2009-0029-System-call-wrappers-part-12.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,114 +42,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 257ac264d69017270fbc3cf5536953525db4076c upstream.
+commit 64fd1de3d821659ac0a3004fd5ee1de59e64af30 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/open.c  |    2 +-
- fs/stat.c  |   20 ++++++++++++--------
- fs/super.c |    2 +-
- 3 files changed, 14 insertions(+), 10 deletions(-)
+ fs/xattr.c |   46 +++++++++++++++++++++-------------------------
+ 1 file changed, 21 insertions(+), 25 deletions(-)
 
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -174,7 +174,7 @@ out:
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -251,9 +251,9 @@ setxattr(struct dentry *d, const char __
  	return error;
  }
  
--asmlinkage long sys_fstatfs64(unsigned int fd, size_t sz, struct statfs64 __user *buf)
-+SYSCALL_DEFINE3(fstatfs64, unsigned int, fd, size_t, sz, struct statfs64 __user *, buf)
+-asmlinkage long
+-sys_setxattr(const char __user *pathname, const char __user *name,
+-	     const void __user *value, size_t size, int flags)
++SYSCALL_DEFINE5(setxattr, const char __user *, pathname,
++		const char __user *, name, const void __user *, value,
++		size_t, size, int, flags)
  {
- 	struct file * file;
- 	struct statfs64 tmp;
---- a/fs/stat.c
-+++ b/fs/stat.c
-@@ -162,7 +162,8 @@ SYSCALL_DEFINE2(stat, char __user *, fil
- 
- 	return error;
- }
--asmlinkage long sys_lstat(char __user * filename, struct __old_kernel_stat __user * statbuf)
-+
-+SYSCALL_DEFINE2(lstat, char __user *, filename, struct __old_kernel_stat __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_lstat_fd(AT_FDCWD, filename, &stat);
-@@ -172,7 +173,8 @@ asmlinkage long sys_lstat(char __user * 
- 
- 	return error;
- }
--asmlinkage long sys_fstat(unsigned int fd, struct __old_kernel_stat __user * statbuf)
-+
-+SYSCALL_DEFINE2(fstat, unsigned int, fd, struct __old_kernel_stat __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_fstat(fd, &stat);
-@@ -235,7 +237,7 @@ static int cp_new_stat(struct kstat *sta
- 	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
- }
- 
--asmlinkage long sys_newstat(char __user *filename, struct stat __user *statbuf)
-+SYSCALL_DEFINE2(newstat, char __user *, filename, struct stat __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_stat_fd(AT_FDCWD, filename, &stat);
-@@ -246,7 +248,7 @@ asmlinkage long sys_newstat(char __user 
+ 	struct path path;
+ 	int error;
+@@ -270,9 +270,9 @@ sys_setxattr(const char __user *pathname
  	return error;
  }
  
--asmlinkage long sys_newlstat(char __user *filename, struct stat __user *statbuf)
-+SYSCALL_DEFINE2(newlstat, char __user *, filename, struct stat __user *, statbuf)
+-asmlinkage long
+-sys_lsetxattr(const char __user *pathname, const char __user *name,
+-	      const void __user *value, size_t size, int flags)
++SYSCALL_DEFINE5(lsetxattr, const char __user *, pathname,
++		const char __user *, name, const void __user *, value,
++		size_t, size, int, flags)
  {
- 	struct kstat stat;
- 	int error = vfs_lstat_fd(AT_FDCWD, filename, &stat);
-@@ -280,7 +282,7 @@ out:
- }
- #endif
- 
--asmlinkage long sys_newfstat(unsigned int fd, struct stat __user *statbuf)
-+SYSCALL_DEFINE2(newfstat, unsigned int, fd, struct stat __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_fstat(fd, &stat);
-@@ -365,7 +367,7 @@ static long cp_new_stat64(struct kstat *
- 	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
- }
- 
--asmlinkage long sys_stat64(char __user * filename, struct stat64 __user * statbuf)
-+SYSCALL_DEFINE2(stat64, char __user *, filename, struct stat64 __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_stat(filename, &stat);
-@@ -375,7 +377,8 @@ asmlinkage long sys_stat64(char __user *
- 
+ 	struct path path;
+ 	int error;
+@@ -289,9 +289,8 @@ sys_lsetxattr(const char __user *pathnam
  	return error;
  }
--asmlinkage long sys_lstat64(char __user * filename, struct stat64 __user * statbuf)
-+
-+SYSCALL_DEFINE2(lstat64, char __user *, filename, struct stat64 __user *, statbuf)
- {
- 	struct kstat stat;
- 	int error = vfs_lstat(filename, &stat);
-@@ -385,7 +388,8 @@ asmlinkage long sys_lstat64(char __user 
  
+-asmlinkage long
+-sys_fsetxattr(int fd, const char __user *name, const void __user *value,
+-	      size_t size, int flags)
++SYSCALL_DEFINE5(fsetxattr, int, fd, const char __user *, name,
++		const void __user *,value, size_t, size, int, flags)
+ {
+ 	struct file *f;
+ 	struct dentry *dentry;
+@@ -349,9 +348,8 @@ getxattr(struct dentry *d, const char __
  	return error;
  }
--asmlinkage long sys_fstat64(unsigned long fd, struct stat64 __user * statbuf)
-+
-+SYSCALL_DEFINE2(fstat64, unsigned long, fd, struct stat64 __user *, statbuf)
+ 
+-asmlinkage long
+-sys_getxattr(const char __user *pathname, const char __user *name,
+-	     void __user *value, size_t size)
++SYSCALL_DEFINE4(getxattr, const char __user *, pathname,
++		const char __user *, name, void __user *, value, size_t, size)
  {
- 	struct kstat stat;
- 	int error = vfs_fstat(fd, &stat);
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -534,7 +534,7 @@ rescan:
- 	return NULL;
+ 	struct path path;
+ 	ssize_t error;
+@@ -364,9 +362,8 @@ sys_getxattr(const char __user *pathname
+ 	return error;
  }
  
--asmlinkage long sys_ustat(unsigned dev, struct ustat __user * ubuf)
-+SYSCALL_DEFINE2(ustat, unsigned, dev, struct ustat __user *, ubuf)
+-asmlinkage long
+-sys_lgetxattr(const char __user *pathname, const char __user *name, void __user *value,
+-	      size_t size)
++SYSCALL_DEFINE4(lgetxattr, const char __user *, pathname,
++		const char __user *, name, void __user *, value, size_t, size)
  {
-         struct super_block *s;
-         struct ustat tmp;
+ 	struct path path;
+ 	ssize_t error;
+@@ -379,8 +376,8 @@ sys_lgetxattr(const char __user *pathnam
+ 	return error;
+ }
+ 
+-asmlinkage long
+-sys_fgetxattr(int fd, const char __user *name, void __user *value, size_t size)
++SYSCALL_DEFINE4(fgetxattr, int, fd, const char __user *, name,
++		void __user *, value, size_t, size)
+ {
+ 	struct file *f;
+ 	ssize_t error = -EBADF;
+@@ -424,8 +421,8 @@ listxattr(struct dentry *d, char __user 
+ 	return error;
+ }
+ 
+-asmlinkage long
+-sys_listxattr(const char __user *pathname, char __user *list, size_t size)
++SYSCALL_DEFINE3(listxattr, const char __user *, pathname, char __user *, list,
++		size_t, size)
+ {
+ 	struct path path;
+ 	ssize_t error;
+@@ -438,8 +435,8 @@ sys_listxattr(const char __user *pathnam
+ 	return error;
+ }
+ 
+-asmlinkage long
+-sys_llistxattr(const char __user *pathname, char __user *list, size_t size)
++SYSCALL_DEFINE3(llistxattr, const char __user *, pathname, char __user *, list,
++		size_t, size)
+ {
+ 	struct path path;
+ 	ssize_t error;
+@@ -452,8 +449,7 @@ sys_llistxattr(const char __user *pathna
+ 	return error;
+ }
+ 
+-asmlinkage long
+-sys_flistxattr(int fd, char __user *list, size_t size)
++SYSCALL_DEFINE3(flistxattr, int, fd, char __user *, list, size_t, size)
+ {
+ 	struct file *f;
+ 	ssize_t error = -EBADF;
+@@ -485,8 +481,8 @@ removexattr(struct dentry *d, const char
+ 	return vfs_removexattr(d, kname);
+ }
+ 
+-asmlinkage long
+-sys_removexattr(const char __user *pathname, const char __user *name)
++SYSCALL_DEFINE2(removexattr, const char __user *, pathname,
++		const char __user *, name)
+ {
+ 	struct path path;
+ 	int error;
 
