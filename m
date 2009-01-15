@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbZAOXMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932511AbZAOXNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762057AbZAOXMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764330AbZAOXM3
+	id S932511AbZAOXNu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZAOXNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:12:29 -0500
-Received: from mx2.suse.de ([195.135.220.15]:44449 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764130AbZAOXM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:12:28 -0500
-Date: Thu, 15 Jan 2009 15:05:16 -0800
-From: Greg KH <gregkh@suse.de>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/85] 2.6.27.12-stable review
-Message-ID: <20090115230516.GA19510@suse.de>
-References: <20090115215812.GA17227@kroah.com> <vifvm49imd48dmmsbg34d44on2hevn6a6q@4ax.com>
+	Thu, 15 Jan 2009 18:13:34 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:58377 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755535AbZAOXNc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 18:13:32 -0500
+Message-ID: <f73f7ab80901151513l22b6b017gadb49312ac331391@mail.gmail.com>
+Date: Thu, 15 Jan 2009 18:13:30 -0500
+From: "Kyle Moffett" <kyle@moffetthome.net>
+To: "Kyle Moffett" <kyle@moffetthome.net>,
+       "Christian Borntraeger" <borntraeger@de.ibm.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>,
+       "Johannes Schindelin" <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: current git kernel has strange problems during bisect
+In-Reply-To: <20090115165425.GA7517@bombe-desk.opditex>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <vifvm49imd48dmmsbg34d44on2hevn6a6q@4ax.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <200901111602.53082.borntraeger@de.ibm.com>
+	 <20090111194258.GA4840@uranus.ravnborg.org>
+	 <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain>
+	 <200901112239.20306.borntraeger@de.ibm.com>
+	 <f73f7ab80901131226s6af7730cucf9c44bc2b4f9545@mail.gmail.com>
+	 <20090115165425.GA7517@bombe-desk.opditex>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 09:54:31AM +1100, Grant Coady wrote:
-> On Thu, 15 Jan 2009 13:58:12 -0800, you wrote:
-> >The whole patch series can be found in one patch at:
-> >	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
-> >and the diffstat can be found below.
-> 
-> Hey Greg, you hid the file?
-> 
-> $ wget http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
-> --09:52:29--  http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.12-rc1.gz
->            => `patch-2.6.27.12-rc1.gz'
-> Resolving kernel.org... 149.20.20.133, 204.152.191.37
-> Connecting to kernel.org|149.20.20.133|:80... connected.
-> HTTP request sent, awaiting response... 404 Not Found
-> 09:52:29 ERROR 404: Not Found.
+On Thu, Jan 15, 2009 at 11:54 AM, Andreas Bombe <andreas.bombe@mytum.de> wrote:
+> On Tue, Jan 13, 2009 at 03:26:09PM -0500, Kyle Moffett wrote:
+>> On Sun, Jan 11, 2009 at 4:39 PM, Christian Borntraeger
+>> <borntraeger@de.ibm.com> wrote:
+>> > In my opinion we should really avoid subtree merges in the future as a curtesy
+>> > to people who do the uncool work of testing, problem tracking and bisecting.
+>> > </rant>
+>>
+>> As an alternative, you can relatively easily rewrite the following
+>> independent histories:
+>>
+>> A -- B -- C
+>> X -- Y -- Z
+>>
+>> To look like this:
+>>
+>> A -- B -- C -- X' -- Y' -- Z'
+>>
+>> Where X' is (C + sub/dir/X), Y' is (C + sub/dir/Y), etc...
+>
+> Given that the subtree may have been in development for a long time, it
+> is almost a certainty that the older commits may compile on A but not
+> on C.  By basing it all on C you create a lot of uncompilable commits
+> which hurt bisection just as bad.  At least with missing kernel sources
+> it is obvious that an attempt at compilation is futile and a waste of
+> time.
 
-{sigh}  I knew I would mess something up...
+No, the older commits will compile just fine as they don't actually
+reference the new code from any of the parent makefiles.  It would
+effectively be "dead code" until the "merge" in the commit *after* Z'
+in which you add lines to "sub/Kconfig" and "sub/Kbuild" which
+reference "sub/dir/*".
 
-It is there now, give it 10 minutes or so to replicate out to the public
-servers.
-
-Thanks for letting me know,
-
-greg k-h
+Cheers,
+Kyle Moffett
