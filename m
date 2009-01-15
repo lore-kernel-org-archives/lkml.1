@@ -1,241 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbZAOUXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbZAOUXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933125AbZAOUXK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932115AbZAOUBN
+	id S933182AbZAOUXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:23:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765632AbZAOUBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:13 -0500
-Received: from kroah.org ([198.145.64.141]:49037 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765975AbZAOUAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:49 -0500
-Date: Thu, 15 Jan 2009 11:58:30 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 34/94] [PATCH 03/44] [CVE-2009-0029] Rename old_readdir to
-	sys_old_readdir
-Message-ID: <20090115195830.GH14419@kroah.com>
-References: <20090115194806.804618825@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0003--CVE-2009-0029-Rename-old_readdir-to-sys_old_readdi.patch"
-In-Reply-To: <20090115195520.GA14403@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 15 Jan 2009 15:01:15 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:44426 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761795AbZAOUAy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=Ag9YXhP162MkCGmemctLVCgwVpXR18zrDXR9JBm/CGvXkFuVVLr9cag6b4l1KmZdZ7
+         EO9HYF84OF1eM2eqMAcQHKMrnN2BXjNasKWg9szy+ohjkiRXlNmZrQl0KUlSiUXZwMy3
+         rn+p9C06JQUkHoPZQaAgHrkY4Y/cZMmcqFN5s=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 15 Jan 2009 21:01:08 +0100
+Message-Id: <20090115200108.17294.11783.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+References: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+Subject: [PATCH 5/9] ide: remove ide_do_drive_cmd()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: remove ide_do_drive_cmd()
 
-------------------
+* Use elv_add_request() instead of __elv_add_request() in ide_do_drive_cmd().
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+* ide_do_drive_cmd() is used only in ide-{atapi,cd}.c so inline it there.
 
-commit e55380edf68796d75bf41391a781c68ee678587d upstream.
+There should be no functional changes caused by this patch.
 
-This way it matches the generic system call name convention.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- arch/arm/kernel/calls.S              |    2 +-
- arch/cris/arch-v10/kernel/entry.S    |    2 +-
- arch/cris/arch-v32/kernel/entry.S    |    2 +-
- arch/h8300/kernel/syscalls.S         |    2 +-
- arch/m68k/kernel/entry.S             |    2 +-
- arch/m68knommu/kernel/syscalltable.S |    2 +-
- arch/mips/kernel/scall32-o32.S       |    2 +-
- arch/mn10300/kernel/entry.S          |    2 +-
- arch/powerpc/include/asm/systbl.h    |    2 +-
- arch/sh/kernel/syscalls_32.S         |    2 +-
- arch/sh/kernel/syscalls_64.S         |    2 +-
- arch/sparc/kernel/systbls.S          |    2 +-
- arch/x86/kernel/syscall_table_32.S   |    2 +-
- fs/readdir.c                         |    2 +-
- include/linux/syscalls.h             |    2 ++
- 15 files changed, 16 insertions(+), 14 deletions(-)
+ drivers/ide/ide-atapi.c |    5 ++++-
+ drivers/ide/ide-cd.c    |    4 +++-
+ drivers/ide/ide-io.c    |   28 ----------------------------
+ include/linux/ide.h     |    2 --
+ 4 files changed, 7 insertions(+), 32 deletions(-)
 
---- a/arch/arm/kernel/calls.S
-+++ b/arch/arm/kernel/calls.S
-@@ -98,7 +98,7 @@
- 		CALL(sys_uselib)
- 		CALL(sys_swapon)
- 		CALL(sys_reboot)
--		CALL(OBSOLETE(old_readdir))	/* used by libc4 */
-+		CALL(OBSOLETE(sys_old_readdir))	/* used by libc4 */
- /* 90 */	CALL(OBSOLETE(old_mmap))	/* used by libc4 */
- 		CALL(sys_munmap)
- 		CALL(sys_truncate)
---- a/arch/cris/arch-v10/kernel/entry.S
-+++ b/arch/cris/arch-v10/kernel/entry.S
-@@ -691,7 +691,7 @@ sys_call_table:	
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/cris/arch-v32/kernel/entry.S
-+++ b/arch/cris/arch-v32/kernel/entry.S
-@@ -614,7 +614,7 @@ sys_call_table:
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/h8300/kernel/syscalls.S
-+++ b/arch/h8300/kernel/syscalls.S
-@@ -103,7 +103,7 @@ SYMBOL_NAME_LABEL(sys_call_table)	
- 	.long SYMBOL_NAME(sys_uselib)
- 	.long SYMBOL_NAME(sys_swapon)
- 	.long SYMBOL_NAME(sys_reboot)
--	.long SYMBOL_NAME(old_readdir)
-+	.long SYMBOL_NAME(sys_old_readdir)
- 	.long SYMBOL_NAME(old_mmap)		/* 90 */
- 	.long SYMBOL_NAME(sys_munmap)
- 	.long SYMBOL_NAME(sys_truncate)
---- a/arch/m68k/kernel/entry.S
-+++ b/arch/m68k/kernel/entry.S
-@@ -513,7 +513,7 @@ sys_call_table:
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/m68knommu/kernel/syscalltable.S
-+++ b/arch/m68knommu/kernel/syscalltable.S
-@@ -107,7 +107,7 @@ ENTRY(sys_call_table)
- 	.long sys_uselib
- 	.long sys_ni_syscall	/* sys_swapon */
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/mips/kernel/scall32-o32.S
-+++ b/arch/mips/kernel/scall32-o32.S
-@@ -398,7 +398,7 @@ einval:	li	v0, -ENOSYS
- 	sys	sys_uselib		1
- 	sys	sys_swapon		2
- 	sys	sys_reboot		3
--	sys	old_readdir		3
-+	sys	sys_old_readdir		3
- 	sys	old_mmap		6	/* 4090 */
- 	sys	sys_munmap		2
- 	sys	sys_truncate		2
---- a/arch/mn10300/kernel/entry.S
-+++ b/arch/mn10300/kernel/entry.S
-@@ -478,7 +478,7 @@ ENTRY(sys_call_table)
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -92,7 +92,7 @@ COMPAT_SYS_SPU(readlink)
- SYSCALL(uselib)
- SYSCALL(swapon)
- SYSCALL(reboot)
--SYSX(sys_ni_syscall,compat_sys_old_readdir,old_readdir)
-+SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
- SYSCALL_SPU(mmap)
- SYSCALL_SPU(munmap)
- SYSCALL_SPU(truncate)
---- a/arch/sh/kernel/syscalls_32.S
-+++ b/arch/sh/kernel/syscalls_32.S
-@@ -105,7 +105,7 @@ ENTRY(sys_call_table)
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/sh/kernel/syscalls_64.S
-+++ b/arch/sh/kernel/syscalls_64.S
-@@ -109,7 +109,7 @@ sys_call_table:
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap			/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/arch/sparc/kernel/systbls.S
-+++ b/arch/sparc/kernel/systbls.S
-@@ -56,7 +56,7 @@ sys_call_table:
- /*185*/	.long sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_newuname
- /*190*/	.long sys_init_module, sys_personality, sparc_remap_file_pages, sys_epoll_create, sys_epoll_ctl
- /*195*/	.long sys_epoll_wait, sys_ioprio_set, sys_getppid, sparc_sigaction, sys_sgetmask
--/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, old_readdir
-+/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, sys_old_readdir
- /*205*/	.long sys_readahead, sys_socketcall, sys_syslog, sys_lookup_dcookie, sys_fadvise64
- /*210*/	.long sys_fadvise64_64, sys_tgkill, sys_waitpid, sys_swapoff, sys_sysinfo
- /*215*/	.long sys_ipc, sys_sigreturn, sys_clone, sys_ioprio_get, sys_adjtimex
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -88,7 +88,7 @@ ENTRY(sys_call_table)
- 	.long sys_uselib
- 	.long sys_swapon
- 	.long sys_reboot
--	.long old_readdir
-+	.long sys_old_readdir
- 	.long old_mmap		/* 90 */
- 	.long sys_munmap
- 	.long sys_truncate
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -102,7 +102,7 @@ efault:
- 	return -EFAULT;
+Index: b/drivers/ide/ide-atapi.c
+===================================================================
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -143,7 +143,10 @@ static void ide_queue_pc_head(ide_drive_
+ 	memcpy(rq->cmd, pc->c, 12);
+ 	if (drive->media == ide_tape)
+ 		rq->cmd[13] = REQ_IDETAPE_PC1;
+-	ide_do_drive_cmd(drive, rq);
++
++	drive->hwif->rq = NULL;
++
++	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
  }
  
--asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
-+asmlinkage long sys_old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
+ /*
+Index: b/drivers/ide/ide-cd.c
+===================================================================
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -234,7 +234,9 @@ static void cdrom_queue_request_sense(id
+ 		ide_debug_log(IDE_DBG_SENSE, "failed_cmd: 0x%x\n",
+ 			      failed_command->cmd[0]);
+ 
+-	ide_do_drive_cmd(drive, rq);
++	drive->hwif->rq = NULL;
++
++	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
+ }
+ 
+ static void cdrom_end_request(ide_drive_t *drive, int uptodate)
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -1125,34 +1125,6 @@ out_early:
+ 	return irq_ret;
+ }
+ 
+-/**
+- *	ide_do_drive_cmd	-	issue IDE special command
+- *	@drive: device to issue command
+- *	@rq: request to issue
+- *
+- *	This function issues a special IDE device request
+- *	onto the request queue.
+- *
+- *	the rq is queued at the head of the request queue, displacing
+- *	the currently-being-processed request and this function
+- *	returns immediately without waiting for the new rq to be
+- *	completed.  This is VERY DANGEROUS, and is intended for
+- *	careful use by the ATAPI tape/cdrom driver code.
+- */
+-
+-void ide_do_drive_cmd(ide_drive_t *drive, struct request *rq)
+-{
+-	struct request_queue *q = drive->queue;
+-	unsigned long flags;
+-
+-	drive->hwif->rq = NULL;
+-
+-	spin_lock_irqsave(q->queue_lock, flags);
+-	__elv_add_request(q, rq, ELEVATOR_INSERT_FRONT, 0);
+-	spin_unlock_irqrestore(q->queue_lock, flags);
+-}
+-EXPORT_SYMBOL(ide_do_drive_cmd);
+-
+ void ide_pad_transfer(ide_drive_t *drive, int write, int len)
  {
- 	int error;
- 	struct file * file;
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -54,6 +54,7 @@ struct compat_stat;
- struct compat_timeval;
- struct robust_list_head;
- struct getcpu_cache;
-+struct old_linux_dirent;
+ 	ide_hwif_t *hwif = drive->hwif;
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1172,8 +1172,6 @@ extern ide_startstop_t ide_do_reset (ide
+ extern int ide_devset_execute(ide_drive_t *drive,
+ 			      const struct ide_devset *setting, int arg);
  
- #include <linux/types.h>
- #include <linux/aio_abi.h>
-@@ -608,6 +609,7 @@ asmlinkage long sys_timerfd_gettime(int 
- asmlinkage long sys_eventfd(unsigned int count);
- asmlinkage long sys_eventfd2(unsigned int count, int flags);
- asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
-+asmlinkage long sys_old_readdir(unsigned int, struct old_linux_dirent __user *, unsigned int);
+-extern void ide_do_drive_cmd(ide_drive_t *, struct request *);
+-
+ extern void ide_end_drive_cmd(ide_drive_t *, u8, u8);
  
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-
+ void ide_tf_dump(const char *, struct ide_taskfile *);
