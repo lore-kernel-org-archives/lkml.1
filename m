@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZAOBo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZAOBpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZAOBo1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 20:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZAOBoS
+	id S1755507AbZAOBpd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 20:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZAOBpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 20:44:18 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:41185 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbZAOBoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 20:44:17 -0500
-X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Jan 2009 20:44:17 EST
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH] resume: wait for device probing to finish
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <200901150039.58972.rjw@sisk.pl>
-References: <200901142303.46166.rjw@sisk.pl>
-	 <20090114152444.64e1ddfb.akpm@linux-foundation.org>
-	 <200901150039.58972.rjw@sisk.pl>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Thu, 15 Jan 2009 12:34:36 +1100
-Message-Id: <1231983276.7229.575.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 20:45:24 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:46581 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752687AbZAOBpX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 20:45:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEALMfbklMQWt2/2dsb2JhbACBbM1OhW+EPw
+Date: Wed, 14 Jan 2009 20:45:21 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Theodore Tso <tytso@mit.edu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.74 for Linux 2.6.28 (ext4 tracepoints)
+	(fixed in LTTng 0.78)
+Message-ID: <20090115014521.GG7458@Krystal>
+References: <20090109235449.GA21999@Krystal> <20090110161137.GA20526@Krystal> <2f11576a0901131433h31056e34n82588a9c643224de@mail.gmail.com> <20090113225827.GA5791@Krystal> <20090114001346.GB14730@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090114001346.GB14730@mit.edu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:42:54 up 14 days,  1:41,  2 users,  load average: 0.35, 0.36,
+	0.35
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael etc.
+* Theodore Tso (tytso@mit.edu) wrote:
+> On Tue, Jan 13, 2009 at 05:58:27PM -0500, Mathieu Desnoyers wrote:
+> > > 
+> > > -ECANTBUILD
+> > > 
+> > Thanks for the report. This should be fixed in LTTng 0.78 now.
+> 
+> Out of curiosity, do you maintain a branch of LTTNG versus any of the
+> -rc kernels, or do you only track the stable kernels?  I tried pulling
+> LTTNG 0.78 against the most recent Linus mainline and got a whole pile
+> of conflicts.
+> 
+> I then tried building LTTng 0.78 and got build failures:
+> 
+>   CC      arch/x86/kernel/init_task.o
+> distcc[27501] ERROR: compile /var/cache/ccache/init_task.tmp.closure.27497.i on localhost failed
+> /usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: unknown field ‘user_markers_mutex’ specified in initializer
+> /usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: warning: braces around scalar initializer
+> /usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: warning: (near initialization for ‘init_task.latency_record_count’)
+> /usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: field name not in record or union initializer
+> /usr/projects/linux/ext4/arch/x86/kernel/init_task.c:35: error: (near initialization for ‘init_task.latency_record_count’)
+> 
+> Looks like CONFIG_MARKERS_USERSPAC is busted....
+> 
 
-On Thu, 2009-01-15 at 00:39 +0100, Rafael J. Wysocki wrote:
+Hi Ted,
 
-[...]
- 
->  /**
-> + * wait_for_device_probe
-> + * Wait for device probing to be completed.
-> + *
-> + * Note: this function polls at 100 msec intervals.
-> + */
-> +int wait_for_device_probe(void)
-> +{
-> +	/* wait for the known devices to complete their probing */
-> +	while (driver_probe_done() != 0)
-> +		msleep(100);
-> +	async_synchronize_full();
-> +	return 0;
-> +}
-> +
+I'm currently integrating Lai's work to the 2.6.28 lttng branch (ascii
+output !) :) and the next step will be to move to 2.6.29-rc1. I'll keep
+you posted. Note that you can just leave the 
 
-Am I missing something? I can't see why you're polling instead of using
-probe_waitqueue.
+#New revamped userspace markers
 
-Regards,
+markers-userspace.patch
+markers-userspace-x86.patch
+markers-userspace-x86_64.patch
+sparc64-support-userspace-tracing.patch
 
-Nigel
+Out of the patchset and it should not hurt the kernel tracing part at
+all. Note that these 4 patches are planned to be heavily reworked before
+lkml submission.
 
+Mathieu
+
+> 						- Ted
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
