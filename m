@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935949AbZAOW34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935977AbZAOWak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935949AbZAOW34 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933847AbZAOWCy
+	id S935977AbZAOWak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZAOWCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:54 -0500
-Received: from kroah.org ([198.145.64.141]:38585 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:55 -0500
+Received: from kroah.org ([198.145.64.141]:38634 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933716AbZAOWCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:41 -0500
-Date: Thu, 15 Jan 2009 14:00:33 -0800
+	id S933765AbZAOWCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:45 -0500
+Date: Thu, 15 Jan 2009 14:00:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 49/85] [PATCH 29/44] [CVE-2009-0029] System call wrappers
-	part 19
-Message-ID: <20090115220033.GX17227@kroah.com>
+Subject: [patch 50/85] [PATCH 30/44] [CVE-2009-0029] System call wrappers
+	part 20
+Message-ID: <20090115220035.GY17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0029--CVE-2009-0029-System-call-wrappers-part-19.patch"
+Content-Disposition: inline; filename="0030--CVE-2009-0029-System-call-wrappers-part-20.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,106 +42,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 003d7ab479168132a2b2c6700fe682b08f08ab0c upstream.
+commit 3cdad42884bbd95d5aa01297e8236ea1bad70053 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/read_write.c |    8 ++++----
- fs/utimes.c     |    5 +++--
- kernel/uid16.c  |   12 ++++++------
- 3 files changed, 13 insertions(+), 12 deletions(-)
+ fs/dcache.c     |    2 +-
+ fs/namei.c      |    4 ++--
+ fs/open.c       |    4 ++--
+ fs/quota.c      |    3 ++-
+ fs/read_write.c |   13 +++++++------
+ 5 files changed, 14 insertions(+), 12 deletions(-)
 
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -2085,7 +2085,7 @@ Elong:
+  *		return NULL;
+  *	}
+  */
+-asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
++SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
+ {
+ 	int error;
+ 	struct path pwd, root;
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2101,7 +2101,7 @@ out_err:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_mkdir(const char __user *pathname, int mode)
++SYSCALL_DEFINE2(mkdir, const char __user *, pathname, int, mode)
+ {
+ 	return sys_mkdirat(AT_FDCWD, pathname, mode);
+ }
+@@ -2208,7 +2208,7 @@ exit1:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_rmdir(const char __user *pathname)
++SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
+ {
+ 	return do_rmdir(AT_FDCWD, pathname);
+ }
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -527,7 +527,7 @@ SYSCALL_DEFINE2(access, const char __use
+ 	return sys_faccessat(AT_FDCWD, filename, mode);
+ }
+ 
+-asmlinkage long sys_chdir(const char __user * filename)
++SYSCALL_DEFINE1(chdir, const char __user *, filename)
+ {
+ 	struct path path;
+ 	int error;
+@@ -548,7 +548,7 @@ out:
+ 	return error;
+ }
+ 
+-asmlinkage long sys_fchdir(unsigned int fd)
++SYSCALL_DEFINE1(fchdir, unsigned int, fd)
+ {
+ 	struct file *file;
+ 	struct inode *inode;
+--- a/fs/quota.c
++++ b/fs/quota.c
+@@ -368,7 +368,8 @@ static inline struct super_block *quotac
+  * calls. Maybe we need to add the process quotas etc. in the future,
+  * but we probably should use rlimits for that.
+  */
+-asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t id, void __user *addr)
++SYSCALL_DEFINE4(quotactl, unsigned int, cmd, const char __user *, special,
++		qid_t, id, void __user *, addr)
+ {
+ 	uint cmds, type;
+ 	struct super_block *sb = NULL;
 --- a/fs/read_write.c
 +++ b/fs/read_write.c
-@@ -112,7 +112,7 @@ loff_t vfs_llseek(struct file *file, lof
+@@ -334,7 +334,7 @@ static inline void file_pos_write(struct
+ 	file->f_pos = pos;
  }
- EXPORT_SYMBOL(vfs_llseek);
  
--asmlinkage long sys_lseek(unsigned int fd, off_t offset, unsigned int origin)
-+SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, origin)
+-asmlinkage long sys_read(unsigned int fd, char __user * buf, size_t count)
++SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
  {
- 	off_t retval;
- 	struct file * file;
-@@ -136,9 +136,9 @@ bad:
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+@@ -351,7 +351,8 @@ asmlinkage long sys_read(unsigned int fd
+ 	return ret;
  }
  
- #ifdef __ARCH_WANT_SYS_LLSEEK
--asmlinkage long sys_llseek(unsigned int fd, unsigned long offset_high,
--			   unsigned long offset_low, loff_t __user * result,
--			   unsigned int origin)
-+SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
-+		unsigned long, offset_low, loff_t __user *, result,
-+		unsigned int, origin)
+-asmlinkage long sys_write(unsigned int fd, const char __user * buf, size_t count)
++SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
++		size_t, count)
  {
- 	int retval;
- 	struct file * file;
---- a/fs/utimes.c
-+++ b/fs/utimes.c
-@@ -24,7 +24,7 @@
-  * must be owner or have write permission.
-  * Else, update from *times, must be owner or super user.
-  */
--asmlinkage long sys_utime(char __user *filename, struct utimbuf __user *times)
-+SYSCALL_DEFINE2(utime, char __user *, filename, struct utimbuf __user *, times)
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+@@ -653,8 +654,8 @@ ssize_t vfs_writev(struct file *file, co
+ 
+ EXPORT_SYMBOL(vfs_writev);
+ 
+-asmlinkage long
+-sys_readv(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
++SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
++		unsigned long, vlen)
  {
- 	struct timespec tv[2];
- 
-@@ -214,7 +214,8 @@ asmlinkage long sys_futimesat(int dfd, c
- 	return do_utimes(dfd, filename, utimes ? tstimes : NULL, 0);
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+@@ -674,8 +675,8 @@ sys_readv(unsigned long fd, const struct
+ 	return ret;
  }
  
--asmlinkage long sys_utimes(char __user *filename, struct timeval __user *utimes)
-+SYSCALL_DEFINE2(utimes, char __user *, filename,
-+		struct timeval __user *, utimes)
+-asmlinkage long
+-sys_writev(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
++SYSCALL_DEFINE3(writev, unsigned long, fd, const struct iovec __user *, vec,
++		unsigned long, vlen)
  {
- 	return sys_futimesat(AT_FDCWD, filename, utimes);
- }
---- a/kernel/uid16.c
-+++ b/kernel/uid16.c
-@@ -160,7 +160,7 @@ static int groups16_from_user(struct gro
- 	return 0;
- }
- 
--asmlinkage long sys_getgroups16(int gidsetsize, old_gid_t __user *grouplist)
-+SYSCALL_DEFINE2(getgroups16, int, gidsetsize, old_gid_t __user *, grouplist)
- {
- 	int i = 0;
- 
-@@ -184,7 +184,7 @@ out:
- 	return i;
- }
- 
--asmlinkage long sys_setgroups16(int gidsetsize, old_gid_t __user *grouplist)
-+SYSCALL_DEFINE2(setgroups16, int, gidsetsize, old_gid_t __user *, grouplist)
- {
- 	struct group_info *group_info;
- 	int retval;
-@@ -209,22 +209,22 @@ asmlinkage long sys_setgroups16(int gids
- 	return retval;
- }
- 
--asmlinkage long sys_getuid16(void)
-+SYSCALL_DEFINE0(getuid16)
- {
- 	return high2lowuid(current->uid);
- }
- 
--asmlinkage long sys_geteuid16(void)
-+SYSCALL_DEFINE0(geteuid16)
- {
- 	return high2lowuid(current->euid);
- }
- 
--asmlinkage long sys_getgid16(void)
-+SYSCALL_DEFINE0(getgid16)
- {
- 	return high2lowgid(current->gid);
- }
- 
--asmlinkage long sys_getegid16(void)
-+SYSCALL_DEFINE0(getegid16)
- {
- 	return high2lowgid(current->egid);
- }
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
 
