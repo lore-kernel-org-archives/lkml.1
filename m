@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbZAORhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbZAORow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762436AbZAORhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 12:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbZAORhj
+	id S1762436AbZAORow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 12:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbZAORoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 12:37:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47203 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753713AbZAORhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 12:37:38 -0500
-Date: Thu, 15 Jan 2009 18:37:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: crash: IP: [<ffffffff80478092>] __bitmap_intersects+0x48/0x73
-	[PATCH supplied]
-Message-ID: <20090115173725.GC22472@elte.hu>
-References: <496CAF5A.3010304@sgi.com> <496D0F46.2010907@sgi.com> <496D2172.6030608@sgi.com> <20090114165431.GA18826@elte.hu> <20090114165524.GA21742@elte.hu> <20090114175126.GA21078@elte.hu> <496E78BA.5040609@sgi.com> <20090115101617.GH5833@elte.hu> <20090115122156.GA20349@elte.hu> <496F7299.3060900@sgi.com>
+	Thu, 15 Jan 2009 12:44:44 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:59411 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755805AbZAORom (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 12:44:42 -0500
+Date: Thu, 15 Jan 2009 10:44:40 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090115174440.GF29283@parisc-linux.org>
+References: <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <496F7299.3060900@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2295]
+In-Reply-To: <20090114192811.GA19691@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Travis <travis@sgi.com> wrote:
-
-> Ingo Molnar wrote:
-> > FYI, there's new warnings due to cpumask changes:
-> > 
-> > arch/x86/kernel/cpu/intel_cacheinfo.c: In function â€˜show_cache_disableâ€™:
-> > arch/x86/kernel/cpu/intel_cacheinfo.c:710: warning: unused variable â€˜maskâ€™
-> > arch/x86/kernel/cpu/intel_cacheinfo.c: In function â€˜store_cache_disableâ€™:
-> > arch/x86/kernel/cpu/intel_cacheinfo.c:745: warning: unused variable â€˜maskâ€™
-> > 
-> > on 32-bit defconfig.
-> > 
-> > 	Ingo
+On Wed, Jan 14, 2009 at 08:28:11PM +0100, Ingo Molnar wrote:
+>                       [v2.6.14]     [v2.6.29]
 > 
-> Hi Ingo,
+>                       Semaphores  | Mutexes
+>             ----------------------------------------------
+>                                   | no-spin           spin
+>                                   |
+>   [tmpfs]   ops/sec:       50713  |  291038         392865       (+34.9%)
+>   [ext3]    ops/sec:       45214  |  283291         435674       (+53.7%)
 > 
-> You can pull the following patch to fix this build warning.
+> A 10x macro-performance improvement on ext3, compared to 2.6.14 :-)
+> 
+> While lots of other details got changed meanwhile, i'm sure most of the 
+> performance win on this particular VFS workload comes from mutexes.
 
-pulled into tip/cpus4096, thanks Mike!
+I asked a couple of our benchmarking teams to try -v9.  Neither the OLTP
+benchmark, nor the kernel-perf test suite found any significant
+performance change.  I suspect mutex contention isn't a significant
+problem for most workloads.
 
-	Ingo
+Has anyone found a non-synthetic benchmark where this makes a
+significant difference?  Aside from btrfs, I mean.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
