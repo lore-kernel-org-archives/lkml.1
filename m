@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbZAOWRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZAOWSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935026AbZAOWRs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933708AbZAOWC1
+	id S1760079AbZAOWSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766016AbZAOWCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:27 -0500
-Received: from kroah.org ([198.145.64.141]:38367 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:30 -0500
+Received: from kroah.org ([198.145.64.141]:38375 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765602AbZAOWCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933670AbZAOWCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 17:02:18 -0500
-Date: Thu, 15 Jan 2009 13:59:52 -0800
+Date: Thu, 15 Jan 2009 13:59:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 28/85] [PATCH 08/44] [CVE-2009-0029] powerpc: Enable
-	syscall wrappers for 64-bit
-Message-ID: <20090115215952.GC17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 29/85] [PATCH 09/44] [CVE-2009-0029] s390: enable system
+	call wrappers
+Message-ID: <20090115215954.GD17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0008--CVE-2009-0029-powerpc-Enable-syscall-wrappers-for.patch"
+Content-Disposition: inline; filename="0009--CVE-2009-0029-s390-enable-system-call-wrappers.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,46 +40,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit ee6a093222549ac0c72cfd296c69fa5e7d6daa34 upstream.
+commit ed6bb6194350dc6ae97a65dbf2d621a3dbe6bbe9 upstream.
 
-This enables the use of syscall wrappers to do proper sign extension
-for 64-bit programs.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/powerpc/Kconfig     |    1 +
- include/linux/syscalls.h |    6 ++++++
- 2 files changed, 7 insertions(+)
+ arch/s390/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -122,6 +122,7 @@ config PPC
- 	select HAVE_DMA_ATTRS if PPC64
- 	select USE_GENERIC_SMP_HELPERS if SMP
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -70,6 +70,7 @@ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+ 	def_bool y
++	select HAVE_SYSCALL_WRAPPERS
  	select HAVE_OPROFILE
-+	select HAVE_SYSCALL_WRAPPERS if PPC64
- 
- config EARLY_PRINTK
- 	bool
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -103,8 +103,14 @@ struct old_linux_dirent;
- #define SYSCALL_DEFINE5(...)    SYSCALL_DEFINEx(5, __VA_ARGS__)
- #define SYSCALL_DEFINE6(...)    SYSCALL_DEFINEx(6, __VA_ARGS__)
- 
-+#ifdef CONFIG_PPC64
-+#define SYSCALL_ALIAS(alias, name)					\
-+	asm ("\t.globl " #alias "\n\t.set " #alias ", " #name "\n"	\
-+	     "\t.globl ." #alias "\n\t.set ." #alias ", ." #name)
-+#else
- #define SYSCALL_ALIAS(alias, name)					\
- 	asm ("\t.globl " #alias "\n\t.set " #alias ", " #name)
-+#endif
- 
- #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
- 
+ 	select HAVE_KPROBES
+ 	select HAVE_KRETPROBES
 
