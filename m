@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZAODJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbZAODNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZAODJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbZAODJh
+	id S1759402AbZAODNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZAODM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:09:37 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39155 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbZAODJh (ORCPT
+	Wed, 14 Jan 2009 22:12:58 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:42645 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbZAODM5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:09:37 -0500
-Date: Thu, 15 Jan 2009 12:08:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
- obsolete
-Message-Id: <20090115120829.e1d417e8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115114846.388781a7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<20090114135539.GA21516@balbir.in.ibm.com>
-	<20090115114846.388781a7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 22:12:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type:content-transfer-encoding;
+        b=NgzNDQX+6N4axh8tzOsuwEInZl4rLFrcPMVCb0FX0TaM7D2a2OUthi4S9/Vvnc0AgO
+         OTQCxWK7IfM/i/VpR0QSzWXDHSgHyO5a+R5VApJx37a8/h9GBU8sUuRswzMVn3sSQ3yV
+         UBfrnIRehYhmsYTV+2Y8Yc0lbZs7itiGT2m+8=
+MIME-Version: 1.0
+Date: Wed, 14 Jan 2009 23:12:56 -0400
+X-Google-Sender-Auth: f98097f383995872
+Message-ID: <177c2b150901141912x28c8c95di45b7dc15670cfe44@mail.gmail.com>
+Subject: [PATCH] Added the product id of bcs(bar code scanner) from Diebold 
+	Procomp Brazil.
+From: Mhayk Whandson <eu@mhayk.com.br>
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 11:48:46 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Added the product id of bcs(bar code scanner) from Diebold Procomp Brazil.
 
-> On Wed, 14 Jan 2009 19:25:39 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > I liked the earlier, EBUSY approach that ensured that parents could
-> > not go away if children exist. IMHO, the code has gotten too complex
-> > and has too many corner cases. Time to revisit it.
-> > 
-> It's on my plan. 
-> I'll fix this by CSS-ID patch.
-> 
-> When I recored memcg's CSS-ID to swap_cgroup (not pointer to memcg), 
-> we never need memcg's refcnt.
-> 
-Sorry, ignore this. refcnt in memcg is necessary anyway to prevent reuse of ID.
+Signed-off-by: Mhayk Whandson <eu@mhayk.com.br>
+---
+ drivers/usb/serial/ftdi_sio.c |    1 +
+ drivers/usb/serial/ftdi_sio.h |    8 ++++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
--Kame
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index ef6cfa5..72c769d 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -660,6 +660,7 @@ static struct usb_device_id id_table_combined [] = {
+        { USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
+        { USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
+        { USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
++       { USB_DEVICE(FTDI_VID, DIEBOLD_BCS_SE923_PID) },
+        { },                                    /* Optional parameter entry */
+        { }                                     /* Terminating entry */
+ };
+diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
+index 373ee09..556e26e 100644
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -20,6 +20,9 @@
+  * Philipp Gühring - pg@futureware.at - added the Device ID of the USB relais
+  * from Rudolf Gugler
+  *
++ * Mhayk Whandson - eu@mhayk.com.br - added the Product ID of the USB Bar Code
++ * Scanner from Diebold Procomp Brazil.
++ *
+  */
 
+ #define FTDI_VID       0x0403  /* Vendor Id */
+@@ -881,6 +884,11 @@
+ #define RATOC_PRODUCT_ID_USB60F        0xb020
+
+ /*
++ * DIEBOLD BCS SE923
++ */
++#define DIEBOLD_BCS_SE923_PID 0xfb99
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
+-- 
+1.5.6.3
+
+-- 
+Mhayk Whandson
+Linux User #413723
+E-mail: eu@mhayk.com.br
