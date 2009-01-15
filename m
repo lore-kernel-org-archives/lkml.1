@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbZAOUKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbZAOULx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932656AbZAOUKo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765933AbZAOUAj
+	id S932794AbZAOULx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbZAOUAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:39 -0500
-Received: from kroah.org ([198.145.64.141]:48872 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:00:42 -0500
+Received: from kroah.org ([198.145.64.141]:48907 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762658AbZAOUAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:30 -0500
-Date: Thu, 15 Jan 2009 11:57:50 -0800
+	id S1765710AbZAOUAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:32 -0500
+Date: Thu, 15 Jan 2009 11:57:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [patch 17/94] vmalloc.c: fix flushing in vmap_page_range()
-Message-ID: <20090115195750.GQ14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: [patch 19/94] cgroups: fix a race between cgroup_clone and umount
+Message-ID: <20090115195754.GS14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="vmalloc.c-fix-flushing-in-vmap_page_range.patch"
+Content-Disposition: inline; filename="cgroups-fix-a-race-between-cgroup_clone-and-umount.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,46 +41,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-commit 2e4e27c7d082b2198b63041310609d7191185a9d upstream.
+commit 7b574b7b0124ed344911f5d581e9bc2d83bbeb19 upstream.
 
-The flush_cache_vmap in vmap_page_range() is called with the end of the
-range twice.  The following patch fixes this for me.
+The race is calling cgroup_clone() while umounting the ns cgroup subsys,
+and thus cgroup_clone() might access invalid cgroup_fs, or kill_sb() is
+called after cgroup_clone() created a new dir in it.
 
-Signed-off-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+The BUG I triggered is BUG_ON(root->number_of_cgroups != 1);
+
+  ------------[ cut here ]------------
+  kernel BUG at kernel/cgroup.c:1093!
+  invalid opcode: 0000 [#1] SMP
+  ...
+  Process umount (pid: 5177, ti=e411e000 task=e40c4670 task.ti=e411e000)
+  ...
+  Call Trace:
+   [<c0493df7>] ? deactivate_super+0x3f/0x51
+   [<c04a3600>] ? mntput_no_expire+0xb3/0xdd
+   [<c04a3ab2>] ? sys_umount+0x265/0x2ac
+   [<c04a3b06>] ? sys_oldumount+0xd/0xf
+   [<c0403911>] ? sysenter_do_call+0x12/0x31
+  ...
+  EIP: [<c0456e76>] cgroup_kill_sb+0x23/0xe0 SS:ESP 0068:e411ef2c
+  ---[ end trace c766c1be3bf944ac ]---
+
+Cc: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Balbir Singh <balbir@in.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/vmalloc.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/cgroup.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -151,11 +151,12 @@ static int vmap_pud_range(pgd_t *pgd, un
-  *
-  * Ie. pte at addr+N*PAGE_SIZE shall point to pfn corresponding to pages[N]
-  */
--static int vmap_page_range(unsigned long addr, unsigned long end,
-+static int vmap_page_range(unsigned long start, unsigned long end,
- 				pgprot_t prot, struct page **pages)
- {
- 	pgd_t *pgd;
- 	unsigned long next;
-+	unsigned long addr = start;
- 	int err = 0;
- 	int nr = 0;
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2942,7 +2942,11 @@ int cgroup_clone(struct task_struct *tsk
+ 	parent = task_cgroup(tsk, subsys->subsys_id);
  
-@@ -167,7 +168,7 @@ static int vmap_page_range(unsigned long
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
--	flush_cache_vmap(addr, end);
-+	flush_cache_vmap(start, end);
+ 	/* Pin the hierarchy */
+-	atomic_inc(&parent->root->sb->s_active);
++	if (!atomic_inc_not_zero(&parent->root->sb->s_active)) {
++		/* We race with the final deactivate_super() */
++		mutex_unlock(&cgroup_mutex);
++		return 0;
++	}
  
- 	if (unlikely(err))
- 		return err;
+ 	/* Keep the cgroup alive */
+ 	get_css_set(cg);
 
