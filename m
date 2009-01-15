@@ -1,88 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZAOCjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbZAOCln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZAOCjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 21:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbZAOCjp
+	id S1757654AbZAOCln (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 21:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZAOCle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:39:45 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48157 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752814AbZAOCjo (ORCPT
+	Wed, 14 Jan 2009 21:41:34 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33268 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbZAOCld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:39:44 -0500
+	Wed, 14 Jan 2009 21:41:33 -0500
+Date: Thu, 15 Jan 2009 11:40:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-From: Andi Kleen <andi@firstfloor.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	<CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-	<20090114163557.11e097f2.akpm@linux-foundation.org>
-	<20090115012147.GW29283@parisc-linux.org>
-	<20090114180431.f4a96543.akpm@linux-foundation.org>
-Date: Thu, 15 Jan 2009 03:39:05 +0100
-In-Reply-To: <20090114180431.f4a96543.akpm@linux-foundation.org> (Andrew Morton's message of "Wed, 14 Jan 2009 18:04:31 -0800")
-Message-ID: <874p01fg3a.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       a.zummo@towertech.it
+Subject: Re: mmotm 2009-01-13-16-38 uploaded (rtc-cmos)
+Message-Id: <20090115114026.8f3bbafd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090114103554.ba1f99b5.akpm@linux-foundation.org>
+References: <200901140038.n0E0cIPd013916@imap1.linux-foundation.org>
+	<20090114090741.fcb5d335.randy.dunlap@oracle.com>
+	<20090114103554.ba1f99b5.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Wed, 14 Jan 2009 10:35:54 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Wed, 14 Jan 2009 09:07:41 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > On Tue, 13 Jan 2009 16:38:17 -0800 akpm@linux-foundation.org wrote:
+> > 
+> > > The mm-of-the-moment snapshot 2009-01-13-16-38 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > and will soon be available at
+> > > 
+> > >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > 
+> > no HPET enabled:
+> > 
+> > mmotm-2009-0113-1638/drivers/rtc/rtc-cmos.c:97: error: redefinition of 'is_hpet_enabled'
+> > mmotm-2009-0113-1638/arch/x86/include/asm/hpet.h:110: error: previous definition of 'is_hpet_enabled' was here
+> > 
+> 
+> Caused by rtc-cumulative-style-fixes-fix-fix.patch:
+> 
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> This was necessary for hpet* functions.
+> 
+Ouch. Sorry. 
 
->>    some of that back, but not as much as taking them out (even when
->>    the sysctl'd variable is in a __read_mostly section).  We tried a
->>    patch from Jens to speed up the search for a new partition, but it
->>    had no effect.
->
-> I find this surprising.
+-Kame
 
-The test system has thousands of disks/LUNs which it writes to
-all the time, in addition to a workload which is a real cache pig. 
-So any increase in the per LUN overhead directly leads to a lot
-more cache misses in the kernel because it increases the working set
-there sigificantly.
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  drivers/rtc/rtc-cmos.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff -puN drivers/rtc/rtc-cmos.c~rtc-cumulative-style-fixes-fix-fix drivers/rtc/rtc-cmos.c
+> --- a/drivers/rtc/rtc-cmos.c~rtc-cumulative-style-fixes-fix-fix
+> +++ a/drivers/rtc/rtc-cmos.c
+> @@ -39,6 +39,7 @@
+>  
+>  /* this is for "generic access to PC-style RTC" using CMOS_READ/CMOS_WRITE */
+>  #include <asm-generic/rtc.h>
+> +#include <asm/hpet.h>
+>  
+>  struct cmos_rtc {
+>  	struct rtc_device	*rtc;
+> _
+> 
+> 
+> alas, we don't know what that fix fixed so I don't know what will break
+> when I drop it.
+> 
+> 
 
->
->>  - The RT scheduler changes.  They're better for some RT tasks, but not
->>    the database benchmark workload.  Chinang has posted about
->>    this before, but the thread didn't really go anywhere.
->>    http://marc.info/?t=122903815000001&r=1&w=2
->
-> Well.  It's more a case that it wasn't taken anywhere.  I appear to
-> have recently been informed that there have never been any
-> CPU-scheduler-caused regressions.  Please persist!
-
-Just to clarify: the non RT scheduler has never performed well on this
-workload (although it seems to get slightly worse too), mostly 
-because of log writer starvation.
-
-RT at some point performed significantly better, but then as 
-the RT behaviour was improved to be more fair on MP there were signficant
-regressions when running under RT.
-I wouldn't really advocate to make RT less fair again, it would
-be better to just fix the non RT scheduler to perform reasonably. 
-Unfortunately the thread above which was supposed to do that
-didn't go anywhere.
-
->> SLUB would have had a huge negative effect if we were using it -- on the
->> order of 7% iirc.  SLQB is at least performance-neutral with SLAB.
->
-> We really need to unblock that problem somehow.  I assume that
-> enterprise distros are shipping slab?
-
-The released ones all do.
-
--Andi
--- 
-ak@linux.intel.com
