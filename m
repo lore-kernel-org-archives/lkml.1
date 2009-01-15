@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZAODer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbZAODfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbZAODer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZAODei
+	id S1760240AbZAODfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZAODfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:34:38 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52529 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753571AbZAODeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:34:37 -0500
-Date: Wed, 14 Jan 2009 19:33:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, andi@firstfloor.org, ak@linux.intel.com,
-       rth@twiddle.net, sfr@canb.auug.org.au, travis@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] compiler-gcc.h: add more comments to RELOC_HIDE
-In-Reply-To: <200901151227.27935.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.2.00.0901141932290.6528@localhost.localdomain>
-References: <200901100040.n0A0eruc013680@imap1.linux-foundation.org> <20090110122945.GA28033@elte.hu> <Pine.LNX.4.64.0901121128470.30369@quilx.com> <200901151227.27935.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 14 Jan 2009 22:35:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:45198 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753692AbZAODfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 22:35:04 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18798.44766.734357.560006@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Jan 2009 14:34:54 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH] perf_counter: Add support for pinned and exclusive
+	counter groups
+In-Reply-To: <20090114095743.GA1389@elte.hu>
+References: <18797.44875.470975.535175@cargo.ozlabs.ibm.com>
+	<20090114095743.GA1389@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar writes:
 
+> (btw., the percpu allocation code seems to have bitrotten a bit - the 
+> logic around perf_reserved_percpu looks wrong and somewhat complicated.)
 
-On Thu, 15 Jan 2009, Rusty Russell wrote:
+Yes, it has.  I don't think it was ever fixed to apply only to
+hardware counters when software counters were added.
 
-> On Tuesday 13 January 2009 04:03:49 Christoph Lameter wrote:
-> > But that is not what is occurring. We do not do &var + LARGE_OFFSET.
-> > Instead one does
-> > 
-> > 	((void *)&var) + LARGE_OFFSET
-> > 
-> > or
-> > 	((unsigned long)&var) + LARGE_OFFSET
-> > 
-> > The cast should cause the C compiler to drop all assumptions about size.
+Side question - were you intending to make the various software
+counters able to act as interrupting counters?  That will mean
+e.g. that anything that increments current->maj_flt or
+current->min_flt (i.e. do_page_fault, __get_user_pages) will need to
+check if that causes any counter to overflow, which could be a bit
+invasive.
+
+> hm, i guess this could be improved: by queueing pinned counters in front 
+> of the list and unpinned counters to the tail.
+
+Yes - and there are other little optimizations we could do too, such
+as recording the number of hardware counters in the group leader's
+struct perf_counter.
+
+> > What this doesn't handle is when a pinned counter gets inherited and 
+> > goes into error state in the child.  The sensible thing would be to put 
+> > the parent counter into error state in __perf_counter_exit_task, but 
+> > that might mean taking it off the PMU on some other CPU, and I was 
+> > nervous about doing anything substantial to parent_counter.  Maybe what 
+> > we need instead of an error value for counter->state is a separate error 
+> > flag that can be set atomically by exiting children. BTW, I think we 
+> > need an smp_wmb after updating parent_counter->count, so that when the 
+> > parent sees the child has exited it is guaranteed to see the updated 
+> > ->count value.
 > 
-> No, and that's the point.  Sorry, at this point you need to talk to a gcc expert.  As I have said, I did and I believe what he told me.
+> Yeah. Such artifacts at inheritance stem from the reduction in utility 
+> that comes from any exclusive-resource-usage scheme, and are expected.
 
-Yeah, I personally believe in the "should cause the C compiler" part, but 
-gcc doesn't work that way. It will remember where the value came from, 
-even when the pointer has been cast to something else.
+Hmmm, I don't see pinning as being about exclusivity, and the reason
+my patch didn't handle it was because I haven't completely got my head
+around the relevant lifetime and locking rules.
 
-			Linus
+> For example, right now it works just fine to nest 'timec' in itself [there 
+> is a reduction in statistical value if we start round-robining, but 
+> there's still full utility]. If it used exclusive or pinned counters that 
+> might not work.
+
+Should be fine with pinned counters, and even with exclusive counters
+as long as the counters are in one group.
+
+> Again, which restrictions users/developers are more willing to live with 
+> will be shown in actual usage of these facilities.
+
+Indeed.
+
+Regards,
+Paul.
