@@ -1,121 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZAOEHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZAOESH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbZAOEHV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 23:07:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZAOEG7
+	id S1757874AbZAOESH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 23:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZAOERy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 23:06:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49783 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753207AbZAOEG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 23:06:57 -0500
-Message-ID: <496EB639.6090800@redhat.com>
-Date: Wed, 14 Jan 2009 22:06:17 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Wed, 14 Jan 2009 23:17:54 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:55630 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbZAOERx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 23:17:53 -0500
+Date: Thu, 15 Jan 2009 09:47:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
+	obsolete
+Message-ID: <20090115041750.GE21516@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp> <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp> <20090114135539.GA21516@balbir.in.ibm.com> <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>
-Subject: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the filesystem freeze operation has been elevated
-to the VFS, and is just an ioctl away, some sort of safety net
-for unintentionally frozen root filesystems may be in order.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 12:24:16]:
 
-The timeout thaw originally proposed did not get merged, but
-perhaps something like this would be useful in emergencies.
+> On Wed, 14 Jan 2009 19:25:39 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-14 17:51:21]:
+> > 
+> > > This is a new one. Please review.
+> > > 
+> > > ===
+> > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > 
+> > > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > > even after the directory has been removed, but it doesn't ensure that parents
+> > > of it can be accessed: parents might have been freed already by rmdir.
+> > > 
+> > > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > > climb up the tree.
+> > > 
+> > > Check if the memcg is obsolete, and don't call res_counter_uncharge when obsole.
+> > > 
+> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > I liked the earlier, EBUSY approach that ensured that parents could
+> > not go away if children exist. IMHO, the code has gotten too complex
+> > and has too many corner cases. Time to revisit it.
+> > 
+> 
+> But I don't like -EBUSY ;)
+> 
+> When rmdir() returns -EBUSY even if there are no (visible) children and tasks,
+> our customer will take kdump and send it to me "please explain this kernel bug"
+> 
+> I'm sure it will happen ;)
+>
 
-This doesn't have to piggyback on the existing emergency sync
-sysrq, but it seems like a reasonable, simple addition to me.
+OK, but memory.stat can show why the group is busy and with
+move_to_parent() such issues should not occur right? I'll relook at
+the code. Thanks for your input.
 
-I've tested this on a non-root fs with multiple (nested) freezers,
-as well as on a system rendered unresponsive due to a frozen
-root fs.
-
-Thanks,
--Eric
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
-
-Index: linux-2.6/drivers/char/sysrq.c
-===================================================================
---- linux-2.6.orig/drivers/char/sysrq.c
-+++ linux-2.6/drivers/char/sysrq.c
-@@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
- 
- static void sysrq_handle_sync(int key, struct tty_struct *tty)
- {
-+	emergency_thaw();
- 	emergency_sync();
- }
- static struct sysrq_key_op sysrq_sync_op = {
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
- }
- EXPORT_SYMBOL(freeze_bdev);
- 
-+void do_thaw(unsigned long unused)
-+{
-+	struct super_block *sb;
-+	char b[BDEVNAME_SIZE];
-+
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-+			printk(KERN_WARNING "Emergency Thaw on %s\n",
-+			       bdevname(sb->s_bdev, b));
-+	}
-+	printk(KERN_WARNING "Emergency Thaw complete\n");
-+}
-+
-+/**
-+ * emergency_thaw -- force thaw every filesystem
-+ *
-+ * Used for emergency unfreeze of all filesystems via SysRq
-+ */
-+void emergency_thaw(void)
-+{
-+	pdflush_operation(do_thaw, 0);
-+}
-+
- /**
-  * thaw_bdev  -- unlock filesystem
-  * @bdev:	blockdevice to unlock
-Index: linux-2.6/include/linux/buffer_head.h
-===================================================================
---- linux-2.6.orig/include/linux/buffer_head.h
-+++ linux-2.6/include/linux/buffer_head.h
-@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
- wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
- int fsync_bdev(struct block_device *);
- struct super_block *freeze_bdev(struct block_device *);
-+void emergency_thaw(void);
- int thaw_bdev(struct block_device *, struct super_block *);
- int fsync_super(struct super_block *);
- int fsync_no_super(struct block_device *);
-Index: linux-2.6/Documentation/sysrq.txt
-===================================================================
---- linux-2.6.orig/Documentation/sysrq.txt
-+++ linux-2.6/Documentation/sysrq.txt
-@@ -101,7 +101,8 @@ On all -  write a character to /proc/sys
- 
- 'r'     - Turns off keyboard raw mode and sets it to XLATE.
- 
--'s'     - Will attempt to sync all mounted filesystems.
-+'s'     - Will attempt to sync all mounted filesystems, and unfreeze
-+	  any frozen fileystems.
- 
- 't'     - Will dump a list of current tasks and their information to your
-           console.
-
-
+-- 
+	Balbir
