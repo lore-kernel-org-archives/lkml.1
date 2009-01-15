@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764154AbZAOTCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZAOTDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764154AbZAOTCG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 14:02:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZAOTBx
+	id S1753001AbZAOTDo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 14:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbZAOTD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 14:01:53 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56640 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754249AbZAOTBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 14:01:51 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-In-Reply-To: <1231807693.27151.21.camel@localhost.localdomain>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-	 <1231807693.27151.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 14:01:48 -0500
-Message-Id: <1232046108.5966.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 14:03:28 -0500
+Received: from kroah.org ([198.145.64.141]:44284 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756343AbZAOTD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 14:03:26 -0500
+Date: Thu, 15 Jan 2009 10:48:32 -0800
+From: Greg KH <greg@kroah.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-ia64@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, Nick Piggin <npiggin@suse.de>,
+       Tony Luck <tony.luck@gmail.com>, Robin Holt <holt@sgi.com>
+Subject: Re: [PATCH] configure HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN systems
+Message-ID: <20090115184832.GE10674@kroah.com>
+References: <20090106162741.GA7991@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090106162741.GA7991@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-12 at 18:48 -0600, James Bottomley wrote:
-> On Mon, 2009-01-12 at 16:16 -0500, Len Brown wrote:
-> > > This is on an IBM Maia system with the calgary IOMMU enabled. It's a
-> > > fatal boot up panic.
-> > > 
-> > 
-> > James,
-> > A guided bisect...
-> > Please let me know which of these fail
-> > 
-> > a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2 is 2.6.29 at ACPI merge
-> > efcb3cf7f00c3c424db012380a8a974c2676a3c8 is 2.6.29 before ACPI merge
+On Tue, Jan 06, 2009 at 10:27:41AM -0600, Dimitri Sivanich wrote:
+> Turn on CONFIG_HAVE_UNSTABLE_SCHED_CLOCK for SGI_SN.
 > 
-> Didn't try these (being after the failure)
+> SGI Altix has unsynchronized itc clocks.  This results in rq->clock
+> occasionally being set to a time in the past by a remote cpu.
 > 
-> > ec9f168fcc344d2ffec1c8c822076bf22dab5c33 is 2.6.28 with most ACPI
+> Note that it is possible that this problem may exist for other ia64
+> machines as well, based on the following comment for sched_clock() in
+> arch/ia64/kernel/head.S:
 > 
-> This is the failing one.
+>  * Return a CPU-local timestamp in nano-seconds.  This timestamp is
+>  * NOT synchronized across CPUs its return value must never be
+>  * compared against the values returned on another CPU.  The usage in
+>  * kernel/sched.c ensures that.
 > 
-> > e8443c358c34f3fe65236e24147ddf0cd0e61b08 is 2.6.28 plus just ACPICA
 > 
-> This one boots fine.
+> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 > 
-> > Please test the "2.6.28+ACPICA" one first.
-> > If it fails, we are close so you can skip the others above
-> > and bisect between that and 2.6.28.
+> ---
 > 
-> I'll try bisecting between ec9f168fcc344d2ffec1c8c822076bf22dab5c33 and
-> e8443c358c34f3fe65236e24147ddf0cd0e61b08.
+> Greg, if everyone is OK with this patch, this should also be applied
+> to all stable trees starting with 2.6.26.
 
-OK, bisection complete.  It's not actually coming from the ACPI tree but
-from the PCI one (appropriate CC's added).
+What is the status of this going into Linus's tree?
 
-The commit causing the boot panic is:
+thanks,
 
-commit e8c331e963c58b83db24b7d0e39e8c07f687dbc6
-Author: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Date:   Wed Dec 17 12:09:12 2008 +0900
-
-    PCI hotplug: introduce functions for ACPI slot detection
-
-I'm still not sure why, though
-
-James
-
-
+greg k-h
