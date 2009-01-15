@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935691AbZAOWmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936278AbZAOWnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935691AbZAOWmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934045AbZAOWDz
+	id S936278AbZAOWnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbZAOWD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:55 -0500
-Received: from kroah.org ([198.145.64.141]:38973 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:56 -0500
+Received: from kroah.org ([198.145.64.141]:39043 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933902AbZAOWDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932493AbZAOWDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 17:03:49 -0500
-Date: Thu, 15 Jan 2009 14:01:49 -0800
+Date: Thu, 15 Jan 2009 14:01:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Wu Fengguang <wfg@linux.intel.com>
-Subject: [patch 74/85] nfs: remove redundant tests on reading new pages
-Message-ID: <20090115220149.GW17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Reinhard Nissl <rnissl@gmx.de>,
+       Ke Wei <kewei@marvell.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 73/85] [SCSI] mvsas: increase port type detection delay to
+	suit Seagates 10k6 drive ST3450856SS 0003
+Message-ID: <20090115220147.GV17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nfs-remove-redundant-tests-on-reading-new-pages.patch"
+Content-Disposition: inline; filename="mvsas-increase-port-type-detection-delay-to-suit-seagate-s-10k6-drive-st3450856ss-0003.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,47 +42,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+From: Reinhard Nissl <rnissl@gmx.de>
 
-commit 136221fc3219b3805c48db5da065e8e3467175d4 upstream.
+commit ddccf307a3599e452804e228d8ed30fba578923e upstream.
 
-aops->readpages() and its NFS helper readpage_async_filler() will only
-be called to do readahead I/O for newly allocated pages. So it's not
-necessary to test for the always 0 dirty/uptodate page flags.
+I increased the delay step by step until loading of mvsas
+reliably detected the drive 200 times in sequence. A much better
+approach would be to monitor the hardware for some flag which
+indicates that port detection has finished, but I do not have any
+hardware documentation.
 
-The removal of nfs_wb_page() call also fixes a readahead bug: the NFS
-readahead has been synchronous since 2.6.23, because that call will
-clear PG_readahead, which is the reminder for asynchronous readahead.
-
-More background: the PG_readahead page flag is shared with PG_reclaim,
-one for read path and the other for write path. clear_page_dirty_for_io()
-unconditionally clears PG_readahead to prevent possible readahead residuals,
-assuming itself to be always called in the write path. However, NFS is one
-and the only exception in that it _always_ calls clear_page_dirty_for_io()
-in the read path, i.e. for readpages()/readpage().
-
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
+Cc: Ke Wei <kewei@marvell.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/read.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/scsi/mvsas.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -533,12 +533,6 @@ readpage_async_filler(void *data, struct
- 	unsigned int len;
- 	int error;
+--- a/drivers/scsi/mvsas.c
++++ b/drivers/scsi/mvsas.c
+@@ -2959,7 +2959,7 @@ static int __devinit mvs_hw_init(struct 
  
--	error = nfs_wb_page(inode, page);
--	if (error)
--		goto out_unlock;
--	if (PageUptodate(page))
--		goto out_unlock;
--
- 	len = nfs_page_length(page);
- 	if (len == 0)
- 		return nfs_return_empty_page(page);
+ 	/* enable auto port detection */
+ 	mw32(GBL_PORT_TYPE, MODE_AUTO_DET_EN);
+-	msleep(100);
++	msleep(1100);
+ 	/* init and reset phys */
+ 	for (i = 0; i < mvi->chip->n_phy; i++) {
+ 		u32 lo = be32_to_cpu(*(u32 *)&mvi->sas_addr[4]);
 
