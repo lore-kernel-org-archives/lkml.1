@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZAOWX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932724AbZAOWXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZAOWX0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933749AbZAOWCo
+	id S932724AbZAOWXy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933759AbZAOWCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:44 -0500
-Received: from kroah.org ([198.145.64.141]:38510 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:45 -0500
+Received: from kroah.org ([198.145.64.141]:38517 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763673AbZAOWCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764902AbZAOWCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Jan 2009 17:02:30 -0500
-Date: Thu, 15 Jan 2009 14:00:11 -0800
+Date: Thu, 15 Jan 2009 14:00:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 38/85] [PATCH 18/44] [CVE-2009-0029] System call wrappers
-	part 08
-Message-ID: <20090115220011.GM17227@kroah.com>
+Subject: [patch 39/85] [PATCH 19/44] [CVE-2009-0029] System call wrappers
+	part 09
+Message-ID: <20090115220013.GN17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0018--CVE-2009-0029-System-call-wrappers-part-08.patch"
+Content-Disposition: inline; filename="0019--CVE-2009-0029-System-call-wrappers-part-09.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,151 +42,109 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 17da2bd90abf428523de0fb98f7075e00e3ed42e upstream.
+commit a5f8fa9e9ba5ef3305e147f41ad6e1e84ac1f0bd upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/exit.c   |    7 +++----
- kernel/fork.c   |    2 +-
- kernel/futex.c  |    6 +++---
- kernel/module.c |   10 ++++------
- kernel/sched.c  |    2 +-
- kernel/signal.c |   18 +++++++-----------
- 6 files changed, 19 insertions(+), 26 deletions(-)
+ fs/sync.c       |    6 +++---
+ kernel/signal.c |   21 ++++++++-------------
+ 2 files changed, 11 insertions(+), 16 deletions(-)
 
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1751,9 +1751,8 @@ end:
- 	return retval;
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -36,7 +36,7 @@ static void do_sync(unsigned long wait)
+ 		laptop_sync_completion();
  }
  
--asmlinkage long sys_waitid(int which, pid_t upid,
--			   struct siginfo __user *infop, int options,
--			   struct rusage __user *ru)
-+SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
-+		infop, int, options, struct rusage __user *, ru)
+-asmlinkage long sys_sync(void)
++SYSCALL_DEFINE0(sync)
  {
- 	struct pid *pid = NULL;
- 	enum pid_type type;
-@@ -1830,7 +1829,7 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int 
-  * sys_waitpid() remains for compatibility. waitpid() should be
-  * implemented by calling sys_wait4() from libc.a.
-  */
--asmlinkage long sys_waitpid(pid_t pid, int __user *stat_addr, int options)
-+SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
- {
- 	return sys_wait4(pid, stat_addr, options, NULL);
- }
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -865,7 +865,7 @@ static void copy_flags(unsigned long clo
- 	clear_freeze_flag(p);
- }
- 
--asmlinkage long sys_set_tid_address(int __user *tidptr)
-+SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
- {
- 	current->clear_child_tid = tidptr;
- 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2036,9 +2036,9 @@ long do_futex(u32 __user *uaddr, int op,
- }
- 
- 
--asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
--			  struct timespec __user *utime, u32 __user *uaddr2,
--			  u32 val3)
-+SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
-+		struct timespec __user *, utime, u32 __user *, uaddr2,
-+		u32, val3)
- {
- 	struct timespec ts;
- 	ktime_t t, *tp = NULL;
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -715,8 +715,8 @@ static void wait_for_zero_refcount(struc
- 	mutex_lock(&module_mutex);
- }
- 
--asmlinkage long
--sys_delete_module(const char __user *name_user, unsigned int flags)
-+SYSCALL_DEFINE2(delete_module, const char __user *, name_user,
-+		unsigned int, flags)
- {
- 	struct module *mod;
- 	char name[MODULE_NAME_LEN];
-@@ -2257,10 +2257,8 @@ static noinline struct module *load_modu
- }
- 
- /* This is where the real work happens */
--asmlinkage long
--sys_init_module(void __user *umod,
--		unsigned long len,
--		const char __user *uargs)
-+SYSCALL_DEFINE3(init_module, void __user *, umod,
-+		unsigned long, len, const char __user *, uargs)
- {
- 	struct module *mod;
- 	int ret = 0;
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5651,7 +5651,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, 
-  * this syscall writes the default timeslice value of a given process
-  * into the user-space timespec buffer. A value of '0' means infinity.
-  */
--SYSCALL_DEFINE4(sched_rr_get_interval, pid_t, pid,
-+SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 		struct timespec __user *, interval)
- {
- 	struct task_struct *p;
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1989,8 +1989,8 @@ int sigprocmask(int how, sigset_t *set, 
- 	return error;
- }
- 
--asmlinkage long
--sys_rt_sigprocmask(int how, sigset_t __user *set, sigset_t __user *oset, size_t sigsetsize)
-+SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, set,
-+		sigset_t __user *, oset, size_t, sigsetsize)
- {
- 	int error = -EINVAL;
- 	sigset_t old_set, new_set;
-@@ -2049,8 +2049,7 @@ out:
- 	return error;
- }	
- 
--asmlinkage long
--sys_rt_sigpending(sigset_t __user *set, size_t sigsetsize)
-+SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, set, size_t, sigsetsize)
- {
- 	return do_sigpending(set, sigsetsize);
- }
-@@ -2121,11 +2120,9 @@ int copy_siginfo_to_user(siginfo_t __use
- 
- #endif
- 
--asmlinkage long
--sys_rt_sigtimedwait(const sigset_t __user *uthese,
--		    siginfo_t __user *uinfo,
--		    const struct timespec __user *uts,
--		    size_t sigsetsize)
-+SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
-+		siginfo_t __user *, uinfo, const struct timespec __user *, uts,
-+		size_t, sigsetsize)
- {
- 	int ret, sig;
- 	sigset_t these;
-@@ -2198,8 +2195,7 @@ sys_rt_sigtimedwait(const sigset_t __use
+ 	do_sync(1);
+ 	return 0;
+@@ -118,12 +118,12 @@ static long __do_fsync(unsigned int fd, 
  	return ret;
  }
  
--asmlinkage long
--sys_kill(pid_t pid, int sig)
-+SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
+-asmlinkage long sys_fsync(unsigned int fd)
++SYSCALL_DEFINE1(fsync, unsigned int, fd)
  {
- 	struct siginfo info;
+ 	return __do_fsync(fd, 0);
+ }
  
+-asmlinkage long sys_fdatasync(unsigned int fd)
++SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
+ {
+ 	return __do_fsync(fd, 1);
+ }
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2254,7 +2254,7 @@ static int do_tkill(pid_t tgid, pid_t pi
+  *  exists but it's not belonging to the target process anymore. This
+  *  method solves the problem of threads exiting and PIDs getting reused.
+  */
+-asmlinkage long sys_tgkill(pid_t tgid, pid_t pid, int sig)
++SYSCALL_DEFINE3(tgkill, pid_t, tgid, pid_t, pid, int, sig)
+ {
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0 || tgid <= 0)
+@@ -2266,8 +2266,7 @@ asmlinkage long sys_tgkill(pid_t tgid, p
+ /*
+  *  Send a signal to only one task, even if it's a CLONE_THREAD task.
+  */
+-asmlinkage long
+-sys_tkill(pid_t pid, int sig)
++SYSCALL_DEFINE2(tkill, pid_t, pid, int, sig)
+ {
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0)
+@@ -2276,8 +2275,8 @@ sys_tkill(pid_t pid, int sig)
+ 	return do_tkill(0, pid, sig);
+ }
+ 
+-asmlinkage long
+-sys_rt_sigqueueinfo(pid_t pid, int sig, siginfo_t __user *uinfo)
++SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig,
++		siginfo_t __user *, uinfo)
+ {
+ 	siginfo_t info;
+ 
+@@ -2501,15 +2500,13 @@ out:
+ /*
+  * For backwards compatibility.  Functionality superseded by sigprocmask.
+  */
+-asmlinkage long
+-sys_sgetmask(void)
++SYSCALL_DEFINE0(sgetmask)
+ {
+ 	/* SMP safe */
+ 	return current->blocked.sig[0];
+ }
+ 
+-asmlinkage long
+-sys_ssetmask(int newmask)
++SYSCALL_DEFINE1(ssetmask, int, newmask)
+ {
+ 	int old;
+ 
+@@ -2529,8 +2526,7 @@ sys_ssetmask(int newmask)
+ /*
+  * For backwards compatibility.  Functionality superseded by sigaction.
+  */
+-asmlinkage long
+-sys_signal(int sig, __sighandler_t handler)
++SYSCALL_DEFINE2(signal, int, sig, __sighandler_t, handler)
+ {
+ 	struct k_sigaction new_sa, old_sa;
+ 	int ret;
+@@ -2547,8 +2543,7 @@ sys_signal(int sig, __sighandler_t handl
+ 
+ #ifdef __ARCH_WANT_SYS_PAUSE
+ 
+-asmlinkage long
+-sys_pause(void)
++SYSCALL_DEFINE0(pause)
+ {
+ 	current->state = TASK_INTERRUPTIBLE;
+ 	schedule();
 
