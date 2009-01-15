@@ -1,40 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbZAORPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761178AbZAORVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbZAORPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 12:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZAORPd
+	id S1761178AbZAORVk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 12:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZAORVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 12:15:33 -0500
-Received: from mail.bitdefender.com ([91.199.104.2]:38235 "EHLO
-	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbZAORPd (ORCPT
+	Thu, 15 Jan 2009 12:21:24 -0500
+Received: from dd13538.kasserver.com ([85.13.135.107]:58169 "EHLO
+	dd13538.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758080AbZAORVX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 12:15:33 -0500
-From: Ionut Leonte <ionut.leonte@gmail.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH] b44: GFP_DMA skb should not escape from driver
-Date: Thu, 15 Jan 2009 19:14:11 +0200
-User-Agent: KMail/1.9.9
-Cc: Pekka Pietikainen <pp@ee.oulu.fi>,
-       Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-References: <20090115111537.GA994@gondor.apana.org.au> <496F4AD4.9080201@cosmosbay.com> <496F690A.2090606@cosmosbay.com>
-In-Reply-To: <496F690A.2090606@cosmosbay.com>
+	Thu, 15 Jan 2009 12:21:23 -0500
+X-Greylist: delayed 1614 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 12:21:23 EST
+Date: Thu, 15 Jan 2009 17:54:25 +0100
+From: Andreas Bombe <andreas.bombe@mytum.de>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>, git@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: current git kernel has strange problems during bisect
+Message-ID: <20090115165425.GA7517@bombe-desk.opditex>
+Mail-Followup-To: Kyle Moffett <kyle@moffetthome.net>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+	git@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200901111602.53082.borntraeger@de.ibm.com> <20090111194258.GA4840@uranus.ravnborg.org> <alpine.LFD.2.00.0901111200330.6528@localhost.localdomain> <200901112239.20306.borntraeger@de.ibm.com> <f73f7ab80901131226s6af7730cucf9c44bc2b4f9545@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901151914.11421.ionut.leonte@gmail.com>
-X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.0.0 on
- mail.bitdefender.com, sigver: 7.23181
-X-BitDefender-Spam: No (7)
-X-BitDefender-SpamStamp: v1, build 2.7.20.59208, bayes score: 500(0),
- pbayes score: 214(7), neunet score: 0(0), flags: [VALID_REPLY],
- total: 7
+In-Reply-To: <f73f7ab80901131226s6af7730cucf9c44bc2b4f9545@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied, seems to fix the problem.
+On Tue, Jan 13, 2009 at 03:26:09PM -0500, Kyle Moffett wrote:
+> On Sun, Jan 11, 2009 at 4:39 PM, Christian Borntraeger
+> <borntraeger@de.ibm.com> wrote:
+> > In my opinion we should really avoid subtree merges in the future as a curtesy
+> > to people who do the uncool work of testing, problem tracking and bisecting.
+> > </rant>
+> 
+> As an alternative, you can relatively easily rewrite the following
+> independent histories:
+> 
+> A -- B -- C
+> X -- Y -- Z
+> 
+> To look like this:
+> 
+> A -- B -- C -- X' -- Y' -- Z'
+> 
+> Where X' is (C + sub/dir/X), Y' is (C + sub/dir/Y), etc...
+
+Given that the subtree may have been in development for a long time, it
+is almost a certainty that the older commits may compile on A but not
+on C.  By basing it all on C you create a lot of uncompilable commits
+which hurt bisection just as bad.  At least with missing kernel sources
+it is obvious that an attempt at compilation is futile and a waste of
+time.
