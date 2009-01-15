@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759695AbZAOIlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZAOIlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759695AbZAOIlc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbZAOIlX
+	id S1757728AbZAOIlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbZAOIlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:41:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:8729 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZAOIlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:41:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=m/CCjPfruvpGGcQ0yJvMeL97M+LzA0BBvvN98m4k4xJ5TcqJy6jP3cPDYNjoKJUJRk
-         16w5TfFiq3XvpYHdOhq0t/+4hdP807cWdJJ5BjVqNyMNMIYE+5a0cCHPtE4hxOHllPJy
-         QGnUsVB/g9m/C6KcL09c0gcuSe/f/dpL3UxyM=
-Date: Thu, 15 Jan 2009 11:41:10 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "harvey.harrison@gmail.com" <harvey.harrison@gmail.com>,
-       "sam@ravnborg.org" <sam@ravnborg.org>,
-       "jaswinderrajput@gmail.com" <jaswinderrajput@gmail.com>
-Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-Message-ID: <20090115084110.GB9032@localhost>
-References: <20090114203745.285473388@gmail.com>> <496e4e23.0c07560a.5e4e.529c@mx.google.com> <496E6585.8050505@zytor.com> <928CFBE8E7CB0040959E56B4EA41A77E0CD9CD33@irsmsx504.ger.corp.intel.com>
-MIME-Version: 1.0
+	Thu, 15 Jan 2009 03:41:37 -0500
+Received: from cmpxchg.org ([85.214.51.133]:59228 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760353AbZAOIlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 03:41:36 -0500
+Date: Thu, 15 Jan 2009 09:41:01 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: [PATCH] mutex: set owner only once on acquisition
+Message-ID: <20090115083951.GA13930@cmpxchg.org>
+References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E0CD9CD33@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1231867314.7141.16.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Metzger, Markus T - Thu, Jan 15, 2009 at 08:06:31AM +0000]
-| >-----Original Message-----
-| >From: H. Peter Anvin [mailto:hpa@zytor.com]
-| >Sent: Wednesday, January 14, 2009 11:22 PM
-| >To: Cyrill Gorcunov; Metzger, Markus T
-| >Cc: mingo@elte.hu; linux-kernel@vger.kernel.org; harvey.harrison@gmail.com; sam@ravnborg.org;
-| >jaswinderrajput@gmail.com; Cyrill Gorcunov
-| >Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-| >
-| >Okay, this one really looks wrong to me.
-| >
-| >Markus, could you confirm if this was ever intended to be exported to
-| >userspace?  I suspect The Right Thing is simply to remove the #ifdef
-| >CONFIG_X86_TRACE_BTS here...
-| 
-| This is intended for userspace.
-| I added the #ifdef so the entire feature could be turned off.
-| This might not be necessary for declarations and macros, though.
-| 
-| Do you want me to remove the #ifdef CONFIG around the declarations in ptrace headers?
-| 
-| regards,
-| markus.
+mutex_lock() sets the lock owner, no need to set it upfront in
+__mutex_lock_common().
 
-Hi Markus,
+Inside __mutex_lock_common() we can cope with the case where the
+successful acquirer got preempted by us before setting the owner
+field: there is an explicit check in the spinning code and the
+sleeping part doesn't rely on it.
 
-since it's supposed to be visible by userspace then we
-should just remove this CONFIG_X86_PTRACE_BTS so if userspace
-app has a reference to ptrace_bts_config but kernel in turn has
-this feature turned off -- the uerspace app shouldn't fail
-while being compiling.
+The debug code does owner checks only on unlock where the field is
+garuanteed to be set.
 
-| >
-| >	-hpa
-| >
-| >
-...
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ kernel/mutex.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-		- Cyrill -
+Just a small observation.  Peter said it wouldn't matter much as the
+write is to a hot cache line.  But otoh, why keep it if it's not
+necessary. :)
+
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -195,7 +195,6 @@ __mutex_lock_common(struct mutex *lock, 
+ 
+ 		if (atomic_cmpxchg(&lock->count, 1, 0) == 1) {
+ 			lock_acquired(&lock->dep_map, ip);
+-			mutex_set_owner(lock);
+ 			preempt_enable();
+ 			return 0;
+ 		}
+@@ -263,7 +262,6 @@ done:
+ 	lock_acquired(&lock->dep_map, ip);
+ 	/* got the lock - rejoice! */
+ 	mutex_remove_waiter(lock, &waiter, current_thread_info());
+-	mutex_set_owner(lock);
+ 
+ 	/* set it to 0 if there are no waiters left: */
+ 	if (likely(list_empty(&lock->wait_list)))
