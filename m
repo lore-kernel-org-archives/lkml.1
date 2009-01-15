@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934408AbZAOWJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934528AbZAOWJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934408AbZAOWJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933545AbZAOWCG
+	id S934528AbZAOWJe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933554AbZAOWCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:06 -0500
-Received: from kroah.org ([198.145.64.141]:38169 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:07 -0500
+Received: from kroah.org ([198.145.64.141]:38188 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933504AbZAOWCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:01 -0500
-Date: Thu, 15 Jan 2009 13:59:19 -0800
+	id S1765116AbZAOWCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:04 -0500
+Date: Thu, 15 Jan 2009 13:59:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,15 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 13/85] SCSI: eata: fix the data buffer accessors conversion
-	regression
-Message-ID: <20090115215919.GN17227@kroah.com>
+       Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: [patch 15/85] USB: isp1760: use a specific PLX bridge instead of
+	any bdridge
+Message-ID: <20090115215924.GP17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-eata-fix-the-data-buffer-accessors-conversion-regression.patch"
+Content-Disposition: inline; filename="usb-isp1760-use-a-specific-plx-bridge-instead-of-any-bdridge.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,60 +41,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-commit 20c09df7eb9c92a40e0ecf654b6e8f14c8583b9e upstream.
+commit 6c0735687d37e25a65866823881bcbf39a6a023f upstream.
 
-This fixes the regression introduced by the commit
-58e2a02eb18393e76a469580fedf7caec190eb5e (eata: convert to use the
-data buffer accessors), reported:
+this driver can't handle (of course) any brdige class devices. So we
+now are just active on one specific bridge which should be only the
+isp1761 chip behind a PLX bridge.
 
-http://marc.info/?t=122987621300006&r=1&w=2
-
-- fix DMA_NONE handling in map_dma()
-
-- this driver can't use scsi_dma_map since host->shost_gendev.parent
-is not set properly (it uses scsi_register).
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Reported-by: Arthur Marsh <arthur.marsh@internode.on.net>
-Tested-by: Arthur Marsh <arthur.marsh@internode.on.net>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Tested-by: Karl Bongers <kblists08@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/eata.c |   15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/usb/host/isp1760-if.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
---- a/drivers/scsi/eata.c
-+++ b/drivers/scsi/eata.c
-@@ -1626,8 +1626,15 @@ static void map_dma(unsigned int i, stru
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -267,12 +267,16 @@ static void isp1761_pci_shutdown(struct 
+ 	printk(KERN_ERR "ips1761_pci_shutdown\n");
+ }
  
- 	cpp->sense_len = SCSI_SENSE_BUFFERSIZE;
+-static const struct pci_device_id isp1760_plx [] = { {
+-	/* handle any USB 2.0 EHCI controller */
+-	PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_OTHER << 8) | (0x06 << 16)), ~0),
+-		.driver_data = 0,
+-},
+-{ /* end: all zeroes */ }
++static const struct pci_device_id isp1760_plx [] = {
++	{
++		.class          = PCI_CLASS_BRIDGE_OTHER << 8,
++		.class_mask     = ~0,
++		.vendor		= PCI_VENDOR_ID_PLX,
++		.device		= 0x5406,
++		.subvendor	= PCI_VENDOR_ID_PLX,
++		.subdevice	= 0x9054,
++	},
++	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, isp1760_plx);
  
--	count = scsi_dma_map(SCpnt);
--	BUG_ON(count < 0);
-+	if (!scsi_sg_count(SCpnt)) {
-+		cpp->data_len = 0;
-+		return;
-+	}
-+
-+	count = pci_map_sg(ha->pdev, scsi_sglist(SCpnt), scsi_sg_count(SCpnt),
-+			   pci_dir);
-+	BUG_ON(!count);
-+
- 	scsi_for_each_sg(SCpnt, sg, count, k) {
- 		cpp->sglist[k].address = H2DEV(sg_dma_address(sg));
- 		cpp->sglist[k].num_bytes = H2DEV(sg_dma_len(sg));
-@@ -1655,7 +1662,9 @@ static void unmap_dma(unsigned int i, st
- 		pci_unmap_single(ha->pdev, DEV2H(cpp->sense_addr),
- 				 DEV2H(cpp->sense_len), PCI_DMA_FROMDEVICE);
- 
--	scsi_dma_unmap(SCpnt);
-+	if (scsi_sg_count(SCpnt))
-+		pci_unmap_sg(ha->pdev, scsi_sglist(SCpnt), scsi_sg_count(SCpnt),
-+			     pci_dir);
- 
- 	if (!DEV2H(cpp->data_len))
- 		pci_dir = PCI_DMA_BIDIRECTIONAL;
 
