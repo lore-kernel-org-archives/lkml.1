@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763262AbZAOKrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763186AbZAOKv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763262AbZAOKrP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZAOKqz
+	id S1763186AbZAOKv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZAOKvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:46:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47463 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZAOKqy (ORCPT
+	Thu, 15 Jan 2009 05:51:21 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:41082 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754470AbZAOKvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:46:54 -0500
-Subject: Re: deadlocks if use htb
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Denys Fedoryschenko <denys@visp.net.lb>, Chris Caputo <ccaputo@alt.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090115090120.GE4190@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local>
-	 <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop>
-	 <200901141505.46929.denys@visp.net.lb> <20090114131257.GC6117@ff.dom.local>
-	 <1231938929.14825.6.camel@laptop> <20090114132603.GD6117@ff.dom.local>
-	 <1231939946.14825.9.camel@laptop> <20090114141311.GA6643@ff.dom.local>
-	 <1231943283.14825.14.camel@laptop>  <20090115090120.GE4190@ff.dom.local>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 11:46:48 +0100
-Message-Id: <1232016408.8870.43.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 05:51:20 -0500
+Date: Thu, 15 Jan 2009 16:21:16 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] cgroup/memcg : updates related to CSS
+Message-ID: <20090115105116.GG30358@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 09:01 +0000, Jarek Poplawski wrote:
-> On Wed, Jan 14, 2009 at 03:28:03PM +0100, Peter Zijlstra wrote:
-> ....
-> > Right, found all that...
-> > 
-> > Can't spot anything obviously wrong though.. hrtimer_start*() does
-> > remove_hrtimer() which checks STATE_ENQUEUED, STATE_PENDING and pulls it
-> > off the relevant list before it continues the enqueue.
-> > 
-> > However a loop in enqueue_hrtimer() would suggest a corrupted RB-tree,
-> > but I cannot find an RB-op that doesn't hold base-lock.
-> > 
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 19:21:20]:
+
 > 
-> I've revisited it yesterday, and if I don't miss something, there is
-> possible a scenario similar to this:
+> I'm sorry that I couldn't work so much, this week.
+> No much updates but I think all comments I got are applied.
 > 
-> cpu1:				cpu2:
+> About memcg part, I'll wait for that all Nishimura's fixes go ahead.
+> If cgroup part looks good, please Ack. I added CC to Andrew Morton for that part.
 > 
-> run_hrtimer_pending
-> spin_unlock
-> restart = fn(timer)
+> changes from previous series
+>   - dropeed a fix to OOM KILL   (will reschedule)
+>   - dropped a fix to -EBUSY     (will reschedule)
+>   - added css_is_populated()
+>   - added hierarchy_stat patch
 > 
-> 				hrtimer_start
-> 				enqueue_hrtimer
+> Known my homework is
+>   - resize_limit should return -EBUSY. (Li Zefan reported.)
 > 
-> 				hrtimer_start
-> 				remove_hrtimer
-> 				(the HRTIMER_STATE_CALLBACK is removed)
-> 
-> 				switch_hrtimer_base
-> spin_lock
-> (not this hrtimer's anymore)
-> __remove_hrtimer
-> list_add_tail			enqueue_hrtimer
-> 
+> Andrew, I'll CC: you [1/4] and [2/4]. But no explicit Acked-by yet to any patches.
+>
 
-(looking at .28 code)
+Kamezawa-San, like you've suggested earlier, I think it is important
+to split up the fixes from the development patches. I wonder if we
+should start marking all patches with BUGFIX for bug fixes, so that we
+can prioritize those first.
+ 
 
-run_hrtimer_pending() reads like:
-
-while (pending timers) {
-  __remove_hrtimer(timer, HRTIMER_STATE_CALLBACK);
-  spin_unlock(&cpu_base->lock);
-
-  fn(timer);
-
-  spin_lock(&cpu_base->lock);
-  timer->state &= ~HRTIMER_STATE_CALLBACK; // _should_ result in HRTIMER_STATE_INACTIVE
-  if (HRTIMER_RESTART)
-    re-queue
-  else if (timer->state != INACTIVE) {
-    // so another cpu re-queued this timer _while_ we were executing it.
-    if (timer is first && !reprogramm) {
-      __remove_hrtimer(timer, HRTIMER_STATE_PENDING);
-      list_add_tail(timer, &cb_pending);
-    }
-  } 
-}
-
-So in the window where we drop the lock, one can, as you said, have
-another cpu requeue the timer, but the rb_entry and list_entry are free,
-so it should not cause the data corruption we're seeing.
-
-
-
+-- 
+	Balbir
