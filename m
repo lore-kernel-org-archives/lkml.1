@@ -1,77 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935946AbZAOWy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935703AbZAOWzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935946AbZAOWy4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935698AbZAOWYC
+	id S935703AbZAOWzp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935411AbZAOWcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:24:02 -0500
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:51343 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935702AbZAOWX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:23:59 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAOhEb0l5LBUR/2dsb2JhbADPDIVx
-X-IronPort-AV: E=Sophos;i="4.37,272,1231075800"; 
-   d="scan'208";a="283744915"
-Date: Fri, 16 Jan 2009 09:23:54 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: wk <handygewinnspiel@gmx.de>
-Cc: Chris Mason <chris.mason@oracle.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-Message-ID: <20090115222354.GG8071@disturbed>
-Mail-Followup-To: wk <handygewinnspiel@gmx.de>,
-	Chris Mason <chris.mason@oracle.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-	HWerner4@gmx.de, viro@zeniv.linux.org.uk,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	mchehab@infradead.org
-References: <20090112162337.318dd61d.akpm@linux-foundation.org> <20090113184755.87720@gmx.net> <20090113105947.9e774b69.akpm@linux-foundation.org> <20090113191757.74290@gmx.net> <20090113113700.776a94b5.akpm@linux-foundation.org> <20090113203843.GJ29283@parisc-linux.org> <1231957750.8269.28.camel@think.oraclecorp.com> <496E56EB.2030301@gmx.de> <20090114223016.GY8071@disturbed> <496F9174.5080907@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <496F9174.5080907@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 17:32:20 -0500
+Received: from vena.lwn.net ([206.168.112.25]:38177 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761915AbZAOWcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:32:15 -0500
+Date: Thu, 15 Jan 2009 15:32:11 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, linux-api@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-ID: <20090115153211.663df310@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.0; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 08:41:40PM +0100, wk wrote:
-> Dave Chinner wrote:
->> It's obviously the regression fixed by:
->>
->> http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs.git;a=commit;h=15440319767942a363f282d6585303d3d75088ba
->>
->> It needs to be pushed to Linus, then into 2.6.28-stable.
->
-> Yes, that solves the problems as expected. But may i kindly ask the xfs  
-> fs developers to put some more readable patch here,
-> so that its better understandable by looking at the source code? I think  
-> some macro would be better here, for example i used
->
-> #define TRUNC_TO_SIGNED32(x) (x & 0x7FFFFFFF)
->
-> inside xfs.h and replaced all "foo & 0x7fffffff" with  
-> "TRUNC_TO_SIGNED32(foo)".
+One of these years I've got to get this right.  I've fixed the problem
+pointed out by Oleg where f_flags would get changed even if fasync()
+fails.  
 
->From the commit description:
+I have also taken out the ABI change.  CCing the linux-api list because
+I still think it's not quite right; fcntl() should not silently let
+applications set the FASYNC flag if the underlying driver/filesystem
+does not support it.  But that's How We've Always Done It, and one
+messes with such things at great risk.  If we want fcntl() to return an
+error in this case, it's an easy change.
 
-"The patch below is a dumb version of just putting back the masking,
- to make sure we have the same behavior as in 2.6.27 and earlier.
+This one's against 2.6.29-rc1.  If I don't hear screaming, I'll drop
+this one into linux-next.
 
- I will work on a better and cleaner fix for 2.6.30."
+Thanks,
 
-And in more detail, read the review thread:
+jon
 
-http://oss.sgi.com/archives/xfs/2008-12/msg01168.html
+--
 
-Cheers,
+Accesses to the f_flags member of struct file involve read-modify-write
+cycles; they have traditionally been done in a racy way.  This patch
+introduces a global spinlock to protect f_flags against concurrent
+modifications.
 
-Dave.
+Additionally, changes to the FASYNC flag and resulting calls to
+f_op->fasync() need to be done in an atomic manner.  Here, the BKL is
+removed and FASYNC modifications are protected with a mutex.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ drivers/char/tty_io.c |    5 +--
+ fs/fcntl.c            |   65 +++++++++++++++++++++++++++++++++++++++----------
+ fs/ioctl.c            |   25 ++++---------------
+ fs/nfsd/vfs.c         |    5 +++-
+ include/linux/fs.h    |   17 +++++++++++++
+ 5 files changed, 80 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index d33e5ab..8450316 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2160,13 +2160,12 @@ static int fionbio(struct file *file, int __user *p)
+ 	if (get_user(nonblock, p))
+ 		return -EFAULT;
+ 
+-	/* file->f_flags is still BKL protected in the fs layer - vomit */
+-	lock_kernel();
++	lock_file_flags();
+ 	if (nonblock)
+ 		file->f_flags |= O_NONBLOCK;
+ 	else
+ 		file->f_flags &= ~O_NONBLOCK;
+-	unlock_kernel();
++	unlock_file_flags();
+ 	return 0;
+ }
+ 
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index cdc1419..ddd497d 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -19,12 +19,16 @@
+ #include <linux/signal.h>
+ #include <linux/rcupdate.h>
+ #include <linux/pid_namespace.h>
+-#include <linux/smp_lock.h>
++#include <linux/mutex.h>
+ 
+ #include <asm/poll.h>
+ #include <asm/siginfo.h>
+ #include <asm/uaccess.h>
+ 
++/* Serialize access to file->f_flags */
++DEFINE_SPINLOCK(file_flags_lock);
++EXPORT_SYMBOL(file_flags_lock);
++
+ void set_close_on_exec(unsigned int fd, int flag)
+ {
+ 	struct files_struct *files = current->files;
+@@ -141,7 +145,7 @@ asmlinkage long sys_dup(unsigned int fildes)
+ 	return ret;
+ }
+ 
+-#define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | FASYNC | O_DIRECT | O_NOATIME)
++#define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | O_DIRECT | O_NOATIME)
+ 
+ static int setfl(int fd, struct file * filp, unsigned long arg)
+ {
+@@ -176,25 +180,60 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+ 	if (error)
+ 		return error;
+ 
+-	/*
+-	 * We still need a lock here for now to keep multiple FASYNC calls
+-	 * from racing with each other.
+-	 */
+-	lock_kernel();
+ 	if ((arg ^ filp->f_flags) & FASYNC) {
+-		if (filp->f_op && filp->f_op->fasync) {
+-			error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
+-			if (error < 0)
+-				goto out;
+-		}
++		error = fasync_change(fd, filp, (arg & FASYNC) != 0);
++		if (error == -ENOTTY)
++			/*
++			 * ABI compatibility: fcntl() has traditionally returned
++			 * zero in this case (but ioctl() does not).
++			 */
++			error = 0;
++		else if (error < 0)
++			goto out;
+ 	}
+ 
++	lock_file_flags();
+ 	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
++	unlock_file_flags();
+  out:
+-	unlock_kernel();
+ 	return error;
+ }
+ 
++
++
++/*
++ * Change the setting of fasync, let the driver know.
++ * Not static because ioctl_fioasync() uses it too.
++ */
++int fasync_change(int fd, struct file *filp, int on)
++{
++	int ret = 0;
++	static DEFINE_MUTEX(fasync_mutex);
++
++	if (filp->f_op->fasync == NULL)
++		return -ENOTTY;
++
++	mutex_lock(&fasync_mutex);
++	/* Can test without flags lock, nobody else will change it */
++	if (((filp->f_flags & FASYNC) == 0) == (on == 0))
++		goto out;
++	ret = filp->f_op->fasync(fd, filp, on);
++	if (ret >= 0) {
++		lock_file_flags();
++		if (on)
++			filp->f_flags |= FASYNC;
++		else
++			filp->f_flags &= ~FASYNC;
++		unlock_file_flags();
++	}
++  out:
++	mutex_unlock(&fasync_mutex);
++	return ret;
++}
++
++
++
++
+ static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
+                      uid_t uid, uid_t euid, int force)
+ {
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index 20b0a8a..e5f85fb 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -404,10 +404,12 @@ static int ioctl_fionbio(struct file *filp, int __user *argp)
+ 	if (O_NONBLOCK != O_NDELAY)
+ 		flag |= O_NDELAY;
+ #endif
++	lock_file_flags();
+ 	if (on)
+ 		filp->f_flags |= flag;
+ 	else
+ 		filp->f_flags &= ~flag;
++	unlock_file_flags();
+ 	return error;
+ }
+ 
+@@ -423,20 +425,9 @@ static int ioctl_fioasync(unsigned int fd, struct file *filp,
+ 	flag = on ? FASYNC : 0;
+ 
+ 	/* Did FASYNC state change ? */
+-	if ((flag ^ filp->f_flags) & FASYNC) {
+-		if (filp->f_op && filp->f_op->fasync)
+-			error = filp->f_op->fasync(fd, filp, on);
+-		else
+-			error = -ENOTTY;
+-	}
+-	if (error)
+-		return error;
+-
+-	if (on)
+-		filp->f_flags |= FASYNC;
+-	else
+-		filp->f_flags &= ~FASYNC;
+-	return error;
++	if ((flag ^ filp->f_flags) & FASYNC)
++		return fasync_change(fd, filp, on);
++	return 0;
+ }
+ 
+ static int ioctl_fsfreeze(struct file *filp)
+@@ -499,17 +490,11 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		break;
+ 
+ 	case FIONBIO:
+-		/* BKL needed to avoid races tweaking f_flags */
+-		lock_kernel();
+ 		error = ioctl_fionbio(filp, argp);
+-		unlock_kernel();
+ 		break;
+ 
+ 	case FIOASYNC:
+-		/* BKL needed to avoid races tweaking f_flags */
+-		lock_kernel();
+ 		error = ioctl_fioasync(fd, filp, argp);
+-		unlock_kernel();
+ 		break;
+ 
+ 	case FIOQSIZE:
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 6e50aaa..4965a5a 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -998,8 +998,11 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 
+ 	if (!EX_ISSYNC(exp))
+ 		stable = 0;
+-	if (stable && !EX_WGATHER(exp))
++	if (stable && !EX_WGATHER(exp)) {
++		lock_file_flags();
+ 		file->f_flags |= O_SYNC;
++		unlock_file_flags();
++	}
+ 
+ 	/* Write the data. */
+ 	oldfs = get_fs(); set_fs(KERNEL_DS);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 6022f44..ccba351 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -874,6 +874,23 @@ extern spinlock_t files_lock;
+ #define get_file(x)	atomic_long_inc(&(x)->f_count)
+ #define file_count(x)	atomic_long_read(&(x)->f_count)
+ 
++/*
++ * Serialize changes to file->f_flags.  These should not be called
++ * from interrupt context.
++ */
++extern spinlock_t file_flags_lock;
++
++static inline void lock_file_flags(void)
++{
++	spin_lock(&file_flags_lock);
++}
++
++static inline void unlock_file_flags(void)
++{
++	spin_unlock(&file_flags_lock);
++}
++extern int fasync_change(int fd, struct file *filp, int on);
++
+ #ifdef CONFIG_DEBUG_WRITECOUNT
+ static inline void file_take_write(struct file *f)
+ {
 -- 
-Dave Chinner
-david@fromorbit.com
+1.6.1
+
