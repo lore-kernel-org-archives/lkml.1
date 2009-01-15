@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935007AbZAOXba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935195AbZAOXb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935007AbZAOXba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763655AbZAOXbV
+	id S935195AbZAOXb6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbZAOXbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:31:21 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:41985 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762057AbZAOXbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:31:20 -0500
-Message-ID: <496FC746.8080908@sgi.com>
-Date: Thu, 15 Jan 2009 15:31:18 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 15 Jan 2009 18:31:34 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:53134 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935062AbZAOXbd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 18:31:33 -0500
+Date: Thu, 15 Jan 2009 15:31:31 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Jan-Bernd Themann <themann@de.ibm.com>,
+       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090115233131.GE9091@ovro.caltech.edu>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev@vger.kernel.org,
+	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+	shemminger@vyatta.com, David Miller <davem@davemloft.net>
+References: <20090107195052.GA24981@ovro.caltech.edu> <200901152222.55006.arnd@arndb.de> <20090115214056.GC9091@ovro.caltech.edu> <200901152353.25052.arnd@arndb.de>
 MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Dieter Ries <clip2@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc1 does not boot
-References: <496A085E.8020604@gmx.de> <20090111151924.GA5722@elte.hu>	 <496A107A.2090301@gmx.de> <20090111153548.GB7401@elte.hu>	 <496A3F62.8090902@gmx.de> <496F9604.8020101@sgi.com>	 <496FA4B6.3000607@gmx.de>	 <8db1092f0901151348l47ffcec7m638180ca2cdbe4ce@mail.gmail.com>	 <496FB0A5.6050004@sgi.com> <8db1092f0901151504h4d8f9234q4b06522149c54af4@mail.gmail.com>
-In-Reply-To: <8db1092f0901151504h4d8f9234q4b06522149c54af4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901152353.25052.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 15:31:33 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej Rutecki wrote:
-> 2009/1/15 Mike Travis <travis@sgi.com>:
+On Thu, Jan 15, 2009 at 11:53:24PM +0100, Arnd Bergmann wrote:
+> On Thursday 15 January 2009, Ira Snyder wrote:
+> > I do have mailboxes (two inbound, two outbound) which can generate
+> > interrupts, as well as doorbell registers (one inbound, one outbound).
+> > The doorbell register's bits are "write 1 to clear", and can only be
+> > cleared by the opposite side.
+> > 
 > 
->> And it works ok without my patch?  Drats!  ;-)
->>
->> I'll see if I can't figure out how to debug it here.
->>
->> Thanks!
->> Mike
->>
-> 
-> To be clear:
-> 2.6.29-rc1-git5:
-> s2disk: hang
-> s2ram: resume immediately and hangs
-> 
-> 2.6.29-rc1-git5+ Your patches (3):
-> s2disk: works OK
-> s2ram: resume immediately and hangs
+> Ok, in this case, you should be able to use one of these to implement
+> the DMA complete interrupt, but adding an extra DMA transfer to the
+> mailbox after each transfer that you want to get notified for.
 
-Cool, thanks!  (I guess that's good news for me... 
-not so good for you. ;-)
+Yep. I wouldn't have come up with that idea on my own, but it seems
+obvious now :)
 
-Mike
+It seems a little strange to keep the DMA descriptors host memory (the
+DMA controller will need to issue a PCI read to get them) but I guess
+that is how real network cards work.
+
+Thanks,
+Ira
