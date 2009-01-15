@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbZAOWIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934406AbZAOWIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934199AbZAOWIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933538AbZAOWCE
+	id S934406AbZAOWIl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407AbZAOWCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:04 -0500
-Received: from kroah.org ([198.145.64.141]:38135 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:05 -0500
+Received: from kroah.org ([198.145.64.141]:38152 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932947AbZAOWB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:01:58 -0500
-Date: Thu, 15 Jan 2009 13:59:13 -0800
+	id S933528AbZAOWCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:00 -0500
+Date: Thu, 15 Jan 2009 13:59:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Evgeniy Dushistov <dushistov@mail.ru>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [patch 10/85] minix: fix add links wrong position calculation
-Message-ID: <20090115215913.GK17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 12/85] SCSI: aha152x_cs: Fix regression that keeps driver
+	from using shared interrupts
+Message-ID: <20090115215917.GM17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="minix-fix-add-link-s-wrong-position-calculation.patch"
+Content-Disposition: inline; filename="scsi-aha152x_cs-fix-regression-that-keeps-driver-from-using-shared-interrupts.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,33 +41,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Evgeniy Dushistov <dushistov@mail.ru>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit d6b54841f4ddd836c886d1e6ac381cf309ee98a3 upstream.
+commit 58607b30fc0f2230a189500112c7a7cca02804cf upstream.
 
-Fix the add link method.  The oosition in the directory was calculated in
-wrong way - it had the incorrect shift direction.
+At some point since 2.6.22, the aha152x_cs driver stopped working and
+started erring on load with the following messages:
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+kernel: pcmcia: request for exclusive IRQ could not be fulfilled.
+kernel: pcmcia: the driver needs updating to supported shared IRQ lines.
+
+With the following change, the driver works with shared IRQs.
+
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/minix/dir.c |    2 +-
+ drivers/scsi/pcmcia/aha152x_stub.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/minix/dir.c
-+++ b/fs/minix/dir.c
-@@ -280,7 +280,7 @@ int minix_add_link(struct dentry *dentry
- 	return -EINVAL;
- 
- got_it:
--	pos = (page->index >> PAGE_CACHE_SHIFT) + p - (char*)page_address(page);
-+	pos = page_offset(page) + p - (char *)page_address(page);
- 	err = __minix_write_begin(NULL, page->mapping, pos, sbi->s_dirsize,
- 					AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
- 	if (err)
+--- a/drivers/scsi/pcmcia/aha152x_stub.c
++++ b/drivers/scsi/pcmcia/aha152x_stub.c
+@@ -114,7 +114,7 @@ static int aha152x_probe(struct pcmcia_d
+     link->io.NumPorts1 = 0x20;
+     link->io.Attributes1 = IO_DATA_PATH_WIDTH_AUTO;
+     link->io.IOAddrLines = 10;
+-    link->irq.Attributes = IRQ_TYPE_EXCLUSIVE;
++    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING;
+     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+     link->conf.Attributes = CONF_ENABLE_IRQ;
+     link->conf.IntType = INT_MEMORY_AND_IO;
 
