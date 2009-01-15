@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936278AbZAOWnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936026AbZAOWnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936278AbZAOWnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbZAOWD4
+	id S936026AbZAOWnq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933755AbZAOWD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:56 -0500
-Received: from kroah.org ([198.145.64.141]:39043 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:57 -0500
+Received: from kroah.org ([198.145.64.141]:39016 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932493AbZAOWDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:49 -0500
-Date: Thu, 15 Jan 2009 14:01:47 -0800
+	id S1765271AbZAOWDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:47 -0500
+Date: Thu, 15 Jan 2009 14:01:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Reinhard Nissl <rnissl@gmx.de>,
-       Ke Wei <kewei@marvell.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 73/85] [SCSI] mvsas: increase port type detection delay to
-	suit Seagates 10k6 drive ST3450856SS 0003
-Message-ID: <20090115220147.GV17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
+Subject: [patch 71/85] mm: fix assertion
+Message-ID: <20090115220142.GT17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mvsas-increase-port-type-detection-delay-to-suit-seagate-s-10k6-drive-st3450856ss-0003.patch"
+Content-Disposition: inline; filename="mm-fix-assertion.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,34 +39,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Reinhard Nissl <rnissl@gmx.de>
+From: Nick Piggin <npiggin@suse.de>
 
-commit ddccf307a3599e452804e228d8ed30fba578923e upstream.
+commit 18e6959c385f3edf3991fa6662a53dac4eb10d5b upstream.
 
-I increased the delay step by step until loading of mvsas
-reliably detected the drive 200 times in sequence. A much better
-approach would be to monitor the hardware for some flag which
-indicates that port detection has finished, but I do not have any
-hardware documentation.
+This assertion is incorrect for lockless pagecache.  By definition if we
+have an unpinned page that we are trying to take a speculative reference
+to, it may become the tail of a compound page at any time (if it is
+freed, then reallocated as a compound page).
 
-Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
-Cc: Ke Wei <kewei@marvell.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+It was still a valid assertion for the vmscan.c LRU isolation case, but
+it doesn't seem incredibly helpful...  if somebody wants it, they can
+put it back directly where it applies in the vmscan code.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mvsas.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/mm.h |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/scsi/mvsas.c
-+++ b/drivers/scsi/mvsas.c
-@@ -2959,7 +2959,7 @@ static int __devinit mvs_hw_init(struct 
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -253,7 +253,6 @@ static inline int put_page_testzero(stru
+  */
+ static inline int get_page_unless_zero(struct page *page)
+ {
+-	VM_BUG_ON(PageTail(page));
+ 	return atomic_inc_not_zero(&page->_count);
+ }
  
- 	/* enable auto port detection */
- 	mw32(GBL_PORT_TYPE, MODE_AUTO_DET_EN);
--	msleep(100);
-+	msleep(1100);
- 	/* init and reset phys */
- 	for (i = 0; i < mvi->chip->n_phy; i++) {
- 		u32 lo = be32_to_cpu(*(u32 *)&mvi->sas_addr[4]);
 
