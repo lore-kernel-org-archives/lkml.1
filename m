@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936052AbZAOWiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936109AbZAOWjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936052AbZAOWiw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763682AbZAOWDn
+	id S936109AbZAOWjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765453AbZAOWDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:43 -0500
-Received: from kroah.org ([198.145.64.141]:38913 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:49 -0500
+Received: from kroah.org ([198.145.64.141]:38932 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933958AbZAOWDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:39 -0500
-Date: Thu, 15 Jan 2009 14:01:28 -0800
+	id S933788AbZAOWDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:40 -0500
+Date: Thu, 15 Jan 2009 14:01:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 64/85] [PATCH 44/44] [CVE-2009-0029] s390 specific system
-	call wrappers
-Message-ID: <20090115220128.GM17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, Bryon Roche <kain@kain.org>
+Subject: [patch 65/85] e1000e: fix IPMI traffic
+Message-ID: <20090115220130.GN17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0044--CVE-2009-0029-s390-specific-system-call-wrappers.patch"
+Content-Disposition: inline; filename="e1000e-fix-ipmi-traffic.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,353 +41,158 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-commit 26689452f5ca201add63b1b1ff0dbcf82d6885e7 upstream.
+commit eb7c3adb1ca92450870dbb0d347fc986cd5e2af4 upstream.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Some users reported that they have machines with BMCs enabled that cannot
+receive IPMI traffic after e1000e is loaded.
+http://marc.info/?l=e1000-devel&m=121909039127414&w=2
+http://marc.info/?l=e1000-devel&m=121365543823387&w=2
+
+This fixes the issue if they load with the new parameter = 0 by disabling
+crc stripping, but leaves the performance feature on for most users.
+Based on work done by Hong Zhang.
+
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Bryon Roche <kain@kain.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/s390/kernel/compat_wrapper.S |    4 ++--
- arch/s390/kernel/entry.h          |   15 ++++++++-------
- arch/s390/kernel/process.c        |    9 +++++----
- arch/s390/kernel/signal.c         |   19 ++++++++-----------
- arch/s390/kernel/sys_s390.c       |   35 +++++++++++++++++++++--------------
- arch/s390/kernel/syscalls.S       |   12 ++++++------
- 6 files changed, 50 insertions(+), 44 deletions(-)
 
---- a/arch/s390/kernel/compat_wrapper.S
-+++ b/arch/s390/kernel/compat_wrapper.S
-@@ -549,7 +549,7 @@ sys32_setdomainname_wrapper:
- 	.globl	sys32_newuname_wrapper
- sys32_newuname_wrapper:
- 	llgtr	%r2,%r2			# struct new_utsname *
--	jg	s390x_newuname		# branch to system call
-+	jg	sys_s390_newuname	# branch to system call
+---
+ drivers/net/e1000e/e1000.h  |    5 +++++
+ drivers/net/e1000e/netdev.c |   23 +++++++++++++++++++++--
+ drivers/net/e1000e/param.c  |   25 +++++++++++++++++++++++++
+ 3 files changed, 51 insertions(+), 2 deletions(-)
+
+--- a/drivers/net/e1000e/e1000.h
++++ b/drivers/net/e1000e/e1000.h
+@@ -283,6 +283,7 @@ struct e1000_adapter {
+ 	unsigned long led_status;
  
- 	.globl	compat_sys_adjtimex_wrapper
- compat_sys_adjtimex_wrapper:
-@@ -617,7 +617,7 @@ sys32_sysfs_wrapper:
- 	.globl	sys32_personality_wrapper
- sys32_personality_wrapper:
- 	llgfr	%r2,%r2			# unsigned long
--	jg	s390x_personality	# branch to system call
-+	jg	sys_s390_personality	# branch to system call
- 
- 	.globl	sys32_setfsuid16_wrapper
- sys32_setfsuid16_wrapper:
---- a/arch/s390/kernel/entry.h
-+++ b/arch/s390/kernel/entry.h
-@@ -31,21 +31,22 @@ struct old_sigaction;
- struct sel_arg_struct;
- 
- long sys_mmap2(struct mmap_arg_struct __user  *arg);
--long old_mmap(struct mmap_arg_struct __user *arg);
-+long sys_s390_old_mmap(struct mmap_arg_struct __user *arg);
- long sys_ipc(uint call, int first, unsigned long second,
- 	     unsigned long third, void __user *ptr);
--long s390x_newuname(struct new_utsname __user *name);
--long s390x_personality(unsigned long personality);
--long s390_fadvise64(int fd, u32 offset_high, u32 offset_low,
-+long sys_s390_newuname(struct new_utsname __user *name);
-+long sys_s390_personality(unsigned long personality);
-+long sys_s390_fadvise64(int fd, u32 offset_high, u32 offset_low,
- 		    size_t len, int advice);
--long s390_fadvise64_64(struct fadvise64_64_args __user *args);
--long s390_fallocate(int fd, int mode, loff_t offset, u32 len_high, u32 len_low);
-+long sys_s390_fadvise64_64(struct fadvise64_64_args __user *args);
-+long sys_s390_fallocate(int fd, int mode, loff_t offset, u32 len_high,
-+			u32 len_low);
- long sys_fork(void);
- long sys_clone(void);
- long sys_vfork(void);
- void execve_tail(void);
- long sys_execve(void);
--int sys_sigsuspend(int history0, int history1, old_sigset_t mask);
-+long sys_sigsuspend(int history0, int history1, old_sigset_t mask);
- long sys_sigaction(int sig, const struct old_sigaction __user *act,
- 		   struct old_sigaction __user *oact);
- long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss);
---- a/arch/s390/kernel/process.c
-+++ b/arch/s390/kernel/process.c
-@@ -38,6 +38,7 @@
- #include <linux/utsname.h>
- #include <linux/tick.h>
- #include <linux/elfcore.h>
-+#include <linux/syscalls.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/system.h>
-@@ -257,13 +258,13 @@ int copy_thread(int nr, unsigned long cl
-         return 0;
- }
- 
--asmlinkage long sys_fork(void)
-+SYSCALL_DEFINE0(fork)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	return do_fork(SIGCHLD, regs->gprs[15], regs, 0, NULL, NULL);
- }
- 
--asmlinkage long sys_clone(void)
-+SYSCALL_DEFINE0(clone)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	unsigned long clone_flags;
-@@ -290,7 +291,7 @@ asmlinkage long sys_clone(void)
-  * do not have enough call-clobbered registers to hold all
-  * the information you need.
-  */
--asmlinkage long sys_vfork(void)
-+SYSCALL_DEFINE0(vfork)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD,
-@@ -310,7 +311,7 @@ asmlinkage void execve_tail(void)
- /*
-  * sys_execve() executes a new program.
-  */
--asmlinkage long sys_execve(void)
-+SYSCALL_DEFINE0(execve)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	char *filename;
---- a/arch/s390/kernel/signal.c
-+++ b/arch/s390/kernel/signal.c
-@@ -24,6 +24,7 @@
- #include <linux/tty.h>
- #include <linux/personality.h>
- #include <linux/binfmts.h>
-+#include <linux/syscalls.h>
- #include <asm/ucontext.h>
- #include <asm/uaccess.h>
- #include <asm/lowcore.h>
-@@ -52,8 +53,7 @@ typedef struct 
- /*
-  * Atomically swap in the new signal mask, and wait for a signal.
-  */
--asmlinkage int
--sys_sigsuspend(int history0, int history1, old_sigset_t mask)
-+SYSCALL_DEFINE3(sigsuspend, int, history0, int, history1, old_sigset_t, mask)
- {
- 	mask &= _BLOCKABLE;
- 	spin_lock_irq(&current->sighand->siglock);
-@@ -69,9 +69,8 @@ sys_sigsuspend(int history0, int history
- 	return -ERESTARTNOHAND;
- }
- 
--asmlinkage long
--sys_sigaction(int sig, const struct old_sigaction __user *act,
--	      struct old_sigaction __user *oact)
-+SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
-+		struct old_sigaction __user *, oact)
- {
- 	struct k_sigaction new_ka, old_ka;
- 	int ret;
-@@ -101,15 +100,13 @@ sys_sigaction(int sig, const struct old_
- 	return ret;
- }
- 
--asmlinkage long
--sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss)
-+SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss,
-+		stack_t __user *, uoss)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	return do_sigaltstack(uss, uoss, regs->gprs[15]);
- }
- 
--
--
- /* Returns non-zero on fault. */
- static int save_sigregs(struct pt_regs *regs, _sigregs __user *sregs)
- {
-@@ -163,7 +160,7 @@ static int restore_sigregs(struct pt_reg
- 	return 0;
- }
- 
--asmlinkage long sys_sigreturn(void)
-+SYSCALL_DEFINE0(sigreturn)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	sigframe __user *frame = (sigframe __user *)regs->gprs[15];
-@@ -190,7 +187,7 @@ badframe:
- 	return 0;
- }
- 
--asmlinkage long sys_rt_sigreturn(void)
-+SYSCALL_DEFINE0(rt_sigreturn)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	rt_sigframe __user *frame = (rt_sigframe __user *)regs->gprs[15];
---- a/arch/s390/kernel/syscalls.S
-+++ b/arch/s390/kernel/syscalls.S
-@@ -98,7 +98,7 @@ SYSCALL(sys_uselib,sys_uselib,sys32_usel
- SYSCALL(sys_swapon,sys_swapon,sys32_swapon_wrapper)
- SYSCALL(sys_reboot,sys_reboot,sys32_reboot_wrapper)
- SYSCALL(sys_ni_syscall,sys_ni_syscall,old32_readdir_wrapper)	/* old readdir syscall */
--SYSCALL(old_mmap,old_mmap,old32_mmap_wrapper)			/* 90 */
-+SYSCALL(sys_s390_old_mmap,sys_s390_old_mmap,old32_mmap_wrapper)	/* 90 */
- SYSCALL(sys_munmap,sys_munmap,sys32_munmap_wrapper)
- SYSCALL(sys_truncate,sys_truncate,sys32_truncate_wrapper)
- SYSCALL(sys_ftruncate,sys_ftruncate,sys32_ftruncate_wrapper)
-@@ -130,7 +130,7 @@ SYSCALL(sys_fsync,sys_fsync,sys32_fsync_
- SYSCALL(sys_sigreturn,sys_sigreturn,sys32_sigreturn)
- SYSCALL(sys_clone,sys_clone,sys32_clone)			/* 120 */
- SYSCALL(sys_setdomainname,sys_setdomainname,sys32_setdomainname_wrapper)
--SYSCALL(sys_newuname,s390x_newuname,sys32_newuname_wrapper)
-+SYSCALL(sys_newuname,sys_s390_newuname,sys32_newuname_wrapper)
- NI_SYSCALL							/* modify_ldt for i386 */
- SYSCALL(sys_adjtimex,sys_adjtimex,compat_sys_adjtimex_wrapper)
- SYSCALL(sys_mprotect,sys_mprotect,sys32_mprotect_wrapper)	/* 125 */
-@@ -144,7 +144,7 @@ SYSCALL(sys_getpgid,sys_getpgid,sys32_ge
- SYSCALL(sys_fchdir,sys_fchdir,sys32_fchdir_wrapper)
- SYSCALL(sys_bdflush,sys_bdflush,sys32_bdflush_wrapper)
- SYSCALL(sys_sysfs,sys_sysfs,sys32_sysfs_wrapper)		/* 135 */
--SYSCALL(sys_personality,s390x_personality,sys32_personality_wrapper)
-+SYSCALL(sys_personality,sys_s390_personality,sys32_personality_wrapper)
- NI_SYSCALL							/* for afs_syscall */
- SYSCALL(sys_setfsuid16,sys_ni_syscall,sys32_setfsuid16_wrapper)	/* old setfsuid16 syscall */
- SYSCALL(sys_setfsgid16,sys_ni_syscall,sys32_setfsgid16_wrapper)	/* old setfsgid16 syscall */
-@@ -261,7 +261,7 @@ SYSCALL(sys_epoll_create,sys_epoll_creat
- SYSCALL(sys_epoll_ctl,sys_epoll_ctl,sys_epoll_ctl_wrapper)	/* 250 */
- SYSCALL(sys_epoll_wait,sys_epoll_wait,sys_epoll_wait_wrapper)
- SYSCALL(sys_set_tid_address,sys_set_tid_address,sys32_set_tid_address_wrapper)
--SYSCALL(s390_fadvise64,sys_fadvise64_64,sys32_fadvise64_wrapper)
-+SYSCALL(sys_s390_fadvise64,sys_fadvise64_64,sys32_fadvise64_wrapper)
- SYSCALL(sys_timer_create,sys_timer_create,sys32_timer_create_wrapper)
- SYSCALL(sys_timer_settime,sys_timer_settime,sys32_timer_settime_wrapper)	/* 255 */
- SYSCALL(sys_timer_gettime,sys_timer_gettime,sys32_timer_gettime_wrapper)
-@@ -272,7 +272,7 @@ SYSCALL(sys_clock_gettime,sys_clock_gett
- SYSCALL(sys_clock_getres,sys_clock_getres,sys32_clock_getres_wrapper)
- SYSCALL(sys_clock_nanosleep,sys_clock_nanosleep,sys32_clock_nanosleep_wrapper)
- NI_SYSCALL							/* reserved for vserver */
--SYSCALL(s390_fadvise64_64,sys_ni_syscall,sys32_fadvise64_64_wrapper)
-+SYSCALL(sys_s390_fadvise64_64,sys_ni_syscall,sys32_fadvise64_64_wrapper)
- SYSCALL(sys_statfs64,sys_statfs64,compat_sys_statfs64_wrapper)
- SYSCALL(sys_fstatfs64,sys_fstatfs64,compat_sys_fstatfs64_wrapper)
- SYSCALL(sys_remap_file_pages,sys_remap_file_pages,sys32_remap_file_pages_wrapper)
-@@ -322,7 +322,7 @@ NI_SYSCALL							/* 310 sys_move_pages *
- SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
- SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
- SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
--SYSCALL(s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
-+SYSCALL(sys_s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
- SYSCALL(sys_utimensat,sys_utimensat,compat_sys_utimensat_wrapper)	/* 315 */
- SYSCALL(sys_signalfd,sys_signalfd,compat_sys_signalfd_wrapper)
- NI_SYSCALL						/* 317 old sys_timer_fd */
---- a/arch/s390/kernel/sys_s390.c
-+++ b/arch/s390/kernel/sys_s390.c
-@@ -29,6 +29,7 @@
- #include <linux/personality.h>
- #include <linux/unistd.h>
- #include <linux/ipc.h>
-+#include <linux/syscalls.h>
- #include <asm/uaccess.h>
- #include "entry.h"
- 
-@@ -74,7 +75,7 @@ struct mmap_arg_struct {
- 	unsigned long offset;
+ 	unsigned int flags;
++	unsigned int flags2;
+ 	struct work_struct downshift_task;
+ 	struct work_struct update_phy_task;
  };
+@@ -290,6 +291,7 @@ struct e1000_adapter {
+ struct e1000_info {
+ 	enum e1000_mac_type	mac;
+ 	unsigned int		flags;
++	unsigned int            flags2;
+ 	u32			pba;
+ 	s32			(*get_variants)(struct e1000_adapter *);
+ 	struct e1000_mac_operations *mac_ops;
+@@ -330,6 +332,9 @@ struct e1000_info {
+ #define FLAG_RX_RESTART_NOW               (1 << 30)
+ #define FLAG_MSI_TEST_FAILED              (1 << 31)
  
--asmlinkage long sys_mmap2(struct mmap_arg_struct __user  *arg)
-+SYSCALL_DEFINE1(mmap2, struct mmap_arg_struct __user *, arg)
- {
- 	struct mmap_arg_struct a;
- 	int error = -EFAULT;
-@@ -86,7 +87,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long old_mmap(struct mmap_arg_struct __user *arg)
-+SYSCALL_DEFINE1(s390_old_mmap, struct mmap_arg_struct __user *, arg)
- {
- 	struct mmap_arg_struct a;
- 	long error = -EFAULT;
-@@ -127,8 +128,8 @@ asmlinkage long old_select(struct sel_ar
-  *
-  * This is really horribly ugly.
-  */
--asmlinkage long sys_ipc(uint call, int first, unsigned long second,
--				  unsigned long third, void __user *ptr)
-+SYSCALL_DEFINE5(ipc, uint, call, int, first, unsigned long, second,
-+		unsigned long, third, void __user *, ptr)
- {
-         struct ipc_kludge tmp;
- 	int ret;
-@@ -194,7 +195,7 @@ asmlinkage long sys_ipc(uint call, int f
- }
- 
- #ifdef CONFIG_64BIT
--asmlinkage long s390x_newuname(struct new_utsname __user *name)
-+SYSCALL_DEFINE1(s390_newuname, struct new_utsname __user *, name)
- {
- 	int ret = sys_newuname(name);
- 
-@@ -205,7 +206,7 @@ asmlinkage long s390x_newuname(struct ne
- 	return ret;
- }
- 
--asmlinkage long s390x_personality(unsigned long personality)
-+SYSCALL_DEFINE1(s390_personality, unsigned long, personality)
- {
- 	int ret;
- 
-@@ -224,15 +225,13 @@ asmlinkage long s390x_personality(unsign
-  */
- #ifndef CONFIG_64BIT
- 
--asmlinkage long
--s390_fadvise64(int fd, u32 offset_high, u32 offset_low, size_t len, int advice)
-+SYSCALL_DEFINE5(s390_fadvise64, int, fd, u32, offset_high, u32, offset_low,
-+		size_t, len, int, advice)
- {
- 	return sys_fadvise64(fd, (u64) offset_high << 32 | offset_low,
- 			len, advice);
- }
- 
--#endif
--
- struct fadvise64_64_args {
- 	int fd;
- 	long long offset;
-@@ -240,8 +239,7 @@ struct fadvise64_64_args {
- 	int advice;
- };
- 
--asmlinkage long
--s390_fadvise64_64(struct fadvise64_64_args __user *args)
-+SYSCALL_DEFINE1(s390_fadvise64_64, struct fadvise64_64_args __user *, args)
- {
- 	struct fadvise64_64_args a;
- 
-@@ -250,7 +248,6 @@ s390_fadvise64_64(struct fadvise64_64_ar
- 	return sys_fadvise64_64(a.fd, a.offset, a.len, a.advice);
- }
- 
--#ifndef CONFIG_64BIT
- /*
-  * This is a wrapper to call sys_fallocate(). For 31 bit s390 the last
-  * 64 bit argument "len" is split into the upper and lower 32 bits. The
-@@ -263,9 +260,19 @@ s390_fadvise64_64(struct fadvise64_64_ar
-  * to
-  *   %r2: fd, %r3: mode, %r4/%r5: offset, 96(%r15)-103(%r15): len
-  */
--asmlinkage long s390_fallocate(int fd, int mode, loff_t offset,
-+SYSCALL_DEFINE(s390_fallocate)(int fd, int mode, loff_t offset,
- 			       u32 len_high, u32 len_low)
- {
- 	return sys_fallocate(fd, mode, offset, ((u64)len_high << 32) | len_low);
- }
-+#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
-+asmlinkage long SyS_s390_fallocate(long fd, long mode, loff_t offset,
-+				   long len_high, long len_low)
-+{
-+	return SYSC_s390_fallocate((int) fd, (int) mode, offset,
-+				   (u32) len_high, (u32) len_low);
-+}
-+SYSCALL_ALIAS(sys_s390_fallocate, SyS_s390_fallocate);
-+#endif
++/* CRC Stripping defines */
++#define FLAG2_CRC_STRIPPING               (1 << 0)
 +
- #endif
+ #define E1000_RX_DESC_PS(R, i)	    \
+ 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
+ #define E1000_GET_DESC(R, i, type)	(&(((struct type *)((R).desc))[i]))
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -497,6 +497,10 @@ static bool e1000_clean_rx_irq(struct e1
+ 			goto next_desc;
+ 		}
+ 
++		/* adjust length to remove Ethernet CRC */
++		if (!(adapter->flags2 & FLAG2_CRC_STRIPPING))
++			length -= 4;
++
+ 		total_rx_bytes += length;
+ 		total_rx_packets++;
+ 
+@@ -802,6 +806,10 @@ static bool e1000_clean_rx_irq_ps(struct
+ 			pci_dma_sync_single_for_device(pdev, ps_page->dma,
+ 				PAGE_SIZE, PCI_DMA_FROMDEVICE);
+ 
++			/* remove the CRC */
++			if (!(adapter->flags2 & FLAG2_CRC_STRIPPING))
++				l1 -= 4;
++
+ 			skb_put(skb, l1);
+ 			goto copydone;
+ 		} /* if */
+@@ -823,6 +831,12 @@ static bool e1000_clean_rx_irq_ps(struct
+ 			skb->truesize += length;
+ 		}
+ 
++		/* strip the ethernet crc, problem is we're using pages now so
++		 * this whole operation can get a little cpu intensive
++		 */
++		if (!(adapter->flags2 & FLAG2_CRC_STRIPPING))
++			pskb_trim(skb, skb->len - 4);
++
+ copydone:
+ 		total_rx_bytes += skb->len;
+ 		total_rx_packets++;
+@@ -1987,8 +2001,12 @@ static void e1000_setup_rctl(struct e100
+ 	else
+ 		rctl |= E1000_RCTL_LPE;
+ 
+-	/* Enable hardware CRC frame stripping */
+-	rctl |= E1000_RCTL_SECRC;
++	/* Some systems expect that the CRC is included in SMBUS traffic. The
++	 * hardware strips the CRC before sending to both SMBUS (BMC) and to
++	 * host memory when this is enabled
++	 */
++	if (adapter->flags2 & FLAG2_CRC_STRIPPING)
++		rctl |= E1000_RCTL_SECRC;
+ 
+ 	/* Setup buffer sizes */
+ 	rctl &= ~E1000_RCTL_SZ_4096;
+@@ -4412,6 +4430,7 @@ static int __devinit e1000_probe(struct 
+ 	adapter->ei = ei;
+ 	adapter->pba = ei->pba;
+ 	adapter->flags = ei->flags;
++	adapter->flags2 = ei->flags2;
+ 	adapter->hw.adapter = adapter;
+ 	adapter->hw.mac.type = ei->mac;
+ 	adapter->msg_enable = (1 << NETIF_MSG_DRV | NETIF_MSG_PROBE) - 1;
+--- a/drivers/net/e1000e/param.c
++++ b/drivers/net/e1000e/param.c
+@@ -142,6 +142,16 @@ E1000_PARAM(KumeranLockLoss, "Enable Kum
+  */
+ E1000_PARAM(WriteProtectNVM, "Write-protect NVM [WARNING: disabling this can lead to corrupted NVM]");
+ 
++/*
++ * Enable CRC Stripping
++ *
++ * Valid Range: 0, 1
++ *
++ * Default Value: 1 (enabled)
++ */
++E1000_PARAM(CrcStripping, "Enable CRC Stripping, disable if your BMC needs " \
++                          "the CRC");
++
+ struct e1000_option {
+ 	enum { enable_option, range_option, list_option } type;
+ 	const char *name;
+@@ -377,6 +387,21 @@ void __devinit e1000e_check_options(stru
+ 				adapter->flags |= FLAG_SMART_POWER_DOWN;
+ 		}
+ 	}
++	{ /* CRC Stripping */
++		const struct e1000_option opt = {
++			.type = enable_option,
++			.name = "CRC Stripping",
++			.err  = "defaulting to enabled",
++			.def  = OPTION_ENABLED
++		};
++
++		if (num_CrcStripping > bd) {
++			unsigned int crc_stripping = CrcStripping[bd];
++			e1000_validate_option(&crc_stripping, &opt, adapter);
++			if (crc_stripping == OPTION_ENABLED)
++				adapter->flags2 |= FLAG2_CRC_STRIPPING;
++		}
++	}
+ 	{ /* Kumeran Lock Loss Workaround */
+ 		const struct e1000_option opt = {
+ 			.type = enable_option,
 
