@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbZAOMSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbZAOMW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbZAOMSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZAOMSJ
+	id S1759774AbZAOMW7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZAOMWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:18:09 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:61595 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbZAOMSI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:18:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LXcZX9SVb0L62zylz1WYejn1heoh8TEy18QMjdyiCZk/5/Q4qWaP+azWGqwTsfbk6z
-         /k0UQ+ntJ9tjpbj1pCeKnux7P78Ml+mpAP0mT8kMFV09FfstNaeC3QOiZ1Nm3vEXRgNg
-         bjGPklTS6lPJI1vSPu+iw3ErXuwN8HS4yJBnE=
-Date: Thu, 15 Jan 2009 12:18:01 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Chris Caputo <ccaputo@alt.net>
-Cc: Denys Fedoryschenko <denys@visp.net.lb>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090115121801.GH5461@ff.dom.local>
-References: <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <Pine.LNX.4.64.0901150724000.20461@nacho.alt.net> <20090115075450.GB4190@ff.dom.local> <20090115094530.GG4190@ff.dom.local> <Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>
+	Thu, 15 Jan 2009 07:22:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35176 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753488AbZAOMWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:22:48 -0500
+Date: Thu, 15 Jan 2009 13:21:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Tony Luck <tony.luck@intel.com>, IA64 <linux-ia64@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       David Howells <dhowells@redhat.com>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       linux-am33-list@redhat.com, "David S. Miller" <davem@davemloft.net>,
+       SPARC <sparclinux@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: crash: IP: [<ffffffff80478092>] __bitmap_intersects+0x48/0x73
+	[PATCH supplied]
+Message-ID: <20090115122156.GA20349@elte.hu>
+References: <496BF6D5.9030403@sgi.com> <20090113130048.GB31147@elte.hu> <496CAF5A.3010304@sgi.com> <496D0F46.2010907@sgi.com> <496D2172.6030608@sgi.com> <20090114165431.GA18826@elte.hu> <20090114165524.GA21742@elte.hu> <20090114175126.GA21078@elte.hu> <496E78BA.5040609@sgi.com> <20090115101617.GH5833@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090115101617.GH5833@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3119]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 12:00:50PM +0000, Chris Caputo wrote:
-...
-> I wish I had a repro scenario in a non-production environment, so I could 
-> help out further with this.  If I did, I would test without nmi_watchdog 
-> while trying just 2.6.28 and Jarek's #4 patch.
 
-I think this watchdog doesn't matter too much yet. Probably it's more
-about hardware (smp, maybe kind of hw timer), and high traffic vs. htb
-rules.
+FYI, there's new warnings due to cpumask changes:
 
-Jarek P.
+arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘show_cache_disable’:
+arch/x86/kernel/cpu/intel_cacheinfo.c:710: warning: unused variable ‘mask’
+arch/x86/kernel/cpu/intel_cacheinfo.c: In function ‘store_cache_disable’:
+arch/x86/kernel/cpu/intel_cacheinfo.c:745: warning: unused variable ‘mask’
+
+on 32-bit defconfig.
+
+	Ingo
