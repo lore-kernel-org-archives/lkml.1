@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbZAOH27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762226AbZAOH32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbZAOH27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbZAOH2u
+	id S1762226AbZAOH32 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZAOH3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:28:50 -0500
-Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:55434 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbZAOH2t (ORCPT
+	Thu, 15 Jan 2009 02:29:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38849 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756162AbZAOH3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:28:49 -0500
-Message-ID: <496EE5A4.4010805@compulab.co.il>
-Date: Thu, 15 Jan 2009 09:28:36 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
-MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-CC: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
-       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
-Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support 
- within mfd driver.
-References: <496E2BE5.1050803@cam.ac.uk>	 <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com>	 <496ED8F6.6030201@compulab.co.il> <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
-In-Reply-To: <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 15 Jan 2009 02:29:16 -0500
+Subject: Re: 2.6.28 has unconfigurable group sched?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mark Glines <mark@glines.org>
+Cc: Ingo Molnar <mingo@elte.hu>, L-K <linux-kernel@vger.kernel.org>
+In-Reply-To: <496DFACE.10403@glines.org>
+References: <496CDDE9.3050008@glines.org> <1231926992.7141.23.camel@twins>
+	 <496DFACE.10403@glines.org>
+Content-Type: text/plain
+Date: Thu, 15 Jan 2009 08:29:04 +0100
+Message-Id: <1232004544.14825.75.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Eric Miao wrote:
-> On Thu, Jan 15, 2009 at 2:34 PM, Mike Rapoport <mike@compulab.co.il> wrote:
->>
->> Eric Miao wrote:
->>> On Thu, Jan 15, 2009 at 2:16 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
->>>> From: Jonathan Cameron <jic23@cam.ac.uk>
->>>>
->>>> Add support for changing the mode of the da9030 usb charge pump
->>>>
->>> Well, if it is totally USB charger related, I'd suggest to move this into
->>> the dedicated driver. This mfd/da903x.c serves as a common code
->>> base for all sub-peripherals.
->> It's not exactly related to the charger, it's rather related to the USB voltage
->> supplied to USB devices attached to PXA OHCI.
->> Indeed the mfd/da903x.c serves as a common core for sub-peripherals, but IMHO
->> adding a subdevice driver because of single method doesn't worth the overhead.
->> I'm for the solution Jonathan proposes.
->>
+On Wed, 2009-01-14 at 06:46 -0800, Mark Glines wrote:
+> Peter Zijlstra wrote:
+> >> So it seems rt_schedulable() is never succeeding.  Any ideas?
+> > 
+> > Yeah, I should test this user grouping stuff more often :/
+> > 
+> > The below fixes it for me.
+> > ---
+> > Subject: sched: fix bandwidth validation for UID grouping 
+> > 
+> > For UID grouping we initialize the root group with infinite bandwidth
+> > which by default is actually more than the global limit, therefore the
+> > bandwidth check always fails.
+> > 
+> > Because the root group is a phantom group (for UID grouping) we cannot
+> > runtime adjust it, therefore we let it reflect the global bandwidth
+> > settings.
 > 
-> Mmm... then who will be the invoker? I'm a bit upset about this
-> being exported while called out of control. If it works as the
-> name suggested, setting some mode, maybe we can have a
-> platform data field specifying this, and hide this totally within
-> the driver. I didn't look into this too much, just a concern here.
+> 
+> Thanks.  Sadly, this doesn't seem to change anything for me.  I applied
+> it to 2.6.28, rebuilt and reinstalled, and got the same result.  I did a
+> clean rebuild to be sure; and got the same behavior again.
+> 
+> Please let me know if there are any additional diagnostics I can provide.
 
-The USB charge pump should be enabled if DA9030 should supply USB VBUS for USB
-devices connected to PXA OHCI port. In the most simple case, when the USB port
-is configured to be host only the platform data can be used to setup the charge
-pump once and forget about it. However, if the USB port is configured as OTG,
-the charge pump should be toggled depending on OTG ID.
-In EM-X270 I have a GPIO connected to OTG ID pin of the connector and according
-to the GPIO state I toggle the da9030 USB charge pump.
+Most strange, I did the patch on .28 just to be sure (my initial testing
+was done on -linus since I couldn't remember it having changed in a
+while), and it still works for me.
 
--- 
-Sincerely yours,
-Mike.
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_RT_GROUP_SCHED=y
+CONFIG_USER_SCHED=y
+# CONFIG_CGROUP_SCHED is not set
+
+Linux opteron 2.6.28 #634 SMP PREEMPT Wed Jan 14 18:13:31 CET 2009
+x86_64 x86_64 x86_64 GNU/Linux
+
+# echo 450000 > /sys/kernel/uids/0/cpu_rt_runtime 
+# cat /sys/kernel/uids/0/cpu_rt_runtime
+450000
+
 
