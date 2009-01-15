@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761811AbZAOVYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbZAOV0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761811AbZAOVYP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:24:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZAOVXy
+	id S932108AbZAOV0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbZAOV0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 16:23:54 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:61307 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753348AbZAOVXx (ORCPT
+	Thu, 15 Jan 2009 16:26:25 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35730 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754395AbZAOV0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 16:23:53 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC v5] net: add PCINet driver
-Date: Thu, 15 Jan 2009 22:22:53 +0100
-User-Agent: KMail/1.9.9
-Cc: Ira Snyder <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, David Miller <davem@davemloft.net>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>
-References: <20090107195052.GA24981@ovro.caltech.edu> <200901151853.52202.arnd@arndb.de> <20090115192129.GB9091@ovro.caltech.edu>
-In-Reply-To: <20090115192129.GB9091@ovro.caltech.edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 15 Jan 2009 16:26:24 -0500
+Date: Thu, 15 Jan 2009 16:26:23 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <gregkh@suse.de>
+cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, <linux-kernel@vger.kernel.org>,
+       <stable@kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: [patch 00/94] 2.6.28.1 stable review
+In-Reply-To: <20090115211234.GA28143@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0901151623180.2181-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901152222.55006.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19h8vEOPNJPE3euO0rk+8+EL4hwn6XNIchSkbX
- jvrSZqLI3rQYZ++J4xMhIvzKf0h13u+WgxhAgPVsOX6OAEv1Pb
- kBD2BV1YcxrvY59FcRNZA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009, Ira Snyder wrote:
-> I have another question for you Arnd.
+On Thu, 15 Jan 2009, Greg KH wrote:
+
+> On Thu, Jan 15, 2009 at 09:59:59PM +0100, Stefan Lippers-Hollmann wrote:
+> > Hi
+> > 
+> > On thursday january 15th, 2009 Greg KH wrote:
+> > > This is the start of the stable review cycle for the 2.6.28.1 release.
+> > > There are 94 patches in this series, all will be posted as a response to
+> > > this one.  If anyone has any issues with these being applied, please let
+> > > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > > to add a Signed-off-by: line to the patch, please respond with it.
+> > 
+> > Please consider adding the following patch, referring to
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12301
+> > 
+> > commit 2caf7fcdb8532045680f06b67b9e63f0c9613aaa
+> > Author: Alan Stern <stern@rowland.harvard.edu>
+> > Date:   Wed Dec 31 11:31:33 2008 -0500
 > 
-> What did you use as the host and guest drivers when you ran virtio over
-> PCI? Did you use two unmodified instances of virtio_net (one on host,
-> one on guest) for networking, or did you write new virtio drivers for
-> those? How about for virtio_console (if you ran it at all).
+> <snip>
+> 
+> Alan said he would provide a backported version of this patch for .28
+> after it went into Linus's tree, as this version will not apply
+> properly.
+> 
+> Alan, care to come up with something?
 
-Jan-Bernd may be able to tell you details about this, and send you the
-driver code that his interns implemented for it.
-This was only doing virtio_net between two machines using MMIO transfers,
-i.e. the DMA engine was unused, but there was a mailbox interrupt (if you
-have one of these, you won't need MSI, btw -- just write a DMA to it).
+Apart from the formatting options used with "diff", my backported 
+version is identical with the one Stefan posted.  However there remains 
+the question of how to handle the additional changes needed for the 
+disable_endpoint pathways.
 
-	Arnd <><
+Maybe it would be best to submit this patch for 2.6.28.stable now and 
+submit the second patch after it gets into the mainline.
+
+Alan Stern
+
