@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZAOLr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZAOL43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbZAOLr4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZAOLro
+	id S1755010AbZAOL43 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZAOL4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:47:44 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48558 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbZAOLrn convert rfc822-to-8bit (ORCPT
+	Thu, 15 Jan 2009 06:56:20 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:60609 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752785AbZAOL4T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:47:43 -0500
-Message-ID: <496F224A.9080100@cosmosbay.com>
-Date: Thu, 15 Jan 2009 12:47:22 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: akpm@linux-foundation.org, Volker.Lendecke@SerNet.DE,
-       linux-kernel@vger.kernel.org, sfrench@us.ibm.com, jens.axboe@oracle.com,
-       netdev@vger.kernel.org
-Subject: Re: maximum buffer size for splice(2) tcp->pipe?
-References: <20090113123702.ad29cd13.akpm@linux-foundation.org>	<496D2078.9080302@cosmosbay.com>	<496D25F8.2080505@cosmosbay.com> <20090114.205839.20689555.davem@davemloft.net>
-In-Reply-To: <20090114.205839.20689555.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 15 Jan 2009 12:47:22 +0100 (CET)
+	Thu, 15 Jan 2009 06:56:19 -0500
+Subject: Re: [BUILD_FAILURE] next-20090115 - s390x - mm/kmemleak.c
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, penberg@cs.helsinki.fi
+In-Reply-To: <20090115112001.GC5093@osiris.boeblingen.de.ibm.com>
+References: <20090115170415.3edc1df6.sfr@canb.auug.org.au>
+	 <20090115103504.GA5178@linux.vnet.ibm.com>
+	 <20090115112001.GC5093@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 15 Jan 2009 11:55:40 +0000
+Message-Id: <1232020540.32016.19.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jan 2009 11:55:41.0710 (UTC) FILETIME=[30B0B2E0:01C97708]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Wed, 14 Jan 2009 00:38:32 +0100
+On Thu, 2009-01-15 at 12:20 +0100, Heiko Carstens wrote:
+> On Thu, Jan 15, 2009 at 04:05:04PM +0530, Kamalesh Babulal wrote:
+> > Hi Stephen,
+> > 
+> > 	next-20090115 allyesconfig build fails on s390x
+> > 
+> > mm/built-in.o: In function `kmemleak_scan':
+> > mm/kmemleak.c:977: undefined reference to `_sdata'
+> > make: *** [.tmp_vmlinux1] Error 1
 > 
->> [PATCH] net: splice() from tcp to socket should take into account O_NONBLOCK
->>
->> Instead of using SPLICE_F_NONBLOCK to select a non blocking mode both on
->> source tcp socket and pipe destination, we use the underlying file flag (O_NONBLOCK)
->> for selecting a non blocking socket.
->>
->> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> 
-> This needs at least some more thought.
-> 
-> It seems, for one thing, that this change will interfere with the
-> intentions of the code in splice_dirt_to_actor which goes:
-> 
-> 	/*
-> 	 * Don't block on output, we have to drain the direct pipe.
-> 	 */
-> 	sd->flags &= ~SPLICE_F_NONBLOCK;
+> A lot of architectures don't have _sdata definined in their linker scripts.
+> On s390 _sdata would be the same as _etext. But that is not necessarily true
+> for all architectures.
 
-Reading splice_direct_to_actor() I see nothing wrong with the patch
+Kmemleak has only been tested on ARM and x86. I can add patches for the
+other architectures so that the compilation is fine but can't really run
+such kernels.
 
-(Patch is about splice from socket to pipe, while the sd->flags you mention
-in splice_direct_to_actor() only applies to the splice from internal pipe to
-something else, as splice_direct_to_actor() allocates an internal pipe to perform
-its work.
-
-Also, the meaning of SPLICE_F_NONBLOCK, as explained in include/linux/splice.h is :
-
-#define SPLICE_F_NONBLOCK (0x02) /* don't block on the pipe splicing (but */
-	/* we may still block on the fd we splice */
-	/* from/to, of course */
-
-If the comment is still correct, SPLICE_F_NONBLOCK only applies to the pipe implied in
-splice() syscall.
-
-For the other file, either its :
-- A regular file : nonblocking mode is not available, like a normal read()/write() syscall
-
-- A socket : We should be able to specify if its blocking or not, independantly from
-             the SPLICE_F_NONBLOCK flag that only applies to the pipe. Normal way
-             is using ioctl(FIONBIO) or other fcntl() call to change file->f_flags O_NONBLOCK
-
-
-In order to be able to efficiently use splice() from a socket to a file, we need
-to do a loop of :
-
-{
-splice(from blocking tcp socket to non blocking pipe, SPLICE_F_NONBLOCK); /* nonblocking pipe or risk deadlock */
-splice(from pipe to file)
-}
-
+-- 
+Catalin
 
