@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764264AbZAONa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbZAONap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764264AbZAONa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 08:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758242AbZAONaJ
+	id S1764822AbZAONap (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 08:30:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZAONaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 08:30:09 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60773 "EHLO
+	Thu, 15 Jan 2009 08:30:20 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60776 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755299AbZAONaI (ORCPT
+	with ESMTP id S1757785AbZAONaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 08:30:08 -0500
+	Thu, 15 Jan 2009 08:30:17 -0500
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/8] tty: Fix race in the flush for some ldiscs
+Subject: [PATCH 2/8] 8250_pci: add support for netmos 9835 IBM devices
 To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Thu, 15 Jan 2009 13:30:25 +0000
-Message-ID: <20090115133000.21366.28884.stgit@localhost.localdomain>
+Date: Thu, 15 Jan 2009 13:30:34 +0000
+Message-ID: <20090115133030.21366.97252.stgit@localhost.localdomain>
 In-Reply-To: <20090115132718.21366.56187.stgit@localhost.localdomain>
 References: <20090115132718.21366.56187.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
@@ -25,34 +25,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-If you issue an ioctl to flush a tty as the line discipline is changing or
-otherwise unplugged you can get a crash. The bug is very old but the rest
-of the BKL lock dropping and some very "good" luck on Ingo's part caught
-an example.
+Most of netmos 9835 hardware is handled by parport-serial.  IBM introduces
+a device which doesn't have any parallel ports and have screwed subdevice
+PCI id (not corresponding to port numbers).
 
-Use the correct ldisc_ref form so that we wait for the ldisc change to
-complete and then flush
+Handle this device (9710:9835 1014:0299) properly.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_ioctl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/serial/8250_pci.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index a408c8e..6f4c7d0 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -1057,7 +1057,7 @@ int tty_perform_flush(struct tty_struct *tty, unsigned long arg)
- 	if (retval)
- 		return retval;
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index c088146..2a36712 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -602,6 +602,10 @@ static int pci_netmos_init(struct pci_dev *dev)
+ 	/* subdevice 0x00PS means <P> parallel, <S> serial */
+ 	unsigned int num_serial = dev->subsystem_device & 0xf;
  
--	ld = tty_ldisc_ref(tty);
-+	ld = tty_ldisc_ref_wait(tty);
- 	switch (arg) {
- 	case TCIFLUSH:
- 		if (ld && ld->ops->flush_buffer)
++	if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
++			dev->subsystem_device == 0x0299)
++		return 0;
++
+ 	if (num_serial == 0)
+ 		return -ENODEV;
+ 	return num_serial;
+@@ -3096,6 +3100,10 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		0,
+ 		pbn_b0_8_115200 },
+ 
++	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9835,
++		PCI_VENDOR_ID_IBM, 0x0299,
++		0, 0, pbn_b0_bt_2_115200 },
++
+ 	/*
+ 	 * These entries match devices with class COMMUNICATION_SERIAL,
+ 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
 
