@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762136AbZAOINT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbZAOINs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762136AbZAOINT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZAOINI
+	id S1762864AbZAOINs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757991AbZAOINi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:13:08 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:57900 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757295AbZAOINH (ORCPT
+	Thu, 15 Jan 2009 03:13:38 -0500
+Received: from rv-out-0506.google.com ([209.85.198.226]:3380 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757667AbZAOINh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:13:07 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Thu, 15 Jan 2009 13:35:27 +0530
-User-Agent: KMail/1.9.10
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <200812241325.49404.chandru@in.ibm.com> <1231444992.23462.138.camel@nimitz> <200901091637.24658.chandru@in.ibm.com>
-In-Reply-To: <200901091637.24658.chandru@in.ibm.com>
+	Thu, 15 Jan 2009 03:13:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cXVhLU1DEu2quWIuyoXeBDzcS8u5vfNaDE5xpMkTAgPrRZwqbf0aees1gwVFEVhMGv
+         PeFv1GYSX8aQ5OnnfAMouWem7NBb7dpNnAE9iBlvu1qpWTKiJvg7b/mQ8wJ46U8IcYcW
+         ihey5A0QAr+xPwXCyEB2X16gjtvjacCQQRWr0=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <496EE5A4.4010805@compulab.co.il>
+References: <496E2BE5.1050803@cam.ac.uk>
+	 <f17812d70901141704n1ac3e8a7q56410f175b833ef6@mail.gmail.com>
+	 <496ED8F6.6030201@compulab.co.il>
+	 <f17812d70901142302n53953607o124df5601cd037bc@mail.gmail.com>
+	 <496EE5A4.4010805@compulab.co.il>
+Date: Thu, 15 Jan 2009 16:13:36 +0800
+Message-ID: <f17812d70901150013v2c70047er829b1c884a1d7772@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support 
+	within mfd driver.
+From: Eric Miao <eric.y.miao@gmail.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
+       felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151335.27649.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 January 2009 16:37:24 Chandru wrote:
-> On Friday 09 January 2009 01:33:12 Dave Hansen wrote:
-> > Now I'm even more confused.  Could you please send a fully changelogged
-> > patch that describes the problem, and how this fixes it?  This just
-> > seems like an off-by-one error, which isn't what I thought we had before
-> > at all.
-> > 
-> > I'm also horribly confused why PFN_UP is needed here.  Is 'physbase' not
-> > page aligned?  reserve_size looks like it *has* to be.  'end_pfn' is
-> > always (as far as I have ever seen in the kernel) the pfn of the page
-> > after the area we are interested in and we treat it as such in that
-> > function.  In the case of an unaligned physbase, that wouldn't be true.
-> > 
-> > Think of the case where we have a 1-byte reservation.  start_pfn will
-> > equal end_pfn and we won't go into that while loop at *all* and won't
-> > reserve anything.
-> > 
-> > Does 'end_pfn' need fixing?
-> > 
-> 
-> Attached is the console log with debug command line parameters enabled and 
-> with couple of more debug statements added to the code.  Please take a look at it. 
-> 
-> thanks,
-> Chandru
-> 
+On Thu, Jan 15, 2009 at 3:28 PM, Mike Rapoport <mike@compulab.co.il> wrote:
+>
+>
+> Eric Miao wrote:
+>> On Thu, Jan 15, 2009 at 2:34 PM, Mike Rapoport <mike@compulab.co.il> wrote:
+>>>
+>>> Eric Miao wrote:
+>>>> On Thu, Jan 15, 2009 at 2:16 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+>>>>> From: Jonathan Cameron <jic23@cam.ac.uk>
+>>>>>
+>>>>> Add support for changing the mode of the da9030 usb charge pump
+>>>>>
+>>>> Well, if it is totally USB charger related, I'd suggest to move this into
+>>>> the dedicated driver. This mfd/da903x.c serves as a common code
+>>>> base for all sub-peripherals.
+>>> It's not exactly related to the charger, it's rather related to the USB voltage
+>>> supplied to USB devices attached to PXA OHCI.
+>>> Indeed the mfd/da903x.c serves as a common core for sub-peripherals, but IMHO
+>>> adding a subdevice driver because of single method doesn't worth the overhead.
+>>> I'm for the solution Jonathan proposes.
+>>>
+>>
+>> Mmm... then who will be the invoker? I'm a bit upset about this
+>> being exported while called out of control. If it works as the
+>> name suggested, setting some mode, maybe we can have a
+>> platform data field specifying this, and hide this totally within
+>> the driver. I didn't look into this too much, just a concern here.
+>
+> The USB charge pump should be enabled if DA9030 should supply USB VBUS for USB
+> devices connected to PXA OHCI port. In the most simple case, when the USB port
+> is configured to be host only the platform data can be used to setup the charge
+> pump once and forget about it. However, if the USB port is configured as OTG,
+> the charge pump should be toggled depending on OTG ID.
+> In EM-X270 I have a GPIO connected to OTG ID pin of the connector and according
+> to the GPIO state I toggle the da9030 USB charge pump.
+>
 
-Hello Dave, From the debug console output, if there is anything you can add here,
-pls let me know.
+OK, now I understand the problem. The optimal way would be to invent
+an abstraction for this external charge pump (in terms of PXA27x OTG
+controller) and make DA9030 a derived class of it. But the PXA27x OTG
+solution is really a hybrid one, and the existing OTG code is in a mess
+(without a clear abstraction), the sub-optimal way would let platform code
+do this trick. Yet the platform code is currently suffering from a missed
+API to retreive this dynamically scanned I2C device. Mmm...stumped.
 
-thanks 
+I would expect the final solution to be clean enough, that requires some
+dependent stuffs to be modified, and the final look of this patch may be a
+bit different.
