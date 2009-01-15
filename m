@@ -1,83 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbZAOUYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbZAOUYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933051AbZAOUYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762596AbZAOUBQ
+	id S933320AbZAOUYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932120AbZAOUBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:16 -0500
-Received: from kroah.org ([198.145.64.141]:49174 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765956AbZAOUA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:58 -0500
-Date: Thu, 15 Jan 2009 11:58:37 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kyle McMartin <kyle@redhat.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 37/94] [PATCH 06/44] [CVE-2009-0029] Make sys_syslog a
-	conditional system call
-Message-ID: <20090115195837.GK14419@kroah.com>
-References: <20090115194806.804618825@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0006--CVE-2009-0029-Make-sys_syslog-a-conditional-system.patch"
-In-Reply-To: <20090115195520.GA14403@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 15 Jan 2009 15:01:18 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:56109 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761594AbZAOUBB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:01:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=Nks49WedOd7rKEqXoFrjC9z0HOn6JiivhwvglCWrE3e+DmksHi981WwIDkTUqkRilM
+         dN7S5TBPrPSCbFa2ZxuYgJsjqMPhgywn7c6waonEU/3MPAiblSV1ewRqLX4lDk4EPduA
+         GzI6QsOHNWgkFKXCu6iUcAoApxO5SqtDnsZoU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 15 Jan 2009 21:01:15 +0100
+Message-Id: <20090115200115.17294.71947.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+References: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+Subject: [PATCH 6/9] ide: factor out processing of special commands from ide_special_rq()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: factor out processing of special commands from ide_special_rq()
 
-------------------
+Factor out processing of special commands from ide_special_rq()
+to ide_do_devset() and ide_do_park_unpark().
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+There should be no functional changes caused by this patch.
 
-commit f627a741d24f12955fa2d9f8831c3b12860635bd upstream.
-
-Remove the -ENOSYS implementation for !CONFIG_PRINTK and use
-the cond_syscall infrastructure instead.
-
-Acked-by: Kyle McMartin <kyle@redhat.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- kernel/printk.c |    5 -----
- kernel/sys_ni.c |    1 +
- 2 files changed, 1 insertion(+), 5 deletions(-)
+ drivers/ide/ide-io.c |   75 +++++++++++++++++++++++++++------------------------
+ 1 file changed, 41 insertions(+), 34 deletions(-)
 
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -742,11 +742,6 @@ EXPORT_SYMBOL(vprintk);
- 
- #else
- 
--asmlinkage long sys_syslog(int type, char __user *buf, int len)
--{
--	return -ENOSYS;
--}
--
- static void call_console_drivers(unsigned start, unsigned end)
- {
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -511,46 +511,53 @@ int ide_devset_execute(ide_drive_t *driv
+ 	return ret;
  }
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -131,6 +131,7 @@ cond_syscall(sys_io_destroy);
- cond_syscall(sys_io_submit);
- cond_syscall(sys_io_cancel);
- cond_syscall(sys_io_getevents);
-+cond_syscall(sys_syslog);
  
- /* arch-specific weak syscall entries */
- cond_syscall(sys_pciconfig_read);
-
++static ide_startstop_t ide_do_devset(ide_drive_t *drive, struct request *rq)
++{
++	int err, (*setfunc)(ide_drive_t *, int) = rq->special;
++
++	err = setfunc(drive, *(int *)&rq->cmd[1]);
++	if (err)
++		rq->errors = err;
++	else
++		err = 1;
++	ide_end_request(drive, err, 0);
++	return ide_stopped;
++}
++
++static ide_startstop_t ide_do_park_unpark(ide_drive_t *drive, struct request *rq)
++{
++	ide_task_t task;
++	struct ide_taskfile *tf = &task.tf;
++
++	memset(&task, 0, sizeof(task));
++	if (rq->cmd[0] == REQ_PARK_HEADS) {
++		drive->sleep = *(unsigned long *)rq->special;
++		drive->dev_flags |= IDE_DFLAG_SLEEPING;
++		tf->command = ATA_CMD_IDLEIMMEDIATE;
++		tf->feature = 0x44;
++		tf->lbal = 0x4c;
++		tf->lbam = 0x4e;
++		tf->lbah = 0x55;
++		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
++	} else		/* cmd == REQ_UNPARK_HEADS */
++		tf->command = ATA_CMD_CHK_POWER;
++
++	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
++	task.rq = rq;
++	drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
++	return do_rw_taskfile(drive, &task);
++}
++
+ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+ {
+ 	u8 cmd = rq->cmd[0];
+ 
+-	if (cmd == REQ_PARK_HEADS || cmd == REQ_UNPARK_HEADS) {
+-		ide_task_t task;
+-		struct ide_taskfile *tf = &task.tf;
+-
+-		memset(&task, 0, sizeof(task));
+-		if (cmd == REQ_PARK_HEADS) {
+-			drive->sleep = *(unsigned long *)rq->special;
+-			drive->dev_flags |= IDE_DFLAG_SLEEPING;
+-			tf->command = ATA_CMD_IDLEIMMEDIATE;
+-			tf->feature = 0x44;
+-			tf->lbal = 0x4c;
+-			tf->lbam = 0x4e;
+-			tf->lbah = 0x55;
+-			task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
+-		} else		/* cmd == REQ_UNPARK_HEADS */
+-			tf->command = ATA_CMD_CHK_POWER;
+-
+-		task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+-		task.rq = rq;
+-		drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
+-		return do_rw_taskfile(drive, &task);
+-	}
+-
+ 	switch (cmd) {
++	case REQ_PARK_HEADS:
++	case REQ_UNPARK_HEADS:
++		return ide_do_park_unpark(drive, rq);
+ 	case REQ_DEVSET_EXEC:
+-	{
+-		int err, (*setfunc)(ide_drive_t *, int) = rq->special;
+-
+-		err = setfunc(drive, *(int *)&rq->cmd[1]);
+-		if (err)
+-			rq->errors = err;
+-		else
+-			err = 1;
+-		ide_end_request(drive, err, 0);
+-		return ide_stopped;
+-	}
++		return ide_do_devset(drive, rq);
+ 	case REQ_DRIVE_RESET:
+ 		return ide_do_reset(drive);
+ 	default:
