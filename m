@@ -1,74 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZAOSJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZAOSML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763947AbZAOSJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbZAOSJK
+	id S1756340AbZAOSML (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:12:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZAOSLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:09:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43279 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755077AbZAOSJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:09:08 -0500
-Date: Thu, 15 Jan 2009 19:08:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090115180844.GL22472@elte.hu>
-References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org> <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
+	Thu, 15 Jan 2009 13:11:55 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:46348 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751447AbZAOSLz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=r4b5BUdSpSgo+BhVeFXYzjAXwCzQebKODZiLx9k9TSERB2kMOb5YsqauHLwCiaXn+aFhH/doZagXcIz/EEnvMcHoZFNCq1bhI0eP2sPM5kgQQRrKf6Dm1nLtUM+IuUoHZnOylykQOO2w64LZdpDbOQO/yK+DucwW7UXa+NGEN8Q=  ;
+X-YMail-OSG: mLOxy9QVM1lTZ3rG5ienPdrT75kEIgbJ5pY7JgBuaNjF16OWwRoEekWTOb3Dvqy6CMb2PPnFyAjjQgocFUqX98bRiyEOyWLhC6TTZ1m0xthqyQW.N0S31EWtFLQvja7gFFucPlhCtiYu4sRKOWTykARp96bjbGIBnqXSrwRW8qkqD3829rflZcoCiE7TOt27dQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [patch 2.6.29-rc] regulator: add get_status()
+Date: Thu, 15 Jan 2009 10:11:51 -0800
+User-Agent: KMail/1.9.10
+Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
+References: <200811091531.46003.david-b@pacbell.net> <20090115124007.GD2147@sirena.org.uk> <1232023845.4934.368.camel@vega.slimlogic.co.uk>
+In-Reply-To: <1232023845.4934.368.camel@vega.slimlogic.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901151011.52250.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > Has anyone found a non-synthetic benchmark where this makes a 
-> > significant difference?  Aside from btrfs, I mean.
+On Thursday 15 January 2009, Liam Girdwood wrote:
 > 
-> Yea, if you have some particular filesystem (or other subsystem) that 
-> uses a global mutex, you'll obviously see way more contention. Btrfs may 
-> not be _unique_ in this regard, but it's definitely doing something that 
-> isn't good.
+> > ...this needs kerneldoc adding.
 > 
-> Btw, it's doing something that ext3 also used to do iirc, until we fixed 
-> it to use spinlocks instead (the block group lock in particular).
-> 
-> Yeah - just double-checked. Commit c12b9866ea52 in the historical Linux 
-> archive, from 2003. Which made block allocation protected by a per-group 
-> spinlock, rather than lock_super().
+> Please send a separate patch for the kerneldoc as I've already applied.
 
-btw., i think spin-mutexes have a design advantage here: in a lot of code 
-areas it's quite difficult to use spinlocks - cannot allocate memory, 
-cannot call any code that can sporadically block (but does not _normally_ 
-block), etc.
+Appended....
 
-With mutexes those atomicity constraints go away - and the performance 
-profile should now be quite close to that of spinlocks as well.
+========== CUT HERE
+From: David Brownell <dbrownell@users.sourceforge.net>
+Subject: regulator: get_status() grows kerneldoc
 
-	Ingo
+Add kerneldoc for the new get_status() message.  Fix the existing
+kerneldoc for that struct in two ways:
+
+ (a) Syntax, making sure parameter descriptions immediately
+     follow the one-line struct description and that the first
+     blank lines is before any more expansive description;
+ (b) Presentation for a few points, to highlight the fact that
+     the previous "get" methods exist only to report the current
+     configuration, not to display actual status.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ include/linux/regulator/driver.h |   22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
+
+--- a/include/linux/regulator/driver.h
++++ b/include/linux/regulator/driver.h
+@@ -34,26 +34,20 @@ enum regulator_status {
+ 
+ /**
+  * struct regulator_ops - regulator operations.
+- *
+- * This struct describes regulator operations which can be implemented by
+- * regulator chip drivers.
+- *
+- * @enable: Enable the regulator.
+- * @disable: Disable the regulator.
++ * @enable: Configure the regulator as enabled.
++ * @disable: Configure the regulator as disabled.
+  * @is_enabled: Return 1 if the regulator is enabled, 0 otherwise.
+- *
+  * @set_voltage: Set the voltage for the regulator within the range specified.
+  *               The driver should select the voltage closest to min_uV.
+  * @get_voltage: Return the currently configured voltage for the regulator.
+- *
+  * @set_current_limit: Configure a limit for a current-limited regulator.
+- * @get_current_limit: Get the limit for a current-limited regulator.
+- *
++ * @get_current_limit: Get the configured limit for a current-limited regulator.
+  * @set_mode: Set the operating mode for the regulator.
+- * @get_mode: Get the current operating mode for the regulator.
++ * @get_mode: Get the configured operating mode for the regulator.
++ * @get_status: Return actual (not as-configured) status of regulator, as a
++ *	REGULATOR_STATUS value (or negative errno)
+  * @get_optimum_mode: Get the most efficient operating mode for the regulator
+  *                    when running with the specified parameters.
+- *
+  * @set_suspend_voltage: Set the voltage for the regulator when the system
+  *                       is suspended.
+  * @set_suspend_enable: Mark the regulator as enabled when the system is
+@@ -62,6 +56,9 @@ enum regulator_status {
+  *                       suspended.
+  * @set_suspend_mode: Set the operating mode for the regulator when the
+  *                    system is suspended.
++ *
++ * This struct describes regulator operations which can be implemented by
++ * regulator chip drivers.
+  */
+ struct regulator_ops {
+ 
+@@ -86,6 +83,7 @@ struct regulator_ops {
+ 	/* report regulator status ... most other accessors report
+ 	 * control inputs, this reports results of combining inputs
+ 	 * from Linux (and other sources) with the actual load.
++	 * returns REGULATOR_STATUS_* or negative errno.
+ 	 */
+ 	int (*get_status)(struct regulator_dev *);
+ 
+
