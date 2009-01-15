@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbZAOU3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbZAOUac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933450AbZAOU3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZAOUBc
+	id S933257AbZAOUac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765163AbZAOUBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:32 -0500
-Received: from kroah.org ([198.145.64.141]:49246 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:33 -0500
+Received: from kroah.org ([198.145.64.141]:49215 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765934AbZAOUBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:01:10 -0500
-Date: Thu, 15 Jan 2009 11:58:57 -0800
+	id S932096AbZAOUBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:01:08 -0500
+Date: Thu, 15 Jan 2009 11:58:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 46/94] [PATCH 15/44] [CVE-2009-0029] System call wrappers
-	part 05
-Message-ID: <20090115195857.GT14419@kroah.com>
+Subject: [patch 44/94] [PATCH 13/44] [CVE-2009-0029] System call wrappers
+	part 03
+Message-ID: <20090115195852.GR14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0015--CVE-2009-0029-System-call-wrappers-part-05.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="0013--CVE-2009-0029-System-call-wrappers-part-03.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,135 +43,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 362e9c07c7220c0a78c88826fc0d2bf7e4a4bb68 upstream.
+commit ae1251ab785f6da87219df8352ffdac68bba23e4 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/itimer.c       |    5 ++---
- kernel/posix-timers.c |   43 +++++++++++++++++++------------------------
- 2 files changed, 21 insertions(+), 27 deletions(-)
+ kernel/sys.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
---- a/kernel/itimer.c
-+++ b/kernel/itimer.c
-@@ -260,9 +260,8 @@ unsigned int alarm_setitimer(unsigned in
- 	return it_old.it_value.tv_sec;
- }
- 
--asmlinkage long sys_setitimer(int which,
--			      struct itimerval __user *value,
--			      struct itimerval __user *ovalue)
-+SYSCALL_DEFINE3(setitimer, int, which, struct itimerval __user *, value,
-+		struct itimerval __user *, ovalue)
- {
- 	struct itimerval set_buffer, get_buffer;
- 	int error;
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -470,10 +470,9 @@ static void release_posix_timer(struct k
- 
- /* Create a POSIX.1b interval timer. */
- 
--asmlinkage long
--sys_timer_create(const clockid_t which_clock,
--		 struct sigevent __user *timer_event_spec,
--		 timer_t __user * created_timer_id)
-+SYSCALL_DEFINE3(timer_create, const clockid_t, which_clock,
-+		struct sigevent __user *, timer_event_spec,
-+		timer_t __user *, created_timer_id)
- {
- 	struct k_itimer *new_timer;
- 	int error, new_timer_id;
-@@ -659,8 +658,8 @@ common_timer_get(struct k_itimer *timr, 
- }
- 
- /* Get the time remaining on a POSIX.1b interval timer. */
--asmlinkage long
--sys_timer_gettime(timer_t timer_id, struct itimerspec __user *setting)
-+SYSCALL_DEFINE2(timer_gettime, timer_t, timer_id,
-+		struct itimerspec __user *, setting)
- {
- 	struct k_itimer *timr;
- 	struct itimerspec cur_setting;
-@@ -689,8 +688,7 @@ sys_timer_gettime(timer_t timer_id, stru
-  * the call back to do_schedule_next_timer().  So all we need to do is
-  * to pick up the frozen overrun.
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -470,7 +470,7 @@ void ctrl_alt_del(void)
+  * SMP: There are not races, the GIDs are checked only by filesystem
+  *      operations (as far as semantic preservation is concerned).
   */
--asmlinkage long
--sys_timer_getoverrun(timer_t timer_id)
-+SYSCALL_DEFINE1(timer_getoverrun, timer_t, timer_id)
+-asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
++SYSCALL_DEFINE2(setregid, gid_t, rgid, gid_t, egid)
  {
- 	struct k_itimer *timr;
- 	int overrun;
-@@ -758,10 +756,9 @@ common_timer_set(struct k_itimer *timr, 
- }
- 
- /* Set a POSIX.1b interval timer */
--asmlinkage long
--sys_timer_settime(timer_t timer_id, int flags,
--		  const struct itimerspec __user *new_setting,
--		  struct itimerspec __user *old_setting)
-+SYSCALL_DEFINE4(timer_settime, timer_t, timer_id, int, flags,
-+		const struct itimerspec __user *, new_setting,
-+		struct itimerspec __user *, old_setting)
+ 	int old_rgid = current->gid;
+ 	int old_egid = current->egid;
+@@ -519,7 +519,7 @@ asmlinkage long sys_setregid(gid_t rgid,
+  *
+  * SMP: Same implicit races as above.
+  */
+-asmlinkage long sys_setgid(gid_t gid)
++SYSCALL_DEFINE1(setgid, gid_t, gid)
  {
- 	struct k_itimer *timr;
- 	struct itimerspec new_spec, old_spec;
-@@ -814,8 +811,7 @@ static inline int timer_delete_hook(stru
- }
- 
- /* Delete a POSIX.1b interval timer. */
--asmlinkage long
--sys_timer_delete(timer_t timer_id)
-+SYSCALL_DEFINE1(timer_delete, timer_t, timer_id)
+ 	int old_egid = current->egid;
+ 	int retval;
+@@ -589,7 +589,7 @@ static int set_user(uid_t new_ruid, int 
+  * 100% compatible with BSD.  A program which uses just setuid() will be
+  * 100% compatible with POSIX with saved IDs. 
+  */
+-asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
++SYSCALL_DEFINE2(setreuid, uid_t, ruid, uid_t, euid)
  {
- 	struct k_itimer *timer;
- 	unsigned long flags;
-@@ -903,8 +899,8 @@ int do_posix_clock_nonanosleep(const clo
- }
- EXPORT_SYMBOL_GPL(do_posix_clock_nonanosleep);
- 
--asmlinkage long sys_clock_settime(const clockid_t which_clock,
--				  const struct timespec __user *tp)
-+SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
-+		const struct timespec __user *, tp)
+ 	int old_ruid, old_euid, old_suid, new_ruid, new_euid;
+ 	int retval;
+@@ -651,7 +651,7 @@ asmlinkage long sys_setreuid(uid_t ruid,
+  * will allow a root program to temporarily drop privileges and be able to
+  * regain them by swapping the real and effective uid.  
+  */
+-asmlinkage long sys_setuid(uid_t uid)
++SYSCALL_DEFINE1(setuid, uid_t, uid)
  {
- 	struct timespec new_tp;
- 
-@@ -916,8 +912,8 @@ asmlinkage long sys_clock_settime(const 
- 	return CLOCK_DISPATCH(which_clock, clock_set, (which_clock, &new_tp));
- }
- 
--asmlinkage long
--sys_clock_gettime(const clockid_t which_clock, struct timespec __user *tp)
-+SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
-+		struct timespec __user *,tp)
+ 	int old_euid = current->euid;
+ 	int old_ruid, old_suid, new_suid;
+@@ -690,7 +690,7 @@ asmlinkage long sys_setuid(uid_t uid)
+  * This function implements a generic ability to update ruid, euid,
+  * and suid.  This allows you to implement the 4.4 compatible seteuid().
+  */
+-asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
++SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
  {
- 	struct timespec kernel_tp;
- 	int error;
-@@ -933,8 +929,8 @@ sys_clock_gettime(const clockid_t which_
- 
- }
- 
--asmlinkage long
--sys_clock_getres(const clockid_t which_clock, struct timespec __user *tp)
-+SYSCALL_DEFINE2(clock_getres, const clockid_t, which_clock,
-+		struct timespec __user *, tp)
+ 	int old_ruid = current->uid;
+ 	int old_euid = current->euid;
+@@ -747,7 +747,7 @@ SYSCALL_DEFINE3(getresuid, uid_t __user 
+ /*
+  * Same as above, but for rgid, egid, sgid.
+  */
+-asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
++SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
  {
- 	struct timespec rtn_tp;
- 	int error;
-@@ -963,10 +959,9 @@ static int common_nsleep(const clockid_t
- 				 which_clock);
- }
+ 	int retval;
  
--asmlinkage long
--sys_clock_nanosleep(const clockid_t which_clock, int flags,
--		    const struct timespec __user *rqtp,
--		    struct timespec __user *rmtp)
-+SYSCALL_DEFINE4(clock_nanosleep, const clockid_t, which_clock, int, flags,
-+		const struct timespec __user *, rqtp,
-+		struct timespec __user *, rmtp)
+@@ -802,7 +802,7 @@ SYSCALL_DEFINE3(getresgid, gid_t __user 
+  * whatever uid it wants to). It normally shadows "euid", except when
+  * explicitly set by setfsuid() or for access..
+  */
+-asmlinkage long sys_setfsuid(uid_t uid)
++SYSCALL_DEFINE1(setfsuid, uid_t, uid)
  {
- 	struct timespec t;
+ 	int old_fsuid;
+ 
+@@ -831,7 +831,7 @@ asmlinkage long sys_setfsuid(uid_t uid)
+ /*
+  * Samma på svenska..
+  */
+-asmlinkage long sys_setfsgid(gid_t gid)
++SYSCALL_DEFINE1(setfsgid, gid_t, gid)
+ {
+ 	int old_fsgid;
+ 
+@@ -1233,7 +1233,7 @@ int set_current_groups(struct group_info
+ 
+ EXPORT_SYMBOL(set_current_groups);
+ 
+-asmlinkage long sys_getgroups(int gidsetsize, gid_t __user *grouplist)
++SYSCALL_DEFINE2(getgroups, int, gidsetsize, gid_t __user *, grouplist)
+ {
+ 	int i = 0;
  
 
