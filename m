@@ -1,127 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZAOMHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbZAOMHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbZAOMHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbZAOMGy
+	id S1760212AbZAOMHf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZAOMG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:06:54 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:37765 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbZAOMGx (ORCPT
+	Thu, 15 Jan 2009 07:06:58 -0500
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:59966 "EHLO
+	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754395AbZAOMG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:06:53 -0500
-Subject: Re: ext2 + -osync: not as easy as it seems
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com
-In-Reply-To: <20090114165952.GH6222@mit.edu>
-References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz>
-	 <20090113134503.41318144@lxorguk.ukuu.org.uk>
-	 <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz>
-	 <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu>
-	 <20090114140532.GC19950@duck.suse.cz> <20090114141204.GD6222@mit.edu>
-	 <20090114143756.GF19950@duck.suse.cz>  <20090114165952.GH6222@mit.edu>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Thu, 15 Jan 2009 21:06:51 +0900
-Message-Id: <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 15 Jan 2009 07:06:57 -0500
+Message-ID: <496F26F3.2030302@xyzw.org>
+Date: Thu, 15 Jan 2009 04:07:15 -0800
+From: Brian Rogers <brian@xyzw.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Mike Galbraith <efault@gmx.de>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] How to get real-time priority using idle priority
+References: <4969D0D7.2060401@xyzw.org>	 <1231736941.6003.7.camel@marge.simson.net>	 <1231765433.5789.35.camel@marge.simson.net> <20090112131406.GB670@elte.hu>	 <496BE8F6.1040308@xyzw.org> <1232011723.26761.36.camel@marge.simson.net>
+In-Reply-To: <1232011723.26761.36.camel@marge.simson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-14 at 11:59 -0500, Theodore Tso wrote: 
-> On Wed, Jan 14, 2009 at 03:37:56PM +0100, Jan Kara wrote:
-> > > Um, we have that already; the sync_inode() followed by
-> > > blkdev_issue_flush() is the path taken by fdatasync(), I do believe.
-> >
-> >   Maybe ext4-patch-queue changes that area but in Linus's tree I see:
-> > 
-> >   if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-> >          goto out;
-> > 
-> >   So if we just overwrite some data, we send them to disk via fdatawrite()
-> > and then we quickly bail out from ext4_sync_file() without doing
-> > blkdev_issue_flush().
-> 
-> So you're thinking about fdatawrite() being called by some code path
-> other than ext4_sync_file() before we call fsync()?  Yeah, that could
-> happen....  I think that will only happen if the file is opened
-> O_SYNC, but that raises another issue, which is that we're not forcing
-> a flush for writes when the file is opened O_SYNC.
-
-Hi Jan, Ted
-
-Is something like the patch below what you had in mind?
-
---
-
-From: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-Subject: ext3: call blkdev_issue_flush on fsync
-
-To ensure that bits are truly on-disk after an fsync or fdatasync, we
-should call blkdev_issue_flush if barriers are supported.
-
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
-
---- linux-2.6.29-rc1-orig/fs/ext4/fsync.c	2008-12-25 08:26:37.000000000 +0900
-+++ linux-2.6.29-rc1/fs/ext4/fsync.c	2009-01-15 21:03:19.000000000 +0900
-@@ -48,6 +48,7 @@ int ext4_sync_file(struct file *file, st
- {
- 	struct inode *inode = dentry->d_inode;
- 	journal_t *journal = EXT4_SB(inode->i_sb)->s_journal;
-+	unsigned long i_state = inode->i_state;
- 	int ret = 0;
- 
- 	J_ASSERT(ext4_journal_current_handle() == NULL);
-@@ -79,22 +80,35 @@ int ext4_sync_file(struct file *file, st
- 		goto out;
- 	}
- 
--	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
--		goto out;
-+	if (datasync && !(i_state & I_DIRTY_DATASYNC))
-+		goto flush_blkdev;
- 
- 	/*
- 	 * The VFS has written the file data.  If the inode is unaltered
- 	 * then we need not start a commit.
- 	 */
--	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
-+	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
- 		struct writeback_control wbc = {
- 			.sync_mode = WB_SYNC_ALL,
- 			.nr_to_write = 0, /* sys_fsync did this */
- 		};
- 		ret = sync_inode(inode, &wbc);
--		if (journal && (journal->j_flags & JBD2_BARRIER))
--			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
-+		/*
-+		 * When there are no blocks attached to the journal transaction
-+		 * some optimizations are possible, but if there were dirty
-+		 * pages sync_inode() should have ensured that all data gets
-+		 * actually written to disk. Thus, we can skip
-+		 * blkdev_issue_flush() below.
-+		 */
-+		if (!(i_state & I_DIRTY_PAGES))
-+			goto flush_blkdev;
- 	}
-+
-+	goto out;
-+
-+flush_blkdev:
-+	if (journal && (journal->j_flags & JBD2_BARRIER))
-+		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
- out:
- 	return ret;
- }
-
+Mike Galbraith wrote:
+> On Mon, 2009-01-12 at 17:05 -0800, Brian Rogers wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> i've applied your fix to tip/sched/urgent and merged it into tip/master.
+>>> Brian, you might want to test tip/master, as per:
+>>>
+>>>  http://people.redhat.com/mingo/tip.git/README
+>>>
+>>> which now has this fix included. Can you make it break?
+>>>       
+>> Yeah, I was able to trigger the same freeze again once on my desktop, 
+>> but it appears to be harder to trigger now. I couldn't get my program to 
+>> freeze the system, but one of the times I suspended then resumed BOINC, 
+>> it happened.
+>>     
+> OK, the below seems to cure all of the problems I've encountered, please
+> take it out for a spin.
+>   
+This did the trick! I can't make it freeze anymore, with BOINC or with 
+forkdie, and the system remains responsive even with dozens of idle 
+priority tasks hogging all spare CPU time. It's great!
 
