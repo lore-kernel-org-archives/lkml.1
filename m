@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZAOSHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZAOSJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761782AbZAOSHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764248AbZAOSGv
+	id S1763947AbZAOSJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbZAOSJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:06:51 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:62712 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764076AbZAOSGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:06:49 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: linux kernel without file system
-Date: Thu, 15 Jan 2009 19:06:42 +0100
-User-Agent: KMail/1.9.9
-Cc: Rogan Dawes <lists@dawes.za.net>, Xavier Bestel <xavier.bestel@free.fr>,
-       Tomasz Chmielewski <mangoo@wpkg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <496DA678.1090701@wpkg.org> <496DFD45.5030408@dawes.za.net> <20090114152423.GA24562@frolo.macqel>
-In-Reply-To: <20090114152423.GA24562@frolo.macqel>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 15 Jan 2009 13:09:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43279 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755077AbZAOSJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:09:08 -0500
+Date: Thu, 15 Jan 2009 19:08:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090115180844.GL22472@elte.hu>
+References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org> <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901151906.43701.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18vKVKumu65S4NxFiiQ/9TSgQaPwNiygFvlidX
- EOE0fZpmSm3FrK9IVAzRtjesdvtjshWEE3BBYoUrGu72AeQuVi
- D9IVY2ogjNv3AWxZg1q5g==
+In-Reply-To: <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 January 2009, Philippe De Muyter wrote:
-> if possible, mcf52236 (256k flash 32k sram in chip) :)
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> > Has anyone found a non-synthetic benchmark where this makes a 
+> > significant difference?  Aside from btrfs, I mean.
 > 
-> kernel+uapplication XIP in flash
+> Yea, if you have some particular filesystem (or other subsystem) that 
+> uses a global mutex, you'll obviously see way more contention. Btrfs may 
+> not be _unique_ in this regard, but it's definitely doing something that 
+> isn't good.
 > 
-> they seems to push something called utasker
+> Btw, it's doing something that ext3 also used to do iirc, until we fixed 
+> it to use spinlocks instead (the block group lock in particular).
+> 
+> Yeah - just double-checked. Commit c12b9866ea52 in the historical Linux 
+> archive, from 2003. Which made block allocation protected by a per-group 
+> spinlock, rather than lock_super().
 
-In 256kb it will be hard to even support simple user space.
-One solution might be to just use linux as a library and
-implement your application code in the kernel, inside
-of the . That lets you throw out all system calls and some
-of the init code of the kernel (don't call rest_init).
+btw., i think spin-mutexes have a design advantage here: in a lot of code 
+areas it's quite difficult to use spinlocks - cannot allocate memory, 
+cannot call any code that can sporadically block (but does not _normally_ 
+block), etc.
 
-At that stage, you have lost most of the advantages of
-using Linux over some other kernel.
+With mutexes those atomicity constraints go away - and the performance 
+profile should now be quite close to that of spinlocks as well.
 
-	Arnd <><
+	Ingo
