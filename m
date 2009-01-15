@@ -1,130 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbZAOIHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbZAOIJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762412AbZAOIHL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:07:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZAOIG4
+	id S1762710AbZAOIJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757116AbZAOIJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:06:56 -0500
-Received: from mga03.intel.com ([143.182.124.21]:18884 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755848AbZAOIGy convert rfc822-to-8bit (ORCPT
+	Thu, 15 Jan 2009 03:09:29 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:64747 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756397AbZAOIJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:06:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,268,1231142400"; 
-   d="scan'208";a="100220838"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Cyrill Gorcunov <gorcunov@gmail.com>
-CC: "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "harvey.harrison@gmail.com" <harvey.harrison@gmail.com>,
-       "sam@ravnborg.org" <sam@ravnborg.org>,
-       "jaswinderrajput@gmail.com" <jaswinderrajput@gmail.com>,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Date: Thu, 15 Jan 2009 08:06:31 +0000
-Subject: RE: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-Thread-Topic: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-Thread-Index: Acl2lnoW0Cau4qF5RICeFWRlZBCZiQAUOBGw
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E0CD9CD33@irsmsx504.ger.corp.intel.com>
-References: <20090114203745.285473388@gmail.com>>
- <496e4e23.0c07560a.5e4e.529c@mx.google.com> <496E6585.8050505@zytor.com>
-In-Reply-To: <496E6585.8050505@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 15 Jan 2009 03:09:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GgGcyujtz0h8AXyRhRpCRpRWYMJWbbVAIh8AShdiBYCxiFxSZd51n4xc0BYuMadve9
+         rnxOBuIBk8NOguDcS5luXXHWZZ2Vbcl4mIDFKccmlswxbPrD9Y6jYSVvfP7ogP1stDrp
+         hKsIx1SxQWVWbHZSYoCmeHjpoukGjegJXE7a8=
+Date: Thu, 15 Jan 2009 08:09:21 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: Chris Caputo <ccaputo@alt.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Denys Fedoryschenko <denys@visp.net.lb>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+Message-ID: <20090115080921.GC4190@ff.dom.local>
+References: <20081010090426.GA6054@ff.dom.local> <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net> <20090114063909.GA4234@ff.dom.local> <200901141417.58667.denys@visp.net.lb> <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <496EE1D4.6010709@bigtelecom.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496EE1D4.6010709@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: H. Peter Anvin [mailto:hpa@zytor.com]
->Sent: Wednesday, January 14, 2009 11:22 PM
->To: Cyrill Gorcunov; Metzger, Markus T
->Cc: mingo@elte.hu; linux-kernel@vger.kernel.org; harvey.harrison@gmail.com; sam@ravnborg.org;
->jaswinderrajput@gmail.com; Cyrill Gorcunov
->Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
->
->Okay, this one really looks wrong to me.
->
->Markus, could you confirm if this was ever intended to be exported to
->userspace?  I suspect The Right Thing is simply to remove the #ifdef
->CONFIG_X86_TRACE_BTS here...
+On Thu, Jan 15, 2009 at 10:12:20AM +0300, Badalian Vyacheslav wrote:
+...
+> Hello all.
+> I also can say this, maybe its help:
+> At old kernels my servers do 100% soft interupt if traffic more 600mbs.
+> Without your patches at new kernel i get crash only at heavy network
+> load PCs (more then 400mbs-500mbs). Servers that get 100-200 mbs not
+> crashed long time.
+> I remember that i not test patch #4, because you sat what its only
+> another way to temporary fix and mainline problem in hrtimer , but i try
+> turn on HiRes and Dynamic Tics in kernel - its not help for me.
 
-This is intended for userspace.
-I added the #ifdef so the entire feature could be turned off.
-This might not be necessary for declarations and macros, though.
+Slavon, I'm very glad of your testing and reporting, and I never
+expected you test anything on production, when something else works
+for you. On the other hand, what works for you could be unacceptable
+for other users, who don't have such crashes, and prefer better
+exactness. So it's hard to recommend such patches if there is not
+enough people interested in them.
 
-Do you want me to remove the #ifdef CONFIG around the declarations in ptrace headers?
-
-regards,
-markus.
-
->
->	-hpa
->
->
->Cyrill Gorcunov wrote:
->> Impact: cleanup
->>
->> 'make headers_check' warn us about leaking of kernel private
->> (mostly compile time vars) data to userspace in headers. Fix it.
->>
->> ptrace_bts_config struct is wrapped by __KERNEL__ --
->> not sure if it was ever proposed for userland. On the
->> other hand branch tracing is really anxious for userland
->> developers.
->>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
->> ---
->>  arch/x86/include/asm/ptrace-abi.h |    4 +++-
->>  1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6.git/arch/x86/include/asm/ptrace-abi.h
->> ===================================================================
->> --- linux-2.6.git.orig/arch/x86/include/asm/ptrace-abi.h
->> +++ linux-2.6.git/arch/x86/include/asm/ptrace-abi.h
->> @@ -50,7 +50,7 @@
->>  #define RSP 152
->>  #define SS 160
->>  #define ARGOFFSET R11
->> -#endif /* __ASSEMBLY__ */
->> +#endif /* __ASSEMBLY__ || __FRAME_OFFSETS */
->>
->>  /* top of stack page */
->>  #define FRAME_SIZE 168
->> @@ -80,6 +80,7 @@
->>
->>  #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
->>
->> +#ifdef __KERNEL__
->>  #ifdef CONFIG_X86_PTRACE_BTS
->>
->>  #ifndef __ASSEMBLY__
->> @@ -141,5 +142,6 @@ struct ptrace_bts_config {
->>     Returns number of BTS records drained.
->>  */
->>  #endif /* CONFIG_X86_PTRACE_BTS */
->> +#endif /* __KERNEL__ */
->>
->>  #endif /* _ASM_X86_PTRACE_ABI_H */
->>
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Best regards,
+Jarek P.
