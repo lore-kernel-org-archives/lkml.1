@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbZAOVbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZAOVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932582AbZAOVbF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 16:31:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756544AbZAOVaw
+	id S1758268AbZAOVlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 16:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZAOVk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 16:30:52 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:35998 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754395AbZAOVav (ORCPT
+	Thu, 15 Jan 2009 16:40:59 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:34931 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbZAOVk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 16:30:51 -0500
-Date: Thu, 15 Jan 2009 22:30:42 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PULL] hwmon fixes for 2.6.29
-Message-ID: <20090115223042.5106b964@hyperion.delvare>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 16:40:58 -0500
+Date: Thu, 15 Jan 2009 13:40:56 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, David Miller <davem@davemloft.net>,
+       Jan-Bernd Themann <themann@de.ibm.com>
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090115214056.GC9091@ovro.caltech.edu>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+	David Miller <davem@davemloft.net>,
+	Jan-Bernd Themann <themann@de.ibm.com>
+References: <20090107195052.GA24981@ovro.caltech.edu> <200901151853.52202.arnd@arndb.de> <20090115192129.GB9091@ovro.caltech.edu> <200901152222.55006.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901152222.55006.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 13:40:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Jan 15, 2009 at 10:22:53PM +0100, Arnd Bergmann wrote:
+> On Thursday 15 January 2009, Ira Snyder wrote:
+> > I have another question for you Arnd.
+> > 
+> > What did you use as the host and guest drivers when you ran virtio over
+> > PCI? Did you use two unmodified instances of virtio_net (one on host,
+> > one on guest) for networking, or did you write new virtio drivers for
+> > those? How about for virtio_console (if you ran it at all).
+> 
+> Jan-Bernd may be able to tell you details about this, and send you the
+> driver code that his interns implemented for it.
+> This was only doing virtio_net between two machines using MMIO transfers,
+> i.e. the DMA engine was unused, but there was a mailbox interrupt (if you
+> have one of these, you won't need MSI, btw -- just write a DMA to it).
+> 
 
-Please pull some hwmon subsystem fixes for Linux 2.6.29 from:
+Thanks. Jan-Bernd, I'm looking forward to any input you have.
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+I'd be happy enough to use mmio at this point. My early attempts with
+this driver only used mmio as well. The DMA was bolted on later.
 
- Documentation/hwmon/adt7475 |   87 +++
- drivers/hwmon/Kconfig       |   10 +
- drivers/hwmon/Makefile      |    2 +
- drivers/hwmon/abituguru3.c  |   24 +-
- drivers/hwmon/adt7475.c     | 1221 +++++++++++++++++++++++++++++++++++++++++++
- drivers/hwmon/k8temp.c      |   55 ++-
- 6 files changed, 1384 insertions(+), 15 deletions(-)
- create mode 100644 Documentation/hwmon/adt7475
- create mode 100644 drivers/hwmon/adt7475.c
+I do have mailboxes (two inbound, two outbound) which can generate
+interrupts, as well as doorbell registers (one inbound, one outbound).
+The doorbell register's bits are "write 1 to clear", and can only be
+cleared by the opposite side.
 
----------------
+All of them can cause interrupts over PCI. I used the doorbell registers
+to communicate which action needed to be taken in my driver. One
+doorbell for "receive packet(s)", another for "packet transmission(s)
+complete", etc. I used the mailboxes to transfer characters for the
+virtual serial port.
 
-Alistair John Strachan (3):
-      hwmon: (abituguru3) Match partial DMI board name strings
-      hwmon: (abituguru3) Enable DMI probing feature on IN9 32X MAX
-      hwmon: (abituguru3) Fix CONFIG_DMI=n fallback to probe
-
-Andreas Herrmann (3):
-      hwmon: (k8temp) Warn about fam F rev F errata
-      hwmon: (k8temp) Fix wrong sensor selection for AMD K8 RevF/RevG CPUs
-      hwmon: (k8temp) Fix temperature reporting for (most) K8 RevG CPUs
-
-Jordan Crouse (1):
-      hwmon: Add a driver for the ADT7475 hardware monitoring chip
-
-Thanks,
--- 
-Jean Delvare
+Ira
