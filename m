@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbZAOFzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZAOF5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbZAOFzX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 00:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZAOFzI
+	id S1758456AbZAOF5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 00:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZAOF5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 00:55:08 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34078 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbZAOFzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 00:55:07 -0500
-Date: Thu, 15 Jan 2009 06:55:02 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: avorontsov@ru.mvista.com
-Cc: Liu Dave <DaveLiu@freescale.com>, linuxppc-dev@ozlabs.org,
-       Lai Kon-LKL001 <Konjin.Lai@freescale.com>, linux-kernel@vger.kernel.org,
-       Xie Xiaobo-R63061 <X.Xie@freescale.com>,
-       "D'Abbraccio Joe-LJD015" <Joe.D'abbraccio@freescale.com>
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Message-ID: <20090115065502.1b719b06@mjolnir.drzeus.cx>
-In-Reply-To: <20090114235605.GA13531@oksana.dev.rtsoft.ru>
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-	<D7CCA83BB0796C49BC0BB53B6AB1208907ABDB@zch01exm21.fsl.freescale.net>
-	<20090114235605.GA13531@oksana.dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 00:57:08 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:48035 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbZAOF5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 00:57:05 -0500
+Date: Thu, 15 Jan 2009 11:19:04 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
+	obsolete
+Message-ID: <20090115054903.GA30358@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp> <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp> <7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com> <20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp> <20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com> <20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp> <20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp> <20090115141458.818b4e9a.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090115141458.818b4e9a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 02:56:05 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 14:14:58]:
 
+> On Thu, 15 Jan 2009 13:38:14 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> Ah. I wonder why Freescale just didn't write some patches for sdhci,
-> but copied the code instead...
-> 
+> > On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > > To handle the problem "parent may be obsolete",
+> > > > > > 
+> > > > > > call mem_cgroup_get(parent) at create()
+> > > > > > call mem_cgroup_put(parent) at freeing memcg.
+> > > > > >      (regardless of use_hierarchy.)
+> > > > > > 
+> > > > > > is clearer way to go, I think.
+> > > > > > 
+> > > > > > I wonder whether there is  mis-accounting problem or not..
+> > > > > > 
+> > hmm, after more consideration, although this patch can prevent the BUG,
+> > it can leak memsw accounting of parents because memsw of parents, which
+> > have been incremented by charge, does not decremented.
+> > 
+> > I'll try pet/put parent approach..
+> > Or any other good ideas ?
+> > 
+> > 
+> I believe get/put at create/destroy is enough now..
+> Let's try and see what happens.
+>
 
-Probably because it was quicker. Samsung did the same thing, but now
-Ben Dooks has patches to properly support it via sdhci.
-
-Rgds
+Other approach could be get_hierarchical/put_hierarchical, but that
+can quickly get complex. Let us try and avoid it, unless nothing else
+works.
+ 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+	Balbir
