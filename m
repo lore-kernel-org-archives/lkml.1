@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbZAOOZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765259AbZAOO13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765462AbZAOOZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 09:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbZAOOZr
+	id S1765259AbZAOO13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 09:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbZAOO1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 09:25:47 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50691 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758923AbZAOOZq (ORCPT
+	Thu, 15 Jan 2009 09:27:21 -0500
+Received: from vin.lip.ens-lyon.fr ([140.77.13.170]:53328 "EHLO
+	vin.lip.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757479AbZAOO1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 09:25:46 -0500
-Date: Thu, 15 Jan 2009 14:25:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Jan-Benedict Glaw <jbglaw@lug-owl.de>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
-       Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Is 386 processor still supported?
-Message-ID: <20090115142541.5a7711b1@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.1.10.0901151353530.5737@ftp.linux-mips.org>
-References: <20090108120338.6b8b4567@zonk.pl>
-	<alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz>
-	<1231424025.11687.447.camel@twins>
-	<alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz>
-	<1231424833.11687.452.camel@twins>
-	<20090108150448.2393aeb0@lxorguk.ukuu.org.uk>
-	<20090108151046.GK18120@elte.hu>
-	<alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org>
-	<20090115123614.GR11087@lug-owl.de>
-	<alpine.LFD.1.10.0901151309420.5737@ftp.linux-mips.org>
-	<20090115133252.28c36adb@lxorguk.ukuu.org.uk>
-	<alpine.LFD.1.10.0901151353530.5737@ftp.linux-mips.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 09:27:20 -0500
+X-Greylist: delayed 1496 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 09:27:20 EST
+Date: Thu, 15 Jan 2009 15:02:17 +0100
+From: Vincent Lefevre <vincent@vinc17.org>
+To: linux-kernel@vger.kernel.org
+Subject: problem with kerneltraffic.org
+Message-ID: <20090115140217.GA6364@vin.lip.ens-lyon.fr>
+Mail-Followup-To: Vincent Lefevre <vincent@vinc17.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Mailer-Info: http://www.vinc17.org/mutt/
+User-Agent: Mutt/1.5.19-vl-r26315 (2009-01-13)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> userland support with little burden for both Linux and respective user 
-> software maintainers.  Certainly it adds some bloat to the kernel, but I 
-> think it is not an option that should be outright dismissed without 
-> consideration.
+[Note: I'm not subscribed to this list. Please make sure I'm Cc'ed.
+Thanks.]
 
-Nobody normally builds for 386 (and you need the big FPU emulator etc too
-and pay a big penalty for the lack of working WP bits) so it wouldn't be
-a big penalty if you can actually find an i386 user any more ;)
+Hi,
 
+When I click on the http://www.kerneltraffic.org/ link from
+
+  http://www.kernel.org/pub/linux/docs/lkml/index.html#s3
+
+I get a page completely unrelated to the Linux kernel. The Google cache
+confirms that this is not a problem with the DNS here. What's going on?
+
+-- 
+Vincent Lefèvre <vincent@vinc17.org> - Web: <http://www.vinc17.org/>
+100% accessible validated (X)HTML - Blog: <http://www.vinc17.org/blog/>
+Work: CR INRIA - computer arithmetic / Arenaire project (LIP, ENS-Lyon)
