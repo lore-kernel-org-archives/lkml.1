@@ -1,265 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762192AbZAOHDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZAOHMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762192AbZAOHDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbZAOHDW
+	id S1757293AbZAOHMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZAOHMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:03:22 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:27716 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756035AbZAOHDV (ORCPT
+	Thu, 15 Jan 2009 02:12:01 -0500
+Received: from mga14.intel.com ([143.182.124.37]:21985 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752053AbZAOHL7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:03:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DAQS/dQsw71L7noxrwxg341bYV+fVio9oezS5sqqPdKaz7GaaE5ppPsA/zrMbiiL3VPO3kQ4XyeSjRlKs9HXVg8qOru3Q1Oll0BO6NaHfyWEIlQuwVOauRdI95GeMKrFoteu83h/tFFqQdK/whIBkvEiC8wVktnnqiXstIttWkQ=  ;
-X-YMail-OSG: 1NvOU1wVM1l6yX.zEM.sdBc6QEqNHsp854gQUlHKCBgmYauPUCJrb_EZFmUr.WpN1EeXgOR1Qi.88R43Q1YqzanX1y9OdHDvVggX99GKlULkQp6v.szUw6IA23EQkJouQuiohPlL439NHtb3PDu1Oy51FyRpHc7fiyQwKDrPLmO_UTN7678n0RxCu9H6FNjIpqomZPYjhn10Rxs8LcTBX6uvNdRiC9eoNPwwu7_X18ukJA1Ye0BPiZSEwQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [patch 2.6.29-rc] regulator: add get_status()
-Date: Wed, 14 Jan 2009 23:03:17 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <200811091531.46003.david-b@pacbell.net> <200811161458.17212.david-b@pacbell.net> <20081117015127.GA10883@sirena.org.uk>
-In-Reply-To: <20081117015127.GA10883@sirena.org.uk>
+	Thu, 15 Jan 2009 02:11:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,268,1231142400"; 
+   d="scan'208";a="100206811"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: Steven Rostedt <srostedt@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>
+Date: Thu, 15 Jan 2009 00:11:51 -0700
+Subject: RE: Mainline kernel OLTP performance update
+Thread-Topic: Mainline kernel OLTP performance update
+Thread-Index: Acl2uNXwmXs5ZY3TQreITREGrY/HCQAJBP7Q
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+ <1231986439.21980.54.camel@localhost.localdomain>
+In-Reply-To: <1231986439.21980.54.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901142303.17906.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+Trying to answer to some of the question below:
 
-Based on previous LKML discussions:
+-Chinang
 
- * Update docs for regulator sysfs class attributes to highlight
-   the fact that all current attributes are intended to be control
-   inputs, including notably "state" and "opmode" which previously
-   implied otherwise.
+>-----Original Message-----
+>From: Steven Rostedt [mailto:srostedt@redhat.com]
+>Sent: Wednesday, January 14, 2009 6:27 PM
+>To: Andrew Morton
+>Cc: Matthew Wilcox; Wilcox, Matthew R; Ma, Chinang; linux-
+>kernel@vger.kernel.org; Tripathi, Sharad C; arjan@linux.intel.com; Kleen,
+>Andi; Siddha, Suresh B; Chilukuri, Harita; Styner, Douglas W; Wang, Peter
+>Xihong; Nueckel, Hubert; chris.mason@oracle.com; linux-scsi@vger.kernel.org;
+>Andrew Vasquez; Anirban Chakraborty; Ingo Molnar; Thomas Gleixner; Peter
+>Zijlstra; Gregory Haskins
+>Subject: Re: Mainline kernel OLTP performance update
+>
+>(added Ingo, Thomas, Peter and Gregory)
+>
+>On Wed, 2009-01-14 at 18:04 -0800, Andrew Morton wrote:
+>> On Wed, 14 Jan 2009 18:21:47 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
+>>
+>> > On Wed, Jan 14, 2009 at 04:35:57PM -0800, Andrew Morton wrote:
+>> > > On Tue, 13 Jan 2009 15:44:17 -0700
+>> > > "Wilcox, Matthew R" <matthew.r.wilcox@intel.com> wrote:
+>> > > >
+>> > >
+>> > > (top-posting repaired.  That @intel.com address is a bad influence ;))
+>> >
+>> > Alas, that email address goes to an Outlook client.  Not much to be
+>done
+>> > about that.
+>>
+>> aspirin?
+>>
+>> > > (cc linux-scsi)
+>> > >
+>> > > > > This is latest 2.6.29-rc1 kernel OLTP performance result. Compare
+>to
+>> > > > > 2.6.24.2 the regression is around 3.5%.
+>> > > > >
+>> > > > > Linux OLTP Performance summary
+>> > > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
+>iowait%
+>> > > > > 2.6.24.2                1.000   21969   43425   76   24     0
+>0
+>> > > > > 2.6.27.2                0.973   30402   43523   74   25     0
+>1
+>> > > > > 2.6.29-rc1              0.965   30331   41970   74   26     0
+>0
+>> >
+>> > > But the interrupt rate went through the roof.
+>> >
+>> > Yes.  I forget why that was; I'll have to dig through my archives for
+>> > that.
+>>
+>> Oh.  I'd have thought that this alone could account for 3.5%.
+>>
+>> > > A 3.5% slowdown in this workload is considered pretty serious, isn't
+>it?
+>> >
+>> > Yes.  Anything above 0.3% is statistically significant.  1% is a big
+>> > deal.  The fact that we've lost 3.5% in the last year doesn't make
+>> > people happy.  There's a few things we've identified that have a big
+>> > effect:
+>> >
+>> >  - Per-partition statistics.  Putting in a sysctl to stop doing them
+>gets
+>> >    some of that back, but not as much as taking them out (even when
+>> >    the sysctl'd variable is in a __read_mostly section).  We tried a
+>> >    patch from Jens to speed up the search for a new partition, but it
+>> >    had no effect.
+>>
+>> I find this surprising.
+>>
+>> >  - The RT scheduler changes.  They're better for some RT tasks, but not
+>> >    the database benchmark workload.  Chinang has posted about
+>> >    this before, but the thread didn't really go anywhere.
+>> >    http://marc.info/?t=122903815000001&r=1&w=2
+>
+>I read the whole thread before I found what you were talking about here:
+>
+>http://marc.info/?l=linux-kernel&m=122937424114658&w=2
+>
+>With this comment:
+>
+>"When setting foreground and log writer to rt-prio, the log latency reduced
+>to 4.8ms. \
+>Performance is about 1.5% higher than the CFS result.
+>On a side note, we had been using rt-prio on all DBMS processes and log
+>writer ( in \
+>higher priority) for the best OLTP performance. That has worked pretty well
+>until \
+>2.6.25 when the new rt scheduler introduced the pull/push task for lower
+>scheduling \
+>latency for rt-task. That has negative impact on this workload, probably
+>due to the \
+>more elaborated load calculation/balancing for hundred of foreground rt-
+>prio \
+>processes. Also, there is that question of no production environment would
+>run DBMS \
+>with rt-prio. That is why I am going back to explore CFS and see whether I
+>can drop \
+>rt-prio for good."
+>
 
- * Define a new regulator driver get_status() method, which is the
-   first method reporting regulator outputs instead of inputs.
-   It can report on/off and error status; or instead of simply
-   "on", report the actual operating mode.
+>A couple of questions:
+>
+>1) how does the latest rt scheduler compare?  There has been a lot of
+>improvements.
 
-For the moment, this is a sysfs-only interface, not accessible to 
-regulator clients.  Such clients can use the current notification
-interfaces to detect errors, if the regulator reports them.
+It is difficult for me to isolate the recent rt scheduler improvement as so many other changes were introduced to the kernel at the same time. A more accurate comparison should just revert the rt-scheduler back to the previous version and test the delta. I am not sure how to get that done. 
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
+>2) how many rt tasks?   
+	Around 250 rt tasks.
 
- Documentation/ABI/testing/sysfs-class-regulator |   57 ++++++++++++++++++----
- drivers/regulator/core.c                        |   46 +++++++++++++++++
- include/linux/regulator/driver.h                |   17 ++++++
- 3 files changed, 111 insertions(+), 9 deletions(-)
+>3) what were the prios, producer compared to consumers, not actual numbers
+	I suppose the single log writer is the main producer (rt-prio 49, higheset rt-prio in this workload) which wake up all foreground process when the log write is done. The 240 foreground processes are the consumer (rt-prio 48). At any given time some number of the 240 foreground was waiting for log writer to finish flushing out the log data.
 
---- a/Documentation/ABI/testing/sysfs-class-regulator
-+++ b/Documentation/ABI/testing/sysfs-class-regulator
-@@ -4,8 +4,8 @@ KernelVersion:	2.6.26
- Contact:	Liam Girdwood <lrg@slimlogic.co.uk>
- Description:
- 		Some regulator directories will contain a field called
--		state. This reports the regulator enable status, for
--		regulators which can report that value.
-+		state. This reports the regulator enable control, for
-+		regulators which can report that input value.
- 
- 		This will be one of the following strings:
- 
-@@ -14,16 +14,54 @@ Description:
- 		'unknown'
- 
- 		'enabled' means the regulator output is ON and is supplying
--		power to the system.
-+		power to the system (assuming no error prevents it).
- 
- 		'disabled' means the regulator output is OFF and is not
--		supplying power to the system..
-+		supplying power to the system (unless some non-Linux
-+		control has enabled it).
- 
- 		'unknown' means software cannot determine the state, or
- 		the reported state is invalid.
- 
- 		NOTE: this field can be used in conjunction with microvolts
--		and microamps to determine regulator output levels.
-+		or microamps to determine configured regulator output levels.
-+
-+
-+What:		/sys/class/regulator/.../status
-+Description:
-+		Some regulator directories will contain a field called
-+		"status". This reports the current regulator status, for
-+		regulators which can report that output value.
-+
-+		This will be one of the following strings:
-+
-+			off
-+			on
-+			error
-+			fast
-+			normal
-+			idle
-+			standby
-+
-+		"off" means the regulator is not supplying power to the
-+		system.
-+
-+		"on" means the regulator is supplying power to the system,
-+		and the regulator can't report a detailed operation mode.
-+
-+		"error" indicates an out-of-regulation status such as being
-+		disabled due to thermal shutdown, or voltage being unstable
-+		because of problems with the input power supply.
-+
-+		"fast", "normal", "idle", and "standby" are all detailed
-+		regulator operation modes (described elsewhere).  They
-+		imply "on", but provide more detail.
-+
-+		Note that regulator status is a function of many inputs,
-+		not limited to control inputs from Linux.  For example,
-+		the actual load presented may trigger "error" status; or
-+		a regulator may be enabled by another user, even though
-+		Linux did not enable it.
- 
- 
- What:		/sys/class/regulator/.../type
-@@ -58,7 +96,7 @@ Description:
- 		Some regulator directories will contain a field called
- 		microvolts. This holds the regulator output voltage setting
- 		measured in microvolts (i.e. E-6 Volts), for regulators
--		which can report that voltage.
-+		which can report the control input for voltage.
- 
- 		NOTE: This value should not be used to determine the regulator
- 		output voltage level as this value is the same regardless of
-@@ -73,7 +111,7 @@ Description:
- 		Some regulator directories will contain a field called
- 		microamps. This holds the regulator output current limit
- 		setting measured in microamps (i.e. E-6 Amps), for regulators
--		which can report that current.
-+		which can report the control input for a current limit.
- 
- 		NOTE: This value should not be used to determine the regulator
- 		output current level as this value is the same regardless of
-@@ -87,7 +125,7 @@ Contact:	Liam Girdwood <lrg@slimlogic.co
- Description:
- 		Some regulator directories will contain a field called
- 		opmode. This holds the current regulator operating mode,
--		for regulators which can report it.
-+		for regulators which can report that control input value.
- 
- 		The opmode value can be one of the following strings:
- 
-@@ -101,7 +139,8 @@ Description:
- 
- 		NOTE: This value should not be used to determine the regulator
- 		output operating mode as this value is the same regardless of
--		whether the regulator is enabled or disabled.
-+		whether the regulator is enabled or disabled.  A "status"
-+		attribute may be available to determine the actual mode.
- 
- 
- What:		/sys/class/regulator/.../min_microvolts
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -312,6 +312,47 @@ static ssize_t regulator_state_show(stru
- }
- static DEVICE_ATTR(state, 0444, regulator_state_show, NULL);
- 
-+static ssize_t regulator_status_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct regulator_dev *rdev = dev_get_drvdata(dev);
-+	int status;
-+	char *label;
-+
-+	status = rdev->desc->ops->get_status(rdev);
-+	if (status < 0)
-+		return status;
-+
-+	switch (status) {
-+	case REGULATOR_STATUS_OFF:
-+		label = "off";
-+		break;
-+	case REGULATOR_STATUS_ON:
-+		label = "on";
-+		break;
-+	case REGULATOR_STATUS_ERROR:
-+		label = "error";
-+		break;
-+	case REGULATOR_STATUS_FAST:
-+		label = "fast";
-+		break;
-+	case REGULATOR_STATUS_NORMAL:
-+		label = "normal";
-+		break;
-+	case REGULATOR_STATUS_IDLE:
-+		label = "idle";
-+		break;
-+	case REGULATOR_STATUS_STANDBY:
-+		label = "standby";
-+		break;
-+	default:
-+		return -ERANGE;
-+	}
-+
-+	return sprintf(buf, "%s\n", label);
-+}
-+static DEVICE_ATTR(status, 0444, regulator_status_show, NULL);
-+
- static ssize_t regulator_min_uA_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
-@@ -1744,6 +1785,11 @@ static int add_regulator_attributes(stru
- 		if (status < 0)
- 			return status;
- 	}
-+	if (ops->get_status) {
-+		status = device_create_file(dev, &dev_attr_status);
-+		if (status < 0)
-+			return status;
-+	}
- 
- 	/* some attributes are type-specific */
- 	if (rdev->desc->type == REGULATOR_CURRENT) {
---- a/include/linux/regulator/driver.h
-+++ b/include/linux/regulator/driver.h
-@@ -21,6 +21,17 @@
- struct regulator_dev;
- struct regulator_init_data;
- 
-+enum regulator_status {
-+	REGULATOR_STATUS_OFF,
-+	REGULATOR_STATUS_ON,
-+	REGULATOR_STATUS_ERROR,
-+	/* fast/normal/idle/standby are flavors of "on" */
-+	REGULATOR_STATUS_FAST,
-+	REGULATOR_STATUS_NORMAL,
-+	REGULATOR_STATUS_IDLE,
-+	REGULATOR_STATUS_STANDBY,
-+};
-+
- /**
-  * struct regulator_ops - regulator operations.
-  *
-@@ -46,6 +57,12 @@ struct regulator_ops {
- 	int (*set_mode) (struct regulator_dev *, unsigned int mode);
- 	unsigned int (*get_mode) (struct regulator_dev *);
- 
-+	/* report regulator status ... most other accessors report
-+	 * control inputs, this reports results of combining inputs
-+	 * from Linux (and other sources) with the actual load.
-+	 */
-+	int (*get_status)(struct regulator_dev *);
-+
- 	/* get most efficient regulator operating mode for load */
- 	unsigned int (*get_optimum_mode) (struct regulator_dev *, int input_uV,
- 					  int output_uV, int load_uA);
+>4) have you tried pinning tasks?
+>
+We did try pin foreground rt-process to cpu. That recovered about 1% performance but introduce idle time in some cpu. Without load balancing, my solution is to pin more processes to the idle cpu. I don't think this is a practical solution for the idle time problem as the process distribution need to be adjusted again when upgrade to a different server. 
+
+>RT is more about determinism than performance. The old scheduler
+>migrated rt tasks the same as other tasks. This helps with performance
+>because it will keep several rt tasks on the same CPU and cache hot even
+>when a rt task can migrate. This helps performance, but kills
+>determinism (I was seeing 10 ms wake up times from the next-highest-prio
+>task on a cpu, even when another CPU was available).
+>
+>If you pin a task to a cpu, then it skips over the push and pull logic
+>and will help with performance too.
+>
+>-- Steve
+>
+>
+>
+>>
+>> Well.  It's more a case that it wasn't taken anywhere.  I appear to
+>> have recently been informed that there have never been any
+>> CPU-scheduler-caused regressions.  Please persist!
+>>
+>> > SLUB would have had a huge negative effect if we were using it -- on
+>the
+>> > order of 7% iirc.  SLQB is at least performance-neutral with SLAB.
+>>
+>> We really need to unblock that problem somehow.  I assume that
+>> enterprise distros are shipping slab?
+>>
+
