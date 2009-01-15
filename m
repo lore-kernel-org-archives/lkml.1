@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935120AbZAOWMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbZAOWNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935120AbZAOWMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933603AbZAOWCN
+	id S934247AbZAOWNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZAOWCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:13 -0500
-Received: from kroah.org ([198.145.64.141]:38237 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:14 -0500
+Received: from kroah.org ([198.145.64.141]:38255 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760999AbZAOWCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:07 -0500
-Date: Thu, 15 Jan 2009 13:59:32 -0800
+	id S933563AbZAOWCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:09 -0500
+Date: Thu, 15 Jan 2009 13:59:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Cliff Wickman <cpw@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 19/85] x86, UV: remove erroneous BAU initialization
-Message-ID: <20090115215932.GT17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Robert Love <rlove@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 20/85] inotify: fix type errors in interfaces
+Message-ID: <20090115215934.GU17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-uv-remove-erroneous-bau-initialization.patch"
+Content-Disposition: inline; filename="inotify-fix-type-errors-in-interfaces.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,65 +41,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Cliff Wickman <cpw@sgi.com>
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 
-commit 46814dded1b972a07b1609d81632eef3009fbb10 upstream.
+commit 4ae8978cf92a96257cd8998a49e781be83571d64 upstream.
 
-Impact: fix crash on x86/UV
+The problems lie in the types used for some inotify interfaces, both at the kernel level and at the glibc level. This mail addresses the kernel problem. I will follow up with some suggestions for glibc changes.
 
-UV is the SGI "UltraViolet" machine, which is x86_64 based.
-BAU is the "Broadcast Assist Unit", used for TLB shootdown in UV.
+For the sys_inotify_rm_watch() interface, the type of the 'wd' argument is
+currently 'u32', it should be '__s32' .  That is Robert's suggestion, and
+is consistent with the other declarations of watch descriptors in the
+kernel source, in particular, the inotify_event structure in
+include/linux/inotify.h:
 
-This patch removes the allocation and initialization of an unused table.
+struct inotify_event {
+        __s32           wd;             /* watch descriptor */
+        __u32           mask;           /* watch mask */
+        __u32           cookie;         /* cookie to synchronize two events */
+        __u32           len;            /* length (including nulls) of name */
+        char            name[0];        /* stub for possible name */
+};
 
-This table is left over from a development test mode.  It is unused in
-the present code.
+The patch makes the changes needed for inotify_rm_watch().
 
-And it was incorrectly initialized: 8 entries allocated but 17 initialized,
-causing slab corruption.
-
-This patch should go into 2.6.27 and 2.6.28 as well as the current tree.
-
-Diffed against 2.6.28 (linux-next, 12/30/08)
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Robert Love <rlove@google.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/tlb_uv.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ fs/inotify_user.c        |    2 +-
+ include/linux/syscalls.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -586,7 +586,6 @@ static int __init uv_ptc_init(void)
- static struct bau_control * __init uv_table_bases_init(int blade, int node)
+--- a/fs/inotify_user.c
++++ b/fs/inotify_user.c
+@@ -707,7 +707,7 @@ fput_and_out:
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
++asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
  {
- 	int i;
--	int *ip;
- 	struct bau_msg_status *msp;
- 	struct bau_control *bau_tabp;
+ 	struct file *filp;
+ 	struct inotify_device *dev;
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -550,7 +550,7 @@ asmlinkage long sys_inotify_init(void);
+ asmlinkage long sys_inotify_init1(int flags);
+ asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
+ 					u32 mask);
+-asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
++asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
  
-@@ -603,13 +602,6 @@ static struct bau_control * __init uv_ta
- 		bau_cpubits_clear(&msp->seen_by, (int)
- 				  uv_blade_nr_possible_cpus(blade));
- 
--	bau_tabp->watching =
--	    kmalloc_node(sizeof(int) * DEST_NUM_RESOURCES, GFP_KERNEL, node);
--	BUG_ON(!bau_tabp->watching);
--
--	for (i = 0, ip = bau_tabp->watching; i < DEST_Q_SIZE; i++, ip++)
--		*ip = 0;
--
- 	uv_bau_table_bases[blade] = bau_tabp;
- 
- 	return bau_tabp;
-@@ -632,7 +624,6 @@ uv_table_bases_finish(int blade, int nod
- 		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
- 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
--		bcp->watching		= bau_tablesp->watching;
- 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
- 		bcp->descriptor_base	= adp;
- 	}
+ asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
+ 				 __u32 __user *ustatus);
 
