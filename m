@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763382AbZAOK2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763488AbZAOK26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763382AbZAOK2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763615AbZAOK2V
+	id S1763488AbZAOK26 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZAOK2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:28:21 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58930 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760283AbZAOK2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:28:20 -0500
-Date: Thu, 15 Jan 2009 19:27:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH 2/4] cgroup:add css_is_populated
-Message-Id: <20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Jan 2009 05:28:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34235 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763658AbZAOK2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:28:32 -0500
+Message-ID: <496F0F96.4010800@kernel.org>
+Date: Thu, 15 Jan 2009 19:27:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, travis@sgi.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
+Subject: Re: [patch] add optimized generic percpu accessors
+References: <1231843097-18003-1-git-send-email-tj@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <200901151253.44016.rusty@rustcorp.com.au>
+In-Reply-To: <200901151253.44016.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 15 Jan 2009 10:27:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Rusty Russell wrote:
+>> percpu_read()
+> 
+> I already have this in my patch series.
+> 
+> Frankly, it starts to get marginal in generic code after percpu_read(),
+> so I didn't do them (and the per-cpu interfaces are already pretty wide).
+> 
+> Tejun, is now a good time to rebase my alloc_percpu series on top of
+> yours? I'm more than happy to hand them over to someone with more cycles...
 
-cgroup creation is done in several stages.
-After allocated and linked to cgroup's hierarchy tree, all necessary
-control files are created.
+Sure, send them my way.
 
-When using CSS_ID, scanning cgroups without cgrouo_lock(), status
-of cgroup is important. At removal of cgroup/css, css_tryget() works fine
-and we can write a safe code. At creation, we need some flag to show 
-"This cgroup is not ready yet"
+Thanks.
 
-This patch adds CSS_POPULATED flag.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
-Index: mmotm-2.6.29-Jan14/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.29-Jan14.orig/include/linux/cgroup.h
-+++ mmotm-2.6.29-Jan14/include/linux/cgroup.h
-@@ -69,6 +69,7 @@ struct cgroup_subsys_state {
- enum {
- 	CSS_ROOT, /* This CSS is the root of the subsystem */
- 	CSS_REMOVED, /* This CSS is dead */
-+	CSS_POPULATED, /* This CSS finished all initialization */
- };
- 
- /*
-@@ -90,6 +91,11 @@ static inline bool css_is_removed(struct
- 	return test_bit(CSS_REMOVED, &css->flags);
- }
- 
-+static inline bool css_is_populated(struct cgroup_subsys_state *css)
-+{
-+	return test_bit(CSS_POPULATED, &css->flags);
-+}
-+
- /*
-  * Call css_tryget() to take a reference on a css if your existing
-  * (known-valid) reference isn't already ref-counted. Returns false if
-Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
-+++ mmotm-2.6.29-Jan14/kernel/cgroup.c
-@@ -2326,8 +2326,10 @@ static int cgroup_populate_dir(struct cg
- 	}
- 
- 	for_each_subsys(cgrp->root, ss) {
-+		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
- 		if (ss->populate && (err = ss->populate(ss, cgrp)) < 0)
- 			return err;
-+		set_bit(CSS_POPULATED, &css->flags);
- 	}
- 
- 	return 0;
-
+-- 
+tejun
