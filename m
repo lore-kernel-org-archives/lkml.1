@@ -1,76 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZAOESH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbZAOEVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbZAOESH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 23:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZAOERy
+	id S1759247AbZAOEVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 23:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZAOEVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 23:17:54 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:55630 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbZAOERx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 23:17:53 -0500
-Date: Thu, 15 Jan 2009 09:47:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+	Wed, 14 Jan 2009 23:21:11 -0500
+Received: from mga11.intel.com ([192.55.52.93]:55776 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754524AbZAOEVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 23:21:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,266,1231142400"; 
+   d="scan'208";a="657257711"
+Date: Thu, 15 Jan 2009 12:20:58 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
-	obsolete
-Message-ID: <20090115041750.GE21516@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp> <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp> <20090114135539.GA21516@balbir.in.ibm.com> <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
+       Martin Michlmayr <tbm@cyrius.com>,
+       "elendil@planet.nl" <elendil@planet.nl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "intel-gfx@lists.freedesktop..." <intel-gfx@lists.freedesktop.org>
+Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
+Message-ID: <20090115042058.GA4073@localhost>
+References: <200901121356.46236.elendil@planet.nl> <20090113123056.GA2464@deprecation.cyrius.com> <20090114162603.c632d82e.akpm@linux-foundation.org> <20090115020311.GA18740@srcf.ucam.org> <20090114181542.34614acf.akpm@linux-foundation.org> <20090115022106.GA19069@srcf.ucam.org> <1231988103.20746.149.camel@rzhang-dt>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1231988103.20746.149.camel@rzhang-dt>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 12:24:16]:
-
-> On Wed, 14 Jan 2009 19:25:39 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-14 17:51:21]:
+On Thu, Jan 15, 2009 at 04:55:03AM +0200, Zhang, Rui wrote:
+> On Thu, 2009-01-15 at 10:21 +0800, Matthew Garrett wrote:
+> > On Wed, Jan 14, 2009 at 06:15:42PM -0800, Andrew Morton wrote:
+> > > On Thu, 15 Jan 2009 02:03:11 +0000 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > > > Lid actions typically trigger SMI code, so it's entirely capable of 
+> > > > destroying CPU state in such a way that the kernel falls over (and 
+> > > > probably even in ways that cause the kernel to turn green, emit pleasing 
+> > > > warbling noises or invade neighbouring pieces of hardware). In this case 
+> > > > it seems to be SMP specific - the system's entirely stable in UP mode. 
+> > > > It's greatly vexing.
+> > > 
+> > > Does it always crash in the same way?
 > > 
-> > > This is a new one. Please review.
-> > > 
-> > > ===
-> > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > > 
-> > > mem_cgroup_get ensures that the memcg that has been got can be accessed
-> > > even after the directory has been removed, but it doesn't ensure that parents
-> > > of it can be accessed: parents might have been freed already by rmdir.
-> > > 
-> > > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
-> > > climb up the tree.
-> > > 
-> > > Check if the memcg is obsolete, and don't call res_counter_uncharge when obsole.
-> > > 
-> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > Not in my experience. Sometimes it falls over in the ACPI parsing code, 
+> > but sometimes the backtrace is nonsense and the IP is in the middle of 
+> > nowhere. I've now got a working 2510p again, so maybe I'll have time to 
+> > look at this on the way to LCA.
 > > 
-> > I liked the earlier, EBUSY approach that ensured that parents could
-> > not go away if children exist. IMHO, the code has gotten too complex
-> > and has too many corner cases. Time to revisit it.
-> > 
+> please check if this is a duplicate of bug #11259.
+> http://bugzilla.kernel.org/show_bug.cgi?id=11259
 > 
-> But I don't like -EBUSY ;)
 > 
-> When rmdir() returns -EBUSY even if there are no (visible) children and tasks,
-> our customer will take kdump and send it to me "please explain this kernel bug"
+> We (Wu, fengguang and me) reproduced this bug on a HP 6910p.
+> and we found that windows run a different AML code path when closing Lid
+> on this laptop and the SMI is not invoked...
+> And I have verified how to make Linux run the same code path by changing
+> the IGD OpRegion code.
 > 
-> I'm sure it will happen ;)
->
+> DIDL is an IGD OpRegion field, as the Supported Display Devices ID List.
+> ﻿it's evaluated by the _DOD method when ACPI video driver is loaded.
+> And according to the spec, "The graphics driver writes to this field
+> once during its initialization"
+> if DIDL is not empty, a flag is set and the SMI will not be invoked when
+> closing the lid.
+> In our tests, this field (DIDL) is set in windows when _DOD is invoked
+> while it's not in Linux.
+> I can workaround this bug by setting the DIDL manually in AML code.
+> 
+> So a patch setting the DIDL in i915_opregion.c should be a proper fix
+> for this problem. Fengguang will cook up a patch later.
 
-OK, but memory.stat can show why the group is busy and with
-move_to_parent() such issues should not occur right? I'll relook at
-the code. Thanks for your input.
+I found it not easy given the required sequence of operations:
+For this specific bug, opregion DIDL entry must be set before the
+*first* _DOD invocation, i.e. the ACPI video module loading time.
 
--- 
-	Balbir
+This means 
+        - opregion module must be loaded before ACPI video module
+        - the opregion DIDL setting code must run in module init time,
+          instead of the current implemented startx time.
+          However, how can the opregion module get the right DIDL data
+          without the help of Xorg and intel driver? Maybe kernel mode
+          setting?
+
+So the module dependencies could be:
+        ACPI video => i915 opregion => kernel mode setting
+
+The latter dependency should be a reasonable one, but does the first
+one make sense in general?
+
+Or is it possible to delay the first _DOD invocation in ACPI video?
+
+Thanks,
+Fengguang
