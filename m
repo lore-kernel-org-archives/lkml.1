@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbZAOUWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbZAOUXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933203AbZAOUWl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932111AbZAOUBM
+	id S933125AbZAOUXK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932115AbZAOUBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:12 -0500
-Received: from kroah.org ([198.145.64.141]:49113 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:13 -0500
+Received: from kroah.org ([198.145.64.141]:49037 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765658AbZAOUAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:50 -0500
-Date: Thu, 15 Jan 2009 11:58:32 -0800
+	id S1765975AbZAOUAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:49 -0500
+Date: Thu, 15 Jan 2009 11:58:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Richard Henderson <rth@twiddle.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Tony Luck <tony.luck@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 35/94] [PATCH 04/44] [CVE-2009-0029] Remove
-	__attribute__((weak)) from sys_pipe/sys_pipe2
-Message-ID: <20090115195832.GI14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 34/94] [PATCH 03/44] [CVE-2009-0029] Rename old_readdir to
+	sys_old_readdir
+Message-ID: <20090115195830.GH14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0004--CVE-2009-0029-Remove-__attribute__-weak-from-sy.patch"
+Content-Disposition: inline; filename="0003--CVE-2009-0029-Rename-old_readdir-to-sys_old_readdi.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,236 +42,200 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 1134723e96f6e2abcf8bfd7a2d1c96fcc323ef35 upstream.
+commit e55380edf68796d75bf41391a781c68ee678587d upstream.
 
-Remove __attribute__((weak)) from common code sys_pipe implemantation.
-IA64, ALPHA, SUPERH (32bit) and SPARC (32bit) have own implemantations
-with the same name. Just rename them.
-For sys_pipe2 there is no architecture specific implementation.
+This way it matches the generic system call name convention.
 
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/alpha/kernel/entry.S         |    8 ++++----
- arch/alpha/kernel/systbls.S       |    2 +-
- arch/ia64/ia32/ia32_entry.S       |    2 +-
- arch/ia64/include/asm/unistd.h    |    2 +-
- arch/ia64/kernel/entry.S          |    2 +-
- arch/ia64/kernel/sys_ia64.c       |    2 +-
- arch/s390/kernel/entry.h          |    1 -
- arch/sh/include/asm/syscalls_32.h |    6 +++---
- arch/sh/kernel/sys_sh32.c         |    2 +-
- arch/sh/kernel/syscalls_32.S      |    2 +-
- arch/sparc/kernel/entry.S         |    4 ++--
- arch/sparc/kernel/systbls.S       |    2 +-
- arch/sparc64/kernel/syscalls.S    |    2 +-
- arch/sparc64/kernel/systbls.S     |    4 ++--
- fs/pipe.c                         |    4 ++--
- 15 files changed, 22 insertions(+), 23 deletions(-)
+ arch/arm/kernel/calls.S              |    2 +-
+ arch/cris/arch-v10/kernel/entry.S    |    2 +-
+ arch/cris/arch-v32/kernel/entry.S    |    2 +-
+ arch/h8300/kernel/syscalls.S         |    2 +-
+ arch/m68k/kernel/entry.S             |    2 +-
+ arch/m68knommu/kernel/syscalltable.S |    2 +-
+ arch/mips/kernel/scall32-o32.S       |    2 +-
+ arch/mn10300/kernel/entry.S          |    2 +-
+ arch/powerpc/include/asm/systbl.h    |    2 +-
+ arch/sh/kernel/syscalls_32.S         |    2 +-
+ arch/sh/kernel/syscalls_64.S         |    2 +-
+ arch/sparc/kernel/systbls.S          |    2 +-
+ arch/x86/kernel/syscall_table_32.S   |    2 +-
+ fs/readdir.c                         |    2 +-
+ include/linux/syscalls.h             |    2 ++
+ 15 files changed, 16 insertions(+), 14 deletions(-)
 
---- a/arch/alpha/kernel/entry.S
-+++ b/arch/alpha/kernel/entry.S
-@@ -894,9 +894,9 @@ sys_getxpid:
- .end sys_getxpid
- 
- 	.align	4
--	.globl	sys_pipe
--	.ent	sys_pipe
--sys_pipe:
-+	.globl	sys_alpha_pipe
-+	.ent	sys_alpha_pipe
-+sys_alpha_pipe:
- 	lda	$sp, -16($sp)
- 	stq	$26, 0($sp)
- 	.prologue 0
-@@ -914,7 +914,7 @@ sys_pipe:
- 	stq	$1, 80+16($sp)
- 1:	lda	$sp, 16($sp)
- 	ret
--.end sys_pipe
-+.end sys_alpha_pipe
- 
- 	.align	4
- 	.globl	sys_execve
---- a/arch/alpha/kernel/systbls.S
-+++ b/arch/alpha/kernel/systbls.S
-@@ -52,7 +52,7 @@ sys_call_table:
- 	.quad sys_setpgid
- 	.quad alpha_ni_syscall			/* 40 */
- 	.quad sys_dup
--	.quad sys_pipe
-+	.quad sys_alpha_pipe
- 	.quad osf_set_program_attributes
- 	.quad alpha_ni_syscall
- 	.quad sys_open				/* 45 */
---- a/arch/ia64/ia32/ia32_entry.S
-+++ b/arch/ia64/ia32/ia32_entry.S
-@@ -220,7 +220,7 @@ ia32_syscall_table:
- 	data8 sys_mkdir
- 	data8 sys_rmdir		  /* 40 */
- 	data8 sys_dup
--	data8 sys_pipe
-+	data8 sys_ia64_pipe
- 	data8 compat_sys_times
- 	data8 sys_ni_syscall	  /* old prof syscall holder */
- 	data8 sys32_brk		  /* 45 */
---- a/arch/ia64/include/asm/unistd.h
-+++ b/arch/ia64/include/asm/unistd.h
-@@ -364,7 +364,7 @@ struct pt_regs;
- struct sigaction;
- long sys_execve(char __user *filename, char __user * __user *argv,
- 			   char __user * __user *envp, struct pt_regs *regs);
--asmlinkage long sys_pipe(void);
-+asmlinkage long sys_ia64_pipe(void);
- asmlinkage long sys_rt_sigaction(int sig,
- 				 const struct sigaction __user *act,
- 				 struct sigaction __user *oact,
---- a/arch/ia64/kernel/entry.S
-+++ b/arch/ia64/kernel/entry.S
-@@ -1442,7 +1442,7 @@ sys_call_table:
- 	data8 sys_mkdir				// 1055
- 	data8 sys_rmdir
- 	data8 sys_dup
--	data8 sys_pipe
-+	data8 sys_ia64_pipe
- 	data8 sys_times
- 	data8 ia64_brk				// 1060
- 	data8 sys_setgid
---- a/arch/ia64/kernel/sys_ia64.c
-+++ b/arch/ia64/kernel/sys_ia64.c
-@@ -154,7 +154,7 @@ out:
-  * and r9) as this is faster than doing a copy_to_user().
-  */
- asmlinkage long
--sys_pipe (void)
-+sys_ia64_pipe (void)
- {
- 	struct pt_regs *regs = task_pt_regs(current);
- 	int fd[2];
---- a/arch/s390/kernel/entry.h
-+++ b/arch/s390/kernel/entry.h
-@@ -30,7 +30,6 @@ struct fadvise64_64_args;
- struct old_sigaction;
- struct sel_arg_struct;
- 
--long sys_pipe(unsigned long __user *fildes);
- long sys_mmap2(struct mmap_arg_struct __user  *arg);
- long old_mmap(struct mmap_arg_struct __user *arg);
- long sys_ipc(uint call, int first, unsigned long second,
---- a/arch/sh/include/asm/syscalls_32.h
-+++ b/arch/sh/include/asm/syscalls_32.h
-@@ -36,9 +36,9 @@ asmlinkage int sys_sigreturn(unsigned lo
- asmlinkage int sys_rt_sigreturn(unsigned long r4, unsigned long r5,
- 				unsigned long r6, unsigned long r7,
- 				struct pt_regs __regs);
--asmlinkage int sys_pipe(unsigned long r4, unsigned long r5,
--			unsigned long r6, unsigned long r7,
--			struct pt_regs __regs);
-+asmlinkage int sys_sh_pipe(unsigned long r4, unsigned long r5,
-+			   unsigned long r6, unsigned long r7,
-+			   struct pt_regs __regs);
- asmlinkage ssize_t sys_pread_wrapper(unsigned int fd, char __user *buf,
- 				     size_t count, long dummy, loff_t pos);
- asmlinkage ssize_t sys_pwrite_wrapper(unsigned int fd, const char __user *buf,
+--- a/arch/arm/kernel/calls.S
++++ b/arch/arm/kernel/calls.S
+@@ -98,7 +98,7 @@
+ 		CALL(sys_uselib)
+ 		CALL(sys_swapon)
+ 		CALL(sys_reboot)
+-		CALL(OBSOLETE(old_readdir))	/* used by libc4 */
++		CALL(OBSOLETE(sys_old_readdir))	/* used by libc4 */
+ /* 90 */	CALL(OBSOLETE(old_mmap))	/* used by libc4 */
+ 		CALL(sys_munmap)
+ 		CALL(sys_truncate)
+--- a/arch/cris/arch-v10/kernel/entry.S
++++ b/arch/cris/arch-v10/kernel/entry.S
+@@ -691,7 +691,7 @@ sys_call_table:	
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/cris/arch-v32/kernel/entry.S
++++ b/arch/cris/arch-v32/kernel/entry.S
+@@ -614,7 +614,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/h8300/kernel/syscalls.S
++++ b/arch/h8300/kernel/syscalls.S
+@@ -103,7 +103,7 @@ SYMBOL_NAME_LABEL(sys_call_table)	
+ 	.long SYMBOL_NAME(sys_uselib)
+ 	.long SYMBOL_NAME(sys_swapon)
+ 	.long SYMBOL_NAME(sys_reboot)
+-	.long SYMBOL_NAME(old_readdir)
++	.long SYMBOL_NAME(sys_old_readdir)
+ 	.long SYMBOL_NAME(old_mmap)		/* 90 */
+ 	.long SYMBOL_NAME(sys_munmap)
+ 	.long SYMBOL_NAME(sys_truncate)
+--- a/arch/m68k/kernel/entry.S
++++ b/arch/m68k/kernel/entry.S
+@@ -513,7 +513,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/m68knommu/kernel/syscalltable.S
++++ b/arch/m68knommu/kernel/syscalltable.S
+@@ -107,7 +107,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_ni_syscall	/* sys_swapon */
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/mips/kernel/scall32-o32.S
++++ b/arch/mips/kernel/scall32-o32.S
+@@ -398,7 +398,7 @@ einval:	li	v0, -ENOSYS
+ 	sys	sys_uselib		1
+ 	sys	sys_swapon		2
+ 	sys	sys_reboot		3
+-	sys	old_readdir		3
++	sys	sys_old_readdir		3
+ 	sys	old_mmap		6	/* 4090 */
+ 	sys	sys_munmap		2
+ 	sys	sys_truncate		2
+--- a/arch/mn10300/kernel/entry.S
++++ b/arch/mn10300/kernel/entry.S
+@@ -478,7 +478,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -92,7 +92,7 @@ COMPAT_SYS_SPU(readlink)
+ SYSCALL(uselib)
+ SYSCALL(swapon)
+ SYSCALL(reboot)
+-SYSX(sys_ni_syscall,compat_sys_old_readdir,old_readdir)
++SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
+ SYSCALL_SPU(mmap)
+ SYSCALL_SPU(munmap)
+ SYSCALL_SPU(truncate)
 --- a/arch/sh/kernel/syscalls_32.S
 +++ b/arch/sh/kernel/syscalls_32.S
-@@ -58,7 +58,7 @@ ENTRY(sys_call_table)
- 	.long sys_mkdir
- 	.long sys_rmdir		/* 40 */
- 	.long sys_dup
--	.long sys_pipe
-+	.long sys_sh_pipe
- 	.long sys_times
- 	.long sys_ni_syscall	/* old prof syscall holder */
- 	.long sys_brk		/* 45 */
---- a/arch/sh/kernel/sys_sh32.c
-+++ b/arch/sh/kernel/sys_sh32.c
-@@ -22,7 +22,7 @@
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way Unix traditionally does this, though.
-  */
--asmlinkage int sys_pipe(unsigned long r4, unsigned long r5,
-+asmlinkage int sys_sh_pipe(unsigned long r4, unsigned long r5,
- 	unsigned long r6, unsigned long r7,
- 	struct pt_regs __regs)
- {
---- a/arch/sparc64/kernel/syscalls.S
-+++ b/arch/sparc64/kernel/syscalls.S
-@@ -20,7 +20,7 @@ execve_merge:
- 	 add	%sp, PTREGS_OFF, %o0
- 
- 	.align	32
--sys_pipe:
-+sys_sparc_pipe:
- 	ba,pt	%xcc, sparc_pipe
- 	 add	%sp, PTREGS_OFF, %o0
- sys_nis_syscall:
---- a/arch/sparc64/kernel/systbls.S
-+++ b/arch/sparc64/kernel/systbls.S
-@@ -26,7 +26,7 @@ sys_call_table32:
- /*25*/	.word sys32_vmsplice, compat_sys_ptrace, sys_alarm, sys32_sigaltstack, sys_pause
- /*30*/	.word compat_sys_utime, sys_lchown, sys_fchown, sys32_access, sys32_nice
- 	.word sys_chown, sys_sync, sys32_kill, compat_sys_newstat, sys32_sendfile
--/*40*/	.word compat_sys_newlstat, sys_dup, sys_pipe, compat_sys_times, sys_getuid
-+/*40*/	.word compat_sys_newlstat, sys_dup, sys_sparc_pipe, compat_sys_times, sys_getuid
- 	.word sys32_umount, sys_setgid16, sys_getgid16, sys32_signal, sys_geteuid16
- /*50*/	.word sys_getegid16, sys_acct, sys_nis_syscall, sys_getgid, compat_sys_ioctl
- 	.word sys32_reboot, sys32_mmap2, sys_symlink, sys32_readlink, sys32_execve
-@@ -100,7 +100,7 @@ sys_call_table:
- /*25*/	.word sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_nis_syscall
- /*30*/	.word sys_utime, sys_nis_syscall, sys_nis_syscall, sys_access, sys_nice
- 	.word sys_nis_syscall, sys_sync, sys_kill, sys_newstat, sys_sendfile64
--/*40*/	.word sys_newlstat, sys_dup, sys_pipe, sys_times, sys_nis_syscall
-+/*40*/	.word sys_newlstat, sys_dup, sys_sparc_pipe, sys_times, sys_nis_syscall
- 	.word sys_umount, sys_setgid, sys_getgid, sys_signal, sys_geteuid
- /*50*/	.word sys_getegid, sys_acct, sys_memory_ordering, sys_nis_syscall, sys_ioctl
- 	.word sys_reboot, sys_nis_syscall, sys_symlink, sys_readlink, sys_execve
---- a/arch/sparc/kernel/entry.S
-+++ b/arch/sparc/kernel/entry.S
-@@ -1088,8 +1088,8 @@ sunos_execv:
- 	 ld	[%sp + STACKFRAME_SZ + PT_I0], %o0
- 
- 	.align	4
--	.globl	sys_pipe
--sys_pipe:
-+	.globl	sys_sparc_pipe
-+sys_sparc_pipe:
- 	mov	%o7, %l5
- 	add	%sp, STACKFRAME_SZ, %o0		! pt_regs *regs arg
- 	call	sparc_pipe
+@@ -105,7 +105,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/sh/kernel/syscalls_64.S
++++ b/arch/sh/kernel/syscalls_64.S
+@@ -109,7 +109,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap			/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
 --- a/arch/sparc/kernel/systbls.S
 +++ b/arch/sparc/kernel/systbls.S
-@@ -24,7 +24,7 @@ sys_call_table:
- /*25*/	.long sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_pause
- /*30*/	.long sys_utime, sys_lchown, sys_fchown, sys_access, sys_nice
- /*35*/	.long sys_chown, sys_sync, sys_kill, sys_newstat, sys_sendfile
--/*40*/	.long sys_newlstat, sys_dup, sys_pipe, sys_times, sys_getuid
-+/*40*/	.long sys_newlstat, sys_dup, sys_sparc_pipe, sys_times, sys_getuid
- /*45*/	.long sys_umount, sys_setgid16, sys_getgid16, sys_signal, sys_geteuid16
- /*50*/	.long sys_getegid16, sys_acct, sys_nis_syscall, sys_getgid, sys_ioctl
- /*55*/	.long sys_reboot, sys_mmap2, sys_symlink, sys_readlink, sys_execve
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1048,7 +1048,7 @@ int do_pipe(int *fd)
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way Unix traditionally does this, though.
-  */
--asmlinkage long __weak sys_pipe2(int __user *fildes, int flags)
-+asmlinkage long sys_pipe2(int __user *fildes, int flags)
- {
- 	int fd[2];
- 	int error;
-@@ -1064,7 +1064,7 @@ asmlinkage long __weak sys_pipe2(int __u
- 	return error;
+@@ -56,7 +56,7 @@ sys_call_table:
+ /*185*/	.long sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_newuname
+ /*190*/	.long sys_init_module, sys_personality, sparc_remap_file_pages, sys_epoll_create, sys_epoll_ctl
+ /*195*/	.long sys_epoll_wait, sys_ioprio_set, sys_getppid, sparc_sigaction, sys_sgetmask
+-/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, old_readdir
++/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, sys_old_readdir
+ /*205*/	.long sys_readahead, sys_socketcall, sys_syslog, sys_lookup_dcookie, sys_fadvise64
+ /*210*/	.long sys_fadvise64_64, sys_tgkill, sys_waitpid, sys_swapoff, sys_sysinfo
+ /*215*/	.long sys_ipc, sys_sigreturn, sys_clone, sys_ioprio_get, sys_adjtimex
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -88,7 +88,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -102,7 +102,7 @@ efault:
+ 	return -EFAULT;
  }
  
--asmlinkage long __weak sys_pipe(int __user *fildes)
-+asmlinkage long sys_pipe(int __user *fildes)
+-asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
++asmlinkage long sys_old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
  {
- 	return sys_pipe2(fildes, 0);
- }
+ 	int error;
+ 	struct file * file;
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -54,6 +54,7 @@ struct compat_stat;
+ struct compat_timeval;
+ struct robust_list_head;
+ struct getcpu_cache;
++struct old_linux_dirent;
+ 
+ #include <linux/types.h>
+ #include <linux/aio_abi.h>
+@@ -608,6 +609,7 @@ asmlinkage long sys_timerfd_gettime(int 
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_old_readdir(unsigned int, struct old_linux_dirent __user *, unsigned int);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
 
