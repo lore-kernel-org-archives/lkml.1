@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbZAODZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZAODer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760135AbZAODZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZAODZ1
+	id S1757584AbZAODer (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZAODei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:25:27 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34456 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZAODZ0 (ORCPT
+	Wed, 14 Jan 2009 22:34:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753571AbZAODeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:25:26 -0500
-Date: Thu, 15 Jan 2009 12:24:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
- obsolete
-Message-Id: <20090115122416.e15d88a7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090114135539.GA21516@balbir.in.ibm.com>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<20090114135539.GA21516@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Jan 2009 22:34:37 -0500
+Date: Wed, 14 Jan 2009 19:33:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, andi@firstfloor.org, ak@linux.intel.com,
+       rth@twiddle.net, sfr@canb.auug.org.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] compiler-gcc.h: add more comments to RELOC_HIDE
+In-Reply-To: <200901151227.27935.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.2.00.0901141932290.6528@localhost.localdomain>
+References: <200901100040.n0A0eruc013680@imap1.linux-foundation.org> <20090110122945.GA28033@elte.hu> <Pine.LNX.4.64.0901121128470.30369@quilx.com> <200901151227.27935.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 19:25:39 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2009-01-14 17:51:21]:
+
+On Thu, 15 Jan 2009, Rusty Russell wrote:
+
+> On Tuesday 13 January 2009 04:03:49 Christoph Lameter wrote:
+> > But that is not what is occurring. We do not do &var + LARGE_OFFSET.
+> > Instead one does
+> > 
+> > 	((void *)&var) + LARGE_OFFSET
+> > 
+> > or
+> > 	((unsigned long)&var) + LARGE_OFFSET
+> > 
+> > The cast should cause the C compiler to drop all assumptions about size.
 > 
-> > This is a new one. Please review.
-> > 
-> > ===
-> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > 
-> > mem_cgroup_get ensures that the memcg that has been got can be accessed
-> > even after the directory has been removed, but it doesn't ensure that parents
-> > of it can be accessed: parents might have been freed already by rmdir.
-> > 
-> > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
-> > climb up the tree.
-> > 
-> > Check if the memcg is obsolete, and don't call res_counter_uncharge when obsole.
-> > 
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> I liked the earlier, EBUSY approach that ensured that parents could
-> not go away if children exist. IMHO, the code has gotten too complex
-> and has too many corner cases. Time to revisit it.
-> 
+> No, and that's the point.  Sorry, at this point you need to talk to a gcc expert.  As I have said, I did and I believe what he told me.
 
-But I don't like -EBUSY ;)
+Yeah, I personally believe in the "should cause the C compiler" part, but 
+gcc doesn't work that way. It will remember where the value came from, 
+even when the pointer has been cast to something else.
 
-When rmdir() returns -EBUSY even if there are no (visible) children and tasks,
-our customer will take kdump and send it to me "please explain this kernel bug"
-
-I'm sure it will happen ;)
-
--Kame
-
-
-
-> -- 
-> 	Balbir
-> 
-
+			Linus
