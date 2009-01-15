@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934406AbZAOWIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934165AbZAOWHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934406AbZAOWIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407AbZAOWCF
+	id S934165AbZAOWHy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933531AbZAOWCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:05 -0500
-Received: from kroah.org ([198.145.64.141]:38152 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:01 -0500
+Received: from kroah.org ([198.145.64.141]:38145 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933528AbZAOWCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:00 -0500
-Date: Thu, 15 Jan 2009 13:59:17 -0800
+	id S933504AbZAOWB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:01:59 -0500
+Date: Thu, 15 Jan 2009 13:59:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 12/85] SCSI: aha152x_cs: Fix regression that keeps driver
-	from using shared interrupts
-Message-ID: <20090115215917.GM17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 11/85] sched_clock: prevent scd->clock from moving
+	backwards, take #2
+Message-ID: <20090115215915.GL17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-aha152x_cs-fix-regression-that-keeps-driver-from-using-shared-interrupts.patch"
+Content-Disposition: inline; filename="sched_clock-prevent-scd-clock-from-moving-backwards-take-2.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,35 +40,93 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 58607b30fc0f2230a189500112c7a7cca02804cf upstream.
+commit 1c5745aa380efb6417b5681104b007c8612fb496 upstream.
 
-At some point since 2.6.22, the aha152x_cs driver stopped working and
-started erring on load with the following messages:
+Redo:
 
-kernel: pcmcia: request for exclusive IRQ could not be fulfilled.
-kernel: pcmcia: the driver needs updating to supported shared IRQ lines.
+  5b7dba4: sched_clock: prevent scd->clock from moving backwards
 
-With the following change, the driver works with shared IRQs.
+which had to be reverted due to s2ram hangs:
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+  ca7e716: Revert "sched_clock: prevent scd->clock from moving backwards"
+
+... this time with resume restoring GTOD later in the sequence
+taken into account as well.
+
+The "timekeeping_suspended" flag is not very nice but we cannot call into
+GTOD before it has been properly resumed and the scheduler will run very
+early in the resume sequence.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/pcmcia/aha152x_stub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/time.h      |    1 +
+ kernel/sched_clock.c      |    5 ++++-
+ kernel/time/timekeeping.c |    7 +++++--
+ 3 files changed, 10 insertions(+), 3 deletions(-)
 
---- a/drivers/scsi/pcmcia/aha152x_stub.c
-+++ b/drivers/scsi/pcmcia/aha152x_stub.c
-@@ -114,7 +114,7 @@ static int aha152x_probe(struct pcmcia_d
-     link->io.NumPorts1 = 0x20;
-     link->io.Attributes1 = IO_DATA_PATH_WIDTH_AUTO;
-     link->io.IOAddrLines = 10;
--    link->irq.Attributes = IRQ_TYPE_EXCLUSIVE;
-+    link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING;
-     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
-     link->conf.Attributes = CONF_ENABLE_IRQ;
-     link->conf.IntType = INT_MEMORY_AND_IO;
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -99,6 +99,7 @@ extern unsigned long read_persistent_clo
+ extern int update_persistent_clock(struct timespec now);
+ extern int no_sync_cmos_clock __read_mostly;
+ void timekeeping_init(void);
++extern int timekeeping_suspended;
+ 
+ unsigned long get_seconds(void);
+ struct timespec current_kernel_time(void);
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -124,7 +124,7 @@ static u64 __update_sched_clock(struct s
+ 
+ 	clock = scd->tick_gtod + delta;
+ 	min_clock = wrap_max(scd->tick_gtod, scd->clock);
+-	max_clock = scd->tick_gtod + TICK_NSEC;
++	max_clock = wrap_max(scd->clock, scd->tick_gtod + TICK_NSEC);
+ 
+ 	clock = wrap_max(clock, min_clock);
+ 	clock = wrap_min(clock, max_clock);
+@@ -227,6 +227,9 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_sleep
+  */
+ void sched_clock_idle_wakeup_event(u64 delta_ns)
+ {
++	if (timekeeping_suspended)
++		return;
++
+ 	sched_clock_tick();
+ 	touch_softlockup_watchdog();
+ }
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -46,6 +46,9 @@ struct timespec xtime __attribute__ ((al
+ struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+ static unsigned long total_sleep_time;		/* seconds */
+ 
++/* flag for if timekeeping is suspended */
++int __read_mostly timekeeping_suspended;
++
+ static struct timespec xtime_cache __attribute__ ((aligned (16)));
+ void update_xtime_cache(u64 nsec)
+ {
+@@ -92,6 +95,8 @@ void getnstimeofday(struct timespec *ts)
+ 	unsigned long seq;
+ 	s64 nsecs;
+ 
++	WARN_ON(timekeeping_suspended);
++
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+ 
+@@ -261,8 +266,6 @@ void __init timekeeping_init(void)
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ }
+ 
+-/* flag for if timekeeping is suspended */
+-static int timekeeping_suspended;
+ /* time in seconds when suspend began */
+ static unsigned long timekeeping_suspend_time;
+ /* xtime offset when we went into suspend */
 
