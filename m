@@ -1,155 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbZAOH4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762938AbZAOH4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbZAOH4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZAOH4H
+	id S1762938AbZAOH4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZAOH4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:56:07 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51532 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbZAOH4E (ORCPT
+	Thu, 15 Jan 2009 02:56:33 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:60953 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756546AbZAOH4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:56:04 -0500
-Date: Thu, 15 Jan 2009 16:54:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>
-Subject: Re: [RFC][PATCH] memcg: get/put parents at create/free
-Message-Id: <20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
-	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
-	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
-	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
-	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 02:56:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=LQO9eIjnbUpStzlntwuEKvlO4o9IFLfdYAeMqsIFaZZCNDsuaM2KmFEgfzsxQkife
+	emRwyIG3w7vEkX2j/d+GA==
+Date: Wed, 14 Jan 2009 23:55:54 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pavel Machek <pavel@suse.cz>, Greg KH <greg@kroah.com>,
+       Arve Hj?nnev?g <arve@android.com>, Brian Swetland <swetland@google.com>,
+       arve@google.com, San Mehat <san@android.com>,
+       Robert Love <rlove@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: lowmemory android driver not needed?
+In-Reply-To: <20090114104834.18387fca@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.2.00.0901142345330.12065@chino.kir.corp.google.com>
+References: <20090114010223.GA21380@kroah.com> <20090114021801.GA14759@bulgaria.corp.google.com> <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com> <20090114035237.GB16442@kroah.com> <20090114104307.GA20451@elf.ucw.cz>
+ <20090114104834.18387fca@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.25.146.36
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 16:45:37 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Wed, 14 Jan 2009, Alan Cox wrote:
 
-> On Thu, 15 Jan 2009 13:38:14 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > > To handle the problem "parent may be obsolete",
-> > > > > > 
-> > > > > > call mem_cgroup_get(parent) at create()
-> > > > > > call mem_cgroup_put(parent) at freeing memcg.
-> > > > > >      (regardless of use_hierarchy.)
-> > > > > > 
-> > > > > > is clearer way to go, I think.
-> > > > > > 
-> > > > > > I wonder whether there is  mis-accounting problem or not..
-> > > > > > 
-> > hmm, after more consideration, although this patch can prevent the BUG,
-> > it can leak memsw accounting of parents because memsw of parents, which
-> > have been incremented by charge, does not decremented.
-> > 
-> > I'll try pet/put parent approach..
-> > Or any other good ideas ?
-> > 
-> I attach a tryial patch.
+> I was thinking that, and it would integrate better with the OLPC work
+> (which IMHO is a nicer interface for some stuff)
 > 
-> It has been working fine so far(for about 1 hour).
+> You'd want two thresholds
 > 
-> Thanks,
-> Daisuke Nishimura.
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> The 'arghhhh....' point where you start killing stuff
+> The 'uh oh...' point where an OLPC style low memory notifier kicks in
 > 
-> mem_cgroup_get ensures that the memcg that has been got can be accessed
-> even after the directory has been removed, but it doesn't ensure that parents
-> of it can be accessed: parents might have been freed already by rmdir.
+> (OLPC's model is a handle you can select/poll for 'memory getting low' so
+> apps can respond to pressure by doing stuff like dumping caches)
 > 
-> This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
-> climb up the tree.
-> 
-> This patch tries to fix this probrem by getting parents at create, and
-> putting them at freeing.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
->  1 files changed, 32 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index fb62b43..b4aed07 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
->  
->  static void mem_cgroup_get(struct mem_cgroup *mem);
->  static void mem_cgroup_put(struct mem_cgroup *mem);
-> +static void mem_cgroup_get_parents(struct mem_cgroup *mem);
-> +static void mem_cgroup_put_parents(struct mem_cgroup *mem);
->  
->  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
->  					 struct page_cgroup *pc,
-> @@ -2185,10 +2187,38 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
->  
->  static void mem_cgroup_put(struct mem_cgroup *mem)
->  {
-> -	if (atomic_dec_and_test(&mem->refcnt))
-> +	if (atomic_dec_and_test(&mem->refcnt)) {
-> +		mem_cgroup_put_parents(mem);
->  		__mem_cgroup_free(mem);
-> +	}
-> +}
-> +
-> +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
-> +{
-> +	if (!mem->res.parent)
-> +		return NULL;
-> +	return mem_cgroup_from_res_counter(mem->res.parent, res);
-> +}
-> +
-> +static void mem_cgroup_get_parents(struct mem_cgroup *mem)
-> +{
-> +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
-> +
-> +	while (parent) {
-> +		mem_cgroup_get(parent);
-> +		parent = parent_mem_cgroup(parent);
-> +	}
->  }
->  
+> The rest ought to follow naturally IFF you can find a clean efficient way
+> to measure that pressure and quantify it as a number. Our default would
+> be like now, the Android default might be to trigger earlier..
 
-does we have to add refcnt to all ancestors ?
+The /dev/mem_notify patch allowed polling on a system-wide scale for low 
+memory conditions so that userspace could respond appropriately: either by 
+droping caches, as you mentioned, or sending a signal.  That signal could 
+quite possibily be SIGKILL for no better reason than preempting what the 
+kernel oom killer would do.
 
-Thanks,
--Kame
+I think this should be completely seperate from the oom killer, which has 
+always been a "last resort" to situations where the kernel is completely 
+out of memory for a task.
 
-> +static void mem_cgroup_put_parents(struct mem_cgroup *mem)
-> +{
-> +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
-> +
-> +	while (parent) {
-> +		mem_cgroup_put(parent);
-> +		parent = parent_mem_cgroup(parent);
-> +	}
-> +}
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  static void __init enable_swap_cgroup(void)
-> @@ -2237,6 +2267,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	if (parent)
->  		mem->swappiness = get_swappiness(parent);
->  	atomic_set(&mem->refcnt, 1);
-> +	mem_cgroup_get_parents(mem);
->  	return &mem->css;
->  free_out:
->  	__mem_cgroup_free(mem);
-> 
-
+If /dev/mem_notify existed in a cgroup form so that different handlers 
+could be responsible for an aggregate of tasks, I think this addresses 
+your concerns.  That might require some cleverness in the cgroup 
+filesystem code if this would introduce device files, but there are 
+probably future use cases for that, as well.
