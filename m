@@ -1,80 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbZAOHeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbZAOHg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbZAOHeA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 02:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbZAOHds
+	id S1762162AbZAOHg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 02:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZAOHgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 02:33:48 -0500
-Received: from nacho.alt.net ([208.90.169.18]:39942 "EHLO nacho.alt.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756320AbZAOHdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 02:33:47 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 02:33:47 EST
-Date: Thu, 15 Jan 2009 07:26:28 +0000 (UTC)
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Denys Fedoryschenko <denys@visp.net.lb>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Badalian Vyacheslav <slavon@bigtelecom.ru>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-In-Reply-To: <20090115065322.GA4190@ff.dom.local>
-Message-ID: <Pine.LNX.4.64.0901150724000.20461@nacho.alt.net>
-References: <20081010090426.GA6054@ff.dom.local>
-	<Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
-	<20090114063909.GA4234@ff.dom.local>
-	<200901141417.58667.denys@visp.net.lb>
-	<1231937404.14825.4.camel@laptop>
-	<Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
-	<20090115065322.GA4190@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Delivery-Agent: TMDA/1.1.4 (Edradour)
-From: Chris Caputo <ccaputo@alt.net>
+	Thu, 15 Jan 2009 02:36:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40100 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756761AbZAOHgT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 02:36:19 -0500
+Subject: Re: Performance regression of specjbb2005/aim7 with 2.6.29-rc1
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Mike Galbraith <efault@gmx.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, dev@jaysonking.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1231986636.10565.159.camel@minggr.sh.intel.com>
+References: <1231837036.11429.27.camel@ymzhang>
+	 <1231839464.14655.12.camel@marge.simson.net>
+	 <1231986636.10565.159.camel@minggr.sh.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 15 Jan 2009 08:36:13 +0100
+Message-Id: <1232004974.14825.79.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009, Jarek Poplawski wrote:
-> On Wed, Jan 14, 2009 at 06:02:04PM +0000, Chris Caputo wrote:
-> ...
-> > That said, I would not recommend just the three for -stable unless they 
-> > get a much wider amount of testing, on multiple platforms.  I don't see 
-> > that as likely to happen, plus Peter says they are incomplete, so maybe it 
-> > is just best to recommend that 2.6.28 users getting crashes while using 
-> > HTB try these specific patches at first, and then the rest of the patches 
-> > if they do not work.
+On Thu, 2009-01-15 at 10:30 +0800, Lin Ming wrote:
+> On Tue, 2009-01-13 at 17:37 +0800, Mike Galbraith wrote:
+> > On Tue, 2009-01-13 at 16:57 +0800, Zhang, Yanmin wrote:
+> > > Comparing with 2.6.28's results, specjbb2005 has about 7% regression with 2.6.29-rc1
+> > > on my a couple of x86_64 machines. aim7 has about 1.7% regression.
+> > > 
+> > > Ming did a quick bisect with aim7 and located below patch.
+> > > 
+> > > ﻿commit 0a582440ff546e2c6610d1acec325e91b4efd313
+> > > Author: Mike Galbraith <efault@gmx.de>
+> > > Date:   Fri Jan 2 12:16:42 2009 +0100
+> > > 
+> > >     sched: fix sched_slice()
+> > >     
+> > >     Impact: fix bad-interactivity buglet
+> > >     
+> > >     Fix sched_slice() to emit a sane result whether a task is currently
+> > >     enqueued or not.
+> > >     
+> > >     Signed-off-by: Mike Galbraith <efault@gmx.de>
+> > >     Tested-by: Jayson King <dev@jaysonking.com>
+> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > 
+> > > After we revert the patch, aim7 regression disappeared. specjbb2005 regression becomes
+> > > less than 1.5% on 8-core stokley and disappears on 16-core tigerton. I don't know what
+> > > causes the last 1.5% regression.
+> > > 
+> > > As tbench has about 5% improvement and oltp(mysql+sysbench) has 5% improvement, we also tested
+> > > to make sure such improvement isn't related to above patch. volanoMark's improvement is also not
+> > > related to the patch. So it seems safe to revert it.
+> > 
+> > No, it's not safe to just revert.  You can replace it with something
+> > else, but as long as sched_slice() is called for unqueued tasks, it must
+> > emit sane slices, otherwise you can experience a latency-hit-from-hell.
+> > 
+> > See thread: problem with "sched: revert back to per-rq vruntime"?
 > 
-> The main problem is my patches, at least the tested ones, harm htb's
-> exactness, and I doubt I could convince anybody to merege them, at
-> least before your case. It was only reported by two users here (plus
-> one more on private), and looked like something very rare. After your
-> report it looks much more necessary.
+> Below patch fixes aim7 regression and specjbb2005 regression becomes
+> less than 1.5% on 8-core stokley.
 > 
-> If there is nothing better, I can recommend it, but IMHO the best
-> candidate for this is the testing patch #4 from this thread, which
-> alas wasn't even tested... So, Chris, if you could give it a try in
-> the meantime (without any other patches)?
+> Jayson,
+> Mike's patch fixed the latency problem you reported
+> would you please help to test this patch to see if it still works fine now?
 > 
-> Thanks,
-> Jarek P.
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 8e1352c..617e54c 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -429,10 +429,10 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+>  	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
+>  
+>  	for_each_sched_entity(se) {
+> -		struct load_weight *load = &cfs_rq->load;
+> +		struct load_weight *load = &cfs_rq_of(se)->load;
+>  
+>  		if (unlikely(!se->on_rq)) {
+> -			struct load_weight lw = cfs_rq->load;
+> +			struct load_weight lw = cfs_rq_of(se)->load;
+>  
+>  			update_load_add(&lw, se->load.weight);
+>  			load = &lw;
 > 
-> (resend testing patch #4 - for 2.6.27 or 2.6.28)
-> ---
-> 
-> diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
-> --- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
-> +++ b2.6.27.7/net/sched/sch_htb.c	2008-12-15 10:44:32.000000000 +0000
-> @@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
->  		}
->  	}
->  	sch->qstats.overlimits++;
-> +	qdisc_watchdog_cancel(&q->watchdog);
->  	qdisc_watchdog_schedule(&q->watchdog, next_event);
->  fin:
->  	return skb;
 
-I hope you can forgive me, but since I have something that works on a 
-production machine, I am not in a position in which I can test this.
+Ugh, that's not making sense, the thing is, if !se->on_rq it doesn't yet
+have a sensible cfs_rq_of().
 
-Chris
+
+
