@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbZAODAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZAODFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbZAODAF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZAOC7w
+	id S1756920AbZAODFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 22:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZAODFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 21:59:52 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:51877 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbZAOC7v (ORCPT
+	Wed, 14 Jan 2009 22:05:32 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:48759 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752722AbZAODFb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 21:59:51 -0500
-Date: Thu, 15 Jan 2009 02:59:45 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Michlmayr <tbm@cyrius.com>,
-       "elendil@planet.nl" <elendil@planet.nl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       fengguang.wu@intel.com
-Subject: Re: [2.6.28] Kernel panic after closing lid on HP 2510p
-Message-ID: <20090115025945.GA19472@srcf.ucam.org>
-References: <200901121356.46236.elendil@planet.nl> <20090113123056.GA2464@deprecation.cyrius.com> <20090114162603.c632d82e.akpm@linux-foundation.org> <20090115020311.GA18740@srcf.ucam.org> <20090114181542.34614acf.akpm@linux-foundation.org> <20090115022106.GA19069@srcf.ucam.org> <1231988103.20746.149.camel@rzhang-dt>
+	Wed, 14 Jan 2009 22:05:31 -0500
+Date: Thu, 15 Jan 2009 14:05:26 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: compress - Add pcomp interface
+Message-ID: <20090115030526.GA27726@gondor.apana.org.au>
+References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1231988103.20746.149.camel@rzhang-dt>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 10:55:03AM +0800, Zhang Rui wrote:
+On Wed, Jan 14, 2009 at 04:01:34PM +0100, Geert Uytterhoeven wrote:
+>
+> It's used by the pr_*() macros in <linux/kernel.h>.
+> 
+> Since commit d091c2f58ba32029495a933b721e8e02fbd12caa ("Add 'pr_fmt()' format
+> modifier to pr_xyz macros."), this is the new way to have a common prefix in
+> all printed output.
 
-> DIDL is an IGD OpRegion field, as the Supported Display Devices ID List.
-> ﻿it's evaluated by the _DOD method when ACPI video driver is loaded.
-> And according to the spec, "The graphics driver writes to this field
-> once during its initialization"
-> if DIDL is not empty, a flag is set and the SMI will not be invoked when
-> closing the lid.
-> In our tests, this field (DIDL) is set in windows when _DOD is invoked
-> while it's not in Linux.
-> I can workaround this bug by setting the DIDL manually in AML code.
+But you don't actually print anything out in the module :)
 
-Oh, huh. Yeah, that sounds plausible. I'll give it a go here tomorrow.
+> For compatibility with crypto_comp, we also need an alloc function for both
+> compress and decompress, so that makes 3 alloc functions.
 
+Couldn't crypto_comp just call both alloc functions? I don't see
+why we need a third function.
+
+> > 1) We know what the user wants to do without every algorithm
+> > reinventing their own signalling for it;
+> 
+> I guess you want to use the flags to indicate compress/decompress/both?
+> Unfortunately I'm still struggling to fully understand the type/mask handling,
+> so I would appreciate it if you could give me a hint how to handle that.
+
+No, I mean that whether you want compression or decompression
+is signified by the which function you're calling.  If you want
+to do both then you call both.
+
+> I assume "length" is the size of the passed params, so the algorithms can
+> return -EINVAL if they're passed the wrong size?
+
+Well with the netlink parameters these can have variable lengths
+depending on how many parameters the user supplies.
+
+> > > +static inline struct crypto_pcomp *crypto_alloc_pcomp(const char *alg_name,
+> > > +						      u32 type, u32 mask)
+> > > +{
+> > > +	type &= ~CRYPTO_ALG_TYPE_MASK;
+> > > +	type |= CRYPTO_ALG_TYPE_PCOMPRESS;
+> > > +	mask |= CRYPTO_ALG_TYPE_MASK;
+> > > +
+> > > +	return __crypto_pcomp_cast(crypto_alloc_base(alg_name, type, mask));
+> > > +}
+> > 
+> > That's the old way to allocate tfm's which won't work since pcomp
+> > is using the new type API.  You should do it the way that shash
+> > does it.
+> 
+> I tried to do this, but stumbled across a dependency problem: as
+> crypto_alloc_tfm() needs a pointer to crypto_pcomp_type(), crypto_alloc_pcomp()
+> can no longer be static inline, and must be moved to crypto/pcompress.c.
+
+Ah yes because crypto_comp is one of the original types that's
+still built-in.  Because there are so few compression users and
+algorithms (exactly 3 if you include null compression), I think
+we can dispense with the compatibility stuff altogether since
+we'll likely rip out fairly soon anyway.
+
+So just create the new type, readd deflate using the new type
+alongside the existing deflate algorithm.  The system is capable
+of supporting two algorithms of the same name with different types.
+
+Then once the other algorithm (lzo) is taken care of and all the
+users are converted I'll just kill the old type and algorithms.
+
+Cheers,
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
