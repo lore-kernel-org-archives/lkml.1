@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934652AbZAOWLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934874AbZAOWMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934652AbZAOWLd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbZAOWCL
+	id S934874AbZAOWMO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933590AbZAOWCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:11 -0500
-Received: from kroah.org ([198.145.64.141]:38212 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:12 -0500
+Received: from kroah.org ([198.145.64.141]:38225 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932114AbZAOWCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:05 -0500
-Date: Thu, 15 Jan 2009 13:59:28 -0800
+	id S933550AbZAOWCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:06 -0500
+Date: Thu, 15 Jan 2009 13:59:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 17/85] x86: default to SWIOTLB=y on x86_64
-Message-ID: <20090115215928.GR17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Ravikiran Thirumalai <kiran@scalex86.org>,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 18/85] x86: fix incorrect __read_mostly on _boot_cpu_pda
+Message-ID: <20090115215930.GS17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-default-to-swiotlb-y-on-x86_64.patch"
+Content-Disposition: inline; filename="x86-fix-incorrect-__read_mostly-on-_boot_cpu_pda.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
 
-commit a1afd01c175324656d0e8f1c82ea94b474953c04 upstream.
+commit 26799a63110dcbe81291ea53178f6b4810d07424 upstream.
 
-Impact: fixes korg bugzilla 11980
+The pda rework (commit 3461b0af025251bbc6b3d56c821c6ac2de6f7209)
+to remove static boot cpu pdas introduced a performance bug.
 
-A kernel for a 64bit x86 system should always contain the swiotlb code
-in case it is booted on a machine without any hardware IOMMU supported
-by the kernel and more than 4GB of RAM. This patch changes Kconfig to
-always compile swiotlb into the kernel for x86_64.
+_boot_cpu_pda is the actual pda used by the boot cpu and is definitely
+not "__read_mostly" and ended up polluting the read mostly section with
+writes.  This bug caused regression of about 8-10% on certain syscall
+intensive workloads.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Acked-by: Mike Travis <travis@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig |    2 +-
+ arch/x86/kernel/head64.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -567,7 +567,7 @@ config AMD_IOMMU
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -26,7 +26,7 @@
+ #include <asm/bios_ebda.h>
  
- # need this always selected by IOMMU for the VIA workaround
- config SWIOTLB
--	bool
-+	def_bool y if X86_64
- 	help
- 	  Support for software bounce buffers used on x86-64 systems
- 	  which don't have a hardware IOMMU (e.g. the current generation
+ /* boot cpu pda */
+-static struct x8664_pda _boot_cpu_pda __read_mostly;
++static struct x8664_pda _boot_cpu_pda;
+ 
+ #ifdef CONFIG_SMP
+ /*
 
