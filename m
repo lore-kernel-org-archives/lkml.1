@@ -1,58 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbZAOASm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761957AbZAOATl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbZAOASm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 19:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761667AbZAOAST
+	id S1761957AbZAOATl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 19:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbZAOATb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 19:18:19 -0500
-Received: from kroah.org ([198.145.64.141]:44999 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761607AbZAOASS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 19:18:18 -0500
-Date: Wed, 14 Jan 2009 16:12:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: lowmemory android driver not needed?
-Message-ID: <20090115001224.GC11328@kroah.com>
-References: <20090114010223.GA21380@kroah.com> <20090114021801.GA14759@bulgaria.corp.google.com> <d6200be20901131830r7103ff8eoe0314f9faf89d89b@mail.gmail.com> <20090114035237.GB16442@kroah.com> <20090114104307.GA20451@elf.ucw.cz> <20090114104834.18387fca@lxorguk.ukuu.org.uk> <d6200be20901141426r1d48ea33gc9a380451e4aaf93@mail.gmail.com> <20090114231739.GB24111@kroah.com> <d6200be20901141532y6f236104kd521041d640c152e@mail.gmail.com>
+	Wed, 14 Jan 2009 19:19:31 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:44075 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758085AbZAOATa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 19:19:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Gji/Hgn81W0ZM6NVOEhr2Gqc4cHWjoMByF8XizXCNzgniGBGvv9j2UVpc4eDnJlC4D
+         G8+Aj0L6nGbAIuSr1D074PSn78RfBGsjA9QiHAziDFD7mGlIVK/+juexDJSa2cTYXKDn
+         2ip8bvXpH2X5o5uTrk+LYIDEsEZTqTkUa0/U8=
+Message-ID: <3e8340490901141619g3c32ebads482d1176efbd98a3@mail.gmail.com>
+Date: Wed, 14 Jan 2009 19:19:29 -0500
+From: "Bryan Donlan" <bdonlan@gmail.com>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: OOPS and panic on 2.6.29-rc1 on xen-x86
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       linux-mm@kvack.org
+In-Reply-To: <20090114025910.GA17395@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d6200be20901141532y6f236104kd521041d640c152e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20090112172613.GA8746@shion.is.fushizen.net>
+	 <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
+	 <20090114025910.GA17395@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 03:32:38PM -0800, Arve Hjønnevåg wrote:
-> On Wed, Jan 14, 2009 at 3:17 PM, Greg KH <greg@kroah.com> wrote:
-> >> We actually use 6 different thresholds for killing processes. I don't
-> >> know what all the classes are, processes with a higher oom_adj value
-> >> can be killed with less impact to the user than processes with a lower
-> >> oom_adj value. The first few classes only affect latency when
-> >> switching apps, but later classes stop non critical background
-> >> services and finally the foreground app. Another reason to not kill
-> >> every process at the same threshold is that memory may not be free
-> >> immediately when the process is killed.
-> >
-> > But the lowmemorykiller android module doesn't have anything to do with
-> > this, right?
-> >
-> 
-> It does. We write the thresholds to
-> /sys/module/lowmemorykiller/parameters/adj and
-> /sys/module/lowmemorykiller/parameters/minfree then set the oom_adj
-> value per process. If the standard oom killer can be adjusted in a
-> similar way, then we will not need the lowmemorykiller module.
+On Tue, Jan 13, 2009 at 9:59 PM, Nick Piggin <npiggin@suse.de> wrote:
+> On Mon, Jan 12, 2009 at 11:54:32PM -0500, Bryan Donlan wrote:
+>> On Mon, Jan 12, 2009 at 12:26 PM, Bryan Donlan <bdonlan@gmail.com> wrote:
+>> > [resending with log/config inline as my previous message seems to have
+>> >  been eaten by vger's spam filters]
+>> >
+>> > Hi,
+>> >
+>> > After testing 2.6.29-rc1 on xen-x86 with a btrfs root filesystem, I
+>> > got the OOPS quoted below and a hard freeze shortly after boot.
+>> > Boot messages and config are attached.
+>> >
+>> > This is on a test system, so I'd be happy to test any patches.
+>> >
+>> > Thanks,
+>> >
+>> > Bryan Donlan
+>>
+>> I've bisected the bug in question, and the faulty commit appears to be:
+>> commit e97a630eb0f5b8b380fd67504de6cedebb489003
+>> Author: Nick Piggin <npiggin@suse.de>
+>> Date:   Tue Jan 6 14:39:19 2009 -0800
+>>
+>>     mm: vmalloc use mutex for purge
+>>
+>>     The vmalloc purge lock can be a mutex so we can sleep while a purge is
+>>     going on (purge involves a global kernel TLB invalidate, so it can take
+>>     quite a while).
+>>
+>>     Signed-off-by: Nick Piggin <npiggin@suse.de>
+>>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+>>
+>> The bug is easily reproducable by a kernel build on -j4 - it will
+>> generally OOPS and panic before the build completes.
+>> Also, I've tested it with ext3, and it still occurs, so it seems
+>> unrelated to btrfs at least :)
+>>
+>> >
+>> > ------------[ cut here ]------------
+>> > Kernel BUG at c05ef80d [verbose debug info unavailable]
+>> > invalid opcode: 0000 [#1] SMP
+>> > last sysfs file: /sys/block/xvdc/size
+>> > Modules linked in:
+>
+> It is bugging in schedule somehow, but you don't have verbose debug
+> info compiled in. Can you compile that in and reproduce if you have
+> the time?
+>
+> Going bug here might indicate that there is some other problem with
+> the Xen and/or vmalloc code, regardless of reverting this patch.
+>
+> Thanks,
+> Nick
+>
 
-Great, care to document this somewhere so people like me don't get
-confused?
+Here's one from a config with CONFIG_DEBUG_BUGVERBOSE:
 
-thanks,
+------------[ cut here ]------------
+kernel BUG at /root/linux-2.6/arch/x86/include/asm/mmu_context_32.h:39!
+invalid opcode: 0000 [#1] SMP
+last sysfs file:
+Modules linked in:
 
-greg k-h
+Pid: 13, comm: ksoftirqd/3 Not tainted (2.6.29-rc1badwdebug #18)
+EIP: 0061:[<c0597e2c>] EFLAGS: 00010087 CPU: 3
+EIP is at schedule+0x52c/0x980
+EAX: d5b47580 EBX: 00000003 ECX: 00000000 EDX: d5b2de40
+ESI: c12f9200 EDI: d5b2de40 EBP: d6059030 ESP: d6071f40
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0069
+Process ksoftirqd/3 (pid: 13, ti=d6070000 task=d6059030 task.ti=d6070000)
+Stack:
+ c06c0d80 c06c0e00 c06c0200 c0105cf6 c06c0200 c06c0200 c06c0200 d60edbd0
+ c0599c10 d5b2de40 c0776200 c06c0d80 c06c0e00 c12f5ec0 d6059030 d60591c4
+ 00000003 00000100 c0165e73 c684ddb8 00000012 d6070200 d60591c4 c070b5d4
+Call Trace:
+ [<c0105cf6>] check_events+0x8/0x12
+ [<c0599c10>] _spin_unlock_irqrestore+0x20/0x40
+ [<c0165e73>] rcu_process_callbacks+0x33/0x40
+ [<c0105cf6>] check_events+0x8/0x12
+ [<c0105c5f>] xen_restore_fl_direct_end+0x0/0x1
+ [<c013354d>] ksoftirqd+0xdd/0x120
+ [<c0133470>] ksoftirqd+0x0/0x120
+ [<c0142769>] kthread+0x39/0x70
+ [<c0142730>] kthread+0x0/0x70
+ [<c0108d53>] kernel_thread_helper+0x7/0x10
+Code: 00 00 e9 0a fe ff ff e8 d3 1f 00 00 8d 76 00 e9 33 fb ff ff 89
+f0 e8 e4 e5 b6 ff 90 51 52 ff 15 a8 df 6b c0 5a 59 e9 52 fe ff ff <0f>
+0b eb fe a1 00 2b 6f c0 8b 6c 24 40 05 e8 03 00 00 89 44 24
+EIP: [<c0597e2c>] schedule+0x52c/0x980 SS:ESP 0069:d6071f40
+---[ end trace 60197587eb4e6dfb ]---
