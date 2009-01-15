@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936026AbZAOWo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935424AbZAOWpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936026AbZAOWo3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:44:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933789AbZAOWD6
+	id S935424AbZAOWpG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934098AbZAOWD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:58 -0500
-Received: from kroah.org ([198.145.64.141]:39075 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:59 -0500
+Received: from kroah.org ([198.145.64.141]:39008 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934011AbZAOWDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:51 -0500
-Date: Thu, 15 Jan 2009 14:01:51 -0800
+	id S933694AbZAOWDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:46 -0500
+Date: Thu, 15 Jan 2009 14:01:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Brian King <brking@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [patch 75/85] powerpc: Disable Collaborative Memory Manager for
-	kdump
-Message-ID: <20090115220151.GX17227@kroah.com>
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 70/85] [SCSI] ibmvfc: Improve async event handling
+Message-ID: <20090115220140.GS17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-disable-collaborative-memory-manager-for-kdump.patch"
+Content-Disposition: inline; filename="ibmvfc-improve-async-event-handling.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,38 +42,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Brian King <brking@linux.vnet.ibm.com>
 
-commit 2218108e182fd8a6d9106077833ed7ad05fc8e75 upstream.
+commit d2131b33c7e07c2905ee2f2321cc4dae1928c483 upstream.
 
-When running Active Memory Sharing, the Collaborative Memory Manager
-(CMM) may mark some pages as "loaned" with the hypervisor.
-Periodically, the CMM will query the hypervisor for a loan request,
-which is a single signed value.  When kexec'ing into a kdump kernel,
-the CMM driver in the kdump kernel is not aware of the pages the
-previous kernel had marked as "loaned", so the hypervisor and the CMM
-driver are out of sync.  This results in the CMM driver getting a
-negative loan request, which can then get treated as a large unsigned
-value and can cause kdump to hang due to the CMM driver inflating too
-large.  Since there really is no clean way for the CMM driver in the
-kdump kernel to clean this up, simply disable CMM in the kdump kernel.
-This fixes hangs we were seeing doing kdump with AMS.
+While doing various error injection testing, such as cable
+pulls and target moves, some issues were observed in handling
+these events. This patch improves the way these events are handled
+by increasing the delay waiting for the fabric to settle and also
+changes the behavior of Link Up to break the CRQ to ensure everything
+gets cleaned up properly on the VIOS.
 
 Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/platforms/pseries/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c |   10 ++++++----
+ drivers/scsi/ibmvscsi/ibmvfc.h |    2 +-
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -54,7 +54,7 @@ config PPC_SMLPAR
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -2092,15 +2092,17 @@ static void ibmvfc_handle_async(struct i
+ 	case IBMVFC_AE_LINK_UP:
+ 	case IBMVFC_AE_RESUME:
+ 		vhost->events_to_log |= IBMVFC_AE_LINKUP;
+-		ibmvfc_init_host(vhost, 1);
++		vhost->delay_init = 1;
++		__ibmvfc_reset_host(vhost);
+ 		break;
+ 	case IBMVFC_AE_SCN_FABRIC:
++	case IBMVFC_AE_SCN_DOMAIN:
+ 		vhost->events_to_log |= IBMVFC_AE_RSCN;
+-		ibmvfc_init_host(vhost, 1);
++		vhost->delay_init = 1;
++		__ibmvfc_reset_host(vhost);
+ 		break;
+ 	case IBMVFC_AE_SCN_NPORT:
+ 	case IBMVFC_AE_SCN_GROUP:
+-	case IBMVFC_AE_SCN_DOMAIN:
+ 		vhost->events_to_log |= IBMVFC_AE_RSCN;
+ 	case IBMVFC_AE_ELS_LOGO:
+ 	case IBMVFC_AE_ELS_PRLO:
+@@ -3525,7 +3527,7 @@ static void ibmvfc_do_work(struct ibmvfc
+ 		if (vhost->delay_init) {
+ 			vhost->delay_init = 0;
+ 			spin_unlock_irqrestore(vhost->host->host_lock, flags);
+-			ssleep(5);
++			ssleep(15);
+ 			return;
+ 		} else
+ 			vhost->job_step(vhost);
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -33,7 +33,7 @@
+ #define IBMVFC_DRIVER_DATE		"(August 14, 2008)"
  
- config CMM
- 	tristate "Collaborative memory management"
--	depends on PPC_SMLPAR
-+	depends on PPC_SMLPAR && !CRASH_DUMP
- 	default y
- 	help
- 	  Select this option, if you want to enable the kernel interface
+ #define IBMVFC_DEFAULT_TIMEOUT	15
+-#define IBMVFC_INIT_TIMEOUT		30
++#define IBMVFC_INIT_TIMEOUT		120
+ #define IBMVFC_MAX_REQUESTS_DEFAULT	100
+ 
+ #define IBMVFC_DEBUG			0
 
