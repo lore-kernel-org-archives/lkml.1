@@ -1,133 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764362AbZAOSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbZAOSrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764362AbZAOSmU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759625AbZAOSmG
+	id S1761501AbZAOSrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZAOSrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:42:06 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:42958 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758456AbZAOSmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:42:05 -0500
-Message-ID: <496F8421.3070703@novell.com>
-Date: Thu, 15 Jan 2009 13:44:49 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Thu, 15 Jan 2009 13:47:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53330 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753404AbZAOSra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:47:30 -0500
+Date: Thu, 15 Jan 2009 19:46:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
+       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       travis@sgi.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Message-ID: <20090115184625.GA9944@elte.hu>
+References: <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org> <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org> <20090115122611.GJ22850@elte.hu> <496F346B.6020804@kernel.org> <20090115130740.GE21839@elte.hu> <496F38C7.5000403@kernel.org>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>	 <20090114163557.11e097f2.akpm@linux-foundation.org>	 <20090115012147.GW29283@parisc-linux.org>	 <20090114180431.f4a96543.akpm@linux-foundation.org>	 <1232028766.5966.10.camel@localhost.localdomain>	 <20090115094442.b6394544.akpm@linux-foundation.org>	 <20090115180052.GG29283@parisc-linux.org> <1232043287.21980.65.camel@localhost.localdomain>
-In-Reply-To: <1232043287.21980.65.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC409C44FCCB2283E4B13E426"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <496F38C7.5000403@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0416]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC409C44FCCB2283E4B13E426
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Steven Rostedt wrote:
-> On Thu, 2009-01-15 at 11:00 -0700, Matthew Wilcox wrote:
->  =20
->> On Thu, Jan 15, 2009 at 09:44:42AM -0800, Andrew Morton wrote:
->>    =20
->>>> Me too.  Anecdotally, I haven't noticed this in my lab machines, but=
+* Tejun Heo <tj@kernel.org> wrote:
 
->>>> what I have noticed is on someone else's laptop (a hyperthreaded ato=
-m)
->>>> that I was trying to demo powertop on was that IPI reschedule interr=
-upts
->>>> seem to be out of control ... they were ticking over at a really hig=
-h
->>>> rate and preventing the CPU from spending much time in the low C and=
- P
->>>> states.  To me this implicates some scheduler problem since that's t=
-he
->>>> primary producer of IPI reschedules ... I think it wouldn't be a
->>>> significant extrapolation to predict that the scheduler might be the=
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> It is an optimization and a cleanup, and adds the following new
+> generic percpu methods:
+> 
+>   percpu_read()
+>   percpu_write()
+>   percpu_add()
+>   percpu_sub()
+>   percpu_and()
+>   percpu_or()
+>   percpu_xor()
 
->>>> cause of the above problem as well.
->>>>
->>>>        =20
->>> Good point.
->>>
->>> The context switch rate actually went down a bit.
->>>
->>> I wonder if the Intel test people have records of /proc/interrupts fo=
-r
->>> the various kernel versions.
->>>      =20
->> I think Chinang does, but he's out of office today.  He did say in an
->> earlier reply:
->>
->>    =20
->>> I took a quick look at the interrupts figure between 2.6.24 and 2.6.2=
-7.
->>> i/o interuputs is slightly down in 2.6.27 (due to reduce throughput).=
+on a second thought ... i just started using this construct in code, and 
+promptly typoed it: i typed "per_cpu_read()".
 
->>> But both NMI and reschedule interrupt increased.  Reschedule interrup=
-ts
->>> is 2x of 2.6.24.
->>>      =20
->> So if the reschedule interrupt is happening twice as often, and the
->> context switch rate is basically unchanged, I guess that means the
->> scheduler is doing a lot more work to get approximately the same
->> results.  And that seems like a bad thing.
->>    =20
+Which is really the more logical name for this. Mind if i do a 
+s/percpu/per_cpu/ rename of all of these new APIs?
 
-I would be very interested in gathering some data in this area.  One
-thing that pops to mind is to instrument the resched-ipi with
-ftrace_printk() and gather a trace of this system in action.  I assume
-that I wouldn't have access to this OLTP suite, so I may need a
-volunteer to try this for me.  I could put together an instrumentation
-patch for the testers convenience if they prefer.
-
-Another data-point I wouldn't mind seeing is  looking at the scheduler
-statistics, particularly with my sched-top utility, which you can find he=
-re:
-
-http://rt.wiki.kernel.org/index.php/Schedtop_utility
-
-(Note you may want to exclude the sched_info stats, as they are
-inherently noisy and make it hard to see the real trends.  To do this
-run it with: 'schedtop -x "sched_info"'
-
-In the meantime, I will try similar approaches here on other non-OLTP
-based workloads to see if I spy anything that looks amiss.
-=20
--Greg
-
-
-
---------------enigC409C44FCCB2283E4B13E426
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAklvhCEACgkQlOSOBdgZUxlcxwCeJFUsBVbF29BKSBT4XgJVu7/S
-zCAAnihcG0gXrh9cTRCruQXbAAmHyOYD
-=K8M/
------END PGP SIGNATURE-----
-
---------------enigC409C44FCCB2283E4B13E426--
+	Ingo
