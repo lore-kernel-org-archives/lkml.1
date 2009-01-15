@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbZAOUJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbZAOUJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761752AbZAOUJD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:09:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765899AbZAOUAg
+	id S932709AbZAOUJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765911AbZAOUAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:00:36 -0500
-Received: from kroah.org ([198.145.64.141]:48834 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:00:37 -0500
+Received: from kroah.org ([198.145.64.141]:48849 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763875AbZAOUA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:27 -0500
-Date: Thu, 15 Jan 2009 11:57:43 -0800
+	id S1762158AbZAOUA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:28 -0500
+Date: Thu, 15 Jan 2009 11:57:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcin Slusarz <marcin.slusarz@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: [patch 14/94] USB: emi26: fix oops on load
-Message-ID: <20090115195743.GN14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Cliff Wickman <cpw@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 15/94] x86, UV: remove erroneous BAU initialization
+Message-ID: <20090115195746.GO14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-emi26-fix-oops-on-load.patch"
+Content-Disposition: inline; filename="x86-uv-remove-erroneous-bau-initialization.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,91 +40,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
+From: Cliff Wickman <cpw@sgi.com>
 
-commit 327d74f6b65ddc8a042c43c11fdd4be0bb354668 upstream.
+commit 46814dded1b972a07b1609d81632eef3009fbb10 upstream.
 
-Fix oops introduced by commit ae93a55bf948753de0bb8e43fa9c027f786abb05
-(emi26: use request_firmware()):
+Impact: fix crash on x86/UV
 
-usb 1-1: new full speed USB device using uhci_hcd and address 2
-usb 1-1: configuration #1 chosen from 1 choice
-emi26 - firmware loader 1-1:1.0: emi26_probe start
-usb 1-1: firmware: requesting emi26/loader.fw
-usb 1-1: firmware: requesting emi26/bitstream.fw
-usb 1-1: firmware: requesting emi26/firmware.fw
-usb 1-1: emi26_set_reset - 1
-usb 1-1: emi26_set_reset - 0
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26]
-*pde = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1d.0/usb1/1-1/firmware/1-1/loading
-Modules linked in: emi26(+) ipv6 cpufreq_ondemand coretemp arc4 ecb iwl3945 irtty_sir sir_dev nsc_ircc ehci_hcd uhci_hcd mac80211 irda usbcore snd_hda_intel thinkpad_acpi rfkill hwmon led_class e1000e snd_pcm cfg80211 snd_timer crc_ccitt snd snd_page_alloc aes_generic
+UV is the SGI "UltraViolet" machine, which is x86_64 based.
+BAU is the "Broadcast Assist Unit", used for TLB shootdown in UV.
 
-Pid: 5082, comm: modprobe Not tainted (2.6.28 #2) 17023QG
-EIP: 0060:[<f80dc487>] EFLAGS: 00010206 CPU: 0
-EIP is at emi26_probe+0x2f7/0x620 [emi26]
-EAX: 0000015c EBX: 00000000 ECX: c1ffd9c0 EDX: 00000000
-ESI: 0000015c EDI: f6bb215c EBP: f6bb0400 ESP: f00ebcfc
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 5082, ti=f00ea000 task=f5c7c700 task.ti=f00ea000)
-Stack:
- 0000015c 000000a5 f6a67cb8 f80dc7e0 c01c6262 fbef2986 f6bb2000 00008fe0
- 0000015c f715f748 f715f740 f715f738 f715f748 f6a67c00 f80dd040 f80dcfc0
- f6bb0400 fbacb290 f6a67c94 fbae0160 c01c70bf 00000000 f6a67c1c 00000000
-Call Trace:
- [<c01c6262>] sysfs_add_one+0x12/0x50
- [<fbacb290>] usb_probe_interface+0xa0/0x140 [usbcore]
- [<c01c70bf>] sysfs_create_link+0xf/0x20
- [<c02dead2>] driver_probe_device+0x82/0x180
- [<fbac9eeb>] usb_match_id+0x3b/0x50 [usbcore]
- [<c02dec4e>] __driver_attach+0x7e/0x80
- [<c02de27a>] bus_for_each_dev+0x3a/0x60
- [<c02de956>] driver_attach+0x16/0x20
- [<c02debd0>] __driver_attach+0x0/0x80
- [<c02de7b1>] bus_add_driver+0x1a1/0x220
- [<c02dee4d>] driver_register+0x4d/0x120
- [<c024e622>] idr_get_empty_slot+0xf2/0x290
- [<fbacab71>] usb_register_driver+0x81/0x100 [usbcore]
- [<f806c000>] emi26_init+0x0/0x14 [emi26]
- [<c0101126>] do_one_initcall+0x36/0x1b0
- [<c01c5e70>] sysfs_ilookup_test+0x0/0x10
- [<c0197a61>] ifind+0x31/0x90
- [<c01c6229>] __sysfs_add_one+0x59/0x80
- [<c01c64e4>] sysfs_addrm_finish+0x14/0x1c0
- [<c0175ca3>] __vunmap+0xa3/0xd0
- [<c014b854>] load_module+0x1544/0x1640
- [<c014b9d7>] sys_init_module+0x87/0x1b0
- [<c0187f41>] sys_read+0x41/0x70
- [<c01032a5>] sysenter_do_call+0x12/0x21
- [<c03d0000>] wait_for_common+0x40/0x110
-Code: 66 c1 e8 08 66 09 d0 75 a5 31 d2 89 e8 e8 72 fc ff ff 85 c0 0f 88 9a 02 00 00 b8 fa 00 00 00 e8 30 46 05 c8 8b 74 24 28 8b 5e 04 <8b> 03 89 44 24 1c 0f c8 89 44 24 1c 0f b7 4b 04 c7 44 24 20 00
-EIP: [<f80dc487>] emi26_probe+0x2f7/0x620 [emi26] SS:ESP 0068:f00ebcfc
----[ end trace 2eefa13825431230 ]---
+This patch removes the allocation and initialization of an unused table.
 
-After the last "package" of firmware data is sent to the device, we dereference
-NULL pointer (on access to rec->addr). Fix it.
+This table is left over from a development test mode.  It is unused in
+the present code.
 
-Reported--by: David Flatz <david@upcs.at>
-Tested-by: David Flatz <david@upcs.at>
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
+And it was incorrectly initialized: 8 entries allocated but 17 initialized,
+causing slab corruption.
+
+This patch should go into 2.6.27 and 2.6.28 as well as the current tree.
+
+Diffed against 2.6.28 (linux-next, 12/30/08)
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/misc/emi26.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/tlb_uv.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- a/drivers/usb/misc/emi26.c
-+++ b/drivers/usb/misc/emi26.c
-@@ -160,7 +160,7 @@ static int emi26_load_firmware (struct u
- 			err("%s - error loading firmware: error = %d", __func__, err);
- 			goto wraperr;
- 		}
--	} while (i > 0);
-+	} while (rec);
+--- a/arch/x86/kernel/tlb_uv.c
++++ b/arch/x86/kernel/tlb_uv.c
+@@ -586,7 +586,6 @@ static int __init uv_ptc_init(void)
+ static struct bau_control * __init uv_table_bases_init(int blade, int node)
+ {
+ 	int i;
+-	int *ip;
+ 	struct bau_msg_status *msp;
+ 	struct bau_control *bau_tabp;
  
- 	/* Assert reset (stop the CPU in the EMI) */
- 	err = emi26_set_reset(dev,1);
+@@ -603,13 +602,6 @@ static struct bau_control * __init uv_ta
+ 		bau_cpubits_clear(&msp->seen_by, (int)
+ 				  uv_blade_nr_possible_cpus(blade));
+ 
+-	bau_tabp->watching =
+-	    kmalloc_node(sizeof(int) * DEST_NUM_RESOURCES, GFP_KERNEL, node);
+-	BUG_ON(!bau_tabp->watching);
+-
+-	for (i = 0, ip = bau_tabp->watching; i < DEST_Q_SIZE; i++, ip++)
+-		*ip = 0;
+-
+ 	uv_bau_table_bases[blade] = bau_tabp;
+ 
+ 	return bau_tabp;
+@@ -632,7 +624,6 @@ uv_table_bases_finish(int blade, int nod
+ 		bcp->bau_msg_head	= bau_tablesp->va_queue_first;
+ 		bcp->va_queue_first	= bau_tablesp->va_queue_first;
+ 		bcp->va_queue_last	= bau_tablesp->va_queue_last;
+-		bcp->watching		= bau_tablesp->watching;
+ 		bcp->msg_statuses	= bau_tablesp->msg_statuses;
+ 		bcp->descriptor_base	= adp;
+ 	}
 
