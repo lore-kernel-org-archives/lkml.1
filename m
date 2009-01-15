@@ -1,64 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbZAOI5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbZAOI6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762855AbZAOI5n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 03:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757774AbZAOI52
+	id S1758426AbZAOI6E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 03:58:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762710AbZAOI5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 03:57:28 -0500
-Received: from cmpxchg.org ([85.214.51.133]:58656 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757461AbZAOI51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 03:57:27 -0500
-X-Greylist: delayed 950 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 03:57:26 EST
-Date: Thu, 15 Jan 2009 09:56:25 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andi Kleen <andi@firstfloor.org>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH] mutex: set owner only once on acquisition
-Message-ID: <20090115085625.GA15038@cmpxchg.org>
-References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <20090115083951.GA13930@cmpxchg.org>
+	Thu, 15 Jan 2009 03:57:36 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:65121 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762682AbZAOI5f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 03:57:35 -0500
+Date: Thu, 15 Jan 2009 17:51:31 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>
+Subject: Re: [RFC][PATCH] memcg: get/put parents at create/free
+Message-Id: <20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
+	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115083951.GA13930@cmpxchg.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 09:41:01AM +0100, Johannes Weiner wrote:
-> mutex_lock() sets the lock owner, no need to set it upfront in
-> __mutex_lock_common().
+On Thu, 15 Jan 2009 17:23:36 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 15 Jan 2009 17:13:15 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> Inside __mutex_lock_common() we can cope with the case where the
-> successful acquirer got preempted by us before setting the owner
-> field: there is an explicit check in the spinning code and the
-> sleeping part doesn't rely on it.
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > mem_cgroup_get ensures that the memcg that has been got can be accessed
+> > even after the directory has been removed, but it doesn't ensure that parents
+> > of it can be accessed: parents might have been freed already by rmdir.
+> > 
+> > This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+> > climb up the tree.
+> > 
+> > This patch tries to fix this probrem by getting the parent at create, and
+> > putting it at freeing.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 > 
-> The debug code does owner checks only on unlock where the field is
-> garuanteed to be set.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
->  kernel/mutex.c |    2 --
->  1 file changed, 2 deletions(-)
-> 
-> Just a small observation.  Peter said it wouldn't matter much as the
-> write is to a hot cache line.  But otoh, why keep it if it's not
-> necessary. :)
+> Seems very simple and promissive.
+Thanks.
 
-Damn, I'm really async here, sorry Peter.  Just noticed you already
-picked it up.
+> But one nitpick
+> 
+> > ---
+> >  mm/memcontrol.c |   29 ++++++++++++++++++++++++++++-
+> >  1 files changed, 28 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index fb62b43..a80ba68 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+> >  
+> >  static void mem_cgroup_get(struct mem_cgroup *mem);
+> >  static void mem_cgroup_put(struct mem_cgroup *mem);
+> > +static void mem_cgroup_get_parent(struct mem_cgroup *mem);
+> > +static void mem_cgroup_put_parent(struct mem_cgroup *mem);
+> >  
+> >  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+> >  					 struct page_cgroup *pc,
+> > @@ -2185,10 +2187,34 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+> >  
+> >  static void mem_cgroup_put(struct mem_cgroup *mem)
+> >  {
+> > -	if (atomic_dec_and_test(&mem->refcnt))
+> > +	if (atomic_dec_and_test(&mem->refcnt)) {
+> > +		mem_cgroup_put_parent(mem);
+> >  		__mem_cgroup_free(mem);
+> > +	}
+> > +}
+> 
+> Here, parent is freed before children is freed. Then,
+> 
+> ==
+> 	if (atomic_dec_and_test(&mem->refcnt)) {
+> 		struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> 		__mem_cgroup_free(mem);
+> 		mem_cgroup_put(parent);
+> 	}
+> ==
+> 
+> Is maybe usual way.
+> 
+I see.
 
-	Hannes
+Thank you for your patient reviews.
+
+Daisuke Nishimura.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+mem_cgroup_get ensures that the memcg that has been got can be accessed
+even after the directory has been removed, but it doesn't ensure that parents
+of it can be accessed: parents might have been freed already by rmdir.
+
+This causes a bug in case of use_hierarchy==1, because res_counter_uncharge
+climb up the tree.
+
+This patch tries to fix this probrem by getting the parent at create, and
+putting it at freeing.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/memcontrol.c |   23 ++++++++++++++++++++++-
+ 1 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fb62b43..45e1b51 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+ 
+ static void mem_cgroup_get(struct mem_cgroup *mem);
+ static void mem_cgroup_put(struct mem_cgroup *mem);
++static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
++static void mem_cgroup_get_parent(struct mem_cgroup *mem);
+ 
+ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+ 					 struct page_cgroup *pc,
+@@ -2185,10 +2187,28 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+ 
+ static void mem_cgroup_put(struct mem_cgroup *mem)
+ {
+-	if (atomic_dec_and_test(&mem->refcnt))
++	if (atomic_dec_and_test(&mem->refcnt)) {
++		struct mem_cgroup *parent = parent_mem_cgroup(mem);
+ 		__mem_cgroup_free(mem);
++		if (parent)
++			mem_cgroup_put(parent);
++	}
++}
++
++static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
++{
++	if (!mem->res.parent)
++		return NULL;
++	return mem_cgroup_from_res_counter(mem->res.parent, res);
+ }
+ 
++static void mem_cgroup_get_parent(struct mem_cgroup *mem)
++{
++	struct mem_cgroup *parent = parent_mem_cgroup(mem);
++
++	if (parent)
++		mem_cgroup_get(parent);
++}
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ static void __init enable_swap_cgroup(void)
+@@ -2237,6 +2257,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if (parent)
+ 		mem->swappiness = get_swappiness(parent);
+ 	atomic_set(&mem->refcnt, 1);
++	mem_cgroup_get_parent(mem);
+ 	return &mem->css;
+ free_out:
+ 	__mem_cgroup_free(mem);
+
