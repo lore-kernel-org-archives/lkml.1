@@ -1,52 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZAMVrO (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 13 Jan 2009 16:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZAMVqw
+	id S1759418AbZAOMZ3 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 15 Jan 2009 07:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZAOMZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Jan 2009 16:46:52 -0500
-Received: from omr2.bezeqint.net ([192.115.104.10]:53102 "EHLO
-	omr2.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbZAMVqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Jan 2009 16:46:51 -0500
-From: "MR. SONG LI" <song@hangbank.com>
-Reply-To: mrsonglil003@yahoo.com.hk
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Thu, 15 Jan 2009 07:25:07 -0500
+Received: from simmts6.bellnexxia.net ([206.47.199.164]:55702 "EHLO
+	simmts6-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753799AbZAOMZG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:25:06 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuTJADy1bknOL8cR/2dsb2JhbAASgTUliH2BaZ1Omz6JRoU5
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [189.52.226.128]
+From: Sarah <mcmillancompany@sympatico.ca>
+Reply-To: edward.brown29@btinternet.com
+To: <info@result.org>
+Subject: claims of =?iso-8859-1?B?ozEsMzUwLjAwMA==?=
+Date: Thu, 15 Jan 2009 7:25:05 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090113234156.IAC16850@mas24.bezeqint.net>
-Date: Tue, 13 Jan 2009 23:41:56 +0200 (IST)
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090115122505.YFUB1652.simmts6-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754820AbZAMVrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759418AbZAOMZ3@vger.kernel.org>
 
-Good Day
+E-MAIL ID Has won you the sum of £1,350,000.00 pounds in our MONTHLY 
+Irish Promo.get back to this office with your details.
 
-My name is Mr. Song Li. I work with the Hang Seng Bank. 
-There is a sum of $19,500,000.00 in my bank Hang Seng Bank", 
-Hong Kong. There were no beneficiaries stated concerning 
-these funds which means no one would ever come to claim it. 
-That is why I ask that we work together.
+Names:
+Address:
+Country:
+Email:edward.brown29@btinternet.com
 
-I do solicit for your assistance in effecting this 
-transaction. I intend to give 30% of the total funds as 
-compensation for your assistance. I will notify you on the 
-full transaction on receipt of your response if interested, 
-and I shall send you the details and necessary procedures 
-with which to make the transfer.
+Regards
 
-E-mail:mrsonglil003@yahoo.com.hk
-
-Should you be interested? Please send me your:
- 
-1. Full names
-2. Private phone number
-3. Current residential address
-
-Kind Regards,
-Mr. LI Song
-
- 
