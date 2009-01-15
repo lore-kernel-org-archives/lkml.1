@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763757AbZAOK7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762415AbZAOLAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763757AbZAOK7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbZAOK7o
+	id S1762415AbZAOLAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763287AbZAOK7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:59:44 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59945 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbZAOK7n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:59:43 -0500
-Date: Thu, 15 Jan 2009 19:58:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/4] cgroup/memcg : updates related to CSS
-Message-Id: <20090115195834.e07e604d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115105116.GG30358@balbir.in.ibm.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115105116.GG30358@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Jan 2009 05:59:51 -0500
+Received: from mailx.swiss-it.ch ([81.6.4.203]:40821 "EHLO mailx.swiss-it.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762990AbZAOK7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 05:59:50 -0500
+X-Greylist: delayed 1915 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 05:59:50 EST
+Message-ID: <496F10EC.9010702@codelabs.ch>
+Date: Thu, 15 Jan 2009 11:33:16 +0100
+From: Adrian-Ken Rueegsegger <ken@codelabs.ch>
+User-Agent: Icedove 1.5.0.14eol (X11/20090105)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Balaji Rao <balajirrao@openmoko.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_MFD_PCF50633=m breaks the kernel build
+References: <20090115100653.509416fb@hyperion.delvare>	<20090115091107.GB3199@fedora.yogi> <20090115110955.4a8e9c5b@hyperion.delvare>
+In-Reply-To: <20090115110955.4a8e9c5b@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 16:21:16 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 19:21:20]:
+Jean Delvare wrote:
+> On Thu, 15 Jan 2009 14:41:08 +0530, Balaji Rao wrote:
+>> On Thu, Jan 15, 2009 at 10:06:53AM +0100, Jean Delvare wrote:
+>>> Hi Balaji,
+>>>
+>>> Building kernel 2.6.29-rc1-git4 on x86_64 with CONFIG_MFD_PCF50633=m
+>>> fails at linking time with:
+>>>
+>>> ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+>>> ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+>> Yes, I've seen this. The fix is waiting on linux-mfd to be pulled
+>> anytime soon.
 > 
-> > 
-> > I'm sorry that I couldn't work so much, this week.
-> > No much updates but I think all comments I got are applied.
-> > 
-> > About memcg part, I'll wait for that all Nishimura's fixes go ahead.
-> > If cgroup part looks good, please Ack. I added CC to Andrew Morton for that part.
-> > 
-> > changes from previous series
-> >   - dropeed a fix to OOM KILL   (will reschedule)
-> >   - dropped a fix to -EBUSY     (will reschedule)
-> >   - added css_is_populated()
-> >   - added hierarchy_stat patch
-> > 
-> > Known my homework is
-> >   - resize_limit should return -EBUSY. (Li Zefan reported.)
-> > 
-> > Andrew, I'll CC: you [1/4] and [2/4]. But no explicit Acked-by yet to any patches.
-> >
-> 
-> Kamezawa-San, like you've suggested earlier, I think it is important
-> to split up the fixes from the development patches. I wonder if we
-> should start marking all patches with BUGFIX for bug fixes, so that we
-> can prioritize those first.
->  
-Ah yes. I'll do that from next post. 
+> Where is linux-mfd? And what is it, a git tree, a mailing list? I
+> couldn't find any reference.
 
-patch [1/4] and [2/4] doesnt modify memcg at all. So, I added Andrew to CC.
-It's a new feature for cgroup.
+git://git.o-hand.com/linux-mfd
 
-for memcg part. of course, I'll wait for all Nishimura's fixes goes to -rc.
+> Can you please send me the patch now, so that I can fix my build
+> locally right now?
 
-patch [3/4] will remove most of them, crazy maze of hierarchical reclaim.
-patch [4/4] is written for demonstration. but the output seems atractive.
+The related commit:
+http://git.o-hand.com/cgit.cgi/linux-mfd/commit/?h=for-linus&id=9bf04a9690b3c961150ac508d343c875f0d641ad
 
-Thanks,
--Kame
-
+Adrian
