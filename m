@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764676AbZAOLVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbZAOLWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764676AbZAOLVv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZAOLVk
+	id S1764751AbZAOLWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZAOLWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:21:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53066 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758009AbZAOLVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:21:40 -0500
-Date: Thu, 15 Jan 2009 12:21:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH] perf_counter: Add support for pinned and exclusive
-	counter groups
-Message-ID: <20090115112125.GD22850@elte.hu>
-References: <18797.44875.470975.535175@cargo.ozlabs.ibm.com> <18798.40466.741696.758199@cargo.ozlabs.ibm.com>
+	Thu, 15 Jan 2009 06:22:10 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:33491 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbZAOLWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:22:08 -0500
+Date: Thu, 15 Jan 2009 12:20:01 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, catalin.marinas@arm.com, penberg@cs.helsinki.fi
+Subject: Re: [BUILD_FAILURE] next-20090115 - s390x - mm/kmemleak.c
+Message-ID: <20090115112001.GC5093@osiris.boeblingen.de.ibm.com>
+References: <20090115170415.3edc1df6.sfr@canb.auug.org.au> <20090115103504.GA5178@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18798.40466.741696.758199@cargo.ozlabs.ibm.com>
+In-Reply-To: <20090115103504.GA5178@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> This patch is in the rfc branch of my perfcounters.git repository at:
+On Thu, Jan 15, 2009 at 04:05:04PM +0530, Kamalesh Babulal wrote:
+> Hi Stephen,
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git rfc
+> 	next-20090115 allyesconfig build fails on s390x
 > 
-> Ingo - you can pull it into your perfcounters branch if you like.
+> mm/built-in.o: In function `kmemleak_scan':
+> mm/kmemleak.c:977: undefined reference to `_sdata'
+> make: *** [.tmp_vmlinux1] Error 1
 
-Pulled into tip/perfcounters/core, thanks Paul!
-
-	Ingo
+A lot of architectures don't have _sdata definined in their linker scripts.
+On s390 _sdata would be the same as _etext. But that is not necessarily true
+for all architectures.
