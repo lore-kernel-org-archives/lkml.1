@@ -1,120 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763231AbZAOL0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbZAOLa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763231AbZAOL0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZAOL0q
+	id S1762980AbZAOLa4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZAOLas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:26:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46046 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752295AbZAOL0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:26:45 -0500
-Date: Thu, 15 Jan 2009 12:26:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Michal Hocko <mhocko@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
-Message-ID: <20090115112640.GF22850@elte.hu>
-References: <20090113122455.GA24824@dhcp35.suse.cz> <200901151754.58311.nickpiggin@yahoo.com.au> <20090115100013.GE5833@elte.hu> <200901152153.42159.nickpiggin@yahoo.com.au>
+	Thu, 15 Jan 2009 06:30:48 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:41996 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754066AbZAOLar (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:30:47 -0500
+Date: Thu, 15 Jan 2009 17:00:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, menage@google.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] mark_page_accessed() in do_swap_page() move latter
+	than memcg charge
+Message-ID: <20090115113037.GH30358@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090109043257.GB9737@balbir.in.ibm.com> <20090109134736.a995fc49.kamezawa.hiroyu@jp.fujitsu.com> <20090115200545.EBE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200901152153.42159.nickpiggin@yahoo.com.au>
+In-Reply-To: <20090115200545.EBE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-01-15 20:08:36]:
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> On Thursday 15 January 2009 21:00:13 Ingo Molnar wrote:
-> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > On Tuesday 13 January 2009 23:34:25 Ingo Molnar wrote:
-> > > > * Michal Hocko <mhocko@suse.cz> wrote:
-> > > > > Hi,
-> > > > > I am not sure whether someone has already reported this, but
-> > > > > I can see the following early boot WARNING with the 2.6.29-rc1 kernel
-> > > > > in the serial console output:
-> > > > >
-> > > > > ------------[ cut here ]------------
-> > > > > WARNING: at kernel/sched.c:4440 sub_preempt_count+0x81/0x95()
-> > > >
-> > > > That one should be fixed in tip/master and it is in the to-Linus queue
-> > > > of fixes:
-> > > >
-> > > >   http://people.redhat.com/mingo/tip.git/README
-> > > >
-> > > > it's this commit:
-> > > >
-> > > >   01e3eb8: Revert "sched: improve preempt debugging"
-> > > >
-> > > > if you want to cherry-pick the fix.
-> > >
-> > > OK, but I still don't think this is the actual problem, but there is
-> > > something amiss in the init code being exposed by it.
-> >
-> > the warnings triggered after a softirq, and there's already preempt-leak
-> > checks in the softirq code - so we can exclude that.
-> >
-> > a hardirq might have leaked a preempt count - but that would have quite
-> > bad effects [with quick atomic check asserts in schedule()], wouldnt it?
-> > So i tend to think that this is a false positive.
-> >
-> > One problem i can think of (and which i outlined in the revert commit log)
-> > is that if a hardirq hits this window in lock_kernel():
-> >
-> > void __lockfunc lock_kernel(void)
+> 
+> sorry for late responce.
+> 
+> > > In this case we've hit a case where the page is valid and the pc is
+> > > not. This does fix the problem, but won't this impact us getting
+> > > correct reclaim stats and thus indirectly impact the working of
+> > > pressure?
+> > > 
+> >  - If retruns NULL, only global LRU's status is updated. 
+> > 
+> > Because this page is not belongs to any memcg, we cannot update
+> > any counters. But yes, your point is a concern.
+> > 
+> > Maybe moving acitvate_page() to
+> > ==
+> > do_swap_page()
 > > {
-> >         int depth = current->lock_depth+1;
-> >                                            <-------------- HERE
-> 
-> current->lock_depth is not yet modified at this point.
-> 
-> >         if (likely(!depth))
-> >                 __lock_kernel();
-> 
-> And here we increment preempt_count when taking the BKL, but we
-> has not yet modified current->lock_depth, so preempt debugging
-> will proceed with no impact of my patch at this point, regardless
-> of what interrupts are taken.
-> 
-> So there is a race window, but it is to err on the safe side and
-> not trigger a false report.
-> 
-> >         current->lock_depth = depth;
+> >     
+> > - activate_page()
+> >    mem_cgroup_try_charge()..
+> >    ....
+> >    mem_cgroup_commit_charge()....
+> >    ....
+> > +  activate_page()   
 > > }
+> > ==
+> > is necessary. How do you think, kosaki ?
 > 
-> At this point, the BKL addition to preempt_count will be taken into
-> account in underflow checking of subsequent preempt counters.
-
-indeed, and the unlock path looks good too.
-
-> > then we have kernel_locked() already true (it checks lock_depth), but 
-> > the preempt count is not elevated yet via __lock_kernel(). So if we 
-> > return from the hardirq [and run into softirqs that end with a 
-> > preempt_enable() - a pure hardirq exit has no preempt debug check] 
-> > we'll incorrectly think that there's a preempt leak going on.
 > 
-> I don't think so. And anyway BKL is taken very early in boot and not 
-> released for a long time, so I don't think it is possible for these 
-> kinds of races to trigger here anyway.
+> OK. it makes sense. and my test found no bug.
 > 
-> So I really think it still is a bug or some other misunderstanding we 
-> have. I'd prefer to try to fix it or at least discover why it is 
-> happening.
+> ==
+> 
+> mark_page_accessed() update reclaim_stat statics.
+> but currently, memcg charge is called after mark_page_accessed().
+> 
+> then, mark_page_accessed() don't update memcg statics correctly.
+> 
+> fixing here.
+> 
 
-yes - but the thing was reported a month ago, it went then upstream and 
-re-reported and re-bisected - so time ran out to debug it and we reverted 
-it. We can re-apply it if you have a good theory about what happened.
+Changelog needs to be a bit more elaborate, may be talk about invalid
+pointer we hit if mark_page_accessed is not moved, etc.
 
-	Ingo
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> ---
+>  mm/memory.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: b/mm/memory.c
+> ===================================================================
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2426,8 +2426,6 @@ static int do_swap_page(struct mm_struct
+>  		count_vm_event(PGMAJFAULT);
+>  	}
+> 
+> -	mark_page_accessed(page);
+> -
+>  	lock_page(page);
+>  	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+> 
+> @@ -2480,6 +2478,8 @@ static int do_swap_page(struct mm_struct
+>  		try_to_free_swap(page);
+>  	unlock_page(page);
+> 
+> +	mark_page_accessed(page);
+> +
+>  	if (write_access) {
+>  		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
+>  		if (ret & VM_FAULT_ERROR)
+> 
+> 
+>
+
+Looks good to me otherwise
+
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
+
+-- 
+	Balbir
