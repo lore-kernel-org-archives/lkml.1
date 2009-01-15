@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbZAOLLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764347AbZAOLMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbZAOLLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZAOLLi
+	id S1764347AbZAOLMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbZAOLMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:11:38 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:44846 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751527AbZAOLLh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:11:37 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <496F19E2.8070306@gmail.com>
-Date: Thu, 15 Jan 2009 11:11:30 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 15 Jan 2009 06:12:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48372 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753797AbZAOLMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 06:12:23 -0500
+Date: Thu, 15 Jan 2009 12:11:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: [PULL -tip] fixed few make headers_check warnings
+Message-ID: <20090115111134.GB22850@elte.hu>
+References: <1231836016.3212.41.camel@jaswinder.satnam> <Pine.LNX.4.64.0901140954250.27308@anakin> <3f9a31f40901140129i1389f47frf32808f3a695a118@mail.gmail.com> <20090114153825.GB32082@uranus.ravnborg.org> <3f9a31f40901140759s1542e6cclae1808b796c2b1a9@mail.gmail.com> <Pine.LNX.4.64.0901141732450.26663@anakin> <20090114201513.GC1556@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Mike Rapoport <mike@compulab.co.il>
-CC: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@sirena.org.uk>, Samuel Ortiz <sameo@openedhand.com>,
-       eric miao <eric.y.miao@gmail.com>, felipe.balbi@nokia.com,
-       Liam Girdwood <lrg@kernel.org>
-Subject: Re: [PATCH 2.6.29-rc1-git4] mfd: da9030 usb charge pump support within
- mfd driver.
-References: <496E2BE5.1050803@cam.ac.uk> <496ED9EF.2050507@compulab.co.il>
-In-Reply-To: <496ED9EF.2050507@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090114201513.GC1556@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Rapoport wrote:
-> Jonathan,
-> Below are my two cents :)
->   
-Thanks,
-> Jonathan Cameron wrote:
->   
->> From: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> Add support for changing the mode of the da9030 usb charge pump
->>
->> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> ---
->>
->> Minor changes from previous version to reflect changes in the
->> driver being patched. Addtional cc's as per Mark's suggestion.
->>
->> This version simply adds the functionality to the da903x mfd driver
->> core. If anyone can suggest a way round simply maintaining a
->> global pointer to the device it would be good.
->>     
->
-> I don't think the global pointer here is real problem. It should be *really*
-> weird design with two da903x.
->
->   
->> To be able to call this from a board config file the driver must be
->> built in rather than a module but enforcing that is down to the
->> board Kconfig entry.
->>     
->
-> Most probably the board with da9030 will anyway have it built-in...
->
->   
->> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
->> index 99f8dcf..70ec3b0 100644
->> --- a/drivers/mfd/da903x.c
->> +++ b/drivers/mfd/da903x.c
->> @@ -30,6 +30,7 @@
->>  #define DA9030_SYS_CTRL_A	0x08
->>  #define DA9030_SYS_CTRL_B	0x09
->>  #define DA9030_FAULT_LOG	0x0a
->> +#define DA9030_USBPUMP_REG	0x19
->>  
->>  #define DA9034_CHIP_ID		0x00
->>  #define DA9034_EVENT_A		0x01
->> @@ -484,6 +485,32 @@ failed:
->>  	return ret;
->>  }
->>  
->> +/* Single device assumption */
->> +struct device *da9030_mfd_dev;
->> +
->> +int da9030_set_usb_charge_pump_mode(int mode)
->> +{
->> +	uint8_t val = 0;
->> +
->> +	if (da9030_mfd_dev == NULL)
->> +		return -EINVAL;
->> +
->> +	switch (mode) {
->> +	case DA9030_USBPUMP_AUTO:
->> +		val = 0;
->> +		break;
->> +	case DA9030_USBPUMP_CHARGE_PUMP:
->> +		val = 0x40;
->> +		break;
->> +	case DA9030_USBPUMP_CURRENT_SOURCE:
->> +		val = 0x80;
->> +		break;
->> +	}
->> +
->> +	return da903x_write(da9030_mfd_dev, DA9030_USBPUMP_REG, val);
->> +}
->> +EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
->> +
->>     
->
-> Maybe we want to have 'da9030_set_usb_charge_pump_mode' as well?
->   
-(get?)
-Possibly though not sure under what circumstances it would be needed
-other than debugging?
 
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> So when I see "capability.h: extern's make no sense in userspace" the 
+> perfect approach would be that the whole file was checked.
+> 
+> This is a much bigger task that just removing the warning.
+
+The problem is, you just littered the kernel with a ton of warnings and 
+declared that fixing them is a 'much bigger task'.
+
+It's not good to start projects like this, because they simply never 
+finish. It's _much_ better to first reach a zero baseline via minimal 
+fixes, then enforce 'look at the whole thing' for all _NEW_ files and 
+changes.
+
+That's how we are using checkpatch in the -tip topics, and it's working 
+very nicely.
+
+Could we please start it like that?
+
+	Ingo
