@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935042AbZAOW7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936751AbZAOW7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935042AbZAOW7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761915AbZAOWpM
+	id S936751AbZAOW7u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936461AbZAOWqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:45:12 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:10037 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758495AbZAOWpH (ORCPT
+	Thu, 15 Jan 2009 17:46:48 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:33936 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936453AbZAOWqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:45:07 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=hkXghJx+f+m1VRJglBjbpeekO5enx5mEk2FXYg4nVJFfD90K8LaphsEfgNaOOpjnC
-	7hbNPsyDhRT59VbdiWfbw==
+	Thu, 15 Jan 2009 17:46:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=rZ+iqw9RdpsoKdZMZrfSxrFatYU2xyZmV3Yd2Y1LXXKofKKTtKYM7y9l4v0z/xbOwW
+         pjpBLNjrJ4TkUbPWqAN1fmu09GF0mf2w2yVuPurmr4skLL4dNB3F7zGruOgnU4amny4o
+         QukyoN+QRk+XJL58n9NpgcNmRmCMW6u6kpj3k=
+Message-ID: <496FBCD1.5050608@gmail.com>
+Date: Thu, 15 Jan 2009 23:46:41 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <1232046039.5966.54.camel@localhost.localdomain>
-References: <200901051952.58029.bzolnier@gmail.com>
-	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>
-	 <20090106073515.GY32491@kernel.dk> <4964866D.8010503@msgid.tls.msk.ru>
-	 <1231342473.3282.19.camel@localhost.localdomain>
-	 <496ECBA0.60209@gmail.com>
-	 <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
-	 <1232035561.5966.48.camel@localhost.localdomain>
-	 <da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com>
-	 <1232046039.5966.54.camel@localhost.localdomain>
-Date: Thu, 15 Jan 2009 14:45:01 -0800
-Message-ID: <da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
-From: Grant Grundler <grundler@google.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Ralf Baechle <ralf@linux-mips.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch 27/85] [PATCH 07/44] [CVE-2009-0029] System call wrapper
+ infrastructure
+References: <20090115215237.906089480@mini.kroah.org> <20090115215950.GB17227@kroah.com>
+In-Reply-To: <20090115215950.GB17227@kroah.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.78
-X-GMailtapped: grundler
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:00 AM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-...
->> Code can test for zero/nonzero or (preferably) more fine grained.
->> e.g. "avgreadcost > 1ms" or "avgwritecost". I'm hoping this test
->> can be abstracted into a macro.
->
-> Um these really have to be things we can get out of the device at boot
-> time without effort (as in part of the data the device can give in a
-> single command).  I'll be shot for increasing boot time so we can work
-> out these parameters ...
+On 01/15/2009 10:59 PM, Greg KH wrote:
+> +
+> +#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
+> +
+> +#define SYSCALL_DEFINE(name) static inline long SYSC_##name
+> +#define SYSCALL_DEFINEx(x, name, ...)                                        \
+> +     asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__));          \
+> +     static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__));      \
 
-No. The whole point is we should not care what it is at boot time.
-It should be based on recent history of what is going on.
-At boot time we read the partition table and we superblocks to mount
-file systems.
-That's fine to start with. So I don't see any need to add some synthetic test
-to establish initial values.
+Hmm, we don't support at least gcc 3.4.6 anymore :/. It seems to be the same as in:
+http://lkml.org/lkml/2007/12/6/385
 
-The rest of the code should work regardless of what the values start out to be.
-This is true for the previous proposed patch too when user space has
-to decide what the right policy is.
+It doesn't like inline prototypes.
 
->> I'm hoping longterm, the values could be "self tuning" but don't know
->> how that might work - e.g. 1 minute avg? 10 minute avg? Cost
->> of collecting/maintaining the stats? Feels like a CONFIG option.
->
-> CONFIG_SLOW_YOUR_BOOT?
+> +     asmlinkage long SyS_##name(__SC_LONG##x(__VA_ARGS__))           \
+> +     {                                                               \
+> +             __SC_TEST##x(__VA_ARGS__);                              \
+> +             return (long) SYSC_##name(__SC_CAST##x(__VA_ARGS__));   \
+> +     }                                                               \
+> +     SYSCALL_ALIAS(sys_##name, SyS_##name);                          \
+> +     static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
 
-maybe CONFIG_AUTOTUNE_RWCOST.
-
-thanks,
-grant
