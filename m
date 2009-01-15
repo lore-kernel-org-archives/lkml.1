@@ -1,101 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764866AbZAOUT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932935AbZAOUUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764866AbZAOUT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765969AbZAOUBC
+	id S932935AbZAOUUj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932076AbZAOUBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:02 -0500
-Received: from kroah.org ([198.145.64.141]:49037 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761354AbZAOUAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:00:45 -0500
-Date: Thu, 15 Jan 2009 11:58:23 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Robert Love <rlove@google.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 31/94] inotify: fix type errors in interfaces
-Message-ID: <20090115195823.GE14419@kroah.com>
-References: <20090115194806.804618825@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="inotify-fix-type-errors-in-interfaces.patch"
-In-Reply-To: <20090115195520.GA14403@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 15 Jan 2009 15:01:04 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:56109 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765858AbZAOUAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:00:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=W6gFZWBvjcVHWzbFZ8iWCKEYU7jO0iHVV7aBLnUcl3SRHWpZ3tw/4FbWbKNYP+YYwF
+         KK7t4Lp1+ztYiyamkXOl+J9sSFzUWGmzHj8hkQl4BlQKfdalSJyPA2IDZt5UtfgB0dY7
+         uwwZ8JfBA+RazTnmdRBnBJoqpjWianClHpqRI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 15 Jan 2009 21:01:01 +0100
+Message-Id: <20090115200101.17294.76431.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+References: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
+Subject: [PATCH 4/9] ide: move ide_dma_timeout_retry() to ide-dma.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: move ide_dma_timeout_retry() to ide-dma.c
 
-------------------
+Move ide_dma_timeout_retry() to ide-dma.c and add static inline
+version for CONFIG_BLK_DEV_IDEDMA=n.
 
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-
-commit 4ae8978cf92a96257cd8998a49e781be83571d64 upstream.
-
-The problems lie in the types used for some inotify interfaces, both at the kernel level and at the glibc level. This mail addresses the kernel problem. I will follow up with some suggestions for glibc changes.
-
-For the sys_inotify_rm_watch() interface, the type of the 'wd' argument is
-currently 'u32', it should be '__s32' .  That is Robert's suggestion, and
-is consistent with the other declarations of watch descriptors in the
-kernel source, in particular, the inotify_event structure in
-include/linux/inotify.h:
-
-struct inotify_event {
-        __s32           wd;             /* watch descriptor */
-        __u32           mask;           /* watch mask */
-        __u32           cookie;         /* cookie to synchronize two events */
-        __u32           len;            /* length (including nulls) of name */
-        char            name[0];        /* stub for possible name */
-};
-
-The patch makes the changes needed for inotify_rm_watch().
-
-Signed-off-by: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Robert Love <rlove@google.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- fs/inotify_user.c        |    2 +-
- include/linux/syscalls.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/ide/ide-dma.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/ide/ide-io.c  |   57 --------------------------------------------------
+ include/linux/ide.h   |    2 +
+ 3 files changed, 59 insertions(+), 57 deletions(-)
 
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -704,7 +704,7 @@ fput_and_out:
- 	return ret;
+Index: b/drivers/ide/ide-dma.c
+===================================================================
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -464,6 +464,63 @@ void ide_dma_timeout(ide_drive_t *drive)
+ }
+ EXPORT_SYMBOL_GPL(ide_dma_timeout);
+ 
++/*
++ * un-busy the port etc, and clear any pending DMA status. we want to
++ * retry the current request in pio mode instead of risking tossing it
++ * all away
++ */
++ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error)
++{
++	ide_hwif_t *hwif = drive->hwif;
++	struct request *rq;
++	ide_startstop_t ret = ide_stopped;
++
++	/*
++	 * end current dma transaction
++	 */
++
++	if (error < 0) {
++		printk(KERN_WARNING "%s: DMA timeout error\n", drive->name);
++		(void)hwif->dma_ops->dma_end(drive);
++		ret = ide_error(drive, "dma timeout error",
++				hwif->tp_ops->read_status(hwif));
++	} else {
++		printk(KERN_WARNING "%s: DMA timeout retry\n", drive->name);
++		hwif->dma_ops->dma_timeout(drive);
++	}
++
++	/*
++	 * disable dma for now, but remember that we did so because of
++	 * a timeout -- we'll reenable after we finish this next request
++	 * (or rather the first chunk of it) in pio.
++	 */
++	drive->dev_flags |= IDE_DFLAG_DMA_PIO_RETRY;
++	drive->retry_pio++;
++	ide_dma_off_quietly(drive);
++
++	/*
++	 * un-busy drive etc and make sure request is sane
++	 */
++
++	rq = hwif->rq;
++	if (!rq)
++		goto out;
++
++	hwif->rq = NULL;
++
++	rq->errors = 0;
++
++	if (!rq->bio)
++		goto out;
++
++	rq->sector = rq->bio->bi_sector;
++	rq->current_nr_sectors = bio_iovec(rq->bio)->bv_len >> 9;
++	rq->hard_cur_sectors = rq->current_nr_sectors;
++	rq->buffer = bio_data(rq->bio);
++out:
++	return ret;
++}
++
+ void ide_release_dma_engine(ide_hwif_t *hwif)
+ {
+ 	if (hwif->dmatable_cpu) {
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -816,63 +816,6 @@ plug_device_2:
+ 		blk_plug_device(q);
  }
  
--asmlinkage long sys_inotify_rm_watch(int fd, u32 wd)
-+asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd)
+-/*
+- * un-busy the port etc, and clear any pending DMA status. we want to
+- * retry the current request in pio mode instead of risking tossing it
+- * all away
+- */
+-static ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error)
+-{
+-	ide_hwif_t *hwif = drive->hwif;
+-	struct request *rq;
+-	ide_startstop_t ret = ide_stopped;
+-
+-	/*
+-	 * end current dma transaction
+-	 */
+-
+-	if (error < 0) {
+-		printk(KERN_WARNING "%s: DMA timeout error\n", drive->name);
+-		(void)hwif->dma_ops->dma_end(drive);
+-		ret = ide_error(drive, "dma timeout error",
+-				hwif->tp_ops->read_status(hwif));
+-	} else {
+-		printk(KERN_WARNING "%s: DMA timeout retry\n", drive->name);
+-		hwif->dma_ops->dma_timeout(drive);
+-	}
+-
+-	/*
+-	 * disable dma for now, but remember that we did so because of
+-	 * a timeout -- we'll reenable after we finish this next request
+-	 * (or rather the first chunk of it) in pio.
+-	 */
+-	drive->dev_flags |= IDE_DFLAG_DMA_PIO_RETRY;
+-	drive->retry_pio++;
+-	ide_dma_off_quietly(drive);
+-
+-	/*
+-	 * un-busy drive etc and make sure request is sane
+-	 */
+-
+-	rq = hwif->rq;
+-	if (!rq)
+-		goto out;
+-
+-	hwif->rq = NULL;
+-
+-	rq->errors = 0;
+-
+-	if (!rq->bio)
+-		goto out;
+-
+-	rq->sector = rq->bio->bi_sector;
+-	rq->current_nr_sectors = bio_iovec(rq->bio)->bv_len >> 9;
+-	rq->hard_cur_sectors = rq->current_nr_sectors;
+-	rq->buffer = bio_data(rq->bio);
+-out:
+-	return ret;
+-}
+-
+ static void ide_plug_device(ide_drive_t *drive)
  {
- 	struct file *filp;
- 	struct inotify_device *dev;
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -549,7 +549,7 @@ asmlinkage long sys_inotify_init(void);
- asmlinkage long sys_inotify_init1(int flags);
- asmlinkage long sys_inotify_add_watch(int fd, const char __user *path,
- 					u32 mask);
--asmlinkage long sys_inotify_rm_watch(int fd, u32 wd);
-+asmlinkage long sys_inotify_rm_watch(int fd, __s32 wd);
+ 	struct request_queue *q = drive->queue;
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1465,6 +1465,7 @@ static inline int config_drive_for_dma(i
  
- asmlinkage long sys_spu_run(int fd, __u32 __user *unpc,
- 				 __u32 __user *ustatus);
-
+ void ide_dma_lost_irq(ide_drive_t *);
+ void ide_dma_timeout(ide_drive_t *);
++ide_startstop_t ide_dma_timeout_retry(ide_drive_t *, int);
+ 
+ #else
+ static inline int ide_id_dma_bug(ide_drive_t *drive) { return 0; }
+@@ -1476,6 +1477,7 @@ static inline void ide_dma_on(ide_drive_
+ static inline void ide_dma_verbose(ide_drive_t *drive) { ; }
+ static inline int ide_set_dma(ide_drive_t *drive) { return 1; }
+ static inline void ide_check_dma_crc(ide_drive_t *drive) { ; }
++static inline ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error) { return ide_stopped; }
+ static inline void ide_release_dma_engine(ide_hwif_t *hwif) { ; }
+ #endif /* CONFIG_BLK_DEV_IDEDMA */
+ 
