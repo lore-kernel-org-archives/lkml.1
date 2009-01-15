@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbZAOUac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbZAOUa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933257AbZAOUac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765163AbZAOUBd
+	id S932898AbZAOUa5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932150AbZAOUBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:33 -0500
-Received: from kroah.org ([198.145.64.141]:49215 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:01:34 -0500
+Received: from kroah.org ([198.145.64.141]:49263 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932096AbZAOUBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:01:08 -0500
-Date: Thu, 15 Jan 2009 11:58:52 -0800
+	id S1765931AbZAOUBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:01:11 -0500
+Date: Thu, 15 Jan 2009 11:58:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 44/94] [PATCH 13/44] [CVE-2009-0029] System call wrappers
-	part 03
-Message-ID: <20090115195852.GR14419@kroah.com>
+Subject: [patch 47/94] [PATCH 16/44] [CVE-2009-0029] System call wrappers
+	part 06
+Message-ID: <20090115195859.GU14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="0013--CVE-2009-0029-System-call-wrappers-part-03.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0016--CVE-2009-0029-System-call-wrappers-part-06.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,95 +42,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit ae1251ab785f6da87219df8352ffdac68bba23e4 upstream.
+commit 5add95d4f7cf08f6f62510f19576992912387501 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/sys.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ kernel/sched.c |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -470,7 +470,7 @@ void ctrl_alt_del(void)
-  * SMP: There are not races, the GIDs are checked only by filesystem
-  *      operations (as far as semantic preservation is concerned).
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5025,7 +5025,7 @@ int can_nice(const struct task_struct *p
+  * sys_setpriority is a more generic, but much slower function that
+  * does similar things.
   */
--asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
-+SYSCALL_DEFINE2(setregid, gid_t, rgid, gid_t, egid)
+-asmlinkage long sys_nice(int increment)
++SYSCALL_DEFINE1(nice, int, increment)
  {
- 	int old_rgid = current->gid;
- 	int old_egid = current->egid;
-@@ -519,7 +519,7 @@ asmlinkage long sys_setregid(gid_t rgid,
-  *
-  * SMP: Same implicit races as above.
+ 	long nice, retval;
+ 
+@@ -5317,8 +5317,8 @@ do_sched_setscheduler(pid_t pid, int pol
+  * @policy: new policy.
+  * @param: structure containing the new RT priority.
   */
--asmlinkage long sys_setgid(gid_t gid)
-+SYSCALL_DEFINE1(setgid, gid_t, gid)
+-asmlinkage long
+-sys_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
++SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy,
++		struct sched_param __user *, param)
  {
- 	int old_egid = current->egid;
+ 	/* negative values for policy are not valid */
+ 	if (policy < 0)
+@@ -5332,7 +5332,7 @@ sys_sched_setscheduler(pid_t pid, int po
+  * @pid: the pid in question.
+  * @param: structure containing the new RT priority.
+  */
+-asmlinkage long sys_sched_setparam(pid_t pid, struct sched_param __user *param)
++SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
+ {
+ 	return do_sched_setscheduler(pid, -1, param);
+ }
+@@ -5341,7 +5341,7 @@ asmlinkage long sys_sched_setparam(pid_t
+  * sys_sched_getscheduler - get the policy (scheduling class) of a thread
+  * @pid: the pid in question.
+  */
+-asmlinkage long sys_sched_getscheduler(pid_t pid)
++SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ {
+ 	struct task_struct *p;
  	int retval;
-@@ -589,7 +589,7 @@ static int set_user(uid_t new_ruid, int 
-  * 100% compatible with BSD.  A program which uses just setuid() will be
-  * 100% compatible with POSIX with saved IDs. 
+@@ -5366,7 +5366,7 @@ asmlinkage long sys_sched_getscheduler(p
+  * @pid: the pid in question.
+  * @param: structure containing the RT priority.
   */
--asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
-+SYSCALL_DEFINE2(setreuid, uid_t, ruid, uid_t, euid)
+-asmlinkage long sys_sched_getparam(pid_t pid, struct sched_param __user *param)
++SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
  {
- 	int old_ruid, old_euid, old_suid, new_ruid, new_euid;
+ 	struct sched_param lp;
+ 	struct task_struct *p;
+@@ -5474,8 +5474,8 @@ static int get_user_cpu_mask(unsigned lo
+  * @len: length in bytes of the bitmask pointed to by user_mask_ptr
+  * @user_mask_ptr: user-space pointer to the new cpu mask
+  */
+-asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
+-				      unsigned long __user *user_mask_ptr)
++SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
++		unsigned long __user *, user_mask_ptr)
+ {
+ 	cpumask_t new_mask;
  	int retval;
-@@ -651,7 +651,7 @@ asmlinkage long sys_setreuid(uid_t ruid,
-  * will allow a root program to temporarily drop privileges and be able to
-  * regain them by swapping the real and effective uid.  
+@@ -5519,8 +5519,8 @@ out_unlock:
+  * @len: length in bytes of the bitmask pointed to by user_mask_ptr
+  * @user_mask_ptr: user-space pointer to hold the current cpu mask
   */
--asmlinkage long sys_setuid(uid_t uid)
-+SYSCALL_DEFINE1(setuid, uid_t, uid)
+-asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len,
+-				      unsigned long __user *user_mask_ptr)
++SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
++		unsigned long __user *, user_mask_ptr)
  {
- 	int old_euid = current->euid;
- 	int old_ruid, old_suid, new_suid;
-@@ -690,7 +690,7 @@ asmlinkage long sys_setuid(uid_t uid)
-  * This function implements a generic ability to update ruid, euid,
-  * and suid.  This allows you to implement the 4.4 compatible seteuid().
+ 	int ret;
+ 	cpumask_t mask;
+@@ -5544,7 +5544,7 @@ asmlinkage long sys_sched_getaffinity(pi
+  * This function yields the current CPU to other tasks. If there are no
+  * other threads running on this CPU then this function will return.
   */
--asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
-+SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
+-asmlinkage long sys_sched_yield(void)
++SYSCALL_DEFINE0(sched_yield)
  {
- 	int old_ruid = current->uid;
- 	int old_euid = current->euid;
-@@ -747,7 +747,7 @@ SYSCALL_DEFINE3(getresuid, uid_t __user 
- /*
-  * Same as above, but for rgid, egid, sgid.
+ 	struct rq *rq = this_rq_lock();
+ 
+@@ -5685,7 +5685,7 @@ long __sched io_schedule_timeout(long ti
+  * this syscall returns the maximum rt_priority that can be used
+  * by a given scheduling class.
   */
--asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
-+SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
+-asmlinkage long sys_sched_get_priority_max(int policy)
++SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
  {
- 	int retval;
+ 	int ret = -EINVAL;
  
-@@ -802,7 +802,7 @@ SYSCALL_DEFINE3(getresgid, gid_t __user 
-  * whatever uid it wants to). It normally shadows "euid", except when
-  * explicitly set by setfsuid() or for access..
+@@ -5710,7 +5710,7 @@ asmlinkage long sys_sched_get_priority_m
+  * this syscall returns the minimum rt_priority that can be used
+  * by a given scheduling class.
   */
--asmlinkage long sys_setfsuid(uid_t uid)
-+SYSCALL_DEFINE1(setfsuid, uid_t, uid)
+-asmlinkage long sys_sched_get_priority_min(int policy)
++SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
  {
- 	int old_fsuid;
- 
-@@ -831,7 +831,7 @@ asmlinkage long sys_setfsuid(uid_t uid)
- /*
-  * Samma på svenska..
-  */
--asmlinkage long sys_setfsgid(gid_t gid)
-+SYSCALL_DEFINE1(setfsgid, gid_t, gid)
- {
- 	int old_fsgid;
- 
-@@ -1233,7 +1233,7 @@ int set_current_groups(struct group_info
- 
- EXPORT_SYMBOL(set_current_groups);
- 
--asmlinkage long sys_getgroups(int gidsetsize, gid_t __user *grouplist)
-+SYSCALL_DEFINE2(getgroups, int, gidsetsize, gid_t __user *, grouplist)
- {
- 	int i = 0;
+ 	int ret = -EINVAL;
  
 
