@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764037AbZAOSBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbZAOSDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764037AbZAOSBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZAOSA4
+	id S1763106AbZAOSDd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZAOSDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:00:56 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41289 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbZAOSAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:00:55 -0500
-Date: Thu, 15 Jan 2009 11:00:53 -0700
-From: Matthew Wilcox <matthew@wil.cx>
+	Thu, 15 Jan 2009 13:03:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50160 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753799AbZAOSDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:03:24 -0500
+Date: Thu, 15 Jan 2009 19:02:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-Message-ID: <20090115180052.GG29283@parisc-linux.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com> <20090114163557.11e097f2.akpm@linux-foundation.org> <20090115012147.GW29283@parisc-linux.org> <20090114180431.f4a96543.akpm@linux-foundation.org> <1232028766.5966.10.camel@localhost.localdomain> <20090115094442.b6394544.akpm@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Message-ID: <20090115180259.GJ22472@elte.hu>
+References: <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <496F0F50.6070200@kernel.org> <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org> <20090115122611.GJ22850@elte.hu> <496F346B.6020804@kernel.org> <20090115130740.GE21839@elte.hu> <496F38C7.5000403@kernel.org> <20090115093007.4215b4b4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115094442.b6394544.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090115093007.4215b4b4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 09:44:42AM -0800, Andrew Morton wrote:
-> > Me too.  Anecdotally, I haven't noticed this in my lab machines, but
-> > what I have noticed is on someone else's laptop (a hyperthreaded atom)
-> > that I was trying to demo powertop on was that IPI reschedule interrupts
-> > seem to be out of control ... they were ticking over at a really high
-> > rate and preventing the CPU from spending much time in the low C and P
-> > states.  To me this implicates some scheduler problem since that's the
-> > primary producer of IPI reschedules ... I think it wouldn't be a
-> > significant extrapolation to predict that the scheduler might be the
-> > cause of the above problem as well.
-> > 
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 15 Jan 2009 22:23:19 +0900 Tejun Heo <tj@kernel.org> wrote:
 > 
-> Good point.
+> > --- a/include/asm-generic/percpu.h
+> > +++ b/include/asm-generic/percpu.h
+> > @@ -80,4 +80,56 @@ extern void setup_per_cpu_areas(void);
+> >  #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
+> >  					__typeof__(type) per_cpu_var(name)
+> >  
+> > +/*
+> > + * Optional methods for optimized non-lvalue per-cpu variable access.
+> > + *
+> > + * @var can be a percpu variable or a field of it and its size should
+> > + * equal char, int or long.  percpu_read() evaluates to a lvalue and
+> > + * all others to void.
+> > + *
+> > + * These operations are guaranteed to be atomic w.r.t. preemption.
+> > + * The generic versions use plain get/put_cpu_var().  Archs are
+> > + * encouraged to implement single-instruction alternatives which don't
+> > + * require preemption protection.
+> > + */
+> > +#ifndef percpu_read
+> > +# define percpu_read(var)						\
+> > +  ({									\
+> > +	typeof(per_cpu_var(var)) __tmp_var__;				\
+> > +	__tmp_var__ = get_cpu_var(var);					\
+> > +	put_cpu_var(var);						\
+> > +	__tmp_var__;							\
+> > +  })
+> > +#endif
 > 
-> The context switch rate actually went down a bit.
-> 
-> I wonder if the Intel test people have records of /proc/interrupts for
-> the various kernel versions.
+> I wonder if the preempt_disable()/preempt_enable() in here actually
+> does anything useful on any architecture.
 
-I think Chinang does, but he's out of office today.  He did say in an
-earlier reply:
+Provides "this is IRQ safe" and "this is preempt safe" semantics.
 
-> I took a quick look at the interrupts figure between 2.6.24 and 2.6.27.
-> i/o interuputs is slightly down in 2.6.27 (due to reduce throughput).
-> But both NMI and reschedule interrupt increased.  Reschedule interrupts
-> is 2x of 2.6.24.
-
-So if the reschedule interrupt is happening twice as often, and the
-context switch rate is basically unchanged, I guess that means the
-scheduler is doing a lot more work to get approximately the same
-results.  And that seems like a bad thing.
-
-Again, it's worth bearing in mind that these are all RT tasks, so the
-underlying problem may be very different from the one that both James and
-I have observed with an Atom laptop running predominantly non-RT tasks.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Ingo
