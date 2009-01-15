@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZAOF5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbZAOF6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbZAOF5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 00:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZAOF5I
+	id S1759121AbZAOF6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 00:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZAOF6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 00:57:08 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:48035 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754939AbZAOF5F (ORCPT
+	Thu, 15 Jan 2009 00:58:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52481 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755131AbZAOF6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 00:57:05 -0500
-Date: Thu, 15 Jan 2009 11:19:04 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 5/4] memcg: don't call res_counter_uncharge when
-	obsolete
-Message-ID: <20090115054903.GA30358@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp> <20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp> <7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com> <20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp> <20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com> <20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp> <20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp> <20090115141458.818b4e9a.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090115141458.818b4e9a.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 00:58:41 -0500
+Date: Wed, 14 Jan 2009 21:58:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dst@ioremap.net,
+       Arjan van de Ven <arjan@infradead.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [4/7] dst: thread pool.
+Message-Id: <20090114215810.674569fc.akpm@linux-foundation.org>
+In-Reply-To: <1231887933-17843-5-git-send-email-zbr@ioremap.net>
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net>
+	<1231887933-17843-2-git-send-email-zbr@ioremap.net>
+	<1231887933-17843-3-git-send-email-zbr@ioremap.net>
+	<1231887933-17843-4-git-send-email-zbr@ioremap.net>
+	<1231887933-17843-5-git-send-email-zbr@ioremap.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-15 14:14:58]:
+On Wed, 14 Jan 2009 02:05:30 +0300 Evgeniy Polyakov <zbr@ioremap.net> wrote:
 
-> On Thu, 15 Jan 2009 13:38:14 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> Kernel currently does not allow to queue work into some entity which
+> will perform it in the process context and have simple way to extend
+> number of worker and work with them not as separate objects, but with
+> pool as a whole. So thread pool model was implemented in the DST.
 > 
-> > On Thu, 15 Jan 2009 11:14:20 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > > To handle the problem "parent may be obsolete",
-> > > > > > 
-> > > > > > call mem_cgroup_get(parent) at create()
-> > > > > > call mem_cgroup_put(parent) at freeing memcg.
-> > > > > >      (regardless of use_hierarchy.)
-> > > > > > 
-> > > > > > is clearer way to go, I think.
-> > > > > > 
-> > > > > > I wonder whether there is  mis-accounting problem or not..
-> > > > > > 
-> > hmm, after more consideration, although this patch can prevent the BUG,
-> > it can leak memsw accounting of parents because memsw of parents, which
-> > have been incremented by charge, does not decremented.
-> > 
-> > I'll try pet/put parent approach..
-> > Or any other good ideas ?
-> > 
-> > 
-> I believe get/put at create/destroy is enough now..
-> Let's try and see what happens.
->
+> Thread pool abstraction allows to schedule a work to be performed
+> on behalf of kernel thread. One does not operate with threads itself,
+> instead user provides setup and cleanup callbacks for thread pool itself,
+> and action and cleanup callbacks for each submitted work.
+> 
+> Each worker has private data initialized at creation time and data,
+> provided by user at scheduling time.
+> 
+> When action is being performed, thread can not be used by other users,
+> instead they will sleep until there is free thread to pick their work.
+> 
+> Thread pool is used for crypto processing of incoming and outgoing IO
+> requests to reduce the overall overhead.
 
-Other approach could be get_hierarchical/put_hierarchical, but that
-can quickly get complex. Let us try and avoid it, unless nothing else
-works.
- 
--- 
-	Balbir
+This is at least our fourth thread pool implementation, not counting
+kernel/workqueue.c:
+
+1: pdflush
+
+2: David Howells' "slow work" infrastructure
+
+3: Arjan van de Ven's kernel/async.c
+
+4: Your "dst thread pool"
+
+
+Guys, please.  Let's get our act together here.
