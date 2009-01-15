@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZAONlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765091AbZAONnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbZAONlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 08:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759824AbZAONk4
+	id S1765091AbZAONnE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 08:43:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbZAONmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 08:40:56 -0500
-Received: from thunk.org ([69.25.196.29]:50323 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760491AbZAONkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 08:40:55 -0500
-Date: Thu, 15 Jan 2009 08:40:47 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, ccache@lists.samba.org,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] Recent change to kernel spikes out ccache/distcc
-Message-ID: <20090115134047.GB30522@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jan Beulich <jbeulich@novell.com>,
-	Peter Zijlstra <peterz@infradead.org>, ccache@lists.samba.org,
-	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-References: <E1LKDeQ-0002xz-7E@closure.thunk.org> <1231953379.14825.29.camel@laptop> <496F0BC2.76E4.0078.0@novell.com>
+	Thu, 15 Jan 2009 08:42:52 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:46717 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757219AbZAONmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 08:42:51 -0500
+Date: Thu, 15 Jan 2009 14:42:49 +0100
+To: linux-kernel@vger.kernel.org
+Subject: dri /dev node disappeared with 2.6.29-rc1
+Message-ID: <20090115134249.GP28392@gamma.logic.tuwien.ac.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <496F0BC2.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 09:11:14AM +0000, Jan Beulich wrote:
-> >>> Peter Zijlstra <peterz@infradead.org> 14.01.09 18:16 >>>
-> >So what's the current status on this, could we get it reverted ASAP or
-> >add that CONFIG_ switch (default N)?
-> >
-> >Leaving the build system broken for so long just isn't cool.
-> 
-> It is my understanding that Sam was looking at doing a partial revert first.
-> If that doesn't work out, doing the CONFIG_* thing would be pretty trivial
-> (I merged it into my local patch, and hence would simply have to extract it).
+Hi all, 
 
-I just have a local branch, "emergency-fixes" which just reverts
-commits ad7a953c and 9bb48247, which I pull in before doing full
-builds.  
+(please Cc, and sorry, don't know where to cross post that one)
 
-You can also work around the bug by disabling CONFIG_MODVERSIONS; one
-of my build configurations has almost no modules at all but it still
-had CONFIG_MODVERSIONS disabled, so for my sniff tests build of
-mainline where I don't want to pull in the emergency-fixes branch,
-I've also dealt with the situation by disabling CONFIG_MODVERSIONS.
+switching from 2.6.28-rc9 to 2.6.29-rc1 my /dev/dri/* entries got lost.
+Hardware is intel GM45:
+[    1.225368] agpgart-intel 0000:00:00.0: Intel Mobile Intel® GM45 Express Chipset
+[    1.230650] agpgart-intel 0000:00:00.0: detected 65532K stolen memory
+[    1.239716] PM: Adding info for No Bus:agpgart
+[    1.239844] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
+[    1.240093] PM: Adding info for No Bus:tpm0
+[    1.564241] [drm] Initialized drm 1.1.0 20060810
 
-These are both hacks, but they do work around the problem...
+but X tells me:
+(II) intel(0): Kernel reported 1264128 total, 1 used
+(II) intel(0): I830CheckAvailableMemory: 5056508 kB available
+drmOpenDevice: node name is /dev/dri/card0
+drmOpenDevice: open result is -1, (No such device)
+drmOpenDevice: open result is -1, (No such device)
+drmOpenDevice: Open failed
+drmOpenDevice: node name is /dev/dri/card0
+drmOpenDevice: open result is -1, (No such device)
+drmOpenDevice: open result is -1, (No such device)
+drmOpenDevice: Open failed
+[drm] failed to load kernel module "i915"
 
-      	       	      	       	       - Ted
+...
+
+I see the post 
+	[PATCH] drm/i915: why does kconfig hate?
+but using that patch I still get:
+	drivers/gpu/drm/Kconfig:8:error: found recursive dependency: DRM
+-> <choice> -> DRM_I915 -> FB -> FB_I810 -> AGP -> DRM
+
+Any chance to fix that, or some suggestion?
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+The major difference between a thing that might go wrong
+and a thing that cannot possibly go wrong is that when a
+thing that cannot possibly go wrong goes wrong it usually
+turns out to be impossible to get at or repair.
+                 --- One of the laws of computers and programming revealed.
+                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
