@@ -1,82 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763716AbZAOTmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765442AbZAOTok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763716AbZAOTmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 14:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbZAOTmW
+	id S1765442AbZAOTok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 14:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759031AbZAOTo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 14:42:22 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40002 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757308AbZAOTmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 14:42:22 -0500
-X-Authenticated: #4875094
-X-Provags-ID: V01U2FsdGVkX18SZ091g8USl3VocpC2j9EXjEPer4X8fPZHQFvr+G
-	RjU0tRd84CoLjl
-Message-ID: <496F9174.5080907@gmx.de>
-Date: Thu, 15 Jan 2009 20:41:40 +0100
-From: wk <handygewinnspiel@gmx.de>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 15 Jan 2009 14:44:29 -0500
+Received: from mga09.intel.com ([134.134.136.24]:24924 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758465AbZAOTo1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 14:44:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,272,1231142400"; 
+   d="scan'208";a="378812641"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <srostedt@redhat.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Date: Thu, 15 Jan 2009 12:44:16 -0700
+Subject: RE: Mainline kernel OLTP performance update
+Thread-Topic: Mainline kernel OLTP performance update
+Thread-Index: Acl3QP0Gjqc9hSu4QH6guhS6q/X0fwAAC7NwAAH+YKA=
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8003175EB45B@azsmsx501.amr.corp.intel.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <1232028766.5966.10.camel@localhost.localdomain>
+	 <20090115094442.b6394544.akpm@linux-foundation.org>
+	 <20090115180052.GG29283@parisc-linux.org>
+ <1232043287.21980.65.camel@localhost.localdomain>
+ <496F8421.3070703@novell.com>
+ <CAC4B8726E86A142B27A9E9A2F2F12479D4403CE@rrsmsx505.amr.corp.intel.com>
+In-Reply-To: <CAC4B8726E86A142B27A9E9A2F2F12479D4403CE@rrsmsx505.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: wk <handygewinnspiel@gmx.de>, Chris Mason <chris.mason@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl, HWerner4@gmx.de,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, mchehab@infradead.org
-Subject: Re: [linux-dvb] compiling on 2.6.28 broken?
-References: <20090112132130.6c932b85.akpm@linux-foundation.org> <20090112220624.4fbfee34@pedra.chehab.org> <20090112162337.318dd61d.akpm@linux-foundation.org> <20090113184755.87720@gmx.net> <20090113105947.9e774b69.akpm@linux-foundation.org> <20090113191757.74290@gmx.net> <20090113113700.776a94b5.akpm@linux-foundation.org> <20090113203843.GJ29283@parisc-linux.org> <1231957750.8269.28.camel@think.oraclecorp.com> <496E56EB.2030301@gmx.de> <20090114223016.GY8071@disturbed>
-In-Reply-To: <20090114223016.GY8071@disturbed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
-> On Wed, Jan 14, 2009 at 10:19:39PM +0100, wk wrote:
->   
->> Chris Mason wrote:
->> I cannot fully understand what strace -v outputs (see attachment), but  
->> what i see is that 'find' stops after finding a file with d_off = 
->> 4294967295
->> 4294967295  =  0xFFFFFFFF, adding any number greater that zero will be  
->> greater that 32bits, so this could be the reason for the message "value  
->> too large".
->>
->>
->>
->> I also noticed that i cannot access these files through samba if i boot  
->> from 2.6.28 - really strange.
->> If i reboot older kernels these are visible in samba again and fully  
->> accessible.
->>
->> Attached the log from stracing the command which was ivoked by the  
->> Makefile from v4l-dvb.
->> I guess this is all i could contribute to that problem. Thats stuff for  
->> xfs filesystem experts now..
->>     
->
-> It's obviously the regression fixed by:
->
-> http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs.git;a=commit;h=15440319767942a363f282d6585303d3d75088ba
->
-> It needs to be pushed to Linus, then into 2.6.28-stable.
->
-> Cheers,
->
-> Dave.
->   
+Gregory. 
+I will test the resched-ipi instrumentation patch with our OLTP if you can post the patch and some instructions.
+Thanks,
+-Chinang
 
-Yes, that solves the problems as expected. But may i kindly ask the xfs 
-fs developers to put some more readable patch here,
-so that its better understandable by looking at the source code? I think 
-some macro would be better here, for example i used
-
-#define TRUNC_TO_SIGNED32(x) (x & 0x7FFFFFFF)
-
-inside xfs.h and replaced all "foo & 0x7fffffff" with 
-"TRUNC_TO_SIGNED32(foo)".
-
-Thanks for your help,
-Winfried
+>-----Original Message-----
+>From: Wilcox, Matthew R
+>Sent: Thursday, January 15, 2009 10:47 AM
+>To: Gregory Haskins; Steven Rostedt
+>Cc: Matthew Wilcox; Andrew Morton; James Bottomley; Ma, Chinang; linux-
+>kernel@vger.kernel.org; Tripathi, Sharad C; arjan@linux.intel.com; Kleen,
+>Andi; Siddha, Suresh B; Chilukuri, Harita; Styner, Douglas W; Wang, Peter
+>Xihong; Nueckel, Hubert; chris.mason@oracle.com; linux-scsi@vger.kernel.org;
+>Andrew Vasquez; Anirban Chakraborty
+>Subject: RE: Mainline kernel OLTP performance update
+>
+>Gregory Haskins [mailto:ghaskins@novell.com] wrote:
+>> > On Thu, 2009-01-15 at 11:00 -0700, Matthew Wilcox wrote:
+>> >> So if the reschedule interrupt is happening twice as often, and the
+>> >> context switch rate is basically unchanged, I guess that means the
+>> >> scheduler is doing a lot more work to get approximately the same
+>> >> results.  And that seems like a bad thing.
+>>
+>> I would be very interested in gathering some data in this area.  One
+>> thing that pops to mind is to instrument the resched-ipi with
+>> ftrace_printk() and gather a trace of this system in action.  I assume
+>> that I wouldn't have access to this OLTP suite, so I may need a
+>> volunteer to try this for me.  I could put together an instrumentation
+>> patch for the testers convenience if they prefer.
+>
+>I don't know whether Novell have an arrangement with the Well-Known
+>Commercial Database and the Well-Known OLTP Benchmark to do runs like this.
+>Chinang is normally only too happy to build his own kernels with patches
+>from people who are interested in helping, so that's probably the best way
+>to do it.
+>
+>I'm leaving for LCA in an hour or so, so further responses from me to this
+>thread are unlikely ;-)
