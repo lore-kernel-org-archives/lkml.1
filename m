@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbZAOUwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934278AbZAOUws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933291AbZAOUwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932238AbZAOUCw
+	id S934278AbZAOUws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762842AbZAOUC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:52 -0500
-Received: from kroah.org ([198.145.64.141]:49786 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:56 -0500
+Received: from kroah.org ([198.145.64.141]:49801 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932330AbZAOUCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:51 -0500
-Date: Thu, 15 Jan 2009 12:00:29 -0800
+	id S932343AbZAOUCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:54 -0500
+Date: Thu, 15 Jan 2009 12:00:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       Dustin Kirkland <kirkland@canonical.com>,
-       ecryptfs-devel@lists.launchpad.net, Duane Griffin <duaneg@dghda.com>,
-       Michael Halcrow <mhalcrow@us.ibm.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 84/94] eCryptfs: check readlink result was not an error
-	before using it
-Message-ID: <20090115200029.GF14419@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Reinhard Nissl <rnissl@gmx.de>,
+       Ke Wei <kewei@marvell.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 85/94] [SCSI] mvsas: increase port type detection delay to
+	suit Seagates 10k6 drive ST3450856SS 0003
+Message-ID: <20090115200031.GG14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ecryptfs-check-readlink-result-was-not-an-error-before-using-it.patch"
+Content-Disposition: inline; filename="mvsas-increase-port-type-detection-delay-to-suit-seagate-s-10k6-drive-st3450856ss-0003.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,40 +42,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Duane Griffin <duaneg@dghda.com>
+From: Reinhard Nissl <rnissl@gmx.de>
 
-commit a17d5232de7b53d34229de79ec22f4bb04adb7e4 upstream.
+commit ddccf307a3599e452804e228d8ed30fba578923e upstream.
 
-The result from readlink is being used to index into the link name
-buffer without checking whether it is a valid length. If readlink
-returns an error this will fault or cause memory corruption.
+I increased the delay step by step until loading of mvsas
+reliably detected the drive 200 times in sequence. A much better
+approach would be to monitor the hardware for some flag which
+indicates that port detection has finished, but I do not have any
+hardware documentation.
 
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Cc: Dustin Kirkland <kirkland@canonical.com>
-Cc: ecryptfs-devel@lists.launchpad.net
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
-Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
-Acked-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
+Cc: Ke Wei <kewei@marvell.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ecryptfs/inode.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/scsi/mvsas.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -673,10 +673,11 @@ static void *ecryptfs_follow_link(struct
- 	ecryptfs_printk(KERN_DEBUG, "Calling readlink w/ "
- 			"dentry->d_name.name = [%s]\n", dentry->d_name.name);
- 	rc = dentry->d_inode->i_op->readlink(dentry, (char __user *)buf, len);
--	buf[rc] = '\0';
- 	set_fs(old_fs);
- 	if (rc < 0)
- 		goto out_free;
-+	else
-+		buf[rc] = '\0';
- 	rc = 0;
- 	nd_set_link(nd, buf);
- 	goto out;
+--- a/drivers/scsi/mvsas.c
++++ b/drivers/scsi/mvsas.c
+@@ -2959,7 +2959,7 @@ static int __devinit mvs_hw_init(struct 
+ 
+ 	/* enable auto port detection */
+ 	mw32(GBL_PORT_TYPE, MODE_AUTO_DET_EN);
+-	msleep(100);
++	msleep(1100);
+ 	/* init and reset phys */
+ 	for (i = 0; i < mvi->chip->n_phy; i++) {
+ 		u32 lo = be32_to_cpu(*(u32 *)&mvi->sas_addr[4]);
 
