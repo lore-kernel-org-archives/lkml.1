@@ -1,131 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZAOU33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbZAOU3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbZAOU33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763212AbZAOUBb
+	id S933450AbZAOU3r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZAOUBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:01:31 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:56109 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932078AbZAOUBI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:01:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=bRhG1LK0DIHHCB2IqrDAl+W8rFPewyyslEWSXvEiDhSln3SkjJDFc97cP8HQzsyaDz
-         nHIDohm2arwjN5/EDPul1BEeoj8Zfm4WyN/G3++stSyeGb2X9gAUlEEA4KJYIiIVAsr4
-         8IrqTb5geyYoBb/hPC0vHgZqETEqrRQ3t+PU0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 15 Jan 2009 21:01:22 +0100
-Message-Id: <20090115200122.17294.13465.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
-References: <20090115200032.17294.84745.sendpatchset@localhost.localdomain>
-Subject: [PATCH 7/9] ide: move ide_do_park_unpark() to ide-park.c
+	Thu, 15 Jan 2009 15:01:32 -0500
+Received: from kroah.org ([198.145.64.141]:49246 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765934AbZAOUBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:01:10 -0500
+Date: Thu, 15 Jan 2009 11:58:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 46/94] [PATCH 15/44] [CVE-2009-0029] System call wrappers
+	part 05
+Message-ID: <20090115195857.GT14419@kroah.com>
+References: <20090115194806.804618825@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0015--CVE-2009-0029-System-call-wrappers-part-05.patch"
+In-Reply-To: <20090115195520.GA14403@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: move ide_do_park_unpark() to ide-park.c
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+------------------
+
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+commit 362e9c07c7220c0a78c88826fc0d2bf7e4a4bb68 upstream.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/ide/ide-io.c   |   24 ------------------------
- drivers/ide/ide-park.c |   25 +++++++++++++++++++++++++
- include/linux/ide.h    |    2 ++
- 3 files changed, 27 insertions(+), 24 deletions(-)
+ kernel/itimer.c       |    5 ++---
+ kernel/posix-timers.c |   43 +++++++++++++++++++------------------------
+ 2 files changed, 21 insertions(+), 27 deletions(-)
 
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -524,30 +524,6 @@ static ide_startstop_t ide_do_devset(ide
- 	return ide_stopped;
+--- a/kernel/itimer.c
++++ b/kernel/itimer.c
+@@ -260,9 +260,8 @@ unsigned int alarm_setitimer(unsigned in
+ 	return it_old.it_value.tv_sec;
  }
  
--static ide_startstop_t ide_do_park_unpark(ide_drive_t *drive, struct request *rq)
--{
--	ide_task_t task;
--	struct ide_taskfile *tf = &task.tf;
--
--	memset(&task, 0, sizeof(task));
--	if (rq->cmd[0] == REQ_PARK_HEADS) {
--		drive->sleep = *(unsigned long *)rq->special;
--		drive->dev_flags |= IDE_DFLAG_SLEEPING;
--		tf->command = ATA_CMD_IDLEIMMEDIATE;
--		tf->feature = 0x44;
--		tf->lbal = 0x4c;
--		tf->lbam = 0x4e;
--		tf->lbah = 0x55;
--		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
--	} else		/* cmd == REQ_UNPARK_HEADS */
--		tf->command = ATA_CMD_CHK_POWER;
--
--	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
--	task.rq = rq;
--	drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
--	return do_rw_taskfile(drive, &task);
--}
--
- static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
+-asmlinkage long sys_setitimer(int which,
+-			      struct itimerval __user *value,
+-			      struct itimerval __user *ovalue)
++SYSCALL_DEFINE3(setitimer, int, which, struct itimerval __user *, value,
++		struct itimerval __user *, ovalue)
  {
- 	u8 cmd = rq->cmd[0];
-Index: b/drivers/ide/ide-park.c
-===================================================================
---- a/drivers/ide/ide-park.c
-+++ b/drivers/ide/ide-park.c
-@@ -1,5 +1,6 @@
- #include <linux/kernel.h>
- #include <linux/ide.h>
-+#include <linux/hdreg.h>
- #include <linux/jiffies.h>
- #include <linux/blkdev.h>
+ 	struct itimerval set_buffer, get_buffer;
+ 	int error;
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -470,10 +470,9 @@ static void release_posix_timer(struct k
  
-@@ -60,6 +61,30 @@ out:
- 	return;
+ /* Create a POSIX.1b interval timer. */
+ 
+-asmlinkage long
+-sys_timer_create(const clockid_t which_clock,
+-		 struct sigevent __user *timer_event_spec,
+-		 timer_t __user * created_timer_id)
++SYSCALL_DEFINE3(timer_create, const clockid_t, which_clock,
++		struct sigevent __user *, timer_event_spec,
++		timer_t __user *, created_timer_id)
+ {
+ 	struct k_itimer *new_timer;
+ 	int error, new_timer_id;
+@@ -659,8 +658,8 @@ common_timer_get(struct k_itimer *timr, 
  }
  
-+ide_startstop_t ide_do_park_unpark(ide_drive_t *drive, struct request *rq)
-+{
-+	ide_task_t task;
-+	struct ide_taskfile *tf = &task.tf;
-+
-+	memset(&task, 0, sizeof(task));
-+	if (rq->cmd[0] == REQ_PARK_HEADS) {
-+		drive->sleep = *(unsigned long *)rq->special;
-+		drive->dev_flags |= IDE_DFLAG_SLEEPING;
-+		tf->command = ATA_CMD_IDLEIMMEDIATE;
-+		tf->feature = 0x44;
-+		tf->lbal = 0x4c;
-+		tf->lbam = 0x4e;
-+		tf->lbah = 0x55;
-+		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
-+	} else		/* cmd == REQ_UNPARK_HEADS */
-+		tf->command = ATA_CMD_CHK_POWER;
-+
-+	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
-+	task.rq = rq;
-+	drive->hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
-+	return do_rw_taskfile(drive, &task);
-+}
-+
- ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
- 		      char *buf)
+ /* Get the time remaining on a POSIX.1b interval timer. */
+-asmlinkage long
+-sys_timer_gettime(timer_t timer_id, struct itimerspec __user *setting)
++SYSCALL_DEFINE2(timer_gettime, timer_t, timer_id,
++		struct itimerspec __user *, setting)
  {
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1167,6 +1167,8 @@ int ide_busy_sleep(ide_hwif_t *, unsigne
+ 	struct k_itimer *timr;
+ 	struct itimerspec cur_setting;
+@@ -689,8 +688,7 @@ sys_timer_gettime(timer_t timer_id, stru
+  * the call back to do_schedule_next_timer().  So all we need to do is
+  * to pick up the frozen overrun.
+  */
+-asmlinkage long
+-sys_timer_getoverrun(timer_t timer_id)
++SYSCALL_DEFINE1(timer_getoverrun, timer_t, timer_id)
+ {
+ 	struct k_itimer *timr;
+ 	int overrun;
+@@ -758,10 +756,9 @@ common_timer_set(struct k_itimer *timr, 
+ }
  
- int ide_wait_stat(ide_startstop_t *, ide_drive_t *, u8, u8, unsigned long);
+ /* Set a POSIX.1b interval timer */
+-asmlinkage long
+-sys_timer_settime(timer_t timer_id, int flags,
+-		  const struct itimerspec __user *new_setting,
+-		  struct itimerspec __user *old_setting)
++SYSCALL_DEFINE4(timer_settime, timer_t, timer_id, int, flags,
++		const struct itimerspec __user *, new_setting,
++		struct itimerspec __user *, old_setting)
+ {
+ 	struct k_itimer *timr;
+ 	struct itimerspec new_spec, old_spec;
+@@ -814,8 +811,7 @@ static inline int timer_delete_hook(stru
+ }
  
-+ide_startstop_t ide_do_park_unpark(ide_drive_t *, struct request *);
-+
- extern ide_startstop_t ide_do_reset (ide_drive_t *);
+ /* Delete a POSIX.1b interval timer. */
+-asmlinkage long
+-sys_timer_delete(timer_t timer_id)
++SYSCALL_DEFINE1(timer_delete, timer_t, timer_id)
+ {
+ 	struct k_itimer *timer;
+ 	unsigned long flags;
+@@ -903,8 +899,8 @@ int do_posix_clock_nonanosleep(const clo
+ }
+ EXPORT_SYMBOL_GPL(do_posix_clock_nonanosleep);
  
- extern int ide_devset_execute(ide_drive_t *drive,
+-asmlinkage long sys_clock_settime(const clockid_t which_clock,
+-				  const struct timespec __user *tp)
++SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
++		const struct timespec __user *, tp)
+ {
+ 	struct timespec new_tp;
+ 
+@@ -916,8 +912,8 @@ asmlinkage long sys_clock_settime(const 
+ 	return CLOCK_DISPATCH(which_clock, clock_set, (which_clock, &new_tp));
+ }
+ 
+-asmlinkage long
+-sys_clock_gettime(const clockid_t which_clock, struct timespec __user *tp)
++SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
++		struct timespec __user *,tp)
+ {
+ 	struct timespec kernel_tp;
+ 	int error;
+@@ -933,8 +929,8 @@ sys_clock_gettime(const clockid_t which_
+ 
+ }
+ 
+-asmlinkage long
+-sys_clock_getres(const clockid_t which_clock, struct timespec __user *tp)
++SYSCALL_DEFINE2(clock_getres, const clockid_t, which_clock,
++		struct timespec __user *, tp)
+ {
+ 	struct timespec rtn_tp;
+ 	int error;
+@@ -963,10 +959,9 @@ static int common_nsleep(const clockid_t
+ 				 which_clock);
+ }
+ 
+-asmlinkage long
+-sys_clock_nanosleep(const clockid_t which_clock, int flags,
+-		    const struct timespec __user *rqtp,
+-		    struct timespec __user *rmtp)
++SYSCALL_DEFINE4(clock_nanosleep, const clockid_t, which_clock, int, flags,
++		const struct timespec __user *, rqtp,
++		struct timespec __user *, rmtp)
+ {
+ 	struct timespec t;
+ 
+
