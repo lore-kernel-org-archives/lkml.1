@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbZAOUiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933799AbZAOUie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249AbZAOUiG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbZAOUCS
+	id S933799AbZAOUie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932262AbZAOUCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:18 -0500
-Received: from kroah.org ([198.145.64.141]:49457 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:19 -0500
+Received: from kroah.org ([198.145.64.141]:49474 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932240AbZAOUCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:12 -0500
-Date: Thu, 15 Jan 2009 11:59:31 -0800
+	id S1762458AbZAOUCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:13 -0500
+Date: Thu, 15 Jan 2009 11:59:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 58/94] [PATCH 27/44] [CVE-2009-0029] System call wrappers
-	part 17
-Message-ID: <20090115195931.GF14419@kroah.com>
+Subject: [patch 59/94] [PATCH 28/44] [CVE-2009-0029] System call wrappers
+	part 18
+Message-ID: <20090115195934.GG14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0027--CVE-2009-0029-System-call-wrappers-part-17.patch"
+Content-Disposition: inline; filename="0028--CVE-2009-0029-System-call-wrappers-part-18.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,115 +42,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit ca013e945b1ba5828b151ee646946f1297b67a4c upstream.
+commit a6b42e83f249aad723589b2bdf6d1dfb2b0997c8 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/open.c      |   16 +++++++---------
- kernel/uid16.c |    6 +++---
- 2 files changed, 10 insertions(+), 12 deletions(-)
+ kernel/uid16.c |   21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -522,7 +522,7 @@ out:
- 	return res;
- }
- 
--asmlinkage long sys_access(const char __user *filename, int mode)
-+SYSCALL_DEFINE2(access, const char __user *, filename, int, mode)
- {
- 	return sys_faccessat(AT_FDCWD, filename, mode);
- }
-@@ -693,7 +693,7 @@ static int chown_common(struct dentry * 
- 	return error;
- }
- 
--asmlinkage long sys_chown(const char __user * filename, uid_t user, gid_t group)
-+SYSCALL_DEFINE3(chown, const char __user *, filename, uid_t, user, gid_t, group)
- {
- 	struct path path;
- 	int error;
-@@ -737,7 +737,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long sys_lchown(const char __user * filename, uid_t user, gid_t group)
-+SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t, group)
- {
- 	struct path path;
- 	int error;
-@@ -756,8 +756,7 @@ out:
- 	return error;
- }
- 
--
--asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group)
-+SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
- {
- 	struct file * file;
- 	int error = -EBADF;
-@@ -1048,7 +1047,7 @@ long do_sys_open(int dfd, const char __u
- 	return fd;
- }
- 
--asmlinkage long sys_open(const char __user *filename, int flags, int mode)
-+SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, int, mode)
- {
- 	long ret;
- 
-@@ -1117,7 +1116,7 @@ EXPORT_SYMBOL(filp_close);
-  * releasing the fd. This ensures that one clone task can't release
-  * an fd while another clone is opening it.
-  */
--asmlinkage long sys_close(unsigned int fd)
-+SYSCALL_DEFINE1(close, unsigned int, fd)
- {
- 	struct file * filp;
- 	struct files_struct *files = current->files;
-@@ -1150,14 +1149,13 @@ out_unlock:
- 	spin_unlock(&files->file_lock);
- 	return -EBADF;
- }
--
- EXPORT_SYMBOL(sys_close);
- 
- /*
-  * This routine simulates a hangup on the tty, to arrange that users
-  * are given clean terminals at login time.
-  */
--asmlinkage long sys_vhangup(void)
-+SYSCALL_DEFINE0(vhangup)
- {
- 	if (capable(CAP_SYS_TTY_CONFIG)) {
- 		tty_vhangup_self();
 --- a/kernel/uid16.c
 +++ b/kernel/uid16.c
-@@ -17,7 +17,7 @@
- 
- #include <asm/uaccess.h>
- 
--asmlinkage long sys_chown16(const char __user * filename, old_uid_t user, old_gid_t group)
-+SYSCALL_DEFINE3(chown16, const char __user *, filename, old_uid_t, user, old_gid_t, group)
- {
- 	long ret = sys_chown(filename, low2highuid(user), low2highgid(group));
- 	/* avoid REGPARM breakage on x86: */
-@@ -25,7 +25,7 @@ asmlinkage long sys_chown16(const char _
+@@ -41,7 +41,7 @@ SYSCALL_DEFINE3(fchown16, unsigned int, 
  	return ret;
  }
  
--asmlinkage long sys_lchown16(const char __user * filename, old_uid_t user, old_gid_t group)
-+SYSCALL_DEFINE3(lchown16, const char __user *, filename, old_uid_t, user, old_gid_t, group)
+-asmlinkage long sys_setregid16(old_gid_t rgid, old_gid_t egid)
++SYSCALL_DEFINE2(setregid16, old_gid_t, rgid, old_gid_t, egid)
  {
- 	long ret = sys_lchown(filename, low2highuid(user), low2highgid(group));
+ 	long ret = sys_setregid(low2highgid(rgid), low2highgid(egid));
  	/* avoid REGPARM breakage on x86: */
-@@ -33,7 +33,7 @@ asmlinkage long sys_lchown16(const char 
+@@ -49,7 +49,7 @@ asmlinkage long sys_setregid16(old_gid_t
  	return ret;
  }
  
--asmlinkage long sys_fchown16(unsigned int fd, old_uid_t user, old_gid_t group)
-+SYSCALL_DEFINE3(fchown16, unsigned int, fd, old_uid_t, user, old_gid_t, group)
+-asmlinkage long sys_setgid16(old_gid_t gid)
++SYSCALL_DEFINE1(setgid16, old_gid_t, gid)
  {
- 	long ret = sys_fchown(fd, low2highuid(user), low2highgid(group));
+ 	long ret = sys_setgid(low2highgid(gid));
+ 	/* avoid REGPARM breakage on x86: */
+@@ -57,7 +57,7 @@ asmlinkage long sys_setgid16(old_gid_t g
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_setreuid16(old_uid_t ruid, old_uid_t euid)
++SYSCALL_DEFINE2(setreuid16, old_uid_t, ruid, old_uid_t, euid)
+ {
+ 	long ret = sys_setreuid(low2highuid(ruid), low2highuid(euid));
+ 	/* avoid REGPARM breakage on x86: */
+@@ -65,7 +65,7 @@ asmlinkage long sys_setreuid16(old_uid_t
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_setuid16(old_uid_t uid)
++SYSCALL_DEFINE1(setuid16, old_uid_t, uid)
+ {
+ 	long ret = sys_setuid(low2highuid(uid));
+ 	/* avoid REGPARM breakage on x86: */
+@@ -73,7 +73,7 @@ asmlinkage long sys_setuid16(old_uid_t u
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_setresuid16(old_uid_t ruid, old_uid_t euid, old_uid_t suid)
++SYSCALL_DEFINE3(setresuid16, old_uid_t, ruid, old_uid_t, euid, old_uid_t, suid)
+ {
+ 	long ret = sys_setresuid(low2highuid(ruid), low2highuid(euid),
+ 				 low2highuid(suid));
+@@ -82,7 +82,7 @@ asmlinkage long sys_setresuid16(old_uid_
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_getresuid16(old_uid_t __user *ruid, old_uid_t __user *euid, old_uid_t __user *suid)
++SYSCALL_DEFINE3(getresuid16, old_uid_t __user *, ruid, old_uid_t __user *, euid, old_uid_t __user *, suid)
+ {
+ 	int retval;
+ 
+@@ -93,7 +93,7 @@ asmlinkage long sys_getresuid16(old_uid_
+ 	return retval;
+ }
+ 
+-asmlinkage long sys_setresgid16(old_gid_t rgid, old_gid_t egid, old_gid_t sgid)
++SYSCALL_DEFINE3(setresgid16, old_gid_t, rgid, old_gid_t, egid, old_gid_t, sgid)
+ {
+ 	long ret = sys_setresgid(low2highgid(rgid), low2highgid(egid),
+ 				 low2highgid(sgid));
+@@ -102,7 +102,8 @@ asmlinkage long sys_setresgid16(old_gid_
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_getresgid16(old_gid_t __user *rgid, old_gid_t __user *egid, old_gid_t __user *sgid)
++
++SYSCALL_DEFINE3(getresgid16, old_gid_t __user *, rgid, old_gid_t __user *, egid, old_gid_t __user *, sgid)
+ {
+ 	int retval;
+ 
+@@ -113,7 +114,7 @@ asmlinkage long sys_getresgid16(old_gid_
+ 	return retval;
+ }
+ 
+-asmlinkage long sys_setfsuid16(old_uid_t uid)
++SYSCALL_DEFINE1(setfsuid16, old_uid_t, uid)
+ {
+ 	long ret = sys_setfsuid(low2highuid(uid));
+ 	/* avoid REGPARM breakage on x86: */
+@@ -121,7 +122,7 @@ asmlinkage long sys_setfsuid16(old_uid_t
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_setfsgid16(old_gid_t gid)
++SYSCALL_DEFINE1(setfsgid16, old_gid_t, gid)
+ {
+ 	long ret = sys_setfsgid(low2highgid(gid));
  	/* avoid REGPARM breakage on x86: */
 
