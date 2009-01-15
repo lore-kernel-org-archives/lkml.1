@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbZAOXdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765585AbZAOXeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934270AbZAOXdm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 18:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765056AbZAOXcq
+	id S1765585AbZAOXeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 18:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933279AbZAOXdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 18:32:46 -0500
-Received: from 1wt.eu ([62.212.114.60]:1521 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932446AbZAOXcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 18:32:45 -0500
-Date: Fri, 16 Jan 2009 00:32:20 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>, jarkao2@gmail.com, zbr@ioremap.net,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090115233220.GD1123@1wt.eu>
-References: <20090113.232710.55011568.davem@davemloft.net> <20090114082630.GB16692@gondor.apana.org.au> <20090114085308.GB4234@ff.dom.local> <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au>
+	Thu, 15 Jan 2009 18:33:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35770 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765437AbZAOXdU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 18:33:20 -0500
+Subject: Re: [GIT PULL] scheduler fixes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1232061471.8870.77.camel@laptop>
+References: <20090115220809.GA7793@elte.hu>
+	 <1232061471.8870.77.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 00:33:11 +0100
+Message-Id: <1232062391.8870.81.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115231934.GA8328@gondor.apana.org.au>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 10:19:35AM +1100, Herbert Xu wrote:
-> On Fri, Jan 16, 2009 at 12:03:31AM +0100, Willy Tarreau wrote:
-> > 
-> > I'm leaving the patch below for comments, maybe someone will spot
-> > something ? Don't we need at least one kfree() somewhere to match
-> > alloc_pages() ?
-> 
-> Indeed.
-> 
-> > >  static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
-> > >  				unsigned int len, unsigned int offset,
-> > > -				struct sk_buff *skb)
-> > > +				struct sk_buff *skb, int linear)
-> > >  {
-> > >  	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
-> > >  		return 1;
-> > >  
-> > > +	if (linear) {
-> > > +		page = linear_to_page(page, len, offset);
-> > > +		if (!page)
-> > > +			return 1;
-> > > +	}
-> > > +
-> > >  	spd->pages[spd->nr_pages] = page;
-> > >  	spd->partial[spd->nr_pages].len = len;
-> > >  	spd->partial[spd->nr_pages].offset = offset;
-> > > -	spd->partial[spd->nr_pages].private = (unsigned long) skb_get(skb);
-> > >  	spd->nr_pages++;
-> > > +	get_page(page);
-> 
-> This get_page needs to be moved into an else clause of the previous
-> if block.
 
-Good catch Herbert, it's working fine now. The performance I get
-(30.6 MB/s) is between the original splice version (24.1) and the
-recently optimized one (35.7). That's not that bad considering
-we're copying the data.
+In specific, these two:
 
-Cheers,
-Willy
+> >       sched: SCHED_IDLE weight change
+> >       sched: SCHED_OTHER vs SCHED_IDLE isolation
+
+Ought to have:
+
+  From: Mike Galbraith <efault@gmx.de>
+
+Linus could you fix that up or tell Ingo to fix it up for you? :-)
+
+---
+
+Dear lazyweb,
+
+Could somebody please 'fix' quilt to not eat From thingies in patches
+but put them in the body of the generated email?
+
+
 
