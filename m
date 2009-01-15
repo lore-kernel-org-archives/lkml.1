@@ -1,126 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759805AbZAOMgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbZAOMgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759805AbZAOMgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZAOMgM
+	id S1758666AbZAOMgk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759712AbZAOMgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:36:12 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34382 "EHLO mx2.suse.de"
+	Thu, 15 Jan 2009 07:36:18 -0500
+Received: from lug-owl.de ([195.71.106.12]:37431 "EHLO lug-owl.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754929AbZAOMgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:36:10 -0500
-Date: Thu, 15 Jan 2009 13:36:07 +0100
-From: Olaf Dabrunz <od@suse.de>
-To: Jon Masters <jcm@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Stefan Assmann <sassmann@suse.de>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: PCI, ACPI, IRQ, IOAPIC: reroute PCI interrupt to legacy boot
-	interrupt equivalent
-Message-ID: <20090115123607.GS25512@suse.de>
-Mail-Followup-To: Jon Masters <jcm@redhat.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Ingo Molnar <mingo@elte.hu>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Stefan Assmann <sassmann@suse.de>, Len Brown <lenb@kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	id S1759280AbZAOMgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:36:16 -0500
+Date: Thu, 15 Jan 2009 13:36:14 +0100
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
+       Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090115123614.GR11087@lug-owl.de>
+Mail-Followup-To: "Maciej W. Rozycki" <macro@linux-mips.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
+	linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
 	Thomas Gleixner <tglx@linutronix.de>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org, Sven Dietrich <sdietrich@novell.com>,
-	"Maciej W. Rozycki" <macro@linux-mips.org>
-References: <200901121151.53195.bjorn.helgaas@hp.com> <m1d4esxfk2.fsf@frodo.ebiederm.org> <1231806563.4094.25.camel@perihelion.bos.jonmasters.org> <20090113014723.GA11366@elte.hu> <m1prirx3xn.fsf@frodo.ebiederm.org> <1231820798.4094.34.camel@perihelion.bos.jonmasters.org> <20090114114006.GF8625@elte.hu> <1231960709.23174.0.camel@londonpacket.bos.redhat.com> <m11vv5wlug.fsf@frodo.ebiederm.org> <1231973760.23174.33.camel@londonpacket.bos.redhat.com>
+	"H. Peter Anvin" <hpa@zytor.com>
+References: <20090108120338.6b8b4567@zonk.pl> <alpine.LRH.1.10.0901081359520.24105@twin.jikos.cz> <1231424025.11687.447.camel@twins> <alpine.LNX.1.10.0901081518070.5377@jikos.suse.cz> <1231424833.11687.452.camel@twins> <20090108150448.2393aeb0@lxorguk.ukuu.org.uk> <20090108151046.GK18120@elte.hu> <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="thbZYyT/l9NtheWI"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1231973760.23174.33.camel@londonpacket.bos.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org>
+X-Operating-System: Linux mail 2.6.18-5-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-message-flag: Please send plain text messages only. Do not send HTML emails. Thank you. 
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14-Jan-09, Jon Masters wrote:
-> On Wed, 2009-01-14 at 14:42 -0800, Eric W. Biederman wrote:
-> > Jon Masters <jcm@redhat.com> writes:
-> > 
-> > > On Wed, 2009-01-14 at 12:40 +0100, Ingo Molnar wrote:
-> > >
-> > >> it's not just -rt, but it is also needed for the concept of threaded IRQ 
-> > >> handlers - which was discussed at the Kernel Summit to be desired for 
-> > >> mainline.
-> > >
-> > > Right. I'm poking at Thomas' patches and hope to post something soon on
-> > > that front - I'm acutely aware that this will be impacted aswell but
-> > > because it's vaguely RT related had banded it under that banner.
-> > 
-> > Stepping back a moment.  The only way I can see this working reliably
-> > is if we disable the boot interrupt.  Anything that leaves the boot interrupt
-> > enabled means that when we disable the primary interrupt the boot interrupt
-> > will scream, and thus we must disable it as well.
-> > 
-> > Which leads to my problem with the entire development process of this feature.
-> > 
-> >  People want the feature.
-> >  People don't want to pay attention to the limits of the hardware.
-> >  Which leads to countless broken patches proposed.
-> 
-> Is a patch broken because hardware has limitations? If that were always
-> true then many of the patches we see in the kernel wouldn't be there.
-> 
-> > Which leads me to conclude.
-> > - IRQ handling in the RT kernel is hopelessly broken.
-> 
-> Nope. It's done in a very similar way to other real time kernels already
-> out there - really there are only so many ways to do this.
-> 
-> > - IRQ threads are a bad idea.
-> 
-> Why? IRQ threads actually make life so much easier - you have a task
-> context, you can do everything inside that rather than scheduling all
-> kinds of deferred work (that in RT will be done in another task later),
-> and so forth.
-> 
-> > None of this works reliably on level triggered ioapic irqs.
 
-Actually it works very well. The patches are also not _that_
-complicated. We have two kinds of patches:
+--thbZYyT/l9NtheWI
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    1) if possible on the chipset, disable boot irqs (if in APIC mode)
+On Tue, 2009-01-13 01:06:55 +0000, Maciej W. Rozycki <macro@linux-mips.org>=
+ wrote:
+>=20
+>  Myself, I could not resist trying an APIC-based 486 SMP box and possibly=
+=20
+> fixing issues if I found one and it was MPS-compliant, but nothing beyond=
+=20
+> that I would say.  Life's too short.
 
-       - this works as designed and has no problems
+While it is not SMP, I still have one or two working i386 (and
+a compatible AMD) system around.
 
-       - we cover up for broken BIOSes here that forget to disable boot
-         irqs
+Back in the days where I ran them the last time, there were two
+issues:
 
-    2) if we cannot disable boot irqs, disable the original interrupt
-       line and only use the boot irq line -> no duplicated interrupts,
-       but increased interrupt sharing
+  * Debian's baseline libc is compiled to use LOCK and some other
+    newish instructions that are not available on a real i386 CPU.
+  * There was a patch flying around to introduce a kernel-based
+    emulator for those instructions. However, this was (at that time)
+    neither included in Debian's kernel, nor in the upstream sources.
 
-       - this is a hack for older, but widely used chipsets
+MfG, JBG
 
-       - we cover up for broken hardware (wrt threaded IRQ handling)
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:               http://www.eyrie.org/~eagle/faqs/questions.html
+the second  :
 
-       - when the broken hardware falls out of use, this is not needed
-         anymore
+--thbZYyT/l9NtheWI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-The only limitations we have so far:
+iD8DBQFJby2+Hb1edYOZ4bsRApAnAKCFZ1/s5eX01Bci+aqPd9yKPVsnfwCdHHWH
+l8+H50Bov5lmatsYIF15AZs=
+=U10Q
+-----END PGP SIGNATURE-----
 
-    - For newer chipsets, we have to make sure that we find the disable
-      bit. Vendors should put this bit in a common place.
-
-    - It is a lot of work to describe all of the findings and
-      experimental results we had, in a digestable way.
-
-> Level triggered IOAPIC IRQs have quirks, film at 11!
-
-Love this. *grin* :)
-
--- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+--thbZYyT/l9NtheWI--
