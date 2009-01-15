@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZAOQgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbZAOQnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbZAOQgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 11:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZAOQgg
+	id S1758313AbZAOQnA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 11:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZAOQmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 11:36:36 -0500
-Received: from websrv.werbeagentur-aufwind.de ([88.198.253.206]:35391 "EHLO
-	websrv.werbeagentur-aufwind.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753167AbZAOQgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 11:36:35 -0500
-Subject: Re: OOPS and panic on 2.6.29-rc1 on xen-x86
-From: Christophe Saout <christophe@saout.de>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, linux-mm@kvack.org
-In-Reply-To: <3e8340490901141619g3c32ebads482d1176efbd98a3@mail.gmail.com>
-References: <20090112172613.GA8746@shion.is.fushizen.net>
-	 <3e8340490901122054q4af2b4cm3303c361477defc0@mail.gmail.com>
-	 <20090114025910.GA17395@wotan.suse.de>
-	 <3e8340490901141619g3c32ebads482d1176efbd98a3@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 17:36:32 +0100
-Message-Id: <1232037392.4604.4.camel@leto.intern.saout.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Thu, 15 Jan 2009 11:42:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40388 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbZAOQmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 11:42:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+Date: Thu, 15 Jan 2009 17:42:08 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200901042346.42723.rjw@sisk.pl> <496EE7ED.10408@jp.fujitsu.com> <496F1078.5040904@jp.fujitsu.com>
+In-Reply-To: <496F1078.5040904@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901151742.09227.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, den 14.01.2009, 19:19 -0500 schrieb Bryan Donlan:
-> On Tue, Jan 13, 2009 at 9:59 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > On Mon, Jan 12, 2009 at 11:54:32PM -0500, Bryan Donlan wrote:
-> >>
-> >> I've bisected the bug in question, and the faulty commit appears to be:
-> >> commit e97a630eb0f5b8b380fd67504de6cedebb489003
-> >> Author: Nick Piggin <npiggin@suse.de>
-> >> Date:   Tue Jan 6 14:39:19 2009 -0800
-> >>
-> >>     mm: vmalloc use mutex for purge
-> >>
-> >>     The vmalloc purge lock can be a mutex so we can sleep while a purge is
-> >>     going on (purge involves a global kernel TLB invalidate, so it can take
-> >>     quite a while).
-> >>
-> >>     Signed-off-by: Nick Piggin <npiggin@suse.de>
-> >>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> >>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> >>
-> >> The bug is easily reproducable by a kernel build on -j4 - it will
-> >> generally OOPS and panic before the build completes.
-> >> Also, I've tested it with ext3, and it still occurs, so it seems
-> >> unrelated to btrfs at least :)
-> >>
->
-> Here's one from a config with CONFIG_DEBUG_BUGVERBOSE:
-> 
-> ------------[ cut here ]------------
-> kernel BUG at /root/linux-2.6/arch/x86/include/asm/mmu_context_32.h:39!
+On Thursday 15 January 2009, Kenji Kaneshige wrote:
+> Hidetoshi Seto wrote:
+> > Rafael J. Wysocki wrote:
+> >> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
+> >>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
+> >> [...]
+> >>>> I'm sorry but I don't understand what the problem is.
+> >>>> Do you mean pci_disable_msix() doesn't work on some platforms?
+> >>> No, I don't.  It was just confusion on my side, sorry.
+> >>>
+> >>> Please have a look at the new version of the patch I sent yesterday
+> >>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
+> >> BTW, in your patch the first dummy pci_enable_msix() allocates just one
+> >> vector, which means that the contents of both
+> >> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
+> >> if my reading of the spec (PCI 3.0 in this case) is correct.
+> > 
+> > According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
+> > it seems your reading is not correct.
+> > 
+> > Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
+> > for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
+> > Spec says that the port could be designed for software to configure entries
+> > assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
+> > 
+> > So if there is just one vector, it could be AAAA.
 
-For the record, I was getting the same bug on x86_64:
+Our pci_enable_msix() doesn't do that.  It will always do A---.
 
-(in mmu_context_64.h):
+> BTW, I don't think pci_enable_msix() allows this kind of configuration.
+> With the dummy pci_enable_msix() in my patch, it would be A---, I think.
 
-...
-#ifdef CONFIG_SMP
-        else {
-                write_pda(mmu_state, TLBSTATE_OK);
-                if (read_pda(active_mm) != next)    
-                        BUG();
-...
+And that exactly is why I'm not sure it's correct.
 
-Christophe
+Namely, if only the first entry is configured, the device is only able to use
+one vector, represented by this entry, for any purpose.  Now, for instance, for
+PCIE_CAPABILITIES_REG, there are two possibilities:
+(1) the value in the register always points to the _valid_ entry in the MSI-X
+    table and that would be the first one,
+(2) the value in the register may point to an _invalid_ entry (1 - 3).
 
+You seem to assume that (2) is the case, but I'm not sure (that should follow
+from the PCI Express spec, but it clearly doesn't, at least I couldn't find
+any pointer in the spec).  IMO it wouldn't make sense, because the port
+wouldn't have been able to generate interrupts for this service if only one
+vector had been configured.
 
+Still, even though (2) is the case, but both PCIE_CAPABILITIES_REG and
+PCI_ERR_ROOT_STATUS just happen to point to the same entry, which very well may
+be possible, the second pci_enable_msix() in your patch will fail.
+
+In any case, I think we should
+(a) get the number of the port's MSI-X table entries _first_, without enabling
+    MSI-X,
+(b) allocate as many MSI-X vectors as indicated by this number, even though
+    some of them may not be used,
+(c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
+    which vector has been allocated to which service.
+
+Thanks,
+Rafael
