@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763743AbZAOTGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbZAOTLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763743AbZAOTGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 14:06:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZAOTGW
+	id S1762300AbZAOTLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 14:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbZAOTLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 14:06:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40911 "EHLO ogre.sisk.pl"
+	Thu, 15 Jan 2009 14:11:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40935 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754679AbZAOTGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 14:06:21 -0500
+	id S1753001AbZAOTLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 14:11:23 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-Date: Thu, 15 Jan 2009 20:05:24 +0100
+Date: Thu, 15 Jan 2009 20:10:59 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-rjw; KDE/4.1.3; x86_64; ; )
 Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Linux PCI <linux-pci@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-References: <200901042346.42723.rjw@sisk.pl> <496F1078.5040904@jp.fujitsu.com> <200901151742.09227.rjw@sisk.pl>
-In-Reply-To: <200901151742.09227.rjw@sisk.pl>
+References: <200901042346.42723.rjw@sisk.pl> <200901151742.09227.rjw@sisk.pl> <200901152005.25370.rjw@sisk.pl>
+In-Reply-To: <200901152005.25370.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901152005.25370.rjw@sisk.pl>
+Message-Id: <200901152011.00216.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Thursday 15 January 2009, Rafael J. Wysocki wrote:
-> On Thursday 15 January 2009, Kenji Kaneshige wrote:
-> > Hidetoshi Seto wrote:
-> > > Rafael J. Wysocki wrote:
-> > >> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
-> > >>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
-> > >> [...]
-> > >>>> I'm sorry but I don't understand what the problem is.
-> > >>>> Do you mean pci_disable_msix() doesn't work on some platforms?
-> > >>> No, I don't.  It was just confusion on my side, sorry.
-> > >>>
-> > >>> Please have a look at the new version of the patch I sent yesterday
-> > >>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
-> > >> BTW, in your patch the first dummy pci_enable_msix() allocates just one
-> > >> vector, which means that the contents of both
-> > >> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
-> > >> if my reading of the spec (PCI 3.0 in this case) is correct.
-> > > 
-> > > According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
-> > > it seems your reading is not correct.
-> > > 
-> > > Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
-> > > for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
-> > > Spec says that the port could be designed for software to configure entries
-> > > assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
-> > > 
-> > > So if there is just one vector, it could be AAAA.
+> On Thursday 15 January 2009, Rafael J. Wysocki wrote:
+> > On Thursday 15 January 2009, Kenji Kaneshige wrote:
+> > > Hidetoshi Seto wrote:
+> > > > Rafael J. Wysocki wrote:
+> > > >> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
+> > > >>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
+> > > >> [...]
+> > > >>>> I'm sorry but I don't understand what the problem is.
+> > > >>>> Do you mean pci_disable_msix() doesn't work on some platforms?
+> > > >>> No, I don't.  It was just confusion on my side, sorry.
+> > > >>>
+> > > >>> Please have a look at the new version of the patch I sent yesterday
+> > > >>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
+> > > >> BTW, in your patch the first dummy pci_enable_msix() allocates just one
+> > > >> vector, which means that the contents of both
+> > > >> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
+> > > >> if my reading of the spec (PCI 3.0 in this case) is correct.
+> > > > 
+> > > > According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
+> > > > it seems your reading is not correct.
+> > > > 
+> > > > Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
+> > > > for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
+> > > > Spec says that the port could be designed for software to configure entries
+> > > > assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
+> > > > 
+> > > > So if there is just one vector, it could be AAAA.
+> > 
+> > Our pci_enable_msix() doesn't do that.  It will always do A---.
+> > 
+> > > BTW, I don't think pci_enable_msix() allows this kind of configuration.
+> > > With the dummy pci_enable_msix() in my patch, it would be A---, I think.
+> > 
+> > And that exactly is why I'm not sure it's correct.
+> > 
+> > Namely, if only the first entry is configured, the device is only able to use
+> > one vector, represented by this entry, for any purpose.  Now, for instance, for
+> > PCIE_CAPABILITIES_REG, there are two possibilities:
+> > (1) the value in the register always points to the _valid_ entry in the MSI-X
+> >     table and that would be the first one,
+> > (2) the value in the register may point to an _invalid_ entry (1 - 3).
+> > 
+> > You seem to assume that (2) is the case, but I'm not sure (that should follow
+> > from the PCI Express spec, but it clearly doesn't, at least I couldn't find
+> > any pointer in the spec).  IMO it wouldn't make sense, because the port
+> > wouldn't have been able to generate interrupts for this service if only one
+> > vector had been configured.
+> > 
+> > Still, even though (2) is the case, but both PCIE_CAPABILITIES_REG and
+> > PCI_ERR_ROOT_STATUS just happen to point to the same entry, which very well may
+> > be possible, the second pci_enable_msix() in your patch will fail.
+> > 
+> > In any case, I think we should
+> > (a) get the number of the port's MSI-X table entries _first_, without enabling
+> >     MSI-X,
+> > (b) allocate as many MSI-X vectors as indicated by this number, even though
+> >     some of them may not be used,
+> > (c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
+> >     which vector has been allocated to which service.
 > 
-> Our pci_enable_msix() doesn't do that.  It will always do A---.
-> 
-> > BTW, I don't think pci_enable_msix() allows this kind of configuration.
-> > With the dummy pci_enable_msix() in my patch, it would be A---, I think.
-> 
-> And that exactly is why I'm not sure it's correct.
-> 
-> Namely, if only the first entry is configured, the device is only able to use
-> one vector, represented by this entry, for any purpose.  Now, for instance, for
-> PCIE_CAPABILITIES_REG, there are two possibilities:
-> (1) the value in the register always points to the _valid_ entry in the MSI-X
->     table and that would be the first one,
-> (2) the value in the register may point to an _invalid_ entry (1 - 3).
-> 
-> You seem to assume that (2) is the case, but I'm not sure (that should follow
-> from the PCI Express spec, but it clearly doesn't, at least I couldn't find
-> any pointer in the spec).  IMO it wouldn't make sense, because the port
-> wouldn't have been able to generate interrupts for this service if only one
-> vector had been configured.
-> 
-> Still, even though (2) is the case, but both PCIE_CAPABILITIES_REG and
-> PCI_ERR_ROOT_STATUS just happen to point to the same entry, which very well may
-> be possible, the second pci_enable_msix() in your patch will fail.
-> 
-> In any case, I think we should
-> (a) get the number of the port's MSI-X table entries _first_, without enabling
->     MSI-X,
-> (b) allocate as many MSI-X vectors as indicated by this number, even though
->     some of them may not be used,
-> (c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
->     which vector has been allocated to which service.
+> (d) mask the unused vectors.
 
-(d) mask the unused vectors.
+However, it's probably simpler to do something like in your patch, although
+I don't like the dummy enabling of MSI-X at all.
 
 Thanks,
 Rafael
