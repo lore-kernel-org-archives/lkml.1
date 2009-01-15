@@ -1,27 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZAOJuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbZAOJyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbZAOJuX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 04:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbZAOJuA
+	id S1760918AbZAOJyB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 04:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbZAOJxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 04:50:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38939 "EHLO mx3.mail.elte.hu"
+	Thu, 15 Jan 2009 04:53:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49211 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757224AbZAOJt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 04:49:58 -0500
-Date: Thu, 15 Jan 2009 10:49:38 +0100
+	id S1751480AbZAOJxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 04:53:48 -0500
+Date: Thu, 15 Jan 2009 10:53:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: arch_probe_nr_irqs
-Message-ID: <20090115094938.GB5833@elte.hu>
-References: <496AD835.6000509@kernel.org> <20090112091952.GI26750@elte.hu> <20090112092613.GA1822@elte.hu> <496B9FC3.7080306@kernel.org> <496BCD14.3020201@sgi.com> <20090114111949.GO2913@elte.hu> <496E4211.6040503@sgi.com> <20090114201152.GA31581@elte.hu> <496E587E.6010503@sgi.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Message-ID: <20090115095321.GC5833@elte.hu>
+References: <1231774622.4371.96.camel@laptop> <1231859742.442.128.camel@twins> <alpine.LFD.2.00.0901130812590.6528@localhost.localdomain> <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins> <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <1231958447.8269.30.camel@think.oraclecorp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <496E587E.6010503@sgi.com>
+In-Reply-To: <1231958447.8269.30.camel@think.oraclecorp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,83 +47,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Travis <travis@sgi.com> wrote:
+* Chris Mason <chris.mason@oracle.com> wrote:
 
-> Very cool, thanks!!
+> On Wed, 2009-01-14 at 19:33 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > Full series, including changelogs available at:
+> > > 
+> > >  http://programming.kicks-ass.net/kernel-patches/mutex-adaptive-spin/
+> > > 
+> > > and should shortly appear in a git tree near Ingo :-)
+> > 
+> > Linus,
+> > 
+> > Please pull the adaptive-mutexes-for-linus git tree from:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git adaptive-mutexes-for-linus
+> > 
 > 
-> The one thing I always get hung up on is what args to use with the git 
-> rebase -i command.  Say I want to edit 4a046d1 (which I do ;-), I see it 
-> in my repo with git-log (3rd one down):
+> I was going to put this into the btrfs tree, but since you have a branch
+> just for adaptive mutexes, is it easier to put there?
+> 
+> From: Chris Mason <chris.mason@oracle.com>
+> 
+> Btrfs: stop spinning on mutex_trylock and let the adaptive code spin for us
+> 
+> Mutexes now spin internally and the btrfs spin is no longer required for
+> performance.
+> 
+> Signed-off-by: Chris Mason <chris.mason@oracle.com>
 
-You shouldnt edit 4a046d1 anymore as i already pulled it - you can queue 
-up a fix commit. (Or we can decide to drop the whole tree and re-pull 
-yours - but that is an emergency path not to be taken lightly.)
-
-Btw., to 'edit' your own commits, you can always do something like this. 
-For example, if this is the current lineup of your own commits (not yet 
-pulled by anyone):
-
- a4a0acf: x86: fix broken flush_tlb_others_ipi()
- 28e0886: xen: fix too early kmalloc call
- 92296c6: cpumask, irq: non-x86 build failures
- 542d865: kstat: modify kstat_irqs_legacy to be variable sized
- 9332fcc: irq: initialize nr_irqs based on nr_cpu_ids
- 0fa0ebb: irq: allocate irq_desc_ptrs array based on nr_irqs
- e2f4d06: irq: use WARN() instead of WARN_ON().
-
-... and you realize that there's a bug in the middle, at 542d865, that 
-you'd like to fix locally before pushing it out for others to pull.
-
-In this case you can rebase and fix in "two phases". The first phase is to 
-'reorder commits':
-
-  git rebase -i 542d865^1
-
-i.e. you start your rebase _from before_ the commit in question. All old 
-history will be preserved (which is always good - you always want the 
-minimum rebase - avoid full rebases as much as possible).
-
-You will be offered this git-rebase screen:
-
- pick 542d865 kstat: modify kstat_irqs_legacy to be variable sized
- pick 92296c6 cpumask, irq: non-x86 build failures
- pick 28e0886 xen: fix too early kmalloc call
- pick a4a0acf x86: fix broken flush_tlb_others_ipi()
-
-Edit it to move the first line to the last, like this:
-
- pick 92296c6 cpumask, irq: non-x86 build failures
- pick 28e0886 xen: fix too early kmalloc call
- pick a4a0acf x86: fix broken flush_tlb_others_ipi()
- pick 542d865 kstat: modify kstat_irqs_legacy to be variable sized
-
-and run the rebase. Now you'll have a new lineup with the buggy commit at 
-the end. (lets assume there were no conflicts caused by the reordering) 
-For example you could get:
-
- b304542: kstat: modify kstat_irqs_legacy to be variable sized
- d398631: x86: fix broken flush_tlb_others_ipi()
- ab6211f: xen: fix too early kmalloc call
- ef3b48b: cpumask, irq: non-x86 build failures
- 9332fcc: irq: initialize nr_irqs based on nr_cpu_ids
- 0fa0ebb: irq: allocate irq_desc_ptrs array based on nr_irqs
- e2f4d06: irq: use WARN() instead of WARN_ON().
-
-note how there's new commit IDs starting at ef3b48b - but all previous 
-commits (9332fcc, 0fa0ebb, e2f4d06) were preserved.
-
-Now comes 'phase 2': the problematic commit is at the end of the lineup 
-and you can fix it in multiple development steps, by editing the buggy 
-source and adding it to the commit via:
-
-   git add kernel/file.c
-   git commit --amend
-
-Ok?
-
-( Or if you are sure you can fix the bug via a single pass, you can change 
-  the 'pick' line to 'edit' and do the editing and 'git commit --amend' 
-  right during the rebase. If it's still not perfect it needs another 
-  rebase though and it's easy to mess up rebases. )
+applied it to tip/core/locking, thanks Chris!
 
 	Ingo
