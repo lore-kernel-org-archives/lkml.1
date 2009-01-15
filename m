@@ -1,117 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZAOSML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764000AbZAOSPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbZAOSML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:12:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZAOSLz
+	id S1764000AbZAOSPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAOSPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:11:55 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:46348 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751447AbZAOSLz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:11:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=r4b5BUdSpSgo+BhVeFXYzjAXwCzQebKODZiLx9k9TSERB2kMOb5YsqauHLwCiaXn+aFhH/doZagXcIz/EEnvMcHoZFNCq1bhI0eP2sPM5kgQQRrKf6Dm1nLtUM+IuUoHZnOylykQOO2w64LZdpDbOQO/yK+DucwW7UXa+NGEN8Q=  ;
-X-YMail-OSG: mLOxy9QVM1lTZ3rG5ienPdrT75kEIgbJ5pY7JgBuaNjF16OWwRoEekWTOb3Dvqy6CMb2PPnFyAjjQgocFUqX98bRiyEOyWLhC6TTZ1m0xthqyQW.N0S31EWtFLQvja7gFFucPlhCtiYu4sRKOWTykARp96bjbGIBnqXSrwRW8qkqD3829rflZcoCiE7TOt27dQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [patch 2.6.29-rc] regulator: add get_status()
-Date: Thu, 15 Jan 2009 10:11:51 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-References: <200811091531.46003.david-b@pacbell.net> <20090115124007.GD2147@sirena.org.uk> <1232023845.4934.368.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1232023845.4934.368.camel@vega.slimlogic.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 15 Jan 2009 13:15:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39569 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbZAOSPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:15:24 -0500
+Subject: Re: Mainline kernel OLTP performance update
+From: Steven Rostedt <srostedt@redhat.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <20090115180052.GG29283@parisc-linux.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <1232028766.5966.10.camel@localhost.localdomain>
+	 <20090115094442.b6394544.akpm@linux-foundation.org>
+	 <20090115180052.GG29283@parisc-linux.org>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Thu, 15 Jan 2009 13:14:47 -0500
+Message-Id: <1232043287.21980.65.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151011.52250.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009, Liam Girdwood wrote:
+
+On Thu, 2009-01-15 at 11:00 -0700, Matthew Wilcox wrote:
+> On Thu, Jan 15, 2009 at 09:44:42AM -0800, Andrew Morton wrote:
+> > > Me too.  Anecdotally, I haven't noticed this in my lab machines, but
+> > > what I have noticed is on someone else's laptop (a hyperthreaded atom)
+> > > that I was trying to demo powertop on was that IPI reschedule interrupts
+> > > seem to be out of control ... they were ticking over at a really high
+> > > rate and preventing the CPU from spending much time in the low C and P
+> > > states.  To me this implicates some scheduler problem since that's the
+> > > primary producer of IPI reschedules ... I think it wouldn't be a
+> > > significant extrapolation to predict that the scheduler might be the
+> > > cause of the above problem as well.
+> > > 
+> > 
+> > Good point.
+> > 
+> > The context switch rate actually went down a bit.
+> > 
+> > I wonder if the Intel test people have records of /proc/interrupts for
+> > the various kernel versions.
 > 
-> > ...this needs kerneldoc adding.
+> I think Chinang does, but he's out of office today.  He did say in an
+> earlier reply:
 > 
-> Please send a separate patch for the kerneldoc as I've already applied.
+> > I took a quick look at the interrupts figure between 2.6.24 and 2.6.27.
+> > i/o interuputs is slightly down in 2.6.27 (due to reduce throughput).
+> > But both NMI and reschedule interrupt increased.  Reschedule interrupts
+> > is 2x of 2.6.24.
+> 
+> So if the reschedule interrupt is happening twice as often, and the
+> context switch rate is basically unchanged, I guess that means the
+> scheduler is doing a lot more work to get approximately the same
+> results.  And that seems like a bad thing.
+> 
+> Again, it's worth bearing in mind that these are all RT tasks, so the
+> underlying problem may be very different from the one that both James and
+> I have observed with an Atom laptop running predominantly non-RT tasks.
+> 
 
-Appended....
+The RT scheduler is a bit more aggressive than it use to be. It use to
+just migrate RT tasks when the migration thread woke up, and did that in
+"bulk".  Now, when an individual RT task wakes up and it can not run on
+the current CPU but can on another CPU, it is scheduled immediately, and
+an IPI is sent out.
 
-========== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
-Subject: regulator: get_status() grows kerneldoc
+As for context switching, it would be the same amount as before, but the
+difference is that the RT task will try to wake up as soon as possible.
+This also causes RT tasks to bounce around CPUs more often.
 
-Add kerneldoc for the new get_status() message.  Fix the existing
-kerneldoc for that struct in two ways:
+If there are many threads, they should not be RT, unless there is some
+design behind it.
 
- (a) Syntax, making sure parameter descriptions immediately
-     follow the one-line struct description and that the first
-     blank lines is before any more expansive description;
- (b) Presentation for a few points, to highlight the fact that
-     the previous "get" methods exist only to report the current
-     configuration, not to display actual status.
+Forgive me if you already did this and said so, but what is the result
+of just making the writer an RT task and keeping all the readers as
+SCHED_OTHER?
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- include/linux/regulator/driver.h |   22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+-- Steve
 
---- a/include/linux/regulator/driver.h
-+++ b/include/linux/regulator/driver.h
-@@ -34,26 +34,20 @@ enum regulator_status {
- 
- /**
-  * struct regulator_ops - regulator operations.
-- *
-- * This struct describes regulator operations which can be implemented by
-- * regulator chip drivers.
-- *
-- * @enable: Enable the regulator.
-- * @disable: Disable the regulator.
-+ * @enable: Configure the regulator as enabled.
-+ * @disable: Configure the regulator as disabled.
-  * @is_enabled: Return 1 if the regulator is enabled, 0 otherwise.
-- *
-  * @set_voltage: Set the voltage for the regulator within the range specified.
-  *               The driver should select the voltage closest to min_uV.
-  * @get_voltage: Return the currently configured voltage for the regulator.
-- *
-  * @set_current_limit: Configure a limit for a current-limited regulator.
-- * @get_current_limit: Get the limit for a current-limited regulator.
-- *
-+ * @get_current_limit: Get the configured limit for a current-limited regulator.
-  * @set_mode: Set the operating mode for the regulator.
-- * @get_mode: Get the current operating mode for the regulator.
-+ * @get_mode: Get the configured operating mode for the regulator.
-+ * @get_status: Return actual (not as-configured) status of regulator, as a
-+ *	REGULATOR_STATUS value (or negative errno)
-  * @get_optimum_mode: Get the most efficient operating mode for the regulator
-  *                    when running with the specified parameters.
-- *
-  * @set_suspend_voltage: Set the voltage for the regulator when the system
-  *                       is suspended.
-  * @set_suspend_enable: Mark the regulator as enabled when the system is
-@@ -62,6 +56,9 @@ enum regulator_status {
-  *                       suspended.
-  * @set_suspend_mode: Set the operating mode for the regulator when the
-  *                    system is suspended.
-+ *
-+ * This struct describes regulator operations which can be implemented by
-+ * regulator chip drivers.
-  */
- struct regulator_ops {
- 
-@@ -86,6 +83,7 @@ struct regulator_ops {
- 	/* report regulator status ... most other accessors report
- 	 * control inputs, this reports results of combining inputs
- 	 * from Linux (and other sources) with the actual load.
-+	 * returns REGULATOR_STATUS_* or negative errno.
- 	 */
- 	int (*get_status)(struct regulator_dev *);
- 
 
