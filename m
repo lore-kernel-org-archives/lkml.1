@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936064AbZAOWux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936384AbZAOWv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936064AbZAOWux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765664AbZAOWEL
+	id S936384AbZAOWv2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763252AbZAOWEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:04:11 -0500
-Received: from kroah.org ([198.145.64.141]:39200 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:04:12 -0500
+Received: from kroah.org ([198.145.64.141]:39224 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934099AbZAOWEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:04:00 -0500
-Date: Thu, 15 Jan 2009 14:02:08 -0800
+	id S934107AbZAOWEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:04:02 -0500
+Date: Thu, 15 Jan 2009 14:02:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 83/85] PCI: Suspend and resume PCI Express ports with
-	interrupts disabled
-Message-ID: <20090115220208.GF17227@kroah.com>
+Subject: [patch 85/85] PCI PM: Split PCI Express port suspend-resume
+Message-ID: <20090115220212.GH17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-suspend-and-resume-pci-express-ports-with-interrupts-disabled.patch"
+Content-Disposition: inline; filename="pci-pm-split-pci-express-port-suspend-resume.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,63 +42,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 90d25f246ddefbb743764f8d45ae97e545a6ee86 upstream
+commit a79d682f789730dfabaebbb507c87a90c0671a62 upstream
 
-I don't see why the suspend and resume of PCI Express ports should be
-handled with interrupts enabled and it may even lead to problems in
-some situations.  For this reason, move the suspending and resuming
-of PCI Express ports into ->suspend_late() and ->resume_early()
-callbacks executed with interrupts disabled.
+Suspend-resume of PCI Express ports has recently been moved into
+_suspend_late() and _resume_early() callbacks, but some functions
+executed from there should not be called with interrupts disabled,
+eg. pci_enable_device().  For this reason, split the suspend-resume
+of PCI Express ports into parts to be executed with interrupts
+disabled and with interrupts enabled.
 
-This patch addresses the regression from 2.6.26 tracked as
-http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
-
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/portdrv_pci.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/pci/pcie/portdrv_pci.c |   23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
 --- a/drivers/pci/pcie/portdrv_pci.c
 +++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -50,7 +50,7 @@ static int pcie_portdrv_restore_config(s
+@@ -41,7 +41,6 @@ static int pcie_portdrv_restore_config(s
+ {
+ 	int retval;
+ 
+-	pci_restore_state(dev);
+ 	retval = pci_enable_device(dev);
+ 	if (retval)
+ 		return retval;
+@@ -50,23 +49,32 @@ static int pcie_portdrv_restore_config(s
  }
  
  #ifdef CONFIG_PM
--static int pcie_portdrv_suspend(struct pci_dev *dev, pm_message_t state)
-+static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
+-static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
++static int pcie_portdrv_suspend(struct pci_dev *dev, pm_message_t state)
  {
- 	int ret = pcie_port_device_suspend(dev, state);
+-	int ret = pcie_port_device_suspend(dev, state);
++	return pcie_port_device_suspend(dev, state);
++
++}
  
-@@ -59,14 +59,14 @@ static int pcie_portdrv_suspend(struct p
- 	return ret;
+-	if (!ret)
+-		ret = pcie_portdrv_save_config(dev);
+-	return ret;
++static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
++{
++	return pci_save_state(dev);
  }
  
--static int pcie_portdrv_resume(struct pci_dev *dev)
-+static int pcie_portdrv_resume_early(struct pci_dev *dev)
+ static int pcie_portdrv_resume_early(struct pci_dev *dev)
  {
++	return pci_restore_state(dev);
++}
++
++static int pcie_portdrv_resume(struct pci_dev *dev)
++{
  	pcie_portdrv_restore_config(dev);
  	return pcie_port_device_resume(dev);
  }
  #else
--#define pcie_portdrv_suspend NULL
--#define pcie_portdrv_resume NULL
-+#define pcie_portdrv_suspend_late NULL
-+#define pcie_portdrv_resume_early NULL
++#define pcie_portdrv_suspend NULL
+ #define pcie_portdrv_suspend_late NULL
+ #define pcie_portdrv_resume_early NULL
++#define pcie_portdrv_resume NULL
  #endif
  
  /*
-@@ -282,8 +282,8 @@ static struct pci_driver pcie_portdriver
+@@ -221,6 +229,7 @@ static pci_ers_result_t pcie_portdrv_slo
+ 
+ 	/* If fatal, restore cfg space for possible link reset at upstream */
+ 	if (dev->error_state == pci_channel_io_frozen) {
++		pci_restore_state(dev);
+ 		pcie_portdrv_restore_config(dev);
+ 		pci_enable_pcie_error_reporting(dev);
+ 	}
+@@ -282,8 +291,10 @@ static struct pci_driver pcie_portdriver
  	.probe		= pcie_portdrv_probe,
  	.remove		= pcie_portdrv_remove,
  
--	.suspend	= pcie_portdrv_suspend,
--	.resume		= pcie_portdrv_resume,
-+	.suspend_late	= pcie_portdrv_suspend_late,
-+	.resume_early	= pcie_portdrv_resume_early,
++	.suspend	= pcie_portdrv_suspend,
+ 	.suspend_late	= pcie_portdrv_suspend_late,
+ 	.resume_early	= pcie_portdrv_resume_early,
++	.resume		= pcie_portdrv_resume,
  
  	.err_handler 	= &pcie_portdrv_err_handler,
  };
