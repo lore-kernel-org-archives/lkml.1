@@ -1,99 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763562AbZAOSk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764362AbZAOSmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763562AbZAOSk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 13:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759247AbZAOSkL
+	id S1764362AbZAOSmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 13:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759625AbZAOSmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 13:40:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37677 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759228AbZAOSkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 13:40:09 -0500
-Date: Thu, 15 Jan 2009 19:39:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
-       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Message-ID: <20090115183942.GA6325@elte.hu>
-References: <496F0F50.6070200@kernel.org> <20090115113045.GG22850@elte.hu> <496F2032.5080502@kernel.org> <20090115122611.GJ22850@elte.hu> <496F346B.6020804@kernel.org> <20090115130740.GE21839@elte.hu> <496F38C7.5000403@kernel.org> <20090115093007.4215b4b4.akpm@linux-foundation.org> <20090115180259.GJ22472@elte.hu> <20090115103406.a85968f0.akpm@linux-foundation.org>
+	Thu, 15 Jan 2009 13:42:06 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:42958 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758456AbZAOSmF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 13:42:05 -0500
+Message-ID: <496F8421.3070703@novell.com>
+Date: Thu, 15 Jan 2009 13:44:49 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115103406.a85968f0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Steven Rostedt <srostedt@redhat.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Subject: Re: Mainline kernel OLTP performance update
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>	 <20090114163557.11e097f2.akpm@linux-foundation.org>	 <20090115012147.GW29283@parisc-linux.org>	 <20090114180431.f4a96543.akpm@linux-foundation.org>	 <1232028766.5966.10.camel@localhost.localdomain>	 <20090115094442.b6394544.akpm@linux-foundation.org>	 <20090115180052.GG29283@parisc-linux.org> <1232043287.21980.65.camel@localhost.localdomain>
+In-Reply-To: <1232043287.21980.65.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigC409C44FCCB2283E4B13E426"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigC409C44FCCB2283E4B13E426
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Steven Rostedt wrote:
+> On Thu, 2009-01-15 at 11:00 -0700, Matthew Wilcox wrote:
+>  =20
+>> On Thu, Jan 15, 2009 at 09:44:42AM -0800, Andrew Morton wrote:
+>>    =20
+>>>> Me too.  Anecdotally, I haven't noticed this in my lab machines, but=
 
-> On Thu, 15 Jan 2009 19:02:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Thu, 15 Jan 2009 22:23:19 +0900 Tejun Heo <tj@kernel.org> wrote:
-> > > 
-> > > > --- a/include/asm-generic/percpu.h
-> > > > +++ b/include/asm-generic/percpu.h
-> > > > @@ -80,4 +80,56 @@ extern void setup_per_cpu_areas(void);
-> > > >  #define DECLARE_PER_CPU(type, name) extern PER_CPU_ATTRIBUTES \
-> > > >  					__typeof__(type) per_cpu_var(name)
-> > > >  
-> > > > +/*
-> > > > + * Optional methods for optimized non-lvalue per-cpu variable access.
-> > > > + *
-> > > > + * @var can be a percpu variable or a field of it and its size should
-> > > > + * equal char, int or long.  percpu_read() evaluates to a lvalue and
-> > > > + * all others to void.
-> > > > + *
-> > > > + * These operations are guaranteed to be atomic w.r.t. preemption.
-> > > > + * The generic versions use plain get/put_cpu_var().  Archs are
-> > > > + * encouraged to implement single-instruction alternatives which don't
-> > > > + * require preemption protection.
-> > > > + */
-> > > > +#ifndef percpu_read
-> > > > +# define percpu_read(var)						\
-> > > > +  ({									\
-> > > > +	typeof(per_cpu_var(var)) __tmp_var__;				\
-> > > > +	__tmp_var__ = get_cpu_var(var);					\
-> > > > +	put_cpu_var(var);						\
-> > > > +	__tmp_var__;							\
-> > > > +  })
-> > > > +#endif
-> > > 
-> > > I wonder if the preempt_disable()/preempt_enable() in here actually
-> > > does anything useful on any architecture.
-> > 
-> > Provides "this is IRQ safe"
-> 
-> ?
-> 
-> > and "this is preempt safe" semantics.
-> 
-> Of course.  But do any architectures actually _need_ that for a single 
-> read?
+>>>> what I have noticed is on someone else's laptop (a hyperthreaded ato=
+m)
+>>>> that I was trying to demo powertop on was that IPI reschedule interr=
+upts
+>>>> seem to be out of control ... they were ticking over at a really hig=
+h
+>>>> rate and preventing the CPU from spending much time in the low C and=
+ P
+>>>> states.  To me this implicates some scheduler problem since that's t=
+he
+>>>> primary producer of IPI reschedules ... I think it wouldn't be a
+>>>> significant extrapolation to predict that the scheduler might be the=
 
-not for a read i guess - but for the other ops like add/and/or/xor.
+>>>> cause of the above problem as well.
+>>>>
+>>>>        =20
+>>> Good point.
+>>>
+>>> The context switch rate actually went down a bit.
+>>>
+>>> I wonder if the Intel test people have records of /proc/interrupts fo=
+r
+>>> the various kernel versions.
+>>>      =20
+>> I think Chinang does, but he's out of office today.  He did say in an
+>> earlier reply:
+>>
+>>    =20
+>>> I took a quick look at the interrupts figure between 2.6.24 and 2.6.2=
+7.
+>>> i/o interuputs is slightly down in 2.6.27 (due to reduce throughput).=
 
-> Maybe.  And if so, they can interpose their arch-specific 
-> implementation.  But if the generic version is optimal for them, they 
-> wouldn't need to..
+>>> But both NMI and reschedule interrupt increased.  Reschedule interrup=
+ts
+>>> is 2x of 2.6.24.
+>>>      =20
+>> So if the reschedule interrupt is happening twice as often, and the
+>> context switch rate is basically unchanged, I guess that means the
+>> scheduler is doing a lot more work to get approximately the same
+>> results.  And that seems like a bad thing.
+>>    =20
 
-we cannot turn the generic ops into a single instruction so arch methods 
-are preferable no matter how thick or thin the generic version is. But i 
-agree that the optimization you suggest could be done.
+I would be very interested in gathering some data in this area.  One
+thing that pops to mind is to instrument the resched-ipi with
+ftrace_printk() and gather a trace of this system in action.  I assume
+that I wouldn't have access to this OLTP suite, so I may need a
+volunteer to try this for me.  I could put together an instrumentation
+patch for the testers convenience if they prefer.
 
-	Ingo
+Another data-point I wouldn't mind seeing is  looking at the scheduler
+statistics, particularly with my sched-top utility, which you can find he=
+re:
+
+http://rt.wiki.kernel.org/index.php/Schedtop_utility
+
+(Note you may want to exclude the sched_info stats, as they are
+inherently noisy and make it hard to see the real trends.  To do this
+run it with: 'schedtop -x "sched_info"'
+
+In the meantime, I will try similar approaches here on other non-OLTP
+based workloads to see if I spy anything that looks amiss.
+=20
+-Greg
+
+
+
+--------------enigC409C44FCCB2283E4B13E426
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAklvhCEACgkQlOSOBdgZUxlcxwCeJFUsBVbF29BKSBT4XgJVu7/S
+zCAAnihcG0gXrh9cTRCruQXbAAmHyOYD
+=K8M/
+-----END PGP SIGNATURE-----
+
+--------------enigC409C44FCCB2283E4B13E426--
