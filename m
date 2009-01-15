@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZAOFgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZAOFh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbZAOFgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 00:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZAOFga
+	id S1757582AbZAOFh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 00:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZAOFhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 00:36:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44177 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753394AbZAOFg2 (ORCPT
+	Thu, 15 Jan 2009 00:37:47 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:9012 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753417AbZAOFhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 00:36:28 -0500
-Date: Wed, 14 Jan 2009 21:36:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, Alan Piszcz <ap@solarrain.com>,
-       netdev@vger.kernel.org, Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.28: r8169: NETDEV WATCHDOG: eth0 (r8169): transmit timed
- out
-Message-Id: <20090114213618.a610d647.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0901131617550.6193@p34.internal.lan>
-References: <alpine.DEB.1.10.0901131617550.6193@p34.internal.lan>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Jan 2009 00:37:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=WcpcIry3Xxli7/gxiyg/kU/YjWDlL/x++44xhVjbL/fr8TA8lvEELldU16sXn2B88l
+         VrKKeGvadFm9XvL90pEbK+tGB6GBXccw28Cqq8aacCYN8kYQ3/87Mw40UnybVppkg2dR
+         bvXn3kLEXc0KDXSrTCgSSNFFZGsOzUCZHlA8E=
+Message-ID: <496ECBA0.60209@gmail.com>
+Date: Thu, 15 Jan 2009 14:37:36 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Michael Tokarev <mjt@tls.msk.ru>, Jens Axboe <jens.axboe@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through	sysfs
+References: <200901051952.58029.bzolnier@gmail.com>	 <20090105185428.GS32491@kernel.dk>	 <ac3eb2510901051347r6593d0fmd64702b1689716c1@mail.gmail.com>	 <20090106073515.GY32491@kernel.dk>  <4964866D.8010503@msgid.tls.msk.ru> <1231342473.3282.19.camel@localhost.localdomain>
+In-Reply-To: <1231342473.3282.19.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added)
+Hello,
 
-On Tue, 13 Jan 2009 16:19:22 -0500 (EST) Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+James Bottomley wrote:
+> I'm afraid that's pretty much marketing coolaid.  Rotational storage
+> will dominate for the forseeable future: just do a simple back of the
+> envelope calculation:
 
-> Most likely disabling this (onboard-nic) and using Intel PCI-Express 1 
-> Gbps card but FYI:
-> 
-> [505628.695393] ------------[ cut here ]------------
-> [505628.695398] WARNING: at net/sched/sch_generic.c:226 dev_watchdog+0x22e/0x240()
-> [505628.695400] NETDEV WATCHDOG: eth0 (r8169): transmit timed out
-> [505628.695403] Pid: 0, comm: swapper Not tainted 2.6.28 #1
-> [505628.695405] Call Trace:
-> [505628.695407]  <IRQ>  [<ffffffff8024f628>] warn_slowpath+0xc8/0x110
-> [505628.695416]  [<ffffffff805b9310>] ip_finish_output+0x0/0x2b0
-> [505628.695419]  [<ffffffff8059e3e4>] eth_header+0x34/0xd0
-> [505628.695423]  [<ffffffff804078c9>] __next_cpu+0x19/0x30
-> [505628.695427]  [<ffffffff802472dc>] find_busiest_group+0x1dc/0x970
-> [505628.695432]  [<ffffffff802308b9>] read_tsc+0x9/0x20
-> [505628.695436]  [<ffffffff802599c4>] lock_timer_base+0x34/0x70
-> [505628.695440]  [<ffffffff8026aa98>] getnstimeofday+0x48/0xc0
-> [505628.695443]  [<ffffffff8040d601>] strlcpy+0x41/0x50
-> [505628.695447]  [<ffffffff8059e9fe>] dev_watchdog+0x22e/0x240
-> [505628.695449]  [<ffffffff802308b9>] read_tsc+0x9/0x20
-> [505628.695453]  [<ffffffff8059e7d0>] dev_watchdog+0x0/0x240
-> [505628.695456]  [<ffffffff802594be>] run_timer_softirq+0x12e/0x200
-> [505628.695460]  [<ffffffff80238c35>] lapic_next_event+0x15/0x20
-> [505628.695463]  [<ffffffff80254e13>] __do_softirq+0x93/0x160
-> [505628.695467]  [<ffffffff802684c2>] hrtimer_interrupt+0x152/0x1c0
-> [505628.695471]  [<ffffffff8022aabc>] call_softirq+0x1c/0x30
-> [505628.695474]  [<ffffffff8022c455>] do_softirq+0x35/0x70
-> [505628.695477]  [<ffffffff802394f6>] smp_apic_timer_interrupt+0x86/0xd0
-> [505628.695480]  [<ffffffff8022a50b>] apic_timer_interrupt+0x6b/0x70
-> [505628.695482]  <EOI>  [<ffffffff805f0320>] unix_poll+0x0/0xb0
-> [505628.695489]  [<ffffffff8023147c>] mwait_idle+0x3c/0x50
-> [505628.695493]  [<ffffffff80228a1c>] cpu_idle+0x5c/0x90
-> [505628.695495] ---[ end trace eddb8da7fddd6198 ]---
-> [505628.700048] r8169: eth0: link up
-> 
-> I believe this occured when trying to burn a DVD via Nero over a 1gbps 
-> connection.
-
-Is this new behaviour?  Was 2.6.27 OK?
+Or just compare prices per byte of memory, flash and rotation disk.
+They haven't had changed too much during last several years.
+Secondary storage which is only slightly cheaper than the primary
+storage doesn't have much chance of flying high and far.
 
 Thanks.
+
+-- 
+tejun
