@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933008AbZAOUe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbZAOUe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933008AbZAOUe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932103AbZAOUCH
+	id S933593AbZAOUe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765931AbZAOUCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:07 -0500
-Received: from kroah.org ([198.145.64.141]:49356 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:09 -0500
+Received: from kroah.org ([198.145.64.141]:49372 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765993AbZAOUCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:05 -0500
-Date: Thu, 15 Jan 2009 11:59:17 -0800
+	id S932233AbZAOUCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:06 -0500
+Date: Thu, 15 Jan 2009 11:59:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 51/94] [PATCH 20/44] [CVE-2009-0029] System call wrappers
-	part 10
-Message-ID: <20090115195917.GY14419@kroah.com>
+Subject: [patch 52/94] [PATCH 21/44] [CVE-2009-0029] System call wrappers
+	part 11
+Message-ID: <20090115195919.GZ14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0020--CVE-2009-0029-System-call-wrappers-part-10.patch"
+Content-Disposition: inline; filename="0021--CVE-2009-0029-System-call-wrappers-part-11.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,118 +42,114 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit bdc480e3bef6eb0e7071770834cbdda7e30a5436 upstream.
+commit 257ac264d69017270fbc3cf5536953525db4076c upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/buffer.c    |    2 +-
- fs/namespace.c |    9 ++++-----
- fs/open.c      |   12 +++++-------
- fs/stat.c      |    2 +-
- 4 files changed, 11 insertions(+), 14 deletions(-)
+ fs/open.c  |    2 +-
+ fs/stat.c  |   20 ++++++++++++--------
+ fs/super.c |    2 +-
+ 3 files changed, 14 insertions(+), 10 deletions(-)
 
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -3177,7 +3177,7 @@ void block_sync_page(struct page *page)
-  * Use of bdflush() is deprecated and will be removed in a future kernel.
-  * The `pdflush' kernel threads fully replace bdflush daemons and this call.
-  */
--asmlinkage long sys_bdflush(int func, long data)
-+SYSCALL_DEFINE2(bdflush, int, func, long, data)
- {
- 	static int msg_count;
- 
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1128,7 +1128,7 @@ static int do_umount(struct vfsmount *mn
-  * unixes. Our API is identical to OSF/1 to avoid making a mess of AMD
-  */
- 
--asmlinkage long sys_umount(char __user * name, int flags)
-+SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
- {
- 	struct path path;
- 	int retval;
-@@ -1160,7 +1160,7 @@ out:
- /*
-  *	The 2.0 compatible umount. No flags.
-  */
--asmlinkage long sys_oldumount(char __user * name)
-+SYSCALL_DEFINE1(oldumount, char __user *, name)
- {
- 	return sys_umount(name, 0);
- }
-@@ -2045,9 +2045,8 @@ struct mnt_namespace *copy_mnt_ns(unsign
- 	return new_ns;
- }
- 
--asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
--			  char __user * type, unsigned long flags,
--			  void __user * data)
-+SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
-+		char __user *, type, unsigned long, flags, void __user *, data)
- {
- 	int retval;
- 	unsigned long data_page;
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -122,7 +122,7 @@ static int vfs_statfs64(struct dentry *d
- 	return 0;
- }
- 
--asmlinkage long sys_statfs(const char __user *pathname, struct statfs __user * buf)
-+SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *, buf)
- {
- 	struct path path;
- 	int error;
-@@ -138,8 +138,7 @@ asmlinkage long sys_statfs(const char __
+@@ -174,7 +174,7 @@ out:
  	return error;
  }
  
--
--asmlinkage long sys_statfs64(const char __user *pathname, size_t sz, struct statfs64 __user *buf)
-+SYSCALL_DEFINE3(statfs64, const char __user *, pathname, size_t, sz, struct statfs64 __user *, buf)
- {
- 	struct path path;
- 	long error;
-@@ -157,8 +156,7 @@ asmlinkage long sys_statfs64(const char 
- 	return error;
- }
- 
--
--asmlinkage long sys_fstatfs(unsigned int fd, struct statfs __user * buf)
-+SYSCALL_DEFINE2(fstatfs, unsigned int, fd, struct statfs __user *, buf)
+-asmlinkage long sys_fstatfs64(unsigned int fd, size_t sz, struct statfs64 __user *buf)
++SYSCALL_DEFINE3(fstatfs64, unsigned int, fd, size_t, sz, struct statfs64 __user *, buf)
  {
  	struct file * file;
- 	struct statfs tmp;
-@@ -287,7 +285,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long sys_truncate(const char __user * path, unsigned long length)
-+SYSCALL_DEFINE2(truncate, const char __user *, path, unsigned long, length)
- {
- 	/* on 32-bit boxen it will cut the range 2^31--2^32-1 off */
- 	return do_sys_truncate(path, (long)length);
-@@ -336,7 +334,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long sys_ftruncate(unsigned int fd, unsigned long length)
-+SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
- {
- 	long ret = do_sys_ftruncate(fd, length, 1);
- 	/* avoid REGPARM breakage on x86: */
+ 	struct statfs64 tmp;
 --- a/fs/stat.c
 +++ b/fs/stat.c
-@@ -152,7 +152,7 @@ static int cp_old_stat(struct kstat *sta
+@@ -162,7 +162,8 @@ SYSCALL_DEFINE2(stat, char __user *, fil
+ 
+ 	return error;
+ }
+-asmlinkage long sys_lstat(char __user * filename, struct __old_kernel_stat __user * statbuf)
++
++SYSCALL_DEFINE2(lstat, char __user *, filename, struct __old_kernel_stat __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_lstat_fd(AT_FDCWD, filename, &stat);
+@@ -172,7 +173,8 @@ asmlinkage long sys_lstat(char __user * 
+ 
+ 	return error;
+ }
+-asmlinkage long sys_fstat(unsigned int fd, struct __old_kernel_stat __user * statbuf)
++
++SYSCALL_DEFINE2(fstat, unsigned int, fd, struct __old_kernel_stat __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_fstat(fd, &stat);
+@@ -235,7 +237,7 @@ static int cp_new_stat(struct kstat *sta
  	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
  }
  
--asmlinkage long sys_stat(char __user * filename, struct __old_kernel_stat __user * statbuf)
-+SYSCALL_DEFINE2(stat, char __user *, filename, struct __old_kernel_stat __user *, statbuf)
+-asmlinkage long sys_newstat(char __user *filename, struct stat __user *statbuf)
++SYSCALL_DEFINE2(newstat, char __user *, filename, struct stat __user *, statbuf)
  {
  	struct kstat stat;
  	int error = vfs_stat_fd(AT_FDCWD, filename, &stat);
+@@ -246,7 +248,7 @@ asmlinkage long sys_newstat(char __user 
+ 	return error;
+ }
+ 
+-asmlinkage long sys_newlstat(char __user *filename, struct stat __user *statbuf)
++SYSCALL_DEFINE2(newlstat, char __user *, filename, struct stat __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_lstat_fd(AT_FDCWD, filename, &stat);
+@@ -280,7 +282,7 @@ out:
+ }
+ #endif
+ 
+-asmlinkage long sys_newfstat(unsigned int fd, struct stat __user *statbuf)
++SYSCALL_DEFINE2(newfstat, unsigned int, fd, struct stat __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_fstat(fd, &stat);
+@@ -365,7 +367,7 @@ static long cp_new_stat64(struct kstat *
+ 	return copy_to_user(statbuf,&tmp,sizeof(tmp)) ? -EFAULT : 0;
+ }
+ 
+-asmlinkage long sys_stat64(char __user * filename, struct stat64 __user * statbuf)
++SYSCALL_DEFINE2(stat64, char __user *, filename, struct stat64 __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_stat(filename, &stat);
+@@ -375,7 +377,8 @@ asmlinkage long sys_stat64(char __user *
+ 
+ 	return error;
+ }
+-asmlinkage long sys_lstat64(char __user * filename, struct stat64 __user * statbuf)
++
++SYSCALL_DEFINE2(lstat64, char __user *, filename, struct stat64 __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_lstat(filename, &stat);
+@@ -385,7 +388,8 @@ asmlinkage long sys_lstat64(char __user 
+ 
+ 	return error;
+ }
+-asmlinkage long sys_fstat64(unsigned long fd, struct stat64 __user * statbuf)
++
++SYSCALL_DEFINE2(fstat64, unsigned long, fd, struct stat64 __user *, statbuf)
+ {
+ 	struct kstat stat;
+ 	int error = vfs_fstat(fd, &stat);
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -534,7 +534,7 @@ rescan:
+ 	return NULL;
+ }
+ 
+-asmlinkage long sys_ustat(unsigned dev, struct ustat __user * ubuf)
++SYSCALL_DEFINE2(ustat, unsigned, dev, struct ustat __user *, ubuf)
+ {
+         struct super_block *s;
+         struct ustat tmp;
 
