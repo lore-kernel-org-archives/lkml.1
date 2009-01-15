@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933701AbZAOUgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZAOUhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933701AbZAOUgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 15:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbZAOUCN
+	id S1754510AbZAOUhI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 15:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765941AbZAOUCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 15:02:13 -0500
-Received: from kroah.org ([198.145.64.141]:49418 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 15:02:15 -0500
+Received: from kroah.org ([198.145.64.141]:49436 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932162AbZAOUCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 15:02:09 -0500
-Date: Thu, 15 Jan 2009 11:59:25 -0800
+	id S932233AbZAOUCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 15:02:10 -0500
+Date: Thu, 15 Jan 2009 11:59:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 55/94] [PATCH 24/44] [CVE-2009-0029] System call wrappers
-	part 14
-Message-ID: <20090115195925.GC14419@kroah.com>
+Subject: [patch 56/94] [PATCH 25/44] [CVE-2009-0029] System call wrappers
+	part 15
+Message-ID: <20090115195927.GD14419@kroah.com>
 References: <20090115194806.804618825@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0024--CVE-2009-0029-System-call-wrappers-part-14.patch"
+Content-Disposition: inline; filename="0025--CVE-2009-0029-System-call-wrappers-part-15.patch"
 In-Reply-To: <20090115195520.GA14403@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,123 +42,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 3480b25743cb7404928d57efeaa3d085708b04c2 upstream.
+commit a26eab2400f0477bfac0255600552394855016f7 upstream.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/namei.c     |    8 ++++----
- fs/namespace.c |    4 ++--
- fs/open.c      |    2 +-
- mm/madvise.c   |    2 +-
- mm/mincore.c   |    4 ++--
- mm/mlock.c     |    4 ++--
- 6 files changed, 12 insertions(+), 12 deletions(-)
+ fs/fcntl.c |   11 ++++++-----
+ fs/ioctl.c |    2 +-
+ fs/namei.c |    2 +-
+ fs/open.c  |    4 ++--
+ 4 files changed, 10 insertions(+), 9 deletions(-)
 
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -50,7 +50,7 @@ static int get_close_on_exec(unsigned in
+ 	return res;
+ }
+ 
+-asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
++SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
+ {
+ 	int err = -EBADF;
+ 	struct file * file, *tofree;
+@@ -113,7 +113,7 @@ out_unlock:
+ 	return err;
+ }
+ 
+-asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd)
++SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
+ {
+ 	if (unlikely(newfd == oldfd)) { /* corner case */
+ 		struct files_struct *files = current->files;
+@@ -126,7 +126,7 @@ asmlinkage long sys_dup2(unsigned int ol
+ 	return sys_dup3(oldfd, newfd, 0);
+ }
+ 
+-asmlinkage long sys_dup(unsigned int fildes)
++SYSCALL_DEFINE1(dup, unsigned int, fildes)
+ {
+ 	int ret = -EBADF;
+ 	struct file *file = fget(fildes);
+@@ -334,7 +334,7 @@ static long do_fcntl(int fd, unsigned in
+ 	return err;
+ }
+ 
+-asmlinkage long sys_fcntl(unsigned int fd, unsigned int cmd, unsigned long arg)
++SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+ {	
+ 	struct file *filp;
+ 	long err = -EBADF;
+@@ -357,7 +357,8 @@ out:
+ }
+ 
+ #if BITS_PER_LONG == 32
+-asmlinkage long sys_fcntl64(unsigned int fd, unsigned int cmd, unsigned long arg)
++SYSCALL_DEFINE3(fcntl64, unsigned int, fd, unsigned int, cmd,
++		unsigned long, arg)
+ {	
+ 	struct file * filp;
+ 	long err;
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -472,7 +472,7 @@ int do_vfs_ioctl(struct file *filp, unsi
+ 	return error;
+ }
+ 
+-asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
++SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+ {
+ 	struct file *filp;
+ 	int error = -EBADF;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2020,7 +2020,7 @@ out_unlock:
+@@ -2696,7 +2696,7 @@ exit:
  	return error;
  }
  
--asmlinkage long sys_mknod(const char __user *filename, int mode, unsigned dev)
-+SYSCALL_DEFINE3(mknod, const char __user *, filename, int, mode, unsigned, dev)
+-asmlinkage long sys_rename(const char __user *oldname, const char __user *newname)
++SYSCALL_DEFINE2(rename, const char __user *, oldname, const char __user *, newname)
  {
- 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
+ 	return sys_renameat(AT_FDCWD, oldname, AT_FDCWD, newname);
  }
-@@ -2293,7 +2293,7 @@ asmlinkage long sys_unlinkat(int dfd, co
- 	return do_unlinkat(dfd, pathname);
- }
- 
--asmlinkage long sys_unlink(const char __user *pathname)
-+SYSCALL_DEFINE1(unlink, const char __user *, pathname)
- {
- 	return do_unlinkat(AT_FDCWD, pathname);
- }
-@@ -2357,7 +2357,7 @@ out_putname:
- 	return error;
- }
- 
--asmlinkage long sys_symlink(const char __user *oldname, const char __user *newname)
-+SYSCALL_DEFINE2(symlink, const char __user *, oldname, const char __user *, newname)
- {
- 	return sys_symlinkat(oldname, AT_FDCWD, newname);
- }
-@@ -2456,7 +2456,7 @@ out:
- 	return error;
- }
- 
--asmlinkage long sys_link(const char __user *oldname, const char __user *newname)
-+SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname)
- {
- 	return sys_linkat(AT_FDCWD, oldname, AT_FDCWD, newname, 0);
- }
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -2171,8 +2171,8 @@ static void chroot_fs_refs(struct path *
-  *    though, so you may need to say mount --bind /nfs/my_root /nfs/my_root
-  *    first.
-  */
--asmlinkage long sys_pivot_root(const char __user * new_root,
--			       const char __user * put_old)
-+SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
-+		const char __user *, put_old)
- {
- 	struct vfsmount *tmp;
- 	struct path new, old, parent_path, root_parent, root;
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -574,7 +574,7 @@ out:
+@@ -599,7 +599,7 @@ out:
  	return error;
  }
  
--asmlinkage long sys_chroot(const char __user * filename)
-+SYSCALL_DEFINE1(chroot, const char __user *, filename)
+-asmlinkage long sys_fchmod(unsigned int fd, mode_t mode)
++SYSCALL_DEFINE2(fchmod, unsigned int, fd, mode_t, mode)
  {
- 	struct path path;
- 	int error;
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -281,7 +281,7 @@ madvise_vma(struct vm_area_struct *vma, 
-  *  -EBADF  - map exists, but area maps something that isn't a file.
-  *  -EAGAIN - a kernel resource was temporarily unavailable.
-  */
--asmlinkage long sys_madvise(unsigned long start, size_t len_in, int behavior)
-+SYSCALL_DEFINE3(madvise, unsigned long, start, size_t, len_in, int, behavior)
- {
- 	unsigned long end, tmp;
- 	struct vm_area_struct * vma, *prev;
---- a/mm/mincore.c
-+++ b/mm/mincore.c
-@@ -177,8 +177,8 @@ none_mapped:
-  *		mapped
-  *  -EAGAIN - A kernel resource was temporarily unavailable.
-  */
--asmlinkage long sys_mincore(unsigned long start, size_t len,
--	unsigned char __user * vec)
-+SYSCALL_DEFINE3(mincore, unsigned long, start, size_t, len,
-+		unsigned char __user *, vec)
- {
- 	long retval;
- 	unsigned long pages;
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -594,7 +594,7 @@ out:
- 	return 0;
+ 	struct inode * inode;
+ 	struct dentry * dentry;
+@@ -663,7 +663,7 @@ out:
+ 	return error;
  }
  
--asmlinkage long sys_mlockall(int flags)
-+SYSCALL_DEFINE1(mlockall, int, flags)
+-asmlinkage long sys_chmod(const char __user *filename, mode_t mode)
++SYSCALL_DEFINE2(chmod, const char __user *, filename, mode_t, mode)
  {
- 	unsigned long lock_limit;
- 	int ret = -EINVAL;
-@@ -622,7 +622,7 @@ out:
- 	return ret;
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
  }
- 
--asmlinkage long sys_munlockall(void)
-+SYSCALL_DEFINE0(munlockall)
- {
- 	int ret;
- 
 
