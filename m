@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZAOQwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761666AbZAOQyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZAOQwz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 11:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZAOQwr
+	id S1761666AbZAOQyU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 11:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZAOQyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 11:52:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57160 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbZAOQwq (ORCPT
+	Thu, 15 Jan 2009 11:54:03 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:33826 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752407AbZAOQyC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 11:52:46 -0500
-Message-ID: <496F69C8.2040103@zytor.com>
-Date: Thu, 15 Jan 2009 08:52:24 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 Jan 2009 11:54:02 -0500
+Date: Thu, 15 Jan 2009 08:54:00 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       shemminger@vyatta.com, netdev@vger.kernel.org
+Subject: Re: [PATCH RFC v5] net: add PCINet driver
+Message-ID: <20090115165359.GA2230@ovro.caltech.edu>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, shemminger@vyatta.com,
+	netdev@vger.kernel.org
+References: <20090107195052.GA24981@ovro.caltech.edu> <200901131842.54688.arnd@arndb.de> <20090115001251.GA10745@ovro.caltech.edu> <200901151358.34250.arnd@arndb.de>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "harvey.harrison@gmail.com" <harvey.harrison@gmail.com>,
-       "sam@ravnborg.org" <sam@ravnborg.org>,
-       "jaswinderrajput@gmail.com" <jaswinderrajput@gmail.com>
-Subject: Re: [patch 3/5] x86: headers cleanup - ptrace-abi.h
-References: <20090114203745.285473388@gmail.com>> <496e4e23.0c07560a.5e4e.529c@mx.google.com> <496E6585.8050505@zytor.com> <928CFBE8E7CB0040959E56B4EA41A77E0CD9CD33@irsmsx504.ger.corp.intel.com> <20090115084110.GB9032@localhost>
-In-Reply-To: <20090115084110.GB9032@localhost>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901151358.34250.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 15 Jan 2009 08:54:01 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
+On Thu, Jan 15, 2009 at 01:58:33PM +0100, Arnd Bergmann wrote:
+> On Thursday 15 January 2009, Ira Snyder wrote:
 > 
-> Hi Markus,
+> > The only problem with that is that you cannot route interrupts from the
+> > DMA controller over PCI with the PowerPC core running. Which makes it
+> > mostly useless for this case.
 > 
-> since it's supposed to be visible by userspace then we
-> should just remove this CONFIG_X86_PTRACE_BTS so if userspace
-> app has a reference to ptrace_bts_config but kernel in turn has
-> this feature turned off -- the uerspace app shouldn't fail
-> while being compiling.
+> If the host supports MSI, you can simply program the DMA controller to
+> write the correct message to the inbound address of the MSI interrupt
+> controller!
+> 
+> All modern host systems should have MSI, as this is required by the
+> PCIe specification, but it still somewhat limits the choice of your
+> hosts.
 > 
 
-Well, for userspace, the kernel configuration doesn't matter: the
-CONFIG_* macros *never* exist.
+These are PCI boards, not PCIe. The host computers are all Pentium3-M
+systems. I tried enabling MSI on the Freescale boards in the driver, by
+calling pci_enable_msi() during probe(), and it failed. I'm pretty sure
+I can't do MSI.
 
-This would be yet another good reason why having them be always defined
-and 0/1 instead would be such an improvement, but we're not there.
+I'll keep thinking about how to manage the DMA. Feel free to toss around
+any ideas you have, though.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Ira
