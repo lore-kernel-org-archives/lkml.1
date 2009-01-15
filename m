@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbZAOMHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763742AbZAOMIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762677AbZAOMHy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 07:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZAOMHH
+	id S1763742AbZAOMIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 07:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760257AbZAOMHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 07:07:07 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:47596 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756673AbZAOMHE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 07:07:04 -0500
-Date: Thu, 15 Jan 2009 13:05:26 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com, penberg@cs.helsinki.fi
-Subject: Re: [BUILD_FAILURE] next-20090115 - s390x - mm/kmemleak.c
-Message-ID: <20090115120526.GD5093@osiris.boeblingen.de.ibm.com>
-References: <20090115170415.3edc1df6.sfr@canb.auug.org.au> <20090115103504.GA5178@linux.vnet.ibm.com> <20090115112001.GC5093@osiris.boeblingen.de.ibm.com> <1232020540.32016.19.camel@pc1117.cambridge.arm.com>
+	Thu, 15 Jan 2009 07:07:35 -0500
+Received: from nacho.alt.net ([208.90.169.18]:33628 "EHLO nacho.alt.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759922AbZAOMHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 07:07:33 -0500
+Date: Thu, 15 Jan 2009 12:00:50 +0000 (UTC)
+To: Jarek Poplawski <jarkao2@gmail.com>,
+       Denys Fedoryschenko <denys@visp.net.lb>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Badalian Vyacheslav <slavon@bigtelecom.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: deadlocks if use htb
+In-Reply-To: <20090115094530.GG4190@ff.dom.local>
+Message-ID: <Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>
+References: <20081010090426.GA6054@ff.dom.local>
+	<Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>
+	<20090114063909.GA4234@ff.dom.local>
+	<200901141417.58667.denys@visp.net.lb>
+	<1231937404.14825.4.camel@laptop>
+	<Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
+	<20090115065322.GA4190@ff.dom.local>
+	<Pine.LNX.4.64.0901150724000.20461@nacho.alt.net>
+	<20090115075450.GB4190@ff.dom.local>
+	<20090115094530.GG4190@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232020540.32016.19.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Delivery-Agent: TMDA/1.1.4 (Edradour)
+From: Chris Caputo <ccaputo@alt.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:55:40AM +0000, Catalin Marinas wrote:
-> On Thu, 2009-01-15 at 12:20 +0100, Heiko Carstens wrote:
-> > On Thu, Jan 15, 2009 at 04:05:04PM +0530, Kamalesh Babulal wrote:
-> > > Hi Stephen,
-> > > 
-> > > 	next-20090115 allyesconfig build fails on s390x
-> > > 
-> > > mm/built-in.o: In function `kmemleak_scan':
-> > > mm/kmemleak.c:977: undefined reference to `_sdata'
-> > > make: *** [.tmp_vmlinux1] Error 1
+On Thu, 15 Jan 2009, Jarek Poplawski wrote:
+> On Thu, Jan 15, 2009 at 07:54:50AM +0000, Jarek Poplawski wrote:
+> > On Thu, Jan 15, 2009 at 07:26:28AM +0000, Chris Caputo wrote:
+> > > On Thu, 15 Jan 2009, Jarek Poplawski wrote:
+> > > > On Wed, Jan 14, 2009 at 06:02:04PM +0000, Chris Caputo wrote:
+> > > > ...
+> > > > > That said, I would not recommend just the three for -stable unless they 
+> > > > > get a much wider amount of testing, on multiple platforms.  I don't see 
+> > > > > that as likely to happen, plus Peter says they are incomplete, so maybe it 
+> > > > > is just best to recommend that 2.6.28 users getting crashes while using 
+> > > > > HTB try these specific patches at first, and then the rest of the patches 
+> > > > > if they do not work.
+> > ...
+> > > I hope you can forgive me, but since I have something that works on a 
+> > > production machine, I am not in a position in which I can test this.
 > > 
-> > A lot of architectures don't have _sdata definined in their linker scripts.
-> > On s390 _sdata would be the same as _etext. But that is not necessarily true
-> > for all architectures.
+> > So, IOW, you don't recommend Peter's patches but prefere to use them,
+> > and recommend my patches, but you are afraid of using them...
 > 
-> Kmemleak has only been tested on ARM and x86. I can add patches for the
-> other architectures so that the compilation is fine but can't really run
-> such kernels.
+> Sorry, Chris! It looks like I misunderstood, and you recomend Peter's
+> patches yet. (But I guess there are users relying on official kernel
+> versions.)
+> 
+> I hope you can forgive me,
 
-That would be nice. Fixing it so that it actually works (_if_ it does not)
-can still be done later.
+:-)  No worries.
 
-Btw. you have
+Just to be clear, by "these specific patches at first", I mean the 
+"hrtimer: removing all ur callback modes" ones:
 
-/*
- * Stop the automatic memory scanning thread. This function must be called
- * with the kmemleak_mutex held.
- */
-void stop_scan_thread(void)
-{
-...
+ ca109491f612aab5c8152207631c0444f63da97f
+ 37810659ea7d9572c5ac284ade272f806ef8f788
+ a0a99b227da57f81319dd239bc4de811b0f530ec
 
-but call the function unlocked from kmemleak_write. Looks like a bug ;)
+By "rest of the patches", I mean the above plus the others created by
+Peter for hrtimers.  Full list:
+
+ ca109491f612aab5c8152207631c0444f63da97f
+ 37810659ea7d9572c5ac284ade272f806ef8f788
+ a0a99b227da57f81319dd239bc4de811b0f530ec
+ b2e3c0adec918ea22b6c9d7c76193dd3aaba9bd4
+ 8bdec955b0da2ffbd10eb9b200651dd1f9e366f2
+ d5fd43c4ae04523e1dcd7794f9c511b289851350
+ 731a55ba0f17064f85903b7bf8e24849ec6cfa20
+ a6037b61c2f5fc99c57c15b26d7cfa58bbb34008
+ e3f1d883740b09e5116d4d4e30a6a6987264a83c
+ 82c5b7b527ccc4b5d3cf832437e842f9d2920a79
+ 6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
+
+The first 3 git patches listed above are working for me so far, so I have 
+not had a need to try the others.
+
+On Thu, Jan 15, 2009 at 11:57:13AM +0200, Denys Fedoryschenko wrote:
+> I didn't notice a bug, just because all that time i was using it without
+> hrtimers (because of nmi_watchdog).
+
+nmi_watchdog 1 or 2?  I'm running with 2 which I've read does not disable 
+hrtimers, right?
+
+I mention it because my original HTB/hrtimers-related crash on .28 was 
+without nmi_watchdog altogether.  I added both "nmi_watchdog=panic,2" and 
+Peter's first 3 patches (ca1, 378, a0a) at the same time, to produce an 
+apparently stable system.
+
+I wish I had a repro scenario in a non-production environment, so I could 
+help out further with this.  If I did, I would test without nmi_watchdog 
+while trying just 2.6.28 and Jarek's #4 patch.
+
+Chris
