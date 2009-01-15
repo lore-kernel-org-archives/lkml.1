@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764643AbZAOLPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763901AbZAOLS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764643AbZAOLPt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 06:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbZAOLPl
+	id S1763901AbZAOLS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 06:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZAOLSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 06:15:41 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:41483 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757911AbZAOLPk (ORCPT
+	Thu, 15 Jan 2009 06:18:18 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:37634 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbZAOLSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 06:15:40 -0500
-Date: Thu, 15 Jan 2009 22:15:37 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Mihai =?utf-8?B?RG9uyJt1?= <mihai.dontu@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: b44 - swapper: page allocation failure
-Message-ID: <20090115111537.GA994@gondor.apana.org.au>
+	Thu, 15 Jan 2009 06:18:17 -0500
+Date: Thu, 15 Jan 2009 16:47:54 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_MFD_PCF50633=m breaks the kernel build
+Message-ID: <20090115111753.GD3199@fedora.yogi>
+References: <20090115100653.509416fb@hyperion.delvare> <20090115091107.GB3199@fedora.yogi> <20090115110955.4a8e9c5b@hyperion.delvare> <20090115103112.GC3199@fedora.yogi> <20090115120025.76a28b23@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901142034.55090.mihai.dontu@gmail.com>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel
+In-Reply-To: <20090115120025.76a28b23@hyperion.delvare>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mihai Donțu <mihai.dontu@gmail.com> wrote:
-> Hi,
+On Thu, Jan 15, 2009 at 12:00:25PM +0100, Jean Delvare wrote:
+> On Thu, 15 Jan 2009 16:01:13 +0530, Balaji Rao wrote:
+> > On Thu, Jan 15, 2009 at 11:09:55AM +0100, Jean Delvare wrote:
+> > > On Thu, 15 Jan 2009 14:41:08 +0530, Balaji Rao wrote:
+> > > > On Thu, Jan 15, 2009 at 10:06:53AM +0100, Jean Delvare wrote:
+> > > > > Hi Balaji,
+> > > > > 
+> > > > > Building kernel 2.6.29-rc1-git4 on x86_64 with CONFIG_MFD_PCF50633=m
+> > > > > fails at linking time with:
+> > > > > 
+> > > > > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> > > > > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+> > > > 
+> > > > Yes, I've seen this. The fix is waiting on linux-mfd to be pulled
+> > > > anytime soon.
+> > > 
+> > > Where is linux-mfd? And what is it, a git tree, a mailing list? I
+> > > couldn't find any reference.
+> > 
+> > It's a git tree at http://git.o-hand.com/cgit.cgi/linux-mfd/
 > 
-> A friend of mine just booted 2.6.28 and when someone else tried to send 
-> something to him over ssh (scp), the transfer failed and the following 
-> appeared in dmesg:
+> Would you be so kind and write a patch adding this information to
+> MAINTAINERS? And get it upstream, so that developers know where it is.
+> 
 
-You missed the all important order line before the stack trace.
-If it's order 0, then you're just out of memory, if it's greater
-than order 0, then either you're using jumbo frames or b44 is
-broken.
+Yes, that's a good idea. Will do.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+	- Balaji
