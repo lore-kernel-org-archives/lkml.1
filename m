@@ -1,56 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbZAODqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZAOEHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbZAODqi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 22:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZAODqY
+	id S1757874AbZAOEHV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 23:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZAOEG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 22:46:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:58178 "EHLO gate.crashing.org"
+	Wed, 14 Jan 2009 23:06:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49783 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754288AbZAODqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Jan 2009 22:46:24 -0500
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Xie Xiaobo <X.Xie@freescale.com>,
-       Konjin Lai <Konjin.Lai@freescale.com>,
-       "Joe D'Abbraccio" <Joe.D'abbraccio@freescale.com>
-Message-Id: <533AEE7C-0605-43E9-BB9F-615BE6761202@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	id S1753207AbZAOEG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Jan 2009 23:06:57 -0500
+Message-ID: <496EB639.6090800@redhat.com>
+Date: Wed, 14 Jan 2009 22:06:17 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+MIME-Version: 1.0
+To: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Takashi Sato <t-sato@yk.jp.nec.com>
+Subject: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] mmc: Add driver for Freescale eSDHC controllers
-Date: Wed, 14 Jan 2009 21:43:50 -0600
-References: <20090114194631.GA25978@oksana.dev.rtsoft.ru>
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Now that the filesystem freeze operation has been elevated
+to the VFS, and is just an ioctl away, some sort of safety net
+for unintentionally frozen root filesystems may be in order.
 
-On Jan 14, 2009, at 1:46 PM, Anton Vorontsov wrote:
+The timeout thaw originally proposed did not get merged, but
+perhaps something like this would be useful in emergencies.
 
-> From: Xie Xiaobo <X.Xie@freescale.com>
->
-> This patch adds support for the Freescale Enhanced Secure Digital
-> Host Controller Interface as found in some Freescale PowerPC
-> microprocessors (e.g. MPC837x SOCs).
->
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-> Signed-off-by: Konjin Lai <Konjin.Lai@freescale.com>
-> Signed-off-by: Joe D'Abbraccio <Joe.D'abbraccio@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> drivers/mmc/host/Kconfig  |    9 +
-> drivers/mmc/host/Makefile |    1 +
-> drivers/mmc/host/esdhc.c  | 1321 ++++++++++++++++++++++++++++++++++++ 
-> +++++++++
-> drivers/mmc/host/esdhc.h  |  255 +++++++++
-> 4 files changed, 1586 insertions(+), 0 deletions(-)
-> create mode 100644 drivers/mmc/host/esdhc.c
-> create mode 100644 drivers/mmc/host/esdhc.h
+This doesn't have to piggyback on the existing emergency sync
+sysrq, but it seems like a reasonable, simple addition to me.
 
-Want to work some device tree docs for this.
+I've tested this on a non-root fs with multiple (nested) freezers,
+as well as on a system rendered unresponsive due to a frozen
+root fs.
 
-- k
+Thanks,
+-Eric
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
+
+Index: linux-2.6/drivers/char/sysrq.c
+===================================================================
+--- linux-2.6.orig/drivers/char/sysrq.c
++++ linux-2.6/drivers/char/sysrq.c
+@@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
+ 
+ static void sysrq_handle_sync(int key, struct tty_struct *tty)
+ {
++	emergency_thaw();
+ 	emergency_sync();
+ }
+ static struct sysrq_key_op sysrq_sync_op = {
+Index: linux-2.6/fs/buffer.c
+===================================================================
+--- linux-2.6.orig/fs/buffer.c
++++ linux-2.6/fs/buffer.c
+@@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
+ }
+ EXPORT_SYMBOL(freeze_bdev);
+ 
++void do_thaw(unsigned long unused)
++{
++	struct super_block *sb;
++	char b[BDEVNAME_SIZE];
++
++	list_for_each_entry(sb, &super_blocks, s_list) {
++		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
++			printk(KERN_WARNING "Emergency Thaw on %s\n",
++			       bdevname(sb->s_bdev, b));
++	}
++	printk(KERN_WARNING "Emergency Thaw complete\n");
++}
++
++/**
++ * emergency_thaw -- force thaw every filesystem
++ *
++ * Used for emergency unfreeze of all filesystems via SysRq
++ */
++void emergency_thaw(void)
++{
++	pdflush_operation(do_thaw, 0);
++}
++
+ /**
+  * thaw_bdev  -- unlock filesystem
+  * @bdev:	blockdevice to unlock
+Index: linux-2.6/include/linux/buffer_head.h
+===================================================================
+--- linux-2.6.orig/include/linux/buffer_head.h
++++ linux-2.6/include/linux/buffer_head.h
+@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+ struct super_block *freeze_bdev(struct block_device *);
++void emergency_thaw(void);
+ int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+Index: linux-2.6/Documentation/sysrq.txt
+===================================================================
+--- linux-2.6.orig/Documentation/sysrq.txt
++++ linux-2.6/Documentation/sysrq.txt
+@@ -101,7 +101,8 @@ On all -  write a character to /proc/sys
+ 
+ 'r'     - Turns off keyboard raw mode and sets it to XLATE.
+ 
+-'s'     - Will attempt to sync all mounted filesystems.
++'s'     - Will attempt to sync all mounted filesystems, and unfreeze
++	  any frozen fileystems.
+ 
+ 't'     - Will dump a list of current tasks and their information to your
+           console.
+
+
