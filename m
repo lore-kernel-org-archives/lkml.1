@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761815AbZAOKGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbZAOKKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761815AbZAOKGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 05:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759612AbZAOKGY
+	id S1760481AbZAOKKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 05:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZAOKKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 05:06:24 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:35594 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZAOKGW (ORCPT
+	Thu, 15 Jan 2009 05:10:07 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:15107 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753104AbZAOKKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 05:06:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QtDrjHXk8gkFQ2kJMhSLfhB9o2vOD1Q86l1DHg1tNSku21RjdWClIVMvPRY97zTkwu
-         Eo+oaF2l4R+aO97xg3gN0X9sNEnjpK5NGH+bA/vx60foi6jCGFasHwPyKOzR4q3as/bQ
-         zPXNvZa68jzb9Oyj5xkMzSGZTXD29gFh5u8FE=
-Date: Thu, 15 Jan 2009 10:06:16 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Denys Fedoryschenko <denys@visp.net.lb>
-Cc: Badalian Vyacheslav <slavon@bigtelecom.ru>, Chris Caputo <ccaputo@alt.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: deadlocks if use htb
-Message-ID: <20090115100616.GC5461@ff.dom.local>
-References: <20081010090426.GA6054@ff.dom.local> <496F04AB.2080705@bigtelecom.ru> <20090115095454.GA5461@ff.dom.local> <200901151157.13340.denys@visp.net.lb>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901151157.13340.denys@visp.net.lb>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 05:10:06 -0500
+Date: Thu, 15 Jan 2009 11:09:55 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: CONFIG_MFD_PCF50633=m breaks the kernel build
+Message-ID: <20090115110955.4a8e9c5b@hyperion.delvare>
+In-Reply-To: <20090115091107.GB3199@fedora.yogi>
+References: <20090115100653.509416fb@hyperion.delvare>
+	<20090115091107.GB3199@fedora.yogi>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 11:57:13AM +0200, Denys Fedoryschenko wrote:
-> I didn't notice a bug, just because all that time i was using it without 
-> hrtimers (because of nmi_watchdog).
+On Thu, 15 Jan 2009 14:41:08 +0530, Balaji Rao wrote:
+> On Thu, Jan 15, 2009 at 10:06:53AM +0100, Jean Delvare wrote:
+> > Hi Balaji,
+> > 
+> > Building kernel 2.6.29-rc1-git4 on x86_64 with CONFIG_MFD_PCF50633=m
+> > fails at linking time with:
+> > 
+> > ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> > ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
 > 
+> Yes, I've seen this. The fix is waiting on linux-mfd to be pulled
+> anytime soon.
 
-Yes, it's strange: I think Slavon reported it happened without hrtimers
-too.
+Where is linux-mfd? And what is it, a git tree, a mailing list? I
+couldn't find any reference.
 
-Jarek P.
+Can you please send me the patch now, so that I can fix my build
+locally right now?
+
+Thanks,
+-- 
+Jean Delvare
