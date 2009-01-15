@@ -1,93 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbZAOAE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZAOAFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761999AbZAOAE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Jan 2009 19:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761435AbZAOADh
+	id S1755474AbZAOAFc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Jan 2009 19:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759908AbZAOADi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Jan 2009 19:03:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62193 "EHLO
+	Wed, 14 Jan 2009 19:03:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62201 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758435AbZAOADe (ORCPT
+	with ESMTP id S1758769AbZAOADe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Jan 2009 19:03:34 -0500
-Message-Id: <20090115000332.355796420@goodmis.org>
+Message-Id: <20090115000332.743671868@goodmis.org>
 References: <20090115000254.519563275@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 14 Jan 2009 19:02:56 -0500
+Date: Wed, 14 Jan 2009 19:02:58 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/4] ring_buffer: reset write when reserve buffer fail
-Content-Disposition: inline; filename=0002-ring_buffer-reset-write-when-reserve-buffer-fail.patch
+Subject: [PATCH 4/4] tracing/function-graph-tracer: fix a regression while suspend to disk
+Content-Disposition: inline; filename=0004-tracing-function-graph-tracer-fix-a-regression-whil.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
 
-[ The following text is in the "UTF-8" character set. ]
-    [ Your display is set for the "ANSI_X3.4-1968" character set.  ]
-    [ Some characters may be displayed incorrectly. ]
+Impact: fix a crash while kernel image restore
 
-Impact: reset struct buffer_page.write when interrupt storm
+When the function graph tracer is running and while suspend to disk, some racy
+and dangerous things happen against this tracer.
 
-if struct buffer_page.write is not reset, any succedent committing
-will corrupted ring_buffer:
+The current task will save its registers including the stack pointer which
+contains the return address hooked by the tracer. But the current task will
+continue to enter other functions after that to save the memory, and then
+it will store other return addresses, and finally loose the old depth which
+matches the return address saved in the old stack (during the registers saving).
 
-static inline void
-rb_set_commit_to_write(struct ring_buffer_per_cpu *cpu_buffer)
-{
-	......
-		cpu_buffer->commit_page->commit =
-			cpu_buffer->commit_page->write;
-	......
-}
+So on image restore, the code will return to wrong addresses.
+And there are other things: on restore, the task will have it's "current"
+pointer overwritten during registers restoring....switching from one task to
+another... That would be insane to try to trace function graphs at these
+stages.
 
-when "if (RB_WARN_ON(cpu_buffer, next_page == reader_page))", ring_buffer
-is disabled, but some reserved buffers may haven't been committed.
-we need reset struct buffer_page.write.
+This patch makes the function graph tracer listening on power events, making
+it's tracing disabled for the current task (the one that performs the hibernation work)
+while suspend/resume to disk, making the tracing safe during hibernation.
 
-when "if (unlikely(next_page == cpu_buffer->commit_page))", ring_buffer
-is still available, we should not corrupt it.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ring_buffer.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ kernel/trace/ftrace.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 4832ffa..0b9de5a 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1017,12 +1017,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		}
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 8c1c9c0..7e9a20b 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -17,6 +17,7 @@
+ #include <linux/clocksource.h>
+ #include <linux/kallsyms.h>
+ #include <linux/seq_file.h>
++#include <linux/suspend.h>
+ #include <linux/debugfs.h>
+ #include <linux/hardirq.h>
+ #include <linux/kthread.h>
+@@ -1957,6 +1958,7 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
  
- 		if (next_page == head_page) {
--			if (!(buffer->flags & RB_FL_OVERWRITE)) {
--				/* reset write */
--				if (tail <= BUF_PAGE_SIZE)
--					local_set(&tail_page->write, tail);
-+			if (!(buffer->flags & RB_FL_OVERWRITE))
- 				goto out_unlock;
--			}
+ static atomic_t ftrace_graph_active;
++static struct notifier_block ftrace_suspend_notifier;
  
- 			/* tail_page has not moved yet? */
- 			if (tail_page == cpu_buffer->tail_page) {
-@@ -1097,6 +1093,10 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 	return event;
+ int ftrace_graph_entry_stub(struct ftrace_graph_ent *trace)
+ {
+@@ -2035,6 +2037,27 @@ static int start_graph_tracing(void)
+ 	return ret;
+ }
  
-  out_unlock:
-+	/* reset write */
-+	if (tail <= BUF_PAGE_SIZE)
-+		local_set(&tail_page->write, tail);
++/*
++ * Hibernation protection.
++ * The state of the current task is too much unstable during
++ * suspend/restore to disk. We want to protect against that.
++ */
++static int
++ftrace_suspend_notifier_call(struct notifier_block *bl, unsigned long state,
++							void *unused)
++{
++	switch (state) {
++	case PM_HIBERNATION_PREPARE:
++		pause_graph_tracing();
++		break;
 +
- 	__raw_spin_unlock(&cpu_buffer->lock);
- 	local_irq_restore(flags);
- 	return NULL;
++	case PM_POST_HIBERNATION:
++		unpause_graph_tracing();
++		break;
++	}
++	return NOTIFY_DONE;
++}
++
+ int register_ftrace_graph(trace_func_graph_ret_t retfunc,
+ 			trace_func_graph_ent_t entryfunc)
+ {
+@@ -2042,6 +2065,9 @@ int register_ftrace_graph(trace_func_graph_ret_t retfunc,
+ 
+ 	mutex_lock(&ftrace_sysctl_lock);
+ 
++	ftrace_suspend_notifier.notifier_call = ftrace_suspend_notifier_call;
++	register_pm_notifier(&ftrace_suspend_notifier);
++
+ 	atomic_inc(&ftrace_graph_active);
+ 	ret = start_graph_tracing();
+ 	if (ret) {
+@@ -2067,6 +2093,7 @@ void unregister_ftrace_graph(void)
+ 	ftrace_graph_return = (trace_func_graph_ret_t)ftrace_stub;
+ 	ftrace_graph_entry = ftrace_graph_entry_stub;
+ 	ftrace_shutdown(FTRACE_STOP_FUNC_RET);
++	unregister_pm_notifier(&ftrace_suspend_notifier);
+ 
+ 	mutex_unlock(&ftrace_sysctl_lock);
+ }
 -- 
 1.5.6.5
 
