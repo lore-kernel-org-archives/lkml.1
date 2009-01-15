@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935015AbZAOWOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbZAOWPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935015AbZAOWOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933661AbZAOWCT
+	id S932704AbZAOWPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbZAOWCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:02:19 -0500
-Received: from kroah.org ([198.145.64.141]:38279 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:02:20 -0500
+Received: from kroah.org ([198.145.64.141]:38292 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932186AbZAOWCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:02:11 -0500
-Date: Thu, 15 Jan 2009 13:59:38 -0800
+	id S933600AbZAOWCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:02:12 -0500
+Date: Thu, 15 Jan 2009 13:59:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 22/85] [PATCH 02/44] [CVE-2009-0029] Convert all system
-	calls to return a long
-Message-ID: <20090115215938.GW17227@kroah.com>
+Subject: [patch 23/85] [PATCH 03/44] [CVE-2009-0029] Rename old_readdir to
+	sys_old_readdir
+Message-ID: <20090115215940.GX17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002--CVE-2009-0029-Convert-all-system-calls-to-return-a.patch"
+Content-Disposition: inline; filename="0003--CVE-2009-0029-Rename-old_readdir-to-sys_old_readdi.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,399 +42,200 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 2ed7c03ec17779afb4fcfa3b8c61df61bd4879ba upstream.
+commit e55380edf68796d75bf41391a781c68ee678587d upstream.
 
-Convert all system calls to return a long. This should be a NOP since all
-converted types should have the same size anyway.
-With the exception of sys_exit_group which returned void. But that doesn't
-matter since the system call doesn't return.
+This way it matches the generic system call name convention.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/read_write.c          |   18 +++++-----
- fs/xattr.c               |   12 +++----
- include/linux/syscalls.h |   79 +++++++++++++++++++++++------------------------
- ipc/mqueue.c             |    2 -
- kernel/exit.c            |    4 +-
- kernel/signal.c          |    2 -
- kernel/timer.c           |    2 -
- mm/filemap.c             |    2 -
- mm/mmap.c                |    2 -
- mm/mremap.c              |    2 -
- mm/nommu.c               |    2 -
- 11 files changed, 64 insertions(+), 63 deletions(-)
+ arch/arm/kernel/calls.S              |    2 +-
+ arch/cris/arch-v10/kernel/entry.S    |    2 +-
+ arch/cris/arch-v32/kernel/entry.S    |    2 +-
+ arch/h8300/kernel/syscalls.S         |    2 +-
+ arch/m68k/kernel/entry.S             |    2 +-
+ arch/m68knommu/kernel/syscalltable.S |    2 +-
+ arch/mips/kernel/scall32-o32.S       |    2 +-
+ arch/mn10300/kernel/entry.S          |    2 +-
+ arch/powerpc/include/asm/systbl.h    |    2 +-
+ arch/sh/kernel/syscalls_32.S         |    2 +-
+ arch/sh/kernel/syscalls_64.S         |    2 +-
+ arch/sparc/kernel/systbls.S          |    2 +-
+ arch/x86/kernel/syscall_table_32.S   |    2 +-
+ fs/readdir.c                         |    2 +-
+ include/linux/syscalls.h             |    2 ++
+ 15 files changed, 16 insertions(+), 14 deletions(-)
 
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -112,7 +112,7 @@ loff_t vfs_llseek(struct file *file, lof
+--- a/arch/arm/kernel/calls.S
++++ b/arch/arm/kernel/calls.S
+@@ -98,7 +98,7 @@
+ 		CALL(sys_uselib)
+ 		CALL(sys_swapon)
+ 		CALL(sys_reboot)
+-		CALL(OBSOLETE(old_readdir))	/* used by libc4 */
++		CALL(OBSOLETE(sys_old_readdir))	/* used by libc4 */
+ /* 90 */	CALL(OBSOLETE(old_mmap))	/* used by libc4 */
+ 		CALL(sys_munmap)
+ 		CALL(sys_truncate)
+--- a/arch/cris/arch-v10/kernel/entry.S
++++ b/arch/cris/arch-v10/kernel/entry.S
+@@ -691,7 +691,7 @@ sys_call_table:	
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/cris/arch-v32/kernel/entry.S
++++ b/arch/cris/arch-v32/kernel/entry.S
+@@ -614,7 +614,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/h8300/kernel/syscalls.S
++++ b/arch/h8300/kernel/syscalls.S
+@@ -103,7 +103,7 @@ SYMBOL_NAME_LABEL(sys_call_table)	
+ 	.long SYMBOL_NAME(sys_uselib)
+ 	.long SYMBOL_NAME(sys_swapon)
+ 	.long SYMBOL_NAME(sys_reboot)
+-	.long SYMBOL_NAME(old_readdir)
++	.long SYMBOL_NAME(sys_old_readdir)
+ 	.long SYMBOL_NAME(old_mmap)		/* 90 */
+ 	.long SYMBOL_NAME(sys_munmap)
+ 	.long SYMBOL_NAME(sys_truncate)
+--- a/arch/m68k/kernel/entry.S
++++ b/arch/m68k/kernel/entry.S
+@@ -513,7 +513,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/m68knommu/kernel/syscalltable.S
++++ b/arch/m68knommu/kernel/syscalltable.S
+@@ -107,7 +107,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_ni_syscall	/* sys_swapon */
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/mips/kernel/scall32-o32.S
++++ b/arch/mips/kernel/scall32-o32.S
+@@ -401,7 +401,7 @@ einval:	li	v0, -EINVAL
+ 	sys	sys_uselib		1
+ 	sys	sys_swapon		2
+ 	sys	sys_reboot		3
+-	sys	old_readdir		3
++	sys	sys_old_readdir		3
+ 	sys	old_mmap		6	/* 4090 */
+ 	sys	sys_munmap		2
+ 	sys	sys_truncate		2
+--- a/arch/mn10300/kernel/entry.S
++++ b/arch/mn10300/kernel/entry.S
+@@ -477,7 +477,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -92,7 +92,7 @@ COMPAT_SYS_SPU(readlink)
+ SYSCALL(uselib)
+ SYSCALL(swapon)
+ SYSCALL(reboot)
+-SYSX(sys_ni_syscall,compat_sys_old_readdir,old_readdir)
++SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
+ SYSCALL_SPU(mmap)
+ SYSCALL_SPU(munmap)
+ SYSCALL_SPU(truncate)
+--- a/arch/sh/kernel/syscalls_32.S
++++ b/arch/sh/kernel/syscalls_32.S
+@@ -105,7 +105,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/sh/kernel/syscalls_64.S
++++ b/arch/sh/kernel/syscalls_64.S
+@@ -109,7 +109,7 @@ sys_call_table:
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap			/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/arch/sparc/kernel/systbls.S
++++ b/arch/sparc/kernel/systbls.S
+@@ -56,7 +56,7 @@ sys_call_table:
+ /*185*/	.long sys_setpgid, sys_fremovexattr, sys_tkill, sys_exit_group, sys_newuname
+ /*190*/	.long sys_init_module, sys_personality, sparc_remap_file_pages, sys_epoll_create, sys_epoll_ctl
+ /*195*/	.long sys_epoll_wait, sys_ioprio_set, sys_getppid, sparc_sigaction, sys_sgetmask
+-/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, old_readdir
++/*200*/	.long sys_ssetmask, sys_sigsuspend, sys_newlstat, sys_uselib, sys_old_readdir
+ /*205*/	.long sys_readahead, sys_socketcall, sys_syslog, sys_lookup_dcookie, sys_fadvise64
+ /*210*/	.long sys_fadvise64_64, sys_tgkill, sys_waitpid, sys_swapoff, sys_sysinfo
+ /*215*/	.long sys_ipc, sys_sigreturn, sys_clone, sys_ioprio_get, sys_adjtimex
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -88,7 +88,7 @@ ENTRY(sys_call_table)
+ 	.long sys_uselib
+ 	.long sys_swapon
+ 	.long sys_reboot
+-	.long old_readdir
++	.long sys_old_readdir
+ 	.long old_mmap		/* 90 */
+ 	.long sys_munmap
+ 	.long sys_truncate
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -102,7 +102,7 @@ efault:
+ 	return -EFAULT;
  }
- EXPORT_SYMBOL(vfs_llseek);
  
--asmlinkage off_t sys_lseek(unsigned int fd, off_t offset, unsigned int origin)
-+asmlinkage long sys_lseek(unsigned int fd, off_t offset, unsigned int origin)
+-asmlinkage long old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
++asmlinkage long sys_old_readdir(unsigned int fd, struct old_linux_dirent __user * dirent, unsigned int count)
  {
- 	off_t retval;
+ 	int error;
  	struct file * file;
-@@ -334,7 +334,7 @@ static inline void file_pos_write(struct
- 	file->f_pos = pos;
- }
- 
--asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
-+asmlinkage long sys_read(unsigned int fd, char __user * buf, size_t count)
- {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -351,7 +351,7 @@ asmlinkage ssize_t sys_read(unsigned int
- 	return ret;
- }
- 
--asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
-+asmlinkage long sys_write(unsigned int fd, const char __user * buf, size_t count)
- {
- 	struct file *file;
- 	ssize_t ret = -EBADF;
-@@ -368,7 +368,7 @@ asmlinkage ssize_t sys_write(unsigned in
- 	return ret;
- }
- 
--asmlinkage ssize_t sys_pread64(unsigned int fd, char __user *buf,
-+asmlinkage long sys_pread64(unsigned int fd, char __user *buf,
- 			     size_t count, loff_t pos)
- {
- 	struct file *file;
-@@ -389,7 +389,7 @@ asmlinkage ssize_t sys_pread64(unsigned 
- 	return ret;
- }
- 
--asmlinkage ssize_t sys_pwrite64(unsigned int fd, const char __user *buf,
-+asmlinkage long sys_pwrite64(unsigned int fd, const char __user *buf,
- 			      size_t count, loff_t pos)
- {
- 	struct file *file;
-@@ -637,7 +637,7 @@ ssize_t vfs_writev(struct file *file, co
- 
- EXPORT_SYMBOL(vfs_writev);
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_readv(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
- {
- 	struct file *file;
-@@ -658,7 +658,7 @@ sys_readv(unsigned long fd, const struct
- 	return ret;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_writev(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
- {
- 	struct file *file;
-@@ -777,7 +777,7 @@ out:
- 	return retval;
- }
- 
--asmlinkage ssize_t sys_sendfile(int out_fd, int in_fd, off_t __user *offset, size_t count)
-+asmlinkage long sys_sendfile(int out_fd, int in_fd, off_t __user *offset, size_t count)
- {
- 	loff_t pos;
- 	off_t off;
-@@ -796,7 +796,7 @@ asmlinkage ssize_t sys_sendfile(int out_
- 	return do_sendfile(out_fd, in_fd, NULL, count, 0);
- }
- 
--asmlinkage ssize_t sys_sendfile64(int out_fd, int in_fd, loff_t __user *offset, size_t count)
-+asmlinkage long sys_sendfile64(int out_fd, int in_fd, loff_t __user *offset, size_t count)
- {
- 	loff_t pos;
- 	ssize_t ret;
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -349,7 +349,7 @@ getxattr(struct dentry *d, const char __
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_getxattr(const char __user *pathname, const char __user *name,
- 	     void __user *value, size_t size)
- {
-@@ -364,7 +364,7 @@ sys_getxattr(const char __user *pathname
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_lgetxattr(const char __user *pathname, const char __user *name, void __user *value,
- 	      size_t size)
- {
-@@ -379,7 +379,7 @@ sys_lgetxattr(const char __user *pathnam
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_fgetxattr(int fd, const char __user *name, void __user *value, size_t size)
- {
- 	struct file *f;
-@@ -424,7 +424,7 @@ listxattr(struct dentry *d, char __user 
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_listxattr(const char __user *pathname, char __user *list, size_t size)
- {
- 	struct path path;
-@@ -438,7 +438,7 @@ sys_listxattr(const char __user *pathnam
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_llistxattr(const char __user *pathname, char __user *list, size_t size)
- {
- 	struct path path;
-@@ -452,7 +452,7 @@ sys_llistxattr(const char __user *pathna
- 	return error;
- }
- 
--asmlinkage ssize_t
-+asmlinkage long
- sys_flistxattr(int fd, char __user *list, size_t size)
- {
- 	struct file *f;
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -77,7 +77,7 @@ asmlinkage long sys_times(struct tms __u
+@@ -54,6 +54,7 @@ struct compat_stat;
+ struct compat_timeval;
+ struct robust_list_head;
+ struct getcpu_cache;
++struct old_linux_dirent;
  
- asmlinkage long sys_gettid(void);
- asmlinkage long sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp);
--asmlinkage unsigned long sys_alarm(unsigned int seconds);
-+asmlinkage long sys_alarm(unsigned int seconds);
- asmlinkage long sys_getpid(void);
- asmlinkage long sys_getppid(void);
- asmlinkage long sys_getuid(void);
-@@ -166,7 +166,7 @@ asmlinkage long sys_kexec_load(unsigned 
- 				unsigned long flags);
+ #include <linux/types.h>
+ #include <linux/aio_abi.h>
+@@ -609,6 +610,7 @@ asmlinkage long sys_timerfd_gettime(int 
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_old_readdir(unsigned int, struct old_linux_dirent __user *, unsigned int);
  
- asmlinkage long sys_exit(int error_code);
--asmlinkage void sys_exit_group(int error_code);
-+asmlinkage long sys_exit_group(int error_code);
- asmlinkage long sys_wait4(pid_t pid, int __user *stat_addr,
- 				int options, struct rusage __user *ru);
- asmlinkage long sys_waitid(int which, pid_t pid,
-@@ -196,7 +196,7 @@ asmlinkage long sys_tkill(int pid, int s
- asmlinkage long sys_rt_sigqueueinfo(int pid, int sig, siginfo_t __user *uinfo);
- asmlinkage long sys_sgetmask(void);
- asmlinkage long sys_ssetmask(int newmask);
--asmlinkage unsigned long sys_signal(int sig, __sighandler_t handler);
-+asmlinkage long sys_signal(int sig, __sighandler_t handler);
- asmlinkage long sys_pause(void);
- 
- asmlinkage long sys_sync(void);
-@@ -246,29 +246,29 @@ asmlinkage long sys_lsetxattr(const char
- 			      const void __user *value, size_t size, int flags);
- asmlinkage long sys_fsetxattr(int fd, const char __user *name,
- 			      const void __user *value, size_t size, int flags);
--asmlinkage ssize_t sys_getxattr(const char __user *path, const char __user *name,
--				void __user *value, size_t size);
--asmlinkage ssize_t sys_lgetxattr(const char __user *path, const char __user *name,
--				void __user *value, size_t size);
--asmlinkage ssize_t sys_fgetxattr(int fd, const char __user *name,
--				void __user *value, size_t size);
--asmlinkage ssize_t sys_listxattr(const char __user *path, char __user *list,
--				size_t size);
--asmlinkage ssize_t sys_llistxattr(const char __user *path, char __user *list,
--				size_t size);
--asmlinkage ssize_t sys_flistxattr(int fd, char __user *list, size_t size);
-+asmlinkage long sys_getxattr(const char __user *path, const char __user *name,
-+			     void __user *value, size_t size);
-+asmlinkage long sys_lgetxattr(const char __user *path, const char __user *name,
-+			      void __user *value, size_t size);
-+asmlinkage long sys_fgetxattr(int fd, const char __user *name,
-+			      void __user *value, size_t size);
-+asmlinkage long sys_listxattr(const char __user *path, char __user *list,
-+			      size_t size);
-+asmlinkage long sys_llistxattr(const char __user *path, char __user *list,
-+			       size_t size);
-+asmlinkage long sys_flistxattr(int fd, char __user *list, size_t size);
- asmlinkage long sys_removexattr(const char __user *path,
- 				const char __user *name);
- asmlinkage long sys_lremovexattr(const char __user *path,
- 				 const char __user *name);
- asmlinkage long sys_fremovexattr(int fd, const char __user *name);
- 
--asmlinkage unsigned long sys_brk(unsigned long brk);
-+asmlinkage long sys_brk(unsigned long brk);
- asmlinkage long sys_mprotect(unsigned long start, size_t len,
- 				unsigned long prot);
--asmlinkage unsigned long sys_mremap(unsigned long addr,
--				unsigned long old_len, unsigned long new_len,
--				unsigned long flags, unsigned long new_addr);
-+asmlinkage long sys_mremap(unsigned long addr,
-+			   unsigned long old_len, unsigned long new_len,
-+			   unsigned long flags, unsigned long new_addr);
- asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
- 			unsigned long prot, unsigned long pgoff,
- 			unsigned long flags);
-@@ -321,10 +321,10 @@ asmlinkage long sys_io_submit(aio_contex
- 				struct iocb __user * __user *);
- asmlinkage long sys_io_cancel(aio_context_t ctx_id, struct iocb __user *iocb,
- 			      struct io_event __user *result);
--asmlinkage ssize_t sys_sendfile(int out_fd, int in_fd,
--				off_t __user *offset, size_t count);
--asmlinkage ssize_t sys_sendfile64(int out_fd, int in_fd,
--				loff_t __user *offset, size_t count);
-+asmlinkage long sys_sendfile(int out_fd, int in_fd,
-+			     off_t __user *offset, size_t count);
-+asmlinkage long sys_sendfile64(int out_fd, int in_fd,
-+			       loff_t __user *offset, size_t count);
- asmlinkage long sys_readlink(const char __user *path,
- 				char __user *buf, int bufsiz);
- asmlinkage long sys_creat(const char __user *pathname, int mode);
-@@ -368,26 +368,25 @@ asmlinkage long sys_utime(char __user *f
- 				struct utimbuf __user *times);
- asmlinkage long sys_utimes(char __user *filename,
- 				struct timeval __user *utimes);
--asmlinkage off_t sys_lseek(unsigned int fd, off_t offset,
--				unsigned int origin);
-+asmlinkage long sys_lseek(unsigned int fd, off_t offset,
-+			  unsigned int origin);
- asmlinkage long sys_llseek(unsigned int fd, unsigned long offset_high,
- 			unsigned long offset_low, loff_t __user *result,
- 			unsigned int origin);
--asmlinkage ssize_t sys_read(unsigned int fd, char __user *buf,
--				size_t count);
--asmlinkage ssize_t sys_readahead(int fd, loff_t offset, size_t count);
--asmlinkage ssize_t sys_readv(unsigned long fd,
--				const struct iovec __user *vec,
--				unsigned long vlen);
--asmlinkage ssize_t sys_write(unsigned int fd, const char __user *buf,
--				size_t count);
--asmlinkage ssize_t sys_writev(unsigned long fd,
--				const struct iovec __user *vec,
--				unsigned long vlen);
--asmlinkage ssize_t sys_pread64(unsigned int fd, char __user *buf,
--				size_t count, loff_t pos);
--asmlinkage ssize_t sys_pwrite64(unsigned int fd, const char __user *buf,
--				size_t count, loff_t pos);
-+asmlinkage long sys_read(unsigned int fd, char __user *buf, size_t count);
-+asmlinkage long sys_readahead(int fd, loff_t offset, size_t count);
-+asmlinkage long sys_readv(unsigned long fd,
-+			  const struct iovec __user *vec,
-+			  unsigned long vlen);
-+asmlinkage long sys_write(unsigned int fd, const char __user *buf,
-+			  size_t count);
-+asmlinkage long sys_writev(unsigned long fd,
-+			   const struct iovec __user *vec,
-+			   unsigned long vlen);
-+asmlinkage long sys_pread64(unsigned int fd, char __user *buf,
-+			    size_t count, loff_t pos);
-+asmlinkage long sys_pwrite64(unsigned int fd, const char __user *buf,
-+			     size_t count, loff_t pos);
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size);
- asmlinkage long sys_mkdir(const char __user *pathname, int mode);
- asmlinkage long sys_chdir(const char __user *filename);
-@@ -477,7 +476,7 @@ asmlinkage long sys_shmctl(int shmid, in
- asmlinkage long sys_mq_open(const char __user *name, int oflag, mode_t mode, struct mq_attr __user *attr);
- asmlinkage long sys_mq_unlink(const char __user *name);
- asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const struct timespec __user *abs_timeout);
--asmlinkage ssize_t sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct timespec __user *abs_timeout);
-+asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct timespec __user *abs_timeout);
- asmlinkage long sys_mq_notify(mqd_t mqdes, const struct sigevent __user *notification);
- asmlinkage long sys_mq_getsetattr(mqd_t mqdes, const struct mq_attr __user *mqstat, struct mq_attr __user *omqstat);
- 
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -896,7 +896,7 @@ out:
- 	return ret;
- }
- 
--asmlinkage ssize_t sys_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
-+asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
- 	size_t msg_len, unsigned int __user *u_msg_prio,
- 	const struct timespec __user *u_abs_timeout)
- {
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1186,9 +1186,11 @@ do_group_exit(int exit_code)
-  * wait4()-ing process will get the correct exit code - even if this
-  * thread is not the thread group leader.
-  */
--asmlinkage void sys_exit_group(int error_code)
-+asmlinkage long sys_exit_group(int error_code)
- {
- 	do_group_exit((error_code & 0xff) << 8);
-+	/* NOTREACHED */
-+	return 0;
- }
- 
- static struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2534,7 +2534,7 @@ sys_ssetmask(int newmask)
- /*
-  * For backwards compatibility.  Functionality superseded by sigaction.
-  */
--asmlinkage unsigned long
-+asmlinkage long
- sys_signal(int sig, __sighandler_t handler)
- {
- 	struct k_sigaction new_sa, old_sa;
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1074,7 +1074,7 @@ void do_timer(unsigned long ticks)
-  * For backwards compatibility?  This can be done in libc so Alpha
-  * and all newer ports shouldn't need it.
-  */
--asmlinkage unsigned long sys_alarm(unsigned int seconds)
-+asmlinkage long sys_alarm(unsigned int seconds)
- {
- 	return alarm_setitimer(seconds);
- }
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1353,7 +1353,7 @@ do_readahead(struct address_space *mappi
- 	return 0;
- }
- 
--asmlinkage ssize_t sys_readahead(int fd, loff_t offset, size_t count)
-+asmlinkage long sys_readahead(int fd, loff_t offset, size_t count)
- {
- 	ssize_t ret;
- 	struct file *file;
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -244,7 +244,7 @@ static struct vm_area_struct *remove_vma
- 	return next;
- }
- 
--asmlinkage unsigned long sys_brk(unsigned long brk)
-+asmlinkage long sys_brk(unsigned long brk)
- {
- 	unsigned long rlim, retval;
- 	unsigned long newbrk, oldbrk;
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -418,7 +418,7 @@ out_nc:
- 	return ret;
- }
- 
--asmlinkage unsigned long sys_mremap(unsigned long addr,
-+asmlinkage long sys_mremap(unsigned long addr,
- 	unsigned long old_len, unsigned long new_len,
- 	unsigned long flags, unsigned long new_addr)
- {
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -355,7 +355,7 @@ EXPORT_SYMBOL(vm_insert_page);
-  *  to a regular file.  in this case, the unmapping will need
-  *  to invoke file system routines that need the global lock.
-  */
--asmlinkage unsigned long sys_brk(unsigned long brk)
-+asmlinkage long sys_brk(unsigned long brk)
- {
- 	struct mm_struct *mm = current->mm;
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
  
 
