@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934047AbZAOWmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935691AbZAOWmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934047AbZAOWmR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 17:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934032AbZAOWDy
+	id S935691AbZAOWmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 17:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934045AbZAOWDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 17:03:54 -0500
-Received: from kroah.org ([198.145.64.141]:38948 "EHLO coco.kroah.org"
+	Thu, 15 Jan 2009 17:03:55 -0500
+Received: from kroah.org ([198.145.64.141]:38973 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933214AbZAOWDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 17:03:48 -0500
-Date: Thu, 15 Jan 2009 14:01:45 -0800
+	id S933902AbZAOWDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 17:03:49 -0500
+Date: Thu, 15 Jan 2009 14:01:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
-Subject: [patch 72/85] mm lockless pagecache barrier fix
-Message-ID: <20090115220145.GU17227@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Wu Fengguang <wfg@linux.intel.com>
+Subject: [patch 74/85] nfs: remove redundant tests on reading new pages
+Message-ID: <20090115220149.GW17227@kroah.com>
 References: <20090115215237.906089480@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-lockless-pagecache-barrier-fix.patch"
+Content-Disposition: inline; filename="nfs-remove-redundant-tests-on-reading-new-pages.patch"
 In-Reply-To: <20090115215812.GA17227@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,78 +40,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-commit e8c82c2e23e3527e0c9dc195e432c16784d270fa upstream.
+commit 136221fc3219b3805c48db5da065e8e3467175d4 upstream.
 
-An XFS workload showed up a bug in the lockless pagecache patch. Basically it
-would go into an "infinite" loop, although it would sometimes be able to break
-out of the loop! The reason is a missing compiler barrier in the "increment
-reference count unless it was zero" case of the lockless pagecache protocol in
-the gang lookup functions.
+aops->readpages() and its NFS helper readpage_async_filler() will only
+be called to do readahead I/O for newly allocated pages. So it's not
+necessary to test for the always 0 dirty/uptodate page flags.
 
-This would cause the compiler to use a cached value of struct page pointer to
-retry the operation with, rather than reload it. So the page might have been
-removed from pagecache and freed (refcount==0) but the lookup would not correctly
-notice the page is no longer in pagecache, and keep attempting to increment the
-refcount and failing, until the page gets reallocated for something else. This
-isn't a data corruption because the condition will be detected if the page has
-been reallocated. However it can result in a lockup.
+The removal of nfs_wb_page() call also fixes a readahead bug: the NFS
+readahead has been synchronous since 2.6.23, because that call will
+clear PG_readahead, which is the reminder for asynchronous readahead.
 
-Linus points out that ACCESS_ONCE is also required in that pointer load, even
-if it's absence is not causing a bug on our particular build. The most general
-way to solve this is just to put an rcu_dereference in radix_tree_deref_slot.
+More background: the PG_readahead page flag is shared with PG_reclaim,
+one for read path and the other for write path. clear_page_dirty_for_io()
+unconditionally clears PG_readahead to prevent possible readahead residuals,
+assuming itself to be always called in the write path. However, NFS is one
+and the only exception in that it _always_ calls clear_page_dirty_for_io()
+in the read path, i.e. for readpages()/readpage().
 
-Assembly of find_get_pages,
-before:
-.L220:
-        movq    (%rbx), %rax    #* ivtmp.1162, tmp82
-        movq    (%rax), %rdi    #, prephitmp.1149
-.L218:
-        testb   $1, %dil        #, prephitmp.1149
-        jne     .L217   #,
-        testq   %rdi, %rdi      # prephitmp.1149
-        je      .L203   #,
-        cmpq    $-1, %rdi       #, prephitmp.1149
-        je      .L217   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L218   #,
-
-after:
-.L212:
-        movq    (%rbx), %rax    #* ivtmp.1109, tmp81
-        movq    (%rax), %rdi    #, ret
-        testb   $1, %dil        #, ret
-        jne     .L211   #,
-        testq   %rdi, %rdi      # ret
-        je      .L197   #,
-        cmpq    $-1, %rdi       #, ret
-        je      .L211   #,
-        movl    8(%rdi), %esi   # <variable>._count.counter, c
-        testl   %esi, %esi      # c
-        je      .L212   #,
-
-(notice the obvious infinite loop in the first example, if page->count remains 0)
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <wfg@linux.intel.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/radix-tree.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/nfs/read.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -136,7 +136,7 @@ do {									\
-  */
- static inline void *radix_tree_deref_slot(void **pslot)
- {
--	void *ret = *pslot;
-+	void *ret = rcu_dereference(*pslot);
- 	if (unlikely(radix_tree_is_indirect_ptr(ret)))
- 		ret = RADIX_TREE_RETRY;
- 	return ret;
+--- a/fs/nfs/read.c
++++ b/fs/nfs/read.c
+@@ -533,12 +533,6 @@ readpage_async_filler(void *data, struct
+ 	unsigned int len;
+ 	int error;
+ 
+-	error = nfs_wb_page(inode, page);
+-	if (error)
+-		goto out_unlock;
+-	if (PageUptodate(page))
+-		goto out_unlock;
+-
+ 	len = nfs_page_length(page);
+ 	if (len == 0)
+ 		return nfs_return_empty_page(page);
 
