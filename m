@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbZAPM3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbZAPMgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933502AbZAPM3o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760869AbZAPM3N
+	id S933645AbZAPMgs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbZAPMgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:29:13 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:50228 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760689AbZAPM3M (ORCPT
+	Fri, 16 Jan 2009 07:36:37 -0500
+Received: from [202.81.31.141] ([202.81.31.141]:45429 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1759225AbZAPMgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:29:12 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: nbd: add locking to nbd_ioctl
-Date: Fri, 16 Jan 2009 13:29:08 +0100
-User-Agent: KMail/1.9.9
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Paul.Clements@steeleye.com
-References: <20090116115512.GA10771@elf.ucw.cz>
-In-Reply-To: <20090116115512.GA10771@elf.ucw.cz>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 16 Jan 2009 07:36:37 -0500
+X-Greylist: delayed 1197 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Jan 2009 07:36:36 EST
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Fri, 16 Jan 2009 17:46:36 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <200901091637.24658.chandru@in.ibm.com> <200901151335.27649.chandru@in.ibm.com>
+In-Reply-To: <200901151335.27649.chandru@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901161329.08588.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18YaloUI1YFfysscLwX9B2amRJLoPBmskwsqnZ
- tLdQvYVomfA1AcfgA/Iv2UScyEtaDMlWnuwMRLFVLqRm2sN3CZ
- tIuynKU8XOHPAxgVicYJA==
+Message-Id: <200901161746.36584.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009, Pavel Machek wrote:
-> The code was written with "oh big kernel lock, please protect me from
-> all the evil" mentality: it does not locks its own data structures, it
-> just hopes that big kernel lock somehow helps.
+On Thursday 15 January 2009 13:35:27 Chandru wrote:
+> Hello Dave, From the debug console output, if there is anything you can add
+> here, pls let me know.
 
-If the locking is ok now, can you also move the call to ->ioctl()? instead
-of locked_ioctl()? That would also be a good opportunity to move to
-compat_ioctl() and kill the handlers in fs/compat_ioctl.c.
+As we can see from the console output here,  physbase isn't page aligned when 
+the panic occurs.  So we could as well send (start_pfn << PAGE_SHIFT) to 
+reserve_bootmem_node() instead of physbase. your thoughts ?.
 
-	Arnd <><
+Also end_pfn in mark_reserved_region_for_nid() is defined as 
+
+unsigned long end_pfn = ((physbase + size) >> PAGE_SHIFT);
+
+Does this refer to the pfn after the area that we are interested in ?.  We have 
+atleast two fixes here,  
+1. Limit start and end to bdata->node_min_pfn  and bdata->node_low_pfn in 
+reserve_bootmem_node() and add comments out in there that the caller of the 
+funtion should be aware of how much are they reserving. 
+2. send (start_pfn << PAGE_SHIFT) to reserve_bootmem_node() instead of 
+physbase. 
+
+Chandru
