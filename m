@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937340AbZAPU27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937458AbZAPU3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937340AbZAPU27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 15:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbZAPU2o
+	id S937458AbZAPU3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 15:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937219AbZAPU24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 15:28:44 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:24747 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756452AbZAPU2n (ORCPT
+	Fri, 16 Jan 2009 15:28:56 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54614 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S937165AbZAPU2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 15:28:43 -0500
-Date: Fri, 16 Jan 2009 21:28:29 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Martin Bligh <mbligh@google.com>
-Cc: bugme-admin@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Bugzilla permissions
-Message-ID: <20090116212829.569f4adb@hyperion.delvare>
-In-Reply-To: <33307c790901160935v2495615fo4ee0998d348fa117@mail.gmail.com>
-References: <20090113132714.75c9ed96@hyperion.delvare>
-	<33307c790901160935v2495615fo4ee0998d348fa117@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+	Fri, 16 Jan 2009 15:28:54 -0500
+Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090116110708.75c5828d.akpm@linux-foundation.org>
+References: <1232117771.3224.21.camel@localhost.localdomain>
+	 <20090116090928.e43c986e.akpm@linux-foundation.org>
+	 <1232131733.3224.46.camel@localhost.localdomain>
+	 <20090116110708.75c5828d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 15:28:37 -0500
+Message-Id: <1232137717.3224.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 09:35:45 -0800, Martin Bligh wrote:
-> > Dear bugzilla admin,
+On Fri, 2009-01-16 at 11:07 -0800, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 13:48:53 -0500
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> Please send bugzilla admin emails to bugme-admin@linux-foundation.org
-> (is linked from the front page of http://bugzilla.kernel.org). Sorry, I can't
-> keep up with reading all of LKML nowadays ;-)
+> > > > +++ b/drivers/scsi/qla2xxx/qla_init.c
+> > > > @@ -1258,35 +1258,48 @@ qla2x00_init_rings(scsi_qla_host_t *vha)
+> > > >  {
+> > > >  	int	rval;
+> > > >  	unsigned long flags = 0;
+> > > > -	int cnt;
+> > > > +	int cnt, que;
+> > > >  	struct qla_hw_data *ha = vha->hw;
+> > > > -	struct req_que *req = ha->req_q_map[0];
+> > > > -	struct rsp_que *rsp = ha->rsp_q_map[0];
+> > > > +	struct req_que *req;
+> > > > +	struct rsp_que *rsp;
+> > > > +	struct scsi_qla_host *vp;
+> > > >  	struct mid_init_cb_24xx *mid_init_cb =
+> > > >  	    (struct mid_init_cb_24xx *) ha->init_cb;
+> > > 
+> > > This cast worries me.  It's a cast between two complex data structures
+> > > which appear to have nothing to do with each other.
+> > 
+> > Actually, it's a C++ type construct.  ha->init_cb is of type init_cb_t,
+> > mid_init_cb actually contains this (via a second indirection) as the
+> > first element, so what it's doing is dynamically casting out based on
+> > the board type.
 > 
-> > Could you please unlock bugzilla so that everybody (starting with me)
-> > is allowed to change the attachment types? I am a bit tired of having
-> > to e-mail the person who created the attachment to ask him/her to
-> > change the type from application/octet-stream to text/plain so that I
-> > can see the attachment directly in my web browser. If we want people to
-> > help with bugs, we must make it as easy for them as possible.
+> Ah, OK, I got lost amongst the typedefs and pointers.
 > 
-> Given that there's no real control on bugzilla accounts, I'm somewhat
-> reluctant to make it a complete free for all and let any new user edit
-> any bug. However, for anyone running a subsystem, or anyone else
-> that I have a vague clue who they are (or any established developer
-> will vouch for, anyone I can see git commits for, etc), I am perfectly
-> willing to enable global edit on a individual basis. Hasn't been a big
-> problem up until now, so I suspect it won't turn into one.
-> 
-> I enabled your account. Thanks for looking at bugs ;-)
+> This code could/should use container_of() for this operation?
 
-Thanks Martin!
+It could, but since it's a double cast out it would get a lot uglier. We
+don't really pick up any safety from this because the FW structure is
+shared with the device, so no-one can move the first element anyway.
 
--- 
-Jean Delvare
+James
+
+
