@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937361AbZAPTQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937260AbZAPTUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937361AbZAPTQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 14:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbZAPTP7
+	id S937260AbZAPTUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 14:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbZAPTUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 14:15:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35826 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbZAPTP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 14:15:58 -0500
-Date: Fri, 16 Jan 2009 14:15:55 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] ftrace interface for blktrace
-In-Reply-To: <20090116181611.GE6562@ghostprotocols.net>
-Message-ID: <alpine.DEB.1.10.0901161414190.22303@gandalf.stny.rr.com>
-References: <20090116181611.GE6562@ghostprotocols.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 16 Jan 2009 14:20:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59974 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753635AbZAPTUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 14:20:33 -0500
+Message-ID: <4970DDF9.4090007@redhat.com>
+Date: Fri, 16 Jan 2009 11:20:25 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-api@vger.kernel.org,
+       aarcange@redhat.com
+Subject: Re: [PATCH v6 0/5] Add preadv & pwritev system calls.
+References: <1232124344-25892-1-git-send-email-kraxel@redhat.com> <200901161852.04953.arnd@arndb.de>
+In-Reply-To: <200901161852.04953.arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Arnaldo,
+Arnd Bergmann wrote:
+> Did you get any feedback from Ulrich
+> Drepper as to whether he plans to add support to glibc?
 
-Cool stuff!
+If they are in the kernel there is no reason not to export them from
+glibc.  But I have a general comment about all kinds of read syscalls.
+If think they have been misdesigned from day one and if we are going to
+add new ones we might want to fix them.
 
-On Fri, 16 Jan 2009, Arnaldo Carvalho de Melo wrote:
+The problem is that they don't allow for zero-copy operations in enough
+cases.  The kernel is not free to store the data wherever it wants even
+if the userlevel code is fine with that.  Ideally the program would tell
+the kernel that it is fine with any addressable address and provides a
+buffer for the kernel to use in case zero-copy into that buffer is
+possible or no zero-copy is possible at all.  An interface could look
+like this:
 
-> Hi Jens,
-> 
-> 	The patch below adds a ftrace interface for blktrace, allowing
-> people to use it without any required userspace tools, using sysfs to setup the
-> act_mask, pid, start_lba, end_lba.
-> 
-> 	Example usage:
-> 
-> [root@f10-1 ~]# mount -t debugfs none /sys/kernel/debug/
+   ssize_t readz (int fd, void *buf, size_t len, void **res)
 
-I think you are the only person that mounts debugfs on the "official"
-location ;-)
+(and accordingly for similar calls).  The application will then use the
+pointer stored at the address pointed to by the fourth parameter instead
+of unconditionally using the buffer pointed to by the second parameter.
+ For res==NULL the semantics could be the same as the normal read().
 
-> [root@f10-1 ~]# ls /sys/block/sda/sda1/trace/
-> act_mask  enable  end_lba  pid  start_lba
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/available_tracers 
-> blk function_graph wakeup function sched_switch nop
-> [root@f10-1 ~]# echo blk > /sys/kernel/debug/tracing/current_tracer 
+This is not the only interface needed to make this work.  Somehow the
+memory used for the zero-copy buffers has to be administrated.  At the
+very least an interface to mark the buffer returned by readz() as unused
+is needed.
 
-You must like to type.
+There is a lot to think about before this can be done (something I
+started back in my 2006 OLS paper [1]).  But I wonder whether it's worth
+preparing for it and not add yet more interfaces which aren't ready for
+this type of I/O.
 
--- Steve
 
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace
-> # tracer: blk
-> #
-> # DEV   CPU TIMESTAMP     PID ACT FLG
-> #  |     |     |           |   |   |
-> [root@f10-1 ~]# echo 1 > /sys/block/sda/sda1/trace/enable 
-> [root@f10-1 ~]# tail /sys/kernel/debug/tracing/trace
->   8,1    0   143.070085  1208  P  NS [tail]
->   8,1    0   143.070087  1208  I RBS 4154375 + 8 [tail]
->   8,1    0   143.070091  1208  A WBS 4155391 + 16 <- (8,1) 4155328
->   8,1    0   143.070091  1208  Q   R 4155391 + 16 [tail]
->   8,1    0   143.070094  1208  G  RB 4155391 + 16 [tail]
->   8,1    0   143.070094  1208  I RBS 4155391 + 16 [tail]
->   8,1    0   143.070097  1208  U  WS [tail] 2
->   8,1    0   143.070101  1208  D  WB 4154375 + 8 [tail]
->   8,1    0   143.070341  1208  D  WB 4155391 + 16 [tail]
->   8,1    0   143.070635     0  C  RS 4154375 + 8 [0]
-> [root@f10-1 ~]#
-> 
+[1] http://people.redhat.com/drepper/newni.pdf
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklw3bIACgkQ2ijCOnn/RHSutgCgvIZki4gZfuLzwCOGkZqOf97v
+1LYAn3fQj0C8CabsfvaYonFTZQ3oUtSn
+=EDYF
+-----END PGP SIGNATURE-----
