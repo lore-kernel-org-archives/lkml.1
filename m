@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935794AbZAPXJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765546AbZAPXLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935794AbZAPXJt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 18:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761698AbZAPXJk
+	id S1765546AbZAPXLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbZAPXLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 18:09:40 -0500
-Received: from smtp5.Stanford.EDU ([171.67.219.85]:50237 "EHLO
-	smtp5.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760371AbZAPXJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 18:09:39 -0500
-Subject: [Fwd: [LAU] [PATCH] [RT] tasklets: fix typo in tasklet_hi_action]
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Fri, 16 Jan 2009 15:09:37 -0800
-Message-Id: <1232147377.3081.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 16 Jan 2009 18:11:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51484 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbZAPXLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 18:11:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] PM: Fix compilation warning in kernel/power/main.c
+Date: Sat, 17 Jan 2009 00:10:45 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901170010.45699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't know if you are aware of this patch (see below), it was
-apparently not xposted to lkml. If fixes the loooong standing midi
-problems in 2.6.26.x. I've tested (not very deeply) and it seems to work
-(and others have also reported success with it). It is not in rt13...
 
--- Fernando
+Reorder the code in kernel/power/main.c to fix compilation warning
+triggered by unsetting CONFIG_SUSPEND.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c |   26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
--------- Forwarded Message --------
-From: Adam Sampson <ats@offog.org>
-To: linux-rt-users@vger.kernel.org
-Cc: linux-audio-user@lists.linuxaudio.org
-Subject: [LAU] [PATCH] [RT] tasklets: fix typo in tasklet_hi_action
-Date: Sun, 4 Jan 2009 15:20:58 +0000
-
-[l-a-u CCed because we've been talking about this problem there
-recently, and that's what prodded me to do the bisection to track it
-down... fortunately the -rt8 to -rt9 interdiff was pretty small!]
-
-Subject: [PATCH] [RT] tasklets: fix typo in tasklet_hi_action
-
-Fix a typo in tasklet_hi_action -- using the wrong tasklet list when removing
-actions.
-
-This appears to be what was causing the ALSA sequencer device not to work in
-2.6.26 with the RT patch: the sequencer was flaky in -rt1 to -rt8, and just
-hung in -rt9 and later, after tasklets-fix-tasklet_hi_schedule.patch which
-fixed the same typo when adding to the list. I guess that's because before -rt9
-the actions were going onto the wrong list, whereas after -rt9 they were being
-lost entirely once the first one had been performed. It seems happy now,
-anyway.
-
-Signed-off-by: Adam Sampson <ats@offog.org>
-
---- linux-2.6.26/kernel/softirq.c_orig	2009-01-04 14:41:06.000000000 +0000
-+++ linux-2.6.26/kernel/softirq.c	2009-01-04 14:41:49.000000000 +0000
-@@ -657,7 +657,7 @@
- 	local_irq_disable();
- 	list = __get_cpu_var(tasklet_hi_vec).head;
- 	__get_cpu_var(tasklet_hi_vec).head = NULL;
--	__get_cpu_var(tasklet_hi_vec).tail = &__get_cpu_var(tasklet_vec).head;
-+	__get_cpu_var(tasklet_hi_vec).tail = &__get_cpu_var(tasklet_hi_vec).head;
- 	local_irq_enable();
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -57,16 +57,6 @@ int pm_notifier_call_chain(unsigned long
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
  
- 	__tasklet_action(a, list);
-
+-static int suspend_test(int level)
+-{
+-	if (pm_test_level == level) {
+-		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
+-		mdelay(5000);
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+ 	[TEST_NONE] = "none",
+ 	[TEST_CORE] = "core",
+@@ -125,14 +115,24 @@ static ssize_t pm_test_store(struct kobj
+ }
+ 
+ power_attr(pm_test);
+-#else /* !CONFIG_PM_DEBUG */
+-static inline int suspend_test(int level) { return 0; }
+-#endif /* !CONFIG_PM_DEBUG */
++#endif /* CONFIG_PM_DEBUG */
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
+ #ifdef CONFIG_SUSPEND
+ 
++static int suspend_test(int level)
++{
++#ifdef CONFIG_PM_DEBUG
++	if (pm_test_level == level) {
++		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
++		mdelay(5000);
++		return 1;
++	}
++#endif /* !CONFIG_PM_DEBUG */
++	return 0;
++}
++
+ #ifdef CONFIG_PM_TEST_SUSPEND
+ 
+ /*
 
