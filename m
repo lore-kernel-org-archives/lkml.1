@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbZAPXMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbZAPXOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932631AbZAPXMp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 18:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbZAPXMd
+	id S1764827AbZAPXOS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZAPXN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 18:12:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55168 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755775AbZAPXMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 18:12:32 -0500
-Date: Sat, 17 Jan 2009 00:11:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-Message-ID: <20090116231139.GB23447@elte.hu>
-References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com> <87ljuf1s75.fsf@basil.nowhere.org> <4970CB6F.9000301@linux.vnet.ibm.com> <497106C5.60703@us.ibm.com>
+	Fri, 16 Jan 2009 18:13:59 -0500
+Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:42572 "EHLO
+	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752870AbZAPXN6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 18:13:58 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [regression] hp-wmi: hangs system on boot
+Date: Sat, 17 Jan 2009 00:13:54 +0100
+User-Agent: KMail/1.9.9
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <497106C5.60703@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901170013.55786.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Jan 2009 23:13:56.0355 (UTC) FILETIME=[1B007D30:01C97830]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When I first booted .29-rc2 my HP 2510p notebook hung while loading
+hp-wmi, which I have listed in /etc/modules. Hard poweroff was needed.
 
-* Maynard Johnson <maynardj@us.ibm.com> wrote:
+The last line on the console was:
+input: HP WMI hotkeys as /class/input/input11
 
-> > Over time, it seems clear that we will see multi-core processor 
-> > designs with increasingly large uncore/nest facilities, so this could 
-> > become more and more of an issue.
+After commenting out hp-wmi in /etc/modules the system booted correctly.
 
-> Ingo, I'll add my voice to the chorus here.  To reiterate the point, 
-> some PMUs count events that are external to the processor cores, and 
-> these events cannot be attributed to any one particular CPU -- and 
-> certainly not to a particular pid.  The current interface has a 
-> restriction that the user cannot pass -1 for both pid and cpu.  But it 
-> seems to me that's exactly what would be needed for such off-core 
-> events.  Can this feature fit in with the current interface or is some 
-> sort of extension needed?
+After the successful boot I tried loading the module manually using
+modprobe, which resulted in:
+input: HP WMI hotkeys as /class/input/input11
+iwlagn: Radio Frequency Kill Switch is On:
+Kill switch must be turned off for wireless networking to work.
+wlan0: No ProbeResp from current AP 00:14:c1:38:e5:15 - assume out of range
+iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+mac80211-phy0: failed to remove key (0, 00:14:c1:38:e5:15) from hardware (-5)
+iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+mac80211-phy0: failed to remove key (1, ff:ff:ff:ff:ff:ff) from hardware (-5)
 
-They fit in just fine, they just will have constraints that dont allow 
-their scheduling in a conflicting way. I.e. you'll only be able to occupy 
-it from a single counter per physical package - but otherwise it still 
-behaves like a normal counter if you define a single such counter per 
-physical package, as a percpu counter. (they dont make much sense as task 
-counters)
+I also noticed that /sys/bus/platform/devices/hp-wmi/dock is missing.
+And I lost my wireless connection.
 
-Btw., those kind of constraints make them quite noisy and hard to 
-interpret as well - because they summarize per physical package 
-characteristics (of up to 8 logical CPUs on Nehalem for example) and 
-cannot be tied to tasks easily.
+Difference between loading hp-wmi from /etc/modules and manually could be
+that normally wlan is started _after_ /etc/modules is processed. So with
+the hang wlan was not yet active, while for the manual modprobe wlan was
+active.
 
-I'm not dismissing them entirely: they do give an overview of "all stuff 
-that happens" at that level, and they do show a few things that is 
-obviously tied to the 'uncore' of a CPU (the cache, the memory interlink, 
-etc.), which cannot be provided by the normal PMCs - but they are too 
-highlevel to really be useful for finegrained analysis and for eventing.
+With 2.6.28 hp-wmi works perfectly.
 
-In any case, despite their limitations they can still be provided just 
-fine, and any limitations they have is an inherent limitation of those 
-hardware counters, not of the perfcounters framework.
+System is running x84_64, Debian Lenny.
 
-	Ingo
+Cheers,
+FJP
