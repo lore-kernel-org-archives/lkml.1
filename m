@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937703AbZAPV0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937754AbZAPV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937703AbZAPV0w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 16:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764641AbZAPV0k
+	id S937754AbZAPV1W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 16:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764465AbZAPV1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 16:26:40 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:41282 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764570AbZAPV0j (ORCPT
+	Fri, 16 Jan 2009 16:27:06 -0500
+Received: from thor.auto.tuwien.ac.at ([128.130.60.15]:42913 "EHLO
+	thor.auto.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763868AbZAPV1F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 16:26:39 -0500
-Date: Fri, 16 Jan 2009 21:26:38 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jan Beulich <jbeulich@novell.com>
-cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: avoid early crash in disable_local_APIC()
-In-Reply-To: <497051E7.76E4.0078.0@novell.com>
-Message-ID: <alpine.LFD.1.10.0901162122520.29021@ftp.linux-mips.org>
-References: <496DE893.76E4.0078.0@novell.com> <20090115110528.GE16253@elte.hu> <20090115224710.GA1327@elte.hu> <20090115224751.GA1625@elte.hu> <497051E7.76E4.0078.0@novell.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 16 Jan 2009 16:27:05 -0500
+Date: Fri, 16 Jan 2009 22:27:03 +0100
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Compile error in drivers/video/backlight/mbp_nvidia_bl.c - v2.6.28
+Message-ID: <20090116212703.GA11952@auto.tuwien.ac.at>
+References: <20090116080503.GA11855@auto.tuwien.ac.at> <1232129665.25018.8490.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1232129665.25018.8490.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mkoegler@auto.tuwien.ac.at (Martin Koegler)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009, Jan Beulich wrote:
+On Fri, Jan 16, 2009 at 06:14:25PM +0000, David Woodhouse wrote:
+> On Fri, 2009-01-16 at 09:05 +0100, Martin Koegler wrote:
+> > 
+> >   CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
+> > drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size of
+> > `__mod_dmi_device_table' isn't known
+> 
+> Hm, didn't we already have a patch to fix this? Is it fixed in
+> 2.6.29-rc1, or did we drop the patch?
 
-> Is this with a config that has X86_IO_APIC off (i.e. one the practical use of
-> which I never understood, and hence easily forget to consider)? Otherwise
-> I can't see how that could happen.
+The bug is still present in:
+commit 7cb36b6ccdca03bd87e8faca7fd920643dd1aec7
+Merge: a9f8d25... 6272d68...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Jan 15 16:55:00 2009 -0800
 
- A lot of systems have a P6-class CPU which has a local APIC and no I/O 
-APIC in the chipset.  My old laptop was an example of one.  It saves some 
-memory to have X86_IO_APIC disabled on such systems, while still being 
-able to use the local APIC for the NMI watchdog and PeMo.
+    Merge branch 'sched-fixes-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
 
-  Maciej
+All gcc 3.x on my system fail:
+gcc-3.2 (GCC) 3.2.3 (Debian)
+gcc-3.3 (GCC) 3.3.6 (Debian 1:3.3.6-15)
+gcc-3.4 (GCC) 3.4.6 (Debian 3.4.6-5)
+
+mfg Martin Kögler
+
