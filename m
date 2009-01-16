@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764773AbZAPBCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZAPBF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764773AbZAPBCj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZAPBCZ
+	id S932862AbZAPBF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbZAPBFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:02:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50445 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753341AbZAPBCY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:02:24 -0500
-Date: Thu, 15 Jan 2009 17:01:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-In-Reply-To: <20090116005351.GD6763@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0901151656060.3118@localhost.localdomain>
-References: <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain> <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu>
- <20090115174440.GF29283@parisc-linux.org> <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain> <20090115180844.GL22472@elte.hu> <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain> <20090116005351.GD6763@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Jan 2009 20:05:14 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:59255 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754435AbZAPBFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 20:05:12 -0500
+Date: Thu, 15 Jan 2009 19:05:11 -0600
+From: "Bill O'Donnell" <billodo@sgi.com>
+To: Joe Perches <joe@perches.com>
+Cc: Lachlan McIlroy <lachlan@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [XFS] Update maintainers
+Message-ID: <20090116010511.GA33559@sgi.com>
+References: <200901150459.n0F4xhVS016322@hera.kernel.org> <1232058936.3109.7.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232058936.3109.7.camel@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 15, 2009 at 02:35:36PM -0800, Joe Perches wrote:
+| On Thu, 2009-01-15 at 04:59 +0000, Linux Kernel Mailing List wrote:
+| >     [XFS] Update maintainers
+| >     New maintainer contact and new tree location.
+| > ---
+| >  MAINTAINERS |    4 ++--
+| >  1 files changed, 2 insertions(+), 2 deletions(-)
+| > 
+| > diff --git a/MAINTAINERS b/MAINTAINERS
+| > index a018844..5f74bce 100644
+| > --- a/MAINTAINERS
+| > +++ b/MAINTAINERS
+| > @@ -4824,11 +4824,11 @@ S:	Supported
+| >  
+| >  XFS FILESYSTEM
+| >  P:	Silicon Graphics Inc
+| > -P:	Tim Shimmin
+| > +P:	Bill O'Donnell
+| >  M:	xfs-masters@oss.sgi.com
+| >  L:	xfs@oss.sgi.com
+| >  W:	http://oss.sgi.com/projects/xfs
+| > -T:	git git://oss.sgi.com:8090/xfs/xfs-2.6.git
+| > +T:	git://oss.sgi.com/xfs/xfs.git
+| >  S:	Supported
+| 
+| Should your email address appear here?  Perhaps:
+| 
+| XFS FILESYSTEM
+| P:	Bill O'Donnell
+| M:	billodo@sgi.com
+| P:	Silicon Graphics Inc
+| M:	xfs-masters@oss.sgi.com
+| L:	xfs@oss.sgi.com
+| W:	http://oss.sgi.com/projects/xfs
+| T:	git://oss.sgi.com/xfs/xfs.git
+| S:	Supported
+| 
+
+No, I'd prefer we keep the maintainer contact address 
+as a centralized SGI mail address.  In fact, it would be 
+best if we remove my name entirely, and leave contact 
+completely centralized to SGI.  I propose the 
+following:
+
+XFS FILESYSTEM
+P:	Silicon Graphics Inc
+M:	xfs-masters@oss.sgi.com
+L:	xfs@oss.sgi.com
+W:	http://oss.sgi.com/projects/xfs
+T:	git://oss.sgi.com/xfs/xfs.git
+S:	Supported
 
 
-On Thu, 15 Jan 2009, Paul E. McKenney wrote:
 
-> On Thu, Jan 15, 2009 at 10:16:53AM -0800, Linus Torvalds wrote:
-> > 
-> > IOW, if you do pre-allocation instead of holding a lock over the 
-> > allocation, you win. So yes, spin-mutexes makes it easier to write the 
-> > code, but it also makes it easier to just plain be lazy.
-> 
-> In infrequently invoked code such as some error handling, lazy/simple
-> can be a big win.
-
-Sure. I don't disagree at all. On such code we don't even care about 
-locking. If it _really_ is fundamentally very rarely invoked.
-
-But if we're talking things like core filesystem locks, it's _really_ 
-irritating when one of those (supposedly rare) allocation delays or the 
-need to do IO then blocks all those (supposedly common) nice cached cases.
-
-So I don't dispute at all that "mutex with spinning" performs better than 
-a mutex, but I _do_ claim that it has some potentially huge downsides 
-compared to a real spinlock. It may perform as well as a spinlock in the 
-nice common case, but then when you hit the non-common case you see the 
-difference between well-written code and badly written code.
-
-And sadly, while allocations _usually_ are nice and immediate, and while 
-our caches _usually_ mean that we don't need to do IO, bad behavior when 
-we do need to do IO is what really kills interactive feel. Suddenly 
-everything else is hurting too, because they wanted that lock - even if 
-they didn't need to do IO or allocate anything.
-
-			Linus
