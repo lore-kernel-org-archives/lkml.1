@@ -1,73 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbZAPHHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbZAPHKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759058AbZAPHHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZAPHHZ
+	id S1759984AbZAPHKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 02:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZAPHKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:07:25 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:38810 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754188AbZAPHHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:07:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Yd7anT8fRVgvWy08IWz63aO4uLsYsPuipNNA2d66MoJhyDr08DhX6j7oWr2SS6h/t78/+yGgk/KG2UdZ4Y0Fm4dlVp2hnC+h8C/e9eCz9krYPw/bFMJqMm8D/3h2cj2YbuwblWwnVngWA2Xcbdc3a83d8A38IlL2AklcOz3Sioc=  ;
-X-YMail-OSG: L__jKysVM1lqtZYh577jXhIQM5FpH2hq6bYEXy0jrPH1Rmp3Td7u.ckOX6cM0JkmpjN_hD408pKJRQBLJlqk4txY02AnxlG4LJMrrEUAgwv1VxE5g7WdnMG05gugDrN8mxjwOdTcAvdIYqAfGMC.povhvA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: Mainline kernel OLTP performance update
-Date: Fri, 16 Jan 2009 18:06:59 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901161746.25205.nickpiggin@yahoo.com.au> <20090116065546.GJ31013@parisc-linux.org>
-In-Reply-To: <20090116065546.GJ31013@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901161807.01342.nickpiggin@yahoo.com.au>
+	Fri, 16 Jan 2009 02:10:24 -0500
+Received: from mga09.intel.com ([134.134.136.24]:29107 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753596AbZAPHKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 02:10:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,276,1231142400"; 
+   d="asc'?scan'208";a="482158597"
+Subject: [PATCH crypto -v5 1/2] AES-NI: Add support to access underlying
+	blkcipher under cryptd ablkcipher
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Ksa8edocmFr4QH5UQUSG"
+Date: Fri, 16 Jan 2009 15:10:20 +0800
+Message-Id: <1232089820.13948.28.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009 17:55:47 Matthew Wilcox wrote:
-> On Fri, Jan 16, 2009 at 05:46:23PM +1100, Nick Piggin wrote:
-> > Intel's OLTP shows SLQB is "neutral" to SLAB. That is, literally within
-> > their measurement confidence interval. If it comes down to it, I think we
-> > could get them to do more runs to narrow that down, but we're talking a
-> > couple of tenths of a percent already.
->
-> I think I can speak with some measure of confidence for at least the
-> OLTP-testing part of my company when I say that I have no objection to
-> Nick's planned merge scheme.
->
-> I believe the kernel benchmark group have also done some testing with
-> SLQB and have generally positive things to say about it (Yanmin added to
-> the gargantuan cc).
->
-> Did slabtop get fixed to work with SLQB?
 
-Yes the old slabtop that works on /proc/slabinfo works with SLQB (ie. SLQB
-implements /proc/slabinfo).
+--=-Ksa8edocmFr4QH5UQUSG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Lin Ming recently also ported the SLUB /sys/kernel/slab/ specific slabinfo
-tool to SLQB. Basically it reports in-depth internal event counts etc. and
-can operate on individual caches, making it very useful for performance
-"observability" and tuning.
+cryptd_alloc_ablkcipher() will allocate a cryptd-ed ablkcipher for
+specified algorithm name. The new allocated one is guaranteed to be
+cryptd-ed ablkcipher, so the blkcipher underlying can be gotten via
+cryptd_ablkcipher_child().
 
-It is hard to come up with a single set of statistics that apply usefully
-to all the allocators. FWIW, it would be a useful tool to port over to
-SLAB too, if we end up deciding to go with SLAB.
+
+v5:
+
+- Move declaration to crypto/cryptd.h
+
+- Fix allocation error processing in cryptd_alloc_ablkcipher()
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ crypto/cryptd.c         |   33 +++++++++++++++++++++++++++++++++
+ include/crypto/cryptd.h |   27 +++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+)
+
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -12,6 +12,7 @@
+=20
+ #include <crypto/algapi.h>
+ #include <crypto/internal/hash.h>
++#include <crypto/cryptd.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -537,6 +538,38 @@ static struct crypto_template cryptd_tmp
+ 	.module =3D THIS_MODULE,
+ };
+=20
++struct cryptd_ablkcipher *cryptd_alloc_ablkcipher(const char *alg_name,
++						  u32 type, u32 mask)
++{
++	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
++	struct crypto_ablkcipher *tfm;
++
++	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
++		     "cryptd(%s)", alg_name) >=3D CRYPTO_MAX_ALG_NAME)
++		return ERR_PTR(-EINVAL);
++	tfm =3D crypto_alloc_ablkcipher(cryptd_alg_name, type, mask);
++	if (IS_ERR(tfm))
++		return ERR_CAST(tfm);
++	if (crypto_ablkcipher_tfm(tfm)->__crt_alg->cra_module !=3D THIS_MODULE)
++		return ERR_PTR(-EINVAL);
++
++	return __cryptd_ablkcipher_cast(tfm);
++}
++EXPORT_SYMBOL_GPL(cryptd_alloc_ablkcipher);
++
++struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher =
+*tfm)
++{
++	struct cryptd_blkcipher_ctx *ctx =3D crypto_ablkcipher_ctx(&tfm->base);
++	return ctx->child;
++}
++EXPORT_SYMBOL_GPL(cryptd_ablkcipher_child);
++
++void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm)
++{
++	crypto_free_ablkcipher(&tfm->base);
++}
++EXPORT_SYMBOL_GPL(cryptd_free_ablkcipher);
++
+ static inline int cryptd_create_thread(struct cryptd_state *state,
+ 				       int (*fn)(void *data), const char *name)
+ {
+--- /dev/null
++++ b/include/crypto/cryptd.h
+@@ -0,0 +1,27 @@
++/*
++ * Software async crypto daemon
++ */
++
++#ifndef _CRYPTO_CRYPT_H
++#define _CRYPTO_CRYPT_H
++
++#include <linux/crypto.h>
++#include <linux/kernel.h>
++
++struct cryptd_ablkcipher {
++	struct crypto_ablkcipher base;
++};
++
++static inline struct cryptd_ablkcipher *__cryptd_ablkcipher_cast(
++	struct crypto_ablkcipher *tfm)
++{
++	return (struct cryptd_ablkcipher *)tfm;
++}
++
++/* alg_name should be algorithm to be cryptd-ed */
++struct cryptd_ablkcipher *cryptd_alloc_ablkcipher(const char *alg_name,
++						  u32 type, u32 mask);
++struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher =
+*tfm);
++void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm);
++
++#endif
+
+
+--=-Ksa8edocmFr4QH5UQUSG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklwMtYACgkQKhFGF+eHlpg1XwCdF7MdkcJxRObx2hTl3uI/IwV1
+TBcAn1z0ky0uJDZ4Wt20GMLwZUE30xbS
+=VBeh
+-----END PGP SIGNATURE-----
+
+--=-Ksa8edocmFr4QH5UQUSG--
 
