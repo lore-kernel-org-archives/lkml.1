@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936430AbZAPSBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936536AbZAPSDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936430AbZAPSBw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbZAPSBn
+	id S936536AbZAPSDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbZAPSDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:01:43 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46761 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754302AbZAPSBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:01:42 -0500
-Message-ID: <4970CB6F.9000301@linux.vnet.ibm.com>
-Date: Fri, 16 Jan 2009 10:01:19 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 16 Jan 2009 13:03:08 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:48522 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754589AbZAPSDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:03:05 -0500
+Message-ID: <4970CBD7.4070006@sgi.com>
+Date: Fri, 16 Jan 2009 10:03:03 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net, maynardj@us.ibm.com
-Subject: Re: [patch] Performance Counters for Linux, v4
-References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com> <87ljuf1s75.fsf@basil.nowhere.org>
-In-Reply-To: <87ljuf1s75.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL}: latest tip/cpus4096 changes
+References: <49704DF6.8040205@sgi.com> <20090116142514.GA1269@elte.hu>
+In-Reply-To: <20090116142514.GA1269@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Paul Mackerras <paulus@samba.org> writes:
->> The perf counter subsystem will, in Ingo's design, naturally try to
->> schedule as many counters and groups on as it can.  Given a list of
->> counters/groups, it could start with the first and keep on trying to
->> add counters or groups while it can, essentially trying all possible
->> combinations until it either fills up all the hardware counters or
->> exhausts the possible combinations.  If it moves all the
->> counters/groups that do fit on up to the head of the list, and then
->> rotates them to the back of the list when the timeslice expires, that
->> would probably be OK.  In fact the computation about what set of
->> counters/groups to put on should be done when adding/removing a
->> counter/group and when the timeslice expires, rather than at context
->> switch time.  (I'm talking about the list of part-time counters/groups
->> here, of course.)
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> One issue is that PMU counts can cover more than one CPU. One example
-> for this are the Uncore events on Nehalem (which cover a whole socket)
-> or when you are in AnyThreads monitoring mode (then you get events
-> from both SMT siblings in a core)
+>> commit b758cdbee5da0b8fb7e34a68651e6ccc5310b48a
+>> Author: Rusty Russell <rusty@rustcorp.com.au>
+>> Date:   Thu Jan 15 16:29:16 2009 -0800
+>>
+>>     work_on_cpu: Use our own workqueue.
+>>     
+>>     Impact: remove potential circular lock dependency with generic kevent workqueue
+>>     
+>>     Annoyingly, some places we want to use work_on_cpu are already in
+>>     workqueues.  As per Ingo's suggestion, we create a different workqueue
+>>     for work_on_cpu.
 > 
-> With that you would need to examine other CPU's state at context switch
-> time. Probably not a good idea for scalability.
+> btw., that's a nice fix - were you able to reproduce any of the lockdep 
+> asserts that i got in testing, and did those go away with this patch?
 > 
-> -Andi
+> If yes then that's nice and makes work_on_cpu() a lot more usable IMO.
 > 
+> If not then that should generally be declared in the pull request: 
+> "beware, different approach than before but might still trigger lockdep 
+> warnings"
+> 
+> 	Ingo
 
-Over time, it seems clear that we will see multi-core processor designs 
-with increasingly large uncore/nest facilities, so this could become 
-more and more of an issue.
+Hi,
 
-- Corey
+I've been trying all sorts of overlapping testing and I've not gotten the
+lockdep warnings any more.  (I do occasionally get that debug object warning
+that I mentioned to Thomas, though that comes and goes irregardless of any
+patches.)  The two fixes that Rusty did (lose the get_online_cpus() and use
+a separate work queue) seems to have relieved work_on_cpu of it's primary
+problems, and I've not found any new ones to replace them yet.  ;-)
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+So I'll "un-push" the entire patchset, and then re-push the x86 only ones,
+and send the others to their respective maintainers after fixing the problems
+you mentioned.  (Posting patches to the list was way more fun, and less
+"committable". ;-)
+
+Thanks,
+Mike
 
