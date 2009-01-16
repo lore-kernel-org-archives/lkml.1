@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937325AbZAPUs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937495AbZAPUtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937325AbZAPUs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 15:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZAPUsT
+	id S937495AbZAPUtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 15:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZAPUtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 15:48:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33192 "EHLO mx2.redhat.com"
+	Fri, 16 Jan 2009 15:49:01 -0500
+Received: from gw2.cosmosbay.com ([86.64.20.130]:41606 "EHLO gw2.cosmosbay.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbZAPUsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 15:48:18 -0500
-Date: Fri, 16 Jan 2009 21:45:40 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] pids: refactor vnr/nr_ns helpers to make them safe
-Message-ID: <20090116204540.GA32686@redhat.com>
-References: <20090116055520.GA28131@redhat.com> <20090116103522.GA32212@hawkmoon.kerlabs.com>
+	id S1755265AbZAPUtA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 15:49:00 -0500
+Message-ID: <4970F2B6.1060508@cosmosbay.com>
+Date: Fri, 16 Jan 2009 21:48:54 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090116103522.GA32212@hawkmoon.kerlabs.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: 2.6.27.9: splice_to_pipe() hung (blocked for more than 120 seconds)
+References: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
+In-Reply-To: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw2.cosmosbay.com [127.0.0.1]); Fri, 16 Jan 2009 21:48:54 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Louis,
+CCed to netdev
 
-On 01/16, Louis Rilling wrote:
->
-> On 16/01/09  6:55 +0100, Oleg Nesterov wrote:
-> > +			struct pid_namespace *ns)
-> >  {
-> > -	return pid_nr_ns(task_pid(tsk), ns);
-> > +	pid_t nr = 0;
-> > +
-> > +	rcu_read_lock();
-> > +	if (!ns)
-> > +		ns = current->nsproxy->pid_ns;
-> > +	if (likely(pid_alive(task))) {
->
-> I don't see what this pid_alive() check buys you. Since tasklist_lock is not
-> enforced, nothing prevents another CPU from detaching the pid right after the
-> check.
+Vegard Nossum a écrit :
+> Hi,
+> 
+> Seeing some recent splice() discussions, I decided to explore this
+> system call. I have written a program which might look, well, not very
+> useful, but the fact is that it creates an unkillable zombie process.
+> Another funny side effect is that system load continually rises, even
+> though the system seems to stay fully interactive and functional.
+> 
+> After a while, I also get some messages like this:
+> 
+> Jan 15 20:11:37 localhost kernel: INFO: task a.out:7149 blocked for
+> more than 120 seconds.
+> Jan 15 20:11:37 localhost kernel: "echo 0 >
+> /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> Jan 15 20:11:37 localhost kernel: a.out         D ec6e2610     0  7149      1
+> Jan 15 20:11:37 localhost kernel:       ec5aad44 00000082 c042451f
+> ec6e2610 00989680 c07da67c c07ddb80 c07ddb80
+> Jan 15 20:11:37 localhost kernel:       c07ddb80 ec6e4c20 ec6e4e7c
+> c201db80 00000001 c201db80 470fed45 0000036b
+> Jan 15 20:11:37 localhost kernel:       ec5aad38 c0421027 ec6e263c
+> ec6e4e7c ec6e3fa8 85c129f4 ec6e4c20 ec6e4c20
+> Jan 15 20:11:37 localhost kernel: Call Trace:
+> Jan 15 20:11:37 localhost kernel: [<c064420f>] __mutex_lock_common+0x8a/0xd9
+> Jan 15 20:11:37 localhost kernel: [<c0644302>] __mutex_lock_slowpath+0x12/0x15
+> Jan 15 20:11:37 localhost kernel: [<c0644181>] mutex_lock+0x29/0x2d
+> Jan 15 20:11:37 localhost kernel: [<c04aa8f1>] splice_to_pipe+0x23/0x1f5
+> Jan 15 20:11:37 localhost kernel: [<c04ab290>]
+> __generic_file_splice_read+0x3ff/0x413
+> Jan 15 20:11:37 localhost kernel: [<c04ab324>]
+> generic_file_splice_read+0x80/0x9a
+> Jan 15 20:11:37 localhost kernel: [<c04a9e95>] do_splice_to+0x4e/0x5f
+> Jan 15 20:11:37 localhost kernel: [<c04aa010>] sys_splice+0x16a/0x1c8
+> Jan 15 20:11:37 localhost kernel: [<c0403cca>] syscall_call+0x7/0xb
+> Jan 15 20:11:37 localhost kernel: =======================
+> 
+> (but this was from such a system with 6 zombies and ~80 load. See
+> attachments for SysRq report with processes in blocked state, it has
+> similar info but for just one zombie.)
+> 
+> This happens with 2.6.27.9-73.fc9.i686 kernel. Maybe it was fixed
+> recently? (In any case, I don't think it is a regression.)
+> 
+> It seems to be not 100% reproducible. Sometimes it works, sometimes
+> not. Start the program, then after a while hit Ctrl-C. If it doesn't
+> exit, zombie count will rise and system state will be as described.
+> Compile with -lpthread.
+> 
 
-pid_alive() should be renamed. We use it to make sure the task didn't pass
-__unhash_process().
+I tried your program on latest git tree and could not reproduce any problem.
 
-Yes, you are right, nothing prevents another CPU from detaching the pid right
-after the  check. But this is fine: we read ->pids[].pid under rcu_read_lock(),
-and if it is NULL pid_nr_ns() returns. So, we don't need pid_alive() check at
-all.
+(changed to 9 threads since I have 8 cpus)
 
-However, we can not use task->group_leader unless we verify the task is still
-alive. That is why we need this check. We do not clear ->group_leader when
-the task exits, so we can't do
+Problem might be that your threads all fight on the same pipe, with
+a mutex protecting its inode.
 
-		rcu_read_lock();
-		if (task->group_leader)
-			do_something(task->group_leader);
-		rcu_unread_lock();
 
-Instead we use pid_alive() before using ->group_leader.
+So mutex_lock() could possibly starve for more than 120 second ?
 
-> I'm also a bit puzzled by your description with using tasklist_lock when task !=
-> current, and not seeing tasklist_lock anywhere in the patch. Does this mean that
-> "safe" is for "no access to freed memory is done, but caller has to take
-> tasklist_lock or may get 0 as return value"?
-
-I am not sure I understand the question...
-
-This patch doesn't use tasklist, it relies on rcu. With this patch the caller
-doesn't need tasklist/rcu to call these helpers (but of course, the caller
-must ensure that task_struct is stable).
-
-But, whatever the caller does, it can get 0 as return value anyway if the
-task exists, this is correct. Or I misunderstood you?
-
-Oleg.
+Maybe you can reproduce the problem using standard read()/write() syscalls...
 
