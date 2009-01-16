@@ -1,33 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935622AbZAPB7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbZAPCA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935622AbZAPB7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbZAPB7h
+	id S935438AbZAPCA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbZAPCAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:59:37 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48288 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757832AbZAPB7g (ORCPT
+	Thu, 15 Jan 2009 21:00:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60797 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760048AbZAPCAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:59:36 -0500
-Date: Fri, 16 Jan 2009 10:58:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
-Message-Id: <20090116105828.392044ce.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <496FE791.9030208@cn.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>
-	<496FE30C.1090300@cn.fujitsu.com>
-	<20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>
-	<496FE791.9030208@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 21:00:10 -0500
+Date: Thu, 15 Jan 2009 17:59:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: linux-next: build problem with nfs tree (Was: Re:
+ [mmotm][PATCH] fix ia64 build error)
+Message-Id: <20090115175917.8e0ae536.akpm@linux-foundation.org>
+In-Reply-To: <20090116124949.7828a559.sfr@canb.auug.org.au>
+References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
+	<20090116124949.7828a559.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,58 +36,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 09:49:05 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Fri, 16 Jan 2009 12:49:49 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Fri, 16 Jan 2009 09:29:48 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >>>  /*
-> >>> - * Dance down the hierarchy if needed to reclaim memory. We remember the
-> >>> - * last child we reclaimed from, so that we don't end up penalizing
-> >>> - * one child extensively based on its position in the children list.
-> >>> + * Visit the first child (need not be the first child as per the ordering
-> >>> + * of the cgroup list, since we track last_scanned_child) of @mem and use
-> >>> + * that to reclaim free pages from.
-> >>> + */
-> >>> +static struct mem_cgroup *
-> >>> +mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-> >>> +{
-> >>> +	struct mem_cgroup *ret = NULL;
-> >>> +	struct cgroup_subsys_state *css;
-> >>> +	int nextid, found;
-> >>> +
-> >>> +	if (!root_mem->use_hierarchy) {
-> >>> +		spin_lock(&root_mem->reclaim_param_lock);
-> >>> +		root_mem->scan_age++;
-> >>> +		spin_unlock(&root_mem->reclaim_param_lock);
-> >>> +		css_get(&root_mem->css);
-> >>> +		ret = root_mem;
-> >>> +	}
-> >>> +
-> >>> +	while (!ret) {
-> >>> +		rcu_read_lock();
-> >>> +		nextid = root_mem->last_scanned_child + 1;
-> >>> +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
-> >>> +				   &found);
-> >>> +		if (css && css_is_populated(css) && css_tryget(css))
-> >> I don't see why you need to check css_is_populated(css) ?
-> >>
-> > 
-> > Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
+> Hi Andrew,
 > 
-> I think this is a rare case. It's just a very short period when a cgroup is
-> being created but not yet fully created.
+> On Thu, 15 Jan 2009 09:35:14 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > On Thu, 15 Jan 2009 20:05:08 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > Applied after: linux-next.patch
+> > > ==
+> > > Subject: [PATCH] remove duplicate EXPORT_SYMBOL()
+> > > Impact: fix build error
+> > > 
+> > > In past, ia64_ksyms.c had EXPORT_SYMBOL(copy_page) in wrong place.
+> > > 
+> > > old code was
+> > > 
+> > > 	#include <asm/uaccess.h>
+> > > 	EXPORT_SYMBOL(__copy_user);
+> > > 	EXPORT_SYMBOL(__do_clear_user);
+> > > 	EXPORT_SYMBOL(__strlen_user);
+> > > 	EXPORT_SYMBOL(__strncpy_from_user);
+> > > 	EXPORT_SYMBOL(__strnlen_user);
+> > > 	EXPORT_SYMBOL(copy_page);
+> > > 
+> > > (but actually, copy_page is declared in asm/page.h)
+> > > 
+> > > And recently, commit bdc2619ab95d45d434c16d5c216bc6243761f6fb insert
+> > > EXPORT_SYMBOL(copy_page) into correct place.
+> > > 
+> > > then, duplicate EXPORT_SYMBOL create following build error.
+> > > 
+> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__kcrctab_copy_page'
+> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__kcrctab_copy_page' was here
+> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__kstrtab_copy_page'
+> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__kstrtab_copy_page' was here
+> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__ksymtab_copy_page'
+> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__ksymtab_copy_page' was here
+> > 
+> > Yes, this is a strange bug added by
+> > 
+> > commit 7aed50e09223e7623c7ab826efd53f097bed2f73
+> > Author:     Prarit Bhargava <prarit@redhat.com>
+> > AuthorDate: Sat Jan 10 02:25:44 2009 +0000
+> > Commit:     David Howells <dhowells@redhat.com>
+> > CommitDate: Sat Jan 10 02:25:44 2009 +0000
+> > 
+> >     CacheFiles: Add missing copy_page export for ia64
+> > 
+> > I don't see how it could have been tested :(
+> > 
+> > I also don't know which linux-next tree added that commit.  There's a
+> > way of working this out but I forgot it.
 > 
-I don't think so. When the cgroup is mounted with several subsystems, it can call
-create() and populate() several times. So, memory allocation occurs between
-create() and populate(), it can call try_to_free_page() (of global LRU). More than
-that, if CONFIG_PREEMPT=y, any "short" race doesn't mean safe.
+> In gitk you can search backwards for a merge commit containing "sfr" :-)
 
+I do most of my gitting across a DSL connection.  It makes GUIs
+painful.
 
+> I have dropped the nfs tree from linux-next for today.
 
-Thanks,
--Kame
-
-
+Just for this buglet?  That sounds a bit savage.
