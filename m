@@ -1,136 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935198AbZAPChZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZAPCqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935198AbZAPChZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbZAPChG
+	id S1756470AbZAPCqZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZAPCqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:37:06 -0500
-Received: from mga11.intel.com ([192.55.52.93]:23282 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759260AbZAPChE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:37:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,274,1231142400"; 
-   d="asc'?scan'208";a="422838138"
-Subject: Re: [PATCH crypto -v4 2/2] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: roel kluin <roel.kluin@gmail.com>,
-       Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+	Thu, 15 Jan 2009 21:46:11 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50486 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbZAPCqJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:46:09 -0500
+Date: Fri, 16 Jan 2009 11:45:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: matthltc@us.ibm.com
+Cc: Paul Menage <menage@google.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090116015356.GA9822@gondor.apana.org.au>
-References: <1232008119.5937.200.camel@yhuang-dev.sh.intel.com>
-	 <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com>
-	 <1232068858.5937.222.camel@yhuang-dev.sh.intel.com>
-	 <20090116015356.GA9822@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dnnTInnrSLItRgHTp1M3"
-Date: Fri, 16 Jan 2009 10:37:02 +0800
-Message-Id: <1232073422.13948.3.camel@yhuang-dev.sh.intel.com>
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Containers <containers@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
+Message-Id: <20090116114502.b3bd565d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1232072445.7955.40.camel@localhost>
+References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
+	<20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
+	<1232072445.7955.40.camel@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Jan 2009 18:20:45 -0800
+Matthew Helsley <matthltc@us.ibm.com> wrote:
 
---=-dnnTInnrSLItRgHTp1M3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Fri, 2009-01-09 at 15:32 +0900, KAMEZAWA Hiroyuki wrote:
+> > On Thu, 8 Jan 2009 22:26:46 -0800
+> > Paul Menage <menage@google.com> wrote:
+> > 
+> > > On Thu, Jan 8, 2009 at 9:32 PM, KAMEZAWA Hiroyuki
+> > > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > >
+> > > > Motivation: Simply classify Applications by cgroup
+> > > >  When using cgroup for classifying applications, some kind of "control" or
+> > > >  "account" subsys must be used. For flexible use of cgroup's nature of
+> > > >  classifying applications, NOOP is useful. It can be used regardless of
+> > > >  resource accounting unit or name spaces or some controls.
+> > > >  IOW, NOOP cgroup allows users to tie PIDs with some nickname.
+> > > 
+> > > I agree that the idea is useful. But to me it seems to a bit
+> > > artificial that you still have to mount some kind of subsystem purely
+> > > to get the grouping, and that you can only have one such grouping.
+> > > 
+> > > I think I'd prefer the ability to mount a cgroups hierarchy without
+> > > *any* subsystems (maybe with "-o none"?) which would give you a
+> > > similar effect, but without you needing to know about a special no-op
+> > > subsystem, and would allow you to have multiple "no-op" groupings.
+> > > 
+> > 
+> > Oh, it seems better idea. Then, we need no configs and no additional subsys.
+> > Thank you for a hint. I'll check how I can do it.
+> > 
+> > Thanks,
+> > -Kame
+> 
+> 	My feeling is this should be a signal subsystem rather than a NOOP
+> subsystem. Then, if users want the grouping for something besides
+> signaling, it doesn't matter if they don't issue any signals via the
+> signal.send file. Also, I think Paul's suggestion would be just as
+> useful for a signal subsystem.
+> 
+> 	What do you think?
+> 
 
-On Fri, 2009-01-16 at 09:53 +0800, Herbert Xu wrote:
-> On Fri, Jan 16, 2009 at 09:20:58AM +0800, Huang Ying wrote:
-> > On Thu, 2009-01-15 at 17:47 +0800, roel kluin wrote:
-> >
-> > > > +       kernel_fpu_begin();
-> > > > +       while ((nbytes =3D walk.nbytes)) {
-> > > > +               aesni_ecb_enc(ctx, walk.dst.virt.addr, walk.src.vir=
-t.addr,
-> > > > +                             nbytes & AES_BLOCK_MASK);
-> > > > +               nbytes &=3D AES_BLOCK_SIZE - 1;
-> > > > +               err =3D blkcipher_walk_done(desc, &walk, nbytes);
-> > > > +       }
-> > > > +       kernel_fpu_end();
-> > > > +
-> > > > +       return err;
-> > > > +}
-> > >=20
-> > > if blkcipher_walk_{virt,done} returns an error, don't we have to brea=
-k
-> > > out of the loop?
-> > > i.e.
-> > >=20
-> > > while (!err && (nbytes =3D walk.nbytes))
-> > >=20
-> > > (if that's erroneous, it occurs in other places as well)
->=20
-> That's not necessary because blkcipher_walk_done will ensure
-> that walk.nbytes =3D=3D 0 if there is an error.
+I think
+  - Paul's suggestion sounds attractive. But I can't see fundamental differences
+    from user's side between "implemented as subsys" and "implemetned as cgroup's
+    feature". I feel it's easier for user's cgroup library to handle subsys rather
+    than "we can mount it anywhere, multiple times!".
+    Flexiblity doesn't means it's easy to use.
 
-But after checking blkcipher_walk_done() in 2.6.28, If input argument
-err !=3D 0 and walk->flags & BLKCIPHER_WALK_SLOW !=3D 0, when
-blkcipher_walk_done() return non-zero, walk->nbytes !=3D 0. So I think it
-is a little fragile to use walk->nbytes =3D=3D 0 indicate error.
+  - About signal, there is a problem.
+    * cgroup's attach() is per thread.
+    * signal is per process.
+    To fix this gap, signal subsystem should be implemented as it is with some
+    *policy*. This doesn't match simple grouping by NOOP.
 
-int blkcipher_walk_done(struct blkcipher_desc *desc,
-                        struct blkcipher_walk *walk, int err)
-{
-        struct crypto_blkcipher *tfm =3D desc->tfm;
-        unsigned int nbytes =3D 0;
-
-        if (likely(err >=3D 0)) {
-                unsigned int n =3D walk->nbytes - err;
-
-                if (likely(!(walk->flags & BLKCIPHER_WALK_SLOW)))
-                        n =3D blkcipher_done_fast(walk, n);
-                else if (WARN_ON(err)) {
-                        err =3D -EINVAL;
-                        goto err;
-                } else
-                        n =3D blkcipher_done_slow(tfm, walk, n);
-
-                nbytes =3D walk->total - n;
-                err =3D 0;
-        }
-
-        scatterwalk_done(&walk->in, 0, nbytes);
-        scatterwalk_done(&walk->out, 1, nbytes);
-
-        walk->total =3D nbytes;
-        walk->nbytes =3D nbytes;
-
-        if (nbytes) {
-                crypto_yield(desc->flags);
-                return blkcipher_walk_next(desc, walk);
-        }
-
-err:
-        if (walk->iv !=3D desc->info)
-                memcpy(desc->info, walk->iv, crypto_blkcipher_ivsize(tfm));
-        if (walk->buffer !=3D walk->page)
-                kfree(walk->buffer);
-        if (walk->page)
-                free_page((unsigned long)walk->page);
-
-        return err;
-}
-
-Best Regards,
-Huang Ying
+  - And, I personally thinks that signal subsystem has to implement following
+    controls. (if we implement it.)
+    Assume that 
+      - we send SIGHUP to all process under /cgroup/group_A/ to restart.
+      - we send SIGABRT to tale coredump.
+    At doing this kind of things, the user should know the order target and has
+    specify order in many cases.
+    For example) 
+     send signal to one by one  ProcessA -> ProcessB -> ProceessC 
+                                or
+                                ProcessC -> ProcessB -> ProcessA
+     or
+       send all at once.
+     Which is better is case-by-case.
+     (In this area, "freezing" subsystem is also have problems.)
 
 
---=-dnnTInnrSLItRgHTp1M3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks,
+-Kame
+    
 
-iEYEABECAAYFAklv8ssACgkQKhFGF+eHlpjOygCgnZuYT7QNMMl15UqATpV8gIiN
-gfsAnA3qxwVDxxgaxIMcxYYdOhwVV2w5
-=ocqV
------END PGP SIGNATURE-----
 
---=-dnnTInnrSLItRgHTp1M3--
+> Cheers,
+> 	-Matt Helsley
+> 
+> PS: Adding containers@lists.linux-foundation.org to Cc.
+> 
+> 
 
