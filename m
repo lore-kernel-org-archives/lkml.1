@@ -1,178 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbZAPFGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZAPF15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465AbZAPFGn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 00:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZAPFGa
+	id S1755366AbZAPF15 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 00:27:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZAPF1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 00:06:30 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:47835 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122AbZAPFG3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 00:06:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references:x-google-sender-auth;
-        b=k5OR1dQmJudKTnAFblnTzy7PpL8Qc3zIXEal9wzHEzc77k38rXLxdWPY4AlDXWwpPz
-         CEbxbj67VGAQR4Q3ZNPr6pQLHuVEGx/ut7sQPjEvkqQ41NNQfsheiwukfSpzifAngRHL
-         F4AOC2b0cLtq9uvbJ89N81kqxIzSKGVgZtJNI=
-Message-ID: <2accc2ff0901152106o500c57abi31433e3d5f4a6e37@mail.gmail.com>
-Date: Fri, 16 Jan 2009 00:06:27 -0500
-From: "Nelson Castillo" <arhuaco@freaks-unidos.net>
-Reply-To: arhuaco@freaks-unidos.net
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] Add touchscreen filter API
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       andy@openmoko.com
-In-Reply-To: <20090115154716.63de462f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Jan 2009 00:27:48 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55388 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751338AbZAPF1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 00:27:47 -0500
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 16:27:32 +1100
+Message-Id: <1232083652.22571.138.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090113233743.26361.14313.stgit@fugue.noexisteestedominiotanlargo.biz>
-	 <20090113233939.26361.18138.stgit@fugue.noexisteestedominiotanlargo.biz>
-	 <20090115154716.63de462f.akpm@linux-foundation.org>
-X-Google-Sender-Auth: e57ad9a6f7f7837d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 6:47 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 13 Jan 2009 18:39:39 -0500
-> Nelson <arhuaco@freaks-unidos.net> wrote:
->
->> From: Nelson Castillo <arhuaco@freaks-unidos.net>
->>
->> Generic filters are not useful by themselves. They define an API that
->> actual filters have to implement.
->>
->> Signed-off-by: Nelson Castillo <arhuaco@freaks-unidos.net>
->> ---
+Hi Linus !
 
-(cut)
+Here are mostly a bunch of fixups for the u64 change in the PS3 code which
+was pretty bad in that area. For bits out of arch/powerpc, we generally have
+either subsystem maintainer explicit ack or verbal ack via email or irc. Only
+davem didn't have a chance to reply yet so I left the drivers/net patch out.
 
->> +int ts_filter_create_chain(struct platform_device *pdev,
->> +                        struct ts_filter_api **api, void **config,
->> +                        struct ts_filter **list, int count_coords)
->> +{
->> +     int count = 0;
->> +     struct ts_filter *last = NULL;
->> +
->> +     if (!api)
->> +             return 0;
->> +
->> +     while (*api && count < MAX_TS_FILTER_CHAIN) {
->
->Why does MAX_TS_FILTER_CHAIN exist?  Why impose limits?
+The rest is a 3 bug fixes and one little one liner that got lost in the
+noise adding an UART type to our OF driver wrapper.
 
-"api" is actually a static array that is not zero_terminated by
-convention. It can be zero-terminated, though. This check avoids
-overrunning the loop if MAX_TS_FILTER_CHAIN filters are used.
+Cheers,
+Ben.
 
-This snippet is taken from mach-gta02.c (link below) and
-"filter_sequence" is what
-we pass as the "api" array.
+The following changes since commit 7cb36b6ccdca03bd87e8faca7fd920643dd1aec7:
+  Linus Torvalds (1):
+        Merge branch 'sched-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-static struct s3c2410_ts_mach_info gta02_ts_cfg = {
-        .delay = 10000,
-        .presc = 0xff, /* slow as we can go */
-        .filter_sequence = {
-                [0] = &ts_filter_group_api,
-                [1] = &ts_filter_median_api,
-                [2] = &ts_filter_mean_api,
-                [3] = &ts_filter_linear_api,
-        },
-        .filter_config = {
-                [0] = &gta02_ts_group_config,
-                [1] = &gta02_ts_median_config,
-                [2] = &gta02_ts_mean_config,
-                [3] = &gta02_ts_linear_config,
-        },
-};
+are available in the git repository at:
 
->> diff --git a/drivers/input/touchscreen/ts_filter.c b/drivers/input/touchscreen/ts_filter.c
->> new file mode 100644
->> index 0000000..1508388
->> --- /dev/null
->> +++ b/drivers/input/touchscreen/ts_filter.c
->
-> Confused.  Nothing appears to use the two functions which this file adds.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-http://git.openmoko.org/?p=kernel.git;a=shortlog;h=stable-tracking
+Dave Kleikamp (1):
+      powerpc: is_hugepage_only_range() must account for both 4kB and 64kB slices
 
-This branch is tracking the upstream Linux kernel and patches are
-rebased/updated
-when things change upstream. Openmoko has been doing this since one
-goal is to be able to use upstream kernels with no patches for OM
-devices.
+Hendrik Brueckner (1):
+      hvc_console: Remove tty->low_latency
 
-This is the driver can use the filters (s3c2410_ts.c) if they are
-defined in the machine configuration:
+Matthias Fuchs (1):
+      serial: Add 16850 uart type support to OF uart driver
 
-http://git.openmoko.org/?p=kernel.git;a=blob_plain;f=drivers/input/touchscreen/s3c2410_ts.c;hb=stable-tracking
+Michael Neuling (1):
+      powerpc: Get the number of SLBs from "slb-size" property
 
-We are ready to send this driver upstream but before we need to trim
-this file (mach-gta02.c) and send it:
+Stephen Rothwell (13):
+      powerpc: Cleanup from l64 to ll64 change drivers/scsi
+      powerpc/ps3: set_dabr() takes an unsigned long
+      powerpc/ps3: Use dma_addr_t down through the stack
+      powerpc/ps3: The lv1_ routines have u64 parameters
+      powerpc/ps3: clear_bit()/set_bit() operate on unsigned longs
+      powerpc/ps3: ps3_repository_read_mm_info() takes u64 * arguments
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion arch/powerpc
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/block
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/char
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion sound/ppc
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/ps3
+      powerpc/ps3: Printing fixups for l64 to ll64 conversion drivers/scsi
+      powerpc/ps3: printing fixups for l64 to ll64 conversion drivers/video
 
-http://git.openmoko.org/?p=kernel.git;a=blob_plain;f=arch/arm/mach-s3c2440/mach-gta02.c;hb=stable-tracking
+ arch/powerpc/include/asm/ps3.h           |    8 +-
+ arch/powerpc/kernel/prom.c               |    5 ++
+ arch/powerpc/mm/slice.c                  |   11 +++-
+ arch/powerpc/platforms/ps3/device-init.c |   26 ++++----
+ arch/powerpc/platforms/ps3/htab.c        |    2 +-
+ arch/powerpc/platforms/ps3/interrupt.c   |   28 +++++----
+ arch/powerpc/platforms/ps3/mm.c          |   97 ++++++++++++++++--------------
+ arch/powerpc/platforms/ps3/os-area.c     |    2 +-
+ arch/powerpc/platforms/ps3/repository.c  |   22 ++++----
+ arch/powerpc/platforms/ps3/setup.c       |    2 +-
+ arch/powerpc/platforms/ps3/spu.c         |   12 +++-
+ arch/powerpc/platforms/ps3/system-bus.c  |   14 +++--
+ drivers/block/ps3disk.c                  |   18 +++---
+ drivers/char/hvc_console.c               |    2 -
+ drivers/char/ps3flash.c                  |   18 +++---
+ drivers/ps3/ps3-lpm.c                    |   16 +++---
+ drivers/ps3/ps3-vuart.c                  |   32 +++++-----
+ drivers/ps3/ps3stor_lib.c                |   14 ++--
+ drivers/scsi/ibmvscsi/ibmvfc.c           |   14 ++--
+ drivers/scsi/ibmvscsi/ibmvfc.h           |    6 +-
+ drivers/scsi/ps3rom.c                    |    6 +-
+ drivers/serial/of_serial.c               |    1 +
+ drivers/video/ps3fb.c                    |    4 +-
+ sound/ppc/snd_ps3.c                      |    4 +-
+ 24 files changed, 196 insertions(+), 168 deletions(-)
 
-We are depending on this mach-gta02.c file now and a streamlined
-version of it must be sent upstream so that we can start adding
-drivers. This file in turn depends on patches that are being sent
-upstream also.
 
-Thus we have a chicken and egg problem and we decided to send the
-filters for review because they are in the stable-tracking branch and
-they need to be suitable for upstream inclusion / included upstream.
-
->> @@ -0,0 +1,64 @@
-(cut)
->> +void ts_filter_destroy_chain(struct platform_device *pdev,
->> +                          struct ts_filter **list)
->> +{
->> +     struct ts_filter **first;
->> +     int count = 0;
->> +
->> +     first = list;
->> +     while (*list && count++ < MAX_TS_FILTER_CHAIN) {
->> +             ((*list)->api->destroy)(pdev, *list);
->> +             list++;
->
-> This is wrong, isn't it?  It's treating the list as an array.  Should
-> advance to list->next.
-
-It is actually an array. This name is misleading, we will change it.
-
-struct ts_filter *tsf[MAX_TS_FILTER_CHAIN];
-
-Defined here (s3c2410_ts.c : 113).
-
-http://git.openmoko.org/?p=kernel.git;a=blob_plain;f=drivers/input/touchscreen/s3c2410_ts.c;hb=stable-tracking
-
->> +     }
->> +     *first = NULL;
->> +}
->> +EXPORT_SYMBOL_GPL(ts_filter_destroy_chain);
->
-> The list should be proected by a lock to prevent corruption.  A single
-> mutex which is static to this file should suffice.
-
-Ok.
-
->> diff --git a/include/linux/ts_filter.h b/include/linux/ts_filter.h
->> new file mode 100644
->> index 0000000..1671044
->> --- /dev/null
->> +++ b/include/linux/ts_filter.h
->
-> I think it would be better to put all the header files from this
-> patchset into drivers/input/touchscreen/
-
-Ok.
-
-I will a little before resubmitting.
-
-Thanks for your comments.
