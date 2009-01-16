@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933539AbZAPQar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934483AbZAPQbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933539AbZAPQar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 11:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760789AbZAPQag
+	id S934483AbZAPQbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 11:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763719AbZAPQam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 11:30:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53855 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760771AbZAPQaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 11:30:35 -0500
-Date: Fri, 16 Jan 2009 17:30:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/2] ftrace: updates to tip
-Message-ID: <20090116163021.GA27495@elte.hu>
-References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu> <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com> <20090116152103.GA28643@elte.hu> <alpine.DEB.1.10.0901161050470.22303@gandalf.stny.rr.com> <20090116160202.GA15209@elte.hu> <alpine.DEB.1.10.0901161111490.22303@gandalf.stny.rr.com>
+	Fri, 16 Jan 2009 11:30:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:39155 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762870AbZAPQal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 11:30:41 -0500
+Date: Fri, 16 Jan 2009 17:30:39 +0100
+From: Jan Kara <jack@suse.cz>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp
+Subject: Re: ext3: call blkdev_issue_flush on fsync
+Message-ID: <20090116163039.GE10617@duck.suse.cz>
+References: <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz> <20090114141204.GD6222@mit.edu> <20090114143756.GF19950@duck.suse.cz> <20090114165952.GH6222@mit.edu> <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp> <20090115234544.GA7579@duck.suse.cz> <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp> <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901161111490.22303@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4709]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Fri, 16 Jan 2009, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+On Fri 16-01-09 22:55:01, Fernando Luis Vázquez Cao wrote:
+> To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> should force a disk flush explicitly when there is dirty data/metadata
+> and the journal didn't emit a write barrier (either because metadata is
+> not being synched or barriers are disabled).
 > 
-> > > [...] We can register a function to be traced via the function pointer, 
-> > > and we can pick which functions to trace, but we can not separate out 
-> > > different functions for different traces.
-> > 
-> > Why not? We could have a hash of all traced functions with metadata 
-> > attached. Since patching functions in/out would be a relatively rare 
-> > operation, this would be a highly efficient read-mostly hash.
-> 
-> I was afraid you would say that :-)
-> 
-> Yes, we could add something to do this. It would take some thought on a 
-> good api, and implementation. This is not an easy task by any means. We 
-> need a way to map between a function call and a tracer, where a function 
-> call can call more than one tracer.
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> ---
+  Only two minor nits:
 
-Note that some other things could be consolidated under per function 
-metadata: for example set_graph_function - which really is a per function 
-attribute too. Plus a lot of new things would be enabled i think.
+> --- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
+> +++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
+> @@ -27,6 +27,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/writeback.h>
+>  #include <linux/jbd.h>
+> +#include <linux/blkdev.h>
+>  #include <linux/ext3_fs.h>
+>  #include <linux/ext3_jbd.h>
+>  
+> @@ -45,6 +46,8 @@
+>  int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+>  {
+>  	struct inode *inode = dentry->d_inode;
+> +	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
+> +	unsigned long i_state = inode->i_state;
+>  	int ret = 0;
+>  
+>  	J_ASSERT(ext3_journal_current_handle() == NULL);
+> @@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
+>  	 */
+>  	if (ext3_should_journal_data(inode)) {
+>  		ret = ext3_force_commit(inode->i_sb);
+> +		if (!(journal->j_flags & JFS_BARRIER))
+> +			goto no_journal_barrier;
+>  		goto out;
+>  	}
+>  
+> -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> -		goto out;
+> +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
+> +		goto flush_blkdev;
+>  
+>  	/*
+>  	 * The VFS has written the file data.  If the inode is unaltered
+>  	 * then we need not start a commit.
+>  	 */
+> -	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> +	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+>  		struct writeback_control wbc = {
+>  			.sync_mode = WB_SYNC_ALL,
+>  			.nr_to_write = 0, /* sys_fsync did this */
+>  		};
+>  		ret = sync_inode(inode, &wbc);
+> +		if (journal && !(journal->j_flags & JFS_BARRIER))
+> +			goto no_journal_barrier;
+  I cannot imagine "journal" will be NULL here.
+  And we can also optimize here a bit and do "goto out" because here
+we know the barrier has been issued.
 
-	Ingo
+>  	}
+> +
+> +flush_blkdev:
+> +	if (!(i_state & I_DIRTY_PAGES))
+> +		goto out;
+> +no_journal_barrier:
+> +	blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+>  out:
+>  	return ret;
+>  }
+
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
