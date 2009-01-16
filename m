@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935740AbZAPPVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934969AbZAPPXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935740AbZAPPVs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 10:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761120AbZAPPVY
+	id S934969AbZAPPXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 10:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZAPPXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 10:21:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60847 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760809AbZAPPVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 10:21:24 -0500
-Date: Fri, 16 Jan 2009 16:21:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/2] ftrace: updates to tip
-Message-ID: <20090116152103.GA28643@elte.hu>
-References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu> <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4193]
+	Fri, 16 Jan 2009 10:23:34 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:27040 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZAPPXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 10:23:32 -0500
+Subject: Re: [PATCH] Btrfs: simplify iteration codes
+From: Chris Mason <chris.mason@oracle.com>
+To: sniper <s3c24xx@gmail.com>
+Cc: Qinghuang Feng <qhfeng.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+In-Reply-To: <9bd6b5360901160720w3a2950eemaf2cd3e35caec788@mail.gmail.com>
+References: <49703687.044e6e0a.04fa.257b@mx.google.com>
+	 <1232116274.21473.15.camel@think.oraclecorp.com>
+	 <9bd6b5360901160720w3a2950eemaf2cd3e35caec788@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 10:23:24 -0500
+Message-Id: <1232119404.21473.27.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4970A66F.0293:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> > maybe we could drive this via the filter API? Something like:
-> > 
-> >    echo "*btrfs*:stacktrace" >> set_filter_functions
-> > 
-> > Would automatically mean that those functions will all generate 
-> > stacktraces too. Note how safe this API is by default: the filter is used 
-> > for a narrow scope of functions anwyay. To get it for all kernel functions 
-> > one would have to do:
-> > 
-> >    echo "*:stacktrace" >> set_filter_functions
-> > 
-> > Which one cannot do accidentally.
-> > 
-> > What do you think?
+On Fri, 2009-01-16 at 23:20 +0800, sniper wrote:
+> On Fri, Jan 16, 2009 at 10:31 PM, Chris Mason <chris.mason@oracle.com> wrote:
+> > On Fri, 2009-01-16 at 15:25 +0800, Qinghuang Feng wrote:
+> >> merge list_for_each and list_entry to list_for_each_entry.
+> >>
+> >
+> > Thanks, I've queued this up.
+> >
+> Good, but....
 > 
-> Now that I see only a 1/2 sec lag, do you still think this is necessary?
+> Now I have made a new patch for cleanupping all the similar codes in btrfs.
+> This patch has been tested in VM, it seems ok.
 > 
-> Maybe I should go back and see why it was so bad before?
+> Now should I  rebuild another patch which based the previous patch,
+> or could you be able to reverse the previous patch then I just post
+> this new patch including all stuff?
 > 
-> But I do notice that not all functions produce a valid stack trace. 
-> Maybe it would be better to add that api :-?
+> Sorry I am not much familiar with the posting flow, and I am not sure
+> the meaning of "queued".
 
-yes - i think that API would be more intuitive, and that way people could 
-mix more interesting functions (with stack traces) with less important 
-functions (no stack traces).
+It means this one looks right and I've put it into my internal testing
+tree.  It should be in my next pull request.
 
-	Ingo
+But, I'll hold off on this one if there is a larger set of fixes coming
+that contain it.
+
+-chris
+
+
