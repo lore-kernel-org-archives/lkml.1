@@ -1,103 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbZAPLpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbZAPLqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbZAPLpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbZAPLp0
+	id S933318AbZAPLqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbZAPLqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:45:26 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:49636 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759449AbZAPLpZ convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 06:46:35 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55711 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759645AbZAPLqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:45:25 -0500
-Message-Id: <4970818A.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Fri, 16 Jan 2009 11:46:02 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fully honor "nolapic" (take 2)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 16 Jan 2009 06:46:34 -0500
+Message-ID: <49707398.1040102@s5r6.in-berlin.de>
+Date: Fri, 16 Jan 2009 12:46:32 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: Mike Travis <travis@sgi.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: new (common) WARNING message?
+References: <496FDE20.6070108@sgi.com>
+In-Reply-To: <496FDE20.6070108@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"nolapic" should not only suppress SMP and use of the LAPIC, but it
-also ought to have the effect of disabling all IO-APIC related activity
-as well as PCI MSI and HT-IRQs.
+Mike Travis wrote:
+> I've been seeing these on and off for a while now.  They don't
+> seem to affect anything but perhaps I should track them down?
+> 
+> Do you know what it means?  (I'm asking you because evidently
+> debugobjects.c is from you?  I read the good explanation in the
+> changelog of 3ac7fe5a, but it didn't clue me into what's going
+> on. ;-)
+> 
+> Thanks,
+> Mike
+> --
+> 
+> [ 1294.973592] ODEBUG: object is on stack, but not annotated
+> [ 1294.974067] ------------[ cut here ]------------
+> [ 1294.974067] WARNING: at /mdata/lwork/polaris3/travis/workareas/ingo-latest/linux-2.6-for-ingo/lib/debugobjects.c:253 __debug_object_init+0x27c/0x2f0()
+> [ 1294.974067] Hardware name: X7DBT
+> [ 1294.974067] Pid: 4150, comm: offline-test Tainted: G        W  2.6.29-rc1-4k-defconfig.01151634-00255-gc99dbbe-dirty #89
+> [ 1294.974067] Call Trace:
+> [ 1294.974067]  [<ffffffff81047e3f>] warn_slowpath+0xd3/0xf2
+> [ 1294.974067]  [<ffffffff8106c64f>] ? trace_hardirqs_off+0xd/0xf
+> [ 1294.974067]  [<ffffffff815ca6ac>] ? _spin_unlock_irqrestore+0x3d/0x4c
+> [ 1294.974067]  [<ffffffff8125bebe>] ? __debug_check_no_obj_freed+0xf6/0x14c
+> [ 1294.974067]  [<ffffffff81048d3c>] ? printk+0x6c/0x6e
+> [ 1294.974067]  [<ffffffff8125c449>] ? __debug_object_init+0xf9/0x2f0
+> [ 1294.974067]  [<ffffffff8125b3ae>] ? _raw_spin_unlock+0xc7/0xf6
+> [ 1294.974067]  [<ffffffff8125c5cc>] __debug_object_init+0x27c/0x2f0
+> [ 1294.974067]  [<ffffffff8125c66d>] debug_object_init+0x14/0x17
+> [ 1294.974067]  [<ffffffff81052320>] init_timer+0x1d/0x2a
+> [ 1294.974067]  [<ffffffff81025077>] hpet_cpuhp_notify+0xad/0x124
+> [ 1294.974067]  [<ffffffff81025233>] ? hpet_work+0x0/0x21a
+> [ 1294.974067]  [<ffffffff81062057>] notifier_call_chain+0x33/0x5b
+> [ 1294.974067]  [<ffffffff810620ad>] __raw_notifier_call_chain+0xe/0x10
+> [ 1294.974067]  [<ffffffff810620c3>] raw_notifier_call_chain+0x14/0x16
+> [ 1294.974067]  [<ffffffff815c5190>] _cpu_up+0x115/0x155
+> [ 1294.974067]  [<ffffffff815c527c>] cpu_up+0x65/0x73
+> [ 1294.974067]  [<ffffffff815ac21d>] store_online+0x52/0x7b
+> [ 1294.974067]  [<ffffffff812ff775>] sysdev_store+0x20/0x22
+> [ 1294.974067]  [<ffffffff81134f6b>] sysfs_write_file+0xe9/0x11e
+> [ 1294.974067]  [<ffffffff810e0da5>] vfs_write+0xea/0x148
+> [ 1294.974067]  [<ffffffff810e0ec7>] sys_write+0x4c/0x72
+> [ 1294.974067]  [<ffffffff8100c6cb>] system_call_fastpath+0x16/0x1b
+> [ 1294.974067] ---[ end trace 4eaa2a86a8e2da24 ]---
+> --
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+The warning tells us that arch/x86/kernel/hpet.c::hpet_cpuhp_notify()
+allocates a timer on the stack.  In particular, it allocates a struct
+hpet_work_struct on the stack which incorporates a timer.
 
----
- arch/x86/kernel/apic.c    |    9 ++++++++-
- arch/x86/kernel/io_apic.c |    6 ++++++
- arch/x86/kernel/smpboot.c |    1 +
- 3 files changed, 13 insertions(+), 1 deletion(-)
+Now, a timer instance on a stack would be wrong if the function which
+defined that timer exits too early.  But in case of hpet_cpuhp_notify(),
+this is OK since
+  - it waits for the work be done,
+  - the work does not rearm itself.
+IOW the work and thus the timer won't be accessed anymore when
+hpet_cpuhp_notify() returns.
 
---- linux-2.6.29-rc1/arch/x86/kernel/apic.c	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/apic.c	2009-01-16 11:57:45.000000000 +0100
-@@ -1125,6 +1125,13 @@ void __cpuinit setup_local_APIC(void)
- 	unsigned int value;
- 	int i, j;
- 
-+	if (disable_apic) {
-+#ifdef CONFIG_X86_IO_APIC
-+		disable_ioapic_setup();
-+#endif
-+		return;
-+	}
-+
- #ifdef CONFIG_X86_32
- 	/* Pound the ESR really hard over the head with a big hammer - mbligh */
- 	if (lapic_is_integrated() && esr_disable) {
-@@ -1565,11 +1570,11 @@ int apic_version[MAX_APICS];
- 
- int __init APIC_init_uniprocessor(void)
- {
--#ifdef CONFIG_X86_64
- 	if (disable_apic) {
- 		pr_info("Apic disabled\n");
- 		return -1;
- 	}
-+#ifdef CONFIG_X86_64
- 	if (!cpu_has_apic) {
- 		disable_apic = 1;
- 		pr_info("Apic disabled by BIOS\n");
---- linux-2.6.29-rc1/arch/x86/kernel/io_apic.c	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/io_apic.c	2009-01-13 15:05:37.000000000 +0100
-@@ -3258,6 +3258,9 @@ static int msi_compose_msg(struct pci_de
- 	int err;
- 	unsigned dest;
- 
-+	if (disable_apic)
-+		return -ENXIO;
-+
- 	cfg = irq_cfg(irq);
- 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
- 	if (err)
-@@ -3726,6 +3729,9 @@ int arch_setup_ht_irq(unsigned int irq, 
- 	struct irq_cfg *cfg;
- 	int err;
- 
-+	if (disable_apic)
-+		return -ENXIO;
-+
- 	cfg = irq_cfg(irq);
- 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
- 	if (!err) {
---- linux-2.6.29-rc1/arch/x86/kernel/smpboot.c	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-x86-no-lapic/arch/x86/kernel/smpboot.c	2009-01-14 09:14:16.000000000 +0100
-@@ -1125,6 +1125,7 @@ static int __init smp_sanity_check(unsig
- 		printk(KERN_ERR "... forcing use of dummy APIC emulation."
- 				"(tell your hw vendor)\n");
- 		smpboot_clear_io_apic();
-+		disable_ioapic_setup();
- 		return -1;
- 	}
- 
-
-
-
+So, hpet_cpuhp_notify() apparently needs a variant of INIT_DELAYED_WORK
+which uses init_timer_on_stack instead of init_timer, to say "trust me,
+I know what I'm doing".
+-- 
+Stefan Richter
+-=====-==--= ---= =----
+http://arcgraph.de/sr/
