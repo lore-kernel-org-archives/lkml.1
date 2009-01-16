@@ -1,71 +1,560 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937458AbZAPU3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937413AbZAPUa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937458AbZAPU3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 15:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937219AbZAPU24
+	id S937413AbZAPUa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 15:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbZAPUaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 15:28:56 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54614 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S937165AbZAPU2y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 15:28:54 -0500
-Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090116110708.75c5828d.akpm@linux-foundation.org>
-References: <1232117771.3224.21.camel@localhost.localdomain>
-	 <20090116090928.e43c986e.akpm@linux-foundation.org>
-	 <1232131733.3224.46.camel@localhost.localdomain>
-	 <20090116110708.75c5828d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 16 Jan 2009 15:28:37 -0500
-Message-Id: <1232137717.3224.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 15:30:05 -0500
+Received: from ns1.sacree.tv ([213.186.44.53]:60445 "EHLO www.sacree.tv"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447AbZAPUaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 15:30:01 -0500
+X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Jan 2009 15:30:00 EST
+Date: Fri, 16 Jan 2009 21:02:41 +0100
+From: Boris Hajduk <boris@hajduk.org>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [PATCH 2.6.29-rc1] usb-serial ch341: support for DTR/RTS/CTS
+Message-ID: <20090116200241.GA28338@zboubi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 11:07 -0800, Andrew Morton wrote:
-> On Fri, 16 Jan 2009 13:48:53 -0500
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > > > +++ b/drivers/scsi/qla2xxx/qla_init.c
-> > > > @@ -1258,35 +1258,48 @@ qla2x00_init_rings(scsi_qla_host_t *vha)
-> > > >  {
-> > > >  	int	rval;
-> > > >  	unsigned long flags = 0;
-> > > > -	int cnt;
-> > > > +	int cnt, que;
-> > > >  	struct qla_hw_data *ha = vha->hw;
-> > > > -	struct req_que *req = ha->req_q_map[0];
-> > > > -	struct rsp_que *rsp = ha->rsp_q_map[0];
-> > > > +	struct req_que *req;
-> > > > +	struct rsp_que *rsp;
-> > > > +	struct scsi_qla_host *vp;
-> > > >  	struct mid_init_cb_24xx *mid_init_cb =
-> > > >  	    (struct mid_init_cb_24xx *) ha->init_cb;
-> > > 
-> > > This cast worries me.  It's a cast between two complex data structures
-> > > which appear to have nothing to do with each other.
-> > 
-> > Actually, it's a C++ type construct.  ha->init_cb is of type init_cb_t,
-> > mid_init_cb actually contains this (via a second indirection) as the
-> > first element, so what it's doing is dynamically casting out based on
-> > the board type.
-> 
-> Ah, OK, I got lost amongst the typedefs and pointers.
-> 
-> This code could/should use container_of() for this operation?
+From: Werner Cornelius <werner@cornelius-consult.de>
 
-It could, but since it's a double cast out it would get a lot uglier. We
-don't really pick up any safety from this because the FW structure is
-shared with the device, so no-one can move the first element anyway.
+Fixup of Werner Cornelius patch to the ch341 USB-serial driver, which adds:
+- support all baudrates, not just a hard-coded set
+- support for controlling DTR, RTS and CTS
 
-James
+Features still missing:
+- character length other than 8 bits
+- parity settings
+- break control
 
+I adapted his patch for the new usb_serial API introduced in 2.6.25-git8 by
+Alan Cox on 22 July 2008. Non-compliance to the new API was a reason for
+refusing a similar patch from Tollef Fog Heen.
 
+Usage example by Tollef Fog Heen :
+        TEMPer USB thermometer <http://err.no/src/TEMPer.c>
+
+Signed-off-by: Werner Cornelius <Werner.Cornelius@cornelius-consult.de>
+Signed-off-by: Boris Hajduk <boris@hajduk.org>
+
+---
+
+--- a/drivers/usb/serial/ch341.c	2008-10-10 00:13:53.000000000 +0200
++++ b/drivers/usb/serial/ch341.c	2009-01-15 21:26:27.000000000 +0100
+@@ -1,5 +1,7 @@
+ /*
+  * Copyright 2007, Frank A Kingswood <frank@kingswood-consulting.co.uk>
++ * Copyright 2007, Werner Cornelius <werner@cornelius-consult.de>
++ * Copyright 2009, Boris Hajduk <boris@hajduk.org>
+  *
+  * ch341.c implements a serial port driver for the Winchiphead CH341.
+  *
+@@ -21,9 +23,39 @@
+ #include <linux/usb/serial.h>
+ #include <linux/serial.h>
+ 
+-#define DEFAULT_BAUD_RATE 2400
++#define DEFAULT_BAUD_RATE 9600
+ #define DEFAULT_TIMEOUT   1000
+ 
++/* flags for IO-Bits */
++#define CH341_BIT_RTS (1 << 6)
++#define CH341_BIT_DTR (1 << 5)
++
++/******************************/
++/* interrupt pipe definitions */
++/******************************/
++/* always 4 interrupt bytes */
++/* first irq byte normally 0x08 */
++/* second irq byte base 0x7d + below */
++/* third irq byte base 0x94 + below */
++/* fourth irq byte normally 0xee */
++
++/* second interrupt byte */
++#define CH341_MULT_STAT 0x04 /* multiple status since last interrupt event */
++
++/* status returned in third interrupt answer byte, inverted in data
++   from irq */
++#define CH341_BIT_CTS 0x01
++#define CH341_BIT_DSR 0x02
++#define CH341_BIT_RI  0x04
++#define CH341_BIT_DCD 0x08
++#define CH341_BITS_MODEM_STAT 0x0f /* all bits */
++
++/*******************************/
++/* baudrate calculation factor */
++/*******************************/
++#define CH341_BAUDBASE_FACTOR 1532620800
++#define CH341_BAUDBASE_DIVMAX 3
++
+ static int debug;
+ 
+ static struct usb_device_id id_table [] = {
+@@ -34,9 +66,12 @@ static struct usb_device_id id_table [] 
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
+ struct ch341_private {
+-	unsigned baud_rate;
+-	u8 dtr;
+-	u8 rts;
++	spinlock_t lock; /* access lock */
++	wait_queue_head_t delta_msr_wait; /* wait queue for modem status */
++	unsigned baud_rate; /* set baud rate */
++	u8 line_control; /* set line control value RTS/DTR */
++	u8 line_status; /* active status of modem control inputs */
++	u8 multi_status_change; /* status changed multiple since last call */
+ };
+ 
+ static int ch341_control_out(struct usb_device *dev, u8 request,
+@@ -72,37 +107,28 @@ static int ch341_set_baudrate(struct usb
+ {
+ 	short a, b;
+ 	int r;
++	unsigned long factor;
++	short divisor;
+ 
+ 	dbg("ch341_set_baudrate(%d)", priv->baud_rate);
+-	switch (priv->baud_rate) {
+-	case 2400:
+-		a = 0xd901;
+-		b = 0x0038;
+-		break;
+-	case 4800:
+-		a = 0x6402;
+-		b = 0x001f;
+-		break;
+-	case 9600:
+-		a = 0xb202;
+-		b = 0x0013;
+-		break;
+-	case 19200:
+-		a = 0xd902;
+-		b = 0x000d;
+-		break;
+-	case 38400:
+-		a = 0x6403;
+-		b = 0x000a;
+-		break;
+-	case 115200:
+-		a = 0xcc03;
+-		b = 0x0008;
+-		break;
+-	default:
++
++	if (!priv->baud_rate)
+ 		return -EINVAL;
++	factor = (CH341_BAUDBASE_FACTOR / priv->baud_rate);
++	divisor = CH341_BAUDBASE_DIVMAX;
++
++	while ((factor > 0xfff0) && divisor) {
++		factor >>= 3;
++		divisor--;
+ 	}
+ 
++	if (factor > 0xfff0)
++		return -EINVAL;
++
++	factor = 0x10000 - factor;
++	a = (factor & 0xff00) | divisor;
++	b = factor & 0xff;
++
+ 	r = ch341_control_out(dev, 0x9a, 0x1312, a);
+ 	if (!r)
+ 		r = ch341_control_out(dev, 0x9a, 0x0f2c, b);
+@@ -110,19 +136,18 @@ static int ch341_set_baudrate(struct usb
+ 	return r;
+ }
+ 
+-static int ch341_set_handshake(struct usb_device *dev,
+-			       struct ch341_private *priv)
++static int ch341_set_handshake(struct usb_device *dev, u8 control)
+ {
+-	dbg("ch341_set_handshake(%d,%d)", priv->dtr, priv->rts);
+-	return ch341_control_out(dev, 0xa4,
+-		~((priv->dtr?1<<5:0)|(priv->rts?1<<6:0)), 0);
++	dbg("ch341_set_handshake(0x%02x)", control);
++	return ch341_control_out(dev, 0xa4, ~control, 0);
+ }
+ 
+-static int ch341_get_status(struct usb_device *dev)
++static int ch341_get_status(struct usb_device *dev, struct ch341_private *priv)
+ {
+ 	char *buffer;
+ 	int r;
+ 	const unsigned size = 8;
++	unsigned long flags;
+ 
+ 	dbg("ch341_get_status()");
+ 
+@@ -134,10 +159,15 @@ static int ch341_get_status(struct usb_d
+ 	if (r < 0)
+ 		goto out;
+ 
+-	/* Not having the datasheet for the CH341, we ignore the bytes returned
+-	 * from the device. Return error if the device did not respond in time.
+-	 */
+-	r = 0;
++	/* setup the private status if available */
++	if (r == 2) {
++		r = 0;
++		spin_lock_irqsave(&priv->lock, flags);
++		priv->line_status = (~(*buffer)) & CH341_BITS_MODEM_STAT;
++		priv->multi_status_change = 0;
++		spin_unlock_irqrestore(&priv->lock, flags);
++	} else
++		r = -EPROTO;
+ 
+ out:	kfree(buffer);
+ 	return r;
+@@ -180,7 +210,7 @@ static int ch341_configure(struct usb_de
+ 		goto out;
+ 
+ 	/* expect 0xff 0xee */
+-	r = ch341_get_status(dev);
++	r = ch341_get_status(dev, priv);
+ 	if (r < 0)
+ 		goto out;
+ 
+@@ -192,12 +222,12 @@ static int ch341_configure(struct usb_de
+ 	if (r < 0)
+ 		goto out;
+ 
+-	r = ch341_set_handshake(dev, priv);
++	r = ch341_set_handshake(dev, priv->line_control);
+ 	if (r < 0)
+ 		goto out;
+ 
+ 	/* expect 0x9f 0xee */
+-	r = ch341_get_status(dev);
++	r = ch341_get_status(dev, priv);
+ 
+ out:	kfree(buffer);
+ 	return r;
+@@ -216,9 +246,10 @@ static int ch341_attach(struct usb_seria
+ 	if (!priv)
+ 		return -ENOMEM;
+ 
++	spin_lock_init(&priv->lock);
++	init_waitqueue_head(&priv->delta_msr_wait);
+ 	priv->baud_rate = DEFAULT_BAUD_RATE;
+-	priv->dtr = 1;
+-	priv->rts = 1;
++	priv->line_control = CH341_BIT_RTS | CH341_BIT_DTR;
+ 
+ 	r = ch341_configure(serial->dev, priv);
+ 	if (r < 0)
+@@ -231,6 +262,35 @@ error:	kfree(priv);
+ 	return r;
+ }
+ 
++static void ch341_close(struct tty_struct *tty, struct usb_serial_port *port,
++				struct file *filp)
++{
++	struct ch341_private *priv = usb_get_serial_port_data(port);
++	unsigned long flags;
++	unsigned int c_cflag;
++
++	dbg("%s - port %d", __func__, port->number);
++
++	/* shutdown our urbs */
++	dbg("%s - shutting down urbs", __func__);
++	usb_kill_urb(port->write_urb);
++	usb_kill_urb(port->read_urb);
++	usb_kill_urb(port->interrupt_in_urb);
++
++	if (tty) {
++		c_cflag = tty->termios->c_cflag;
++		if (c_cflag & HUPCL) {
++			/* drop DTR and RTS */
++			spin_lock_irqsave(&priv->lock, flags);
++			priv->line_control = 0;
++			spin_unlock_irqrestore(&priv->lock, flags);
++			ch341_set_handshake(port->serial->dev, 0);
++		}
++	}
++	wake_up_interruptible(&priv->delta_msr_wait);
++}
++
++
+ /* open this device, set default parameters */
+ static int ch341_open(struct tty_struct *tty, struct usb_serial_port *port,
+ 				struct file *filp)
+@@ -242,14 +302,13 @@ static int ch341_open(struct tty_struct 
+ 	dbg("ch341_open()");
+ 
+ 	priv->baud_rate = DEFAULT_BAUD_RATE;
+-	priv->dtr = 1;
+-	priv->rts = 1;
++	priv->line_control = CH341_BIT_RTS | CH341_BIT_DTR;
+ 
+ 	r = ch341_configure(serial->dev, priv);
+ 	if (r)
+ 		goto out;
+ 
+-	r = ch341_set_handshake(serial->dev, priv);
++	r = ch341_set_handshake(serial->dev, priv->line_control);
+ 	if (r)
+ 		goto out;
+ 
+@@ -257,6 +316,16 @@ static int ch341_open(struct tty_struct 
+ 	if (r)
+ 		goto out;
+ 
++	dbg("%s - submitting interrupt urb", __func__);
++	port->interrupt_in_urb->dev = serial->dev;
++	r = usb_submit_urb(port->interrupt_in_urb, GFP_KERNEL);
++	if (r) {
++		dev_err(&port->dev, "%s - failed submitting interrupt urb,"
++			" error %d\n", __func__, r);
++		ch341_close(tty, port, NULL);
++		return -EPROTO;
++	}
++
+ 	r = usb_serial_generic_open(tty, port, filp);
+ 
+ out:	return r;
+@@ -270,38 +339,194 @@ static void ch341_set_termios(struct tty
+ {
+ 	struct ch341_private *priv = usb_get_serial_port_data(port);
+ 	unsigned baud_rate;
++	unsigned long flags;
+ 
+ 	dbg("ch341_set_termios()");
+ 
++	if (!tty || !tty->termios)
++		return;
++
+ 	baud_rate = tty_get_baud_rate(tty);
+ 
+-	switch (baud_rate) {
+-	case 2400:
+-	case 4800:
+-	case 9600:
+-	case 19200:
+-	case 38400:
+-	case 115200:
+-		priv->baud_rate = baud_rate;
+-		break;
+-	default:
+-		dbg("Rate %d not supported, using %d",
+-			baud_rate, DEFAULT_BAUD_RATE);
+-		priv->baud_rate = DEFAULT_BAUD_RATE;
++	priv->baud_rate = baud_rate;
++
++	if (baud_rate) {
++		spin_lock_irqsave(&priv->lock, flags);
++		priv->line_control |= (CH341_BIT_DTR | CH341_BIT_RTS);
++		spin_unlock_irqrestore(&priv->lock, flags);
++		ch341_set_baudrate(port->serial->dev, priv);
++	} else {
++		spin_lock_irqsave(&priv->lock, flags);
++		priv->line_control &= ~(CH341_BIT_DTR | CH341_BIT_RTS);
++		spin_unlock_irqrestore(&priv->lock, flags);
+ 	}
+ 
+-	ch341_set_baudrate(port->serial->dev, priv);
++	ch341_set_handshake(port->serial->dev, priv->line_control);
+ 
+ 	/* Unimplemented:
+ 	 * (cflag & CSIZE) : data bits [5, 8]
+ 	 * (cflag & PARENB) : parity {NONE, EVEN, ODD}
+ 	 * (cflag & CSTOPB) : stop bits [1, 2]
+ 	 */
++}
++
++static int ch341_tiocmset(struct tty_struct *tty, struct file *file,
++			  unsigned int set, unsigned int clear)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	struct ch341_private *priv = usb_get_serial_port_data(port);
++	unsigned long flags;
++	u8 control;
++
++	spin_lock_irqsave(&priv->lock, flags);
++	if (set & TIOCM_RTS)
++		priv->line_control |= CH341_BIT_RTS;
++	if (set & TIOCM_DTR)
++		priv->line_control |= CH341_BIT_DTR;
++	if (clear & TIOCM_RTS)
++		priv->line_control &= ~CH341_BIT_RTS;
++	if (clear & TIOCM_DTR)
++		priv->line_control &= ~CH341_BIT_DTR;
++	control = priv->line_control;
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return ch341_set_handshake(port->serial->dev, control);
++}
++
++static void ch341_read_int_callback(struct urb *urb)
++{
++	struct usb_serial_port *port = (struct usb_serial_port *) urb->context;
++	unsigned char *data = urb->transfer_buffer;
++	unsigned int actual_length = urb->actual_length;
++	int status;
++
++	dbg("%s (%d)", __func__, port->number);
++
++	switch (urb->status) {
++	case 0:
++		/* success */
++		break;
++	case -ECONNRESET:
++	case -ENOENT:
++	case -ESHUTDOWN:
++		/* this urb is terminated, clean up */
++		dbg("%s - urb shutting down with status: %d", __func__,
++		    urb->status);
++		return;
++	default:
++		dbg("%s - nonzero urb status received: %d", __func__,
++		    urb->status);
++		goto exit;
++	}
++
++	usb_serial_debug_data(debug, &port->dev, __func__,
++			      urb->actual_length, urb->transfer_buffer);
++
++	if (actual_length >= 4) {
++		struct ch341_private *priv = usb_get_serial_port_data(port);
++		unsigned long flags;
++
++		spin_lock_irqsave(&priv->lock, flags);
++		priv->line_status = (~(data[2])) & CH341_BITS_MODEM_STAT;
++		if ((data[1] & CH341_MULT_STAT))
++			priv->multi_status_change = 1;
++		spin_unlock_irqrestore(&priv->lock, flags);
++		wake_up_interruptible(&priv->delta_msr_wait);
++	}
++
++exit:
++	status = usb_submit_urb(urb, GFP_ATOMIC);
++	if (status)
++		dev_err(&urb->dev->dev,
++			"%s - usb_submit_urb failed with result %d\n",
++			__func__, status);
++}
++
++static int wait_modem_info(struct usb_serial_port *port, unsigned int arg)
++{
++	struct ch341_private *priv = usb_get_serial_port_data(port);
++	unsigned long flags;
++	u8 prevstatus;
++	u8 status;
++	u8 changed;
++	u8 multi_change = 0;
++
++	spin_lock_irqsave(&priv->lock, flags);
++	prevstatus = priv->line_status;
++	priv->multi_status_change = 0;
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	while (!multi_change) {
++		interruptible_sleep_on(&priv->delta_msr_wait);
++		/* see if a signal did it */
++		if (signal_pending(current))
++			return -ERESTARTSYS;
++
++		spin_lock_irqsave(&priv->lock, flags);
++		status = priv->line_status;
++		multi_change = priv->multi_status_change;
++		spin_unlock_irqrestore(&priv->lock, flags);
++
++		changed = prevstatus ^ status;
++
++		if (((arg & TIOCM_RNG) && (changed & CH341_BIT_RI)) ||
++		    ((arg & TIOCM_DSR) && (changed & CH341_BIT_DSR)) ||
++		    ((arg & TIOCM_CD)  && (changed & CH341_BIT_DCD)) ||
++		    ((arg & TIOCM_CTS) && (changed & CH341_BIT_CTS))) {
++			return 0;
++		}
++		prevstatus = status;
++	}
++
++	return 0;
++}
++
++/*static int ch341_ioctl(struct usb_serial_port *port, struct file *file,*/
++static int ch341_ioctl(struct tty_struct *tty, struct file *file,
++			unsigned int cmd, unsigned long arg)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	dbg("%s (%d) cmd = 0x%04x", __func__, port->number, cmd);
++
++	switch (cmd) {
++	case TIOCMIWAIT:
++		dbg("%s (%d) TIOCMIWAIT", __func__,  port->number);
++		return wait_modem_info(port, arg);
++
++	default:
++		dbg("%s not supported = 0x%04x", __func__, cmd);
++		break;
++	}
++
++	return -ENOIOCTLCMD;
++}
++
++static int ch341_tiocmget(struct tty_struct *tty, struct file *file)
++{
++	struct usb_serial_port *port = tty->driver_data;
++	struct ch341_private *priv = usb_get_serial_port_data(port);
++	unsigned long flags;
++	u8 mcr;
++	u8 status;
++	unsigned int result;
++
++	dbg("%s (%d)", __func__, port->number);
++
++	spin_lock_irqsave(&priv->lock, flags);
++	mcr = priv->line_control;
++	status = priv->line_status;
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	result = ((mcr & CH341_BIT_DTR)		? TIOCM_DTR : 0)
++		  | ((mcr & CH341_BIT_RTS)	? TIOCM_RTS : 0)
++		  | ((status & CH341_BIT_CTS)	? TIOCM_CTS : 0)
++		  | ((status & CH341_BIT_DSR)	? TIOCM_DSR : 0)
++		  | ((status & CH341_BIT_RI)	? TIOCM_RI  : 0)
++		  | ((status & CH341_BIT_DCD)	? TIOCM_CD  : 0);
++
++	dbg("%s - result = %x", __func__, result);
+ 
+-	 /* Copy back the old hardware settings */
+-	 tty_termios_copy_hw(tty->termios, old_termios);
+-	 /* And re-encode with the new baud */
+-	 tty_encode_baud_rate(tty, baud_rate, baud_rate);
++	return result;
+ }
+ 
+ static struct usb_driver ch341_driver = {
+@@ -317,12 +542,17 @@ static struct usb_serial_driver ch341_de
+ 		.owner	= THIS_MODULE,
+ 		.name	= "ch341-uart",
+ 	},
+-	.id_table         = id_table,
+-	.usb_driver       = &ch341_driver,
+-	.num_ports        = 1,
+-	.open             = ch341_open,
+-	.set_termios      = ch341_set_termios,
+-	.attach           = ch341_attach,
++	.id_table          = id_table,
++	.usb_driver        = &ch341_driver,
++	.num_ports         = 1,
++	.open              = ch341_open,
++	.close             = ch341_close,
++	.ioctl             = ch341_ioctl,
++	.set_termios       = ch341_set_termios,
++	.tiocmget          = ch341_tiocmget,
++	.tiocmset          = ch341_tiocmset,
++	.read_int_callback = ch341_read_int_callback,
++	.attach            = ch341_attach,
+ };
+ 
+ static int __init ch341_init(void)
