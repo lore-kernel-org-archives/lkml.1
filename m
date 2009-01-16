@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932777AbZAPMHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbZAPMPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932777AbZAPMHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbZAPMHA
+	id S1762977AbZAPMPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbZAPMPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:07:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756584AbZAPMG7 convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 07:15:44 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:18502 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756080AbZAPMPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:06:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Simon Holm =?utf-8?q?Th=C3=B8gersen?= <odie@cs.aau.dk>
-Subject: Re: regression: a0d4922 causes PCI host constroller problems
-Date: Fri, 16 Jan 2009 13:06:09 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-References: <1232093125.2876.1.camel@odie.local> <1232097368.3120.5.camel@odie.local>
-In-Reply-To: <1232097368.3120.5.camel@odie.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901161306.10358.rjw@sisk.pl>
+	Fri, 16 Jan 2009 07:15:43 -0500
+Date: Fri, 16 Jan 2009 14:15:24 +0200 (EET)
+Message-Id: <20090116.141524.236287675.Hiroshi.DOYU@nokia.com>
+To: roel.kluin@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition
+ with macro
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <25e057c00901160156w6058ade2j9c99ef727d8767ab@mail.gmail.com>
+References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com>
+	<20090116082706.17571.31102.stgit@oreo.research.nokia.com>
+	<25e057c00901160156w6058ade2j9c99ef727d8767ab@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Jan 2009 12:15:25.0733 (UTC) FILETIME=[1CD60550:01C977D4]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009, Simon Holm Thøgersen wrote:
-> fre, 16 01 2009 kl. 09:05 +0100, skrev Simon Holm Thøgersen:
-> > commit a0d4922 ("USB: fix up suspend and resume for PCI host
-> > controllers") causes a lot of these two lines to be logged:
-> > 
-> > uhci_hcd 0000:00:1d.2: host system error, PCI problems?
-> > uhci_hcd 0000:00:1d.2: host controller process error, something bad
-> > happened!
-> > 
-> > Normally they appear on resume after suspend to disk, but sometimes I'm
-> > not even sure I had to suspend to disk to see them. Also, it seems like
-> > they don't trigger if X has not been started, or at least they are much
-> > less likely to.
-> > 
-> > Reverting the patch restores normal operation.
-> > 
-> > No USB devices were attached BTW.
-> 
-> So this one has already been reported [1]. There was some mentioning of
-> a patch to try out instead of reverting, but I couldn't find it.
-> 
-> Rafael, did you have something else to suggest or can we please get a
-> revert of this one upstream asap before too many are wasting their time
-> on this one?
+From: "ext roel kluin" <roel.kluin@gmail.com>
+Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition with macro
+Date: Fri, 16 Jan 2009 10:56:01 +0100
 
-Yes, please try the patch from http://lkml.org/lkml/2009/1/13/144 and report
-back.
+[...]
+> > +#define MAILBOX_SYSCONFIG              0x010
+> > +#define MAILBOX_SYSSTATUS              0x014
+> > +#define MAILBOX_MESSAGE(m)             (0x040 + 4 * (m))
+> > +#define MAILBOX_FIFOSTATUS(m)          (0x080 + 4 * (m))
+> > +#define MAILBOX_MSGSTATUS(m)           (0x0c0 + 4 * (m))
+> > +#define MAILBOX_IRQSTATUS(u)           (0x100 + 8 * (u))
+> > +#define MAILBOX_IRQENABLE(u)           (0x108 + 8 * (u))
+>                                                                   ^^^^^^^
+> shouldn't this be
+> #define MAILBOX_IRQENABLE(u)           (0x104 + 8 * (u))
 
-Thanks,
-Rafael
+Right. I'll fix, thanks.
