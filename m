@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935332AbZAPQ76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934973AbZAPREi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935332AbZAPQ76 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 11:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbZAPQ7d
+	id S934973AbZAPREi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 12:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZAPRE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 11:59:33 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38989 "EHLO e6.ny.us.ibm.com"
+	Fri, 16 Jan 2009 12:04:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38519 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753812AbZAPQ7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 11:59:32 -0500
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a
- question
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: hooanon05@yahoo.co.jp
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <9829.1232091366@jrobl>
-References: <7471.1231827621@jrobl>
-	 <1231852628.6954.4.camel@norville.austin.ibm.com>
-	 <496FAFE2.8020102@linux.vnet.ibm.com>  <9829.1232091366@jrobl>
+	id S1757262AbZAPRE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 12:04:28 -0500
+Subject: Re: mmotm 2009-01-14-20-31 uploaded (gfs2)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com
+In-Reply-To: <20090116084352.9f35b822.akpm@linux-foundation.org>
+References: <200901150432.n0F4WI66023742@imap1.linux-foundation.org>
+	 <496F8AED.3020604@oracle.com>
+	 <1232101203.3554.3.camel@localhost.localdomain>
+	 <20090116084352.9f35b822.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Fri, 16 Jan 2009 10:59:29 -0600
-Message-Id: <1232125169.15209.19.camel@norville.austin.ibm.com>
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Fri, 16 Jan 2009 17:02:51 +0000
+Message-Id: <1232125371.9571.587.camel@quoit>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 16:36 +0900, hooanon05@yahoo.co.jp wrote:
-> Tyler Hicks:
+Hi,
 
-> I guess the problem was related to the i_count including my fixes for
-> ecryptfs_unlink() and ecryptfs_link(). Current ecryptfs_link() calls
-> ecryptfs_interpose(), but obviously the inode is not I_NEW and the
-> incremented i_count is decremented again (finally unchanged).
-> The current unnecessary d_drop()s may help hiding the problem, but I am
-> not sure.
+On Fri, 2009-01-16 at 08:43 -0800, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 10:20:03 +0000 Steven Whitehouse <swhiteho@redhat.com> wrote:
+> 
+> > Hi,
+> > 
+> > On Thu, 2009-01-15 at 11:13 -0800, Randy Dunlap wrote:
+> > > akpm@linux-foundation.org wrote:
+> > > > The mm-of-the-moment snapshot 2009-01-14-20-31 has been uploaded to
+> > > > 
+> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > > 
+> > > > and will soon be available at
+> > > > 
+> > > >    git://git.zen-sources.org/zen/mmotm.git
+> > > 
+> > > 
+> > > when CONFIG_FILE_LOCKING=n:
+> > > 
+> > > mmotm-2009-0114-2031/fs/gfs2/ops_file.c:746: error: 'generic_setlease' undeclared here (not in a function)
+> > > 
+> > > 
+> > > since generic_setlease() is a macro/define in that case.
+> > > 
+> > Hmm, it looks like I'll have to do this, in that case:
+> > 
+> > diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+> > index 99d726f..4580335 100644
+> > --- a/fs/gfs2/ops_file.c
+> > +++ b/fs/gfs2/ops_file.c
+> > @@ -743,7 +743,9 @@ const struct file_operations *gfs2_file_fops_nolock = &(const struct file_operat
+> >  	.fsync		= gfs2_fsync,
+> >  	.splice_read	= generic_file_splice_read,
+> >  	.splice_write	= generic_file_splice_write,
+> > +#ifdef CONFIG_FILE_LOCKING
+> >  	.setlease	= generic_setlease,
+> > +#endif /* CONFIG_FILE_LOCKING */
+> >  };
+> >  
+> >  const struct file_operations *gfs2_dir_fops_nolock = &(const struct file_operations){
+> > 
+> > 
+> > which is not ideal, but I don't see any easy way to avoid the #ifdef,
+> > 
+> 
+> Take a look in fs.h:
+> 
+> #define generic_setlease(a, b, c) ({ -EINVAL; })
+> 
+> If that wasn't a stupid macro, your code would have compiled and ran
+> just as intended.
+> 
+There doesn't seem to be an easy answer though. If I #define it to NULL,
+that upsets other parts of the code that rely on that macro, and if I
+turn it into a inline function which returns -EINVAL, then presumably I
+can't take its address for my file_operations.
 
-I think you're hitting on something here.  I never understood  the need
-for the d_drop()s, but taking them out broke things.  They probably are
-just papering over bugs where the ecryptfs inode is not being properly
-updated after changes are made to the lower inode.
+I could create a small function which then calls generic_setlease I
+suppose, but is that any better than this? Its not really very neat
+which ever I choose :(
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+Steve.
+
 
