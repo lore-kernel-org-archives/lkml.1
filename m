@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbZAPIxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763317AbZAPI6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763440AbZAPIxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZAPIx2
+	id S1763317AbZAPI6z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbZAPI6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:53:28 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52033 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755652AbZAPIx1 (ORCPT
+	Fri, 16 Jan 2009 03:58:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:35089 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754372AbZAPI6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:53:27 -0500
-Date: Fri, 16 Jan 2009 09:53:26 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: MartinG <gronslet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend/resume works in 2.6.29-0.19.rc0.git9.fc11.i686, but fails in later versions
-Message-ID: <20090116085326.GC4795@atrey.karlin.mff.cuni.cz>
-References: <bcb3ef430901150110nc4ced93w50c662ac512f8552@mail.gmail.com>
+	Fri, 16 Jan 2009 03:58:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=xjB4SjtufIp3wnz0+UIpdowDkLO2wYuLcm67RSSAqw3jxvnXQ+1W++jeXyr3rZWvXg
+         SLnC70Lxd0Z0SIhV+7KZwQ0A+iPJ+IUDnyI8UIW2ID2uQ7LWmauLx1r9Th/c4E3Sby2u
+         v18UxC0HpzlJMCw/WCik4LNDH9orb1arKjDC4=
+Date: Fri, 16 Jan 2009 09:58:39 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] trace_workqueue: use percpu data for workqueue
+	stat
+Message-ID: <20090116085838.GA7846@nowhere>
+References: <496F25A8.5040303@cn.fujitsu.com> <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com> <49704147.6000003@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <bcb3ef430901150110nc4ced93w50c662ac512f8552@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49704147.6000003@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 16, 2009 at 04:11:51PM +0800, Lai Jiangshan wrote:
+> Frédéric Weisbecker wrote:
+> > Hi Lai,
+> > 
+> > 2009/1/15 Lai Jiangshan <laijs@cn.fujitsu.com>:
+> >> Impact: make trace_workqueue works well on NUMA
+> >>
+> >> It's not correct when (num_possible_cpus() < nr_cpumask_bits):
+> >>        all_workqueue_stat = kmalloc(sizeof(struct workqueue_global_stats)
+> >>                                     * num_possible_cpus(), GFP_KERNEL);
+> > 
+> > 
+> > What is the difference between num_possible_cpus() and nr_cpumask_bits actually?
+> > It looks like nr_cpumask_bits binds to NR_CPUS on early time and after
+> > it is set to
+> > num_possible_cpus() , right?
+> > In this case num_possible_cpus() seems more relevant...no?
+> > 
+> > (I'm pretty sure I'm wrong.... :-)
+> > 
+> 
+> I wanted to reference to nr_cpu_ids, not nr_cpumask_bits(I made mistake yesterday)
+> 
+> init/main.c
+> static void __init setup_nr_cpu_ids(void)
+> {
+> 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+> }
+> setup_nr_cpu_ids() is called directly in main.c, it's earlier than early_initcall.
+> 
+> So nr_cpu_ids is better than num_possible_cpus(), for maybe cpu_possible_mask=101B
+> nr_cpu_ids=3, num_possible_cpus()=2, We will access to invalid memory when we use
+> num_possible_cpus().
 
-> Hi, I run Fedora Rawhide on a Dell Latitude X1 and want to report on
-> failing suspend/resume on the latest kernel snapshots.
-> Smolt is currently not working in Rawhide, but an old profile of my
-> laptop can be found in [1]
-> 
-> In kernel-2.6.29-0.19.rc0.git9.fc11.i686 I have suspend(to ram)/resume
-> working, but in later versions, I am not able to get my laptop to
-> resume. I have tested these later kernels:
-> kernel-2.6.29-0.24.rc0.git13.fc11.i686
-> kernel-2.6.29-0.25.rc0.git14.fc11.i686
-> kernel-2.6.29-0.28.rc1.fc11.i686
-> kernel-2.6.29-0.31.rc1.git2.fc11.i686
-> kernel-2.6.29-0.35.rc1.git4.fc11.i686
-> 
-> None of them seems to let me wake up from suspend to ram.
-> I have used normal kwin (no desktop effects, no compiz).
-> When I open the lid, my wlan led lights up, but there is no hdd
-> activity, and the keyboard is dead.
-> 
-> Here's dmesg of the working kernel http://fpaste.org/paste/1459
-> 
-> Please let me know how I can test further and what logs to provide.
 
-Can you boot non-working kernel, and try "cd /sys/devices/system/cpu;
-echo 0 > cpu1/online; echo 1 > cpu1/online" ?
+Oh ok I see now. If the cpu_possible_mask is 101, there is a risk I use cpu number 3
+later to directly find the index into the table. But I allocated the array in a
+contiguous way.
 
-If it breaks, try just doing "echo 0 > online" followed by s2ram. That
-should work.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks I better understand now.
+ 
+> but percpu data as my patch shows is better than nr_cpu_ids.
+> 
+> Thanks, Lai.
+> 
+> 
+> 
+
