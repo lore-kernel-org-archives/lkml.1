@@ -1,70 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936536AbZAPSDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936368AbZAPSI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936536AbZAPSDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbZAPSDI
+	id S936368AbZAPSI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762505AbZAPSIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:03:08 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:48522 "EHLO relay.sgi.com"
+	Fri, 16 Jan 2009 13:08:23 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47969 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754589AbZAPSDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:03:05 -0500
-Message-ID: <4970CBD7.4070006@sgi.com>
-Date: Fri, 16 Jan 2009 10:03:03 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PULL}: latest tip/cpus4096 changes
-References: <49704DF6.8040205@sgi.com> <20090116142514.GA1269@elte.hu>
-In-Reply-To: <20090116142514.GA1269@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1761167AbZAPSIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:08:21 -0500
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Quota fixes and improvements
+Date: Fri, 16 Jan 2009 19:08:08 +0100
+Message-Id: <1232129299-22018-1-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <yes>
+References: <yes>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> commit b758cdbee5da0b8fb7e34a68651e6ccc5310b48a
->> Author: Rusty Russell <rusty@rustcorp.com.au>
->> Date:   Thu Jan 15 16:29:16 2009 -0800
->>
->>     work_on_cpu: Use our own workqueue.
->>     
->>     Impact: remove potential circular lock dependency with generic kevent workqueue
->>     
->>     Annoyingly, some places we want to use work_on_cpu are already in
->>     workqueues.  As per Ingo's suggestion, we create a different workqueue
->>     for work_on_cpu.
-> 
-> btw., that's a nice fix - were you able to reproduce any of the lockdep 
-> asserts that i got in testing, and did those go away with this patch?
-> 
-> If yes then that's nice and makes work_on_cpu() a lot more usable IMO.
-> 
-> If not then that should generally be declared in the pull request: 
-> "beware, different approach than before but might still trigger lockdep 
-> warnings"
-> 
-> 	Ingo
+I'm sending for review patches fixing some bugs and implementing new quota
+features. First four patches fix possible deadlocks in OCFS2 quotas. I plan
+to send them to Linus next week if nobody objects. The remaining patches
+are going to linux-next and I plan to merge them in the next merge window.
 
-Hi,
-
-I've been trying all sorts of overlapping testing and I've not gotten the
-lockdep warnings any more.  (I do occasionally get that debug object warning
-that I mentioned to Thomas, though that comes and goes irregardless of any
-patches.)  The two fixes that Rusty did (lose the get_online_cpus() and use
-a separate work queue) seems to have relieved work_on_cpu of it's primary
-problems, and I've not found any new ones to replace them yet.  ;-)
-
-So I'll "un-push" the entire patchset, and then re-push the x86 only ones,
-and send the others to their respective maintainers after fixing the problems
-you mentioned.  (Posting patches to the list was way more fun, and less
-"committable". ;-)
-
-Thanks,
-Mike
-
+								Honza
