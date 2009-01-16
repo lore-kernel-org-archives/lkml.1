@@ -1,97 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936653AbZAPSsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937123AbZAPSta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936653AbZAPSsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbZAPSsn
+	id S937123AbZAPSta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936870AbZAPSs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:48:43 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:34360 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756957AbZAPSsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:48:42 -0500
-Message-ID: <4970D686.6030006@sgi.com>
-Date: Fri, 16 Jan 2009 10:48:38 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: new (common) WARNING message?
-References: <496FDE20.6070108@sgi.com> <49707398.1040102@s5r6.in-berlin.de>
-In-Reply-To: <49707398.1040102@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Jan 2009 13:48:59 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52281 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936763AbZAPSs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:48:57 -0500
+Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090116090928.e43c986e.akpm@linux-foundation.org>
+References: <1232117771.3224.21.camel@localhost.localdomain>
+	 <20090116090928.e43c986e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 13:48:53 -0500
+Message-Id: <1232131733.3224.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Mike Travis wrote:
->> I've been seeing these on and off for a while now.  They don't
->> seem to affect anything but perhaps I should track them down?
->>
->> Do you know what it means?  (I'm asking you because evidently
->> debugobjects.c is from you?  I read the good explanation in the
->> changelog of 3ac7fe5a, but it didn't clue me into what's going
->> on. ;-)
->>
->> Thanks,
->> Mike
->> --
->>
->> [ 1294.973592] ODEBUG: object is on stack, but not annotated
->> [ 1294.974067] ------------[ cut here ]------------
->> [ 1294.974067] WARNING: at /mdata/lwork/polaris3/travis/workareas/ingo-latest/linux-2.6-for-ingo/lib/debugobjects.c:253 __debug_object_init+0x27c/0x2f0()
->> [ 1294.974067] Hardware name: X7DBT
->> [ 1294.974067] Pid: 4150, comm: offline-test Tainted: G        W  2.6.29-rc1-4k-defconfig.01151634-00255-gc99dbbe-dirty #89
->> [ 1294.974067] Call Trace:
->> [ 1294.974067]  [<ffffffff81047e3f>] warn_slowpath+0xd3/0xf2
->> [ 1294.974067]  [<ffffffff8106c64f>] ? trace_hardirqs_off+0xd/0xf
->> [ 1294.974067]  [<ffffffff815ca6ac>] ? _spin_unlock_irqrestore+0x3d/0x4c
->> [ 1294.974067]  [<ffffffff8125bebe>] ? __debug_check_no_obj_freed+0xf6/0x14c
->> [ 1294.974067]  [<ffffffff81048d3c>] ? printk+0x6c/0x6e
->> [ 1294.974067]  [<ffffffff8125c449>] ? __debug_object_init+0xf9/0x2f0
->> [ 1294.974067]  [<ffffffff8125b3ae>] ? _raw_spin_unlock+0xc7/0xf6
->> [ 1294.974067]  [<ffffffff8125c5cc>] __debug_object_init+0x27c/0x2f0
->> [ 1294.974067]  [<ffffffff8125c66d>] debug_object_init+0x14/0x17
->> [ 1294.974067]  [<ffffffff81052320>] init_timer+0x1d/0x2a
->> [ 1294.974067]  [<ffffffff81025077>] hpet_cpuhp_notify+0xad/0x124
->> [ 1294.974067]  [<ffffffff81025233>] ? hpet_work+0x0/0x21a
->> [ 1294.974067]  [<ffffffff81062057>] notifier_call_chain+0x33/0x5b
->> [ 1294.974067]  [<ffffffff810620ad>] __raw_notifier_call_chain+0xe/0x10
->> [ 1294.974067]  [<ffffffff810620c3>] raw_notifier_call_chain+0x14/0x16
->> [ 1294.974067]  [<ffffffff815c5190>] _cpu_up+0x115/0x155
->> [ 1294.974067]  [<ffffffff815c527c>] cpu_up+0x65/0x73
->> [ 1294.974067]  [<ffffffff815ac21d>] store_online+0x52/0x7b
->> [ 1294.974067]  [<ffffffff812ff775>] sysdev_store+0x20/0x22
->> [ 1294.974067]  [<ffffffff81134f6b>] sysfs_write_file+0xe9/0x11e
->> [ 1294.974067]  [<ffffffff810e0da5>] vfs_write+0xea/0x148
->> [ 1294.974067]  [<ffffffff810e0ec7>] sys_write+0x4c/0x72
->> [ 1294.974067]  [<ffffffff8100c6cb>] system_call_fastpath+0x16/0x1b
->> [ 1294.974067] ---[ end trace 4eaa2a86a8e2da24 ]---
->> --
+On Fri, 2009-01-16 at 09:09 -0800, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 09:56:11 -0500 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> The warning tells us that arch/x86/kernel/hpet.c::hpet_cpuhp_notify()
-> allocates a timer on the stack.  In particular, it allocates a struct
-> hpet_work_struct on the stack which incorporates a timer.
+> > This is acutally four bug fixes and part of a fusion update which was a
+> > bit late processing through the merge window, but which should be
+> > perfectly acceptable for -rc1.
+> > 
+> > ...
+> >
+> > Full diff below.
 > 
-> Now, a timer instance on a stack would be wrong if the function which
-> defined that timer exits too early.  But in case of hpet_cpuhp_notify(),
-> this is OK since
->   - it waits for the work be done,
->   - the work does not rearm itself.
-> IOW the work and thus the timer won't be accessed anymore when
-> hpet_cpuhp_notify() returns.
+> I like full diffs.
+>  
+> > --- a/drivers/message/fusion/mptbase.c
+> > +++ b/drivers/message/fusion/mptbase.c
+> > @@ -79,9 +79,22 @@ MODULE_VERSION(my_VERSION);
+> >  /*
+> >   *  cmd line parameters
+> >   */
+> > -static int mpt_msi_enable = -1;
+> > -module_param(mpt_msi_enable, int, 0);
+> > -MODULE_PARM_DESC(mpt_msi_enable, " MSI Support Enable (default=0)");
+> > +
+> > +static int mpt_msi_enable_spi;
+> > +module_param(mpt_msi_enable_spi, int, 0);
+> > +MODULE_PARM_DESC(mpt_msi_enable_spi, " Enable MSI Support for SPI \
+> > +		controllers (default=0)");
+> > +
+> > +static int mpt_msi_enable_fc;
+> > +module_param(mpt_msi_enable_fc, int, 0);
+> > +MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
+> > +		controllers (default=0)");
+> > +
+> > +static int mpt_msi_enable_sas;
+> > +module_param(mpt_msi_enable_sas, int, 1);
+> > +MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
+> > +		controllers (default=1)");
+> > +
+> > 
+> > ...
 > 
-> So, hpet_cpuhp_notify() apparently needs a variant of INIT_DELAYED_WORK
-> which uses init_timer_on_stack instead of init_timer, to say "trust me,
-> I know what I'm doing".
+> Those MODULE_PARM_DESC strings are going to come out funny-looking,
+> with extra tabs and stuff.
 
-Hi Stefan,
+Yes ... the compiler complained about a few of the other updates, which
+I told them to redo ... I didn't notice these.
 
-Thanks for the great explanation!
+> > +MODULE_PARM_DESC(mpt_debug_level, " debug level - refer to mptdebug.h \
+> > +	- (default=0)");
+> > +
+> > +int mpt_fwfault_debug;
+> > +EXPORT_SYMBOL(mpt_fwfault_debug);
+> > +module_param_call(mpt_fwfault_debug, param_set_int, param_get_int,
+> > +	  &mpt_fwfault_debug, 0600);
+> > +MODULE_PARM_DESC(mpt_fwfault_debug, "Enable detection of Firmware fault"
+> > +	" and halt Firmware on fault - (default=0)");
+> 
+> That one got it right.
+> 
+> >  
+> >  #ifdef MFCNT
+> >  static int mfcounter = 0;
+> > @@ -1751,16 +1774,25 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
+> >  		ioc->bus_type = SAS;
+> >  	}
+> >  
+> > -	if (mpt_msi_enable == -1) {
+> > -		/* Enable on SAS, disable on FC and SPI */
+> > -		if (ioc->bus_type == SAS)
+> > -			ioc->msi_enable = 1;
+> > -		else
+> > -			ioc->msi_enable = 0;
+> > -	} else
+> > -		/* follow flag: 0 - disable; 1 - enable */
+> > -		ioc->msi_enable = mpt_msi_enable;
+> >  
+> > +	switch (ioc->bus_type) {
+> > +
+> > +	case SAS:
+> > +		ioc->msi_enable = mpt_msi_enable_sas;
+> > +		break;
+> > +
+> > +	case SPI:
+> > +		ioc->msi_enable = mpt_msi_enable_spi;
+> > +		break;
+> > +
+> > +	case FC:
+> > +		ioc->msi_enable = mpt_msi_enable_fc;
+> > +		break;
+> > +
+> > +	default:
+> > +		ioc->msi_enable = 0;
+> > +		break;
+> > +	}
+> >  	if (ioc->errata_flag_1064)
+> >  		pci_disable_io_access(pdev);
+> >  
+> > @@ -6313,6 +6345,33 @@ mpt_print_ioc_summary(MPT_ADAPTER *ioc, char *buffer, int *size, int len, int sh
+> >  	*size = y;
+> >  }
+> >  
+> > +
+> > +/**
+> > + *	mpt_halt_firmware - Halts the firmware if it is operational and panic
+> > + *	the kernel
+> > + *	@ioc: Pointer to MPT_ADAPTER structure
+> > + *
+> > + **/
+> > +void
+> > +mpt_halt_firmware(MPT_ADAPTER *ioc)
+> > +{
+> > +	u32	 ioc_raw_state;
+> > +
+> > +	ioc_raw_state = mpt_GetIocState(ioc, 0);
+> > +
+> > +	if ((ioc_raw_state & MPI_IOC_STATE_MASK) == MPI_IOC_STATE_FAULT) {
+> > +		printk(MYIOC_s_ERR_FMT "IOC is in FAULT state (%04xh)!!!\n",
+> > +			ioc->name, ioc_raw_state & MPI_DOORBELL_DATA_MASK);
+> > +		panic("%s: IOC Fault (%04xh)!!!\n", ioc->name,
+> > +			ioc_raw_state & MPI_DOORBELL_DATA_MASK);
+> > +	} else {
+> > +		CHIPREG_WRITE32(&ioc->chip->Doorbell, 0xC0FFEE00);
+> > +		panic("%s: Firmware is halted due to command timeout\n",
+> > +			ioc->name);
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(mpt_halt_firmware);
+> 
+> Doing a panic() after we've already detected an error is plain nasty. 
+> Is there no way in which we can allow the kernel to continue?
 
-Cheers,
-Mike
+There's a long thread discussing this very point on linux-scsi.  The
+short version is "no, it's only used for debugging firmware and if
+you've corrupted your firmware to this point you need the machine
+halting".
+
+> 
+> >  /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+> >  /*
+> >   *	Reset Handling
+> > @@ -6345,6 +6404,8 @@ mpt_HardResetHandler(MPT_ADAPTER *ioc, int sleepFlag)
+> >  	printk(MYIOC_s_INFO_FMT "HardResetHandler Entered!\n", ioc->name);
+> >  	printk("MF count 0x%x !\n", ioc->mfcnt);
+> >  #endif
+> > +	if (mpt_fwfault_debug)
+> > +		mpt_halt_firmware(ioc);
+> >  
+> >  	/* Reset the adapter. Prevent more than 1 call to
+> >  	 * mpt_do_ioc_recovery at any instant in time.
+> > diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
+> > index dff048c..b3e981d 100644
+> > --- a/drivers/message/fusion/mptbase.h
+> > +++ b/drivers/message/fusion/mptbase.h
+> > @@ -922,11 +922,14 @@ extern void	 mpt_free_fw_memory(MPT_ADAPTER *ioc);
+> >  extern int	 mpt_findImVolumes(MPT_ADAPTER *ioc);
+> >  extern int	 mptbase_sas_persist_operation(MPT_ADAPTER *ioc, u8 persist_opcode);
+> >  extern int	 mpt_raid_phys_disk_pg0(MPT_ADAPTER *ioc, u8 phys_disk_num, pRaidPhysDiskPage0_t phys_disk);
+> > +extern void     mpt_halt_firmware(MPT_ADAPTER *ioc);
+> > +
+> >  
+> >  /*
+> >   *  Public data decl's...
+> >   */
+> >  extern struct list_head	  ioc_list;
+> > +extern int mpt_fwfault_debug;
+> >  
+> >  /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+> >  #endif		/* } __KERNEL__ */
+> > diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
+> > index ee09041..e62c6bc 100644
+> > --- a/drivers/message/fusion/mptscsih.c
+> > +++ b/drivers/message/fusion/mptscsih.c
+> > @@ -1846,6 +1846,9 @@ mptscsih_abort(struct scsi_cmnd * SCpnt)
+> >  	if (hd->timeouts < -1)
+> >  		hd->timeouts++;
+> >  
+> > +	if (mpt_fwfault_debug)
+> > +		mpt_halt_firmware(ioc);
+> 
+> So one single global flag affects all controllers in the system?
+> 
+> I guess that's OK if it's just a debug/diag thing.
+
+Yes, that's correct.
+
+> >  	/* Most important!  Set TaskMsgContext to SCpnt's MsgContext!
+> >  	 * (the IO to be ABORT'd)
+> >  	 *
+> > diff --git a/drivers/scsi/libiscsi_tcp.c b/drivers/scsi/libiscsi_tcp.c
+> > index a745f91..e7705d3 100644
+> > --- a/drivers/scsi/libiscsi_tcp.c
+> > +++ b/drivers/scsi/libiscsi_tcp.c
+> > @@ -177,7 +177,6 @@ int iscsi_tcp_segment_done(struct iscsi_tcp_conn *tcp_conn,
+> >  			   struct iscsi_segment *segment, int recv,
+> >  			   unsigned copied)
+> >  {
+> > -	static unsigned char padbuf[ISCSI_PAD_LEN];
+> >  	struct scatterlist sg;
+> >  	unsigned int pad;
+> >  
+> > @@ -233,7 +232,7 @@ int iscsi_tcp_segment_done(struct iscsi_tcp_conn *tcp_conn,
+> >  			debug_tcp("consume %d pad bytes\n", pad);
+> >  			segment->total_size += pad;
+> >  			segment->size = pad;
+> > -			segment->data = padbuf;
+> > +			segment->data = segment->padbuf;
+> >  			return 0;
+> >  		}
+> >  	}
+> > diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
+> > index 2d4f32b..9ad4d09 100644
+> > --- a/drivers/scsi/qla2xxx/qla_init.c
+> > +++ b/drivers/scsi/qla2xxx/qla_init.c
+> > @@ -1258,35 +1258,48 @@ qla2x00_init_rings(scsi_qla_host_t *vha)
+> >  {
+> >  	int	rval;
+> >  	unsigned long flags = 0;
+> > -	int cnt;
+> > +	int cnt, que;
+> >  	struct qla_hw_data *ha = vha->hw;
+> > -	struct req_que *req = ha->req_q_map[0];
+> > -	struct rsp_que *rsp = ha->rsp_q_map[0];
+> > +	struct req_que *req;
+> > +	struct rsp_que *rsp;
+> > +	struct scsi_qla_host *vp;
+> >  	struct mid_init_cb_24xx *mid_init_cb =
+> >  	    (struct mid_init_cb_24xx *) ha->init_cb;
+> 
+> This cast worries me.  It's a cast between two complex data structures
+> which appear to have nothing to do with each other.
+
+Actually, it's a C++ type construct.  ha->init_cb is of type init_cb_t,
+mid_init_cb actually contains this (via a second indirection) as the
+first element, so what it's doing is dynamically casting out based on
+the board type.
+
+> Oh well.  It _is_ a scsi driver :(
+
+James
+
 
