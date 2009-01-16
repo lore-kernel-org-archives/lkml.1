@@ -1,41 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbZAPIdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764771AbZAPIdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbZAPIdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764621AbZAPIca
+	id S1764771AbZAPIdr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763706AbZAPIdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:32:30 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40411 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1764505AbZAPIca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:32:30 -0500
-X-Authenticated: #34473864
-X-Provags-ID: V01U2FsdGVkX18QrsBg9owQwvbNy/M1LFWqIfqiTj9zEVk8em3aqW
-	Z9X3qEYObMu6pG
-Message-ID: <4970461B.4080706@gmx.de>
-Date: Fri, 16 Jan 2009 09:32:27 +0100
-From: Philipp Kohlbecher <xt28@gmx.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 16 Jan 2009 03:33:08 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60363 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1761058AbZAPIdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 03:33:06 -0500
+Message-ID: <49704619.4030806@cn.fujitsu.com>
+Date: Fri, 16 Jan 2009 16:32:25 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Hex digits in ACPI HIDs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] trace_workqueue: use percpu data for workqueue stat
+References: <496F25A8.5040303@cn.fujitsu.com> <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com>
+In-Reply-To: <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, everyone!
+Impact: use percpu data instead hardcode
 
-I believe ACPI _HIDs (including PNP IDs) should be all uppercase, 
-including the hex digits A through F. I would like to prepare a patch 
-fixing all occurences of lowercase hex digits in ACPI HIDs.
+Use
+static DEFINE_PER_CPU(struct workqueue_global_stats, all_workqueue_stat);
+instead of allocate it.
 
-My question: Can I send a single patch fixing about 90 occurences in 
-about 25 files or should I prepare a series of patches, one for each 
-file/driver?
+And percpu data works well on NUMA.
 
-Thanks,
-- Philipp Kohlbecher
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index f8118d3..4664990 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -8,6 +8,7 @@
+ 
+ #include <trace/workqueue.h>
+ #include <linux/list.h>
++#include <linux/percpu.h>
+ #include "trace_stat.h"
+ #include "trace.h"
+ 
+@@ -37,7 +38,8 @@ struct workqueue_global_stats {
+ /* Don't need a global lock because allocated before the workqueues, and
+  * never freed.
+  */
+-static struct workqueue_global_stats *all_workqueue_stat;
++static DEFINE_PER_CPU(struct workqueue_global_stats, all_workqueue_stat);
++#define workqueue_cpu_stat(cpu) (&per_cpu(all_workqueue_stat, cpu))
+ 
+ /* Insertion of a work */
+ static void
+@@ -48,8 +50,8 @@ probe_workqueue_insertion(struct task_struct *wq_thread,
+ 	struct cpu_workqueue_stats *node, *next;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	list_for_each_entry_safe(node, next, &all_workqueue_stat[cpu].list,
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
+ 							list) {
+ 		if (node->pid == wq_thread->pid) {
+ 			atomic_inc(&node->inserted);
+@@ -58,7 +60,7 @@ probe_workqueue_insertion(struct task_struct *wq_thread,
+ 	}
+ 	pr_debug("trace_workqueue: entry not found\n");
+ found:
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ }
+ 
+ /* Execution of a work */
+@@ -70,8 +72,8 @@ probe_workqueue_execution(struct task_struct *wq_thread,
+ 	struct cpu_workqueue_stats *node, *next;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	list_for_each_entry_safe(node, next, &all_workqueue_stat[cpu].list,
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
+ 							list) {
+ 		if (node->pid == wq_thread->pid) {
+ 			node->executed++;
+@@ -80,7 +82,7 @@ probe_workqueue_execution(struct task_struct *wq_thread,
+ 	}
+ 	pr_debug("trace_workqueue: entry not found\n");
+ found:
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ }
+ 
+ /* Creation of a cpu workqueue thread */
+@@ -104,11 +106,11 @@ static void probe_workqueue_creation(struct task_struct *wq_thread, int cpu)
+ 
+ 	cws->pid = wq_thread->pid;
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	if (list_empty(&all_workqueue_stat[cpu].list))
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	if (list_empty(&workqueue_cpu_stat(cpu)->list))
+ 		cws->first_entry = true;
+-	list_add_tail(&cws->list, &all_workqueue_stat[cpu].list);
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	list_add_tail(&cws->list, &workqueue_cpu_stat(cpu)->list);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ }
+ 
+ /* Destruction of a cpu workqueue thread */
+@@ -119,8 +121,8 @@ static void probe_workqueue_destruction(struct task_struct *wq_thread)
+ 	struct cpu_workqueue_stats *node, *next;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	list_for_each_entry_safe(node, next, &all_workqueue_stat[cpu].list,
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	list_for_each_entry_safe(node, next, &workqueue_cpu_stat(cpu)->list,
+ 							list) {
+ 		if (node->pid == wq_thread->pid) {
+ 			list_del(&node->list);
+@@ -131,7 +133,7 @@ static void probe_workqueue_destruction(struct task_struct *wq_thread)
+ 
+ 	pr_debug("trace_workqueue: don't find workqueue to destroy\n");
+ found:
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ 
+ }
+ 
+@@ -141,13 +143,13 @@ static struct cpu_workqueue_stats *workqueue_stat_start_cpu(int cpu)
+ 	struct cpu_workqueue_stats *ret = NULL;
+ 
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+ 
+-	if (!list_empty(&all_workqueue_stat[cpu].list))
+-		ret = list_entry(all_workqueue_stat[cpu].list.next,
++	if (!list_empty(&workqueue_cpu_stat(cpu)->list))
++		ret = list_entry(workqueue_cpu_stat(cpu)->list.next,
+ 				 struct cpu_workqueue_stats, list);
+ 
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ 
+ 	return ret;
+ }
+@@ -172,9 +174,9 @@ static void *workqueue_stat_next(void *prev, int idx)
+ 	unsigned long flags;
+ 	void *ret = NULL;
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	if (list_is_last(&prev_cws->list, &all_workqueue_stat[cpu].list)) {
+-		spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	if (list_is_last(&prev_cws->list, &workqueue_cpu_stat(cpu)->list)) {
++		spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ 		for (++cpu ; cpu < num_possible_cpus(); cpu++) {
+ 			ret = workqueue_stat_start_cpu(cpu);
+ 			if (ret)
+@@ -182,7 +184,7 @@ static void *workqueue_stat_next(void *prev, int idx)
+ 		}
+ 		return NULL;
+ 	}
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ 
+ 	return list_entry(prev_cws->list.next, struct cpu_workqueue_stats,
+ 			  list);
+@@ -199,10 +201,10 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 		   cws->executed,
+ 		   trace_find_cmdline(cws->pid));
+ 
+-	spin_lock_irqsave(&all_workqueue_stat[cpu].lock, flags);
+-	if (&cws->list == all_workqueue_stat[cpu].list.next)
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
+ 		seq_printf(s, "\n");
+-	spin_unlock_irqrestore(&all_workqueue_stat[cpu].lock, flags);
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+ 
+ 	return 0;
+ }
+@@ -258,17 +260,9 @@ int __init trace_workqueue_early_init(void)
+ 	if (ret)
+ 		goto no_creation;
+ 
+-	all_workqueue_stat = kmalloc(sizeof(struct workqueue_global_stats)
+-				     * num_possible_cpus(), GFP_KERNEL);
+-
+-	if (!all_workqueue_stat) {
+-		pr_warning("trace_workqueue: not enough memory\n");
+-		goto no_creation;
+-	}
+-
+ 	for_each_possible_cpu(cpu) {
+-		spin_lock_init(&all_workqueue_stat[cpu].lock);
+-		INIT_LIST_HEAD(&all_workqueue_stat[cpu].list);
++		spin_lock_init(&workqueue_cpu_stat(cpu)->lock);
++		INIT_LIST_HEAD(&workqueue_cpu_stat(cpu)->list);
+ 	}
+ 
+ 	return 0;
+
