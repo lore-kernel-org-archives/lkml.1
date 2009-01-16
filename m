@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937755AbZAPWtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936301AbZAPWue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937755AbZAPWtW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 17:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbZAPWtL
+	id S936301AbZAPWue (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 17:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZAPWuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 17:49:11 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48397 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753895AbZAPWtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 17:49:09 -0500
-Date: Sat, 17 Jan 2009 09:49:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, prarit@redhat.com, dhowells@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, sam@ravnborg.org, kyle@mcmartin.ca,
-       tony.luck@intel.com, trond.myklebust@fys.uio.no
-Subject: Re: linux-next: build problem with nfs tree (Was: Re:
- [mmotm][PATCH] fix ia64 build error)
-Message-Id: <20090117094903.bc0c646d.sfr@canb.auug.org.au>
-In-Reply-To: <20090117094008.5a0ce562.sfr@canb.auug.org.au>
-References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
-	<20090116124949.7828a559.sfr@canb.auug.org.au>
-	<20090115175917.8e0ae536.akpm@linux-foundation.org>
-	<20090116134930.68e783aa.sfr@canb.auug.org.au>
-	<20090116153417.891297ca.sfr@canb.auug.org.au>
-	<20090116141557.0a3eaaac.akpm@linux-foundation.org>
-	<20090117094008.5a0ce562.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Fri, 16 Jan 2009 17:50:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49284 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756085AbZAPWuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 17:50:21 -0500
+Date: Fri, 16 Jan 2009 14:49:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] ACPI suspend: Fix compilation warnings in
+ drivers/acpi/sleep.c
+Message-Id: <20090116144933.3ed476f9.akpm@linux-foundation.org>
+In-Reply-To: <200901162309.14778.rjw@sisk.pl>
+References: <200901162309.14778.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__17_Jan_2009_09_49_03_+1100_ijlhoFp_NJgNDsij"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__17_Jan_2009_09_49_03_+1100_ijlhoFp_NJgNDsij
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 16 Jan 2009 23:09:14 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Hi Andrew,
+> Fix two compilation warnings in drivers/acpi/sleep.c, one triggered
+> by unsetting CONFIG_SUSPEND and the other triggered by unsetting
+> CONFIG_HIBERNATION, by moving some code under the appropriate
+> #ifdefs .
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  arch/x86/kernel/acpi/sleep.c |    4 +--
+>  drivers/acpi/sleep.c         |   51 +++++++++++++++++++++----------------------
 
-On Sat, 17 Jan 2009 09:40:08 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> > y:/usr/src/git26> who-committed.sh 2c3fb6b1b1a43ca089032e6523207f6687c9=
-62c1
->=20
-> And that is one I committed myself because Linus' tree is broken.
-
-It also appears as commit d992c8403a72c4067587a32a7736bcc2af6c408f in the
-mfd tree but has not made it into Linus' tree yet.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__17_Jan_2009_09_49_03_+1100_ijlhoFp_NJgNDsij
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklxDt8ACgkQjjKRsyhoI8xXqgCfcCHoLndb77ZH9yDTM71Z7IDh
-6hoAoJ6H6uWGeBc1kMAXEdo80VUD/Lty
-=gsda
------END PGP SIGNATURE-----
-
---Signature=_Sat__17_Jan_2009_09_49_03_+1100_ijlhoFp_NJgNDsij--
+Confused.  drivers/acpi/sleep.c was removed six years ago?
