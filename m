@@ -1,207 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZAPGrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZAPGtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbZAPGrH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 01:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZAPGqt
+	id S1756769AbZAPGtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 01:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZAPGtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 01:46:49 -0500
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:26745 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752127AbZAPGqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 01:46:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=N+My6NzczxXEO7wQlHYojMCQrEwkTnzEa/ptqV3l2P1lKPexP2xxesj2O5ie5WCqfIJ7LKUREaXxjj5M/OAcqpmLB+P86x2hIdtguyRt4GTXIXDCEjf0lqIxcH6754vhnYWt38hN0uJkvxe7ezik72dCxyf4V1n8oy5IxghmGIE=  ;
-X-YMail-OSG: 8phmD90VM1lsq5P02BrA.qDBx6cV8TO4UaH52KLbsvdw9KiziWIQIav3z7sSTFMkk7YMQkRkbxYlSdnY.63FRfIcLX41N9bgDe9i3.BajA_blp3KHy0rpFjC0EglzcwBYCg8vCmZMXi1_kx9wUAJHSGY2ZGPuEXAhA4Fv6RPOXDb1GV3226cErOGJEa6ZrRzMebuZx4i.HJhmPL3quKSrf8BqPHIT.op3d8-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: Mainline kernel OLTP performance update
-Date: Fri, 16 Jan 2009 17:46:23 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: matthew@wil.cx, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901161503.13730.nickpiggin@yahoo.com.au> <20090115201210.ca1a9542.akpm@linux-foundation.org>
-In-Reply-To: <20090115201210.ca1a9542.akpm@linux-foundation.org>
+	Fri, 16 Jan 2009 01:49:43 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:26354 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753226AbZAPGtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 01:49:42 -0500
+Date: Fri, 16 Jan 2009 07:48:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Grant Grundler <grundler@google.com>,
+       Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
+Message-ID: <20090116064818.GS30821@kernel.dk>
+References: <4964866D.8010503@msgid.tls.msk.ru> <1231342473.3282.19.camel@localhost.localdomain> <496ECBA0.60209@gmail.com> <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com> <1232035561.5966.48.camel@localhost.localdomain> <da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com> <1232046039.5966.54.camel@localhost.localdomain> <da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com> <1232061429.5966.87.camel@localhost.localdomain> <Pine.LNX.4.64.0901152341500.15035@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901161746.25205.nickpiggin@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.64.0901152341500.15035@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009 15:12:10 Andrew Morton wrote:
-> On Fri, 16 Jan 2009 15:03:12 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > I would like to see SLQB merged in mainline, made default, and wait for
-> > some number releases. Then we take what we know, and try to make an
-> > informed decision about the best one to take. I guess that is problematic
-> > in that the rest of the kernel is moving underneath us. Do you have
-> > another idea?
->
-> Nope.  If it doesn't work out, we can remove it again I guess.
+On Thu, Jan 15 2009, Hugh Dickins wrote:
+> On Thu, 15 Jan 2009, James Bottomley wrote:
+> > 
+> > OK, so they could be calculated on the fly in the elevators, I suppose.
+> > But what would the value be?  Right now we use the nonrotational flag to
+> > basically not bother with plugging (no point if no seek penalty) on
+> > certain events where we'd previously have waited for other I/O to join.
+> > But that's really a seek penalty parameter rather than the idea of read
+> > or write costing (although the elevators usually track these dynamically
+> > anyway ... as part of the latency calculations but not explicitly).
+> 
+> ... not bother with plugging (no point if no seek penalty) ...
+> 
+> I thought there was considerable advantage to plugging writes
+> (in case they turn out to be adjacent) on current and older
+> generations of non-rotational storage?
 
-OK, I have these numbers to show I'm not completely off my rocker to suggest
-we merge SLQB :) Given these results, how about I ask to merge SLQB as default
-in linux-next, then if nothing catastrophic happens, merge it upstream in the
-next merge window, then a couple of releases after that, given some time to
-test and tweak SLQB, then we plan to bite the bullet and emerge with just one
-main slab allocator (plus SLOB).
+Don't confuse plugging and merging, although one does help the other.
 
+We can essentially divide the current SSD market into two categories -
+queuing and non-queuing. Which also happens to just about the same as
+saying Intel and non-Intel, at least that has been the case since Sep
+'08 and until present time. On the queuing devices, plugging does more
+harm than good. The IO access time is so fast, that delaying for merging
+hurts your performance.
 
-System is a 2socket, 4 core AMD. All debug and stats options turned off for
-all the allocators; default parameters (ie. SLUB using higher order pages,
-and the others tend to be using order-0). SLQB is the version I recently
-posted, with some of the prefetching removed according to Pekka's review
-(probably a good idea to only add things like that in if/when they prove to
-be an improvement).
+For non-queuing devices, I think our current check is a bit too drastic.
+We probably want to change that to
 
-time fio examples/netio (10 runs, lower better):
-SLAB AVG=13.19 STD=0.40
-SLQB AVG=13.78 STD=0.24
-SLUB AVG=14.47 STD=0.23
+int dont_plug(q)
+{
+        return blk_queue_nonrot(q) && blk_queue_tagged(q);
+}
 
-SLAB makes a good showing here. The allocation/freeing pattern seems to be
-very regular and easy (fast allocs and frees). So it could be some "lucky"
-caching behaviour, I'm not exactly sure. I'll have to run more tests and
-profiles here.
+Which is identical to what CFQ tests for idling to avoid read/write
+overlaps which also completely kills performance on the current SSD
+drives (except for Intel, which again shines).
 
-
-hackbench (10 runs, lower better):
-1 GROUP
-SLAB AVG=1.34 STD=0.05
-SLQB AVG=1.31 STD=0.06
-SLUB AVG=1.46 STD=0.07
-
-2 GROUPS
-SLAB AVG=1.20 STD=0.09
-SLQB AVG=1.22 STD=0.12
-SLUB AVG=1.21 STD=0.06
-
-4 GROUPS
-SLAB AVG=0.84 STD=0.05
-SLQB AVG=0.81 STD=0.10
-SLUB AVG=0.98 STD=0.07
-
-8 GROUPS
-SLAB AVG=0.79 STD=0.10
-SLQB AVG=0.76 STD=0.15
-SLUB AVG=0.89 STD=0.08
-
-16 GROUPS
-SLAB AVG=0.78 STD=0.08
-SLQB AVG=0.79 STD=0.10
-SLUB AVG=0.86 STD=0.05
-
-32 GROUPS
-SLAB AVG=0.86 STD=0.05
-SLQB AVG=0.78 STD=0.06
-SLUB AVG=0.88 STD=0.06
-
-64 GROUPS
-SLAB AVG=1.03 STD=0.05
-SLQB AVG=0.90 STD=0.04
-SLUB AVG=1.05 STD=0.06
-
-128 GROUPS
-SLAB AVG=1.31 STD=0.19
-SLQB AVG=1.16 STD=0.36
-SLUB AVG=1.29 STD=0.11
-
-SLQB tends to be the winner here. SLAB is close at lower numbers of
-groups, but drops behind a bit more as they increase.
-
-
-tbench (10 runs, higher better):
-1 THREAD
-SLAB AVG=239.25 STD=31.74
-SLQB AVG=257.75 STD=33.89
-SLUB AVG=223.02 STD=14.73
-
-2 THREADS
-SLAB AVG=649.56 STD=9.77
-SLQB AVG=647.77 STD=7.48
-SLUB AVG=634.50 STD=7.66
-
-4 THREADS
-SLAB AVG=1294.52 STD=13.19
-SLQB AVG=1266.58 STD=35.71
-SLUB AVG=1228.31 STD=48.08
-
-8 THREADS
-SLAB AVG=2750.78 STD=26.67
-SLQB AVG=2758.90 STD=18.86
-SLUB AVG=2685.59 STD=22.41
-
-16 THREADS
-SLAB AVG=2669.11 STD=58.34
-SLQB AVG=2671.69 STD=31.84
-SLUB AVG=2571.05 STD=45.39
-
-SLAB and SLQB seem to be pretty close, winning some and losing some.
-They're always within a standard deviation of one another, so we can't
-make conclusions between them. SLUB seems to be a bit slower.
-
-
-Netperf UDP unidirectional send test (10 runs, higher better):
-
-Server and client bound to same CPU
-SLAB AVG=60.111 STD=1.59382
-SLQB AVG=60.167 STD=0.685347
-SLUB AVG=58.277 STD=0.788328
-
-Server and client bound to same socket, different CPUs
-SLAB AVG=85.938 STD=0.875794
-SLQB AVG=93.662 STD=2.07434
-SLUB AVG=81.983 STD=0.864362
-
-Server and client bound to different sockets
-SLAB AVG=78.801 STD=1.44118
-SLQB AVG=78.269 STD=1.10457
-SLUB AVG=71.334 STD=1.16809
-
-SLQB is up with SLAB for the first and last cases, and faster in
-the second case. SLUB trails in each case. (Any ideas for better types
-of netperf tests?)
-
-
-Kbuild numbers don't seem to be significantly different. SLAB and SLQB
-actually got exactly the same average over 10 runs. The user+sys times
-tend to be almost identical between allocators, with elapsed time mainly
-depending on how much time the CPU was not idle.
-
-
-Intel's OLTP shows SLQB is "neutral" to SLAB. That is, literally within
-their measurement confidence interval. If it comes down to it, I think we
-could get them to do more runs to narrow that down, but we're talking a
-couple of tenths of a percent already.
-
-
-I haven't done any non-local network tests. Networking is the one of the
-subsystems most heavily dependent on slab performance, so if anybody
-cares to run their favourite tests, that would be really helpful.
-
-Disclaimer
-----------
-Now remember this is just one specific HW configuration, and some
-allocators for some reason give significantly (and sometimes perplexingly)
-different results between different CPU and system architectures.
-
-The other frustrating thing is that sometimes you happen to get a lucky
-or unlucky cache or NUMA layout depending on the compile, the boot, etc.
-So sometimes results get a little "skewed" in a way that isn't reflected
-in the STDDEV. But I've tried to minimise that. Dropping caches and
-restarting services etc. between individual runs.
-
+-- 
+Jens Axboe
 
