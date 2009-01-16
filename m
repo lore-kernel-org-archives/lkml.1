@@ -1,132 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932763AbZAPLHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbZAPLJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932763AbZAPLHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbZAPLHT
+	id S932517AbZAPLJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZAPLJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:07:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45055 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754489AbZAPLHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:07:18 -0500
-Date: Fri, 16 Jan 2009 12:07:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH] perf_counter: Add counter enable/disable ioctls
-Message-ID: <20090116110703.GA18165@elte.hu>
-References: <18800.25726.604410.232889@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18800.25726.604410.232889@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 16 Jan 2009 06:09:09 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:56833 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759094AbZAPLJI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:09:08 -0500
+Subject: Re: [PATCH] UBI: add ioctl compatibility
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200901151734.23870.arnd@arndb.de>
+References: <1232036381.25068.10.camel@localhost.localdomain>
+	 <200901151734.23870.arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Jan 2009 13:08:58 +0200
+Message-Id: <1232104138.25068.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Jan 2009 11:08:28.0919 (UTC) FILETIME=[C2A0D870:01C977CA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Impact: New perf_counter features
+On Thu, 2009-01-15 at 17:34 +0100, Arnd Bergmann wrote:
+> On Thursday 15 January 2009, Artem Bityutskiy wrote:
 > 
-> This primarily adds a way for perf_counter users to enable and disable 
-> counters and groups.  Enabling or disabling a counter or group also 
-> enables or disables all of the child counters that have been cloned from 
-> it to monitor children of the task monitored by the top-level counter.  
-> The userspace interface to enable/disable counters is via ioctl on the 
-> counter file descriptor.
+> > would you please glance if this patch all-right?
 > 
-> Along the way this extends the code that handles child counters to 
-> handle child counter groups properly.  A group with multiple counters 
-> will be cloned to child tasks if and only if the group leader has the 
-> hw_event.inherit bit set - if it is set the whole group is cloned as a 
-> group in the child task.
-> 
-> In order to be able to enable or disable all child counters of a given 
-> top-level counter, we need a way to find them all.  Hence I have added a 
-> child_list field to struct perf_counter, which is the head of the list 
-> of children for a top-level counter, or the link in that list for a 
-> child counter.  That list is protected by the perf_counter.mutex field.
-> 
-> This also adds a mutex to the perf_counter_context struct.  Previously 
-> the list of counters was protected just by the lock field in the 
-> context, which meant that perf_counter_init_task had to take that lock 
-> and then take whatever lock/mutex protects the top-level counter's 
-> child_list.  But the counter enable/disable functions need to take that 
-> lock in order to traverse the list, then for each counter take the lock 
-> in that counter's context in order to change the counter's state safely, 
-> which will lead to a deadlock.
-> 
-> To solve this, we now have both a mutex and a spinlock in the context, 
-> and taking either is sufficient to ensure the list of counters can't 
-> change - you have to take both before changing the list.  Now 
-> perf_counter_init_task takes the mutex instead of the lock (which 
-> incidentally means that inherit_counter can use GFP_KERNEL instead of 
-> GFP_ATOMIC) and thus avoids the possible deadlock.  Similarly the new 
-> enable/disable functions can take the mutex while traversing the list of 
-> child counters without incurring a possible deadlock when the counter 
-> manipulation code locks the context for a child counter.
-> 
-> We also had an misfeature that the first counter added to a context 
-> would possibly not go on until the next sched-in, because we were using 
-> ctx->nr_active to detect if the context was running on a CPU. But 
-> nr_active is the number of active counters, and if that was zero 
-> (because the context didn't have any counters yet) it would look like 
-> the context wasn't running on a cpu and so the retry code in 
-> __perf_install_in_context wouldn't retry.  So this adds an 'is_active' 
-> field that is set when the context is on a CPU, even if it has no 
-> counters.  The is_active field is only used for task contexts, not for 
-> per-cpu contexts.
-> 
-> If we enable a subsidiary counter in a group that is active on a CPU, 
-> and the arch code can't enable the counter, then we have to pull the 
-> whole group off the CPU.  We do this with group_sched_out, which gets 
-> moved up in the file so it comes before all its callers.  This also adds 
-> similar logic to __perf_install_in_context so that the "all on, or none" 
-> invariant of groups is preserved when adding a new counter to a group.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> This is not in my git tree yet because I haven't tested these new
-> features (well, it builds and boots and passes simple tests, but I
-> haven't tested the new ioctls yet).
+> No, it's not. New ioctl numbers should not be added to fs/compat_ioctl.c
+> but rather to the file that implements the file operations (ubi/cdev.c).
 
-Okay - please let me know when i can pull it - the extension of counter 
-ops to the 'family' looks nice and desirable.
+Thank you Arnd. Here is the corrected patch. Tested on x68_64 + 32-bit
+UBI tools.
 
-I'm wondering, should it also extend to all members of a group perhaps - 
-or should that be separate ioctls?
+>From 8d1e92e1e277e3f9fb51491b248f3c6cbfc86083 Mon Sep 17 00:00:00 2001
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Fri, 16 Jan 2009 14:08:35 +0200
+Subject: [PATCH] UBI: add ioctl compatibility
 
-It makes sense to individually enable/disable a single counter within a 
-group - including the group leader. So i guess we need 3 variants:
+UBI ioctl's do not work when running 64-bit kernel and 32-bit
+user-land. Fix this by adding the compat_ioctl method.
 
- - disable/enable single counter
- - disable/enable group
- - disable/enable family
+Also, UBI serializes all ioctls, so more than one ioctl at a time,
+and UBI does not seem to depend on anything else, so use
+unlocked_ioctl instead of ioctl (no BKL needed).
 
-We might as well just offer a single variant initially: 'disable/enable 
-everything that can be iterated from that counter', and provide more 
-specialized variants only once the specific need arises?
+Reported-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-> I have to admit to a small element of cargo-cult programming in 
-> __perf_counter_enable and __perf_counter_disable: I put calls to 
-> curr_rq_lock_irq_save/restore in there because I was following the model 
-> of __perf_install_in_context, but I don't know what they do (beyond 
-> disabling/restoring interrupts) or why they are needed.  What are they 
-> there for?
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ drivers/mtd/ubi/cdev.c |   41 ++++++++++++++++++++++-------------------
+ 1 files changed, 22 insertions(+), 19 deletions(-)
 
-That's an ugly detail: we can only observe and update the current task 
-clock with the runqueue lock held. So right now the counter ops are 
-structured so that we first take the rq lock (which implies irq disable as 
-well), and then all sw counters can assume that the rq lock is held.
+diff --git a/drivers/mtd/ubi/cdev.c b/drivers/mtd/ubi/cdev.c
+index a4a6e9a..c5f8a91 100644
+--- a/drivers/mtd/ubi/cdev.c
++++ b/drivers/mtd/ubi/cdev.c
+@@ -402,8 +402,8 @@ static ssize_t vol_cdev_write(struct file *file, const char __user *buf,
+ 	return count;
+ }
+ 
+-static int vol_cdev_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg)
++static long vol_cdev_ioctl(struct file *file, unsigned int cmd,
++			   unsigned long arg)
+ {
+ 	int err = 0;
+ 	struct ubi_volume_desc *desc = file->private_data;
+@@ -803,8 +803,8 @@ out_free:
+ 	return err;
+ }
+ 
+-static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg)
++static long ubi_cdev_ioctl(struct file *file, unsigned int cmd,
++			   unsigned long arg)
+ {
+ 	int err = 0;
+ 	struct ubi_device *ubi;
+@@ -814,7 +814,7 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+ 	if (!capable(CAP_SYS_RESOURCE))
+ 		return -EPERM;
+ 
+-	ubi = ubi_get_by_major(imajor(inode));
++	ubi = ubi_get_by_major(imajor(file->f_mapping->host));
+ 	if (!ubi)
+ 		return -ENODEV;
+ 
+@@ -950,8 +950,8 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+ 	return err;
+ }
+ 
+-static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
+-			   unsigned int cmd, unsigned long arg)
++static long ctrl_cdev_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
+ {
+ 	int err = 0;
+ 	void __user *argp = (void __user *)arg;
+@@ -1029,24 +1029,27 @@ static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
+ 
+ /* UBI control character device operations */
+ const struct file_operations ubi_ctrl_cdev_operations = {
+-	.ioctl = ctrl_cdev_ioctl,
+-	.owner = THIS_MODULE,
++	.owner          = THIS_MODULE,
++	.unlocked_ioctl = ctrl_cdev_ioctl,
++	.compat_ioctl   = ctrl_cdev_ioctl,
+ };
+ 
+ /* UBI character device operations */
+ const struct file_operations ubi_cdev_operations = {
+-	.owner = THIS_MODULE,
+-	.ioctl = ubi_cdev_ioctl,
+-	.llseek = no_llseek,
++	.owner          = THIS_MODULE,
++	.llseek         = no_llseek,
++	.unlocked_ioctl = ubi_cdev_ioctl,
++	.compat_ioctl   = ubi_cdev_ioctl,
+ };
+ 
+ /* UBI volume character device operations */
+ const struct file_operations ubi_vol_cdev_operations = {
+-	.owner   = THIS_MODULE,
+-	.open    = vol_cdev_open,
+-	.release = vol_cdev_release,
+-	.llseek  = vol_cdev_llseek,
+-	.read    = vol_cdev_read,
+-	.write   = vol_cdev_write,
+-	.ioctl   = vol_cdev_ioctl,
++	.owner          = THIS_MODULE,
++	.open           = vol_cdev_open,
++	.release        = vol_cdev_release,
++	.llseek         = vol_cdev_llseek,
++	.read           = vol_cdev_read,
++	.write          = vol_cdev_write,
++	.unlocked_ioctl = vol_cdev_ioctl,
++	.compat_ioctl   = vol_cdev_ioctl,
+ };
+-- 
+1.6.0.6
 
-	Ingo
+
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
