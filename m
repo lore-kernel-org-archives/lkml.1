@@ -1,160 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936559AbZAPTuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765334AbZAPTzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936559AbZAPTuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 14:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZAPTu3
+	id S1765334AbZAPTzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 14:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbZAPTzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 14:50:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52737 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbZAPTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 14:50:28 -0500
-Message-ID: <4970E4FB.7040407@redhat.com>
-Date: Fri, 16 Jan 2009 13:50:19 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 16 Jan 2009 14:55:07 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:60785 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754239AbZAPTzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 14:55:05 -0500
+Message-ID: <4970E614.5040607@sgi.com>
+Date: Fri, 16 Jan 2009 11:55:00 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>
-Subject: [PATCH V3] Allow SysRq emergency thaw to thaw frozen filesystems
-References: <496EB639.6090800@redhat.com> <4970E087.8020308@redhat.com>
-In-Reply-To: <4970E087.8020308@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL}: latest tip/cpus4096 changes
+References: <49704DF6.8040205@sgi.com> <20090116093442.GE4305@elte.hu> <4970BF1C.2020201@goop.org>
+In-Reply-To: <4970BF1C.2020201@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the filesystem freeze operation has been elevated
-to the VFS, and is just an ioctl away, some sort of safety net
-for unintentionally frozen root filesystems may be in order.
+Jeremy Fitzhardinge wrote:
+> Ingo Molnar wrote:
+>>> commit beec9183a43f8a42f5b790326a3b120a3b513590
+>>> Author: Mike Travis <travis@sgi.com>
+>>> Date:   Fri Jan 16 00:22:33 2009 -0800
+>>>
+>>>     xen: reduce static memory usage
+>>>     
+>>
+>> this one looks good in a quick check but please send it to Jeremy
+>> first or get his Ack.
+>>   
+> 
+> Yeah, send me a copy (I can't find it if you already have).
+> 
+> Thanks,
+>    J
 
-The timeout thaw originally proposed did not get merged, but
-perhaps something like this would be useful in emergencies.
+Hi Jeremy,
 
-For example, freeze /path/to/mountpoint may freeze your
-root filesystem if you forgot that you had that unmounted.
+Here tis... Christophe was kind enough to test it for me.  (I believe
+he said you were on vacation, though he did mention that you had some
+changes in the queue?)
 
-I chose 'j' as the last remaining character other than 'h'
-which is sort of reserved for help (because help is generated
-on any unknown character).
+Thanks!
+Mike
+--- 
 
-I've tested this on a non-root fs with multiple (nested) freezers,
-as well as on a system rendered unresponsive due to a frozen
-root fs.
+Subject: xen: reduce static memory usage
 
-(this version fixes a couple small issues raised by Randy Dunlap)
+Impact: reduce memory usage
 
-Thanks,
--Eric
+By allocating the irq_info and irq_bindcount based
+on nr_irqs instead of NR_IRQS, it will contain only
+enough entries as needed by the running system.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+This addresses this memory bump when NR_CPUS bumped
+from 128 to 4096:
+
+  17408   132096  +114688  +658%  irq_info(.bss)
+  17408   132096  +114688  +658%  irq_bindcount(.bss)
+
+This is only effective when CONFIG_SPARSE_IRQS=y.
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+Tested-by: Christophe Saout <christophe@saout.de>
 ---
+ drivers/xen/events.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/char/sysrq.c
-===================================================================
---- linux-2.6.orig/drivers/char/sysrq.c	2009-01-16 13:24:14.688575212 -0600
-+++ linux-2.6/drivers/char/sysrq.c	2009-01-16 13:47:46.169575069 -0600
-@@ -346,6 +346,17 @@ static struct sysrq_key_op sysrq_moom_op
- 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
+--- linux-2.6-for-ingo.orig/drivers/xen/events.c
++++ linux-2.6-for-ingo/drivers/xen/events.c
+@@ -27,6 +27,7 @@
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/bootmem.h>
++#include <linux/irqnr.h>
+ 
+ #include <asm/ptrace.h>
+ #include <asm/irq.h>
+@@ -59,7 +60,7 @@ struct packed_irq
+ 	unsigned char type;
  };
  
-+static void sysrq_handle_thaw(int key, struct tty_struct *tty)
-+{
-+	emergency_thaw_all();
-+}
-+static struct sysrq_key_op sysrq_thaw_op = {
-+	.handler	= sysrq_handle_thaw,
-+	.help_msg	= "thaw-filesystems(J)",
-+	.action_msg	= "Emergency Thaw of all frozen filesystems",
-+	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
-+};
-+
- static void sysrq_handle_kill(int key, struct tty_struct *tty)
- {
- 	send_sig_all(SIGKILL);
-@@ -396,9 +407,9 @@ static struct sysrq_key_op *sysrq_key_ta
- 	&sysrq_moom_op,			/* f */
- 	/* g: May be registered by ppc for kgdb */
- 	NULL,				/* g */
--	NULL,				/* h */
-+	NULL,				/* h - reserved for help */
- 	&sysrq_kill_op,			/* i */
--	NULL,				/* j */
-+	&sysrq_thaw_op,			/* j */
- 	&sysrq_SAK_op,			/* k */
- #ifdef CONFIG_SMP
- 	&sysrq_showallcpus_op,		/* l */
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c	2009-01-16 13:24:15.564575078 -0600
-+++ linux-2.6/fs/buffer.c	2009-01-16 13:47:58.518575938 -0600
-@@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
- }
- EXPORT_SYMBOL(freeze_bdev);
+-static struct packed_irq irq_info[NR_IRQS];
++static struct packed_irq *irq_info;
  
-+void do_thaw_all(unsigned long unused)
-+{
-+	struct super_block *sb;
-+	char b[BDEVNAME_SIZE];
-+
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-+			printk(KERN_WARNING "Emergency Thaw on %s\n",
-+			       bdevname(sb->s_bdev, b));
-+	}
-+	printk(KERN_WARNING "Emergency Thaw complete\n");
-+}
-+
-+/**
-+ * emergency_thaw_all -- forcibly thaw every frozen filesystem
-+ *
-+ * Used for emergency unfreeze of all filesystems via SysRq
-+ */
-+void emergency_thaw_all(void)
-+{
-+	pdflush_operation(do_thaw_all, 0);
-+}
-+
- /**
-  * thaw_bdev  -- unlock filesystem
-  * @bdev:	blockdevice to unlock
-Index: linux-2.6/include/linux/buffer_head.h
-===================================================================
---- linux-2.6.orig/include/linux/buffer_head.h	2009-01-14 15:15:53.320575384 -0600
-+++ linux-2.6/include/linux/buffer_head.h	2009-01-16 13:26:35.394575234 -0600
-@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
- wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
- int fsync_bdev(struct block_device *);
- struct super_block *freeze_bdev(struct block_device *);
-+void emergency_thaw_all(void);
- int thaw_bdev(struct block_device *, struct super_block *);
- int fsync_super(struct super_block *);
- int fsync_no_super(struct block_device *);
-Index: linux-2.6/Documentation/sysrq.txt
-===================================================================
---- linux-2.6.orig/Documentation/sysrq.txt	2009-01-16 13:24:12.943637511 -0600
-+++ linux-2.6/Documentation/sysrq.txt	2009-01-16 13:26:35.436575321 -0600
-@@ -81,6 +81,8 @@ On all -  write a character to /proc/sys
+ /* Binding types. */
+ enum {
+@@ -87,7 +88,7 @@ static inline unsigned long *cpu_evtchn_
+ static u8 cpu_evtchn[NR_EVENT_CHANNELS];
  
- 'i'     - Send a SIGKILL to all processes, except for init.
+ /* Reference counts for bindings to IRQs. */
+-static int irq_bindcount[NR_IRQS];
++static int *irq_bindcount;
  
-+'j'	- Forcibly "Just thaw it" - filesystems frozen by the FIFREEZE ioctl.
+ /* Xen will never allocate port zero for any purpose. */
+ #define VALID_EVTCHN(chn)	((chn) != 0)
+@@ -833,7 +834,10 @@ void __init xen_init_IRQ(void)
+ 	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+ 
+ 	cpu_evtchn_mask_p = alloc_bootmem(size);
+-	BUG_ON(cpu_evtchn_mask_p == NULL);
 +
- 'k'     - Secure Access Key (SAK) Kills all programs on the current virtual
-           console. NOTE: See important comments below in SAK section.
- 
-@@ -160,6 +162,9 @@ t'E'rm and k'I'll are useful if you have
- are unable to kill any other way, especially if it's spawning other
- processes.
- 
-+"'J'ust thaw it" is useful if your system becomes unresponsive due to a frozen
-+(probably root) filesystem via the FIFREEZE ioctl.
++	irq_info = alloc_bootmem(nr_irqs * sizeof(struct packed_irq));
 +
- *  Sometimes SysRq seems to get 'stuck' after using it, what can I do?
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- That happens to me, also. I've found that tapping shift, alt, and control
-
++	irq_bindcount = alloc_bootmem(nr_irqs * sizeof(int));
+ 
+ 	init_evtchn_cpu_bindings();
+ 
