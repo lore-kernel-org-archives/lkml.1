@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbZAPMgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbZAPM3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933235AbZAPMgE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbZAPMfv
+	id S933502AbZAPM3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760869AbZAPM3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:35:51 -0500
-Received: from h155.mvista.com ([63.81.120.155]:47819 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758351AbZAPMft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:35:49 -0500
-Message-ID: <49707F20.4030600@ru.mvista.com>
-Date: Fri, 16 Jan 2009 15:35:44 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 16 Jan 2009 07:29:13 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:50228 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760689AbZAPM3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 07:29:12 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: nbd: add locking to nbd_ioctl
+Date: Fri, 16 Jan 2009 13:29:08 +0100
+User-Agent: KMail/1.9.9
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Paul.Clements@steeleye.com
+References: <20090116115512.GA10771@elf.ucw.cz>
+In-Reply-To: <20090116115512.GA10771@elf.ucw.cz>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Dmitry Gryazin <gdu@mns.spb.ru>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Kirill Smelkov <kirr@mns.spb.ru>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, navy-patches@mns.spb.ru
-Subject: Re: [PATCH] ide: motherboard-info based blacklist for ide-dma
-References: <1230651239-29388-1-git-send-email-kirr@mns.spb.ru> <49611CF4.9030103@ru.mvista.com> <4961478B.9060005@ru.mvista.com> <200901151448.52900.gdu@mns.spb.ru>
-In-Reply-To: <200901151448.52900.gdu@mns.spb.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901161329.08588.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18YaloUI1YFfysscLwX9B2amRJLoPBmskwsqnZ
+ tLdQvYVomfA1AcfgA/Iv2UScyEtaDMlWnuwMRLFVLqRm2sN3CZ
+ tIuynKU8XOHPAxgVicYJA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Friday 16 January 2009, Pavel Machek wrote:
+> The code was written with "oh big kernel lock, please protect me from
+> all the evil" mentality: it does not locks its own data structures, it
+> just hopes that big kernel lock somehow helps.
 
-Dmitry Gryazin wrote:
+If the locking is ok now, can you also move the call to ->ioctl()? instead
+of locked_ioctl()? That would also be a good opportunity to move to
+compat_ioctl() and kill the handlers in fs/compat_ioctl.c.
 
->>>> True.  However it should be possible to handle it correctly by adding
->>>> the
->>>> DMA quirk to the respective host drivers (seems to be via82cxxx.c in
->>>> case of
->>>> IEI PCISA-C3/EDEN).
->>>>         
->>>   Yeah, this seems a viable approach...
->>>       
->>>> Kirill, could you please look into adding such quirk to via82cxxx
->>>> instead?
->>>>
->>>> [ It seems the best place to add it would be via_init_one() as we
->>>> could just
->>>>         
->>>   No, not really -- the issue is not at all as simple as this patch
->>> tried to present it. Looking at its "Quick Startup Reference"
->>> (http://f.ipc2u.ru/files/add/doc/496/M_PCISA-C800EV_ENG.pdf), the EPIC
->>> board has *two* normal IDE connectors in addition to the CF slot
->>> (connected to the secondary port -- and it seems possible that a hard
->>> drive can be connected to the same port as CF), so the right place
->>> seems to rather be in [mu]dma_filter() methods -- and the decision
->>> should be strictly based on the drive type indicating CF, i.e. by
->>> calling ata_id_is_cfa().
->>>       
->
-> As you suggest, we could use the following criterions:
->
->     Board vendor="FIC"		&&
->     Board name="PT-2200"	&&
->     VIA-family IDE controller	&&
->     drive type=CF
->   
-
-   Yes, but in almost exactly opposite order (well one check shoud be added)
-
-    VT82C686 (or whatever) and
-    secondary channel and
-    CFA device and
-    DMI ID is FIC PT2200
-
-> It should work good enough.
->
-> To test it I also tried to install external IDE CF adaptor to the secondary 
-> IDE controller (both master and slave).
-
-   You mean that this adaptor is directly connected to IDE slot with the 
-cable... hm, haven't seen those.
-
-> And it's also identified as CF drive 
-> type. And we turn off DMA for it. But since external CF adaptor could be 
-> wired right, turning DMA off would be incorrect in some cases.
->
-> Yes, _that_ particular external IDE/CF adaptor that we bought, has the same  
-> problem, so turning DMA off on it should be correct. We even decided to 
-> verify ourselves that wrong soldering is the cause of problems, and wired 
-> manually necessary pins, and, voila, DMA works. So the question is:
->
->     Is it right to implement the above-mentioned criterion, which would work 
->     correctly in 99 cases of 100, but will pessimistically turn DMA off in
->     rare cases (e.g. rightly wired external IDE/CF adaptor attached to
->     PCISA/C3), or is the whole problem unsolvable?
->   
-
-   Good question. However, with the on-board CF adapter already present 
-on the seconary channel it seems improbable that the user will need to 
-connect another (external) CF adapter. Even if he'd need it, he'd still 
-be able to use the primary port.
-
-> We could not come up with the right criterion which selects exactly on-board 
-> CF slot, so if there is no satisfactory 100% reliable solution maybe it 
-> doesn't make sense to continue...
->   
-
-   I think it still does make sense.
-
-MBR, Sergei
-
-
+	Arnd <><
