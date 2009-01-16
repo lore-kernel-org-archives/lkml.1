@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761099AbZAPMGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932777AbZAPMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761099AbZAPMGn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbZAPMGe
+	id S932777AbZAPMHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbZAPMHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:06:34 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38882 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756330AbZAPMGe (ORCPT
+	Fri, 16 Jan 2009 07:07:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46041 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756584AbZAPMG7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:06:34 -0500
-Date: Fri, 16 Jan 2009 13:08:43 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Paul.Clements@steeleye.com
-Subject: Re: nbd: add locking to nbd_ioctl
-Message-ID: <20090116120843.GA29971@elf.ucw.cz>
-References: <20090116115512.GA10771@elf.ucw.cz>
+	Fri, 16 Jan 2009 07:06:59 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Simon Holm =?utf-8?q?Th=C3=B8gersen?= <odie@cs.aau.dk>
+Subject: Re: regression: a0d4922 causes PCI host constroller problems
+Date: Fri, 16 Jan 2009 13:06:09 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+References: <1232093125.2876.1.camel@odie.local> <1232097368.3120.5.camel@odie.local>
+In-Reply-To: <1232097368.3120.5.camel@odie.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090116115512.GA10771@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901161306.10358.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-01-16 12:55:12, Pavel Machek wrote:
+On Friday 16 January 2009, Simon Holm Thøgersen wrote:
+> fre, 16 01 2009 kl. 09:05 +0100, skrev Simon Holm Thøgersen:
+> > commit a0d4922 ("USB: fix up suspend and resume for PCI host
+> > controllers") causes a lot of these two lines to be logged:
+> > 
+> > uhci_hcd 0000:00:1d.2: host system error, PCI problems?
+> > uhci_hcd 0000:00:1d.2: host controller process error, something bad
+> > happened!
+> > 
+> > Normally they appear on resume after suspend to disk, but sometimes I'm
+> > not even sure I had to suspend to disk to see them. Also, it seems like
+> > they don't trigger if X has not been started, or at least they are much
+> > less likely to.
+> > 
+> > Reverting the patch restores normal operation.
+> > 
+> > No USB devices were attached BTW.
 > 
-> The code was written with "oh big kernel lock, please protect me from
-> all the evil" mentality: it does not locks its own data structures, it
-> just hopes that big kernel lock somehow helps.
+> So this one has already been reported [1]. There was some mentioning of
+> a patch to try out instead of reverting, but I couldn't find it.
 > 
-> It does not. (My fault).
-> 
-> So this uses tx_lock to protect data structures from concurrent use
-> between ioctl and worker threads.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> Rafael, did you have something else to suggest or can we please get a
+> revert of this one upstream asap before too many are wasting their time
+> on this one?
 
-Ok, it should return -EINVAL at the end of __nbd_ioctl. But Paul, does
-it look ok otherwise?
+Yes, please try the patch from http://lkml.org/lkml/2009/1/13/144 and report
+back.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
