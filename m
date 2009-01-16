@@ -1,82 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbZAPBe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZAPBjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbZAPBe6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:34:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZAPBep
+	id S1761177AbZAPBjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZAPBjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:34:45 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44480 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZAPBeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:34:44 -0500
-Date: Thu, 15 Jan 2009 17:34:43 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090116013443.GH6763@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org> <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain> <20090115180844.GL22472@elte.hu> <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain> <20090116005351.GD6763@linux.vnet.ibm.com> <alpine.LFD.2.00.0901151656060.3118@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901151656060.3118@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 15 Jan 2009 20:39:21 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48262 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbZAPBjU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 20:39:20 -0500
+Date: Fri, 16 Jan 2009 10:38:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
+Message-Id: <20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <496FE30C.1090300@cn.fujitsu.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>
+	<496FE30C.1090300@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 05:01:32PM -0800, Linus Torvalds wrote:
-> On Thu, 15 Jan 2009, Paul E. McKenney wrote:
-> > On Thu, Jan 15, 2009 at 10:16:53AM -0800, Linus Torvalds wrote:
-> > > 
-> > > IOW, if you do pre-allocation instead of holding a lock over the 
-> > > allocation, you win. So yes, spin-mutexes makes it easier to write the 
-> > > code, but it also makes it easier to just plain be lazy.
-> > 
-> > In infrequently invoked code such as some error handling, lazy/simple
-> > can be a big win.
+On Fri, 16 Jan 2009 09:29:48 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> >  /*
+> > - * Dance down the hierarchy if needed to reclaim memory. We remember the
+> > - * last child we reclaimed from, so that we don't end up penalizing
+> > - * one child extensively based on its position in the children list.
+> > + * Visit the first child (need not be the first child as per the ordering
+> > + * of the cgroup list, since we track last_scanned_child) of @mem and use
+> > + * that to reclaim free pages from.
+> > + */
+> > +static struct mem_cgroup *
+> > +mem_cgroup_select_victim(struct mem_cgroup *root_mem)
+> > +{
+> > +	struct mem_cgroup *ret = NULL;
+> > +	struct cgroup_subsys_state *css;
+> > +	int nextid, found;
+> > +
+> > +	if (!root_mem->use_hierarchy) {
+> > +		spin_lock(&root_mem->reclaim_param_lock);
+> > +		root_mem->scan_age++;
+> > +		spin_unlock(&root_mem->reclaim_param_lock);
+> > +		css_get(&root_mem->css);
+> > +		ret = root_mem;
+> > +	}
+> > +
+> > +	while (!ret) {
+> > +		rcu_read_lock();
+> > +		nextid = root_mem->last_scanned_child + 1;
+> > +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
+> > +				   &found);
+> > +		if (css && css_is_populated(css) && css_tryget(css))
 > 
-> Sure. I don't disagree at all. On such code we don't even care about 
-> locking. If it _really_ is fundamentally very rarely invoked.
+> I don't see why you need to check css_is_populated(css) ?
 > 
-> But if we're talking things like core filesystem locks, it's _really_ 
-> irritating when one of those (supposedly rare) allocation delays or the 
-> need to do IO then blocks all those (supposedly common) nice cached cases.
 
-Certainly if there was one big mutex covering all the operations, it would
-indeed be bad.  On the other hand, if the filesystem/cache was partitioned
-(perhaps hashed) so that there was a large number of such locks, then
-if should be OK.  Yes, I am making the perhaps naive assumption that
-hot spots such as the root inode would be in the cache.  And that they
-would rarely collide with allocation or I/O, which might also be naive.
+Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
+Second reason is for avoinding unnecessary calls to try_to_free_pages(),
+it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
 
-But on this point I must defer to the filesystem folks.
+THanks,
+-Kame
 
-> So I don't dispute at all that "mutex with spinning" performs better than 
-> a mutex, but I _do_ claim that it has some potentially huge downsides 
-> compared to a real spinlock. It may perform as well as a spinlock in the 
-> nice common case, but then when you hit the non-common case you see the 
-> difference between well-written code and badly written code.
+> > +			ret = container_of(css, struct mem_cgroup, css);
+> > +
+> > +		rcu_read_unlock();
+> > +		/* Updates scanning parameter */
+> > +		spin_lock(&root_mem->reclaim_param_lock);
+> > +		if (!css) {
+> > +			/* this means start scan from ID:1 */
+> > +			root_mem->last_scanned_child = 0;
+> > +			root_mem->scan_age++;
+> > +		} else
+> > +			root_mem->last_scanned_child = found;
+> > +		spin_unlock(&root_mem->reclaim_param_lock);
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > +
 > 
-> And sadly, while allocations _usually_ are nice and immediate, and while 
-> our caches _usually_ mean that we don't need to do IO, bad behavior when 
-> we do need to do IO is what really kills interactive feel. Suddenly 
-> everything else is hurting too, because they wanted that lock - even if 
-> they didn't need to do IO or allocate anything.
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
-I certainly agree that there are jobs that a spin-mutex is ill-suited for.
-
-							Thanx, Paul
