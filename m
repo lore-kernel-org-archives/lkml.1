@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZAPDBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZAPDKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZAPDBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZAPDBN
+	id S1758240AbZAPDKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZAPDKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:01:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51118 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZAPDBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:01:12 -0500
-Date: Fri, 16 Jan 2009 12:00:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] cgroup:add css_is_populated
-Message-Id: <20090116120001.f37e1895.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 22:10:40 -0500
+Received: from mga01.intel.com ([192.55.52.88]:48676 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754107AbZAPDKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 22:10:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,274,1231142400"; 
+   d="asc'?scan'208";a="422844903"
+Subject: [RFC] per-CPU cryptd thread implementation based on workqueue
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yQm4J2R5nORAQuLHb0py"
+Date: Fri, 16 Jan 2009 11:10:36 +0800
+Message-Id: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li-san, If you don't like this, could you give me an idea for
-"How to check cgroup is fully ready or not" ?
 
-BTW, why "we have a half filled direcotory - oh well" is allowed....
+--=-yQm4J2R5nORAQuLHb0py
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
--Kame
+Hi, Herbert,
+
+The scalability of current cryptd implementation is not good. So a
+per-CPU cryptd kthread implementation is necessary. The per-CPU kthread
+pool implementation need to consider many issues such as CPU hotplug, so
+I suggest to base cryptd kthread implementation on workqueue, that is,
+create a dedicate workqueue for crypto subsystem. This way, chainiv can
+use this crypto workqueue too.
+
+I will implement it if you have no plan to do it yourself.
+
+Best Regards,
+Huang Ying
 
 
+--=-yQm4J2R5nORAQuLHb0py
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-On Thu, 15 Jan 2009 19:27:12 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> cgroup creation is done in several stages.
-> After allocated and linked to cgroup's hierarchy tree, all necessary
-> control files are created.
-> 
-> When using CSS_ID, scanning cgroups without cgrouo_lock(), status
-> of cgroup is important. At removal of cgroup/css, css_tryget() works fine
-> and we can write a safe code. At creation, we need some flag to show 
-> "This cgroup is not ready yet"
-> 
-> This patch adds CSS_POPULATED flag.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
-> Index: mmotm-2.6.29-Jan14/include/linux/cgroup.h
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/include/linux/cgroup.h
-> +++ mmotm-2.6.29-Jan14/include/linux/cgroup.h
-> @@ -69,6 +69,7 @@ struct cgroup_subsys_state {
->  enum {
->  	CSS_ROOT, /* This CSS is the root of the subsystem */
->  	CSS_REMOVED, /* This CSS is dead */
-> +	CSS_POPULATED, /* This CSS finished all initialization */
->  };
->  
->  /*
-> @@ -90,6 +91,11 @@ static inline bool css_is_removed(struct
->  	return test_bit(CSS_REMOVED, &css->flags);
->  }
->  
-> +static inline bool css_is_populated(struct cgroup_subsys_state *css)
-> +{
-> +	return test_bit(CSS_POPULATED, &css->flags);
-> +}
-> +
->  /*
->   * Call css_tryget() to take a reference on a css if your existing
->   * (known-valid) reference isn't already ref-counted. Returns false if
-> Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
-> +++ mmotm-2.6.29-Jan14/kernel/cgroup.c
-> @@ -2326,8 +2326,10 @@ static int cgroup_populate_dir(struct cg
->  	}
->  
->  	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
->  		if (ss->populate && (err = ss->populate(ss, cgrp)) < 0)
->  			return err;
-> +		set_bit(CSS_POPULATED, &css->flags);
->  	}
->  
->  	return 0;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+iEYEABECAAYFAklv+qoACgkQKhFGF+eHlphKzACfQlNVSZUsKiPeCypAnCNlqJxZ
+tGYAoIH/NMlRCMUcGKKGv3dGifeC+WEj
+=Dn+/
+-----END PGP SIGNATURE-----
+
+--=-yQm4J2R5nORAQuLHb0py--
 
