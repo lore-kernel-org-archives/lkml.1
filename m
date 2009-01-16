@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZAPBjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbZAPBl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761177AbZAPBjc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZAPBjV
+	id S1763478AbZAPBl0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZAPBlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:39:21 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48262 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbZAPBjU (ORCPT
+	Thu, 15 Jan 2009 20:41:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753343AbZAPBlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:39:20 -0500
-Date: Fri, 16 Jan 2009 10:38:10 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
-Message-Id: <20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <496FE30C.1090300@cn.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>
-	<496FE30C.1090300@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 20:41:16 -0500
+Date: Thu, 15 Jan 2009 17:40:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] ftrace: fix trace_output
+Message-Id: <20090115174008.935e0391.akpm@linux-foundation.org>
+In-Reply-To: <20090116004121.039250781@goodmis.org>
+References: <20090116004050.273665842@goodmis.org>
+	<20090116004121.039250781@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,71 +31,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 09:29:48 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Thu, 15 Jan 2009 19:40:51 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> >  /*
-> > - * Dance down the hierarchy if needed to reclaim memory. We remember the
-> > - * last child we reclaimed from, so that we don't end up penalizing
-> > - * one child extensively based on its position in the children list.
-> > + * Visit the first child (need not be the first child as per the ordering
-> > + * of the cgroup list, since we track last_scanned_child) of @mem and use
-> > + * that to reclaim free pages from.
-> > + */
-> > +static struct mem_cgroup *
-> > +mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-> > +{
-> > +	struct mem_cgroup *ret = NULL;
-> > +	struct cgroup_subsys_state *css;
-> > +	int nextid, found;
-> > +
-> > +	if (!root_mem->use_hierarchy) {
-> > +		spin_lock(&root_mem->reclaim_param_lock);
-> > +		root_mem->scan_age++;
-> > +		spin_unlock(&root_mem->reclaim_param_lock);
-> > +		css_get(&root_mem->css);
-> > +		ret = root_mem;
-> > +	}
-> > +
-> > +	while (!ret) {
-> > +		rcu_read_lock();
-> > +		nextid = root_mem->last_scanned_child + 1;
-> > +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
-> > +				   &found);
-> > +		if (css && css_is_populated(css) && css_tryget(css))
+> From: Lai Jiangshan <laijs@cn.fujitsu.com>
 > 
-> I don't see why you need to check css_is_populated(css) ?
+> Impact: fix bug for handling partial line
 > 
+> trace_seq_printf(), seq_print_userip_objs(), ... return
+> 0          -- partial line was written
+> other(>0)  -- success
+> 
+> duplicate output is also removed in trace_print_raw().
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/trace/trace_output.c |   65 ++++++++++++++++++++----------------------
+>  kernel/trace/trace_output.h |    4 +-
+>  2 files changed, 33 insertions(+), 36 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+> index df0c25c..4e3ad36 100644
+> --- a/kernel/trace/trace_output.c
+> +++ b/kernel/trace/trace_output.c
+> @@ -440,9 +440,9 @@ trace_fn_raw(struct trace_seq *s, struct trace_entry *entry, int flags)
+>  
+>  	trace_assign_type(field, entry);
+>  
+> -	if (trace_seq_printf(s, "%x %x\n",
+> -			     field->ip,
+> -			     field->parent_ip))
+> +	if (!trace_seq_printf(s, "%x %x\n",
 
-Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
-Second reason is for avoinding unnecessary calls to try_to_free_pages(),
-it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
+"%lx %lx", surely?
 
-THanks,
--Kame
+If trace_seq_printf() had the attribute(printf) thing, it would have warned.
 
-> > +			ret = container_of(css, struct mem_cgroup, css);
-> > +
-> > +		rcu_read_unlock();
-> > +		/* Updates scanning parameter */
-> > +		spin_lock(&root_mem->reclaim_param_lock);
-> > +		if (!css) {
-> > +			/* this means start scan from ID:1 */
-> > +			root_mem->last_scanned_child = 0;
-> > +			root_mem->scan_age++;
-> > +		} else
-> > +			root_mem->last_scanned_child = found;
-> > +		spin_unlock(&root_mem->reclaim_param_lock);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
 
