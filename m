@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbZAPXH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935794AbZAPXJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934323AbZAPXH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 18:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760371AbZAPXHr
+	id S935794AbZAPXJt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761698AbZAPXJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 18:07:47 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:27629 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761464AbZAPXHq (ORCPT
+	Fri, 16 Jan 2009 18:09:40 -0500
+Received: from smtp5.Stanford.EDU ([171.67.219.85]:50237 "EHLO
+	smtp5.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760371AbZAPXJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 18:07:46 -0500
-X-IronPort-AV: E=Sophos;i="4.37,278,1231113600"; 
-   d="scan'208";a="130135458"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 16 Jan 2009 15:07:40 -0800
-Message-ID: <adaiqoedf43.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Jan 2009 23:07:40.0867 (UTC) FILETIME=[3B319130:01C9782F]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Fri, 16 Jan 2009 18:09:39 -0500
+Subject: [Fwd: [LAU] [PATCH] [RT] tasklets: fix typo in tasklet_hi_action]
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 15:09:37 -0800
+Message-Id: <1232147377.3081.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+I don't know if you are aware of this patch (see below), it was
+apparently not xposted to lkml. If fixes the loooong standing midi
+problems in 2.6.26.x. I've tested (not very deeply) and it seems to work
+(and others have also reported success with it). It is not in rt13...
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+-- Fernando
 
-This tree is also available from kernel.org mirrors at:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+-------- Forwarded Message --------
+From: Adam Sampson <ats@offog.org>
+To: linux-rt-users@vger.kernel.org
+Cc: linux-audio-user@lists.linuxaudio.org
+Subject: [LAU] [PATCH] [RT] tasklets: fix typo in tasklet_hi_action
+Date: Sun, 4 Jan 2009 15:20:58 +0000
 
-Some fixes to go into 2.6.29-rc3.  Nothing too urgent so if this takes
-a long time due to LCA, it's not a big deal.  The bulk of things are
-for the ehca driver, to fix warning spew caused by the powerpc u64
-transition from long to long long.
+[l-a-u CCed because we've been talking about this problem there
+recently, and that's what prodded me to do the bisection to track it
+down... fortunately the -rt8 to -rt9 interdiff was pretty small!]
 
-Andrew Morton (1):
-      mlx4_core: Fix min() warning
+Subject: [PATCH] [RT] tasklets: fix typo in tasklet_hi_action
 
-Roland Dreier (4):
-      IPoIB: Fix hang in napi_disable() if P_Key is never found
-      IPoIB: Fix deadlock between ipoib_open() and child interface create
-      IB/mlx4: Fix memory ordering problem when posting LSO sends
-      Merge branches 'ehca', 'ipoib' and 'mlx4' into for-linus
+Fix a typo in tasklet_hi_action -- using the wrong tasklet list when removing
+actions.
 
-Stephen Rothwell (2):
-      IB/ehca: Fix printk format warnings from u64 type change
-      IB/ehca: Use consistent types for ehca_plpar_hcall9()
+This appears to be what was causing the ALSA sequencer device not to work in
+2.6.26 with the RT patch: the sequencer was flaky in -rt1 to -rt8, and just
+hung in -rt9 and later, after tasklets-fix-tasklet_hi_schedule.patch which
+fixed the same typo when adding to the list. I guess that's because before -rt9
+the actions were going onto the wrong list, whereas after -rt9 they were being
+lost entirely once the first one had been performed. It seems happy now,
+anyway.
 
-Yossi Etigin (1):
-      IPoIB: Do not print error messages for multicast join retries
+Signed-off-by: Adam Sampson <ats@offog.org>
 
- drivers/infiniband/hw/ehca/ehca_cq.c           |   16 ++--
- drivers/infiniband/hw/ehca/ehca_hca.c          |    2 +-
- drivers/infiniband/hw/ehca/ehca_irq.c          |   18 ++--
- drivers/infiniband/hw/ehca/ehca_main.c         |    6 +-
- drivers/infiniband/hw/ehca/ehca_mcast.c        |    4 +-
- drivers/infiniband/hw/ehca/ehca_mrmw.c         |  144 ++++++++++++------------
- drivers/infiniband/hw/ehca/ehca_qp.c           |   32 +++---
- drivers/infiniband/hw/ehca/ehca_reqs.c         |    2 +-
- drivers/infiniband/hw/ehca/ehca_sqp.c          |    2 +-
- drivers/infiniband/hw/ehca/ehca_tools.h        |    2 +-
- drivers/infiniband/hw/ehca/ehca_uverbs.c       |    2 +-
- drivers/infiniband/hw/ehca/hcp_if.c            |   56 +++++-----
- drivers/infiniband/hw/mlx4/qp.c                |   28 +++--
- drivers/infiniband/ulp/ipoib/ipoib_main.c      |   27 +++--
- drivers/infiniband/ulp/ipoib/ipoib_multicast.c |    2 +-
- drivers/infiniband/ulp/ipoib/ipoib_vlan.c      |   11 ++-
- drivers/net/mlx4/profile.c                     |    6 +-
- 17 files changed, 189 insertions(+), 171 deletions(-)
+--- linux-2.6.26/kernel/softirq.c_orig	2009-01-04 14:41:06.000000000 +0000
++++ linux-2.6.26/kernel/softirq.c	2009-01-04 14:41:49.000000000 +0000
+@@ -657,7 +657,7 @@
+ 	local_irq_disable();
+ 	list = __get_cpu_var(tasklet_hi_vec).head;
+ 	__get_cpu_var(tasklet_hi_vec).head = NULL;
+-	__get_cpu_var(tasklet_hi_vec).tail = &__get_cpu_var(tasklet_vec).head;
++	__get_cpu_var(tasklet_hi_vec).tail = &__get_cpu_var(tasklet_hi_vec).head;
+ 	local_irq_enable();
+ 
+ 	__tasklet_action(a, list);
+
+
