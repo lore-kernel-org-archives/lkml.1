@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759752AbZAPLAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbZAPLCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759752AbZAPLAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757254AbZAPLAb
+	id S932893AbZAPLCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757254AbZAPLCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:00:31 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40210 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756953AbZAPLAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:00:30 -0500
-Date: Fri, 16 Jan 2009 12:00:29 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       jbenc@suse.cz
-Subject: Re: [patch 42/94] [PATCH 11/44] [CVE-2009-0029] System call wrappers part 01
-Message-ID: <20090116110029.GA28778@atrey.karlin.mff.cuni.cz>
-References: <20090115194806.804618825@mini.kroah.org> <20090115195848.GP14419@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Jan 2009 06:02:04 -0500
+Received: from mga09.intel.com ([134.134.136.24]:1781 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756908AbZAPLCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:02:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,276,1231142400"; 
+   d="scan'208";a="378999149"
+Date: Fri, 16 Jan 2009 12:01:53 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
+       srostedt@redhat.com
+Subject: [patch 4/5] x86, ftrace, hw-branch-tracer: reset trace on close
+Message-ID: <20090116120153.A30291@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20090115195848.GP14419@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Reset the ftrace buffer on close. Since we use cyclic buffers to store
+the trace, the trace is not contiguous, anyway. This behaviour should
+be more natural.
 
-> 2.6.28-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> commit 58fd3aa288939d3097fa04505b25c2f5e6e144d1 upstream.
-> 
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-That does not make review exactly easy. Would it be possible to
-inline upstream comment in the commit message?
+Index: ftrace/kernel/trace/trace_hw_branches.c
+===================================================================
+--- ftrace.orig/kernel/trace/trace_hw_branches.c	2009-01-14 15:26:11.000000000 +0100
++++ ftrace/kernel/trace/trace_hw_branches.c	2009-01-14 15:26:16.000000000 +0100
+@@ -272,6 +272,11 @@
+ 	mutex_unlock(&bts_tracer_mutex);
+ }
+ 
++static void trace_bts_close(struct trace_iterator *iter)
++{
++	tracing_reset_online_cpus(iter->tr);
++}
++
+ void trace_hw_branch_oops(void)
+ {
+ 	mutex_lock(&bts_tracer_mutex);
+@@ -290,7 +295,8 @@
+ 	.print_line	= bts_trace_print_line,
+ 	.start		= bts_trace_start,
+ 	.stop		= bts_trace_stop,
+-	.open		= trace_bts_prepare
++	.open		= trace_bts_prepare,
++	.close		= trace_bts_close
+ };
+ 
+ __init static int init_bts_trace(void)
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-...upstream commit message is empty :-(.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-> -asmlinkage long
-> -sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
-> +SYSCALL_DEFINE2(nanosleep, struct timespec __user *, rqtp,
-> +		struct timespec __user *, rmtp)
->  {
->  	struct timespec tu;
->  
-
-Is it strictly neccessary to modify all the syscalls? 
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
