@@ -1,261 +1,814 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937093AbZAPSQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937128AbZAPSRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937093AbZAPSQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936637AbZAPSLa
+	id S937128AbZAPSRc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936988AbZAPSQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:11:30 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:36108 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936745AbZAPSL0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:11:26 -0500
-Message-ID: <4970CE79.1080002@novell.com>
-Date: Fri, 16 Jan 2009 13:14:17 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Fri, 16 Jan 2009 13:16:42 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36159 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936991AbZAPSQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:16:38 -0500
+Date: Fri, 16 Jan 2009 16:16:11 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH] ftrace interface for blktrace
+Message-ID: <20090116181611.GE6562@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: "Ma, Chinang" <chinang.ma@intel.com>
-CC: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       Steven Rostedt <srostedt@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>	 <20090114163557.11e097f2.akpm@linux-foundation.org>	 <20090115012147.GW29283@parisc-linux.org>	 <20090114180431.f4a96543.akpm@linux-foundation.org>	 <1232028766.5966.10.camel@localhost.localdomain>	 <20090115094442.b6394544.akpm@linux-foundation.org>	 <20090115180052.GG29283@parisc-linux.org> <1232043287.21980.65.camel@localhost.localdomain> <496F8421.3070703@novell.com> <CAC4B8726E86A142B27A9E9A2F2F12479D4403CE@rrsmsx505.amr.corp.intel.com> <BC02C49EEB98354DBA7F5DD76F2A9E8003175EB45B@azsmsx501.amr.corp.intel.com>
-In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E8003175EB45B@azsmsx501.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig23678B990F433679EAC85FC0"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig23678B990F433679EAC85FC0
-Content-Type: multipart/mixed;
- boundary="------------080709000308020607050200"
+Hi Jens,
 
-This is a multi-part message in MIME format.
---------------080709000308020607050200
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+	The patch below adds a ftrace interface for blktrace, allowing
+people to use it without any required userspace tools, using sysfs to setup the
+act_mask, pid, start_lba, end_lba.
 
-Ma, Chinang wrote:
-> Gregory.=20
-> I will test the resched-ipi instrumentation patch with our OLTP if you =
-can post the patch and some instructions.
-> Thanks,
-> -Chinang
->  =20
+	Example usage:
 
-Hi Chinang,
-  Please find a patch attached which applies to linus.git as of today.=20
-You will also want to enable CONFIG_FUNCTION_TRACER as well as the trace
-components.  Here is my system:
+[root@f10-1 ~]# mount -t debugfs none /sys/kernel/debug/
+[root@f10-1 ~]# ls /sys/block/sda/sda1/trace/
+act_mask  enable  end_lba  pid  start_lba
+[root@f10-1 ~]# cat /sys/kernel/debug/tracing/available_tracers 
+blk function_graph wakeup function sched_switch nop
+[root@f10-1 ~]# echo blk > /sys/kernel/debug/tracing/current_tracer 
+[root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace
+# tracer: blk
+#
+# DEV   CPU TIMESTAMP     PID ACT FLG
+#  |     |     |           |   |   |
+[root@f10-1 ~]# echo 1 > /sys/block/sda/sda1/trace/enable 
+[root@f10-1 ~]# tail /sys/kernel/debug/tracing/trace
+  8,1    0   143.070085  1208  P  NS [tail]
+  8,1    0   143.070087  1208  I RBS 4154375 + 8 [tail]
+  8,1    0   143.070091  1208  A WBS 4155391 + 16 <- (8,1) 4155328
+  8,1    0   143.070091  1208  Q   R 4155391 + 16 [tail]
+  8,1    0   143.070094  1208  G  RB 4155391 + 16 [tail]
+  8,1    0   143.070094  1208  I RBS 4155391 + 16 [tail]
+  8,1    0   143.070097  1208  U  WS [tail] 2
+  8,1    0   143.070101  1208  D  WB 4154375 + 8 [tail]
+  8,1    0   143.070341  1208  D  WB 4155391 + 16 [tail]
+  8,1    0   143.070635     0  C  RS 4154375 + 8 [0]
+[root@f10-1 ~]#
 
-ghaskins@dev:~/sandbox/git/linux-2.6-rt> grep TRACE .config
-CONFIG_STACKTRACE_SUPPORT=3Dy
-CONFIG_TRACEPOINTS=3Dy
-CONFIG_HAVE_ARCH_TRACEHOOK=3Dy
-CONFIG_BLK_DEV_IO_TRACE=3Dy
-# CONFIG_TREE_RCU_TRACE is not set
-# CONFIG_PREEMPT_RCU_TRACE is not set
-CONFIG_X86_PTRACE_BTS=3Dy
-# CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
-CONFIG_NETFILTER_XT_TARGET_TRACE=3Dm
-CONFIG_SOUND_TRACEINIT=3Dy
-CONFIG_TRACE_IRQFLAGS_SUPPORT=3Dy
-CONFIG_TRACE_IRQFLAGS=3Dy
-CONFIG_STACKTRACE=3Dy
-# CONFIG_BACKTRACE_SELF_TEST is not set
-CONFIG_USER_STACKTRACE_SUPPORT=3Dy
-CONFIG_NOP_TRACER=3Dy
-CONFIG_HAVE_FUNCTION_TRACER=3Dy
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=3Dy
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=3Dy
-CONFIG_HAVE_DYNAMIC_FTRACE=3Dy
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=3Dy
-CONFIG_HAVE_HW_BRANCH_TRACER=3Dy
-CONFIG_TRACER_MAX_TRACE=3Dy
-CONFIG_FUNCTION_TRACER=3Dy
-CONFIG_FUNCTION_GRAPH_TRACER=3Dy
-CONFIG_IRQSOFF_TRACER=3Dy
-CONFIG_SYSPROF_TRACER=3Dy
-CONFIG_SCHED_TRACER=3Dy
-CONFIG_CONTEXT_SWITCH_TRACER=3Dy
-# CONFIG_BOOT_TRACER is not set
-# CONFIG_TRACE_BRANCH_PROFILING is not set
-CONFIG_POWER_TRACER=3Dy
-CONFIG_STACK_TRACER=3Dy
-CONFIG_HW_BRANCH_TRACER=3Dy
-CONFIG_DYNAMIC_FTRACE=3Dy
-CONFIG_FTRACE_MCOUNT_RECORD=3Dy
-# CONFIG_FTRACE_STARTUP_TEST is not set
-# CONFIG_MMIOTRACE is not set
-# CONFIG_KVM_TRACE is not set
+	Filters can be set using:
 
+[root@f10-1 ~]# echo write,sync > /sys/block/sda/sda1/trace/act_mask 
+[root@f10-1 ~]# cat /sys/block/sda/sda1/trace/act_mask 
+0xa
 
-Then on your booted system, do:
+	One can go on interactively adding more filters, for instance:
 
-echo sched_switch > /sys/kernel/debug/tracing/current_tracer
-echo 1 > /sys/kernel/debug/tracing/tracing_enabled
-$run_oltp && echo 0 > /sys/kernel/debug/tracing/tracing_enabled
+[root@f10-1 ~]# echo `pidof kjournald` > /sys/block/sda/sda1/trace/pid
+[root@f10-1 ~]# cat /sys/block/sda/sda1/trace/pid
+423
 
-(where $run_oltp is your suite)
+	And use the existing ftrace infrastructure to, for instance,
+replicate the btrace (blktrace -o - | blkparse) functionality by simply
+using cat:
 
-Then, email the contents of /sys/kernel/debug/tracing/trace to me
+[root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace_pipe 
+  8,1    0   457.253356   423  A WBS 6335 + 8 <- (8,1) 6272
+  8,1    0   457.253360   423  Q   R 6335 + 8 [kjournald]
+  8,1    0   457.253367   423  G  RB 6335 + 8 [kjournald]
+  8,1    0   457.253372   423  I RBS 6335 + 8 [kjournald]
+  8,1    0   457.253376   423  A WBS 6343 + 8 <- (8,1) 6280
+  8,1    0   457.253376   423  Q   R 6343 + 8 [kjournald]
+  8,1    0   457.253378   423  M   W 6343 + 8 [kjournald]
+  8,1    0   457.253380   423  A WBS 6351 + 8 <- (8,1) 6288
+CONTROL+C
+[root@f10-1 ~]#
 
--Greg
+	This patch was done on Linus tree, I'll now work with it on
+linux-tip so that I can experiment with binary tracing, i.e to ask for
+the output of /sys/kernel/debug/tracing/trace_pipe to be raw, exactly
+the one provide by relayfs based variant, so that we will be able to
+continue using blkparse to validate the trace entries, as a debugging
+aid.
 
+	Also there are other interesting things that one gets from using
+the ftrace infrastructure, such as being able to set see traffic that
+happens in just a cpuset (/sys/kernel/debug/tracing/tracing_cpumask),
+and others that I plan to add such as what Steve did in "[PATCH 2/2]
+ftrace: add stack trace to function tracer", so that we could have
+things like (made up example):
 
---------------080709000308020607050200
-Content-Type: text/x-patch;
- name="instrumentation.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
- filename="instrumentation.patch"
+[root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace_pipe 
+  8,1    0   457.253356   423  A WBS 6335 + 8 <- (8,1) 6272
+  8,1    0   457.253360   423  Q   R 6335 + 8 [kjournald]
+  8,1    0   457.253367   423  G  RB 6335 + 8 [kjournald]
+  8,1    0   457.253372   423  I RBS 6335 + 8 [kjournald]
+ <= sync_buffer
+ <= __wait_on_bit
+ <= out_of_line_wait_on_bit
+ <= __wait_on_buffer
+ <= sync_dirty_buffer
+ <= journal_commit_transaction
+ <= kjournald
+  8,1    0   457.253376   423  A WBS 6343 + 8 <- (8,1) 6280
+  8,1    0   457.253376   423  Q   R 6343 + 8 [kjournald]
+  8,1    0   457.253378   423  M   W 6343 + 8 [kjournald]
+  8,1    0   457.253380   423  A WBS 6351 + 8 <- (8,1) 6288
 
-ftrace instrumentation for RT tasks
+	More polishing is needed, I wrote the patch this way just to
+show where things are different, with new code, for registering the
+tracer, bits stolen from the userspace blktrace, allowing config via
+sysfs at the bottom.
 
-From: Gregory Haskins <ghaskins@novell.com>
+	Ideally we would move this to kernel/trace/block.c, break it
+into smaller self contained patches, etc.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Comments?
 
- arch/x86/kernel/smp.c |    2 ++
- include/linux/sched.h |    6 ++++++
- kernel/sched.c        |    3 +++
- kernel/sched_rt.c     |   10 ++++++++++
- 4 files changed, 21 insertions(+), 0 deletions(-)
+- Arnaldo
 
+ block/blktrace.c      |  578 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/partitions/check.c |    7 
+ 2 files changed, 583 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-index e6faa33..468abeb 100644
---- a/arch/x86/kernel/smp.c
-+++ b/arch/x86/kernel/smp.c
-@@ -118,6 +118,7 @@ static void native_smp_send_reschedule(int cpu)
- 		WARN_ON(1);
+diff --git a/block/blktrace.c b/block/blktrace.c
+index b0a2cae..10985f9 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -25,9 +25,13 @@
+ #include <linux/time.h>
+ #include <trace/block.h>
+ #include <asm/uaccess.h>
++#include <../kernel/trace/trace.h>
+ 
+ static unsigned int blktrace_seq __read_mostly = 1;
+ 
++static struct trace_array *blk_tr;
++static int __read_mostly  blk_tracer_enabled;
++
+ /* Global reference count of probes */
+ static DEFINE_MUTEX(blk_probe_mutex);
+ static atomic_t blk_probes_ref = ATOMIC_INIT(0);
+@@ -43,6 +47,9 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
+ {
+ 	struct blk_io_trace *t;
+ 
++	if (!bt->rchan)
++		return;
++
+ 	t = relay_reserve(bt->rchan, sizeof(*t) + len);
+ 	if (t) {
+ 		const int cpu = smp_processor_id();
+@@ -90,6 +97,9 @@ void __trace_note_message(struct blk_trace *bt, const char *fmt, ...)
+ 	unsigned long flags;
+ 	char *buf;
+ 
++	if (!bt->msg_data)
++		return;
++
+ 	local_irq_save(flags);
+ 	buf = per_cpu_ptr(bt->msg_data, smp_processor_id());
+ 	va_start(args, fmt);
+@@ -131,13 +141,14 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
+ {
+ 	struct task_struct *tsk = current;
++	struct ring_buffer_event *event = NULL;
+ 	struct blk_io_trace *t;
+ 	unsigned long flags;
+ 	unsigned long *sequence;
+ 	pid_t pid;
+ 	int cpu;
+ 
+-	if (unlikely(bt->trace_state != Blktrace_running))
++	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
  		return;
+ 
+ 	what |= ddir_act[rw & WRITE];
+@@ -158,6 +169,25 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 	 */
+ 	local_irq_save(flags);
+ 
++	if (blk_tr) {
++		struct trace_array_cpu *data;
++
++		tracing_record_cmdline(current);
++		cpu = raw_smp_processor_id();
++		data = blk_tr->data[cpu];
++
++		if (unlikely(atomic_read(&data->disabled)))
++			goto out_local_irq_restore;
++
++		event = ring_buffer_lock_reserve(blk_tr->buffer,
++						 sizeof(*t) + pdu_len, &flags);
++		if (!event)
++			goto out_local_irq_restore;
++		
++		t = ring_buffer_event_data(event);
++		goto record_it;
++	}
++
+ 	if (unlikely(tsk->btrace_seq != blktrace_seq))
+ 		trace_note_tsk(bt, tsk);
+ 
+@@ -169,19 +199,26 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
+ 		t->sequence = ++(*sequence);
+ 		t->time = ktime_to_ns(ktime_get());
++		t->cpu = cpu;
++record_it:
+ 		t->sector = sector;
+ 		t->bytes = bytes;
+ 		t->action = what;
+ 		t->pid = pid;
+ 		t->device = bt->dev;
+-		t->cpu = cpu;
+ 		t->error = error;
+ 		t->pdu_len = pdu_len;
+ 
+ 		if (pdu_len)
+ 			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
++
++		if (blk_tr) {
++			ring_buffer_unlock_commit(blk_tr->buffer, event, flags);
++			trace_wake_up();
++		}
  	}
-+	ftrace_printk("cpu %d\n", cpu);
- 	send_IPI_mask(cpumask_of(cpu), RESCHEDULE_VECTOR);
+ 
++out_local_irq_restore:
+ 	local_irq_restore(flags);
  }
-=20
-@@ -171,6 +172,7 @@ static void native_smp_send_stop(void)
-  */
- void smp_reschedule_interrupt(struct pt_regs *regs)
- {
-+	ftrace_printk("NEEDS_RESCHED\n");
- 	ack_APIC_irq();
- 	inc_irq_stat(irq_resched_count);
+ 
+@@ -888,3 +925,540 @@ static void blk_unregister_tracepoints(void)
+ 
+ 	tracepoint_synchronize_unregister();
  }
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4cae9b8..a320692 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2094,8 +2094,14 @@ static inline int test_tsk_thread_flag(struct task=
-_struct *tsk, int flag)
- 	return test_ti_thread_flag(task_thread_info(tsk), flag);
++
++/*
++ * struct blk_io_tracer formatting routines
++ */
++
++static void fill_rwbs(char *rwbs, struct blk_io_trace *t)
++{
++        int i = 0;
++
++        if (t->action & BLK_TC_DISCARD)	   rwbs[i++] = 'D';
++        else if (t->action & BLK_TC_WRITE) rwbs[i++] = 'W';
++        else if (t->bytes)		   rwbs[i++] = 'R';
++        else				   rwbs[i++] = 'N';
++
++        if (t->action & BLK_TC_AHEAD)	   rwbs[i++] = 'A';
++        if (t->action & BLK_TC_BARRIER)	   rwbs[i++] = 'B';
++        if (t->action & BLK_TC_SYNC)	   rwbs[i++] = 'S';
++        if (t->action & BLK_TC_META)	   rwbs[i++] = 'M';
++
++        rwbs[i] = '\0';
++}
++
++static inline void *pdu_start(struct blk_io_trace *t)
++{
++	return t + 1;
++}
++
++static inline u32 t_sec(const struct blk_io_trace *t)
++{
++	return t->bytes >> 9;
++}
++
++static __u64 get_pdu_int(struct blk_io_trace *t)
++{
++	__u64 *val = pdu_start(t);
++
++	return be64_to_cpu(*val);
++}
++
++static void get_pdu_remap(struct blk_io_trace *t, struct blk_io_trace_remap *r)
++{
++	struct blk_io_trace_remap *__r = pdu_start(t);
++	__u64 sector = __r->sector;
++
++	r->device = be32_to_cpu(__r->device);
++	r->device_from = be32_to_cpu(__r->device_from);
++	r->sector = be64_to_cpu(sector);
++}
++
++static int blk_log_action(struct trace_iterator *iter, struct blk_io_trace *t,
++			  const char *act)
++{
++	char rwbs[6];
++	unsigned long long ts	= ns2usecs(iter->ts);
++	unsigned long usec_rem	= do_div(ts, USEC_PER_SEC);
++	unsigned secs		= (unsigned long)ts;
++
++	fill_rwbs(rwbs, t);
++	return trace_seq_printf(&iter->seq,
++				"%3d,%-3d %2d %5d.%06lu %5u %2s %3s ",
++				MAJOR(t->device), MINOR(t->device), iter->cpu,
++				secs, usec_rem, t->pid, act, rwbs);
++}
++
++static int blk_log_generic(struct trace_iterator *iter, struct blk_io_trace *t,
++			   const char *act)
++{
++	int ret = blk_log_action(iter, t, act);
++	if (ret) {
++		const char *cmd = trace_find_cmdline(t->pid);
++
++		if (t_sec(t))
++			ret = trace_seq_printf(&iter->seq, "%llu + %u [%s]\n",
++					       (unsigned long long)t->sector,
++					       t_sec(t), cmd);
++		else
++			ret = trace_seq_printf(&iter->seq, "[%s]\n", cmd);
++	}
++	return ret;
++}
++
++static int blk_log_with_err(struct trace_iterator *iter, struct blk_io_trace *t,
++			    const char *act)
++{
++	int ret = blk_log_action(iter, t, act);
++	if (ret) {
++		if (t_sec(t))
++			ret = trace_seq_printf(&iter->seq, "%llu + %u [%d]\n",
++					       (unsigned long long)t->sector,
++					       t_sec(t), t->error);
++		else
++			ret = trace_seq_printf(&iter->seq, "%llu [%d]\n",
++					       (unsigned long long)t->sector,
++					       t->error);
++	}
++	return ret;
++}
++
++static int blk_log_remap(struct trace_iterator *iter, struct blk_io_trace *t)
++{
++	int ret = blk_log_action(iter, t, "A");
++	if (ret) {
++		struct blk_io_trace_remap r = { .device = 0, };
++
++		get_pdu_remap(t, &r);
++		t->device = r.device_from;
++		ret = trace_seq_printf(&iter->seq, "%llu + %u <- (%d,%d) %llu\n",
++				       (unsigned long long)t->sector,
++				       t_sec(t), MAJOR(r.device), MINOR(r.device),
++				       (unsigned long long)r.sector);
++	}
++	return ret;
++}
++
++static int blk_log_plug(struct trace_iterator *iter, struct blk_io_trace *t)
++{
++	int ret = blk_log_action(iter, t, "P");
++	if (ret)
++		ret = trace_seq_printf(&iter->seq, "[%s]\n",
++				       trace_find_cmdline(t->pid));
++	return ret;
++}
++
++static int blk_log_unplug(struct trace_iterator *iter, struct blk_io_trace *t,
++			  const char *act)
++{
++	int ret = blk_log_action(iter, t, act);
++	if (ret)
++		ret = trace_seq_printf(&iter->seq, "[%s] %u\n",
++				       trace_find_cmdline(t->pid),
++				       get_pdu_int(t));
++	return ret;
++}
++
++static int blk_log_split(struct trace_iterator *iter, struct blk_io_trace *t,
++			 const char *act)
++{
++	int ret = blk_log_action(iter, t, act);
++	if (ret)
++		ret = trace_seq_printf(&iter->seq, "%llu / %u [%s]\n",
++				       (unsigned long long)t->sector,
++				       get_pdu_int(t),
++				       trace_find_cmdline(t->pid));
++	return ret;
++}
++
++/*
++ * struct tracer operations
++ */
++
++static void blk_tracer_print_header(struct seq_file *m)
++{
++	seq_puts(m, "# DEV   CPU TIMESTAMP     PID ACT FLG\n"
++		    "#  |     |     |           |   |   |\n");
++}
++
++static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
++{
++	struct trace_seq *s = &iter->seq;
++	struct blk_io_trace *t = (struct blk_io_trace *)iter->ent;
++	const u16 what = t->action & ((1 << BLK_TC_SHIFT) - 1);
++	int ret;
++
++	switch (what) {
++	case __BLK_TA_ISSUE:	    ret = blk_log_generic(iter, t, "D"); break;
++	case __BLK_TA_INSERT:	    ret = blk_log_generic(iter, t, "I"); break;
++	case __BLK_TA_QUEUE:	    ret = blk_log_generic(iter, t, "Q"); break;
++	case __BLK_TA_BOUNCE:	    ret = blk_log_generic(iter, t, "B"); break;
++	case __BLK_TA_BACKMERGE:    ret = blk_log_generic(iter, t, "M"); break;
++	case __BLK_TA_FRONTMERGE:   ret = blk_log_generic(iter, t, "F"); break;
++	case __BLK_TA_GETRQ:	    ret = blk_log_generic(iter, t, "G"); break;
++	case __BLK_TA_SLEEPRQ:	    ret = blk_log_generic(iter, t, "S"); break;
++	case __BLK_TA_REQUEUE:	    ret = blk_log_with_err(iter, t, "R"); break;
++	case __BLK_TA_COMPLETE:	    ret = blk_log_with_err(iter, t, "C"); break;
++	case __BLK_TA_PLUG:	    ret = blk_log_plug(iter, t); break;
++	case __BLK_TA_UNPLUG_IO:    ret = blk_log_unplug(iter, t, "U"); break;
++	case __BLK_TA_UNPLUG_TIMER: ret = blk_log_unplug(iter, t, "UT"); break;
++	case __BLK_TA_REMAP:	    ret = blk_log_remap(iter, t); break;
++	case __BLK_TA_SPLIT:	    ret = blk_log_split(iter, t, "X"); break;
++	default:
++		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
++		break;
++	}
++
++	if (ret == 0)
++		return TRACE_TYPE_PARTIAL_LINE;
++
++	return TRACE_TYPE_HANDLED;
++}
++
++static void blk_tracer_start(struct trace_array *tr)
++{
++	int cpu;
++
++	tr->time_start = ftrace_now(tr->cpu);
++
++	for_each_online_cpu(cpu)
++		tracing_reset(tr, cpu);
++
++	mutex_lock(&blk_probe_mutex);
++	if (atomic_add_return(1, &blk_probes_ref) == 1)
++		if (blk_register_tracepoints())
++			atomic_dec(&blk_probes_ref);
++	mutex_unlock(&blk_probe_mutex);
++}
++
++static int blk_tracer_init(struct trace_array *tr)
++{
++	blk_tr = tr;
++	blk_tracer_start(tr);
++	mutex_lock(&blk_probe_mutex);
++	blk_tracer_enabled++;
++	mutex_unlock(&blk_probe_mutex);
++	return 0;
++}
++
++static void blk_tracer_stop(struct trace_array *tr)
++{
++	mutex_lock(&blk_probe_mutex);
++	if (atomic_dec_and_test(&blk_probes_ref))
++		blk_unregister_tracepoints();
++	mutex_unlock(&blk_probe_mutex);
++}
++
++static void blk_tracer_reset(struct trace_array *tr)
++{
++	if (!atomic_read(&blk_probes_ref))
++		return;
++
++	mutex_lock(&blk_probe_mutex);
++	blk_tracer_enabled--;
++	WARN_ON(blk_tracer_enabled < 0);
++	mutex_unlock(&blk_probe_mutex);
++
++	blk_tracer_stop(tr);
++}
++
++static struct tracer blk_tracer __read_mostly = {
++	.name		= "blk",
++	.init		= blk_tracer_init,
++	.reset		= blk_tracer_reset,
++	.start		= blk_tracer_start,
++	.stop		= blk_tracer_stop,
++	.print_header	= blk_tracer_print_header,
++	.print_line	= blk_tracer_print_line,
++};
++
++static int __init init_blk_tracer(void)
++{
++	return register_tracer(&blk_tracer);
++}
++
++device_initcall(init_blk_tracer);
++
++static int blk_trace_remove_queue(struct request_queue *q)
++{
++	struct blk_trace *bt;
++
++	bt = xchg(&q->blk_trace, NULL);
++	if (bt == NULL)
++		return -EINVAL;
++
++	kfree(bt);
++	return 0;
++}
++
++/*
++ * Setup everything required to start tracing
++ */
++static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
++{
++	struct blk_trace *old_bt, *bt = NULL;
++	int ret;
++
++	ret = -ENOMEM;
++	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
++	if (!bt)
++		goto err;
++
++	bt->dev = dev;
++	bt->act_mask = (u16)-1;
++	bt->end_lba = -1ULL;
++	bt->trace_state = Blktrace_running;
++
++	old_bt = xchg(&q->blk_trace, bt);
++	if (old_bt != NULL) {
++		(void)xchg(&q->blk_trace, old_bt);
++		kfree(bt);
++		ret = -EBUSY;
++	}
++	return 0;
++err:
++	return ret;
++}
++
++/*
++ * sysfs interface to enable and configure tracing
++ */
++
++static ssize_t sysfs_blk_trace_enable_show(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
++{
++	struct hd_struct *p = dev_to_part(dev);
++	struct block_device *bdev;
++	ssize_t ret = -ENXIO;
++
++	lock_kernel();
++	bdev = bdget(part_devt(p));
++	if (bdev != NULL) {
++		struct request_queue *q = bdev_get_queue(bdev);
++
++		if (q != NULL) {
++			mutex_lock(&bdev->bd_mutex);
++			ret = sprintf(buf, "%u\n", !!q->blk_trace);
++			mutex_unlock(&bdev->bd_mutex);
++		}
++
++		bdput(bdev);
++	}
++
++	unlock_kernel();
++	return ret;
++}
++
++static ssize_t sysfs_blk_trace_enable_store(struct device *dev,
++					    struct device_attribute *attr,
++					    const char *buf, size_t count)
++{
++	struct block_device *bdev;
++	struct request_queue *q;
++	struct hd_struct *p;
++	int value;
++	ssize_t ret = -ENXIO;
++
++	if (count == 0 || sscanf(buf, "%d", &value) != 1)
++		goto out;
++
++	lock_kernel();
++	p = dev_to_part(dev);
++	bdev = bdget(part_devt(p));
++	if (bdev == NULL)
++		goto out_unlock_kernel;
++
++	q = bdev_get_queue(bdev);
++	if (q == NULL)
++		goto out_bdput;
++
++	mutex_lock(&bdev->bd_mutex);
++	if (value)
++		ret = blk_trace_setup_queue(q, bdev->bd_dev);
++	else
++		ret = blk_trace_remove_queue(q);
++	mutex_unlock(&bdev->bd_mutex);
++
++	if (ret == 0)
++		ret = count;
++out_bdput:
++	bdput(bdev);
++out_unlock_kernel:
++	unlock_kernel();
++out:
++	return ret;
++}
++
++static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf);
++static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
++					  struct device_attribute *attr,
++					  const char *buf, size_t count);
++#define BLK_TRACE_DEVICE_ATTR(_name) \
++	DEVICE_ATTR(_name, S_IRUGO | S_IWUSR, \
++		    sysfs_blk_trace_attr_show, \
++		    sysfs_blk_trace_attr_store)
++
++static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR,
++		   sysfs_blk_trace_enable_show, sysfs_blk_trace_enable_store);
++static BLK_TRACE_DEVICE_ATTR(act_mask);
++static BLK_TRACE_DEVICE_ATTR(pid);
++static BLK_TRACE_DEVICE_ATTR(start_lba);
++static BLK_TRACE_DEVICE_ATTR(end_lba);
++
++static struct attribute *blk_trace_attrs[] = {
++	&dev_attr_enable.attr,
++	&dev_attr_act_mask.attr,
++	&dev_attr_pid.attr,
++	&dev_attr_start_lba.attr,
++	&dev_attr_end_lba.attr,
++	NULL
++};
++
++struct attribute_group blk_trace_attr_group = {
++	.name  = "trace",
++	.attrs = blk_trace_attrs,
++};
++
++static int blk_str2act_mask(const char *str)
++{
++	int mask = 0;
++	char *copy = kstrdup(str, GFP_KERNEL), *s;
++
++	if (copy == NULL)
++		return -ENOMEM;
++
++	s = strstrip(copy);
++
++	while (1) {
++		char *sep = strchr(s, ',');
++
++		if (sep != NULL)
++			*sep = '\0';
++
++		if (strcasecmp(s, "barrier") == 0)
++			mask |= BLK_TC_BARRIER;
++		else if (strcasecmp(s, "complete") == 0)
++			mask |= BLK_TC_COMPLETE;
++		else if (strcasecmp(s, "fs") == 0)
++			mask |= BLK_TC_FS;
++		else if (strcasecmp(s, "issue") == 0)
++			mask |= BLK_TC_ISSUE;
++		else if (strcasecmp(s, "pc") == 0)
++			mask |= BLK_TC_PC;
++		else if (strcasecmp(s, "queue") == 0)
++			mask |= BLK_TC_QUEUE;
++		else if (strcasecmp(s, "read") == 0)
++			mask |= BLK_TC_READ;
++		else if (strcasecmp(s, "requeue") == 0)
++			mask |= BLK_TC_REQUEUE;
++		else if (strcasecmp(s, "sync") == 0)
++			mask |= BLK_TC_SYNC;
++		else if (strcasecmp(s, "write") == 0)
++			mask |= BLK_TC_WRITE;
++
++		if (sep == NULL)
++			break;
++
++		s = sep + 1;
++	}
++	kfree(copy);
++
++	return mask;
++}
++
++static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
++{
++	struct hd_struct *p = dev_to_part(dev);
++	struct request_queue *q;
++	struct block_device *bdev;
++	ssize_t ret = -ENXIO;
++
++	lock_kernel();
++	bdev = bdget(part_devt(p));
++	if (bdev == NULL)
++		goto out_unlock_kernel;
++
++	q = bdev_get_queue(bdev);
++	if (q == NULL)
++		goto out_bdput;
++	mutex_lock(&bdev->bd_mutex);
++	if (q->blk_trace == NULL)
++		ret = sprintf(buf, "disabled\n");
++	else if (attr == &dev_attr_act_mask)
++		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
++	else if (attr == &dev_attr_pid)
++		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
++	else if (attr == &dev_attr_start_lba)
++		ret = sprintf(buf, "%llu\n", q->blk_trace->start_lba);
++	else if (attr == &dev_attr_end_lba)
++		ret = sprintf(buf, "%llu\n", q->blk_trace->end_lba);
++	mutex_unlock(&bdev->bd_mutex);
++out_bdput:
++	bdput(bdev);
++out_unlock_kernel:
++	unlock_kernel();
++	return ret;
++}
++
++static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
++					  struct device_attribute *attr,
++					  const char *buf, size_t count)
++{
++	struct block_device *bdev;
++	struct request_queue *q;
++	struct hd_struct *p;
++	u64 value;
++	ssize_t ret = -ENXIO;
++
++	if (count == 0)
++		goto out;
++
++	if (attr == &dev_attr_act_mask) {
++		if (sscanf(buf, "%llx", &value) != 1) {
++			/* Assume it is a list of trace category names */
++			value = blk_str2act_mask(buf);
++			if (value < 0)
++				goto out;
++		}
++	} else if (sscanf(buf, "%llu", &value) != 1)
++		goto out;
++
++	lock_kernel();
++	p = dev_to_part(dev);
++	bdev = bdget(part_devt(p));
++	if (bdev == NULL)
++		goto out_unlock_kernel;
++
++	q = bdev_get_queue(bdev);
++	if (q == NULL)
++		goto out_bdput;
++
++	mutex_lock(&bdev->bd_mutex);
++	ret = 0;
++	if (q->blk_trace == NULL)
++		ret = blk_trace_setup_queue(q, bdev->bd_dev);
++
++	if (ret == 0) {
++		if (attr == &dev_attr_act_mask)
++			q->blk_trace->act_mask = value;
++		else if (attr == &dev_attr_pid)
++			q->blk_trace->pid = value;
++		else if (attr == &dev_attr_start_lba)
++			q->blk_trace->start_lba = value;
++		else if (attr == &dev_attr_end_lba)
++			q->blk_trace->end_lba = value;
++		ret = count;
++	}
++	mutex_unlock(&bdev->bd_mutex);
++out_bdput:
++	bdput(bdev);
++out_unlock_kernel:
++	unlock_kernel();
++out:
++	return ret;
++}
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 6d72024..01714ef 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -268,6 +268,10 @@ ssize_t part_fail_store(struct device *dev,
  }
-=20
-+# define ftrace_printk(fmt...) __ftrace_printk(_THIS_IP_, fmt)
-+extern int
-+__ftrace_printk(unsigned long ip, const char *fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
+ #endif
+ 
++#ifdef CONFIG_BLK_DEV_IO_TRACE
++extern struct attribute_group blk_trace_attr_group;
++#endif
 +
- static inline void set_tsk_need_resched(struct task_struct *tsk)
- {
-+	ftrace_printk("%s/%d\n", tsk->comm, tsk->pid);
- 	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
- }
-=20
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 52bbf1c..d55fcf1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1874,6 +1874,9 @@ void set_task_cpu(struct task_struct *p, unsigned i=
-nt new_cpu)
- 		      *new_cfsrq =3D cpu_cfs_rq(old_cfsrq, new_cpu);
- 	u64 clock_offset;
-=20
-+	ftrace_printk("migrate %s/%d [%d] -> [%d]\n",
-+		      p->comm, p->pid, task_cpu(p), new_cpu);
-+
- 	clock_offset =3D old_rq->clock - new_rq->clock;
-=20
- 	trace_sched_migrate_task(p, task_cpu(p), new_cpu);
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 954e1a8..59cf64b 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1102,6 +1102,8 @@ static int push_rt_task(struct rq *rq)
- 	if (!next_task)
- 		return 0;
-=20
-+	ftrace_printk("attempting push\n");
-+
-  retry:
- 	if (unlikely(next_task =3D=3D rq->curr)) {
- 		WARN_ON(1);
-@@ -1139,6 +1141,8 @@ static int push_rt_task(struct rq *rq)
- 		goto out;
- 	}
-=20
-+	ftrace_printk("%s/%d\n", next_task->comm, next_task->pid);
-+
- 	deactivate_task(rq, next_task, 0);
- 	set_task_cpu(next_task, lowest_rq->cpu);
- 	activate_task(lowest_rq, next_task, 0);
-@@ -1180,6 +1184,8 @@ static int pull_rt_task(struct rq *this_rq)
- 	if (likely(!rt_overloaded(this_rq)))
- 		return 0;
-=20
-+	ftrace_printk("attempting pull\n");
-+
- 	next =3D pick_next_task_rt(this_rq);
-=20
- 	for_each_cpu(cpu, this_rq->rd->rto_mask) {
-@@ -1234,6 +1240,10 @@ static int pull_rt_task(struct rq *this_rq)
-=20
- 			ret =3D 1;
-=20
-+			ftrace_printk("pull %s/%d [%d] -> [%d]\n",
-+				      p->comm, p->pid,
-+				      src_rq->cpu, this_rq->cpu);
-+
- 			deactivate_task(src_rq, p, 0);
- 			set_task_cpu(p, this_cpu);
- 			activate_task(this_rq, p, 0);
-
---------------080709000308020607050200--
-
---------------enig23678B990F433679EAC85FC0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAklwznkACgkQlOSOBdgZUxkTRgCeM5YiPR+fR5/jFBYmufbjUSSb
-ACIAn16gqamBR6NyIp9w5vNLwk/9M4Wt
-=kjU2
------END PGP SIGNATURE-----
-
---------------enig23678B990F433679EAC85FC0--
+ static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
+ static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+@@ -294,6 +298,9 @@ static struct attribute_group part_attr_group = {
+ 
+ static struct attribute_group *part_attr_groups[] = {
+ 	&part_attr_group,
++#ifdef CONFIG_BLK_DEV_IO_TRACE
++	&blk_trace_attr_group,
++#endif
+ 	NULL
+ };
+ 
