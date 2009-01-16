@@ -1,219 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbZAPOXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935653AbZAPOY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933638AbZAPOXt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935256AbZAPOXK
+	id S935653AbZAPOY1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935815AbZAPOX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:23:10 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:38605 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935119AbZAPOXH (ORCPT
+	Fri, 16 Jan 2009 09:23:29 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:22923 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935787AbZAPOX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:23:07 -0500
+	Fri, 16 Jan 2009 09:23:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rU1bGJvZ8qEITQCEQo2hHxh9hW3+J344C/RSBzGDhSjei/pw35yRIrr0UjRO/DvxsY
-         jDW5ZrWMMoQ59Rq4g3mj+MXm5cJhz2HD4NFyU0chebRvxqtDt+qpXv40gCLeXCR8i+6Y
-         oqFAdXFba6epIuTpzAy37TuChOhDh0DpwYXdc=
+        b=vu/COf3WTBvkJgbiDr4KdXsLbKVRcVSYCIoFQDIryGgcQL6ImDSElCP3dk6kiBG519
+         fmhs8fzCke1JnbxnNQJiJDGgdNaf2ZQXcjx9EJU0JUTqxGN58shluldoUFvXL/oMg5UN
+         qtGM4evvhgSg7+gYr3PpoFIRq3EvFEUfM1WC0=
 From: Brian Gerst <brgerst@gmail.com>
 To: Tejun Heo <tj@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Brian Gerst <brgerst@gmail.com>
-Subject: [PATCH 01/17] x86-64: Move irq stats from PDA to per-cpu and consolidate with 32-bit.
-Date: Fri, 16 Jan 2009 09:16:20 -0500
-Message-Id: <1232115396-26367-1-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 09/17] x86-64: Move irqcount from PDA to per-cpu.
+Date: Fri, 16 Jan 2009 09:16:28 -0500
+Message-Id: <1232115396-26367-9-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.1.rc1
-In-Reply-To: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
+In-Reply-To: <1232115396-26367-8-git-send-email-brgerst@gmail.com>
 References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
+ <1232115396-26367-1-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-2-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-3-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-4-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-5-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-6-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-7-git-send-email-brgerst@gmail.com>
+ <1232115396-26367-8-git-send-email-brgerst@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/hardirq_64.h |   24 +++++++++++++++++++-----
- arch/x86/include/asm/pda.h        |   10 ----------
- arch/x86/kernel/irq.c             |    6 +-----
- arch/x86/kernel/irq_64.c          |    3 +++
- arch/x86/kernel/nmi.c             |   10 +---------
- arch/x86/xen/smp.c                |   18 +++---------------
- 6 files changed, 27 insertions(+), 44 deletions(-)
+ arch/x86/include/asm/pda.h       |    2 +-
+ arch/x86/kernel/asm-offsets_64.c |    1 -
+ arch/x86/kernel/cpu/common.c     |    4 ++--
+ arch/x86/kernel/entry_64.S       |   12 ++++++------
+ 4 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/hardirq_64.h b/arch/x86/include/asm/hardirq_64.h
-index b5a6b5d..a65bab2 100644
---- a/arch/x86/include/asm/hardirq_64.h
-+++ b/arch/x86/include/asm/hardirq_64.h
-@@ -3,22 +3,36 @@
- 
- #include <linux/threads.h>
- #include <linux/irq.h>
--#include <asm/pda.h>
- #include <asm/apic.h>
- 
-+typedef struct {
-+	unsigned int __softirq_pending;
-+	unsigned int __nmi_count;	/* arch dependent */
-+	unsigned int apic_timer_irqs;	/* arch dependent */
-+	unsigned int irq0_irqs;
-+	unsigned int irq_resched_count;
-+	unsigned int irq_call_count;
-+	unsigned int irq_tlb_count;
-+	unsigned int irq_thermal_count;
-+	unsigned int irq_spurious_count;
-+	unsigned int irq_threshold_count;
-+} ____cacheline_aligned irq_cpustat_t;
-+
-+DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
-+
- /* We can have at most NR_VECTORS irqs routed to a cpu at a time */
- #define MAX_HARDIRQS_PER_CPU NR_VECTORS
- 
- #define __ARCH_IRQ_STAT 1
- 
--#define inc_irq_stat(member)	add_pda(member, 1)
-+#define inc_irq_stat(member)	percpu_add(irq_stat.member, 1)
- 
--#define local_softirq_pending() read_pda(__softirq_pending)
-+#define local_softirq_pending() percpu_read(irq_stat.__softirq_pending)
- 
- #define __ARCH_SET_SOFTIRQ_PENDING 1
- 
--#define set_softirq_pending(x) write_pda(__softirq_pending, (x))
--#define or_softirq_pending(x)  or_pda(__softirq_pending, (x))
-+#define set_softirq_pending(x) percpu_write(irq_stat.__softirq_pending, (x))
-+#define or_softirq_pending(x)  percpu_or(irq_stat.__softirq_pending, (x))
- 
- extern void ack_bad_irq(unsigned int irq);
- 
 diff --git a/arch/x86/include/asm/pda.h b/arch/x86/include/asm/pda.h
-index 47f274f..69a4075 100644
+index ae23deb..4527d70 100644
 --- a/arch/x86/include/asm/pda.h
 +++ b/arch/x86/include/asm/pda.h
-@@ -25,19 +25,9 @@ struct x8664_pda {
- 	char *irqstackptr;
- 	short nodenumber;		/* number of current node (32k max) */
- 	short in_bootmem;		/* pda lives in bootmem */
--	unsigned int __softirq_pending;
--	unsigned int __nmi_count;	/* number of NMI on this CPUs */
- 	short mmu_state;
- 	short isidle;
- 	struct mm_struct *active_mm;
--	unsigned apic_timer_irqs;
--	unsigned irq0_irqs;
--	unsigned irq_resched_count;
--	unsigned irq_call_count;
--	unsigned irq_tlb_count;
--	unsigned irq_thermal_count;
--	unsigned irq_threshold_count;
--	unsigned irq_spurious_count;
- } ____cacheline_aligned_in_smp;
+@@ -15,7 +15,7 @@ struct x8664_pda {
+ 	unsigned long unused2;
+ 	unsigned long unused3;
+ 	unsigned long unused4;
+-	int irqcount;			/* 32 Irq nesting counter. Starts -1 */
++	int unused5;
+ 	unsigned int unused6;		/* 36 was cpunumber */
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 	unsigned long stack_canary;	/* 40 stack canary value */
+diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
+index 6a13983..fbc6045 100644
+--- a/arch/x86/kernel/asm-offsets_64.c
++++ b/arch/x86/kernel/asm-offsets_64.c
+@@ -48,7 +48,6 @@ int main(void)
+ 	BLANK();
+ #undef ENTRY
+ #define ENTRY(entry) DEFINE(pda_ ## entry, offsetof(struct x8664_pda, entry))
+-	ENTRY(irqcount);
+ 	DEFINE(pda_size, sizeof(struct x8664_pda));
+ 	BLANK();
+ #undef ENTRY
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index f653860..62f9665 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -888,6 +888,8 @@ DEFINE_PER_CPU(unsigned long, kernelstack) = (unsigned long)&init_thread_union -
+ 					      KERNELSTACK_OFFSET + THREAD_SIZE;
+ EXPORT_PER_CPU_SYMBOL(kernelstack);
  
- DECLARE_PER_CPU(struct x8664_pda, __pda);
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 3973e2d..8b30d0c 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -36,11 +36,7 @@ void ack_bad_irq(unsigned int irq)
- #endif
- }
- 
--#ifdef CONFIG_X86_32
--# define irq_stats(x)		(&per_cpu(irq_stat, x))
--#else
--# define irq_stats(x)		cpu_pda(x)
--#endif
-+#define irq_stats(x)		(&per_cpu(irq_stat, x))
- /*
-  * /proc/interrupts printing:
-  */
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index 0b21cb1..1db0524 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -19,6 +19,9 @@
- #include <asm/io_apic.h>
- #include <asm/idle.h>
- 
-+DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-+EXPORT_PER_CPU_SYMBOL(irq_stat);
++DEFINE_PER_CPU(unsigned int, irqcount) = -1;
 +
- /*
-  * Probabilistic stack overflow check:
-  *
-diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-index 7228979..23b6d9e 100644
---- a/arch/x86/kernel/nmi.c
-+++ b/arch/x86/kernel/nmi.c
-@@ -61,11 +61,7 @@ static int endflag __initdata;
- 
- static inline unsigned int get_nmi_count(int cpu)
+ void __cpuinit pda_init(int cpu)
  {
--#ifdef CONFIG_X86_64
--	return cpu_pda(cpu)->__nmi_count;
--#else
--	return nmi_count(cpu);
--#endif
-+	return per_cpu(irq_stat, cpu).__nmi_count;
- }
+ 	struct x8664_pda *pda = cpu_pda(cpu);
+@@ -898,8 +900,6 @@ void __cpuinit pda_init(int cpu)
  
- static inline int mce_in_progress(void)
-@@ -82,12 +78,8 @@ static inline int mce_in_progress(void)
-  */
- static inline unsigned int get_timer_irqs(int cpu)
- {
--#ifdef CONFIG_X86_64
--	return read_pda(apic_timer_irqs) + read_pda(irq0_irqs);
--#else
- 	return per_cpu(irq_stat, cpu).apic_timer_irqs +
- 		per_cpu(irq_stat, cpu).irq0_irqs;
--#endif
- }
+ 	load_pda_offset(cpu);
  
- #ifdef CONFIG_SMP
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 3bfd6dd..9ff3b09 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -50,11 +50,7 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id);
-  */
- static irqreturn_t xen_reschedule_interrupt(int irq, void *dev_id)
- {
--#ifdef CONFIG_X86_32
--	__get_cpu_var(irq_stat).irq_resched_count++;
--#else
--	add_pda(irq_resched_count, 1);
--#endif
-+	inc_irq_stat(irq_resched_count);
- 
- 	return IRQ_HANDLED;
- }
-@@ -435,11 +431,7 @@ static irqreturn_t xen_call_function_interrupt(int irq, void *dev_id)
- {
- 	irq_enter();
- 	generic_smp_call_function_interrupt();
--#ifdef CONFIG_X86_32
--	__get_cpu_var(irq_stat).irq_call_count++;
--#else
--	add_pda(irq_call_count, 1);
--#endif
-+	inc_irq_stat(irq_call_count);
- 	irq_exit();
- 
- 	return IRQ_HANDLED;
-@@ -449,11 +441,7 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id)
- {
- 	irq_enter();
- 	generic_smp_call_function_single_interrupt();
--#ifdef CONFIG_X86_32
--	__get_cpu_var(irq_stat).irq_call_count++;
--#else
--	add_pda(irq_call_count, 1);
--#endif
-+	inc_irq_stat(irq_call_count);
- 	irq_exit();
- 
- 	return IRQ_HANDLED;
+-	pda->irqcount = -1;
+-
+ 	if (cpu != 0) {
+ 		if (pda->nodenumber == 0 && cpu_to_node(cpu) != NUMA_NO_NODE)
+ 			pda->nodenumber = cpu_to_node(cpu);
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 1331fd2..c97a1b5 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -342,7 +342,7 @@ ENTRY(save_args)
+ 	 * a little cheaper to use a separate counter in the PDA (short of
+ 	 * moving irq_enter into assembly, which would be too much work)
+ 	 */
+-1:	incl %gs:pda_irqcount
++1:	incl PER_CPU_VAR(irqcount)
+ 	jne 2f
+ 	popq_cfi %rax			/* move return address... */
+ 	mov PER_CPU_VAR(irqstackptr),%rsp
+@@ -837,7 +837,7 @@ common_interrupt:
+ ret_from_intr:
+ 	DISABLE_INTERRUPTS(CLBR_NONE)
+ 	TRACE_IRQS_OFF
+-	decl %gs:pda_irqcount
++	decl PER_CPU_VAR(irqcount)
+ 	leaveq
+ 	CFI_DEF_CFA_REGISTER	rsp
+ 	CFI_ADJUST_CFA_OFFSET	-8
+@@ -1260,14 +1260,14 @@ ENTRY(call_softirq)
+ 	CFI_REL_OFFSET rbp,0
+ 	mov  %rsp,%rbp
+ 	CFI_DEF_CFA_REGISTER rbp
+-	incl %gs:pda_irqcount
++	incl PER_CPU_VAR(irqcount)
+ 	cmove PER_CPU_VAR(irqstackptr),%rsp
+ 	push  %rbp			# backlink for old unwinder
+ 	call __do_softirq
+ 	leaveq
+ 	CFI_DEF_CFA_REGISTER	rsp
+ 	CFI_ADJUST_CFA_OFFSET   -8
+-	decl %gs:pda_irqcount
++	decl PER_CPU_VAR(irqcount)
+ 	ret
+ 	CFI_ENDPROC
+ END(call_softirq)
+@@ -1297,7 +1297,7 @@ ENTRY(xen_do_hypervisor_callback)   # do_hypervisor_callback(struct *pt_regs)
+ 	movq %rdi, %rsp            # we don't return, adjust the stack frame
+ 	CFI_ENDPROC
+ 	DEFAULT_FRAME
+-11:	incl %gs:pda_irqcount
++11:	incl PER_CPU_VAR(irqcount)
+ 	movq %rsp,%rbp
+ 	CFI_DEF_CFA_REGISTER rbp
+ 	cmovzq PER_CPU_VAR(irqstackptr),%rsp
+@@ -1305,7 +1305,7 @@ ENTRY(xen_do_hypervisor_callback)   # do_hypervisor_callback(struct *pt_regs)
+ 	call xen_evtchn_do_upcall
+ 	popq %rsp
+ 	CFI_DEF_CFA_REGISTER rsp
+-	decl %gs:pda_irqcount
++	decl PER_CPU_VAR(irqcount)
+ 	jmp  error_exit
+ 	CFI_ENDPROC
+ END(do_hypervisor_callback)
 -- 
 1.6.1.rc1
 
