@@ -1,145 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936066AbZAPCaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935198AbZAPChZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936066AbZAPCaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbZAPCaI
+	id S935198AbZAPChZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbZAPChG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:30:08 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:65489 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755240AbZAPCaG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:30:06 -0500
-Date: Fri, 16 Jan 2009 11:25:07 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>
-Subject: Re: [BUGFIX][PATCH] memcg: get/put parents at create/free
-Message-Id: <20090116112507.701e044d.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090116111702.fba37439.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
-	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
-	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
-	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
-	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
-	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
-	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
-	<20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
-	<20090115181243.8dad9052.akpm@linux-foundation.org>
-	<20090116111702.fba37439.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 21:37:06 -0500
+Received: from mga11.intel.com ([192.55.52.93]:23282 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759260AbZAPChE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:37:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,274,1231142400"; 
+   d="asc'?scan'208";a="422838138"
+Subject: Re: [PATCH crypto -v4 2/2] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: roel kluin <roel.kluin@gmail.com>,
+       Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090116015356.GA9822@gondor.apana.org.au>
+References: <1232008119.5937.200.camel@yhuang-dev.sh.intel.com>
+	 <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com>
+	 <1232068858.5937.222.camel@yhuang-dev.sh.intel.com>
+	 <20090116015356.GA9822@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dnnTInnrSLItRgHTp1M3"
+Date: Fri, 16 Jan 2009 10:37:02 +0800
+Message-Id: <1232073422.13948.3.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 11:17:02 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 15 Jan 2009 18:12:43 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 16 Jan 2009 10:50:09 +0900 Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > This version works well in my test.
-> > > 
-> > > Andrew, please pick up this one.
-> > > 
-> > > ===
-> > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > > 
-> > > The lifetime of struct cgroup and struct mem_cgroup is different and
-> > > mem_cgroup has its own reference count for handling references from swap_cgroup.
-> > > 
-> > > This causes strange problem that the parent mem_cgroup dies while
-> > > child mem_cgroup alive, and this problem causes a bug in case of use_hierarchy==1
-> > > because res_counter_uncharge climbs up the tree.
-> > > 
-> > > This patch is for avoiding it by getting the parent at create, and
-> > > putting it at freeing.
-> > > 
-> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > > Reviewed-by; KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > ---
-> > >  mm/memcontrol.c |   23 ++++++++++++++++++++++-
-> > >  1 files changed, 22 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > > index fb62b43..45e1b51 100644
-> > > --- a/mm/memcontrol.c
-> > > +++ b/mm/memcontrol.c
-> > > @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
-> > >  
-> > >  static void mem_cgroup_get(struct mem_cgroup *mem);
-> > >  static void mem_cgroup_put(struct mem_cgroup *mem);
-> > > +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
-> > > +static void mem_cgroup_get_parent(struct mem_cgroup *mem);
-> > >  
-> > >  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
-> > >  					 struct page_cgroup *pc,
-> > > @@ -2185,10 +2187,28 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
-> > >  
-> > >  static void mem_cgroup_put(struct mem_cgroup *mem)
-> > >  {
-> > > -	if (atomic_dec_and_test(&mem->refcnt))
-> > > +	if (atomic_dec_and_test(&mem->refcnt)) {
-> > > +		struct mem_cgroup *parent = parent_mem_cgroup(mem);
-> > >  		__mem_cgroup_free(mem);
-> > > +		if (parent)
-> > > +			mem_cgroup_put(parent);
-> > > +	}
-> > > +}
-> > > +
-> > > +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
-> > > +{
-> > > +	if (!mem->res.parent)
-> > > +		return NULL;
-> > > +	return mem_cgroup_from_res_counter(mem->res.parent, res);
-> > >  }
-> > >  
-> > > +static void mem_cgroup_get_parent(struct mem_cgroup *mem)
-> > > +{
-> > > +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
-> > > +
-> > > +	if (parent)
-> > > +		mem_cgroup_get(parent);
-> > > +}
-> > >  
-> > >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> > >  static void __init enable_swap_cgroup(void)
-> > > @@ -2237,6 +2257,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
-> > >  	if (parent)
-> > >  		mem->swappiness = get_swappiness(parent);
-> > >  	atomic_set(&mem->refcnt, 1);
-> > > +	mem_cgroup_get_parent(mem);
-> > >  	return &mem->css;
-> > >  free_out:
-> > >  	__mem_cgroup_free(mem);
-> > 
-> > It seems strange that we add a little helper function for the get(),
-> > but open-code the put()?
-> > 
-> Maybe I don't feel this as strange because I saw update history of this patch ;(
-> As you pointed out, I like open-code rather than helper here. Nishimura-san,
-> could you update ?
-> 
-Sure.
 
-The patch has gone into mmotm already, so I'll send a fix patch.
+--=-dnnTInnrSLItRgHTp1M3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-please wait for a while
+On Fri, 2009-01-16 at 09:53 +0800, Herbert Xu wrote:
+> On Fri, Jan 16, 2009 at 09:20:58AM +0800, Huang Ying wrote:
+> > On Thu, 2009-01-15 at 17:47 +0800, roel kluin wrote:
+> >
+> > > > +       kernel_fpu_begin();
+> > > > +       while ((nbytes =3D walk.nbytes)) {
+> > > > +               aesni_ecb_enc(ctx, walk.dst.virt.addr, walk.src.vir=
+t.addr,
+> > > > +                             nbytes & AES_BLOCK_MASK);
+> > > > +               nbytes &=3D AES_BLOCK_SIZE - 1;
+> > > > +               err =3D blkcipher_walk_done(desc, &walk, nbytes);
+> > > > +       }
+> > > > +       kernel_fpu_end();
+> > > > +
+> > > > +       return err;
+> > > > +}
+> > >=20
+> > > if blkcipher_walk_{virt,done} returns an error, don't we have to brea=
+k
+> > > out of the loop?
+> > > i.e.
+> > >=20
+> > > while (!err && (nbytes =3D walk.nbytes))
+> > >=20
+> > > (if that's erroneous, it occurs in other places as well)
+>=20
+> That's not necessary because blkcipher_walk_done will ensure
+> that walk.nbytes =3D=3D 0 if there is an error.
+
+But after checking blkcipher_walk_done() in 2.6.28, If input argument
+err !=3D 0 and walk->flags & BLKCIPHER_WALK_SLOW !=3D 0, when
+blkcipher_walk_done() return non-zero, walk->nbytes !=3D 0. So I think it
+is a little fragile to use walk->nbytes =3D=3D 0 indicate error.
+
+int blkcipher_walk_done(struct blkcipher_desc *desc,
+                        struct blkcipher_walk *walk, int err)
+{
+        struct crypto_blkcipher *tfm =3D desc->tfm;
+        unsigned int nbytes =3D 0;
+
+        if (likely(err >=3D 0)) {
+                unsigned int n =3D walk->nbytes - err;
+
+                if (likely(!(walk->flags & BLKCIPHER_WALK_SLOW)))
+                        n =3D blkcipher_done_fast(walk, n);
+                else if (WARN_ON(err)) {
+                        err =3D -EINVAL;
+                        goto err;
+                } else
+                        n =3D blkcipher_done_slow(tfm, walk, n);
+
+                nbytes =3D walk->total - n;
+                err =3D 0;
+        }
+
+        scatterwalk_done(&walk->in, 0, nbytes);
+        scatterwalk_done(&walk->out, 1, nbytes);
+
+        walk->total =3D nbytes;
+        walk->nbytes =3D nbytes;
+
+        if (nbytes) {
+                crypto_yield(desc->flags);
+                return blkcipher_walk_next(desc, walk);
+        }
+
+err:
+        if (walk->iv !=3D desc->info)
+                memcpy(desc->info, walk->iv, crypto_blkcipher_ivsize(tfm));
+        if (walk->buffer !=3D walk->page)
+                kfree(walk->buffer);
+        if (walk->page)
+                free_page((unsigned long)walk->page);
+
+        return err;
+}
+
+Best Regards,
+Huang Ying
 
 
-Thanks,
-Daisuke Nishimura.
+--=-dnnTInnrSLItRgHTp1M3
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklv8ssACgkQKhFGF+eHlpjOygCgnZuYT7QNMMl15UqATpV8gIiN
+gfsAnA3qxwVDxxgaxIMcxYYdOhwVV2w5
+=ocqV
+-----END PGP SIGNATURE-----
+
+--=-dnnTInnrSLItRgHTp1M3--
+
