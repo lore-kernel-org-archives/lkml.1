@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936939AbZAPSOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936710AbZAPSP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936939AbZAPSOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932450AbZAPSIb
+	id S936710AbZAPSP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763957AbZAPSJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:08:31 -0500
-Received: from styx.suse.cz ([82.119.242.94]:47996 "EHLO mail.suse.cz"
+	Fri, 16 Jan 2009 13:09:08 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47997 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762793AbZAPSIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:08:24 -0500
+	id S1761814AbZAPSIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:08:23 -0500
 From: Jan Kara <jack@suse.cz>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 08/11] quota: Move EXPORT_SYMBOL immediately next to the functions/varibles
-Date: Fri, 16 Jan 2009 19:08:16 +0100
-Message-Id: <1232129299-22018-9-git-send-email-jack@suse.cz>
+       Jan Kara <jack@suse.cz>
+Subject: [PATCH 10/11] ext4: Remove unnecessary quota functions
+Date: Fri, 16 Jan 2009 19:08:18 +0100
+Message-Id: <1232129299-22018-11-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1232129299-22018-8-git-send-email-jack@suse.cz>
+In-Reply-To: <1232129299-22018-10-git-send-email-jack@suse.cz>
 References: <yes>
  <1232129299-22018-1-git-send-email-jack@suse.cz>
  <1232129299-22018-2-git-send-email-jack@suse.cz>
@@ -27,328 +27,89 @@ References: <yes>
  <1232129299-22018-6-git-send-email-jack@suse.cz>
  <1232129299-22018-7-git-send-email-jack@suse.cz>
  <1232129299-22018-8-git-send-email-jack@suse.cz>
+ <1232129299-22018-9-git-send-email-jack@suse.cz>
+ <1232129299-22018-10-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mingming Cao <cmm@us.ibm.com>
+ext4_dquot_initialize() and ext4_dquot_drop() is no longer
+needed because of modified quota locking.
 
-According to checkpatch: EXPORT_SYMBOL(foo); should immediately follow its
- function/variable
-
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/dquot.c |   69 ++++++++++++++++++++++++++++-------------------------------
- 1 files changed, 33 insertions(+), 36 deletions(-)
+ fs/ext4/super.c |   44 ++------------------------------------------
+ 1 files changed, 2 insertions(+), 42 deletions(-)
 
-diff --git a/fs/dquot.c b/fs/dquot.c
-index 2916f91..28aa146 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -132,6 +132,7 @@
- static DEFINE_SPINLOCK(dq_list_lock);
- static DEFINE_SPINLOCK(dq_state_lock);
- DEFINE_SPINLOCK(dq_data_lock);
-+EXPORT_SYMBOL(dq_data_lock);
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index e5f06a5..f0785fd 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -926,8 +926,6 @@ static int bdev_try_to_free_page(struct super_block *sb, struct page *page, gfp_
+ #define QTYPE2NAME(t) ((t) == USRQUOTA ? "user" : "group")
+ #define QTYPE2MOPT(on, t) ((t) == USRQUOTA?((on)##USRJQUOTA):((on)##GRPJQUOTA))
  
- static char *quotatypes[] = INITQFNAMES;
- static struct quota_format_type *quota_formats;	/* List of registered formats */
-@@ -148,6 +149,7 @@ int register_quota_format(struct quota_format_type *fmt)
- 	spin_unlock(&dq_list_lock);
- 	return 0;
+-static int ext4_dquot_initialize(struct inode *inode, int type);
+-static int ext4_dquot_drop(struct inode *inode);
+ static int ext4_write_dquot(struct dquot *dquot);
+ static int ext4_acquire_dquot(struct dquot *dquot);
+ static int ext4_release_dquot(struct dquot *dquot);
+@@ -942,8 +940,8 @@ static ssize_t ext4_quota_write(struct super_block *sb, int type,
+ 				const char *data, size_t len, loff_t off);
+ 
+ static struct dquot_operations ext4_quota_operations = {
+-	.initialize	= ext4_dquot_initialize,
+-	.drop		= ext4_dquot_drop,
++	.initialize	= dquot_initialize,
++	.drop		= dquot_drop,
+ 	.alloc_space	= dquot_alloc_space,
+ 	.alloc_inode	= dquot_alloc_inode,
+ 	.free_space	= dquot_free_space,
+@@ -3378,44 +3376,6 @@ static inline struct inode *dquot_to_inode(struct dquot *dquot)
+ 	return sb_dqopt(dquot->dq_sb)->files[dquot->dq_type];
  }
-+EXPORT_SYMBOL(register_quota_format);
  
- void unregister_quota_format(struct quota_format_type *fmt)
- {
-@@ -159,6 +161,7 @@ void unregister_quota_format(struct quota_format_type *fmt)
- 		*actqf = (*actqf)->qf_next;
- 	spin_unlock(&dq_list_lock);
- }
-+EXPORT_SYMBOL(unregister_quota_format);
- 
- static struct quota_format_type *find_quota_format(int id)
- {
-@@ -215,6 +218,7 @@ static unsigned int dq_hash_bits, dq_hash_mask;
- static struct hlist_head *dquot_hash;
- 
- struct dqstats dqstats;
-+EXPORT_SYMBOL(dqstats);
- 
- static inline unsigned int
- hashfn(const struct super_block *sb, unsigned int id, int type)
-@@ -309,6 +313,7 @@ int dquot_mark_dquot_dirty(struct dquot *dquot)
- 	spin_unlock(&dq_list_lock);
- 	return 0;
- }
-+EXPORT_SYMBOL(dquot_mark_dquot_dirty);
- 
- /* This function needs dq_list_lock */
- static inline int clear_dquot_dirty(struct dquot *dquot)
-@@ -360,6 +365,7 @@ out_iolock:
- 	mutex_unlock(&dquot->dq_lock);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_acquire);
- 
- /*
-  *	Write dquot to disk
-@@ -389,6 +395,7 @@ out_sem:
- 	mutex_unlock(&dqopt->dqio_mutex);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_commit);
- 
- /*
-  *	Release dquot
-@@ -417,6 +424,7 @@ out_dqlock:
- 	mutex_unlock(&dquot->dq_lock);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_release);
- 
- void dquot_destroy(struct dquot *dquot)
- {
-@@ -516,6 +524,7 @@ out:
- 	mutex_unlock(&sb_dqopt(sb)->dqonoff_mutex);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_scan_active);
- 
- int vfs_quota_sync(struct super_block *sb, int type)
- {
-@@ -563,6 +572,7 @@ int vfs_quota_sync(struct super_block *sb, int type)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(vfs_quota_sync);
- 
- /* Free unused dquots from cache */
- static void prune_dqcache(int count)
-@@ -672,6 +682,7 @@ we_slept:
- 	put_dquot_last(dquot);
- 	spin_unlock(&dq_list_lock);
- }
-+EXPORT_SYMBOL(dqput);
- 
- struct dquot *dquot_alloc(struct super_block *sb, int type)
- {
-@@ -767,6 +778,7 @@ out:
- 
- 	return dquot;
- }
-+EXPORT_SYMBOL(dqget);
- 
- static int dqinit_needed(struct inode *inode, int type)
- {
-@@ -1282,6 +1294,7 @@ out_err:
- 		dqput(got[cnt]);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_initialize);
- 
- /*
-  * 	Release all quotas referenced by inode
-@@ -1302,6 +1315,7 @@ int dquot_drop(struct inode *inode)
- 		dqput(put[cnt]);
- 	return 0;
- }
-+EXPORT_SYMBOL(dquot_drop);
- 
- /* Wrapper to remove references to quota structures from inode */
- void vfs_dq_drop(struct inode *inode)
-@@ -1324,6 +1338,7 @@ void vfs_dq_drop(struct inode *inode)
- 			inode->i_sb->dq_op->drop(inode);
- 	}
- }
-+EXPORT_SYMBOL(vfs_dq_drop);
- 
- /*
-  * Following four functions update i_blocks+i_bytes fields and
-@@ -1404,6 +1419,7 @@ out_unlock:
- out:
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_alloc_space);
- 
- int dquot_reserve_space(struct inode *inode, qsize_t number, int warn)
- {
-@@ -1468,6 +1484,7 @@ warn_put_all:
- 	up_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_alloc_inode);
- 
- int dquot_claim_space(struct inode *inode, qsize_t number)
- {
-@@ -1574,6 +1591,7 @@ out_sub:
- 	up_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	return QUOTA_OK;
- }
-+EXPORT_SYMBOL(dquot_free_space);
- 
- /*
-  * This operation can block, but only after everything is updated
-@@ -1610,6 +1628,7 @@ int dquot_free_inode(const struct inode *inode, qsize_t number)
- 	up_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	return QUOTA_OK;
- }
-+EXPORT_SYMBOL(dquot_free_inode);
- 
- /*
-  * call back function, get reserved quota space from underlying fs
-@@ -1746,6 +1765,7 @@ over_quota:
- 	ret = NO_QUOTA;
- 	goto warn_put_all;
- }
-+EXPORT_SYMBOL(dquot_transfer);
- 
- /* Wrapper for transferring ownership of an inode */
- int vfs_dq_transfer(struct inode *inode, struct iattr *iattr)
-@@ -1757,7 +1777,7 @@ int vfs_dq_transfer(struct inode *inode, struct iattr *iattr)
- 	}
- 	return 0;
- }
+-static int ext4_dquot_initialize(struct inode *inode, int type)
+-{
+-	handle_t *handle;
+-	int ret, err;
 -
-+EXPORT_SYMBOL(vfs_dq_transfer);
- 
- /*
-  * Write info of quota file to disk
-@@ -1772,6 +1792,7 @@ int dquot_commit_info(struct super_block *sb, int type)
- 	mutex_unlock(&dqopt->dqio_mutex);
- 	return ret;
- }
-+EXPORT_SYMBOL(dquot_commit_info);
- 
- /*
-  * Definitions of diskquota operations.
-@@ -1924,13 +1945,14 @@ put_inodes:
- 		}
- 	return ret;
- }
-+EXPORT_SYMBOL(vfs_quota_disable);
- 
- int vfs_quota_off(struct super_block *sb, int type, int remount)
- {
- 	return vfs_quota_disable(sb, type, remount ? DQUOT_SUSPENDED :
- 				 (DQUOT_USAGE_ENABLED | DQUOT_LIMITS_ENABLED));
- }
+-	/* We may create quota structure so we need to reserve enough blocks */
+-	handle = ext4_journal_start(inode, 2*EXT4_QUOTA_INIT_BLOCKS(inode->i_sb));
+-	if (IS_ERR(handle))
+-		return PTR_ERR(handle);
+-	ret = dquot_initialize(inode, type);
+-	err = ext4_journal_stop(handle);
+-	if (!ret)
+-		ret = err;
+-	return ret;
+-}
 -
-+EXPORT_SYMBOL(vfs_quota_off);
- /*
-  *	Turn quotas on on a device
-  */
-@@ -2087,6 +2109,7 @@ int vfs_quota_on_path(struct super_block *sb, int type, int format_id,
- 					     DQUOT_LIMITS_ENABLED);
- 	return error;
- }
-+EXPORT_SYMBOL(vfs_quota_on_path);
- 
- int vfs_quota_on(struct super_block *sb, int type, int format_id, char *name,
- 		 int remount)
-@@ -2104,6 +2127,7 @@ int vfs_quota_on(struct super_block *sb, int type, int format_id, char *name,
- 	}
- 	return error;
- }
-+EXPORT_SYMBOL(vfs_quota_on);
- 
- /*
-  * More powerful function for turning on quotas allowing setting
-@@ -2150,6 +2174,7 @@ out_lock:
- load_quota:
- 	return vfs_load_quota_inode(inode, type, format_id, flags);
- }
-+EXPORT_SYMBOL(vfs_quota_enable);
- 
- /*
-  * This function is used when filesystem needs to initialize quotas
-@@ -2179,6 +2204,7 @@ out:
- 	dput(dentry);
- 	return error;
- }
-+EXPORT_SYMBOL(vfs_quota_on_mount);
- 
- /* Wrapper to turn on quotas when remounting rw */
- int vfs_dq_quota_on_remount(struct super_block *sb)
-@@ -2195,6 +2221,7 @@ int vfs_dq_quota_on_remount(struct super_block *sb)
- 	}
- 	return ret;
- }
-+EXPORT_SYMBOL(vfs_dq_quota_on_remount);
- 
- static inline qsize_t qbtos(qsize_t blocks)
- {
-@@ -2236,6 +2263,7 @@ int vfs_get_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *d
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(vfs_get_dqblk);
- 
- /* Generic routine for setting common part of quota structure */
- static int do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
-@@ -2327,6 +2355,7 @@ int vfs_set_dqblk(struct super_block *sb, int type, qid_t id, struct if_dqblk *d
- out:
- 	return rc;
- }
-+EXPORT_SYMBOL(vfs_set_dqblk);
- 
- /* Generic routine for getting common part of quota file information */
- int vfs_get_dqinfo(struct super_block *sb, int type, struct if_dqinfo *ii)
-@@ -2348,6 +2377,7 @@ int vfs_get_dqinfo(struct super_block *sb, int type, struct if_dqinfo *ii)
- 	mutex_unlock(&sb_dqopt(sb)->dqonoff_mutex);
- 	return 0;
- }
-+EXPORT_SYMBOL(vfs_get_dqinfo);
- 
- /* Generic routine for setting common part of quota file information */
- int vfs_set_dqinfo(struct super_block *sb, int type, struct if_dqinfo *ii)
-@@ -2376,6 +2406,7 @@ out:
- 	mutex_unlock(&sb_dqopt(sb)->dqonoff_mutex);
- 	return err;
- }
-+EXPORT_SYMBOL(vfs_set_dqinfo);
- 
- struct quotactl_ops vfs_quotactl_ops = {
- 	.quota_on	= vfs_quota_on,
-@@ -2531,37 +2562,3 @@ static int __init dquot_init(void)
- 	return 0;
- }
- module_init(dquot_init);
+-static int ext4_dquot_drop(struct inode *inode)
+-{
+-	handle_t *handle;
+-	int ret, err;
 -
--EXPORT_SYMBOL(register_quota_format);
--EXPORT_SYMBOL(unregister_quota_format);
--EXPORT_SYMBOL(dqstats);
--EXPORT_SYMBOL(dq_data_lock);
--EXPORT_SYMBOL(vfs_quota_enable);
--EXPORT_SYMBOL(vfs_quota_on);
--EXPORT_SYMBOL(vfs_quota_on_path);
--EXPORT_SYMBOL(vfs_quota_on_mount);
--EXPORT_SYMBOL(vfs_quota_disable);
--EXPORT_SYMBOL(vfs_quota_off);
--EXPORT_SYMBOL(dquot_scan_active);
--EXPORT_SYMBOL(vfs_quota_sync);
--EXPORT_SYMBOL(vfs_get_dqinfo);
--EXPORT_SYMBOL(vfs_set_dqinfo);
--EXPORT_SYMBOL(vfs_get_dqblk);
--EXPORT_SYMBOL(vfs_set_dqblk);
--EXPORT_SYMBOL(dquot_commit);
--EXPORT_SYMBOL(dquot_commit_info);
--EXPORT_SYMBOL(dquot_acquire);
--EXPORT_SYMBOL(dquot_release);
--EXPORT_SYMBOL(dquot_mark_dquot_dirty);
--EXPORT_SYMBOL(dquot_initialize);
--EXPORT_SYMBOL(dquot_drop);
--EXPORT_SYMBOL(vfs_dq_drop);
--EXPORT_SYMBOL(dqget);
--EXPORT_SYMBOL(dqput);
--EXPORT_SYMBOL(dquot_alloc_space);
--EXPORT_SYMBOL(dquot_alloc_inode);
--EXPORT_SYMBOL(dquot_free_space);
--EXPORT_SYMBOL(dquot_free_inode);
--EXPORT_SYMBOL(dquot_transfer);
--EXPORT_SYMBOL(vfs_dq_transfer);
--EXPORT_SYMBOL(vfs_dq_quota_on_remount);
+-	/* We may delete quota structure so we need to reserve enough blocks */
+-	handle = ext4_journal_start(inode, 2*EXT4_QUOTA_DEL_BLOCKS(inode->i_sb));
+-	if (IS_ERR(handle)) {
+-		/*
+-		 * We call dquot_drop() anyway to at least release references
+-		 * to quota structures so that umount does not hang.
+-		 */
+-		dquot_drop(inode);
+-		return PTR_ERR(handle);
+-	}
+-	ret = dquot_drop(inode);
+-	err = ext4_journal_stop(handle);
+-	if (!ret)
+-		ret = err;
+-	return ret;
+-}
+-
+ static int ext4_write_dquot(struct dquot *dquot)
+ {
+ 	int ret, err;
 -- 
 1.6.0.2
 
