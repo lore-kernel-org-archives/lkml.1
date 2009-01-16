@@ -1,110 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765538AbZAPKQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbZAPKQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765538AbZAPKQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 05:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758899AbZAPKQF
+	id S932323AbZAPKQt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 05:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbZAPKQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 05:16:05 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:8307 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758165AbZAPKQC (ORCPT
+	Fri, 16 Jan 2009 05:16:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:39995 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759316AbZAPKQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 05:16:02 -0500
+	Fri, 16 Jan 2009 05:16:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=k41G18PDTAelaPLgeUCKwecSrb2k2wU/i2ZLLAdpaSK/O08qAffeujKRE27p9ciFmJ
-         A7BBGyPYUZusD9bAGHqj0rsU0bS7rviEnOT6Kgx+JIhOfmEVTDSLaW2vsoyZahFHnH3i
-         OT35SpRyuAWv9yi0mnWcQfsZVirKz+XnEBd6Y=
-References: <200901160948.32172.ao@rsbac.org>
-Message-Id: <069484CC-549F-4B2E-A4B7-A92415E0F124@gmail.com>
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: Amon Ott <ao@rsbac.org>
-In-Reply-To: <200901160948.32172.ao@rsbac.org>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=peyua+6/v9mRk+Hix/QYbbcWhnLqtNrNwpxAygP5arFZWmn/BX9Nittq355BjyI4fi
+         aM3D25ni+k/aaTkbQ+1qj4iWOG4/Tbzn8salk5KWgummTyPgo/4LgH9TJe8Pw0TEQmpr
+         mFXBZQdZ/SORub4DJTvhZHBkFegwdhHI8SS/0=
+Message-ID: <84144f020901160216q17f1b558q955d5b8fb7c528c0@mail.gmail.com>
+Date: Fri, 16 Jan 2009 12:16:31 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: Mainline kernel OLTP performance update
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
+       "Anirban Chakraborty" <anirban.chakraborty@qlogic.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>
+In-Reply-To: <20090115135236.GB29283@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5G77)
-Mime-Version: 1.0 (iPhone Mail 5G77)
-Subject: Re: Announce: RSBAC 1.4.0 released
-Date: Fri, 16 Jan 2009 02:15:50 -0800
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <200901151824.38658.nickpiggin@yahoo.com.au>
+	 <84144f020901150146x72402ec4p7636d583cfd55b3e@mail.gmail.com>
+	 <20090115135236.GB29283@parisc-linux.org>
+X-Google-Sender-Auth: 7887fc88dcb6c9d1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahh.. I couldn't help it
-(really excited for a new feature
-In security); jumped the gun with
-Adding cc's(I'll try not to do that);
+On Thu, Jan 15, 2009 at 11:46:09AM +0200, Pekka Enberg wrote:
+>> It would also be nice if someone could do the performance analysis on
+>> the SLUB bug. I ran sysbench in oltp mode here and the results look
+>> like this:
+>>
+>>   [ number of transactions per second from 10 runs. ]
+>>
+>>                    min      max      avg      sd
+>>   2.6.29-rc1-slab  833.77   852.32   845.10   4.72
+>>   2.6.29-rc1-slub  823.61   851.94   836.74   8.57
+>>
+>> And no, the numbers are not flipped, SLUB beats SLAB here. :(
 
-Regards;
+On Thu, Jan 15, 2009 at 3:52 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> Um.  More transactions per second is good.  Your numbers show SLAB
+> beating SLUB (even on your dual-CPU system).  And SLAB shows a lower
+> standard deviation, which is also good.
 
-justin P. Mattock
+I had lockdep enabled in my config so I ran the tests again with
+x86-64 defconfig and I'm back to square one:
 
+  [ number of transactions per second from 10 runs, bigger is better ]
 
+                   min      max      avg      sd
+  2.6.29-rc1-slab  802.02   805.37   803.93   0.97
+  2.6.29-rc1-slub  807.78   811.20   809.86   1.05
 
-On Jan 16, 2009, at 12:48 AM, Amon Ott <ao@rsbac.org> wrote:
-
-> Rule Set Based Access Control (RSBAC) 1.4.0 has been released for both
-> Linux kernels 2.4.37 and 2.6.27.10
-> You can download the new version from http://www.rsbac.org
->
-> RSBAC is one of the leading access control systems for the Linux
-> kernel with a good selection of access control models, see
-> http://www.rsbac.org/why for more details.
->
-> Important changes since 1.3 series:
->
->  *  VUM (Virtual User Management) support (http://rsbac.org/redir.php?t=vum 
-> )
->  * One time password support for user management
-> (http://rsbac.org/redir.php?t=otp)
->  * Code for kernels 2.4 and 2.6 has been separated. 2.4 kernels might
-> be phased out at a later date.
->  * PAM module does not send a message "User not authenticated" anymore
-> if authentication failed. (To match other PAM modules behavior)
->  * Made PAM password prompt standard and definable to RSBAC's custom
-> prompt if the user wants it only.
->  * rsbac_useradd -K to copy a user with password.
->  * rsbac_mount now uses kernel's vfs_mount
->
->
-> About RSBAC 1.4:
-> ---
->
-> RSBAC 1.4 mainly introduces the new Virtual User Management feature (
-> (http://rsbac.org/redir.php?t=vum),
-> which allows to isolate complete sets of users in so-called "virtual  
-> sets".
-> Every user in every set can have individual passwords and access  
-> rights.
->
-> As an example, you can start your mail server in a different set, and
-> the users getting the email will not be part of the system users.
->
-> Likewise, your jails can be started in a different set, so that the
-> users in that jail will never be the same ones as the real system  
-> users.
->
-> You can specify the user set with the usual tools by specifying the
-> full user path, e.g.:
->
-> 0/0 defines user id 0 (root) in virtual set 0 (eg system user root)
-> 0/1000 defines user id 1000 in virtual set 0 (eg a system user)
-> 1/secoff defines user secoff in virtual set 1 (e.g. with uid 400)
-> 2/1000 defines user id 1000 in virtual set 2 (for example, mail users
-> could be in set 2)
->
-> Amon.
-> -- 
-> http://www.rsbac.org - GnuPG: 2048g/5DEAAA30 2002-10-22
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+                        Pekka
