@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbZAPIBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZAPIE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759378AbZAPIBg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZAPIB1
+	id S1757462AbZAPIE4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZAPIEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:01:27 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:48567 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZAPIB0 (ORCPT
+	Fri, 16 Jan 2009 03:04:46 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:41165 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbZAPIEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:01:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=n2cRLnD+iHpHlQxV4ZlC76zMCZbxQ8kfMd6hapc4Y/pJ/yTCu1zYxZSGV26C+5lMh6
-         TQgQ6o5PwZsiEuQPYcaTAiQODR6kwwgtY3CIhdFE54iWqaPImK/flpunMH45xvJt902z
-         h0KCFdqFuiW0IIcrytSeEFZiZHSouXa2W+Qi8=
-Message-ID: <49703ED2.8010606@gmail.com>
-Date: Fri, 16 Jan 2009 00:01:22 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: conflicting memory types 40000000-48000000 write-combining<->uncached-minus
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 03:04:45 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
+To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
+In-Reply-To: <496FAFE2.8020102@linux.vnet.ibm.com>
+References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com>
+Date: Fri, 16 Jan 2009 17:04:38 +0900
+Message-ID: <10085.1232093078@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this is probably an Xorg issue,
-but you never know);
-noticed this when doing a git-pull
-a few day's ago:
 
-[   31.816030] [drm] Initialized radeon 1.29.0 20080528 on minor 0
-[   32.224553] [drm] Setting GART location based on new memory map
-[   32.225952] [drm] Loading R500 Microcode
-[   32.226010] [drm] Num pipes: 1
-[   32.226024] [drm] writeback test succeeded in 1 usecs
-[   32.611979] Xorg:2661 conflicting memory types 40000000-48000000 
-write-combining<->uncached-minus
-[   32.611983] reserve_memtype failed 0x40000000-0x48000000, track 
-write-combining, req write-combining
-[   32.968560] Xorg:2661 conflicting memory types 40000000-48000000 
-write-combining<->uncached-minus
-[   32.968565] reserve_memtype failed 0x40000000-0x48000000, track 
-write-combining, req write-combining
+Tyler Hicks:
+> >> - remove the unnecessary d_drop()s in ecryptfs_link().
+> 
+> I tend to agree that they look unnecessary, but one of them was added
+> for cifs (see ae56fb16) and the other two seem to be intentional (see
+> 45ec4aba) as well.  I'm working on adding support for networked
+> filesystems, I'll keep these d_drop()s in mind and see if we can drop
+> them. :)
 
-should I be concerned, or no?
+commit ae56fb16337c882c52806508f93ead4034004c7a
+    When CIFS is the lower filesystem, the old lower dentry needs to be explicitly
+    dropped from inside eCryptfs to force a revalidate.  In addition, when CIFS is
+    the lower filesystem, the inode attributes need to be copied back up from the
+    lower inode to the eCryptfs inode on an eCryptfs revalidate.
 
-regards;
+Even with this commit, fstat(2) still returns incorrect attributes,
+doesn't it? Because fstat(2) doesn't involve revalidate.
+{
+	fd = open(fileA);
+	link(fileA, fileB);
+	fstat(fd);
+}
 
-Justin P. Mattock
+
+commit 45ec4ababe999cb95f9c0cad03b2689cb0b77a2b
+    Fix the use of dget/dput calls to balance out on the lower filesystem.
+	:::
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 2f2c6cf..ff4865d 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+	:::
+@@ -475,8 +470,8 @@ out_lock:
+ 	unlock_dir(lower_dir_dentry);
+ 	dput(lower_new_dentry);
+ 	dput(lower_old_dentry);
+-	if (!new_dentry->d_inode)
+-		d_drop(new_dentry);
++	d_drop(new_dentry);
++	d_drop(old_dentry);
+ 	return rc;
+ }
+ 
+Are these two d_drop()s really intentional?
+I don't understand why they are necessary after the success of link.
+It might be the same to the commit ae56fb16 (see above), ie. wanting to
+force re-lookup and get the latest inode attributes. (Just a guess)
+Actually they are maintained in ecryptfs_link() correctly...
+
+
+J. R. Okajima
