@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbZAPEOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZAPEYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760448AbZAPEOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 23:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZAPEOF
+	id S1757479AbZAPEYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 23:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZAPEX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 23:14:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48392 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750937AbZAPEOC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 23:14:02 -0500
-Date: Thu, 15 Jan 2009 20:13:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Graham <david.graham@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>
-Subject: Re: 2.6.29-rc1-wl gives WARNING on ich8lan
-Message-Id: <20090115201321.12cedb23.akpm@linux-foundation.org>
-In-Reply-To: <9929d2390901152006h3e47b2c8m3a63f741333b9c3c@mail.gmail.com>
-References: <20090114231546.GI1457@gamma.logic.tuwien.ac.at>
-	<20090114222550.80fb1bb2.akpm@linux-foundation.org>
-	<9929d2390901152006h3e47b2c8m3a63f741333b9c3c@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 23:23:59 -0500
+Received: from ns.suse.de ([195.135.220.2]:33144 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753606AbZAPEX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 23:23:58 -0500
+Date: Thu, 15 Jan 2009 20:13:04 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jike Song <albcamus@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 81/85] x86: fix RIP printout in early_idt_handler
+Message-ID: <20090116041304.GA5991@suse.de>
+References: <20090115215237.906089480@mini.kroah.org> <20090115215812.GA17227@kroah.com> <20090115220204.GD17227@kroah.com> <df9815e70901151927i29b0da1fh168c80cd80b754ae@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <df9815e70901151927i29b0da1fh168c80cd80b754ae@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 20:06:17 -0800 Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+On Fri, Jan 16, 2009 at 11:27:57AM +0800, Jike Song wrote:
+> On Fri, Jan 16, 2009 at 6:02 AM, Greg KH <gregkh@suse.de> wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> >
+> > ------------------
+> >
+> > From: Jiri Slaby <jirislaby@gmail.com>
+> >
+> > commit 7aed55d1085f71241284a30af0300feea48c36db upstream.
+> >
+> > Impact: fix debug/crash printout
+> >
+> > Since errorcode is popped out, RIP is on the top of the stack.
+> > Use real RIP value instead of wrong CS.
+> >
+> > Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+> >  arch/x86/kernel/head_64.S |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > --- a/arch/x86/kernel/head_64.S
+> > +++ b/arch/x86/kernel/head_64.S
+> > @@ -305,7 +305,7 @@ ENTRY(early_idt_handler)
+> >        call dump_stack
+> >  #ifdef CONFIG_KALLSYMS
+> >        leaq early_idt_ripmsg(%rip),%rdi
+> > -       movq 8(%rsp),%rsi       # get rip again
+> > +       movq 0(%rsp),%rsi       # get rip again
+> >        call __print_symbol
+> >  #endif
+> >  #endif /* EARLY_PRINTK */
+> 
+> why not:
+> 
+>     movq (%rsp), %rsi
+> 
+> instead? Yes, it's all the same but 0 is just unnecessary.
 
-> On Wed, Jan 14, 2009 at 10:25 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > On Thu, 15 Jan 2009 00:15:46 +0100 Norbert Preining <preining@logic.at> wrote:
-> >
-> >> Hi all,
-> >>
-> >> (please cc)
-> >
-> > (please cc right lists!)
-> >
-> >> 2.6.29-rc1-wl (wireless testing) gives me:
-> >>
-> >> [  367.804080] WARNING: at drivers/net/e1000e/ich8lan.c:412 e1000_acquire_swflag_ich8lan+0x35/0xcc()
-> >> [  367.804085] Hardware name: VGN-Z11VN_B
-> >> [  367.804088] e1000e mutex contention. Owned by pid 3781
-> >> [  367.804092] Modules linked in: binfmt_misc rfcomm l2cap kvm isofs zlib_inflate fuse dm_crypt dm_mod firewire_sbp2 loop arc4 iwlagn iwlcore rfkill joydev firewire_ohci mac80211 firewire_core crc_itu_t cfg80211 btusb sony_laptop tpm_infineon video backlight
-> >> [  367.804143] Pid: 8, comm: events/1 Not tainted 2.6.29-rc1-wl #1
-> >> [  367.804148] Call Trace:
-> >> [  367.804158]  [<ffffffff80236441>] warn_slowpath+0xd8/0x112
-> >> [  367.804169]  [<ffffffff8051152f>] _spin_unlock_irqrestore+0x31/0x3d
-> >> [  367.804178]  [<ffffffff802324f9>] try_to_wake_up+0x168/0x17a
-> >> [  367.804186]  [<ffffffff8023250b>] default_wake_function+0x0/0x9
-> >> [  367.804196]  [<ffffffff80323438>] delay_tsc+0x0/0xc8
-> >> [  367.804204]  [<ffffffff8022c48d>] dequeue_entity+0xf/0x102
-> >> [  367.804211]  [<ffffffff803a12a4>] e1000_acquire_swflag_ich8lan+0x35/0xcc
-> >> [  367.804219]  [<ffffffff803a5c0b>] e1000e_read_phy_reg_bm+0x39/0xbe
-> >> [  367.804227]  [<ffffffff803a5ee7>] e1000e_phy_has_link_generic+0x50/0xcc
-> >> [  367.804234]  [<ffffffff8022c48d>] dequeue_entity+0xf/0x102
-> >> [  367.804242]  [<ffffffff803ad593>] e1000_watchdog_task+0x0/0x6ef
-> >> [  367.804249]  [<ffffffff803a4d25>] e1000e_check_for_copper_link+0x24/0x86
-> >> [  367.804257]  [<ffffffff8023f05e>] lock_timer_base+0x26/0x4b
-> >> [  367.804265]  [<ffffffff803aa186>] e1000_has_link+0x40/0xc1
-> >> [  367.804272]  [<ffffffff803ad5ca>] e1000_watchdog_task+0x37/0x6ef
-> >> [  367.804280]  [<ffffffff803ad593>] e1000_watchdog_task+0x0/0x6ef
-> >> [  367.804289]  [<ffffffff80245058>] run_workqueue+0x87/0x122
-> >> [  367.804296]  [<ffffffff802451cb>] worker_thread+0xd8/0xe7
-> >> [  367.804304]  [<ffffffff802487a8>] autoremove_wake_function+0x0/0x2e
-> >> [  367.804311]  [<ffffffff802450f3>] worker_thread+0x0/0xe7
-> >> [  367.804318]  [<ffffffff802450f3>] worker_thread+0x0/0xe7
-> >> [  367.804324]  [<ffffffff8024848f>] kthread+0x47/0x73
-> >> [  367.804332]  [<ffffffff8020c6aa>] child_rip+0xa/0x20
-> >> [  367.804338]  [<ffffffff80248448>] kthread+0x0/0x73
-> >> [  367.804344]  [<ffffffff8020c6a0>] child_rip+0x0/0x20
-> >> [  367.804349] ---[ end trace 608ec83548aefe5d ]---
-> >>
-> >> Should I be concerned?
-> >>
-> >
-> > I don't think so.  It looks like it's just some developer debug code:
-> >
-> >        if (!mutex_trylock(&nvm_mutex)) {
-> >                WARN(1, KERN_ERR "e1000e mutex contention. Owned by process "
-> >                     "%s (pid %d), required by process %s (pid %d)\n",
-> >                     nvm_owner_name, nvm_owner_pid,
-> >                     current->comm, current->pid);
-> >
-> >                mutex_lock(&nvm_mutex);
-> >        }
-> >
-> > guys, is this actually indicative of a bug?  An unexpected state?
-> >
-> > If not, I'd suggest that this code simply be removed, or downgraded
-> > into a developer-only debug thing.  We don't want the kernel to be
-> > spewing scary things at people.
-> >
-> > --
-> >
-> 
-> A message from Dave Graham <david.graham@intel.com>...
-> 
-> The message identifies a condition that rarely occurs, and that I'd
-> like to monitor for a few more weeks. While this WARN occurred
-> fequently until recent 2.6.28 kernels, the messages have already
-> helped us to tighten our code to reduce contentious access to this
-> path, and so we now longer expect many. In fact at this time we only
-> have one (this one) report, out of a total 1,296 WARNs shown at
-> www.kerneloops.org for all 2.6.29-rc builds. There's been a minor
-> improvement to the WARN message tagged as tag v2.6.29-rc1-6-geefacf3,
-> and I'd like to collect & analyze a few reports that include that
-> change.
-> 
-> I'll monitor reports up at keneloops daily, and when I've got 5 or
-> more, I can quickly move the WARN to debug-only code, so reports will
-> soon stop. Does that sound OK?
+I supposed in light of the previous verison having "8" it's to be a bit
+more explicit :)
 
-OK, thanks, sounds good to me.
+thanks,
+
+greg k-h
