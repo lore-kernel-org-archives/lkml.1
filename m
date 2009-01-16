@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937238AbZAPTMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937296AbZAPTMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937238AbZAPTMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 14:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937135AbZAPTLM
+	id S937296AbZAPTMy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 14:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937139AbZAPTLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 14:11:12 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:58125 "EHLO relay.sgi.com"
+	Fri, 16 Jan 2009 14:11:14 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:35262 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764053AbZAPTLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S936646AbZAPTLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Jan 2009 14:11:10 -0500
-Message-Id: <20090116191108.392536000@polaris-admin.engr.sgi.com>
+Message-Id: <20090116191108.671229000@polaris-admin.engr.sgi.com>
 References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 Jan 2009 11:11:09 -0800
+Date: Fri, 16 Jan 2009 11:11:11 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>, Dave Jones <davej@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, cpufreq@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] work_on_cpu: dont try to get_online_cpus() in work_on_cpu.
-Content-Disposition: inline; filename=remove-get_online_cpus-from-work_on_cpu.patch
+Subject: [PATCH 3/3] cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+Content-Disposition: inline; filename=7503bfba.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+Impact: use new work_on_cpu function to reduce stack usage
 
-Impact: remove potential circular lock dependency with cpu hotplug lock
+Replace the saving of current->cpus_allowed and set_cpus_allowed_ptr() with
+a work_on_cpu function for drv_read() and drv_write().
 
-This has caused more problems than it solved, with a pile of cpu
-hotplug locking issues.
+Basically converts do_drv_{read,write} into "work_on_cpu" functions that
+are now called by drv_read and drv_write.
 
-Followup patches will get_online_cpus() in callers that need it, but
-if they don't do it they're no worse than before when they were using
-set_cpus_allowed without locking.
+Note: This patch basically reverts 50c668d6 which reverted 7503bfba, now
+that the work_on_cpu() function is more stable.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Tested-by: Dieter Ries <clip2@gmx.de>
+Tested-by: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: <cpufreq@vger.kernel.org>
 ---
- kernel/workqueue.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
 
---- linux-2.6-for-ingo.orig/kernel/workqueue.c
-+++ linux-2.6-for-ingo/kernel/workqueue.c
-@@ -991,8 +991,8 @@ static void do_work_for_cpu(struct work_
-  * @fn: the function to run
-  * @arg: the function arg
-  *
-- * This will return -EINVAL in the cpu is not online, or the return value
-- * of @fn otherwise.
-+ * This will return the value @fn returns.
-+ * It is up to the caller to ensure that the cpu doesn't go offline.
-  */
- long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
- {
-@@ -1001,14 +1001,8 @@ long work_on_cpu(unsigned int cpu, long 
- 	INIT_WORK(&wfc.work, do_work_for_cpu);
- 	wfc.fn = fn;
- 	wfc.arg = arg;
--	get_online_cpus();
--	if (unlikely(!cpu_online(cpu)))
--		wfc.ret = -EINVAL;
--	else {
--		schedule_work_on(cpu, &wfc.work);
--		flush_work(&wfc.work);
--	}
--	put_online_cpus();
-+	schedule_work_on(cpu, &wfc.work);
-+	flush_work(&wfc.work);
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -150,8 +150,9 @@ struct drv_cmd {
+ 	u32 val;
+ };
  
- 	return wfc.ret;
+-static void do_drv_read(struct drv_cmd *cmd)
++static long do_drv_read(void *_cmd)
+ {
++	struct drv_cmd *cmd = _cmd;
+ 	u32 h;
+ 
+ 	switch (cmd->type) {
+@@ -166,10 +167,12 @@ static void do_drv_read(struct drv_cmd *
+ 	default:
+ 		break;
+ 	}
++	return 0;
  }
+ 
+-static void do_drv_write(struct drv_cmd *cmd)
++static long do_drv_write(void *_cmd)
+ {
++	struct drv_cmd *cmd = _cmd;
+ 	u32 lo, hi;
+ 
+ 	switch (cmd->type) {
+@@ -186,30 +189,23 @@ static void do_drv_write(struct drv_cmd 
+ 	default:
+ 		break;
+ 	}
++	return 0;
+ }
+ 
+ static void drv_read(struct drv_cmd *cmd)
+ {
+-	cpumask_t saved_mask = current->cpus_allowed;
+ 	cmd->val = 0;
+ 
+-	set_cpus_allowed_ptr(current, cmd->mask);
+-	do_drv_read(cmd);
+-	set_cpus_allowed_ptr(current, &saved_mask);
++	work_on_cpu(cpumask_any(cmd->mask), do_drv_read, cmd);
+ }
+ 
+ static void drv_write(struct drv_cmd *cmd)
+ {
+-	cpumask_t saved_mask = current->cpus_allowed;
+ 	unsigned int i;
+ 
+ 	for_each_cpu(i, cmd->mask) {
+-		set_cpus_allowed_ptr(current, cpumask_of(i));
+-		do_drv_write(cmd);
++		work_on_cpu(i, do_drv_write, cmd);
+ 	}
+-
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return;
+ }
+ 
+ static u32 get_cur_val(const struct cpumask *mask)
+@@ -367,7 +363,7 @@ static unsigned int get_cur_freq_on_cpu(
+ 	return freq;
+ }
+ 
+-static unsigned int check_freqs(const cpumask_t *mask, unsigned int freq,
++static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
+ 				struct acpi_cpufreq_data *data)
+ {
+ 	unsigned int cur_freq;
 
 -- 
