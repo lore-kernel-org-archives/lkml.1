@@ -1,93 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbZAPLqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbZAPLxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbZAPLqo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbZAPLqf
+	id S1762245AbZAPLxu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZAPLxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:46:35 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:55711 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759645AbZAPLqe (ORCPT
+	Fri, 16 Jan 2009 06:53:40 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40230 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbZAPLxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:46:34 -0500
-Message-ID: <49707398.1040102@s5r6.in-berlin.de>
-Date: Fri, 16 Jan 2009 12:46:32 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Fri, 16 Jan 2009 06:53:38 -0500
+Date: Fri, 16 Jan 2009 12:55:46 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Paul.Clements@steeleye.com
+Subject: nbd: add locking to nbd_ioctl
+Message-ID: <20090116115512.GA10771@elf.ucw.cz>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: new (common) WARNING message?
-References: <496FDE20.6070108@sgi.com>
-In-Reply-To: <496FDE20.6070108@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> I've been seeing these on and off for a while now.  They don't
-> seem to affect anything but perhaps I should track them down?
-> 
-> Do you know what it means?  (I'm asking you because evidently
-> debugobjects.c is from you?  I read the good explanation in the
-> changelog of 3ac7fe5a, but it didn't clue me into what's going
-> on. ;-)
-> 
-> Thanks,
-> Mike
-> --
-> 
-> [ 1294.973592] ODEBUG: object is on stack, but not annotated
-> [ 1294.974067] ------------[ cut here ]------------
-> [ 1294.974067] WARNING: at /mdata/lwork/polaris3/travis/workareas/ingo-latest/linux-2.6-for-ingo/lib/debugobjects.c:253 __debug_object_init+0x27c/0x2f0()
-> [ 1294.974067] Hardware name: X7DBT
-> [ 1294.974067] Pid: 4150, comm: offline-test Tainted: G        W  2.6.29-rc1-4k-defconfig.01151634-00255-gc99dbbe-dirty #89
-> [ 1294.974067] Call Trace:
-> [ 1294.974067]  [<ffffffff81047e3f>] warn_slowpath+0xd3/0xf2
-> [ 1294.974067]  [<ffffffff8106c64f>] ? trace_hardirqs_off+0xd/0xf
-> [ 1294.974067]  [<ffffffff815ca6ac>] ? _spin_unlock_irqrestore+0x3d/0x4c
-> [ 1294.974067]  [<ffffffff8125bebe>] ? __debug_check_no_obj_freed+0xf6/0x14c
-> [ 1294.974067]  [<ffffffff81048d3c>] ? printk+0x6c/0x6e
-> [ 1294.974067]  [<ffffffff8125c449>] ? __debug_object_init+0xf9/0x2f0
-> [ 1294.974067]  [<ffffffff8125b3ae>] ? _raw_spin_unlock+0xc7/0xf6
-> [ 1294.974067]  [<ffffffff8125c5cc>] __debug_object_init+0x27c/0x2f0
-> [ 1294.974067]  [<ffffffff8125c66d>] debug_object_init+0x14/0x17
-> [ 1294.974067]  [<ffffffff81052320>] init_timer+0x1d/0x2a
-> [ 1294.974067]  [<ffffffff81025077>] hpet_cpuhp_notify+0xad/0x124
-> [ 1294.974067]  [<ffffffff81025233>] ? hpet_work+0x0/0x21a
-> [ 1294.974067]  [<ffffffff81062057>] notifier_call_chain+0x33/0x5b
-> [ 1294.974067]  [<ffffffff810620ad>] __raw_notifier_call_chain+0xe/0x10
-> [ 1294.974067]  [<ffffffff810620c3>] raw_notifier_call_chain+0x14/0x16
-> [ 1294.974067]  [<ffffffff815c5190>] _cpu_up+0x115/0x155
-> [ 1294.974067]  [<ffffffff815c527c>] cpu_up+0x65/0x73
-> [ 1294.974067]  [<ffffffff815ac21d>] store_online+0x52/0x7b
-> [ 1294.974067]  [<ffffffff812ff775>] sysdev_store+0x20/0x22
-> [ 1294.974067]  [<ffffffff81134f6b>] sysfs_write_file+0xe9/0x11e
-> [ 1294.974067]  [<ffffffff810e0da5>] vfs_write+0xea/0x148
-> [ 1294.974067]  [<ffffffff810e0ec7>] sys_write+0x4c/0x72
-> [ 1294.974067]  [<ffffffff8100c6cb>] system_call_fastpath+0x16/0x1b
-> [ 1294.974067] ---[ end trace 4eaa2a86a8e2da24 ]---
-> --
 
-The warning tells us that arch/x86/kernel/hpet.c::hpet_cpuhp_notify()
-allocates a timer on the stack.  In particular, it allocates a struct
-hpet_work_struct on the stack which incorporates a timer.
+The code was written with "oh big kernel lock, please protect me from
+all the evil" mentality: it does not locks its own data structures, it
+just hopes that big kernel lock somehow helps.
 
-Now, a timer instance on a stack would be wrong if the function which
-defined that timer exits too early.  But in case of hpet_cpuhp_notify(),
-this is OK since
-  - it waits for the work be done,
-  - the work does not rearm itself.
-IOW the work and thus the timer won't be accessed anymore when
-hpet_cpuhp_notify() returns.
+It does not. (My fault).
 
-So, hpet_cpuhp_notify() apparently needs a variant of INIT_DELAYED_WORK
-which uses init_timer_on_stack instead of init_timer, to say "trust me,
-I know what I'm doing".
+So this uses tx_lock to protect data structures from concurrent use
+between ioctl and worker threads.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index 34f80fa..81c94a4 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -559,74 +557,68 @@ static void do_nbd_request(struct reques
+ 	}
+ }
+ 
+-static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
+-		     unsigned int cmd, unsigned long arg)
+-{
+-	struct nbd_device *lo = bdev->bd_disk->private_data;
+-	struct file *file;
+-	int error;
+-	struct request sreq ;
+-	struct task_struct *thread;
+-
+-	if (!capable(CAP_SYS_ADMIN))
+-		return -EPERM;
+-
+-	BUG_ON(lo->magic != LO_MAGIC);
+-
+-	/* Anyone capable of this syscall can do *real bad* things */
+-	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
+-			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
++/* Must be called with tx_lock held */
+ 
++static int __nbd_ioctl(struct block_device *bdev, struct nbd_device *lo, 
++		       unsigned int cmd, unsigned long arg)
++{
+ 	switch (cmd) {
+ 	case NBD_DISCONNECT:
+ 	        printk(KERN_INFO "%s: NBD_DISCONNECT\n", lo->disk->disk_name);
+-		blk_rq_init(NULL, &sreq);
+-		sreq.cmd_type = REQ_TYPE_SPECIAL;
+-		nbd_cmd(&sreq) = NBD_CMD_DISC;
+-		/*
+-		 * Set these to sane values in case server implementation
+-		 * fails to check the request type first and also to keep
+-		 * debugging output cleaner.
+-		 */
+-		sreq.sector = 0;
+-		sreq.nr_sectors = 0;
+-                if (!lo->sock)
+-			return -EINVAL;
+-		mutex_lock(&lo->tx_lock);
+-                nbd_send_req(lo, &sreq);
+-		mutex_unlock(&lo->tx_lock);
++		{
++			struct request sreq;
++
++			blk_rq_init(NULL, &sreq);
++			sreq.cmd_type = REQ_TYPE_SPECIAL;
++			nbd_cmd(&sreq) = NBD_CMD_DISC;
++			/*
++			 * Set these to sane values in case server implementation
++			 * fails to check the request type first and also to keep
++			 * debugging output cleaner.
++			 */
++			sreq.sector = 0;
++			sreq.nr_sectors = 0;
++			if (!lo->sock)
++				return -EINVAL;
++			nbd_send_req(lo, &sreq);
++		}
+                 return 0;
+  
+ 	case NBD_CLEAR_SOCK:
+-		error = 0;
+-		mutex_lock(&lo->tx_lock);
+-		lo->sock = NULL;
+-		mutex_unlock(&lo->tx_lock);
+-		file = lo->file;
+-		lo->file = NULL;
+-		nbd_clear_que(lo);
+-		BUG_ON(!list_empty(&lo->queue_head));
+-		if (file)
+-			fput(file);
+-		return error;
+-	case NBD_SET_SOCK:
+-		if (lo->file)
+-			return -EBUSY;
+-		error = -EINVAL;
+-		file = fget(arg);
+-		if (file) {
+-			struct inode *inode = file->f_path.dentry->d_inode;
+-			if (S_ISSOCK(inode->i_mode)) {
+-				lo->file = file;
+-				lo->sock = SOCKET_I(inode);
+-				if (max_part > 0)
+-					bdev->bd_invalidated = 1;
+-				error = 0;
+-			} else {
++		{
++			struct file *file;
++
++			lo->sock = NULL;
++			file = lo->file;
++			lo->file = NULL;
++			nbd_clear_que(lo);
++			BUG_ON(!list_empty(&lo->queue_head));
++			if (file)
+ 				fput(file);
++		}
++	return 0;
++
++	case NBD_SET_SOCK:
++		{
++			struct file *file;
++			if (lo->file)
++				return -EBUSY;
++			file = fget(arg);
++			if (file) {
++				struct inode *inode = file->f_path.dentry->d_inode;
++				if (S_ISSOCK(inode->i_mode)) {
++					lo->file = file;
++					lo->sock = SOCKET_I(inode);
++					if (max_part > 0)
++						bdev->bd_invalidated = 1;
++					return 0;
++				} else {
++					fput(file);
++				}
+ 			}
+ 		}
+-		return error;
++		return -EINVAL;
++
+ 	case NBD_SET_BLKSIZE:
+ 		lo->blksize = arg;
+ 		lo->bytesize &= ~(lo->blksize-1);
+@@ -634,47 +626,65 @@ static int nbd_ioctl(struct block_device
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_SET_SIZE:
+ 		lo->bytesize = arg & ~(lo->blksize-1);
+ 		bdev->bd_inode->i_size = lo->bytesize;
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_SET_TIMEOUT:
+ 		lo->xmit_timeout = arg * HZ;
+ 		return 0;
++
+ 	case NBD_SET_SIZE_BLOCKS:
+ 		lo->bytesize = ((u64) arg) * lo->blksize;
+ 		bdev->bd_inode->i_size = lo->bytesize;
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_DO_IT:
+-		if (lo->pid)
+-			return -EBUSY;
+-		if (!lo->file)
+-			return -EINVAL;
+-		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+-		if (IS_ERR(thread))
+-			return PTR_ERR(thread);
+-		wake_up_process(thread);
+-		error = nbd_do_it(lo);
+-		kthread_stop(thread);
+-		if (error)
+-			return error;
+-		sock_shutdown(lo, 1);
+-		file = lo->file;
+-		lo->file = NULL;
+-		nbd_clear_que(lo);
+-		printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
+-		if (file)
+-			fput(file);
+-		lo->bytesize = 0;
+-		bdev->bd_inode->i_size = 0;
+-		set_capacity(lo->disk, 0);
+-		if (max_part > 0)
+-			ioctl_by_bdev(bdev, BLKRRPART, 0);
+-		return lo->harderror;
++		{
++			struct task_struct *thread;
++			struct file *file;
++			int error;
++
++			if (lo->pid)
++				return -EBUSY;
++			if (!lo->file)
++				return -EINVAL;
++
++			mutex_unlock(&lo->tx_lock);
++
++			thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
++			if (IS_ERR(thread)) {
++				mutex_lock(&lo->tx_lock);
++				return PTR_ERR(thread);
++			}
++			wake_up_process(thread);
++			error = nbd_do_it(lo);
++			kthread_stop(thread);
++
++			mutex_lock(&lo->tx_lock);
++			if (error)
++				return error;
++			sock_shutdown(lo, 0);
++			file = lo->file;
++			lo->file = NULL;
++			nbd_clear_que(lo);
++			printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
++			if (file)
++				fput(file);
++			lo->bytesize = 0;
++			bdev->bd_inode->i_size = 0;
++			set_capacity(lo->disk, 0);
++			if (max_part > 0)
++				ioctl_by_bdev(bdev, BLKRRPART, 0);
++			return lo->harderror;
++		}
++
+ 	case NBD_CLEAR_QUE:
+ 		/*
+ 		 * This is for compatibility only.  The queue is always cleared
+@@ -682,6 +692,7 @@ static int nbd_ioctl(struct block_device
+ 		 */
+ 		BUG_ON(!lo->sock && !list_empty(&lo->queue_head));
+ 		return 0;
++
+ 	case NBD_PRINT_DEBUG:
+ 		printk(KERN_INFO "%s: next = %p, prev = %p, head = %p\n",
+ 			bdev->bd_disk->disk_name,
+@@ -689,7 +700,29 @@ static int nbd_ioctl(struct block_device
+ 			&lo->queue_head);
+ 		return 0;
+ 	}
+-	return -EINVAL;
++}
++
++
++static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
++		     unsigned int cmd, unsigned long arg)
++{
++	struct nbd_device *lo = bdev->bd_disk->private_data;
++	int error;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	BUG_ON(lo->magic != LO_MAGIC);
++
++	/* Anyone capable of this syscall can do *real bad* things */
++	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
++			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
++
++	mutex_lock(&lo->tx_lock);
++	error = __nbd_ioctl(bdev, lo, cmd, arg);
++	mutex_unlock(&lo->tx_lock);
++
++	return error;
+ }
+ 
+ static struct block_device_operations nbd_fops =
+
+
 -- 
-Stefan Richter
--=====-==--= ---= =----
-http://arcgraph.de/sr/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
