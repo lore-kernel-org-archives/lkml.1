@@ -1,201 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764043AbZAPL7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762437AbZAPMAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764043AbZAPL7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZAPL66
+	id S1762437AbZAPMAB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbZAPL7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:58:58 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:50254 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757575AbZAPL65 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:58:57 -0500
-Message-Id: <497084B5.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Fri, 16 Jan 2009 11:59:33 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: "Nick Piggin" <npiggin@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: fix assumed to be contiguous leaf page tables
-	 for kmap_atomic region (take 2)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 16 Jan 2009 06:59:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:38124 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760301AbZAPL7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:59:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18800.30380.277025.456930@cargo.ozlabs.ibm.com>
+Date: Fri, 16 Jan 2009 22:59:40 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH] perf_counter: Add counter enable/disable ioctls
+In-Reply-To: <20090116110703.GA18165@elte.hu>
+References: <18800.25726.604410.232889@cargo.ozlabs.ibm.com>
+	<20090116110703.GA18165@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Debugging and original patch from Nick Piggin <npiggin@suse.de>
+Ingo Molnar writes:
 
-The early fixmap pmd entry inserted at the very top of the KVA is causing the
-subsequent fixmap mapping code to not provide physically linear pte pages over
-the kmap atomic portion of the fixmap (which relies on said property to
-calculate pte addresses).
+> Okay - please let me know when i can pull it - the extension of counter 
+> ops to the 'family' looks nice and desirable.
 
-This has caused weird boot failures in kmap_atomic much later in the boot
-process (initial userspace faults) on a 32-bit PAE system with a larger number
-of CPUs (smaller CPU counts tend not to run over into the next page so don't
-show up the problem).
+Thanks - I'll try to do some basic testing this weekend.  I won't get
+a chance to do any extensive testing for the next two weeks because
+I'll be on vacation.
 
-Solve this by attempting to clear out the page table, and copy any of its
-entries to the new one. Also, add a bug if a nonlinear condition is encountered
-and can't be resolved, which might save some hours of debugging if this fragile
-scheme ever breaks again...
+> I'm wondering, should it also extend to all members of a group perhaps - 
+> or should that be separate ioctls?
+> 
+> It makes sense to individually enable/disable a single counter within a 
+> group - including the group leader. So i guess we need 3 variants:
+> 
+>  - disable/enable single counter
+>  - disable/enable group
+>  - disable/enable family
+> 
+> We might as well just offer a single variant initially: 'disable/enable 
+> everything that can be iterated from that counter', and provide more 
+> specialized variants only once the specific need arises?
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+Well, each member of a group has its own family.  I don't see any need
+to enable/disable the top-level (parent) counter separately from its
+children, but as you say, if the need arises we can add that.
 
-Once we have such logic, we can also use it to eliminate the early ioremap
-trickery around the page table setup for the fixmap area. This also fixes
-potential issues with FIX_* entries sharing the leaf page table with the early
-ioremap ones getting discarded by early_ioremap_clear() and not restored by
-early_ioremap_reset(). It at once eliminates the temporary (and configuration,
-namely NR_CPUS, dependent) unavailability of early fixed mappings during the
-time the fixmap area page tables get constructed.
+We can enable/disable individual subsidiary group members (and their
+families) since we have an fd for each member.  We would only need
+separate 'single counter' and 'group' ioctls for the group leader, and
+once again we could add that if the need arises.
 
-Finally, also replace the hard coded calculation of the initial table space
-needed for the fixmap area with a proper one, allowing kernels configured for
-large CPU counts to actually boot.
+Currently the ioctls on the group leader disable/enable the whole
+group.  I'm not sure that enabling/disabling individual counters in
+the group will really be all that useful, but I put it in for
+subsidiary counters since it falls out pretty easily and naturally in
+the code.  If users want to disable/enable each counter in a group
+individually, they could add an extra dummy counter (say a cpu_clock
+counter) to be the group leader and then just mostly ignore it.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+So I think that boils down to saying that what I have implemented is
+the single variant that you propose in your last quoted paragraph
+above. :)
 
----
- arch/x86/include/asm/io.h |    1 
- arch/x86/mm/init_32.c     |   48 +++++++++++++++++++++++++++++++++++++++++++---
- arch/x86/mm/ioremap.c     |   25 -----------------------
- 3 files changed, 45 insertions(+), 29 deletions(-)
+> > I have to admit to a small element of cargo-cult programming in 
+> > __perf_counter_enable and __perf_counter_disable: I put calls to 
+> > curr_rq_lock_irq_save/restore in there because I was following the model 
+> > of __perf_install_in_context, but I don't know what they do (beyond 
+> > disabling/restoring interrupts) or why they are needed.  What are they 
+> > there for?
+> 
+> That's an ugly detail: we can only observe and update the current task 
+> clock with the runqueue lock held. So right now the counter ops are 
+> structured so that we first take the rq lock (which implies irq disable as 
+> well), and then all sw counters can assume that the rq lock is held.
 
---- linux-2.6.29-rc1/arch/x86/include/asm/io.h	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-i386-fix-kmap-contig/arch/x86/include/asm/io.h	2009-01-16 00:00:00.000000000 +0100
-@@ -99,7 +99,6 @@ extern void __iomem *ioremap_wc(unsigned
-  * A boot-time mapping is currently limited to at most 16 pages.
-  */
- extern void early_ioremap_init(void);
--extern void early_ioremap_clear(void);
- extern void early_ioremap_reset(void);
- extern void __iomem *early_ioremap(unsigned long offset, unsigned long size);
- extern void __iomem *early_memremap(unsigned long offset, unsigned long size);
---- linux-2.6.29-rc1/arch/x86/mm/init_32.c	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-i386-fix-kmap-contig/arch/x86/mm/init_32.c	2009-01-16 00:00:00.000000000 +0100
-@@ -138,6 +138,47 @@ static pte_t * __init one_page_table_ini
- 	return pte_offset_kernel(pmd, 0);
- }
- 
-+static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
-+					   unsigned long vaddr, pte_t *lastpte)
-+{
-+#ifdef CONFIG_HIGHMEM
-+	/*
-+	 * Something (early fixmap) may already have put a pte
-+	 * page here, which causes the page table allocation
-+	 * to become nonlinear. Attempt to fix it, and if it
-+	 * is still nonlinear then we have to bug.
-+	 */
-+	int pmd_idx_kmap_begin = fix_to_virt(FIX_KMAP_END) >> PMD_SHIFT;
-+	int pmd_idx_kmap_end = fix_to_virt(FIX_KMAP_BEGIN) >> PMD_SHIFT;
-+
-+	if (pmd_idx_kmap_begin != pmd_idx_kmap_end
-+	    && (vaddr >> PMD_SHIFT) >= pmd_idx_kmap_begin
-+	    && (vaddr >> PMD_SHIFT) <= pmd_idx_kmap_end
-+	    && ((__pa(pte) >> PAGE_SHIFT) < table_start
-+		|| (__pa(pte) >> PAGE_SHIFT) >= table_end)) {
-+		pte_t *newpte;
-+		int i;
-+
-+		BUG_ON(after_init_bootmem);
-+		newpte = alloc_low_page();
-+		for (i = 0; i < PTRS_PER_PTE; i++)
-+			set_pte(newpte + i, pte[i]);
-+
-+		paravirt_alloc_pte(&init_mm, __pa(newpte) >> PAGE_SHIFT);
-+		set_pmd(pmd, __pmd(__pa(newpte)|_PAGE_TABLE));
-+		BUG_ON(newpte != pte_offset_kernel(pmd, 0));
-+		__flush_tlb_all();
-+
-+		paravirt_release_pte(__pa(pte) >> PAGE_SHIFT);
-+		pte = newpte;
-+	}
-+	BUG_ON(vaddr < fix_to_virt(FIX_KMAP_BEGIN - 1)
-+	       && vaddr > fix_to_virt(FIX_KMAP_END)
-+	       && lastpte && lastpte + PTRS_PER_PTE != pte);
-+#endif
-+	return pte;
-+}
-+
- /*
-  * This function initializes a certain range of kernel virtual memory
-  * with new bootmem page tables, everywhere page tables are missing in
-@@ -154,6 +195,7 @@ page_table_range_init(unsigned long star
- 	unsigned long vaddr;
- 	pgd_t *pgd;
- 	pmd_t *pmd;
-+	pte_t *pte = NULL;
- 
- 	vaddr = start;
- 	pgd_idx = pgd_index(vaddr);
-@@ -165,7 +207,8 @@ page_table_range_init(unsigned long star
- 		pmd = pmd + pmd_index(vaddr);
- 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
- 							pmd++, pmd_idx++) {
--			one_page_table_init(pmd);
-+			pte = page_table_kmap_check(one_page_table_init(pmd),
-+			                            pmd, vaddr, pte);
- 
- 			vaddr += PMD_SIZE;
- 		}
-@@ -508,7 +551,6 @@ static void __init early_ioremap_page_ta
- 	 * Fixed mappings, only the page table structure has to be
- 	 * created - mappings will be set by set_fixmap():
- 	 */
--	early_ioremap_clear();
- 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
- 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
- 	page_table_range_init(vaddr, end, pgd_base);
-@@ -801,7 +843,7 @@ static void __init find_early_table_spac
- 	tables += PAGE_ALIGN(ptes * sizeof(pte_t));
- 
- 	/* for fixmap */
--	tables += PAGE_SIZE * 2;
-+	tables += PAGE_ALIGN(__end_of_fixed_addresses * sizeof(pte_t));
- 
- 	/*
- 	 * RED-PEN putting page tables only on node 0 could
---- linux-2.6.29-rc1/arch/x86/mm/ioremap.c	2009-01-14 11:36:05.000000000 +0100
-+++ 2.6.29-rc1-i386-fix-kmap-contig/arch/x86/mm/ioremap.c	2009-01-16 00:00:00.000000000 +0100
-@@ -557,34 +557,9 @@ void __init early_ioremap_init(void)
- 	}
- }
- 
--void __init early_ioremap_clear(void)
--{
--	pmd_t *pmd;
--
--	if (early_ioremap_debug)
--		printk(KERN_INFO "early_ioremap_clear()\n");
--
--	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
--	pmd_clear(pmd);
--	paravirt_release_pte(__pa(bm_pte) >> PAGE_SHIFT);
--	__flush_tlb_all();
--}
--
- void __init early_ioremap_reset(void)
- {
--	enum fixed_addresses idx;
--	unsigned long addr, phys;
--	pte_t *pte;
--
- 	after_paging_init = 1;
--	for (idx = FIX_BTMAP_BEGIN; idx >= FIX_BTMAP_END; idx--) {
--		addr = fix_to_virt(idx);
--		pte = early_ioremap_pte(addr);
--		if (pte_present(*pte)) {
--			phys = pte_val(*pte) & PAGE_MASK;
--			set_fixmap(idx, phys);
--		}
--	}
- }
- 
- static void __init __early_set_fixmap(enum fixed_addresses idx,
+OK.  Is there any advantage of the task_clock over the cpu_clock?
+Could we get rid of task_clock (and therefore remove the
+curr_rq_lock_* calls) and just use the cpu_clock?
 
+Also, since we know we're only taking differences between readings on
+the same cpu, could we use sched_clock() instead of cpu_clock() to
+reduce overhead?  (We certainly could on powerpc, since we have
+synchronized timebase registers, but I know you don't have that luxury
+on x86. :)
 
+Paul.
