@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZAPPth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760900AbZAPPxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbZAPPth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 10:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZAPPtZ
+	id S1760900AbZAPPxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 10:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZAPPxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 10:49:25 -0500
-Received: from smtp.cs.aau.dk ([130.225.194.6]:56257 "EHLO smtp.cs.aau.dk"
+	Fri, 16 Jan 2009 10:53:01 -0500
+Received: from www.tglx.de ([62.245.132.106]:50502 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbZAPPtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 10:49:24 -0500
-Subject: Re: regression: a0d4922 causes PCI host constroller problems
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-In-Reply-To: <200901161306.10358.rjw@sisk.pl>
-References: <1232093125.2876.1.camel@odie.local>
-	 <1232097368.3120.5.camel@odie.local>  <200901161306.10358.rjw@sisk.pl>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 16 Jan 2009 16:48:59 +0100
-Message-Id: <1232120939.2782.3.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	id S1753857AbZAPPxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 10:53:00 -0500
+Date: Fri, 16 Jan 2009 16:52:36 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Tim Blechmann <tim@klingt.org>
+cc: Andi Kleen <ak@linux.intel.com>, oprofile-list@lists.sf.net,
+       linux-kernel@vger.kernel.org, Robert Richter <robert.richter@amd.com>,
+       venkatesh.pallipadi@intel.com
+Subject: Re: 2.6.28-rc9: oprofile regression
+In-Reply-To: <1232105393.6378.16.camel@thinkpad>
+Message-ID: <alpine.LFD.2.00.0901161651590.3400@localhost.localdomain>
+References: <1229869416.6911.1.camel@thinkpad>  <1229894585.6898.6.camel@thinkpad>  <49544497.9020900@linux.intel.com>  <1230894257.6072.10.camel@thinkpad>  <alpine.LFD.2.00.0901141739580.3598@localhost.localdomain>  <1231957184.13033.70.camel@thinkpad> 
+ <alpine.LFD.2.00.0901150940250.3598@localhost.localdomain>  <1232010853.6541.4.camel@thinkpad>  <alpine.LFD.2.00.0901152135110.3400@localhost.localdomain>  <1232067181.6134.74.camel@thinkpad>  <alpine.LFD.2.00.0901160956170.3400@localhost.localdomain>
+ <1232105393.6378.16.camel@thinkpad>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fre, 16 01 2009 kl. 13:06 +0100, skrev Rafael J. Wysocki:
-> On Friday 16 January 2009, Simon Holm Thøgersen wrote:
-> > fre, 16 01 2009 kl. 09:05 +0100, skrev Simon Holm Thøgersen:
-> > > commit a0d4922 ("USB: fix up suspend and resume for PCI host
-> > > controllers") causes a lot of these two lines to be logged:
-> > > 
-> > > uhci_hcd 0000:00:1d.2: host system error, PCI problems?
-> > > uhci_hcd 0000:00:1d.2: host controller process error, something bad
-> > > happened!
-> > > 
-> > > Normally they appear on resume after suspend to disk, but sometimes I'm
-> > > not even sure I had to suspend to disk to see them. Also, it seems like
-> > > they don't trigger if X has not been started, or at least they are much
-> > > less likely to.
-> > > 
-> > > Reverting the patch restores normal operation.
-> > > 
-> > > No USB devices were attached BTW.
-> > 
-> > So this one has already been reported [1]. There was some mentioning of
-> > a patch to try out instead of reverting, but I couldn't find it.
-> > 
-> > Rafael, did you have something else to suggest or can we please get a
-> > revert of this one upstream asap before too many are wasting their time
-> > on this one?
-> 
-> Yes, please try the patch from http://lkml.org/lkml/2009/1/13/144 and report
-> back.
+On Fri, 16 Jan 2009, Tim Blechmann wrote:
+> nothing fancy, just the ubuntu default:
+> root=UUID=7b58a11b-972a-4a67-909a-b8e48cb29da5 ro quiet splash 
 
-That fixes suspend to disk for me.
+Hmm, ubuntu. question: which gcc version ?
 
-Thanks Rafael, you really do an important and fantastic job on the
-regression work.
+Thanks,
 
-
-Simon Holm Thøgersen
-
+	tglx
