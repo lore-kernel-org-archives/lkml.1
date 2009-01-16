@@ -1,206 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934356AbZAPNVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934237AbZAPNXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934356AbZAPNVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 08:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762557AbZAPNVZ
+	id S934237AbZAPNXl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 08:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759889AbZAPNXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 08:21:25 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:58121 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761014AbZAPNVX (ORCPT
+	Fri, 16 Jan 2009 08:23:31 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:20962 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757550AbZAPNXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 08:21:23 -0500
-Date: Fri, 16 Jan 2009 15:21:12 +0200 (EET)
-Message-Id: <20090116.152112.90140354.Hiroshi.DOYU@nokia.com>
-To: roel.kluin@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition
- with macro
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-In-Reply-To: <20090116.141524.236287675.Hiroshi.DOYU@nokia.com>
-References: <20090116082706.17571.31102.stgit@oreo.research.nokia.com>
-	<25e057c00901160156w6058ade2j9c99ef727d8767ab@mail.gmail.com>
-	<20090116.141524.236287675.Hiroshi.DOYU@nokia.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
- boundary="--Next_Part(Fri_Jan_16_15_21_12_2009_137)--"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jan 2009 13:21:13.0762 (UTC) FILETIME=[4E0B7020:01C977DD]
-X-Nokia-AV: Clean
+	Fri, 16 Jan 2009 08:23:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=P4yxl/M0GRTYu8zK9Sj/Pq8T049rYW5tie1Di1WbfOapNRvuZxXc2UsSfxCC8Pp0Vd
+         dp/DRmCnJ1ihr0GYD4b+k9sNY0BIIRueORLkZ+bfe9+RQWYfMtMYTbw3VlnjhGJrEUzT
+         w9DzPVSoSBruK8LIBQcDFwCP2KJn2cKIZ4oys=
+Message-ID: <b6a2187b0901160523t5bbe116i72a7674172d5d8bb@mail.gmail.com>
+Date: Fri, 16 Jan 2009 21:23:29 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Cc: "Christian Borntraeger" <borntraeger@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090116104455.GA3283@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_285686_21587867.1232112209599"
+References: <20090113081316.GA2292@elf.ucw.cz> <200901131239.21995.rjw@sisk.pl>
+	 <200901131342.44562.borntraeger@de.ibm.com>
+	 <20090113132805.GE30352@atrey.karlin.mff.cuni.cz>
+	 <b6a2187b0901130533m118e9401k8a7152d6f5982708@mail.gmail.com>
+	 <20090116104455.GA3283@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-----Next_Part(Fri_Jan_16_15_21_12_2009_137)--
-Content-Type: Text/Plain; charset=us-ascii
+------=_Part_285686_21587867.1232112209599
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Updated one attached.
+On Fri, Jan 16, 2009 at 6:44 PM, Pavel Machek <pavel@suse.cz> wrote:
 
-From: "ext Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>
-Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition with macro
-Date: Fri, 16 Jan 2009 14:15:24 +0200 (EET)
+> Which patch?
 
-> From: "ext roel kluin" <roel.kluin@gmail.com>
-> Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition with macro
-> Date: Fri, 16 Jan 2009 10:56:01 +0100
-> 
-> [...]
-> > > +#define MAILBOX_SYSCONFIG              0x010
-> > > +#define MAILBOX_SYSSTATUS              0x014
-> > > +#define MAILBOX_MESSAGE(m)             (0x040 + 4 * (m))
-> > > +#define MAILBOX_FIFOSTATUS(m)          (0x080 + 4 * (m))
-> > > +#define MAILBOX_MSGSTATUS(m)           (0x0c0 + 4 * (m))
-> > > +#define MAILBOX_IRQSTATUS(u)           (0x100 + 8 * (u))
-> > > +#define MAILBOX_IRQENABLE(u)           (0x108 + 8 * (u))
-> >                                                                   ^^^^^^^
-> > shouldn't this be
-> > #define MAILBOX_IRQENABLE(u)           (0x104 + 8 * (u))
-> 
-> Right. I'll fix, thanks.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-----Next_Part(Fri_Jan_16_15_21_12_2009_137)--
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename=omap-mailbox-cleanup-omap2-reg
-
-omap mailbox: cleanup omap2 register definition with macro
-
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-
-Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
----
-
- arch/arm/mach-omap2/mailbox.c |   77 +++++++++++++++--------------------------
- 1 files changed, 29 insertions(+), 48 deletions(-)
+Try this patch attached.
 
 
-diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
-index 32b7af3..85c3ab8 100644
---- a/arch/arm/mach-omap2/mailbox.c
-+++ b/arch/arm/mach-omap2/mailbox.c
-@@ -1,9 +1,9 @@
- /*
-- * Mailbox reservation modules for OMAP2
-+ * Mailbox reservation modules for OMAP2/3
-  *
-- * Copyright (C) 2006 Nokia Corporation
-+ * Copyright (C) 2006-2008 Nokia Corporation
-  * Written by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-- *        and  Paul Mundt <paul.mundt@nokia.com>
-+ *        and  Paul Mundt
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file "COPYING" in the main directory of this archive
-@@ -18,40 +18,19 @@
- #include <mach/mailbox.h>
- #include <mach/irqs.h>
- 
--#define MAILBOX_REVISION		0x00
--#define MAILBOX_SYSCONFIG		0x10
--#define MAILBOX_SYSSTATUS		0x14
--#define MAILBOX_MESSAGE_0		0x40
--#define MAILBOX_MESSAGE_1		0x44
--#define MAILBOX_MESSAGE_2		0x48
--#define MAILBOX_MESSAGE_3		0x4c
--#define MAILBOX_MESSAGE_4		0x50
--#define MAILBOX_MESSAGE_5		0x54
--#define MAILBOX_FIFOSTATUS_0		0x80
--#define MAILBOX_FIFOSTATUS_1		0x84
--#define MAILBOX_FIFOSTATUS_2		0x88
--#define MAILBOX_FIFOSTATUS_3		0x8c
--#define MAILBOX_FIFOSTATUS_4		0x90
--#define MAILBOX_FIFOSTATUS_5		0x94
--#define MAILBOX_MSGSTATUS_0		0xc0
--#define MAILBOX_MSGSTATUS_1		0xc4
--#define MAILBOX_MSGSTATUS_2		0xc8
--#define MAILBOX_MSGSTATUS_3		0xcc
--#define MAILBOX_MSGSTATUS_4		0xd0
--#define MAILBOX_MSGSTATUS_5		0xd4
--#define MAILBOX_IRQSTATUS_0		0x100
--#define MAILBOX_IRQENABLE_0		0x104
--#define MAILBOX_IRQSTATUS_1		0x108
--#define MAILBOX_IRQENABLE_1		0x10c
--#define MAILBOX_IRQSTATUS_2		0x110
--#define MAILBOX_IRQENABLE_2		0x114
--#define MAILBOX_IRQSTATUS_3		0x118
--#define MAILBOX_IRQENABLE_3		0x11c
-+#define MAILBOX_REVISION		0x000
-+#define MAILBOX_SYSCONFIG		0x010
-+#define MAILBOX_SYSSTATUS		0x014
-+#define MAILBOX_MESSAGE(m)		(0x040 + 4 * (m))
-+#define MAILBOX_FIFOSTATUS(m)		(0x080 + 4 * (m))
-+#define MAILBOX_MSGSTATUS(m)		(0x0c0 + 4 * (m))
-+#define MAILBOX_IRQSTATUS(u)		(0x100 + 8 * (u))
-+#define MAILBOX_IRQENABLE(u)		(0x104 + 8 * (u))
- 
--static unsigned long mbox_base;
-+#define MAILBOX_IRQ_NEWMSG(u)		(1 << (2 * (u)))
-+#define MAILBOX_IRQ_NOTFULL(u)		(1 << (2 * (u) + 1))
- 
--#define MAILBOX_IRQ_NOTFULL(n)		(1 << (2 * (n) + 1))
--#define MAILBOX_IRQ_NEWMSG(n)		(1 << (2 * (n)))
-+static unsigned long mbox_base;
- 
- struct omap_mbox2_fifo {
- 	unsigned long msg;
-@@ -209,15 +188,15 @@ static struct omap_mbox_ops omap2_mbox_ops = {
- /* DSP */
- static struct omap_mbox2_priv omap2_mbox_dsp_priv = {
- 	.tx_fifo = {
--		.msg		= MAILBOX_MESSAGE_0,
--		.fifo_stat	= MAILBOX_FIFOSTATUS_0,
-+		.msg		= MAILBOX_MESSAGE(0),
-+		.fifo_stat	= MAILBOX_FIFOSTATUS(0),
- 	},
- 	.rx_fifo = {
--		.msg		= MAILBOX_MESSAGE_1,
--		.msg_stat	= MAILBOX_MSGSTATUS_1,
-+		.msg		= MAILBOX_MESSAGE(1),
-+		.msg_stat	= MAILBOX_MSGSTATUS(1),
- 	},
--	.irqenable	= MAILBOX_IRQENABLE_0,
--	.irqstatus	= MAILBOX_IRQSTATUS_0,
-+	.irqenable	= MAILBOX_IRQENABLE(0),
-+	.irqstatus	= MAILBOX_IRQSTATUS(0),
- 	.notfull_bit	= MAILBOX_IRQ_NOTFULL(0),
- 	.newmsg_bit	= MAILBOX_IRQ_NEWMSG(1),
- };
-@@ -232,15 +211,15 @@ EXPORT_SYMBOL(mbox_dsp_info);
- /* IVA */
- static struct omap_mbox2_priv omap2_mbox_iva_priv = {
- 	.tx_fifo = {
--		.msg		= MAILBOX_MESSAGE_2,
--		.fifo_stat	= MAILBOX_FIFOSTATUS_2,
-+		.msg		= MAILBOX_MESSAGE(2),
-+		.fifo_stat	= MAILBOX_FIFOSTATUS(2),
- 	},
- 	.rx_fifo = {
--		.msg		= MAILBOX_MESSAGE_3,
--		.msg_stat	= MAILBOX_MSGSTATUS_3,
-+		.msg		= MAILBOX_MESSAGE(3),
-+		.msg_stat	= MAILBOX_MSGSTATUS(3),
- 	},
--	.irqenable	= MAILBOX_IRQENABLE_3,
--	.irqstatus	= MAILBOX_IRQSTATUS_3,
-+	.irqenable	= MAILBOX_IRQENABLE(3),
-+	.irqstatus	= MAILBOX_IRQSTATUS(3),
- 	.notfull_bit	= MAILBOX_IRQ_NOTFULL(2),
- 	.newmsg_bit	= MAILBOX_IRQ_NEWMSG(3),
- };
-@@ -320,4 +299,6 @@ static void __exit omap2_mbox_exit(void)
- module_init(omap2_mbox_init);
- module_exit(omap2_mbox_exit);
- 
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("omap mailbox: omap2/3 architecture specific functions");
-+MODULE_AUTHOR("Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Paul Mundt");
+Jeff.
 
-----Next_Part(Fri_Jan_16_15_21_12_2009_137)----
+------=_Part_285686_21587867.1232112209599
+Content-Type: application/octet-stream; name=patch-fix-resume2
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fq0vpu590
+Content-Disposition: attachment; filename=patch-fix-resume2
+
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgCkRlbGl2ZXJlZC1UbzogamVmZi5jaHVhLmxpbnV4
+QGdtYWlsLmNvbQpSZWNlaXZlZDogYnkgMTAuMTE0LjU3Ljcgd2l0aCBTTVRQIGlkIGY3Y3MxNDE2
+Njc1d2FhOwogICAgICAgIFR1ZSwgMTMgSmFuIDIwMDkgMDM6MzM6MDggLTA4MDAgKFBTVCkKUmVj
+ZWl2ZWQ6IGJ5IDEwLjIyMy4xMDUuMTM5IHdpdGggU01UUCBpZCB0MTFtcjExMDMwMzM4ZmFvLjEx
+LjEyMzE4NDYzODc1NjI7CiAgICAgICAgVHVlLCAxMyBKYW4gMjAwOSAwMzozMzowNyAtMDgwMCAo
+UFNUKQpSZXR1cm4tUGF0aDogPHJqd0BzaXNrLnBsPgpSZWNlaXZlZDogZnJvbSBvZ3JlLnNpc2su
+cGwgKG9ncmUuc2lzay5wbCBbMjE3Ljc5LjE0NC4xNThdKQogICAgICAgIGJ5IG14Lmdvb2dsZS5j
+b20gd2l0aCBFU01UUCBpZCBiMTdzaTI3NTM1ODUyZmthLjM1LjIwMDkuMDEuMTMuMDMuMzMuMDY7
+CiAgICAgICAgVHVlLCAxMyBKYW4gMjAwOSAwMzozMzowNyAtMDgwMCAoUFNUKQpSZWNlaXZlZC1T
+UEY6IHBhc3MgKGdvb2dsZS5jb206IGJlc3QgZ3Vlc3MgcmVjb3JkIGZvciBkb21haW4gb2Ygcmp3
+QHNpc2sucGwgZGVzaWduYXRlcyAyMTcuNzkuMTQ0LjE1OCBhcyBwZXJtaXR0ZWQgc2VuZGVyKSBj
+bGllbnQtaXA9MjE3Ljc5LjE0NC4xNTg7CkF1dGhlbnRpY2F0aW9uLVJlc3VsdHM6IG14Lmdvb2ds
+ZS5jb207IHNwZj1wYXNzIChnb29nbGUuY29tOiBiZXN0IGd1ZXNzIHJlY29yZCBmb3IgZG9tYWlu
+IG9mIHJqd0BzaXNrLnBsIGRlc2lnbmF0ZXMgMjE3Ljc5LjE0NC4xNTggYXMgcGVybWl0dGVkIHNl
+bmRlcikgc210cC5tYWlsPXJqd0BzaXNrLnBsClJlY2VpdmVkOiBmcm9tIGxvY2FsaG9zdCAobG9j
+YWxob3N0LmxvY2FsZG9tYWluIFsxMjcuMC4wLjFdKQoJYnkgb2dyZS5zaXNrLnBsIChQb3N0Zml4
+KSB3aXRoIEVTTVRQIGlkIEFFMzkyMTE0OTdDOwoJVHVlLCAxMyBKYW4gMjAwOSAxMDoxNTo0NSAr
+MDEwMCAoQ0VUKQpSZWNlaXZlZDogZnJvbSBvZ3JlLnNpc2sucGwgKFsxMjcuMC4wLjFdKQogYnkg
+bG9jYWxob3N0IChvZ3JlLnNpc2sucGwgWzEyNy4wLjAuMV0pIChhbWF2aXNkLW5ldywgcG9ydCAx
+MDAyNCkgd2l0aCBFU01UUAogaWQgMTk5MzctMDU7IFR1ZSwgMTMgSmFuIDIwMDkgMTA6MTU6Mzgg
+KzAxMDAgKENFVCkKUmVjZWl2ZWQ6IGZyb20gdG9zaC5sb2NhbG5ldCAoaWZ0d2xhbjAuZnV3LmVk
+dS5wbCBbMTkzLjAuODMuMTk5XSkKCSh1c2luZyBUTFN2MSB3aXRoIGNpcGhlciBESEUtUlNBLUFF
+UzI1Ni1TSEEgKDI1Ni8yNTYgYml0cykpCgkoTm8gY2xpZW50IGNlcnRpZmljYXRlIHJlcXVlc3Rl
+ZCkKCWJ5IG9ncmUuc2lzay5wbCAoUG9zdGZpeCkgd2l0aCBFU01UUCBpZCAwRDNFOTExQzhDNTsK
+CVR1ZSwgMTMgSmFuIDIwMDkgMTA6MTU6MzggKzAxMDAgKENFVCkKRnJvbTogIlJhZmFlbCBKLiBX
+eXNvY2tpIiA8cmp3QHNpc2sucGw+ClRvOiAiSmVmZiBDaHVhIiA8amVmZi5jaHVhLmxpbnV4QGdt
+YWlsLmNvbT4KU3ViamVjdDogUmU6IFtCdWcgIzEyNDIyXSAyLjYuMjgtZ2l0IGNhbid0IHJlc3Vt
+ZSBmcm9tIHN0cgpEYXRlOiBUdWUsIDEzIEphbiAyMDA5IDEyOjMyOjE3ICswMTAwClVzZXItQWdl
+bnQ6IEtNYWlsLzEuMTAuMyAoTGludXgvMi42LjI5LXJjMS1yanc7IEtERS80LjEuMzsgeDg2XzY0
+OyA7ICkKQ2M6ICJMaW51cyBUb3J2YWxkcyIgPHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3Jn
+PiwKICJJbmdvIE1vbG5hciIgPG1pbmdvQGVsdGUuaHU+LAogIkNocmlzdGlhbiBCb3JudHJhZWdl
+ciIgPGJvcm50cmFlZ2VyQGRlLmlibS5jb20+LAogIkRhbmllbCBEcmFrZSIgPGRzZEBnZW50b28u
+b3JnPiwKICJMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0IiA8bGludXgta2VybmVsQHZnZXIua2Vy
+bmVsLm9yZz4sCiAiS2VybmVsIFRlc3RlcnMgTGlzdCIgPGtlcm5lbC10ZXN0ZXJzQHZnZXIua2Vy
+bmVsLm9yZz4sCiAiUGhpbCBEaWJvd2l0eiIgPHBoaWxAaXBvbS5jb20+LAogQWxhbiBTdGVybiA8
+c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT4KUmVmZXJlbmNlczogPFhVLThpY0FyV0xNLkEuVXBH
+LjhHZmFKQkBjaGltZXJhPiA8YjZhMjE4N2IwOTAxMTIyMDI4dzNmODVmYzlhajQxZDdjOGFjNDRh
+ZGIyZWRAbWFpbC5nbWFpbC5jb20+IDxiNmEyMTg3YjA5MDExMjIxNDdvNDU4OTBjZDRsZmI2YmE3
+YjI5MDhlNmFlN0BtYWlsLmdtYWlsLmNvbT4KSW4tUmVwbHktVG86IDxiNmEyMTg3YjA5MDExMjIx
+NDdvNDU4OTBjZDRsZmI2YmE3YjI5MDhlNmFlN0BtYWlsLmdtYWlsLmNvbT4KTUlNRS1WZXJzaW9u
+OiAxLjAKQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOwogIGNoYXJzZXQ9Imlzby04ODU5LTEiCkNv
+bnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQKQ29udGVudC1EaXNwb3NpdGlvbjogaW5saW5l
+Ck1lc3NhZ2UtSWQ6IDwyMDA5MDExMzEyMzIuMTc5NDEucmp3QHNpc2sucGw+ClgtVmlydXMtU2Nh
+bm5lZDogYW1hdmlzZC1uZXcgYXQgb2dyZS5zaXNrLnBsIHVzaW5nIE1rU19WaXIgZm9yIExpbnV4
+CgpPbiBUdWVzZGF5IDEzIEphbnVhcnkgMjAwOSwgSmVmZiBDaHVhIHdyb3RlOgo+IE9uIFN1biwg
+SmFuIDExLCAyMDA5IGF0IDc6MTYgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4g
+d3JvdGU6Cj4gCj4gPiBUaGUgZm9sbG93aW5nIGJ1ZyBlbnRyeSBpcyBvbiB0aGUgY3VycmVudCBs
+aXN0IG9mIGtub3duIHJlZ3Jlc3Npb25zCj4gPiBmcm9tIDIuNi4yOC4gIFBsZWFzZSB2ZXJpZnkg
+aWYgaXQgc3RpbGwgc2hvdWxkIGJlIGxpc3RlZCBhbmQgbGV0IG1lIGtub3cKPiA+IEJ1Zy1FbnRy
+eSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMjQy
+Mgo+ID4gU3ViamVjdCAgICAgICAgIDogMi42LjI4LWdpdCBjYW4ndCByZXN1bWUgZnJvbSBzdHIK
+PiA+IFN1Ym1pdHRlciAgICAgICA6IEplZmYgQ2h1YSA8amVmZi5jaHVhLmxpbnV4QGdtYWlsLmNv
+bT4KPiA+IERhdGUgICAgICAgICAgICA6IDIwMDktMDEtMTAgMTozOSAoMiBkYXlzIG9sZCkKPiA+
+IFJlZmVyZW5jZXMgICAgICA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTIz
+MTU1MTU3OTA5MjgyJnc9NAo+IAo+IEZpeGVkIGJ5IHJldmVydGluZyBhMGQ0OTIyZGEyZTRjY2Iw
+OTczMDk1ZDhkMjlmMzZmNmIxYjVmNzAzLgo+IDc1MDNiZmJhZTg5ZWJhMDdiNDY0NDFhNWQxNTk0
+NjQ3ZjZiOGFiN2QgaGFzIGFscmVhZHkgYmVlbiByZXZlcnRlZCBpbgo+IHRoZSBMaW51cydzIGxh
+dGVzdCBnaXQgdHJlZS4KCkNhbiB5b3UgcGxlYXNlIGNoZWNrIGlmIHRoZSBpc3N1ZSBnb2VzIGF3
+YXkgd2hlbiB5b3UgYXBwbHkgdGhlIGFwcGVuZGVkIHBhdGNoCmluc3RlYWQgb2YgcmV2ZXJ0aW5n
+IGNvbW1pdCBhMGQ0OTIyZGEyZTRjY2IwOTczMDk1ZDhkMjlmMzZmNmIxYjVmNzAzID8KClJhZmFl
+bAoKLS0tCiBkcml2ZXJzL3VzYi9jb3JlL2hjZC1wY2kuYyAgfCAgMTE2ICsrKysrKysrKystLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiBkcml2ZXJzL3VzYi9jb3JlL2hjZC5oICAg
+ICAgfCAgICAxIAogZHJpdmVycy91c2IvaG9zdC9laGNpLXBjaS5jIHwgICAgMSAKIGRyaXZlcnMv
+dXNiL2hvc3Qvb2hjaS1wY2kuYyB8ICAgIDEgCiBkcml2ZXJzL3VzYi9ob3N0L3VoY2ktaGNkLmMg
+fCAgICAxIAogNSBmaWxlcyBjaGFuZ2VkLCAyNyBpbnNlcnRpb25zKCspLCA5MyBkZWxldGlvbnMo
+LSkKCkluZGV4OiBsaW51eC0yLjYvZHJpdmVycy91c2IvY29yZS9oY2QtcGNpLmMKPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy91c2IvY29yZS9oY2QtcGNpLmMKKysrIGxpbnV4
+LTIuNi9kcml2ZXJzL3VzYi9jb3JlL2hjZC1wY2kuYwpAQCAtMjAxLDYgKzIwMSw3IEBAIGludCB1
+c2JfaGNkX3BjaV9zdXNwZW5kKHN0cnVjdCBwY2lfZGV2ICoKIAlzdHJ1Y3QgdXNiX2hjZAkJKmhj
+ZCA9IHBjaV9nZXRfZHJ2ZGF0YShkZXYpOwogCWludAkJCXJldHZhbCA9IDA7CiAJaW50CQkJd2Fr
+ZSwgdzsKKwlpbnQJCQloYXNfcGNpX3BtOwogCiAJLyogUm9vdCBodWIgc3VzcGVuZCBzaG91bGQg
+aGF2ZSBzdG9wcGVkIGFsbCBkb3duc3RyZWFtIHRyYWZmaWMsCiAJICogYW5kIGFsbCBidXMgbWFz
+dGVyIHRyYWZmaWMuICBBbmQgZG9uZSBzbyBmb3IgYm90aCB0aGUgaW50ZXJmYWNlCkBAIC0yMzAs
+NiArMjMxLDE1IEBAIGludCB1c2JfaGNkX3BjaV9zdXNwZW5kKHN0cnVjdCBwY2lfZGV2ICoKIAog
+CXN5bmNocm9uaXplX2lycShkZXYtPmlycSk7CiAKKwkvKiBEb3duc3RyZWFtIHBvcnRzIGZyb20g
+dGhpcyByb290IGh1YiBzaG91bGQgYWxyZWFkeSBiZSBxdWllc2NlZCwgc28KKwkgKiB0aGVyZSB3
+aWxsIGJlIG5vIERNQSBhY3Rpdml0eS4gIE5vdyB3ZSBjYW4gc2h1dCBkb3duIHRoZSB1cHN0cmVh
+bQorCSAqIGxpbmsgKGV4Y2VwdCBtYXliZSBmb3IgUE1FIyByZXN1bWUgc2lnbmFsaW5nKSBhbmQg
+ZW50ZXIgc29tZSBQQ0kKKwkgKiBsb3cgcG93ZXIgc3RhdGUsIGlmIHRoZSBoYXJkd2FyZSBhbGxv
+d3MuCisJICovCisJcGNpX2Rpc2FibGVfZGV2aWNlKGRldik7CisKKwlwY2lfc2F2ZV9zdGF0ZShk
+ZXYpOworCiAJLyogRG9uJ3QgZmFpbCBvbiBlcnJvciB0byBlbmFibGUgd2FrZXVwLiAgV2UgcmVs
+eSBvbiBwY2kgY29kZQogCSAqIHRvIHJlamVjdCByZXF1ZXN0cyB0aGUgaGFyZHdhcmUgY2FuJ3Qg
+aW1wbGVtZW50LCByYXRoZXIKIAkgKiB0aGFuIGNvZGluZyB0aGUgc2FtZSB0aGluZy4KQEAgLTI0
+MSwzNSArMjUxLDYgQEAgaW50IHVzYl9oY2RfcGNpX3N1c3BlbmQoc3RydWN0IHBjaV9kZXYgKgog
+CQl3YWtlID0gdzsKIAlkZXZfZGJnKCZkZXYtPmRldiwgIndha2V1cDogJWRcbiIsIHdha2UpOwog
+Ci0JLyogRG93bnN0cmVhbSBwb3J0cyBmcm9tIHRoaXMgcm9vdCBodWIgc2hvdWxkIGFscmVhZHkg
+YmUgcXVpZXNjZWQsIHNvCi0JICogdGhlcmUgd2lsbCBiZSBubyBETUEgYWN0aXZpdHkuICBOb3cg
+d2UgY2FuIHNodXQgZG93biB0aGUgdXBzdHJlYW0KLQkgKiBsaW5rIChleGNlcHQgbWF5YmUgZm9y
+IFBNRSMgcmVzdW1lIHNpZ25hbGluZykgYW5kIGVudGVyIHNvbWUgUENJCi0JICogbG93IHBvd2Vy
+IHN0YXRlLCBpZiB0aGUgaGFyZHdhcmUgYWxsb3dzLgotCSAqLwotCXBjaV9kaXNhYmxlX2Rldmlj
+ZShkZXYpOwotIGRvbmU6Ci0JcmV0dXJuIHJldHZhbDsKLX0KLUVYUE9SVF9TWU1CT0xfR1BMKHVz
+Yl9oY2RfcGNpX3N1c3BlbmQpOwotCi0vKioKLSAqIHVzYl9oY2RfcGNpX3N1c3BlbmRfbGF0ZSAt
+IHN1c3BlbmQgYSBQQ0ktYmFzZWQgSENEIGFmdGVyIElSUXMgYXJlIGRpc2FibGVkCi0gKiBAZGV2
+OiBVU0IgSG9zdCBDb250cm9sbGVyIGJlaW5nIHN1c3BlbmRlZAotICogQG1lc3NhZ2U6IFBvd2Vy
+IE1hbmFnZW1lbnQgbWVzc2FnZSBkZXNjcmliaW5nIHRoaXMgc3RhdGUgdHJhbnNpdGlvbgotICoK
+LSAqIFN0b3JlIHRoaXMgZnVuY3Rpb24gaW4gdGhlIEhDRCdzIHN0cnVjdCBwY2lfZHJpdmVyIGFz
+IC5zdXNwZW5kX2xhdGUuCi0gKi8KLWludCB1c2JfaGNkX3BjaV9zdXNwZW5kX2xhdGUoc3RydWN0
+IHBjaV9kZXYgKmRldiwgcG1fbWVzc2FnZV90IG1lc3NhZ2UpCi17Ci0JaW50CQkJcmV0dmFsID0g
+MDsKLQlpbnQJCQloYXNfcGNpX3BtOwotCi0JLyogV2UgbWlnaHQgYWxyZWFkeSBiZSBzdXNwZW5k
+ZWQgKHJ1bnRpbWUgUE0gLS0gbm90IHlldCB3cml0dGVuKSAqLwotCWlmIChkZXYtPmN1cnJlbnRf
+c3RhdGUgIT0gUENJX0QwKQotCQlnb3RvIGRvbmU7Ci0KLQlwY2lfc2F2ZV9zdGF0ZShkZXYpOwot
+CiAJLyogRG9uJ3QgY2hhbmdlIHN0YXRlIGlmIHdlIGRvbid0IG5lZWQgdG8gKi8KIAlpZiAobWVz
+c2FnZS5ldmVudCA9PSBQTV9FVkVOVF9GUkVFWkUgfHwKIAkJCW1lc3NhZ2UuZXZlbnQgPT0gUE1f
+RVZFTlRfUFJFVEhBVykgewpAQCAtMzE1LDcgKzI5Niw3IEBAIGludCB1c2JfaGNkX3BjaV9zdXNw
+ZW5kX2xhdGUoc3RydWN0IHBjaV8KICBkb25lOgogCXJldHVybiByZXR2YWw7CiB9Ci1FWFBPUlRf
+U1lNQk9MX0dQTCh1c2JfaGNkX3BjaV9zdXNwZW5kX2xhdGUpOworRVhQT1JUX1NZTUJPTF9HUEwo
+dXNiX2hjZF9wY2lfc3VzcGVuZCk7CiAKIC8qKgogICogdXNiX2hjZF9wY2lfcmVzdW1lX2Vhcmx5
+IC0gcmVzdW1lIGEgUENJLWJhc2VkIEhDRCBiZWZvcmUgSVJRcyBhcmUgZW5hYmxlZApAQCAtMzI1
+LDY1ICszMDYsOCBAQCBFWFBPUlRfU1lNQk9MX0dQTCh1c2JfaGNkX3BjaV9zdXNwZW5kX2xhCiAg
+Ki8KIGludCB1c2JfaGNkX3BjaV9yZXN1bWVfZWFybHkoc3RydWN0IHBjaV9kZXYgKmRldikKIHsK
+LQlpbnQJCXJldHZhbCA9IDA7Ci0JcGNpX3Bvd2VyX3QJc3RhdGUgPSBkZXYtPmN1cnJlbnRfc3Rh
+dGU7Ci0KLSNpZmRlZiBDT05GSUdfUFBDX1BNQUMKLQkvKiBSZWVuYWJsZSBBU0lDIGNsb2NrcyBm
+b3IgVVNCICovCi0JaWYgKG1hY2hpbmVfaXMocG93ZXJtYWMpKSB7Ci0JCXN0cnVjdCBkZXZpY2Vf
+bm9kZSAqb2Zfbm9kZTsKLQotCQlvZl9ub2RlID0gcGNpX2RldmljZV90b19PRl9ub2RlKGRldik7
+Ci0JCWlmIChvZl9ub2RlKQotCQkJcG1hY19jYWxsX2ZlYXR1cmUoUE1BQ19GVFJfVVNCX0VOQUJM
+RSwKLQkJCQkJCW9mX25vZGUsIDAsIDEpOwotCX0KLSNlbmRpZgotCi0JLyogTk9URTogIGNoaXAg
+ZG9jcyBjb3ZlciBjbGVhbiAicmVhbCBzdXNwZW5kIiBjYXNlcyAod2hhdCBMaW51eAotCSAqIGNh
+bGxzICJzdGFuZGJ5IiwgInN1c3BlbmQgdG8gUkFNIiwgYW5kIHNvIG9uKS4gIFRoZXJlIGFyZSBh
+bHNvCi0JICogZGlydHkgY2FzZXMgd2hlbiBzd3N1c3AgZmFrZXMgYSBzdXNwZW5kIGluICJzaHV0
+ZG93biIgbW9kZS4KLQkgKi8KLQlpZiAoc3RhdGUgIT0gUENJX0QwKSB7Ci0jaWZkZWYJREVCVUcK
+LQkJaW50CXBjaV9wbTsKLQkJdTE2CXBtY3I7Ci0KLQkJcGNpX3BtID0gcGNpX2ZpbmRfY2FwYWJp
+bGl0eShkZXYsIFBDSV9DQVBfSURfUE0pOwotCQlwY2lfcmVhZF9jb25maWdfd29yZChkZXYsIHBj
+aV9wbSArIFBDSV9QTV9DVFJMLCAmcG1jcik7Ci0JCXBtY3IgJj0gUENJX1BNX0NUUkxfU1RBVEVf
+TUFTSzsKLQkJaWYgKHBtY3IpIHsKLQkJCS8qIENsZWFuIGNhc2U6ICBwb3dlciB0byBVU0IgYW5k
+IHRvIEhDIHJlZ2lzdGVycyB3YXMKLQkJCSAqIG1haW50YWluZWQ7IHJlbW90ZSB3YWtldXAgaXMg
+ZWFzeS4KLQkJCSAqLwotCQkJZGV2X2RiZygmZGV2LT5kZXYsICJyZXN1bWUgZnJvbSBQQ0kgRCVk
+XG4iLCBwbWNyKTsKLQkJfSBlbHNlIHsKLQkJCS8qIENsZWFuOiAgSEMgbG9zdCBWY2MgcG93ZXIs
+IEQwIHVuaW5pdGlhbGl6ZWQKLQkJCSAqICAgKyBWYXV4IG1heSBoYXZlIHByZXNlcnZlZCBwb3J0
+IGFuZCB0cmFuc2NlaXZlcgotCQkJICogICAgIHN0YXRlIC4uLiBmb3IgcmVtb3RlIHdha2V1cCBm
+cm9tIEQzY29sZAotCQkJICogICArIG9yIG5vdDsgSENEIG11c3QgcmVpbml0ICsgcmUtZW51bWVy
+YXRlCi0JCQkgKgotCQkJICogRGlydHk6IEQwIHNlbWktaW5pdGlhbGl6ZWQgY2FzZXMgd2l0aCBz
+d3N1c3AKLQkJCSAqICAgKyBhZnRlciBCSU9TIGluaXQKLQkJCSAqICAgKyBhZnRlciBMaW51eCBp
+bml0IChIQ0Qgc3RhdGljYWxseSBsaW5rZWQpCi0JCQkgKi8KLQkJCWRldl9kYmcoJmRldi0+ZGV2
+LCAicmVzdW1lIGZyb20gcHJldmlvdXMgUENJIEQlZFxuIiwKLQkJCQkJc3RhdGUpOwotCQl9Ci0j
+ZW5kaWYKLQotCQlyZXR2YWwgPSBwY2lfc2V0X3Bvd2VyX3N0YXRlKGRldiwgUENJX0QwKTsKLQl9
+IGVsc2UgewotCQkvKiBTYW1lIGJhc2ljIGNhc2VzOiBjbGVhbiAocG93ZXJlZC9ub3QpLCBkaXJ0
+eSAqLwotCQlkZXZfZGJnKCZkZXYtPmRldiwgIlBDSSBsZWdhY3kgcmVzdW1lXG4iKTsKLQl9Ci0K
+LQlpZiAocmV0dmFsIDwgMCkKLQkJZGV2X2VycigmZGV2LT5kZXYsICJjYW4ndCByZXN1bWU6ICVk
+XG4iLCByZXR2YWwpOwotCWVsc2UKLQkJcGNpX3Jlc3RvcmVfc3RhdGUoZGV2KTsKLQotCXJldHVy
+biByZXR2YWw7CisJcGNpX3Jlc3RvcmVfc3RhdGUoZGV2KTsKKwlyZXR1cm4gMDsKIH0KIEVYUE9S
+VF9TWU1CT0xfR1BMKHVzYl9oY2RfcGNpX3Jlc3VtZV9lYXJseSk7CiAKQEAgLTM5OCw2ICszMjIs
+MTggQEAgaW50IHVzYl9oY2RfcGNpX3Jlc3VtZShzdHJ1Y3QgcGNpX2RldiAqZAogCXN0cnVjdCB1
+c2JfaGNkCQkqaGNkOwogCWludAkJCXJldHZhbDsKIAorI2lmZGVmIENPTkZJR19QUENfUE1BQwor
+CS8qIFJlZW5hYmxlIEFTSUMgY2xvY2tzIGZvciBVU0IgKi8KKwlpZiAobWFjaGluZV9pcyhwb3dl
+cm1hYykpIHsKKwkJc3RydWN0IGRldmljZV9ub2RlICpvZl9ub2RlOworCisJCW9mX25vZGUgPSBw
+Y2lfZGV2aWNlX3RvX09GX25vZGUoZGV2KTsKKwkJaWYgKG9mX25vZGUpCisJCQlwbWFjX2NhbGxf
+ZmVhdHVyZShQTUFDX0ZUUl9VU0JfRU5BQkxFLAorCQkJCQkJb2Zfbm9kZSwgMCwgMSk7CisJfQor
+I2VuZGlmCisKIAloY2QgPSBwY2lfZ2V0X2RydmRhdGEoZGV2KTsKIAlpZiAoaGNkLT5zdGF0ZSAh
+PSBIQ19TVEFURV9TVVNQRU5ERUQpIHsKIAkJZGV2X2RiZyhoY2QtPnNlbGYuY29udHJvbGxlciwK
+QEAgLTQwNSw2ICszNDEsOCBAQCBpbnQgdXNiX2hjZF9wY2lfcmVzdW1lKHN0cnVjdCBwY2lfZGV2
+ICpkCiAJCXJldHVybiAwOwogCX0KIAorCXBjaV9lbmFibGVfd2FrZShkZXYsIFBDSV9EMCwgZmFs
+c2UpOworCiAJcmV0dmFsID0gcGNpX2VuYWJsZV9kZXZpY2UoZGV2KTsKIAlpZiAocmV0dmFsIDwg
+MCkgewogCQlkZXZfZXJyKCZkZXYtPmRldiwgImNhbid0IHJlLWVuYWJsZSBhZnRlciByZXN1bWUs
+ICVkIVxuIiwKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL3VzYi9jb3JlL2hjZC5oCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvdXNiL2NvcmUvaGNkLmgKKysrIGxpbnV4LTIu
+Ni9kcml2ZXJzL3VzYi9jb3JlL2hjZC5oCkBAIC0yNTcsNyArMjU3LDYgQEAgZXh0ZXJuIHZvaWQg
+dXNiX2hjZF9wY2lfcmVtb3ZlKHN0cnVjdCBwYwogCiAjaWZkZWYgQ09ORklHX1BNCiBleHRlcm4g
+aW50IHVzYl9oY2RfcGNpX3N1c3BlbmQoc3RydWN0IHBjaV9kZXYgKmRldiwgcG1fbWVzc2FnZV90
+IG1zZyk7Ci1leHRlcm4gaW50IHVzYl9oY2RfcGNpX3N1c3BlbmRfbGF0ZShzdHJ1Y3QgcGNpX2Rl
+diAqZGV2LCBwbV9tZXNzYWdlX3QgbXNnKTsKIGV4dGVybiBpbnQgdXNiX2hjZF9wY2lfcmVzdW1l
+X2Vhcmx5KHN0cnVjdCBwY2lfZGV2ICpkZXYpOwogZXh0ZXJuIGludCB1c2JfaGNkX3BjaV9yZXN1
+bWUoc3RydWN0IHBjaV9kZXYgKmRldik7CiAjZW5kaWYgLyogQ09ORklHX1BNICovCkluZGV4OiBs
+aW51eC0yLjYvZHJpdmVycy91c2IvaG9zdC9laGNpLXBjaS5jCj09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4
+LTIuNi5vcmlnL2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYworKysgbGludXgtMi42L2RyaXZl
+cnMvdXNiL2hvc3QvZWhjaS1wY2kuYwpAQCAtNDMyLDcgKzQzMiw2IEBAIHN0YXRpYyBzdHJ1Y3Qg
+cGNpX2RyaXZlciBlaGNpX3BjaV9kcml2ZXIKIAogI2lmZGVmCUNPTkZJR19QTQogCS5zdXNwZW5k
+ID0JdXNiX2hjZF9wY2lfc3VzcGVuZCwKLQkuc3VzcGVuZF9sYXRlID0JdXNiX2hjZF9wY2lfc3Vz
+cGVuZF9sYXRlLAogCS5yZXN1bWVfZWFybHkgPQl1c2JfaGNkX3BjaV9yZXN1bWVfZWFybHksCiAJ
+LnJlc3VtZSA9CXVzYl9oY2RfcGNpX3Jlc3VtZSwKICNlbmRpZgpJbmRleDogbGludXgtMi42L2Ry
+aXZlcnMvdXNiL2hvc3Qvb2hjaS1wY2kuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9k
+cml2ZXJzL3VzYi9ob3N0L29oY2ktcGNpLmMKKysrIGxpbnV4LTIuNi9kcml2ZXJzL3VzYi9ob3N0
+L29oY2ktcGNpLmMKQEAgLTQ4Nyw3ICs0ODcsNiBAQCBzdGF0aWMgc3RydWN0IHBjaV9kcml2ZXIg
+b2hjaV9wY2lfZHJpdmVyCiAKICNpZmRlZglDT05GSUdfUE0KIAkuc3VzcGVuZCA9CXVzYl9oY2Rf
+cGNpX3N1c3BlbmQsCi0JLnN1c3BlbmRfbGF0ZSA9CXVzYl9oY2RfcGNpX3N1c3BlbmRfbGF0ZSwK
+IAkucmVzdW1lX2Vhcmx5ID0JdXNiX2hjZF9wY2lfcmVzdW1lX2Vhcmx5LAogCS5yZXN1bWUgPQl1
+c2JfaGNkX3BjaV9yZXN1bWUsCiAjZW5kaWYKSW5kZXg6IGxpbnV4LTIuNi9kcml2ZXJzL3VzYi9o
+b3N0L3VoY2ktaGNkLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy91c2Iv
+aG9zdC91aGNpLWhjZC5jCisrKyBsaW51eC0yLjYvZHJpdmVycy91c2IvaG9zdC91aGNpLWhjZC5j
+CkBAIC05NDIsNyArOTQyLDYgQEAgc3RhdGljIHN0cnVjdCBwY2lfZHJpdmVyIHVoY2lfcGNpX2Ry
+aXZlcgogCiAjaWZkZWYJQ09ORklHX1BNCiAJLnN1c3BlbmQgPQl1c2JfaGNkX3BjaV9zdXNwZW5k
+LAotCS5zdXNwZW5kX2xhdGUgPQl1c2JfaGNkX3BjaV9zdXNwZW5kX2xhdGUsCiAJLnJlc3VtZV9l
+YXJseSA9CXVzYl9oY2RfcGNpX3Jlc3VtZV9lYXJseSwKIAkucmVzdW1lID0JdXNiX2hjZF9wY2lf
+cmVzdW1lLAogI2VuZGlmCS8qIFBNICovCgo=
+------=_Part_285686_21587867.1232112209599--
