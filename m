@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbZAPPxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbZAPPyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbZAPPxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 10:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbZAPPxP
+	id S932149AbZAPPyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 10:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764304AbZAPPxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 10:53:15 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:33063 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbZAPPxN (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 10:53:13 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Theodore Tso <tytso@mit.edu>
-Cc: Pavel Machek <pavel@suse.cz>, Eric Sandeen <sandeen@redhat.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>
-Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-In-Reply-To: Your message of "Fri, 16 Jan 2009 10:40:26 EST."
-             <20090116154026.GG10683@mit.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <496EB639.6090800@redhat.com> <20090116084828.GB4795@atrey.karlin.mff.cuni.cz> <16406.1232119029@turing-police.cc.vt.edu>
-            <20090116154026.GG10683@mit.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1232121154_11157P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 16 Jan 2009 10:52:34 -0500
-Message-ID: <18022.1232121154@turing-police.cc.vt.edu>
+	Fri, 16 Jan 2009 10:53:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40883 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764203AbZAPPxo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 10:53:44 -0500
+Date: Fri, 16 Jan 2009 10:53:42 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH 0/2] ftrace: updates to tip
+In-Reply-To: <20090116152103.GA28643@elte.hu>
+Message-ID: <alpine.DEB.1.10.0901161050470.22303@gandalf.stny.rr.com>
+References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu> <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com> <20090116152103.GA28643@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1232121154_11157P
-Content-Type: text/plain; charset=us-ascii
 
-On Fri, 16 Jan 2009 10:40:26 EST, Theodore Tso said:
+On Fri, 16 Jan 2009, Ingo Molnar wrote:
+> > 
+> > But I do notice that not all functions produce a valid stack trace. 
+> > Maybe it would be better to add that api :-?
+> 
+> yes - i think that API would be more intuitive, and that way people could 
+> mix more interesting functions (with stack traces) with less important 
+> functions (no stack traces).
 
-> My biggest complaint is that the two operations are largely
-> orthogonal.  Emergency sync and unfreeze are two very different
-> operations, and while emergency sync is largely harmless, it just
-> seems really unclean to combine the two.  For one thing, it'll be
-> extremely non-obvious that emergency sync implies unfreeze, and
-> changing the sysrq help to say emergency-Sync-and-unfreeze just
-> screams "kludge"....
+Ah, that's the point. We can't mix and match on these. Either all 
+functions that are traced do the stack trace, or none do. This is where 
+the new api may be confusing.  We can register a function to be traced via 
+the function pointer, and we can pick which functions to trace, but we can 
+not separate out different functions for different traces.
 
-Fair enough - as it is, I usually end up doing sysrq-s, -s, -u, -s, -b
-anyhow because each sysrq- does one little thing, adding another little
-thing on some other control-meta-alt-cokebottle key *is* probably the
-right choice, we still have a few keyscan codes left.. ;)
+-- Steve
 
---==_Exmh_1232121154_11157P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJcK1CcC3lWbTT17ARArKVAKCkacyG+Jy01mnlZmhIpzwYFZdAQACgoKcB
-JIWLeo+NcaRCNGjQ0LlPtCM=
-=4IF+
------END PGP SIGNATURE-----
-
---==_Exmh_1232121154_11157P--
