@@ -1,117 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbZAPDtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbZAPDxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761746AbZAPDtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZAPDtj
+	id S1757949AbZAPDxO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZAPDwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:49:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53351 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754108AbZAPDti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:49:38 -0500
-Message-ID: <497003CC.8030503@redhat.com>
-Date: Thu, 15 Jan 2009 21:49:32 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Thu, 15 Jan 2009 22:52:55 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:38455 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZAPDwy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 22:52:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EdlbGx5XQyoBOv7WJTp+3okf+jg6kGDtDpX6pKjEWh+epEfwWwbGok/PSTOpRaom/S
+         1JzRMwZA6yshMydePhfm37DcGmPLn2d3P0Mt4ap8B3hvqXeMmaG4mQh2+Z20oEk/1Tjt
+         yNDcCNQjLT4W2VkF41LalElNSVrYAewRb3vns=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
-Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-References: <496EB639.6090800@redhat.com> <20090115162031.a512232b.akpm@linux-foundation.org>
-In-Reply-To: <20090115162031.a512232b.akpm@linux-foundation.org>
+In-Reply-To: <1232066174.5966.92.camel@localhost.localdomain>
+References: <200901051952.58029.bzolnier@gmail.com> <496ECBA0.60209@gmail.com>
+	 <87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
+	 <1232035561.5966.48.camel@localhost.localdomain>
+	 <da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com>
+	 <1232046039.5966.54.camel@localhost.localdomain>
+	 <da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com>
+	 <1232061429.5966.87.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0901152341500.15035@blonde.anvils>
+	 <1232066174.5966.92.camel@localhost.localdomain>
+Date: Fri, 16 Jan 2009 12:52:51 +0900
+Message-ID: <7fe698080901151952u4c6157d3tca8d745b69cacc1e@mail.gmail.com>
+Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through sysfs
+From: Dongjun Shin <djshin90@gmail.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Grant Grundler <grundler@google.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 14 Jan 2009 22:06:17 -0600
-> Eric Sandeen <sandeen@redhat.com> wrote:
-> 
->> Now that the filesystem freeze operation has been elevated
->> to the VFS, and is just an ioctl away, some sort of safety net
->> for unintentionally frozen root filesystems may be in order.
->>
->> The timeout thaw originally proposed did not get merged, but
->> perhaps something like this would be useful in emergencies.
->>
->> This doesn't have to piggyback on the existing emergency sync
->> sysrq, but it seems like a reasonable, simple addition to me.
->>
->> I've tested this on a non-root fs with multiple (nested) freezers,
->> as well as on a system rendered unresponsive due to a frozen
->> root fs.
-> 
-> Worried.
-> 
-> Under what operational scenarios is ths feature actually needed/used?
+On Fri, Jan 16, 2009 at 9:36 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+>
+> On Thu, 2009-01-15 at 23:50 +0000, Hugh Dickins wrote:
+> > On Thu, 15 Jan 2009, James Bottomley wrote:
+> > >
+> > > OK, so they could be calculated on the fly in the elevators, I suppose.
+> > > But what would the value be?  Right now we use the nonrotational flag to
+> > > basically not bother with plugging (no point if no seek penalty) on
+> > > certain events where we'd previously have waited for other I/O to join.
+> > > But that's really a seek penalty parameter rather than the idea of read
+> > > or write costing (although the elevators usually track these dynamically
+> > > anyway ... as part of the latency calculations but not explicitly).
+> >
+> > ... not bother with plugging (no point if no seek penalty) ...
+> >
+> > I thought there was considerable advantage to plugging writes
+> > (in case they turn out to be adjacent) on current and older
+> > generations of non-rotational storage?
+>
+> Heh, you get as many answers to that one as their are SSD manufacturers.
+> However, the consensus seems to be that all MLC and SLC flash has a RAID
+> like architecture internally, thus it can actually be *faster* if you
+> send multiple commands (each area of the RAID processes independently).
+> Of course, you have to be *able* to send multiple commands, so the
+> device must implement TCQ/NCQ, but if it does, it's actually beneficial
+> *not* to wait even if the requests are adjacent.
+>
+> However, the reason the nonrotational flag is set from user space is
+> precisely so if we do find an SSD that has this property, we can just
+> not set the nonrotational queue flag.
+>
 
-Well, if you freeze root and do some things that require IO there, you
-can get stuck pretty easily
+Not all non-rotational SSDs are created equal (as Intel said).
 
-(hacked xfs_io to call the ioctl here)
+Some SSD performs better as the I/O queue length increase, while others not.
+For SSD with scalable queueing performance, it might be better to allow
+multiple discrete I/Os.
 
-[root@inode io]# ./xfs_io -r -x -F -c "freeze" /
-[root@inode io]# ls
-^Z
-^C
-<tap tap.. uhoh>
+I'm not sure if "non-rotational" is well suited for tuning the
+behavior of elevator merging.
 
->> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
->> ---
->>
->> Index: linux-2.6/drivers/char/sysrq.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/char/sysrq.c
->> +++ linux-2.6/drivers/char/sysrq.c
->> @@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
->>  
->>  static void sysrq_handle_sync(int key, struct tty_struct *tty)
->>  {
->> +	emergency_thaw();
->>  	emergency_sync();
->>  }
-> 
-> Kind of weird.   The thaw will happen after/during the sync().
-
-oh, hrm.  Maybe I didn't think enough about how it's handed off to
-pdflush; I could rearrange if that makes sense?  Or maybe handing to
-pdflush is wrong, it was just so convenient....
-
-> I guess that if the sync is blocked on a frozen fs then things will
-> sort themselves out.
-> 
-> otoh, if all the pdflush threads are blocked on frozen filesystems
-> (possible?) then the emergency_thaw() simply won't do anything.
-
-Hm, maybe possible... I'll have to think about that.
-
-Thanks,
--Eric
-
->> ===================================================================
->> --- linux-2.6.orig/fs/buffer.c
->> +++ linux-2.6/fs/buffer.c
->> @@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
->>  }
->>  EXPORT_SYMBOL(freeze_bdev);
->>  
->> +void do_thaw(unsigned long unused)
->> +{
->> +	struct super_block *sb;
->> +	char b[BDEVNAME_SIZE];
->> +
->> +	list_for_each_entry(sb, &super_blocks, s_list) {
->> +		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
->> +			printk(KERN_WARNING "Emergency Thaw on %s\n",
->> +			       bdevname(sb->s_bdev, b));
-> 
-> hm, I made the args to bdevname() backwards.  Bad me.
-> 
->> +	}
->> +	printk(KERN_WARNING "Emergency Thaw complete\n");
->> +}
-> 
-
+--
+Dongjun
