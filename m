@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbZAPHgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbZAPHg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761738AbZAPHgj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbZAPHgP
+	id S1761993AbZAPHg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 02:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZAPHg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:36:15 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:40600 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758041AbZAPHgO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:36:14 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
-To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <496FAFE2.8020102@linux.vnet.ibm.com>
-References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com>
-Date: Fri, 16 Jan 2009 16:36:06 +0900
-Message-ID: <9829.1232091366@jrobl>
+	Fri, 16 Jan 2009 02:36:27 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62573 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753625AbZAPHg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 02:36:26 -0500
+Message-ID: <497038CD.8010505@cn.fujitsu.com>
+Date: Fri, 16 Jan 2009 15:35:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>	<496FE30C.1090300@cn.fujitsu.com>	<20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>	<496FE791.9030208@cn.fujitsu.com> <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Tyler Hicks:
-> >> - The ecryptfs inode holds a reference to the lower inode, but doesn't=
+>>>>> +	while (!ret) {
+>>>>> +		rcu_read_lock();
+>>>>> +		nextid = root_mem->last_scanned_child + 1;
+>>>>> +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
+>>>>> +				   &found);
+>>>>> +		if (css && css_is_populated(css) && css_tryget(css))
+>>>> I don't see why you need to check css_is_populated(css) ?
+>>>>
+>>> Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
+>> I think this is a rare case. It's just a very short period when a cgroup is
+>> being created but not yet fully created.
+>>
+>>> Second reason is for avoinding unnecessary calls to try_to_free_pages(),
+>>> it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
+>>>
+>> And if mem->res.usage == 0 is checked, css_is_popuated() is just redundant.
+>>
+> Hmm ? Can I check mem->res.usage before css_tryget() ?
 > 
-> >>   increment the reference counter. When a user sets inotify to the
-> >>   ecryptfs inode, it may live without the corresponding dentry. In thi=
-> s
-> >>   case the referecen to the lower inode may be broken.
-> >>   This patch maintains the reference of the lower inode.
-> 
-> Is this a problem that you've experienced or something you found during
-> a code review?  How can it be reproduced?  We get a reference to the
-> lower inode with the igrab() in ecryptfs_interpose() and put it back in
-> ecryptfs_clear_inode().  This part of the patch seems to just increment
-> the ref counts again.
 
-I could confirm the igrab() in ecryptfs_interpose(), so touching i_count
-in my patch are unnecessary.
-Although I don't remember the detail, I have experienced a trouble (and
-I wrote the patch). If I can recall the problem and find the
-reproducible way, I will write again.
-One thing I remember is, vfs_unlink() in ecryptfs_unlink() made
-lower_dentry->d_inode NULL unexpectedly.
-
-I guess the problem was related to the i_count including my fixes for
-ecryptfs_unlink() and ecryptfs_link(). Current ecryptfs_link() calls
-ecryptfs_interpose(), but obviously the inode is not I_NEW and the
-incremented i_count is decremented again (finally unchanged).
-The current unnecessary d_drop()s may help hiding the problem, but I am
-not sure.
+I think you can. If css != NULL, css is valid (otherwise how can we access css->flags
+in css_tryget), so mem is valid. Correct me if I'm wrong. :)
 
 
-> I see that do_unlinkat does this, but since eCryptfs already holds these
-> references, I don't think that we need to do it here.
-
-Whether the counter is one or more is more important than to hold or not
-to hold simply.
-
-
-> This part of the patch is valid, nice catch!
-
-I am happy that my patch was not totally useless. :-)
-
-
-And one more suggestion. It is better to set f_type in
-ecryptfs_statfs(), and move ECRYPTFS_SUPER_MAGIC under include/linux/,
-in order to be usable from userspace (or other modules).
-
-
-J. R. Okajima
