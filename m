@@ -1,98 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933702AbZAPXAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765672AbZAPXEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933702AbZAPXAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 18:00:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbZAPXAK
+	id S1765672AbZAPXEw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:04:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZAPXEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 18:00:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57125 "EHLO mx2.mail.elte.hu"
+	Fri, 16 Jan 2009 18:04:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51461 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757385AbZAPXAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 18:00:09 -0500
-Date: Fri, 16 Jan 2009 23:59:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/2] ftrace: updates to tip
-Message-ID: <20090116225948.GA12314@elte.hu>
-References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu> <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com> <20090116152103.GA28643@elte.hu> <alpine.DEB.1.10.0901161050470.22303@gandalf.stny.rr.com> <20090116160202.GA15209@elte.hu> <alpine.DEB.1.10.0901161111490.22303@gandalf.stny.rr.com> <20090116163021.GA27495@elte.hu>
+	id S1756288AbZAPXEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 18:04:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ACPI suspend: Fix compilation warnings in drivers/acpi/sleep.c
+Date: Sat, 17 Jan 2009 00:03:51 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
+Cc: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <200901162309.14778.rjw@sisk.pl> <20090116144933.3ed476f9.akpm@linux-foundation.org>
+In-Reply-To: <20090116144933.3ed476f9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090116163021.GA27495@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901170003.52015.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > I was afraid you would say that :-)
-> > 
-> > Yes, we could add something to do this. It would take some thought on 
-> > a good api, and implementation. This is not an easy task by any means. 
-> > We need a way to map between a function call and a tracer, where a 
-> > function call can call more than one tracer.
+On Friday 16 January 2009, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 23:09:14 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Note that some other things could be consolidated under per function 
-> metadata: for example set_graph_function - which really is a per 
-> function attribute too. Plus a lot of new things would be enabled i 
-> think.
+> > Fix two compilation warnings in drivers/acpi/sleep.c, one triggered
+> > by unsetting CONFIG_SUSPEND and the other triggered by unsetting
+> > CONFIG_HIBERNATION, by moving some code under the appropriate
+> > #ifdefs .
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  arch/x86/kernel/acpi/sleep.c |    4 +--
+> >  drivers/acpi/sleep.c         |   51 +++++++++++++++++++++----------------------
+> 
+> Confused.  drivers/acpi/sleep.c was removed six years ago?
 
-a few other things that could be per-function attributes:
-
- - Using function trace 'limits': trace a function 50 times and dont trace 
-   it afterwards. Each invocation of that function decreases the
-   remaining-count by one. For example:
-
-     echo 'btrfs_join_transaction:#2' >> set_ftrace_filter
-
-   Would specify that we generate two trace entries of
-   btrfs_join_transaction(), then stop tracing this function.
-
- - Using function-triggered tracing: a function could be specified (via a 
-   filter format extension) to act as a 'start tracing' trigger. Another 
-   extension would be 'stop tracing' trigger.
-
-   For example:
-
-      echo 'btrfs_join_transaction:+' >> set_ftrace_filter
-      echo 'btrfs_commit_transaction:-' >> set_ftrace_filter
-
-   The '+' is a start-tracing trigger condition, the '-' is a stop-tracing 
-   trigger condition. All function calls between btrfs_join_transaction() 
-   and btrfs_commit_transaction() would be traced.
-
-The two could be combined - to generate the trace of a single btrfs 
-transaction, one could do:
-
-      echo 0 > tracing_enabled
-      echo 'btrfs_join_transaction:+#1' >> set_ftrace_filter
-      echo 'btrfs_commit_transaction:-#1' >> set_ftrace_filter
-      echo 1 > tracing_enabled
-
-Other extensions are possible too:
-
- - Trace length triggers. For example one could do:
-
-      echo 'btrfs_join_transaction:+*#10' >> set_ftrace_filter
-
-   To trace 10 function calls [allowed by current filter settings] after
-   the first btrfs_join_transaction() call - and stop tracing after those 
-   10 trace entries.
-
-This would allow the creation of "surgical" one-time traces - of events 
-and functions one is specifically interested in.
-
-	Ingo
+It's back in 2.6.29-rc2. :-)
