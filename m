@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbZAPIVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761409AbZAPIWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbZAPIVi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZAPIV3
+	id S1761409AbZAPIWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbZAPIWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:21:29 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:33743 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbZAPIV2 (ORCPT
+	Fri, 16 Jan 2009 03:22:11 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:37738 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756015AbZAPIWK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:21:28 -0500
-Date: Fri, 16 Jan 2009 03:21:26 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: 2.6.29-rc1 vs selinux
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200901160321.26749.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.10
+	Fri, 16 Jan 2009 03:22:10 -0500
+Message-Id: <497051E7.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 16 Jan 2009 08:22:47 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: avoid early crash in disable_local_APIC()
+References: <496DE893.76E4.0078.0@novell.com>
+ <20090115110528.GE16253@elte.hu> <20090115224710.GA1327@elte.hu>
+ <20090115224751.GA1625@elte.hu>
+In-Reply-To: <20090115224751.GA1625@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the things that was bugging me was that after having booted 2.6.29-rc1, 
-rebooting to 2.6.28 final always caused an automatic relabel, which on this 
-box with a bit over a terrabyte in drives, takes an extra 20 minutes to do.
+>>> Ingo Molnar <mingo@elte.hu> 15.01.09 23:47 >>>
+>
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> hm, this gives a build failure on latest -tip:
+>> 
+>> arch/x86/kernel/apic.c: In function 'setup_local_APIC':
+>> arch/x86/kernel/apic.c:1135: error: implicit declaration of function 'disable_ioapic_setup'
 
-So I grepped the .config's and there is no mention of SELINUX in the output of 
-a make oldconfig for 2.6.29-rc1, based on a 2.6.28 .config input.
+Is this with a config that has X86_IO_APIC off (i.e. one the practical use of
+which I never understood, and hence easily forget to consider)? Otherwise
+I can't see how that could happen.
 
-I see the security/selinux directory still exists in the src tree.  Is this a 
-kconfig bug, or is selinux outta here?
+Jan
 
-Thanks.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Bushydo -- the way of the shrub.  Bonsai!
