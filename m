@@ -1,126 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758436AbZAPBYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZAPB2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758436AbZAPBYU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZAPBYJ
+	id S1757518AbZAPB2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZAPB2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:24:09 -0500
-Received: from wf-out-1314.google.com ([209.85.200.171]:23339 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbZAPBYH (ORCPT
+	Thu, 15 Jan 2009 20:28:31 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:18604 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753060AbZAPB23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:24:07 -0500
+	Thu, 15 Jan 2009 20:28:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=QM9pa/l8KESfRPOVJ2183tzhK3oV1cpIlcMa9Ilc4DrqW4AEqRdAFmwkGQ/JtN9YOZ
-         lhvRMnvCARlPm5VXdBhDi1/NjMvI/8HezISbJYGDL3lmvUW8PGGtdkDK1GTveqCjVV+f
-         P2SMDjjEptaIONidcnJNCW/1loUZjqCYViKY8=
-Date: Fri, 16 Jan 2009 10:24:03 +0900
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20090116102403.c04f2916.h.mitake@gmail.com>
-In-Reply-To: <20081205005841.1ee1dc71.h.mitake@gmail.com>
-References: <20081129192610.716a2d57.h.mitake@gmail.com>
-	<20081129222449.e341f028.h.mitake@gmail.com>
-	<20081129180144.GA15533@uranus.ravnborg.org>
-	<20081130171604.dc3c8715.h.mitake@gmail.com>
-	<20081130083700.GA31644@elte.hu>
-	<20081130092407.GA10802@elte.hu>
-	<20081201002056.d9f9204c.h.mitake@gmail.com>
-	<20081130161504.GA25627@elte.hu>
-	<a6b9f31a0812010551h28c0841fxa2a26af4645df64@mail.gmail.com>
-	<20081201135922.GA30068@elte.hu>
-	<a6b9f31a0812011558o373edbd3r9690efe539d43ca0@mail.gmail.com>
-	<20081205005841.1ee1dc71.h.mitake@gmail.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=XzRHzpBGefjRBgAQwEA8TrndHko+ph2Ul/mnjhKaOP/Ck9ku48Pl4W2zC+NuBZNRnU
+         EvLFR7EgbS4YyK04KNIHnRT5bMEjXLrZH6mz7nlIWlR4dRHx36GqixVL1A4scIBAcZS4
+         Zw162s5rIKOsKLSo1sh7Ic84OP6eLX9jMkt2g=
+Message-ID: <496FE2B3.3060706@gmail.com>
+Date: Fri, 16 Jan 2009 10:28:19 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: roel kluin <roel.kluin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
+       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       steiner@sgi.com, hugh@veritas.com
+Subject: [PATCH x86/percpu] x86: fix build bug introduced during merge
+References: <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <25e057c00901150204x61c54d9fl91afe23477d1f12f@mail.gmail.com> <496F0F5E.3080404@kernel.org> <20090115113230.GH22850@elte.hu> <496F1FA6.6050204@kernel.org> <20090115122222.GI22850@elte.hu> <496F3577.4020303@kernel.org> <20090115133206.GA31416@elte.hu> <20090115133916.GA3417@elte.hu> <496FB09A.8020808@kernel.org>
+In-Reply-To: <496FB09A.8020808@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+EXPORT_PER_CPU_SYMBOL() got misplaced during merge leading to build
+failure.  Fix it.
 
-I wrote wrong mail address of LKML:-(
-Resending, sorry.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ arch/x86/kernel/setup_percpu.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-On Fri, 5 Dec 2008 00:58:41 +0900
-Hitoshi Mitake <h.mitake@gmail.com> wrote:
-
-> On Tue, 2 Dec 2008 08:58:19 +0900
-> "Hitoshi Mitake" <h.mitake@gmail.com> wrote:
-> 
-> > On Mon, Dec 1, 2008 at 22:59, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > * Hitoshi Mitake <h.mitake@gmail.com> wrote:
-> > >
-> > >> On Mon, Dec 1, 2008 at 01:15, Ingo Molnar <mingo@elte.hu> wrote:
-> > >> >
-> > >> > * Hitoshi Mitake <h.mitake@gmail.com> wrote:
-> > >> >
-> > >> >> On Sun, 30 Nov 2008 10:24:07 +0100
-> > >> >> Ingo Molnar <mingo@elte.hu> wrote:
-> > >> >>
-> > >> >> >
-> > >> >> > the 32-bit build broke promptly - readq/writeq is a family of APIs that
-> > >> >> > has to be either fully provided or not provided at all. The fix is below.
-> > >> >>
-> > >> >> Thanks for your fix and adding!
-> > >> >> When will this patch be added to mainline?
-> > >> >> I want to rewrite x38_edac.c to adapt new APIs.
-> > >> >
-> > >> > v2.6.29 at the earliest - if there are no regressions. A number of
-> > >> > drivers use these APIs and usage is a bit messy - so bugs could be
-> > >> > triggered, etc.
-> > >> >
-> > >> Thanks. What is URL of your repository?
-> > >> I want to look your tree and test it.
-> > >
-> > > you can pick up tip/master via:
-> > >
-> > >  http://people.redhat.com/mingo/tip.git/README
-> > >
-> > 
-> 
-
-Ingo
-
-I found that my previous patch contents wrong point, sorry.
-Previous patch can't provide HAVE_READQ and HAVE_WRITEQ
-to Kconfigs of other part well.
-
-So I wrote a patch to fix this.
-Please use.
-
-Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 73f7fe8..6f1abcd 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -19,8 +19,6 @@ config X86_64
- config X86
- 	def_bool y
- 	select HAVE_AOUT if X86_32
--	select HAVE_READQ
--	select HAVE_WRITEQ
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-@@ -1969,6 +1967,12 @@ config HAVE_ATOMIC_IOMAP
- 	def_bool y
- 	depends on X86_32
+diff --git a/arch/arm/mach-integrator/clock.h b/arch/arm/mach-integrator/clock.h
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index daeedf8..b5c35af 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -86,9 +86,8 @@ void __cpuinit load_pda_offset(int cpu)
+ }
+ #ifndef CONFIG_SMP
+ DEFINE_PER_CPU(struct x8664_pda, __pda);
+-EXPORT_PER_CPU_SYMBOL(__pda);
+ #endif
+-
++EXPORT_PER_CPU_SYMBOL(__pda);
+ #endif /* CONFIG_SMP && CONFIG_X86_64 */
  
-+config HAVE_READQ
-+	def_bool y
-+
-+config HAVE_WRITEQ
-+	def_bool y
-+
- source "net/Kconfig"
- 
- source "drivers/Kconfig"
+ #ifdef CONFIG_X86_64
