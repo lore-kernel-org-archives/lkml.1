@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZAPKKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbZAPKNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932110AbZAPKKQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 05:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZAPKJ5
+	id S1762877AbZAPKNd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 05:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbZAPKNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 05:09:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56770 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758309AbZAPKJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 05:09:55 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19jdfVIRNpj+W9X3kwvAVczyP65/5BTDjSIMeejJ6
-	owCKQLCDH0kE/a
-Date: Fri, 16 Jan 2009 11:09:54 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-In-Reply-To: <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901161106100.4940@axis700.grange>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
- <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
+	Fri, 16 Jan 2009 05:13:23 -0500
+Received: from lug-owl.de ([195.71.106.12]:54394 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758113AbZAPKNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 05:13:21 -0500
+Date: Fri, 16 Jan 2009 11:13:19 +0100
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
+       Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090116101319.GT11087@lug-owl.de>
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+	"Maciej W. Rozycki" <macro@linux-mips.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
+	linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>
+References: <1231424833.11687.452.camel@twins> <20090108150448.2393aeb0@lxorguk.ukuu.org.uk> <20090108151046.GK18120@elte.hu> <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org> <20090115123614.GR11087@lug-owl.de> <alpine.LFD.1.10.0901151309420.5737@ftp.linux-mips.org> <20090115133252.28c36adb@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0901151353530.5737@ftp.linux-mips.org> <20090115141734.GA15732@elte.hu> <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7Ibvc83oEUpT2okI"
+Content-Disposition: inline
+In-Reply-To: <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
+X-Operating-System: Linux mail 2.6.18-5-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-message-flag: Please send plain text messages only. Do not send HTML emails. Thank you. 
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Jan 2009, Dan Williams wrote:
 
-> On Fri, Dec 26, 2008 at 10:11 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > Hi,
-> >
-> > This is version 6 of dmaengine and framebuffer drivers for i.MX31.
-> >
-> 
-> Tha drivers/dma/ bits look ok to me minus the new warnings:
-> 
-> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_fn':
-> drivers/dma/ipu/ipu_irq.c:328: warning: 'irq' may be used
-> uninitialized in this function
-> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_err':
-> drivers/dma/ipu/ipu_irq.c:290: warning: 'irq' may be used
-> uninitialized in this function
-> 
-> I can take patches 1 and 2 through the async_tx tree, or if you would
-> rather, add my Acked-by to those and take 1-4 through the MXC tree.
-> I'll be sending the async_tx pull request for 2.6.29 in the next few
-> days.
+--7Ibvc83oEUpT2okI
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, let's do it this way: Sascha has acked version 8 of patches 2 and 3. 
-And there seems to be no active framebuffer maintainer ATM. So, maybe you 
-could take patches 1-3 into your tree, so they are exposed to the public, 
-people have easier access to them in case they want to test (I had several 
-requests), and you update them in case you change async-tx API again:-) It 
-would be good to try and push them in for 2.6.29 - these are new drivers, 
-so, might still be possible to convince Andrew / Linus, if not, you could 
-keep them in your tree (and in next) until 2.6.30, then we'd add platform 
-bindings and the camera driver. What do you think?
+On Fri, 2009-01-16 10:00:02 +0100, Pavel Machek <pavel@suse.cz> wrote:
+> > patches are welcome ...
+>=20
+> Hehe, I guess the only long-term solution is to get shiny old 386 as a
+> part of Ingo's test farm ;-).
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+:-D  I'm currently cleaning up the flat, 'll try to dig out the old
+patch tonight. Maybe I can play with it a bit on my original i386
+hardware. (I've already tested it, it still powers on and boots up
+that ancient debian version. Using a 20GB (right, gigabytes) HDD.)
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:                http://catb.org/~esr/faqs/smart-questions.html
+the second  :
+
+--7Ibvc83oEUpT2okI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJcF2/Hb1edYOZ4bsRAuOrAJ9hX4pG75vDb7X/f4E/5j5DMTRieACfUi8q
+bw5nkioSljxY2mya3JkCiPM=
+=/Jom
+-----END PGP SIGNATURE-----
+
+--7Ibvc83oEUpT2okI--
