@@ -1,103 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936266AbZAPOVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935639AbZAPOXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936266AbZAPOVx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935901AbZAPOTQ
+	id S935639AbZAPOXS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZAPOW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:19:16 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:45237 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935387AbZAPOTN (ORCPT
+	Fri, 16 Jan 2009 09:22:56 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51825 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbZAPOWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:19:13 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, shaohua.li@intel.com
-In-Reply-To: <4970242C.4010404@jp.fujitsu.com>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-	 <1231807693.27151.21.camel@localhost.localdomain>
-	 <1232046108.5966.57.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>
-	 <1232049269.5966.64.camel@localhost.localdomain>
-	 <1232050347.5966.66.camel@localhost.localdomain>
-	 <4970242C.4010404@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Fri, 16 Jan 2009 09:19:06 -0500
-Message-Id: <1232115546.3224.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 09:22:54 -0500
+Date: Fri, 16 Jan 2009 15:22:11 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: hugh@veritas.com
+Subject: [PATCH] Use early clobbers in usercopy*.c
+Message-ID: <20090116142211.GA31576@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 15:07 +0900, Kenji Kaneshige wrote:
-> > It looks like acpi_pci_get_bridge_handle() is returning NULL, so this is
-> > the fix that works for me.
-> > 
-> 
-> I'm sorry for troubling you, and thank you for your patience.
-> 
-> The patch seems to avoid the kernel panic, but I still don't know
-> why acpi_pci_get_bridge_handle() returns NULL here. I assumed
-> it should return non-NULL value here. So I'd like to investigate
-> it more.
+commit 229689f6f129334446e48e777d12cbf365745283
+Author: Andi Kleen <ak@linux.intel.com>
+Date:   Wed Jan 14 07:50:57 2009 +0100
 
-Sure, Len and I couldn't work out why it was returning NULL on this box
-(other than that perhaps it doesn't have an ACPI entry).  The two
-offending busses which trigger this are the two internal ones (which
-aren't hotplug).  The layout of the box is:
+    Use early clobbers in usercopy*.c
+    
+    Hugh Dickins noticed that strncpy_from_user() was miscompiled
+    in some circumstances with gcc 4.3.
+    
+    Thanks to Hugh's excellent analysis it was easy to track down.
+    
+    Hugh writes:
+    
+    Try building an x86_64 defconfig 2.6.29-rc1 kernel tree,
+    except not quite defconfig, switch CONFIG_PREEMPT_NONE=y
+    and CONFIG_PREEMPT_VOLUNTARY off (because it expands a
+    might_fault() there, which hides the issue): using a
+    gcc 4.3.2 (I've checked both openSUSE 11.1 and Fedora 10).
+    
+    It generates the following:
+    
+    0000000000000000 <__strncpy_from_user>:
+       0:   48 89 d1                mov    %rdx,%rcx
+       3:   48 85 c9                test   %rcx,%rcx
+       6:   74 0e                   je     16 <__strncpy_from_user+0x16>
+       8:   ac                      lods   %ds:(%rsi),%al
+       9:   aa                      stos   %al,%es:(%rdi)
+       a:   84 c0                   test   %al,%al
+       c:   74 05                   je     13 <__strncpy_from_user+0x13>
+       e:   48 ff c9                dec    %rcx
+      11:   75 f5                   jne    8 <__strncpy_from_user+0x8>
+      13:   48 29 c9                sub    %rcx,%rcx
+      16:   48 89 c8                mov    %rcx,%rax
+      19:   c3                      retq
+    
+    Observe that "sub %rcx,%rcx; mov %rcx,%rax", whereas gcc 4.2.1
+    (and many other configs) say "sub %rcx,%rdx; mov %rdx,%rax".
+    Isn't it returning 0 when it ought to be returning strlen?
+    
+    AK:
+    
+    The asm constraints for the strncpy_from_user() result were missing an
+    early clobber, which tells gcc that the last output arguments
+    are written before all input arguments are read.
+    
+    I also added some more early clobbers in the rest of the file.
+    
+    And indeed 32bit usercopy.c had the same problem in some places.
+    Fixed there too.
 
-sparkweed:~# lspci -t
--+-[0000:0c]---00.0
- +-[0000:0a]---00.0
- +-[0000:08]---00.0
- +-[0000:06]---00.0
- +-[0000:04]---00.0
- +-[0000:02]---00.0
- +-[0000:01]-+-00.0
- |           +-01.0
- |           +-01.1
- |           \-02.0
- \-[0000:00]-+-00.0
-             +-01.0
-             +-03.0
-             +-03.1
-             +-03.2
-             +-0f.0
-             +-0f.1
-             \-0f.3
-sparkweed:~# lspci   
-00:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-00:01.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY
-[Radeon 7000/VE]
-00:03.0 USB Controller: NEC Corporation USB (rev 43)
-00:03.1 USB Controller: NEC Corporation USB (rev 43)
-00:03.2 USB Controller: NEC Corporation USB 2.0 (rev 04)
-00:0f.0 Host bridge: Broadcom CSB6 South Bridge (rev a0)
-00:0f.1 IDE interface: Broadcom CSB6 RAID/IDE Controller (rev a0)
-00:0f.3 ISA bridge: Broadcom GCLE-2 Host Bridge
-01:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-01:01.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5704
-Gigabit Ethernet (rev 10)
-01:01.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5704
-Gigabit Ethernet (rev 10)
-01:02.0 SCSI storage controller: Adaptec AIC-9410W SAS (Razor ASIC
-non-RAID) (rev 08)
-02:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-04:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-06:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-08:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-0a:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-0c:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
+    Stable candidate
+    
+    Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-And when I annotate the problem, the two busses returning NULL are
-0000:00 and 0000:01
-
-James
-
-
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 4a20b2f..7c8ca91 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -56,7 +56,7 @@ do {									   \
+ 		"	jmp 2b\n"					   \
+ 		".previous\n"						   \
+ 		_ASM_EXTABLE(0b,3b)					   \
+-		: "=d"(res), "=c"(count), "=&a" (__d0), "=&S" (__d1),	   \
++		: "=&d"(res), "=&c"(count), "=&a" (__d0), "=&S" (__d1),	   \
+ 		  "=&D" (__d2)						   \
+ 		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
+ 		: "memory");						   \
+@@ -218,7 +218,7 @@ long strnlen_user(const char __user *s, long n)
+ 		"	.align 4\n"
+ 		"	.long 0b,2b\n"
+ 		".previous"
+-		:"=r" (n), "=D" (s), "=a" (res), "=c" (tmp)
++		:"=&r" (n), "=&D" (s), "=&a" (res), "=&c" (tmp)
+ 		:"0" (n), "1" (s), "2" (0), "3" (mask)
+ 		:"cc");
+ 	return res & mask;
+diff --git a/arch/x86/lib/usercopy_64.c b/arch/x86/lib/usercopy_64.c
+index 64d6c84..ec13cb5 100644
+--- a/arch/x86/lib/usercopy_64.c
++++ b/arch/x86/lib/usercopy_64.c
+@@ -32,7 +32,7 @@ do {									   \
+ 		"	jmp 2b\n"					   \
+ 		".previous\n"						   \
+ 		_ASM_EXTABLE(0b,3b)					   \
+-		: "=r"(res), "=c"(count), "=&a" (__d0), "=&S" (__d1),	   \
++		: "=&r"(res), "=&c"(count), "=&a" (__d0), "=&S" (__d1),	   \
+ 		  "=&D" (__d2)						   \
+ 		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
+ 		: "memory");						   \
+@@ -86,7 +86,7 @@ unsigned long __clear_user(void __user *addr, unsigned long size)
+ 		".previous\n"
+ 		_ASM_EXTABLE(0b,3b)
+ 		_ASM_EXTABLE(1b,2b)
+-		: [size8] "=c"(size), [dst] "=&D" (__d0)
++		: [size8] "=&c"(size), [dst] "=&D" (__d0)
+ 		: [size1] "r"(size & 7), "[size8]" (size / 8), "[dst]"(addr),
+ 		  [zero] "r" (0UL), [eight] "r" (8UL));
+ 	return size;
