@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759359AbZAPHmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbZAPHoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759359AbZAPHmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZAPHmm
+	id S1760892AbZAPHoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 02:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbZAPHn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:42:42 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:40728 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbZAPHml (ORCPT
+	Fri, 16 Jan 2009 02:43:59 -0500
+Received: from mail.bigtelecom.ru ([87.255.0.61]:44228 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbZAPHn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:42:41 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [PATCH] ecryptfs: some inode attrs, and a question 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mhalcrow@us.ibm.com, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <20090115150332.f72ad0f8.akpm@linux-foundation.org>
-References: <7471.1231827621@jrobl> <20090115150332.f72ad0f8.akpm@linux-foundation.org>
-Date: Fri, 16 Jan 2009 16:42:31 +0900
-Message-ID: <9845.1232091751@jrobl>
+	Fri, 16 Jan 2009 02:43:58 -0500
+Message-ID: <49703ABA.3020702@bigtelecom.ru>
+Date: Fri, 16 Jan 2009 10:43:54 +0300
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Site kernel.org fix and feature request
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all.
 
-Andrew Morton:
-> > +	atomic_inc_return(&lower_dentry->d_inode->i_count);
-> > +	atomic_inc_return(&lower_inode->i_count);
-> 
-> atomic_inc() would suffice here, yes?
+Please update site! Href at "C" at 2.6.x link to one place.
 
-I thought that ..._return() is smp safe and necessary here.
-Because lower_inode may be touched by lower fs (outside of ecryptfs).
+Also i will be happy if in site i can go to last -stable git tree
+(patches queued to be released at current stable kernel).
 
-Anyway my original patch seemed to be already dropped.
+Now we see:
+The latest prepatch for the stable Linux kernel tree is:
+The latest snapshot for the stable Linux kernel tree is:
+and we see on it 2.6.29 what not released and have many not tested features.
 
+maybe change to:
 
-J. R. Okajima
+The latest snapshot for the stable Linux kernel tree is: 2.6.28-git?
+The latest prepatch for the testing Linux kernel tree is: 2.6.29-rc?
+The latest snapshot for the testing Linux kernel tree is: 2.6.29-rc?-git?
+
+And users can get fresh patches to 2.6.28 stable kernel or see it?
+
+Thanks.
+Best regals, Badalian Vyacheslav aka Slavon
