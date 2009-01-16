@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbZAPGu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZAPGvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbZAPGu5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 01:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZAPGuZ
+	id S1757905AbZAPGvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 01:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZAPGvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 01:50:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50939 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753550AbZAPGuX (ORCPT
+	Fri, 16 Jan 2009 01:51:17 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:43826 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755320AbZAPGvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 01:50:23 -0500
-Date: Thu, 15 Jan 2009 22:49:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/6] ftrace: move function tracer functions out of
- trace.c
-Message-Id: <20090115224925.6b0e6c24.akpm@linux-foundation.org>
-In-Reply-To: <20090116045417.632296101@goodmis.org>
-References: <20090116045342.748642160@goodmis.org>
-	<20090116045417.632296101@goodmis.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 01:51:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Y5D3X0MAVHA0szf+r1fLbl3ERtk3oKDQnSDNnswaxGO29ydIuqrj97hBnM0UHnuO6U
+         TflfYDs19nGBlWOSIMtDsvVSGn/auhhrPLXKOuIKJNxEjmFHcRPj0D+qr2UFsYQtgks5
+         H2r4yegmyjg8CqI3r741NjHwDpe5tyZhi/nQ0=
+Date: Fri, 16 Jan 2009 06:51:08 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       zbr@ioremap.net, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090116065107.GA4170@ff.dom.local>
+References: <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090115233205.GA8474@gondor.apana.org.au> <20090115.153449.204259387.davem@davemloft.net> <20090115234255.GE1123@1wt.eu> <20090115234408.GA1693@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090115234408.GA1693@1wt.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 23:53:43 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+On Fri, Jan 16, 2009 at 12:44:08AM +0100, Willy Tarreau wrote:
+> On Fri, Jan 16, 2009 at 12:42:55AM +0100, Willy Tarreau wrote:
+> > On Thu, Jan 15, 2009 at 03:34:49PM -0800, David Miller wrote:
+> > > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > > Date: Fri, 16 Jan 2009 10:32:05 +1100
+> > > 
+> > > > On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
+> > > > > +static inline struct page *linear_to_page(struct page *page, unsigned int len,
+> > > > > +					  unsigned int offset)
+> > > > > +{
+> > > > > +	struct page *p = alloc_pages(GFP_KERNEL, 0);
+> > > > > +
+> > > > > +	if (!p)
+> > > > > +		return NULL;
+> > > > > +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
+> > > > 
+> > > > This won't work very well if skb->head is longer than a page.
+> > > > 
+> > > > We'll need to divide it up into individual pages.
+> > > 
+> > > Oh yes the same bug I pointed out the other day.
+> > > 
+> > > But Willy can test this patch as-is,
+> > 
+> > Hey, nice work Dave. +3% performance from your previous patch
+> > (31.6 MB/s). It's going fine and stable here.
+> 
+> And BTW feel free to add my Tested-by if you want in case you merge
+> this fix.
+> 
+> Willy
+> 
 
->  static void
-> +function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
-> +{
-> +	struct trace_array *tr = func_trace;
-> +	struct trace_array_cpu *data;
-> +	unsigned long flags;
-> +	long disabled;
-> +	int cpu, resched;
-> +	int pc;
-> +
-> +	if (unlikely(!ftrace_function_enabled))
-> +		return;
+Herbert, good catch!
 
-We're optimizing for the tracing-is-enabled case.  What's the thinking
-here?
+David, if it's not too late I think more credits are needed,
+especially for Willy. He did "a bit" more than testing.
+
+Alas, I can't see this problem with skb->head longer than page. There
+is even some comment on this in __splice_segment(), but I can miss
+something.
+
+I'm more concerned with memory usage if these skbs are not acked for
+some reason. Isn't there some DOS issue possible?
+
+Thanks everybody,
+Jarek P.
+--------->
+Based on a review by Changli Gao <xiaosuo@gmail.com>:
+http://lkml.org/lkml/2008/2/26/210
+
+Foreseen-by: Changli Gao <xiaosuo@gmail.com>
+Diagnosed-by: Willy Tarreau <w@1wt.eu>
+Reported-by: Willy Tarreau <w@1wt.eu>
+Fixed-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
