@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937327AbZAPTVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937438AbZAPTWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937327AbZAPTVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 14:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbZAPTVZ
+	id S937438AbZAPTWO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 14:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936756AbZAPTVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 14:21:25 -0500
-Received: from nxgate.netxen.com ([38.99.60.130]:12798 "EHLO nxexch.unminc.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751308AbZAPTVY convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 14:21:51 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:56670 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755281AbZAPTVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 14:21:24 -0500
-From: Dhananjay Phadke <dhananjay@netxen.com>
-To: David Miller <davem@davemloft.net>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Date: Fri, 16 Jan 2009 11:21:24 -0800
-Subject: RE: [PATCH 2/2] netxen: include ipv6.h (fixes build failure)
-Thread-Topic: [PATCH 2/2] netxen: include ipv6.h (fixes build failure)
-Thread-Index: Acl4DWHdKGg61jvDQGynmFR5SF/z2QAAbyUg
-Message-ID: <9FB481EF4C70734186A21A64437F637C02A100BB7F@nxexch.unminc.com>
-References: <1232130484-25188-1-git-send-email-dhananjay@netxen.com>
-	<1232130484-25188-3-git-send-email-dhananjay@netxen.com>
- <20090116.110452.77631610.davem@davemloft.net>
-In-Reply-To: <20090116.110452.77631610.davem@davemloft.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Jan 2009 14:21:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HoyDp8urqh9wwdnKYARsKkM6xgfeaz9UjTm7lPWBkb4iBJQbmz6+iatb0svD5deCjz
+         Lpm9wZ4mdXk1UvpbasyfneXPRWfJ2hvKMdXEoXndR9f3sCKsADY6OmAsZsh02rPnhLA1
+         +TSt0uvKdDasYowD2AF118dNTQ5I6ISJ7nXsA=
+Message-ID: <19f34abd0901161121j2f5a21b5g2a73036dc20766ad@mail.gmail.com>
+Date: Fri, 16 Jan 2009 20:21:47 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] pci: fix no_pci_devices() #2
+Cc: "Greg KH" <gregkh@suse.de>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200901161041.10071.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081220111419.GA5367@localhost.localdomain>
+	 <200901051109.43953.jbarnes@virtuousgeek.org>
+	 <20090107004258.GA3223@suse.de>
+	 <200901161041.10071.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My bad, I copy-pasted the --to --cc list to git command line and missed out the original Sender in that email.
-
-Double apologies to Ingo, first for introducing the build error and other for fixing without credit to reporter :-(.
-
-Thanks Ingo, Dave.
-
--Dhananjay
-
------Original Message-----
-From: David Miller [mailto:davem@davemloft.net]
-Sent: Friday, January 16, 2009 11:05
-To: Dhananjay Phadke
-Cc: netdev@vger.kernel.org; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; mingo@elte.hu
-Subject: Re: [PATCH 2/2] netxen: include ipv6.h (fixes build failure)
-
-From: Dhananjay Phadke <dhananjay@netxen.com>
-Date: Fri, 16 Jan 2009 10:28:04 -0800
-
-> Fixes a build error in absence of CONFIG_IPV6:
+On Fri, Jan 16, 2009 at 7:41 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+>> > Assuming Greg already took the generic part, can you resend the PCI part
+>> > to the linux-pci@vger.kernel.org list for review just in case anyone has
+>> > a better idea of how to do it?
+>>
+>> Did I take the generic part?  I can't remember...
 >
-> drivers/net/netxen/netxen_nic_main.c:1189: error: implicit declaration of function 'ipv6_hdr'
-> drivers/net/netxen/netxen_nic_main.c:1189: error: invalid type argument of '->'
->
-> Signed-off-by: Dhananjay Phadke <dhananjay@netxen.com>
+> Doesn't look like it.  Vergard can you send out an updated patch set?
 
-Gee, thanks for not even mentioning Ingo having reported this problem
-in your commit message. :-((
+Actually, my patch is still just a hack, since pci_bus_type.p is still
+set before the pci_bus_type is really usable. So if the kernel crashes
+(or, in general, no_pci_devices() is called) at some point between the
+pci_bus_type.p = <something> and pci_bus_type.p = NULL (which I
+inserted), we will still see the same type of fault.
 
-I've fixed this when committing.
+So I would prefer to solve this in a different way, like a dedicated
+flag which is only set after we know that pci_bus_type initialisation
+succeeded. I think that was the approach of my first patch? I don't
+remember. In any case, such a patch could not be split in generic/pci
+parts, I think. Also, should we anticipate concurrent access to
+pci_bus_type.p or such a dedicated "no_pci_devices" flag?
 
-You didn't even CC: him on this patch posting, what gives?
+Here is the first patch, but I wonder if it should be turned into
+atomic_t instead: http://lkml.org/lkml/2008/12/20/33
 
 
-No virus found in this incoming message.
-Checked by AVG.
-Version: 7.5.526 / Virus Database: 270.10.6/1889 - Release Date: 1/12/2009 20:18
+Vegard
 
-
-No virus found in this outgoing message.
-Checked by AVG.
-Version: 7.5.526 / Virus Database: 270.10.6/1889 - Release Date: 1/12/2009 20:18
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
