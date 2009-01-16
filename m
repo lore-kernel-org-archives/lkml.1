@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937973AbZAPWLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937869AbZAPWO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937973AbZAPWLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 17:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765584AbZAPWKZ
+	id S937869AbZAPWO6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 17:14:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764363AbZAPWOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 17:10:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42626 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765457AbZAPWKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 17:10:22 -0500
-Date: Fri, 16 Jan 2009 23:09:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
-       tj@kernel.org, hpa@zytor.com, brgerst@gmail.com, ebiederm@xmission.com,
-       cl@linux-foundation.org, travis@sgi.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, hugh@veritas.com
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Message-ID: <20090116220925.GA28917@elte.hu>
-References: <20090116001200.GA9137@gondor.apana.org.au> <200901170804.18622.rusty@rustcorp.com.au>
+	Fri, 16 Jan 2009 17:14:47 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39535 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764354AbZAPWOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 17:14:47 -0500
+Message-ID: <497106C5.60703@us.ibm.com>
+Date: Fri, 16 Jan 2009 16:14:29 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901170804.18622.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: [patch] Performance Counters for Linux, v4
+References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com> <87ljuf1s75.fsf@basil.nowhere.org> <4970CB6F.9000301@linux.vnet.ibm.com>
+In-Reply-To: <4970CB6F.9000301@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Friday 16 January 2009 10:42:00 Herbert Xu wrote:
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > >> Of course.  But do any architectures actually _need_ that for a single 
-> > >> read?
-> > > 
-> > > not for a read i guess - but for the other ops like add/and/or/xor.
-> > 
-> > One of the things I'd like to see happen with this work is for
-> > us to have a cheap per-cpu atomic counter that we can use for
-> > SNMP stats.
-> > 
-> > If we can make the inc/add variants into a single instruction, then it 
-> > won't need to disable preemption or interrupts.
-> > 
-> > So if you could design the API such that we have a variant of add/inc 
-> > that automatically disables/enables preemption then we can optimise 
-> > that away on x86.
+Corey Ashford wrote:
+> Andi Kleen wrote:
+>> Paul Mackerras <paulus@samba.org> writes:
+>>> The perf counter subsystem will, in Ingo's design, naturally try to
+>>> schedule as many counters and groups on as it can.  Given a list of
+>>> counters/groups, it could start with the first and keep on trying to
+>>> add counters or groups while it can, essentially trying all possible
+>>> combinations until it either fills up all the hardware counters or
+>>> exhausts the possible combinations.  If it moves all the
+>>> counters/groups that do fit on up to the head of the list, and then
+>>> rotates them to the back of the list when the timeslice expires, that
+>>> would probably be OK.  In fact the computation about what set of
+>>> counters/groups to put on should be done when adding/removing a
+>>> counter/group and when the timeslice expires, rather than at context
+>>> switch time.  (I'm talking about the list of part-time counters/groups
+>>> here, of course.)
+>> One issue is that PMU counts can cover more than one CPU. One example
+>> for this are the Uncore events on Nehalem (which cover a whole socket)
+>> or when you are in AnyThreads monitoring mode (then you get events
+>> from both SMT siblings in a core)
+>>
+>> With that you would need to examine other CPU's state at context switch
+>> time. Probably not a good idea for scalability.
+>>
+>> -Andi
+>>
 > 
-> Yep, already on it.  It's called local_t; that's what it was originally 
-> designed for.
+> Over time, it seems clear that we will see multi-core processor designs 
+> with increasingly large uncore/nest facilities, so this could become 
+> more and more of an issue.
+Ingo, I'll add my voice to the chorus here.  To reiterate the point, some PMUs count events that are external to the processor cores, and these events cannot be attributed to any one particular CPU -- and certainly not to a particular pid.  The current interface has a restriction that the user cannot pass -1 for both pid and cpu.  But it seems to me that's exactly what would be needed for such off-core events.  Can this feature fit in with the current interface or is some sort of extension needed?
+
+Thanks.
+-Maynard
 > 
-> Unfortunately, to use it efficiently, we need large per-cpu areas.
+> - Corey
+> 
+> Corey Ashford
+> Software Engineer
+> IBM Linux Technology Center, Linux Toolchain
+> Beaverton, OR
+> 503-578-3507
+> cjashfor@us.ibm.com
+> 
 
-This makes no sense to me at all. Care to explain?
-
-	Ingo
