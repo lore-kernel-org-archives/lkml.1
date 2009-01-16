@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938057AbZAPWld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765527AbZAPWnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938057AbZAPWld (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 17:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764312AbZAPWlU
+	id S1765527AbZAPWnX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 17:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZAPWnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 17:41:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55693 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756288AbZAPWlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 17:41:19 -0500
-Date: Fri, 16 Jan 2009 23:41:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: Define ARCH_WANT_FRAME_POINTERS
-Message-ID: <20090116224114.GF3899@elte.hu>
-References: <4970D0A7.90005@suse.com>
+	Fri, 16 Jan 2009 17:43:12 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:37883 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752538AbZAPWnK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 17:43:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YwR/qfyTpoF1++bSP5ysZXcXW3yJ0n/Rrh8+bRCRd/eEuJ+d69msw2X+ivw3c+EmwT
+         n56HOarYpzZoQcA7YVNKZngL5Ew2IGx7w6qiRkhZhw6gOi+b8l8/8tkH0YPQEO2l1Vu0
+         YMO/uBQSbsN7pUNfRwqCdqZeBifRki8t0Sqws=
+Message-ID: <bcb3ef430901161443y5843d951m1cdee28dd588d006@mail.gmail.com>
+Date: Fri, 16 Jan 2009 23:43:08 +0100
+From: MartinG <gronslet@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Suspend/resume works in 2.6.29-0.19.rc0.git9.fc11.i686, but fails in later versions
+In-Reply-To: <20090116085326.GC4795@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4970D0A7.90005@suse.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <bcb3ef430901150110nc4ced93w50c662ac512f8552@mail.gmail.com>
+	 <20090116085326.GC4795@atrey.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 16, 2009 at 9:53 AM, Pavel Machek <pavel@suse.cz> wrote:
+> Can you boot non-working kernel, and try "cd /sys/devices/system/cpu;
+> echo 0 > cpu1/online; echo 1 > cpu1/online" ?
+>
+> If it breaks, try just doing "echo 0 > online" followed by s2ram. That
+> should work.
 
-* Jeff Mahoney <jeffm@suse.com> wrote:
+Ok, thanks for the reply. This is what I've tried (I have a single
+core (old) cpu):
+# uname -r
+2.6.29-0.35.rc1.git4.fc11.i686
+# cd /sys/devices/system/cpu
+# find .|grep online
+./online
+# cat online
+0
+# echo 0 > online; echo 1 > online
+-bash: online: Permission denied
+-bash: online: Permission denied
+# chmod +rw online
+# echo 0 > online; echo 1 > online
+-bash: echo: write error: Input/output error
+-bash: echo: write error: Input/output error
 
->  Commit da4276b8299a6544dc41ac2485d3ffca5811b3fb changed a dependency
->  for FRAME_POINTER from X86 to ARCH_WANT_FRAME_POINTERS, but didn't
->  actually define it.
-> 
->  This patch adds the definition for ARCH_WANT_FRAME_POINTERS. Without it,
->  FRAME_POINTER can't be enabled on x86.
-> 
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-> ---
-> 
->  lib/Kconfig.debug |    6 ++++++
->  1 file changed, 6 insertions(+)
+Yep, I am a bit confused - any hints appreciated!
 
-Yes - doh! :-)
-
-Applied to tip/x86/urgent, thanks Jeff!
-
-	Ingo
+-MartinG
