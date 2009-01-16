@@ -1,84 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934805AbZAPOcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934893AbZAPOeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934805AbZAPOcn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:32:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZAPOce
+	id S934893AbZAPOeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZAPOeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:32:34 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52872 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbZAPOcd (ORCPT
+	Fri, 16 Jan 2009 09:34:01 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:40237 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbZAPOeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:32:33 -0500
-Date: Fri, 16 Jan 2009 09:32:32 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/2] ftrace: updates to tip
-In-Reply-To: <20090116112345.GC20082@elte.hu>
-Message-ID: <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com>
-References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 Jan 2009 09:34:00 -0500
+Subject: Re: [PATCH] UBI: add ioctl compatibility
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200901161324.35271.arnd@arndb.de>
+References: <1232036381.25068.10.camel@localhost.localdomain>
+	 <200901151734.23870.arnd@arndb.de>
+	 <1232104138.25068.22.camel@localhost.localdomain>
+	 <200901161324.35271.arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Jan 2009 16:34:07 +0200
+Message-Id: <1232116447.25068.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Jan 2009 14:33:37.0896 (UTC) FILETIME=[6B59AE80:01C977E7]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 16 Jan 2009, Ingo Molnar wrote:
-
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > Ingo,
+On Fri, 2009-01-16 at 13:24 +0100, Arnd Bergmann wrote:
+> On Friday 16 January 2009, Artem Bityutskiy wrote:
+> > Thank you Arnd. Here is the corrected patch. Tested on x68_64 + 32-bit
+> > UBI tools.
 > > 
-> > The first patch is critical, and needs to stay with trace_output.c Not 
-> > that critical since trace_output.c is not in mainline yet.
-> > 
-> > The second patch gives the ability to stack trace functions. I've been 
-> > leery about adding this and still keep it a separate option from the 
-> > "stacktrace" that already exists. This is because when enabled with no 
-> > filtering, the lag between typing and seeing what is typed can be up to 
-> > 10 seconds or more.
 > 
-> Btw., is this true even if frame pointers are enabled? When frame pointers 
-> are disabled we scan the full kernel stack => that can be quite slow if 
-> every kernel function is traced ;-)
+> Looks better now, but the compat_ versions are still missing the
+> compat_ptr() conversions. Those only make a difference on s390,
+> so you wouldn't see the problem on x86_64.
 
-After making my latest changes, I see a half sec lag. I don't know
-why it was so slow before. But I do have all the debug features enabled
-which would also slow things down quite a bit (lockdep, et. al)
+Ok, here is the new patch.
 
-> 
-> > I made the function stack trace an option attached to the function 
-> > tracer, so it must be enabled after the function tracer has been set. 
-> > This still needs to be updated in ftrace.txt.
-> 
-> maybe we could drive this via the filter API? Something like:
-> 
->    echo "*btrfs*:stacktrace" >> set_filter_functions
-> 
-> Would automatically mean that those functions will all generate 
-> stacktraces too. Note how safe this API is by default: the filter is used 
-> for a narrow scope of functions anwyay. To get it for all kernel functions 
-> one would have to do:
-> 
->    echo "*:stacktrace" >> set_filter_functions
-> 
-> Which one cannot do accidentally.
-> 
-> What do you think?
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH] UBI: add ioctl compatibility
 
-Now that I see only a 1/2 sec lag, do you still think this is necessary?
+UBI ioctl's do not work when running 64-bit kernel and 32-bit
+user-land. Fix this by adding the compat_ioctl method.
 
-Maybe I should go back and see why it was so bad before?
+Also, UBI serializes all ioctls, so more than one ioctl at a time
+is not a problem. Amd UBI does not seem to depend on anything else,
+so use unlocked_ioctl instead of ioctl (no BKL needed).
 
-But I do notice that not all functions produce a valid stack trace. Maybe 
-it would be better to add that api :-?
+Reported-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ drivers/mtd/ubi/cdev.c |   66 ++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 47 insertions(+), 19 deletions(-)
 
--- Steve
+diff --git a/drivers/mtd/ubi/cdev.c b/drivers/mtd/ubi/cdev.c
+index d99935c..820f50e 100644
+--- a/drivers/mtd/ubi/cdev.c
++++ b/drivers/mtd/ubi/cdev.c
+@@ -40,6 +40,7 @@
+ #include <linux/ioctl.h>
+ #include <linux/capability.h>
+ #include <linux/uaccess.h>
++#include <linux/compat.h>
+ #include <mtd/ubi-user.h>
+ #include <asm/div64.h>
+ #include "ubi.h"
+@@ -401,8 +402,8 @@ static ssize_t vol_cdev_write(struct file *file, const char __user *buf,
+ 	return count;
+ }
+ 
+-static int vol_cdev_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg)
++static long vol_cdev_ioctl(struct file *file, unsigned int cmd,
++			   unsigned long arg)
+ {
+ 	int err = 0;
+ 	struct ubi_volume_desc *desc = file->private_data;
+@@ -566,6 +567,14 @@ static int vol_cdev_ioctl(struct inode *inode, struct file *file,
+ 	return err;
+ }
+ 
++static long vol_cdev_compat_ioctl(struct file *file, unsigned int cmd,
++				  unsigned long arg)
++{
++	unsigned long translated_arg = (unsigned long)compat_ptr(arg);
++
++	return vol_cdev_ioctl(file, cmd, translated_arg);
++}
++
+ /**
+  * verify_mkvol_req - verify volume creation request.
+  * @ubi: UBI device description object
+@@ -800,8 +809,8 @@ out_free:
+ 	return err;
+ }
+ 
+-static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg)
++static long ubi_cdev_ioctl(struct file *file, unsigned int cmd,
++			   unsigned long arg)
+ {
+ 	int err = 0;
+ 	struct ubi_device *ubi;
+@@ -811,7 +820,7 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+ 	if (!capable(CAP_SYS_RESOURCE))
+ 		return -EPERM;
+ 
+-	ubi = ubi_get_by_major(imajor(inode));
++	ubi = ubi_get_by_major(imajor(file->f_mapping->host));
+ 	if (!ubi)
+ 		return -ENODEV;
+ 
+@@ -947,8 +956,16 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
+ 	return err;
+ }
+ 
+-static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
+-			   unsigned int cmd, unsigned long arg)
++static long ubi_cdev_compat_ioctl(struct file *file, unsigned int cmd,
++				  unsigned long arg)
++{
++	unsigned long translated_arg = (unsigned long)compat_ptr(arg);
++
++	return ubi_cdev_ioctl(file, cmd, translated_arg);
++}
++
++static long ctrl_cdev_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
+ {
+ 	int err = 0;
+ 	void __user *argp = (void __user *)arg;
+@@ -1024,26 +1041,37 @@ static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
+ 	return err;
+ }
+ 
++static long ctrl_cdev_compat_ioctl(struct file *file, unsigned int cmd,
++				   unsigned long arg)
++{
++	unsigned long translated_arg = (unsigned long)compat_ptr(arg);
++
++	return ctrl_cdev_ioctl(file, cmd, translated_arg);
++}
++
+ /* UBI control character device operations */
+ const struct file_operations ubi_ctrl_cdev_operations = {
+-	.ioctl = ctrl_cdev_ioctl,
+-	.owner = THIS_MODULE,
++	.owner          = THIS_MODULE,
++	.unlocked_ioctl = ctrl_cdev_ioctl,
++	.compat_ioctl   = ctrl_cdev_compat_ioctl,
+ };
+ 
+ /* UBI character device operations */
+ const struct file_operations ubi_cdev_operations = {
+-	.owner = THIS_MODULE,
+-	.ioctl = ubi_cdev_ioctl,
+-	.llseek = no_llseek,
++	.owner          = THIS_MODULE,
++	.llseek         = no_llseek,
++	.unlocked_ioctl = ubi_cdev_ioctl,
++	.compat_ioctl   = ubi_cdev_compat_ioctl,
+ };
+ 
+ /* UBI volume character device operations */
+ const struct file_operations ubi_vol_cdev_operations = {
+-	.owner   = THIS_MODULE,
+-	.open    = vol_cdev_open,
+-	.release = vol_cdev_release,
+-	.llseek  = vol_cdev_llseek,
+-	.read    = vol_cdev_read,
+-	.write   = vol_cdev_write,
+-	.ioctl   = vol_cdev_ioctl,
++	.owner          = THIS_MODULE,
++	.open           = vol_cdev_open,
++	.release        = vol_cdev_release,
++	.llseek         = vol_cdev_llseek,
++	.read           = vol_cdev_read,
++	.write          = vol_cdev_write,
++	.unlocked_ioctl = vol_cdev_ioctl,
++	.compat_ioctl   = vol_cdev_compat_ioctl,
+ };
+-- 
+1.6.0.6
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
