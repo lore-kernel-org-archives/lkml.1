@@ -1,82 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbZAPMrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbZAPMsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933450AbZAPMrx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZAPMro
+	id S933830AbZAPMsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbZAPMsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:47:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56884 "EHLO mx3.mail.elte.hu"
+	Fri, 16 Jan 2009 07:48:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46395 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755841AbZAPMro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:47:44 -0500
-Date: Fri, 16 Jan 2009 13:47:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: fix assumed to be contiguous leaf page tables
-	for kmap_atomic region (take 2)
-Message-ID: <20090116124734.GD5421@elte.hu>
-References: <497084B5.76E4.0078.0@novell.com>
+	id S933706AbZAPMsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 07:48:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: kexec fail with e1000 and e1000e
+Date: Fri, 16 Jan 2009 13:47:13 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
+Cc: "Barnes, Jesse" <jesse.barnes@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <86802c440901152031k55bf8e2eu31c8b9658c2216ac@mail.gmail.com> <86802c440901152039i2021a8b0j3d6797593e05968e@mail.gmail.com> <200901161328.19194.rjw@sisk.pl>
+In-Reply-To: <200901161328.19194.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <497084B5.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901161347.14212.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 16 January 2009, Rafael J. Wysocki wrote:
+> On Friday 16 January 2009, Yinghai Lu wrote:
+> > On Thu, Jan 15, 2009 at 8:31 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> > > [    8.652468] Intel(R) PRO/1000 Network Driver - version 7.3.20-k3-NAPI
+> > > [    8.658896] Copyright (c) 1999-2006 Intel Corporation.
+> > > [    8.680008] e1000 0000:05:01.0: enabling device (0000 -> 0003)
+> > > [    8.685831] vendor=1022 device=7458
+> > > [    8.689314] e1000 0000:05:01.0: PCI INT A -> GSI 48 (level, low) -> IRQ 48
+> > > [    8.696184] e1000 0000:05:01.0: enabling bus mastering
+> > > [    8.953642] e1000: 0000:05:01.0: e1000_probe: The EEPROM Checksum
+> > > Is Not Valid
+> > > [    9.863340] /*********************/
+> > > [    9.866829] Current EEPROM Checksum : 0xffff
+> > > [    9.871092] Calculated              : 0xbaf9
+> > > [    9.875354] Offset    Values
+> > > [    9.878230] ========  ======
+> > > [    9.881107] 00000000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.887622] 00000010: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.894137] 00000020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.900653] 00000030: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.907168] 00000040: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.913684] 00000050: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.920200] 00000060: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.926715] 00000070: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > [    9.933231] Include this output when contacting your support provider.
+> > > [    9.939746] This is not a software error! Something bad happened to
+> > > your hardware or
+> > > [    9.947475] EEPROM image. Ignoring this problem could result in
+> > > further problems,
+> > > [    9.954945] possibly loss of data, corruption or system hangs!
+> > > [    9.960767] The MAC Address will be reset to 00:00:00:00:00:00,
+> > > which is invalid
+> > > [    9.968149] and requires you to set the proper MAC address manually
+> > > before continuing
+> > > [    9.975964] to enable this network device.
+> > > [    9.980053] Please inspect the EEPROM dump and report the issue to
+> > > your hardware vendor
+> > > [    9.988041] or Intel Customer Support.
+> > > [    9.991770] /*********************/
+> > >
+> > > git bisect said following patch is first bad one.
+> > >
+> > > commit 98e6e286d7b01deb7453b717aa38ebb69d6cefc0
+> > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Date:   Wed Jan 7 13:10:35 2009 +0100
+> > >
+> > >    PCI PM: Register power state of devices during initialization
+> > >
+> > >    Use the observation that the power state of a PCI device can be
+> > >    loaded into its pci_dev structure as soon as pci_pm_init() is run for
+> > >    it and make that happen.
+> > >
+> > >    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > >    Acked-by: Pavel Machek <pavel@suse.cz>
+> > >    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > 
+> > reverting that patch will make kexec work with e1000 again.
+> 
+> Well, although I think that reverting the patch won't make much harm, I also
+> don't quite understand why this should matter for kexec at all.
+> 
+> Can you please check if the problem also happens with the appended debug patch?
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+OK, scratch that, I think I know what happens.
 
-> Debugging and original patch from Nick Piggin <npiggin@suse.de>
-> 
-> The early fixmap pmd entry inserted at the very top of the KVA is causing the
-> subsequent fixmap mapping code to not provide physically linear pte pages over
-> the kmap atomic portion of the fixmap (which relies on said property to
-> calculate pte addresses).
-> 
-> This has caused weird boot failures in kmap_atomic much later in the boot
-> process (initial userspace faults) on a 32-bit PAE system with a larger number
-> of CPUs (smaller CPU counts tend not to run over into the next page so don't
-> show up the problem).
-> 
-> Solve this by attempting to clear out the page table, and copy any of its
-> entries to the new one. Also, add a bug if a nonlinear condition is encountered
-> and can't be resolved, which might save some hours of debugging if this fragile
-> scheme ever breaks again...
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> 
-> Once we have such logic, we can also use it to eliminate the early ioremap
-> trickery around the page table setup for the fixmap area. This also fixes
-> potential issues with FIX_* entries sharing the leaf page table with the early
-> ioremap ones getting discarded by early_ioremap_clear() and not restored by
-> early_ioremap_reset(). It at once eliminates the temporary (and configuration,
-> namely NR_CPUS, dependent) unavailability of early fixed mappings during the
-> time the fixmap area page tables get constructed.
-> 
-> Finally, also replace the hard coded calculation of the initial table space
-> needed for the fixmap area with a proper one, allowing kernels configured for
-> large CPU counts to actually boot.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> ---
->  arch/x86/include/asm/io.h |    1 
->  arch/x86/mm/init_32.c     |   48 +++++++++++++++++++++++++++++++++++++++++++---
->  arch/x86/mm/ioremap.c     |   25 -----------------------
->  3 files changed, 45 insertions(+), 29 deletions(-)
+shutdown() puts the device into D3 and then kexec relies on the device's
+current_state being PCI_UNKNOWN so that pci_restore_bars() is called when
+pci_set_power_state() runs for the first time.  This looks fragile, but I don't
+know how to fix it cleanly at the moment and I can see this can also happen
+in some other cases.  My bad.
 
-Much cleaner - applied to tip/x86/urgent, thanks Jan!
+Linus, please revert commit 98e6e286d7b01deb7453b717aa38ebb69d6cefc0
+(PCI PM: Register power state of devices during initialization), because it
+breaks the mechanism by which pci_restore_bars() is called during
+initialization if the device is initially in D3.
 
-	Ingo
+Thanks,
+Rafael
+
