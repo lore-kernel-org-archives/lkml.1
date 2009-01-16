@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762687AbZAPEeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbZAPEe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762687AbZAPEeg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 23:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbZAPEeZ
+	id S1756475AbZAPEe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 23:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbZAPEeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 23:34:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:47631 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755277AbZAPEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 23:34:24 -0500
-Date: Fri, 16 Jan 2009 15:34:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Tony Luck <tony.luck@intel.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: linux-next: build problem with nfs tree (Was: Re:
- [mmotm][PATCH] fix ia64 build error)
-Message-Id: <20090116153417.891297ca.sfr@canb.auug.org.au>
-In-Reply-To: <20090116134930.68e783aa.sfr@canb.auug.org.au>
-References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
-	<20090116124949.7828a559.sfr@canb.auug.org.au>
-	<20090115175917.8e0ae536.akpm@linux-foundation.org>
-	<20090116134930.68e783aa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Jan 2009 23:34:36 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:46941 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761300AbZAPEef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 23:34:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=H1HKkb+b7YjN9GVLX4jLn4KbnClrILOHkNc5ty8aUFB1ygthZgbNbH/1qyfL41esf
+	BPyM98j8iZGI/3KIrhlIg==
+MIME-Version: 1.0
+In-Reply-To: <20090116121725.fff7dad9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090116121725.fff7dad9.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 15 Jan 2009 20:34:28 -0800
+Message-ID: <6599ad830901152034i4ffb7d24mbd5ab35d41cc7deb@mail.gmail.com>
+Subject: Re: [PATCH] use hierarchy mutex in creation failure path
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       containers@lists.linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.88
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-On Fri, 16 Jan 2009 13:49:30 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Thu, Jan 15, 2009 at 7:17 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 >
-> On Thu, 15 Jan 2009 17:59:17 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > I do most of my gitting across a DSL connection.  It makes GUIs
-> > painful.
-> 
-> Yeah, I will think on it ...
+> Now, cgrp->sibling is handled under hierarchy mutex.
+> error route should do so, too.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-With the help of Paul Mackerras, I have come up with the shell script
-below.  You run it with the commit id, the tag of the tree you care
-about (e.g. next-20080115)(it defaults to the current top of tree) and
-the name of the branch the represents Linus' tree (default to
-origin/master).  It will spit out the (or a) tree that contains the
-commit you asked about.
+Acked-by Paul Menage <menage@google.com>
 
--------------------------------------------------------------------------
-#!/bin/bash
+Good catch, thanks.
 
-commit=$1
-[ "$commit" ] || {
-	echo "$0: <commit id> [<top tag> [<linus branch>]]" 1>&2
-	exit 1
-}
+Paul
 
-top=$2
-[ "$top" ] || top=HEAD
-
-linus=$3
-[ "$linus" ] || linus=origin/master
-
-base=$(git merge-base "$linus" "$top")
-
-git log --first-parent --pretty='format:%H %P' "$base".."$top" |
-while read m p1 p2
-do
-	[ "$p2" ] || continue
-	git rev-list $base..$p2 | grep -q "$commit" || continue
-	branch=$(git show $m | sed -n "s/[ 	]*Merge .* '\([^']*\)'/\1/p")
-	tree=${branch%%/*}
-	[ "$tree" = "quilt" ] && tree=${branch##*/}
-	echo "$tree"
-	break
-done
-
-exit 0
-----------------------------------------------------------------------------
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>
+> ---
+>  kernel/cgroup.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
+> +++ mmotm-2.6.29-Jan14/kernel/cgroup.c
+> @@ -2434,7 +2434,9 @@ static long cgroup_create(struct cgroup
+>
+>  err_remove:
+>
+> +       cgroup_lock_hierarchy(root);
+>        list_del(&cgrp->sibling);
+> +       cgroup_unlock_hierarchy(root);
+>        root->number_of_cgroups--;
+>
+>  err_destroy:
+>
+>
