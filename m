@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbZAPDlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZAPDmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760333AbZAPDlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZAPDla
+	id S1755531AbZAPDmD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:42:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760250AbZAPDlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:41:30 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:35873 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754950AbZAPDl3 (ORCPT
+	Thu, 15 Jan 2009 22:41:40 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53570 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758336AbZAPDli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:41:29 -0500
-Date: Fri, 16 Jan 2009 14:41:21 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: roel kluin <roel.kluin@gmail.com>,
-       Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH crypto -v4 2/2] AES-NI: Add support to Intel AES-NI
-	instructions for x86_64 platform
-Message-ID: <20090116034121.GA10996@gondor.apana.org.au>
-References: <1232008119.5937.200.camel@yhuang-dev.sh.intel.com> <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com> <1232068858.5937.222.camel@yhuang-dev.sh.intel.com> <20090116015356.GA9822@gondor.apana.org.au> <1232073422.13948.3.camel@yhuang-dev.sh.intel.com> <20090116032639.GA10390@gondor.apana.org.au> <1232077045.13948.14.camel@yhuang-dev.sh.intel.com>
+	Thu, 15 Jan 2009 22:41:38 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build problem with nfs tree (Was: Re: [mmotm][PATCH] fix ia64 build error)
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+In-Reply-To: <20090116134930.68e783aa.sfr@canb.auug.org.au>
+References: <20090115175917.8e0ae536.akpm@linux-foundation.org> <20090116134930.68e783aa.sfr@canb.auug.org.au>
+Message-Id: <20090116123931.EBEF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232077045.13948.14.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri, 16 Jan 2009 12:41:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 11:37:25AM +0800, Huang Ying wrote:
+> Hi Andrew,
 > 
-> I think Roel Kluin is the real reporter.
+> On Thu, 15 Jan 2009 17:59:17 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > I do most of my gitting across a DSL connection.  It makes GUIs
+> > painful.
+> 
+> Yeah, I will think on it ...
+> 
+> > > I have dropped the nfs tree from linux-next for today.
+> > 
+> > Just for this buglet?  That sounds a bit savage.
+> 
+> There was another problem with the fscache code as well.  Also, this was
+> reported the day before yesterday and got no response.  Also, the other
+> patch that added EXPORT_SYMBOL(copy_page) "recently" was from
+> December, *2007* ... Also, this is 2.6.30 material and they have a long
+> time to fix it.
+> 
+> Also, it is much easier on me :-)
 
-OK I'll add him as well.
+Ghh, sorry for my really poor analysis ;)
+thanks stephen.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+
+
