@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbZAPQOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763743AbZAPQTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763346AbZAPQOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 11:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZAPQOO
+	id S1763743AbZAPQTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 11:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbZAPQTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 11:14:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41351 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756283AbZAPQOM (ORCPT
+	Fri, 16 Jan 2009 11:19:14 -0500
+Received: from mail.netone.net.tr ([193.192.98.182]:36863 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754612AbZAPQTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 11:14:12 -0500
-Date: Fri, 16 Jan 2009 08:13:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 36/51] revert "mm: vmalloc use mutex for purge"
-Message-Id: <20090116081359.567a4dc9.akpm@linux-foundation.org>
-In-Reply-To: <20090116094312.GD22810@wotan.suse.de>
-References: <200901152151.n0FLpFvI009218@imap1.linux-foundation.org>
-	<20090116025531.GI17810@wotan.suse.de>
-	<1232098736.4808.17.camel@leto.intern.saout.de>
-	<20090116094312.GD22810@wotan.suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Jan 2009 11:19:13 -0500
+Message-ID: <4970B37D.2040508@turknet.net.tr>
+Date: Fri, 16 Jan 2009 18:19:09 +0200
+From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Chris Mason <chris.mason@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Btrfs Snapshot Removal And General Project Status
+References: <496DC1C6.7090307@turknet.net.tr> <1232119011.21473.24.camel@think.oraclecorp.com>
+In-Reply-To: <1232119011.21473.24.camel@think.oraclecorp.com>
+Content-Type: text/plain; charset=ISO-8859-9; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Jan 2009 16:19:09.0388 (UTC) FILETIME=[2936B0C0:01C977F6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 10:43:12 +0100 Nick Piggin <npiggin@suse.de> wrote:
+Chris Mason wrote:
+> Sorry for the delay, I missed this one somehow.
+Oh,it's really no problem. ;-)  All we know that you're too busy 
+nowadays, cause of btrfs' mainline inclusion. :-)
+> That's right.  You did rm -rf dir, which is actually the slowest
+> possible way to remove the snapshot ;)  A much more optimized version is
+> possible, and already implemented as part of transaction commit.
+>
+>   
+Thanks for pointing ;-)
 
-> On Fri, Jan 16, 2009 at 10:38:56AM +0100, Christophe Saout wrote:
-> > Hi Nick,
-> > 
-> > > Weird. It seem to be something to do with Xen (and btrfs? or was it reproduced
-> > > without?).
-> > 
-> > I got this bug without btrfs.  Seen on both Xen x86_32 and x86_64.
-> > 
-> > Note that I also some a different issue with CONFIG_UNEVICTABLE_LRU.
-> > Seems like Xen tears down current->mm early on process termination, so
-> > that __get_user_pages in exit_mmap causes nasty messages when the
-> > process had any mlocked pages.  (in fact, it somehow manages to get into
-> > the swapping code and produces a null pointer dereference trying to get
-> > a swap token)
-> 
-> There is an oops there, yes. I remember I patch we have, although it was
-> specifically for kernel threads rather than this issue. Xen could easily
-> have bigger issues if it is exiting the mm before that final get_user_pages.
-> 
->  
-> 
-> > > Anyway, I agree with the revert for the moment, but I'm worried that it might
-> > > be hiding another bug... I might add a few might_sleep and in_atomic warnings
-> > > around the place to see if it might find the culprit without crashing machines.
-> > 
-> > If you need some testing, please tell me.  On a dual-core machine this
-> > bug happens within few minutes of a compiler run.
-> 
-> Ok, thanks... I'll see if I can get to it next week.
-> 
-> ---
-> 
-> From: Dean Roe <roe@sgi.com>
-> Subject: Prevent NULL pointer deref in grab_swap_token
-> References: 159260
-> 
-> grab_swap_token() assumes that the current process has an mm struct,
-> which is not true for kernel threads invoking get_user_pages().  Since
-> this should be extremely rare, just return from grab_swap_token()
-> without doing anything.
-> 
-> Signed-off-by: Dean Roe <roe@sgi.com>
-> Acked-by: mason@suse.de
-> Acked-by: okir@suse.de
-> 
-> 
->  mm/thrash.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> --- a/mm/thrash.c
-> +++ b/mm/thrash.c
-> @@ -31,6 +31,9 @@ void grab_swap_token(void)
->  	int current_interval;
->  
->  	global_faults++;
-> +	if (current->mm == NULL)
-> +		return;
-> +
->  
->  	current_interval = global_faults - current->mm->faultstamp;
->  
+> A very good point, I'm in the process of documenting this better.
+>
+>   
+Good luck! :-)
 
-Confused.  Why was there a random, seemingly-unrelated patch at the end
-of this email?
 
+Tarkan ERIMER
