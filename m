@@ -1,63 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764827AbZAPXOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934736AbZAPXOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764827AbZAPXOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 18:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZAPXN7
+	id S934736AbZAPXOw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763976AbZAPXON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 18:13:59 -0500
-Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:42572 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752870AbZAPXN6 (ORCPT
+	Fri, 16 Jan 2009 18:14:13 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:47643 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763597AbZAPXOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 18:13:58 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [regression] hp-wmi: hangs system on boot
-Date: Sat, 17 Jan 2009 00:13:54 +0100
-User-Agent: KMail/1.9.9
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901170013.55786.elendil@planet.nl>
-X-OriginalArrivalTime: 16 Jan 2009 23:13:56.0355 (UTC) FILETIME=[1B007D30:01C97830]
+	Fri, 16 Jan 2009 18:14:11 -0500
+Date: Fri, 16 Jan 2009 18:14:07 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] PM: Fix compilation warning in kernel/power/main.c
+In-reply-to: <200901170010.45699.rjw@sisk.pl>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0901161813480.31281@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200901170010.45699.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I first booted .29-rc2 my HP 2510p notebook hung while loading
-hp-wmi, which I have listed in /etc/modules. Hard poweroff was needed.
+applied
 
-The last line on the console was:
-input: HP WMI hotkeys as /class/input/input11
+thanks,
+--
+Len Brown, Intel Open Source Technology Center
 
-After commenting out hp-wmi in /etc/modules the system booted correctly.
+On Sat, 17 Jan 2009, Rafael J. Wysocki wrote:
 
-After the successful boot I tried loading the module manually using
-modprobe, which resulted in:
-input: HP WMI hotkeys as /class/input/input11
-iwlagn: Radio Frequency Kill Switch is On:
-Kill switch must be turned off for wireless networking to work.
-wlan0: No ProbeResp from current AP 00:14:c1:38:e5:15 - assume out of range
-iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
-mac80211-phy0: failed to remove key (0, 00:14:c1:38:e5:15) from hardware (-5)
-iwlagn: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
-mac80211-phy0: failed to remove key (1, ff:ff:ff:ff:ff:ff) from hardware (-5)
-
-I also noticed that /sys/bus/platform/devices/hp-wmi/dock is missing.
-And I lost my wireless connection.
-
-Difference between loading hp-wmi from /etc/modules and manually could be
-that normally wlan is started _after_ /etc/modules is processed. So with
-the hang wlan was not yet active, while for the manual modprobe wlan was
-active.
-
-With 2.6.28 hp-wmi works perfectly.
-
-System is running x84_64, Debian Lenny.
-
-Cheers,
-FJP
+> 
+> Reorder the code in kernel/power/main.c to fix compilation warning
+> triggered by unsetting CONFIG_SUSPEND.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/main.c |   26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/main.c
+> +++ linux-2.6/kernel/power/main.c
+> @@ -57,16 +57,6 @@ int pm_notifier_call_chain(unsigned long
+>  #ifdef CONFIG_PM_DEBUG
+>  int pm_test_level = TEST_NONE;
+>  
+> -static int suspend_test(int level)
+> -{
+> -	if (pm_test_level == level) {
+> -		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
+> -		mdelay(5000);
+> -		return 1;
+> -	}
+> -	return 0;
+> -}
+> -
+>  static const char * const pm_tests[__TEST_AFTER_LAST] = {
+>  	[TEST_NONE] = "none",
+>  	[TEST_CORE] = "core",
+> @@ -125,14 +115,24 @@ static ssize_t pm_test_store(struct kobj
+>  }
+>  
+>  power_attr(pm_test);
+> -#else /* !CONFIG_PM_DEBUG */
+> -static inline int suspend_test(int level) { return 0; }
+> -#endif /* !CONFIG_PM_DEBUG */
+> +#endif /* CONFIG_PM_DEBUG */
+>  
+>  #endif /* CONFIG_PM_SLEEP */
+>  
+>  #ifdef CONFIG_SUSPEND
+>  
+> +static int suspend_test(int level)
+> +{
+> +#ifdef CONFIG_PM_DEBUG
+> +	if (pm_test_level == level) {
+> +		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
+> +		mdelay(5000);
+> +		return 1;
+> +	}
+> +#endif /* !CONFIG_PM_DEBUG */
+> +	return 0;
+> +}
+> +
+>  #ifdef CONFIG_PM_TEST_SUSPEND
+>  
+>  /*
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
