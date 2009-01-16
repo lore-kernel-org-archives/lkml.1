@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764804AbZAPJTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764621AbZAPJXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764804AbZAPJTO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 04:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZAPJSu
+	id S1764621AbZAPJXj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 04:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbZAPJXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 04:18:50 -0500
-Received: from www.m-privacy.de ([85.214.138.176]:32768 "EHLO www.m-privacy.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759223AbZAPJSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 04:18:47 -0500
-X-Greylist: delayed 1804 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Jan 2009 04:18:46 EST
-To: linux-kernel@vger.kernel.org
-Subject: Announce: RSBAC 1.4.0 released
-Content-Disposition: inline
-From: Amon Ott <ao@rsbac.org>
-Date: Fri, 16 Jan 2009 09:48:31 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 16 Jan 2009 04:23:19 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:55078 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757522AbZAPJXQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 04:23:16 -0500
+Subject: Re: [PATCH 00/14] Kernel memory leak detector
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+In-Reply-To: <170fa0d20901151409p5ce88a4cqb3686d600ac6190e@mail.gmail.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20090108144538.e5195575.akpm@linux-foundation.org>
+	 <1231753866.10982.11.camel@pc1117.cambridge.arm.com>
+	 <20090112022138.bd2e6ce4.akpm@linux-foundation.org>
+	 <20090112213339.feefdd02.sfr@canb.auug.org.au>
+	 <1231936220.24082.11.camel@pc1117.cambridge.arm.com>
+	 <20090115010141.42e1dfc5.sfr@canb.auug.org.au>
+	 <1231944602.24082.42.camel@pc1117.cambridge.arm.com>
+	 <170fa0d20901151409p5ce88a4cqb3686d600ac6190e@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 16 Jan 2009 09:22:32 +0000
+Message-Id: <1232097752.31143.12.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901160948.32172.ao@rsbac.org>
+X-OriginalArrivalTime: 16 Jan 2009 09:22:33.0489 (UTC) FILETIME=[F67F3010:01C977BB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rule Set Based Access Control (RSBAC) 1.4.0 has been released for both
-Linux kernels 2.4.37 and 2.6.27.10
-You can download the new version from http://www.rsbac.org
+On Thu, 2009-01-15 at 17:09 -0500, Mike Snitzer wrote:
+> When running your latest git kmemleak branch (as is being pulled into
+> linux-next AFAIK) I'm still seeing that kmemleak fails to initialize
+> with:
+> 
+> kmemleak: Early log buffer exceeded
+[...]
+> Kernel memory leak detector disabled
 
-RSBAC is one of the leading access control systems for the Linux
-kernel with a good selection of access control models, see
-http://www.rsbac.org/why for more details.
+It looks like kmemleak exceeded it's buffer for logging initial memory
+allocations requests and disabled itself (since it needs to track all
+the memory allocations and kmemleak uses the slab allocator itself, it
+uses this buffer). You can try to increase the size of the early_log[]
+array (currently 200) in the kmemleak.c file. The current size was fine
+on my embedded systems but, well, it looks like it needs to be
+increased.
 
-Important changes since 1.3 series:
+> Doing so yields:
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0xaed80): Section mismatch in reference from
+> the function kmemleak_free() to the function .init.text:log_early()
+> The function kmemleak_free() references
+> the function __init log_early().
+> This is often because kmemleak_free lacks a __init
+> annotation or the annotation of log_early is wrong.
 
-  *  VUM (Virtual User Management) support (http://rsbac.org/redir.php?t=vum)
-  * One time password support for user management 
-(http://rsbac.org/redir.php?t=otp)
-  * Code for kernels 2.4 and 2.6 has been separated. 2.4 kernels might
-be phased out at a later date.
-  * PAM module does not send a message "User not authenticated" anymore
-if authentication failed. (To match other PAM modules behavior)
-  * Made PAM password prompt standard and definable to RSBAC's custom
-prompt if the user wants it only.
-  * rsbac_useradd -K to copy a user with password.
-  * rsbac_mount now uses kernel's vfs_mount
+That's related to the early_log buffer. Once kmemleak was initialised,
+it no longer calls the log_early() function and doesn't use the
+early_log[] array, hence they were marked as __init. The warning is
+valid but it doesn't cause any bugs in kmemleak. Any idea how to avoid
+this warning and still release the __init code and data?
 
+Another solution is to use the page allocator for the early logging
+buffer and just free the pages once fully initialised, though this may
+complicate the code slightly more.
 
-About RSBAC 1.4:
----
-
-RSBAC 1.4 mainly introduces the new Virtual User Management feature ( 
-(http://rsbac.org/redir.php?t=vum),
-which allows to isolate complete sets of users in so-called "virtual sets". 
-Every user in every set can have individual passwords and access rights.
-
-As an example, you can start your mail server in a different set, and
-the users getting the email will not be part of the system users.
-
-Likewise, your jails can be started in a different set, so that the
-users in that jail will never be the same ones as the real system users.
-
-You can specify the user set with the usual tools by specifying the
-full user path, e.g.:
-
-0/0 defines user id 0 (root) in virtual set 0 (eg system user root)
-0/1000 defines user id 1000 in virtual set 0 (eg a system user)
-1/secoff defines user secoff in virtual set 1 (e.g. with uid 400)
-2/1000 defines user id 1000 in virtual set 2 (for example, mail users
-could be in set 2)
-
-Amon.
 -- 
-http://www.rsbac.org - GnuPG: 2048g/5DEAAA30 2002-10-22
+Catalin
+
