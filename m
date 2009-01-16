@@ -1,77 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936119AbZAPCU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936128AbZAPCXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936119AbZAPCU7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbZAPCUt
+	id S936128AbZAPCXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbZAPCXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:20:49 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48186 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754580AbZAPCUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:20:48 -0500
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-From: Matthew Helsley <matthltc@us.ibm.com>
-Reply-To: matthltc@us.ibm.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Menage <menage@google.com>,
+	Thu, 15 Jan 2009 21:23:24 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50268 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755463AbZAPCXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:23:21 -0500
+Date: Fri, 16 Jan 2009 11:22:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Containers <containers@lists.linux-foundation.org>
-In-Reply-To: <20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
-	 <20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 15 Jan 2009 18:20:45 -0800
-Message-Id: <1232072445.7955.40.camel@localhost>
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
+Message-Id: <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <496FE791.9030208@cn.fujitsu.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>
+	<496FE30C.1090300@cn.fujitsu.com>
+	<20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>
+	<496FE791.9030208@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-09 at 15:32 +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 8 Jan 2009 22:26:46 -0800
-> Paul Menage <menage@google.com> wrote:
-> 
-> > On Thu, Jan 8, 2009 at 9:32 PM, KAMEZAWA Hiroyuki
-> > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > >
-> > > Motivation: Simply classify Applications by cgroup
-> > >  When using cgroup for classifying applications, some kind of "control" or
-> > >  "account" subsys must be used. For flexible use of cgroup's nature of
-> > >  classifying applications, NOOP is useful. It can be used regardless of
-> > >  resource accounting unit or name spaces or some controls.
-> > >  IOW, NOOP cgroup allows users to tie PIDs with some nickname.
+On Fri, 16 Jan 2009 09:49:05 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> KAMEZAWA Hiroyuki wrote:
+> > On Fri, 16 Jan 2009 09:29:48 +0800
+> > Li Zefan <lizf@cn.fujitsu.com> wrote:
 > > 
-> > I agree that the idea is useful. But to me it seems to a bit
-> > artificial that you still have to mount some kind of subsystem purely
-> > to get the grouping, and that you can only have one such grouping.
+> >>>  /*
+> >>> - * Dance down the hierarchy if needed to reclaim memory. We remember the
+> >>> - * last child we reclaimed from, so that we don't end up penalizing
+> >>> - * one child extensively based on its position in the children list.
+> >>> + * Visit the first child (need not be the first child as per the ordering
+> >>> + * of the cgroup list, since we track last_scanned_child) of @mem and use
+> >>> + * that to reclaim free pages from.
+> >>> + */
+> >>> +static struct mem_cgroup *
+> >>> +mem_cgroup_select_victim(struct mem_cgroup *root_mem)
+> >>> +{
+> >>> +	struct mem_cgroup *ret = NULL;
+> >>> +	struct cgroup_subsys_state *css;
+> >>> +	int nextid, found;
+> >>> +
+> >>> +	if (!root_mem->use_hierarchy) {
+> >>> +		spin_lock(&root_mem->reclaim_param_lock);
+> >>> +		root_mem->scan_age++;
+> >>> +		spin_unlock(&root_mem->reclaim_param_lock);
+> >>> +		css_get(&root_mem->css);
+> >>> +		ret = root_mem;
+> >>> +	}
+> >>> +
+> >>> +	while (!ret) {
+> >>> +		rcu_read_lock();
+> >>> +		nextid = root_mem->last_scanned_child + 1;
+> >>> +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
+> >>> +				   &found);
+> >>> +		if (css && css_is_populated(css) && css_tryget(css))
+> >> I don't see why you need to check css_is_populated(css) ?
+> >>
 > > 
-> > I think I'd prefer the ability to mount a cgroups hierarchy without
-> > *any* subsystems (maybe with "-o none"?) which would give you a
-> > similar effect, but without you needing to know about a special no-op
-> > subsystem, and would allow you to have multiple "no-op" groupings.
+> > Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
+> 
+> I think this is a rare case. It's just a very short period when a cgroup is
+> being created but not yet fully created.
+> 
+> > Second reason is for avoinding unnecessary calls to try_to_free_pages(),
+> > it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
 > > 
 > 
-> Oh, it seems better idea. Then, we need no configs and no additional subsys.
-> Thank you for a hint. I'll check how I can do it.
+> And if mem->res.usage == 0 is checked, css_is_popuated() is just redundant.
 > 
-> Thanks,
-> -Kame
+Hmm ? Can I check mem->res.usage before css_tryget() ?
 
-	My feeling is this should be a signal subsystem rather than a NOOP
-subsystem. Then, if users want the grouping for something besides
-signaling, it doesn't matter if they don't issue any signals via the
-signal.send file. Also, I think Paul's suggestion would be just as
-useful for a signal subsystem.
+-Kame
 
-	What do you think?
 
-Cheers,
-	-Matt Helsley
 
-PS: Adding containers@lists.linux-foundation.org to Cc.
+
+> > THanks,
+> > -Kame
+> > 
+> >>> +			ret = container_of(css, struct mem_cgroup, css);
+> >>> +
+> >>> +		rcu_read_unlock();
+> >>> +		/* Updates scanning parameter */
+> >>> +		spin_lock(&root_mem->reclaim_param_lock);
+> >>> +		if (!css) {
+> >>> +			/* this means start scan from ID:1 */
+> >>> +			root_mem->last_scanned_child = 0;
+> >>> +			root_mem->scan_age++;
+> >>> +		} else
+> >>> +			root_mem->last_scanned_child = found;
+> >>> +		spin_unlock(&root_mem->reclaim_param_lock);
+> >>> +	}
+> >>> +
+> >>> +	return ret;
+> >>> +}
+> >>> +
+> 
 
