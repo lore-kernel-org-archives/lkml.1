@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbZAPNvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbZAPNzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934818AbZAPNvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 08:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762764AbZAPNu7
+	id S934628AbZAPNzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 08:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765417AbZAPNzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 08:50:59 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:54956 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762229AbZAPNu6 convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 08:55:05 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59399 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763887AbZAPNzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 08:50:58 -0500
-Message-Id: <49709EF7.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Fri, 16 Jan 2009 13:51:35 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
-References: <4970818A.76E4.0078.0@novell.com>
- <20090116124548.GC5421@elte.hu> <49709C94.76E4.0078.0@novell.com>
- <20090116134243.GC14874@elte.hu>
-In-Reply-To: <20090116134243.GC14874@elte.hu>
+	Fri, 16 Jan 2009 08:55:03 -0500
+Subject: ext3: call blkdev_issue_flush on fsync
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp
+In-Reply-To: <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+References: <20090113140347.GD17664@mit.edu>
+	 <20090113143011.GB10064@duck.suse.cz>
+	 <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu>
+	 <20090114140532.GC19950@duck.suse.cz> <20090114141204.GD6222@mit.edu>
+	 <20090114143756.GF19950@duck.suse.cz> <20090114165952.GH6222@mit.edu>
+	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090115234544.GA7579@duck.suse.cz>
+	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Fri, 16 Jan 2009 22:55:01 +0900
+Message-Id: <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 16.01.09 14:42 >>>
->
->* Jan Beulich <jbeulich@novell.com> wrote:
->
->> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 13:45 >>>
->> >
->> >* Jan Beulich <jbeulich@novell.com> wrote:
->> >
->> >> +	if (disable_apic) {
->> >> +#ifdef CONFIG_X86_IO_APIC
->> >> +		disable_ioapic_setup();
->> >> +#endif
->> >> +		return;
->> >> +	}
->> >
->> > Shouldnt that #ifdef be avoided by always providing the function - 
->> > just it is a NOP inline in the !CONFIG_X86_IO_APIC case?
->> 
->> That would make for a much bigger patch, since the io_apic.h doesn't 
->> (and imo shouldn't) be included without that config option.
->
->But we are using io-apic functionality in that file, so we should include 
->io_apic.h, right?
+To ensure that bits are truly on-disk after an fsync or fdatasync, we
+should force a disk flush explicitly when there is dirty data/metadata
+and the journal didn't emit a write barrier (either because metadata is
+not being synched or barriers are disabled).
 
-I don't generally (i.e. when !X86_IO_APIC) think so - anything accessing
-stuff from io_apic.c is guarded by a similar #ifdef.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-Jan
+--- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
++++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
+@@ -27,6 +27,7 @@
+ #include <linux/sched.h>
+ #include <linux/writeback.h>
+ #include <linux/jbd.h>
++#include <linux/blkdev.h>
+ #include <linux/ext3_fs.h>
+ #include <linux/ext3_jbd.h>
+ 
+@@ -45,6 +46,8 @@
+ int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ {
+ 	struct inode *inode = dentry->d_inode;
++	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
++	unsigned long i_state = inode->i_state;
+ 	int ret = 0;
+ 
+ 	J_ASSERT(ext3_journal_current_handle() == NULL);
+@@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
+ 	 */
+ 	if (ext3_should_journal_data(inode)) {
+ 		ret = ext3_force_commit(inode->i_sb);
++		if (!(journal->j_flags & JFS_BARRIER))
++			goto no_journal_barrier;
+ 		goto out;
+ 	}
+ 
+-	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+-		goto out;
++	if (datasync && !(i_state & I_DIRTY_DATASYNC))
++		goto flush_blkdev;
+ 
+ 	/*
+ 	 * The VFS has written the file data.  If the inode is unaltered
+ 	 * then we need not start a commit.
+ 	 */
+-	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
++	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+ 		struct writeback_control wbc = {
+ 			.sync_mode = WB_SYNC_ALL,
+ 			.nr_to_write = 0, /* sys_fsync did this */
+ 		};
+ 		ret = sync_inode(inode, &wbc);
++		if (journal && !(journal->j_flags & JFS_BARRIER))
++			goto no_journal_barrier;
+ 	}
++
++flush_blkdev:
++	if (!(i_state & I_DIRTY_PAGES))
++		goto out;
++no_journal_barrier:
++	blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+ out:
+ 	return ret;
+ }
+
 
