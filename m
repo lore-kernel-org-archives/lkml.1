@@ -1,119 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbZAPGH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763087AbZAPGIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764053AbZAPGH5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 01:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZAPGHq
+	id S1763087AbZAPGIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 01:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbZAPGIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 01:07:46 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59027 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbZAPGHp (ORCPT
+	Fri, 16 Jan 2009 01:08:38 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:57031 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754890AbZAPGIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 01:07:45 -0500
-Message-ID: <4970242C.4010404@jp.fujitsu.com>
-Date: Fri, 16 Jan 2009 15:07:40 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 16 Jan 2009 01:08:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OvmR0ncQ6hjB42DG7KeUIVOEx/CNjGJ/HyI9awEKnhuheaMEm+kw4NEti/PLCfys3w
+         7NwbM5sPZPuSthWJvvKUzgWQSp+vIthANTBAUhuEnXa79ooyeif7KLU71d4wvkw6SG5/
+         PYMs9DObVoeDO387ZwGK/94pNmiHJ+/Lp/o1A=
+Date: Fri, 16 Jan 2009 15:08:30 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, npiggin@suse.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove needless flush_dcache_page call
+Message-ID: <20090116060830.GB6515@barrios-desktop>
+References: <20090116052804.GA18737@barrios-desktop> <20090116053338.GC31013@parisc-linux.org> <20090116055119.GA6515@barrios-desktop> <20090116055729.GF31013@parisc-linux.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, shaohua.li@intel.com
-Subject: Re: ACPI hotplug panic with current git head
-References: <1231604250.3642.33.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>	 <1231807693.27151.21.camel@localhost.localdomain>	 <1232046108.5966.57.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>	 <1232049269.5966.64.camel@localhost.localdomain> <1232050347.5966.66.camel@localhost.localdomain>
-In-Reply-To: <1232050347.5966.66.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090116055729.GF31013@parisc-linux.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2009-01-15 at 14:54 -0500, James Bottomley wrote:
->> On Thu, 2009-01-15 at 14:22 -0500, Len Brown wrote:
->>> On Thu, 15 Jan 2009, James Bottomley wrote:
->>>
->>>> On Mon, 2009-01-12 at 18:48 -0600, James Bottomley wrote:
->>>>> On Mon, 2009-01-12 at 16:16 -0500, Len Brown wrote:
->>>>>>> This is on an IBM Maia system with the calgary IOMMU enabled. It's a
->>>>>>> fatal boot up panic.
->>>>>>>
->>>>>> James,
->>>>>> A guided bisect...
->>>>>> Please let me know which of these fail
->>>>>>
->>>>>> a3a798c88a14b35e5d4ca30716dbc9eb9a1ddfe2 is 2.6.29 at ACPI merge
->>>>>> efcb3cf7f00c3c424db012380a8a974c2676a3c8 is 2.6.29 before ACPI merge
->>>>> Didn't try these (being after the failure)
->>>>>
->>>>>> ec9f168fcc344d2ffec1c8c822076bf22dab5c33 is 2.6.28 with most ACPI
->>>>> This is the failing one.
->>>>>
->>>>>> e8443c358c34f3fe65236e24147ddf0cd0e61b08 is 2.6.28 plus just ACPICA
->>>>> This one boots fine.
->>>>>
->>>>>> Please test the "2.6.28+ACPICA" one first.
->>>>>> If it fails, we are close so you can skip the others above
->>>>>> and bisect between that and 2.6.28.
->>>>> I'll try bisecting between ec9f168fcc344d2ffec1c8c822076bf22dab5c33 and
->>>>> e8443c358c34f3fe65236e24147ddf0cd0e61b08.
->>>> OK, bisection complete.  It's not actually coming from the ACPI tree but
->>>> from the PCI one (appropriate CC's added).
->>>>
->>>> The commit causing the boot panic is:
->>>>
->>>> commit e8c331e963c58b83db24b7d0e39e8c07f687dbc6
->>>> Author: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
->>>> Date:   Wed Dec 17 12:09:12 2008 +0900
->>>>
->>>>     PCI hotplug: introduce functions for ACPI slot detection
->>>>
->>>> I'm still not sure why, though
->>> Nothing jumped out at me in the patch.
->>> Does reverting e8c331e963c58b83db24b7d0e39e8c07f687dbc6
->>> make the boot crash go away?
->> Yes, but then it would ... the call sequence is through the reverted
->> code.
+On Thu, Jan 15, 2009 at 10:57:30PM -0700, Matthew Wilcox wrote:
+> On Fri, Jan 16, 2009 at 02:51:19PM +0900, MinChan Kim wrote:
+> > On Thu, Jan 15, 2009 at 10:33:38PM -0700, Matthew Wilcox wrote:
+> > > Sorry, no.  You have to call fluch_dcache_page() in two situations --
+> > > when the kernel is going to read some data that userspace wrote, *and*
+> > > when userspace is going to read some data that the kernel wrote.  From a
+> > > quick look at the patch, this seems to be the second case.  The kernel
+> > > wrote data to a pagecache page, and userspace should be able to read it.
+> > > 
+> > > To understand why this is necessary, consider a processor which is
+> > > virtually indexed and has a writeback cache.  The kernel writes to a
+> > > page, then a user process reads from the same page through a different
+> > > address.  The cache doesn't find the data the kernel wrote because it
+> > > has a different virtual index, so userspace reads stale data.
+> > 
+> > I see. :)
+> > 
+> > Thanks for quick reponse and good explaination.
+> > Hmm,.. one more question. 
+> > 
+> > I can't find flush_dcache_page call in mpage_readpage which is 
+> > generic read function. In case of ext fs, it use mpage_readpage 
+> > with readpage.
+> > 
+> > who and where call flush_dcache_page in mpage_readpage call path?
 > 
-> It looks like acpi_pci_get_bridge_handle() is returning NULL, so this is
-> the fix that works for me.
-> 
+> Most I/O devices will do DMA to the page in question and thus the kernel
+> hasn't written to it and the CPU won't have the data in cache.  For the
+> few devices which can't do DMA, it's the responsibility of the device
+> driver to call flush_dcache_page() (or some other flushing primitive).
 
-I'm sorry for troubling you, and thank you for your patience.
+Hmm.. Now I am confusing. 
+If devicer driver or with DMA makes sure cache consistency,
+Why filesystem code have to handle it ?
 
-The patch seems to avoid the kernel panic, but I still don't know
-why acpi_pci_get_bridge_handle() returns NULL here. I assumed
-it should return non-NULL value here. So I'd like to investigate
-it more.
+> See the gdth driver for an example:
+> 
+>             address = kmap_atomic(sg_page(sl), KM_BIO_SRC_IRQ) + sl->offset;
+>             memcpy(address, buffer, cpnow);
+>             flush_dcache_page(sg_page(sl));
+>             kunmap_atomic(address, KM_BIO_SRC_IRQ);
+> 
+> -- 
+> Matthew Wilcox				Intel Open Source Technology Centre
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
 
-Thanks,
-Kenji Kaneshige
-
-
-> James
-> 
-> ---
-> 
-> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-> index f09b101..803d9dd 100644
-> --- a/drivers/pci/hotplug/acpiphp_glue.c
-> +++ b/drivers/pci/hotplug/acpiphp_glue.c
-> @@ -266,6 +266,8 @@ static int detect_ejectable_slots(struct pci_bus *pbus)
->  	int found = acpi_pci_detect_ejectable(pbus);
->  	if (!found) {
->  		acpi_handle bridge_handle = acpi_pci_get_bridge_handle(pbus);
-> +		if (!bridge_handle)
-> +			return 0;
->  		acpi_walk_namespace(ACPI_TYPE_DEVICE, bridge_handle, (u32)1,
->  				    is_pci_dock_device, (void *)&found, NULL);
->  	}
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
+--
+Kinds regards,
+MinChan Kim
 
