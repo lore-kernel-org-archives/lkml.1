@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZAPGvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbZAPGwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbZAPGvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 01:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZAPGvR
+	id S1756831AbZAPGwL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 01:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZAPGvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 01:51:17 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:43826 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755320AbZAPGvP (ORCPT
+	Fri, 16 Jan 2009 01:51:42 -0500
+Received: from mail.bigtelecom.ru ([87.255.0.61]:60603 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758610AbZAPGvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 01:51:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Y5D3X0MAVHA0szf+r1fLbl3ERtk3oKDQnSDNnswaxGO29ydIuqrj97hBnM0UHnuO6U
-         TflfYDs19nGBlWOSIMtDsvVSGn/auhhrPLXKOuIKJNxEjmFHcRPj0D+qr2UFsYQtgks5
-         H2r4yegmyjg8CqI3r741NjHwDpe5tyZhi/nQ0=
-Date: Fri, 16 Jan 2009 06:51:08 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       zbr@ioremap.net, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090116065107.GA4170@ff.dom.local>
-References: <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090115233205.GA8474@gondor.apana.org.au> <20090115.153449.204259387.davem@davemloft.net> <20090115234255.GE1123@1wt.eu> <20090115234408.GA1693@1wt.eu>
+	Fri, 16 Jan 2009 01:51:41 -0500
+Message-ID: <49702E79.6040100@bigtelecom.ru>
+Date: Fri, 16 Jan 2009 09:51:37 +0300
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115234408.GA1693@1wt.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Chris Caputo <ccaputo@alt.net>
+CC: Jarek Poplawski <jarkao2@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Denys Fedoryschenko <denys@visp.net.lb>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: deadlocks if use htb
+References: <Pine.LNX.4.64.0901110438050.16453@nacho.alt.net>	<20090114063909.GA4234@ff.dom.local>	<200901141417.58667.denys@visp.net.lb>	<1231937404.14825.4.camel@laptop>	<Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>	<20090115065322.GA4190@ff.dom.local>	<Pine.LNX.4.64.0901150724000.20461@nacho.alt.net>	<20090115075450.GB4190@ff.dom.local>	<20090115094530.GG4190@ff.dom.local>	<Pine.LNX.4.64.0901151139440.20461@nacho.alt.net>	<20090115121801.GH5461@ff.dom.local> <Pine.LNX.4.64.0901151340540.20461@nacho.alt.net>
+In-Reply-To: <Pine.LNX.4.64.0901151340540.20461@nacho.alt.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 12:44:08AM +0100, Willy Tarreau wrote:
-> On Fri, Jan 16, 2009 at 12:42:55AM +0100, Willy Tarreau wrote:
-> > On Thu, Jan 15, 2009 at 03:34:49PM -0800, David Miller wrote:
-> > > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > > Date: Fri, 16 Jan 2009 10:32:05 +1100
-> > > 
-> > > > On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
-> > > > > +static inline struct page *linear_to_page(struct page *page, unsigned int len,
-> > > > > +					  unsigned int offset)
-> > > > > +{
-> > > > > +	struct page *p = alloc_pages(GFP_KERNEL, 0);
-> > > > > +
-> > > > > +	if (!p)
-> > > > > +		return NULL;
-> > > > > +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
-> > > > 
-> > > > This won't work very well if skb->head is longer than a page.
-> > > > 
-> > > > We'll need to divide it up into individual pages.
-> > > 
-> > > Oh yes the same bug I pointed out the other day.
-> > > 
-> > > But Willy can test this patch as-is,
-> > 
-> > Hey, nice work Dave. +3% performance from your previous patch
-> > (31.6 MB/s). It's going fine and stable here.
-> 
-> And BTW feel free to add my Tested-by if you want in case you merge
-> this fix.
-> 
-> Willy
-> 
+Chris Caputo пишет:
+> On Thu, 15 Jan 2009, Jarek Poplawski wrote:
+>   
+>> On Thu, Jan 15, 2009 at 12:00:50PM +0000, Chris Caputo wrote:
+>> ...
+>>     
+>>> I wish I had a repro scenario in a non-production environment, so I could 
+>>> help out further with this.  If I did, I would test without nmi_watchdog 
+>>> while trying just 2.6.28 and Jarek's #4 patch.
+>>>       
+>> I think this watchdog doesn't matter too much yet. Probably it's more
+>> about hardware (smp, maybe kind of hw timer), and high traffic vs. htb
+>> rules.
+>>     
+>
+> Per Thomas' comment in http://bugzilla.kernel.org/show_bug.cgi?id=10944 
+> regarding broken hrtimers:
+>
+> --
+>   nmi_watchdog=1 disables the local apic timers and therefor highres/nohz
+>
+>   Try to use nmi_watchdog=2 instead.
+> --
+>
+> Chris
+>
+>
+>   
+Oh... after first deadlocks i add nmi_watchdog=1 to kernel and test with
+it. Is this result what highres/nohz
+allways on and my message where i say what test bug which highres/nohz
+on/off is wrong?
 
-Herbert, good catch!
-
-David, if it's not too late I think more credits are needed,
-especially for Willy. He did "a bit" more than testing.
-
-Alas, I can't see this problem with skb->head longer than page. There
-is even some comment on this in __splice_segment(), but I can miss
-something.
-
-I'm more concerned with memory usage if these skbs are not acked for
-some reason. Isn't there some DOS issue possible?
-
-Thanks everybody,
-Jarek P.
---------->
-Based on a review by Changli Gao <xiaosuo@gmail.com>:
-http://lkml.org/lkml/2008/2/26/210
-
-Foreseen-by: Changli Gao <xiaosuo@gmail.com>
-Diagnosed-by: Willy Tarreau <w@1wt.eu>
-Reported-by: Willy Tarreau <w@1wt.eu>
-Fixed-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
