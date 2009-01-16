@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937660AbZAPVRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937590AbZAPVTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937660AbZAPVRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 16:17:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932909AbZAPVQt
+	id S937590AbZAPVTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 16:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbZAPVTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 16:16:49 -0500
-Received: from gw.goop.org ([64.81.55.164]:49879 "EHLO mail.goop.org"
+	Fri, 16 Jan 2009 16:19:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58147 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937580AbZAPVQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 16:16:48 -0500
-Message-ID: <4970F907.7030400@goop.org>
-Date: Fri, 16 Jan 2009 13:15:51 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1755389AbZAPVTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 16:19:00 -0500
+Date: Fri, 16 Jan 2009 22:18:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: simplify HIGHMEM-related Kconfig entries
+Message-ID: <20090116211849.GB10063@elte.hu>
+References: <496DE927.76E4.0078.0@novell.com> <496E3F7D.2060908@zytor.com> <496F0796.76E4.0078.0@novell.com> <20090115085728.GA28607@elte.hu> <496F6DFC.90006@zytor.com> <49708423.76E4.0078.0@novell.com> <4970D04C.9080104@zytor.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PULL}: latest tip/cpus4096 changes
-References: <49704DF6.8040205@sgi.com> <20090116093442.GE4305@elte.hu> <4970BF1C.2020201@goop.org> <4970E614.5040607@sgi.com>
-In-Reply-To: <4970E614.5040607@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4970D04C.9080104@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4992]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
+
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+> Jan Beulich wrote:
+>>> If so, what would be the difference between HIGHMEM4G and HIGHMEM64G in
+>>> that case at all?
+>>
+>> For example being able to select the DMADEVICES config option.
 >
-> Here tis... Christophe was kind enough to test it for me.  (I believe
-> he said you were on vacation, though he did mention that you had some
-> changes in the queue?)
->   
+> WTF?!  Why would DMA device support be banned on HIGHMEM64G?  That makes 
+> no sense whatsoever...
 
-That looks OK, but it will clash with some of the pending patches.  I'll 
-fix it up.
+yes - but i guess the point is that there is some assymetry there which 
+needs to be investigated and fixed.
 
-    J
+	Ingo
