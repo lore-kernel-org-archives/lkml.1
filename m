@@ -1,178 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbZAPM0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbZAPM3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933236AbZAPM0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbZAPM0g
+	id S932331AbZAPM3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbZAPM3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:26:36 -0500
-Received: from oceanic.CalvaEDI.COM ([81.252.197.184]:63606 "EHLO
-	oceanic.CalvaEDI.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755622AbZAPM0f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:26:35 -0500
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Jan 2009 07:26:34 EST
-Message-ID: <49707BA9.1040102@Calva.COM>
-Date: Fri, 16 Jan 2009 13:20:57 +0100
-From: John Hughes <john@Calva.COM>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 16 Jan 2009 07:29:01 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46292 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756998AbZAPM3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 07:29:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: kexec fail with e1000 and e1000e
+Date: Fri, 16 Jan 2009 13:28:18 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
+Cc: "Barnes, Jesse" <jesse.barnes@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <86802c440901152031k55bf8e2eu31c8b9658c2216ac@mail.gmail.com> <86802c440901152039i2021a8b0j3d6797593e05968e@mail.gmail.com>
+In-Reply-To: <86802c440901152039i2021a8b0j3d6797593e05968e@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: A patch to arch/i386/kernel/irq.c to help get backtraces of (near)
- stack overflow situations
-Content-Type: multipart/mixed;
- boundary="------------000902060702010105070300"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901161328.19194.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000902060702010105070300
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Friday 16 January 2009, Yinghai Lu wrote:
+> On Thu, Jan 15, 2009 at 8:31 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> > [    8.652468] Intel(R) PRO/1000 Network Driver - version 7.3.20-k3-NAPI
+> > [    8.658896] Copyright (c) 1999-2006 Intel Corporation.
+> > [    8.680008] e1000 0000:05:01.0: enabling device (0000 -> 0003)
+> > [    8.685831] vendor=1022 device=7458
+> > [    8.689314] e1000 0000:05:01.0: PCI INT A -> GSI 48 (level, low) -> IRQ 48
+> > [    8.696184] e1000 0000:05:01.0: enabling bus mastering
+> > [    8.953642] e1000: 0000:05:01.0: e1000_probe: The EEPROM Checksum
+> > Is Not Valid
+> > [    9.863340] /*********************/
+> > [    9.866829] Current EEPROM Checksum : 0xffff
+> > [    9.871092] Calculated              : 0xbaf9
+> > [    9.875354] Offset    Values
+> > [    9.878230] ========  ======
+> > [    9.881107] 00000000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.887622] 00000010: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.894137] 00000020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.900653] 00000030: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.907168] 00000040: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.913684] 00000050: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.920200] 00000060: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.926715] 00000070: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > [    9.933231] Include this output when contacting your support provider.
+> > [    9.939746] This is not a software error! Something bad happened to
+> > your hardware or
+> > [    9.947475] EEPROM image. Ignoring this problem could result in
+> > further problems,
+> > [    9.954945] possibly loss of data, corruption or system hangs!
+> > [    9.960767] The MAC Address will be reset to 00:00:00:00:00:00,
+> > which is invalid
+> > [    9.968149] and requires you to set the proper MAC address manually
+> > before continuing
+> > [    9.975964] to enable this network device.
+> > [    9.980053] Please inspect the EEPROM dump and report the issue to
+> > your hardware vendor
+> > [    9.988041] or Intel Customer Support.
+> > [    9.991770] /*********************/
+> >
+> > git bisect said following patch is first bad one.
+> >
+> > commit 98e6e286d7b01deb7453b717aa38ebb69d6cefc0
+> > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > Date:   Wed Jan 7 13:10:35 2009 +0100
+> >
+> >    PCI PM: Register power state of devices during initialization
+> >
+> >    Use the observation that the power state of a PCI device can be
+> >    loaded into its pci_dev structure as soon as pci_pm_init() is run for
+> >    it and make that happen.
+> >
+> >    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >    Acked-by: Pavel Machek <pavel@suse.cz>
+> >    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> reverting that patch will make kexec work with e1000 again.
 
-I'm working on a system that is using a bit too much stack to work 
-reliably with 4K stacks (OpenSSI with DRBD for the root filesystem 
-replication) and I find that the CONFIG_DEBUG_STACKOVERFLOW stuff works 
-rather poorly - often the stack dump will cause a stack overflow itself.
+Well, although I think that reverting the patch won't make much harm, I also
+don't quite understand why this should matter for kexec at all.
 
-Here's a little patch to irq.c to make stack overflow dumps use a 
-separate stack.
+Can you please check if the problem also happens with the appended debug patch?
 
-It's based on 2.6.12 'cos that's how out of date I am.  :-)
+Rafael
 
-Maybe it'll be of use to someone.
 
-Please CC john@calva.com with any comments, I'm not subscribed to the list.
+---
+ drivers/pci/pci.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---------------000902060702010105070300
-Content-Type: text/x-patch;
- name="arch-i386-kernel-irq.c-overflow.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="arch-i386-kernel-irq.c-overflow.patch"
-
---- linux/arch/i386/kernel/irq.c	2005-06-17 21:48:29.000000000 +0200
-+++ linux-ssi/arch/i386/kernel/irq.c	2009-01-15 13:09:45.000000000 +0100
-@@ -41,6 +41,23 @@
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1266,6 +1266,7 @@ void pci_pm_init(struct pci_dev *dev)
+ {
+ 	int pm;
+ 	u16 pmc;
++	pci_power_t state;
  
- static union irq_ctx *hardirq_ctx[NR_CPUS];
- static union irq_ctx *softirq_ctx[NR_CPUS];
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+static union irq_ctx *overflow_ctx[NR_CPUS];
-+#endif
-+#ifdef	CONFIG_KDB
-+const char *kdba_irq_ctx_type(int cpu, struct thread_info *tinfo)
-+{
-+	if (tinfo == &hardirq_ctx[cpu]->tinfo)
-+		return "hardirq_ctx";
-+	if (tinfo == &softirq_ctx[cpu]->tinfo)
-+		return "softirq_ctx";
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+	if (tinfo == &overflow_ctx[cpu]->tinfo)
-+		return "overflow_ctx";
-+#endif
-+	return NULL;
-+}
-+#endif	/* CONFIG_KDB */
- #endif
+ 	dev->pm_cap = 0;
  
- /*
-@@ -53,6 +70,7 @@
- 	/* high bits used in ret_from_ code */
- 	int irq = regs->orig_eax & 0xff;
- #ifdef CONFIG_4KSTACKS
-+	int arg1, arg2, ebx;
- 	union irq_ctx *curctx, *irqctx;
- 	u32 *isp;
- #endif
-@@ -66,9 +84,38 @@
- 		__asm__ __volatile__("andl %%esp,%0" :
- 					"=r" (esp) : "0" (THREAD_SIZE - 1));
- 		if (unlikely(esp < (sizeof(struct thread_info) + STACK_WARN))) {
-+#if CONFIG_4KSTACKS
-+			/* use a special stack for overflow warning,
-+			   we want to avoid overflowing while telling
-+			   the user about the problem! */
-+
-+			curctx = (union irq_ctx *) current_thread_info();
-+			irqctx = overflow_ctx[smp_processor_id()];
-+
-+			if (curctx == irqctx) {
-+				panic("double overflow");
-+			}
-+			
-+			/* build the stack frame on the oflow stack */
-+			isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
-+			irqctx->tinfo.task = curctx->tinfo.task;
-+			irqctx->tinfo.previous_esp = current_stack_pointer;
-+
-+			asm volatile(
-+				"       xchgl   %%ebx,%%esp    \n"
-+				"       call    __overflow     \n"
-+				"       movl   %%ebx,%%esp     \n"
-+				: "=a" (arg1), "=d" (arg2), "=b" (ebx)
-+				:  "0" (irq),   "1" (esp),  "2" (isp)
-+				: "memory", "cc", "ecx"
-+			);
-+
-+			printk ("Back from overflow\n");
-+#else
- 			printk("do_IRQ: stack overflow: %ld\n",
- 				esp - sizeof(struct thread_info));
- 			dump_stack();
-+#endif
- 		}
+@@ -1321,7 +1322,9 @@ void pci_pm_init(struct pci_dev *dev)
  	}
- #endif
-@@ -109,6 +156,17 @@
- 	return 1;
+ 
+  Exit:
++	state = dev->current_state;
+ 	pci_update_current_state(dev, PCI_D0);
++	dev->current_state = state;
  }
  
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+#ifdef CONFIG_4KSTACKS
-+static fastcall void __overflow (int irq, long esp)
-+{
-+	printk("do_IRQ: stack overflow: %ld\n",
-+		esp - sizeof(struct thread_info));
-+	dump_stack();
-+}
-+#endif
-+#endif
-+
- #ifdef CONFIG_4KSTACKS
- 
- /*
-@@ -121,6 +179,10 @@
- static char hardirq_stack[NR_CPUS * THREAD_SIZE]
- 		__attribute__((__aligned__(THREAD_SIZE)));
- 
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+static char overflow_stack[NR_CPUS * THREAD_SIZE]
-+		__attribute__((__aligned__(THREAD_SIZE)));
-+#endif
- /*
-  * allocate per-cpu stacks for hardirq and for softirq processing
-  */
-@@ -151,6 +213,20 @@
- 
- 	printk("CPU %u irqstacks, hard=%p soft=%p\n",
- 		cpu,hardirq_ctx[cpu],softirq_ctx[cpu]);
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+
-+	irqctx = (union irq_ctx*) &overflow_stack[cpu*THREAD_SIZE];
-+	irqctx->tinfo.task              = NULL;
-+	irqctx->tinfo.exec_domain       = NULL;
-+	irqctx->tinfo.cpu               = cpu;
-+	irqctx->tinfo.preempt_count     = HARDIRQ_OFFSET;	/* ? */
-+	irqctx->tinfo.addr_limit        = MAKE_MM_SEG(0);
-+
-+	overflow_ctx[cpu] = irqctx;
-+
-+	printk("CPU %u irqstacks, overflow=%p\n",
-+		cpu,overflow_ctx[cpu]);
-+#endif
- }
- 
- extern asmlinkage void __do_softirq(void);
+ /**
 
---------------000902060702010105070300--
