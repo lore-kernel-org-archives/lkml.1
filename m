@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbZAPWxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933702AbZAPXAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932885AbZAPWxX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 17:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761973AbZAPWxE
+	id S933702AbZAPXAY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 18:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbZAPXAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 17:53:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53654 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757831AbZAPWxB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 17:53:01 -0500
-Date: Fri, 16 Jan 2009 14:51:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, prarit@redhat.com, dhowells@redhat.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, sam@ravnborg.org, kyle@mcmartin.ca,
-       tony.luck@intel.com, trond.myklebust@fys.uio.no
-Subject: Re: linux-next: build problem with nfs tree (Was: Re:
- [mmotm][PATCH] fix ia64 build error)
-Message-Id: <20090116145156.ebbea173.akpm@linux-foundation.org>
-In-Reply-To: <20090117094008.5a0ce562.sfr@canb.auug.org.au>
-References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
-	<20090116124949.7828a559.sfr@canb.auug.org.au>
-	<20090115175917.8e0ae536.akpm@linux-foundation.org>
-	<20090116134930.68e783aa.sfr@canb.auug.org.au>
-	<20090116153417.891297ca.sfr@canb.auug.org.au>
-	<20090116141557.0a3eaaac.akpm@linux-foundation.org>
-	<20090117094008.5a0ce562.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 18:00:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57125 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757385AbZAPXAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 18:00:09 -0500
+Date: Fri, 16 Jan 2009 23:59:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH 0/2] ftrace: updates to tip
+Message-ID: <20090116225948.GA12314@elte.hu>
+References: <20090116004050.273665842@goodmis.org> <20090116112345.GC20082@elte.hu> <alpine.DEB.1.10.0901160929300.22303@gandalf.stny.rr.com> <20090116152103.GA28643@elte.hu> <alpine.DEB.1.10.0901161050470.22303@gandalf.stny.rr.com> <20090116160202.GA15209@elte.hu> <alpine.DEB.1.10.0901161111490.22303@gandalf.stny.rr.com> <20090116163021.GA27495@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090116163021.GA27495@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Jan 2009 09:40:08 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> Hi Andrew,
-> 
-> On Fri, 16 Jan 2009 14:15:57 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > y:/usr/src/git26> git-checkout linux-next
-> > Switched to branch "linux-next"
-> > y:/usr/src/git26> who-committed.sh ba9a5918
-> 
-> Well that commit is from 2.6.23-rc1:
-> 
-> commit ba9a5918c86762fa7fae353c635bb6ed5221dfb8
-> Author: Douglas Thompson <dougthompson@xmission.com>
-> Date:   Thu Jul 19 01:50:32 2007 -0700
-> 
->     drivers/edac: add to maintainers new info
-> 
-> before linux-next even existed.  My script only works for things in
-> linux-next but not in Linus' tree ...
-> 
-> > y:/usr/src/git26> who-committed.sh 2c3fb6b1b1a43ca089032e6523207f6687c962c1
-> 
-> And that is one I committed myself because Linus' tree is broken.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Oh, OK, sorry, drat.  Two hastily and poorly chosen test cases.
+> > I was afraid you would say that :-)
+> > 
+> > Yes, we could add something to do this. It would take some thought on 
+> > a good api, and implementation. This is not an easy task by any means. 
+> > We need a way to map between a function call and a tracer, where a 
+> > function call can call more than one tracer.
+> 
+> Note that some other things could be consolidated under per function 
+> metadata: for example set_graph_function - which really is a per 
+> function attribute too. Plus a lot of new things would be enabled i 
+> think.
 
-> I'll see if I can do better.  What do you actually want to do?
+a few other things that could be per-function attributes:
 
-y:/usr/src/git26> who-committed.sh bcff57c25287216221d0ff82080ac37bb081969e
-ide
+ - Using function trace 'limits': trace a function 50 times and dont trace 
+   it afterwards. Each invocation of that function decreases the
+   remaining-count by one. For example:
 
-That ;)
+     echo 'btrfs_join_transaction:#2' >> set_ftrace_filter
+
+   Would specify that we generate two trace entries of
+   btrfs_join_transaction(), then stop tracing this function.
+
+ - Using function-triggered tracing: a function could be specified (via a 
+   filter format extension) to act as a 'start tracing' trigger. Another 
+   extension would be 'stop tracing' trigger.
+
+   For example:
+
+      echo 'btrfs_join_transaction:+' >> set_ftrace_filter
+      echo 'btrfs_commit_transaction:-' >> set_ftrace_filter
+
+   The '+' is a start-tracing trigger condition, the '-' is a stop-tracing 
+   trigger condition. All function calls between btrfs_join_transaction() 
+   and btrfs_commit_transaction() would be traced.
+
+The two could be combined - to generate the trace of a single btrfs 
+transaction, one could do:
+
+      echo 0 > tracing_enabled
+      echo 'btrfs_join_transaction:+#1' >> set_ftrace_filter
+      echo 'btrfs_commit_transaction:-#1' >> set_ftrace_filter
+      echo 1 > tracing_enabled
+
+Other extensions are possible too:
+
+ - Trace length triggers. For example one could do:
+
+      echo 'btrfs_join_transaction:+*#10' >> set_ftrace_filter
+
+   To trace 10 function calls [allowed by current filter settings] after
+   the first btrfs_join_transaction() call - and stop tracing after those 
+   10 trace entries.
+
+This would allow the creation of "surgical" one-time traces - of events 
+and functions one is specifically interested in.
+
+	Ingo
