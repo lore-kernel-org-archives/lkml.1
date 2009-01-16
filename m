@@ -1,386 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbZAPIim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbZAPIjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764898AbZAPIim (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbZAPIhi
+	id S1764377AbZAPIjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbZAPIhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:37:38 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:42495 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756406AbZAPIhf (ORCPT
+	Fri, 16 Jan 2009 03:37:43 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:30893 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760367AbZAPIhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:37:35 -0500
+	Fri, 16 Jan 2009 03:37:41 -0500
 From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Subject: [PATCH 2/6] omap iommu: omap2 architecture specific functions
+Subject: [PATCH 3/6] omap iommu: omap3 iommu device registration
 To: linux-kernel@vger.kernel.org
 Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org
-Date: Fri, 16 Jan 2009 10:37:14 +0200
-Message-ID: <20090116083714.18344.13846.stgit@oreo.research.nokia.com>
+Date: Fri, 16 Jan 2009 10:37:20 +0200
+Message-ID: <20090116083719.18344.28959.stgit@oreo.research.nokia.com>
 In-Reply-To: <20090116083003.18344.38307.stgit@oreo.research.nokia.com>
 References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jan 2009 08:37:16.0542 (UTC) FILETIME=[A311F9E0:01C977B5]
+X-OriginalArrivalTime: 16 Jan 2009 08:37:21.0183 (UTC) FILETIME=[A5D622F0:01C977B5]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The structure 'arch_mmu' accommodates the difference between omap1 and
-omap2/3.
-
-This patch provides omap2/3 specific functions
-
 Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
 ---
 
- arch/arm/mach-omap2/iommu2.c             |  325 ++++++++++++++++++++++++++++++
- arch/arm/plat-omap/include/mach/iommu2.h |   94 +++++++++
- 2 files changed, 419 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-omap2/iommu2.c
- create mode 100644 arch/arm/plat-omap/include/mach/iommu2.h
+ arch/arm/mach-omap2/omap3-iommu.c |  111 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 111 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/omap3-iommu.c
 
-diff --git a/arch/arm/mach-omap2/iommu2.c b/arch/arm/mach-omap2/iommu2.c
+diff --git a/arch/arm/mach-omap2/omap3-iommu.c b/arch/arm/mach-omap2/omap3-iommu.c
 new file mode 100644
-index 0000000..daaa6f5
+index 0000000..52d0e56
 --- /dev/null
-+++ b/arch/arm/mach-omap2/iommu2.c
-@@ -0,0 +1,325 @@
++++ b/arch/arm/mach-omap2/omap3-iommu.c
+@@ -0,0 +1,111 @@
 +/*
-+ * omap iommu: omap2/3 architecture specific functions
-+ *
-+ * Copyright (C) 2008 Nokia Corporation
-+ *
-+ * Written by Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
-+ *		Paul Mundt and Toshihiro Kobayashi
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/device.h>
-+#include <linux/jiffies.h>
-+#include <linux/module.h>
-+#include <linux/stringify.h>
-+
-+#include <mach/iommu.h>
-+#include <mach/iommu2.h>
-+
-+/*
-+ * omap2 architecture specific register bit definitions
-+ */
-+#define IOMMU_ARCH_VERSION	0x00000011
-+
-+/* SYSCONF */
-+#define MMU_SYS_IDLE_SHIFT	3
-+#define MMU_SYS_IDLE_FORCE	(0 << MMU_SYS_IDLE_SHIFT)
-+#define MMU_SYS_IDLE_NONE	(1 << MMU_SYS_IDLE_SHIFT)
-+#define MMU_SYS_IDLE_SMART	(2 << MMU_SYS_IDLE_SHIFT)
-+#define MMU_SYS_IDLE_MASK	(3 << MMU_SYS_IDLE_SHIFT)
-+
-+#define MMU_SYS_SOFTRESET	(1 << 1)
-+#define MMU_SYS_AUTOIDLE	1
-+
-+/* SYSSTATUS */
-+#define MMU_SYS_RESETDONE	1
-+
-+/* IRQSTATUS & IRQENABLE */
-+#define MMU_IRQ_MULTIHITFAULT	(1 << 4)
-+#define MMU_IRQ_TABLEWALKFAULT	(1 << 3)
-+#define MMU_IRQ_EMUMISS		(1 << 2)
-+#define MMU_IRQ_TRANSLATIONFAULT	(1 << 1)
-+#define MMU_IRQ_TLBMISS		(1 << 0)
-+#define MMU_IRQ_MASK	\
-+	(MMU_IRQ_MULTIHITFAULT | MMU_IRQ_TABLEWALKFAULT | MMU_IRQ_EMUMISS | \
-+	 MMU_IRQ_TRANSLATIONFAULT)
-+
-+/* MMU_CNTL */
-+#define MMU_CNTL_SHIFT		1
-+#define MMU_CNTL_MASK		(7 << MMU_CNTL_SHIFT)
-+#define MMU_CNTL_EML_TLB	(1 << 3)
-+#define MMU_CNTL_TWL_EN		(1 << 2)
-+#define MMU_CNTL_MMU_EN		(1 << 1)
-+
-+#define get_cam_va_mask(pgsz)				\
-+	(((pgsz) == MMU_CAM_PGSZ_16M) ? 0xff000000 :	\
-+	 ((pgsz) == MMU_CAM_PGSZ_1M)  ? 0xfff00000 :	\
-+	 ((pgsz) == MMU_CAM_PGSZ_64K) ? 0xffff0000 :	\
-+	 ((pgsz) == MMU_CAM_PGSZ_4K)  ? 0xfffff000 : 0)
-+
-+static int omap2_iommu_enable(struct iommu *obj)
-+{
-+	u32 l, pa;
-+	unsigned long timeout;
-+
-+	if (!obj->iopgd || !IS_ALIGNED((u32)obj->iopgd,  SZ_16K))
-+		return -EINVAL;
-+
-+	pa = virt_to_phys(obj->iopgd);
-+	if (!IS_ALIGNED(pa, SZ_16K))
-+		return -EINVAL;
-+
-+	iommu_write_reg(obj, MMU_SYS_SOFTRESET, MMU_SYSCONFIG);
-+
-+	timeout = jiffies + msecs_to_jiffies(20);
-+	do {
-+		l = iommu_read_reg(obj, MMU_SYSSTATUS);
-+		if (l & MMU_SYS_RESETDONE)
-+			break;
-+	} while (time_after(jiffies, timeout));
-+
-+	if (!(l & MMU_SYS_RESETDONE)) {
-+		dev_err(obj->dev, "can't take mmu out of reset\n");
-+		return -ENODEV;
-+	}
-+
-+	l = iommu_read_reg(obj, MMU_REVISION);
-+	dev_info(obj->dev, "%s: version %d.%d\n", obj->name,
-+		 (l >> 4) & 0xf, l & 0xf);
-+
-+	l = iommu_read_reg(obj, MMU_SYSCONFIG);
-+	l &= ~MMU_SYS_IDLE_MASK;
-+	l |= (MMU_SYS_IDLE_SMART | MMU_SYS_AUTOIDLE);
-+	iommu_write_reg(obj, l, MMU_SYSCONFIG);
-+
-+	iommu_write_reg(obj, MMU_IRQ_MASK, MMU_IRQENABLE);
-+	iommu_write_reg(obj, pa, MMU_TTB);
-+
-+	l = iommu_read_reg(obj, MMU_CNTL);
-+	l &= ~MMU_CNTL_MASK;
-+	l |= (MMU_CNTL_MMU_EN | MMU_CNTL_TWL_EN);
-+	iommu_write_reg(obj, l, MMU_CNTL);
-+
-+	return 0;
-+}
-+
-+static void omap2_iommu_disable(struct iommu *obj)
-+{
-+	u32 l = iommu_read_reg(obj, MMU_CNTL);
-+
-+	l &= ~MMU_CNTL_MASK;
-+	iommu_write_reg(obj, l, MMU_CNTL);
-+	iommu_write_reg(obj, MMU_SYS_IDLE_FORCE, MMU_SYSCONFIG);
-+
-+	dev_dbg(obj->dev, "%s is shutting down\n", obj->name);
-+}
-+
-+static u32 omap2_iommu_fault_isr(struct iommu *obj, u32 *ra)
-+{
-+	int i;
-+	u32 stat, da;
-+	const char *err_msg[] =	{
-+		"tlb miss",
-+		"translation fault",
-+		"emulation miss",
-+		"table walk fault",
-+		"multi hit fault",
-+	};
-+
-+	stat = iommu_read_reg(obj, MMU_IRQSTATUS);
-+	stat &= MMU_IRQ_MASK;
-+	if (!stat)
-+		return 0;
-+
-+	da = iommu_read_reg(obj, MMU_FAULT_AD);
-+	*ra = da;
-+
-+	dev_err(obj->dev, "%s:\tda:%08x ", __func__, da);
-+
-+	for (i = 0; i < ARRAY_SIZE(err_msg); i++) {
-+		if (stat & (1 << i))
-+			printk("%s ", err_msg[i]);
-+	}
-+	printk("\n");
-+
-+	iommu_write_reg(obj, stat, MMU_IRQSTATUS);
-+	return stat;
-+}
-+
-+static void omap2_tlb_read_cr(struct iommu *obj, struct cr_regs *cr)
-+{
-+	cr->cam = iommu_read_reg(obj, MMU_READ_CAM);
-+	cr->ram = iommu_read_reg(obj, MMU_READ_RAM);
-+}
-+
-+static void omap2_tlb_load_cr(struct iommu *obj, struct cr_regs *cr)
-+{
-+	iommu_write_reg(obj, cr->cam | MMU_CAM_V, MMU_CAM);
-+	iommu_write_reg(obj, cr->ram, MMU_RAM);
-+}
-+
-+static u32 omap2_cr_to_virt(struct cr_regs *cr)
-+{
-+	u32 page_size = cr->cam & MMU_CAM_PGSZ_MASK;
-+	u32 mask = get_cam_va_mask(cr->cam & page_size);
-+
-+	return cr->cam & mask;
-+}
-+
-+static struct cr_regs *omap2_alloc_cr(struct iommu *obj, struct iotlb_entry *e)
-+{
-+	struct cr_regs *cr;
-+
-+	if (e->da & ~(get_cam_va_mask(e->pgsz))) {
-+		dev_err(obj->dev, "%s:\twrong alignment: %08x\n", __func__,
-+			e->da);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	cr = kmalloc(sizeof(*cr), GFP_KERNEL);
-+	if (!cr)
-+		return ERR_PTR(-ENOMEM);
-+
-+	cr->cam = (e->da & MMU_CAM_VATAG_MASK) | e->prsvd | e->pgsz;
-+	cr->ram = e->pa | e->endian | e->elsz | e->mixed;
-+
-+	return cr;
-+}
-+
-+static inline int omap2_cr_valid(struct cr_regs *cr)
-+{
-+	return cr->cam & MMU_CAM_V;
-+}
-+
-+static u32 omap2_get_pte_attr(struct iotlb_entry *e)
-+{
-+	u32 attr;
-+
-+	attr = e->mixed << 5;
-+	attr |= e->endian;
-+	attr |= e->elsz >> 3;
-+	attr <<= ((e->pgsz & MMU_CAM_PGSZ_4K) ? 0 : 6);
-+
-+	return attr;
-+}
-+
-+static ssize_t omap2_dump_cr(struct iommu *obj, struct cr_regs *cr, char *buf)
-+{
-+	char *p = buf;
-+
-+	/* FIXME: Need more detail analysis of cam/ram */
-+	p += sprintf(p, "%08x %08x\n", cr->cam, cr->ram);
-+
-+	return p - buf;
-+}
-+
-+#define pr_reg(name)							\
-+	p += sprintf(p, "%20s: %08x\n",					\
-+		     __stringify(name), iommu_read_reg(obj, MMU_##name));
-+
-+static ssize_t omap2_iommu_dump_ctx(struct iommu *obj, char *buf)
-+{
-+	char *p = buf;
-+
-+	pr_reg(REVISION);
-+	pr_reg(SYSCONFIG);
-+	pr_reg(SYSSTATUS);
-+	pr_reg(IRQSTATUS);
-+	pr_reg(IRQENABLE);
-+	pr_reg(WALKING_ST);
-+	pr_reg(CNTL);
-+	pr_reg(FAULT_AD);
-+	pr_reg(TTB);
-+	pr_reg(LOCK);
-+	pr_reg(LD_TLB);
-+	pr_reg(CAM);
-+	pr_reg(RAM);
-+	pr_reg(GFLUSH);
-+	pr_reg(FLUSH_ENTRY);
-+	pr_reg(READ_CAM);
-+	pr_reg(READ_RAM);
-+	pr_reg(EMU_FAULT_AD);
-+
-+	return p - buf;
-+}
-+
-+static void omap2_iommu_save_ctx(struct iommu *obj)
-+{
-+	int i;
-+	u32 *p = obj->ctx;
-+
-+	for (i = 0; i < (MMU_REG_SIZE / sizeof(u32)); i++) {
-+		p[i] = iommu_read_reg(obj, i * sizeof(u32));
-+		dev_dbg(obj->dev, "%s\t[%02d] %08x\n", __func__, i, p[i]);
-+	}
-+
-+	BUG_ON(p[0] != IOMMU_ARCH_VERSION);
-+}
-+
-+static void omap2_iommu_restore_ctx(struct iommu *obj)
-+{
-+	int i;
-+	u32 *p = obj->ctx;
-+
-+	for (i = 0; i < (MMU_REG_SIZE / sizeof(u32)); i++) {
-+		iommu_write_reg(obj, p[i], i * sizeof(u32));
-+		dev_dbg(obj->dev, "%s\t[%02d] %08x\n", __func__, i, p[i]);
-+	}
-+
-+	BUG_ON(p[0] != IOMMU_ARCH_VERSION);
-+}
-+
-+static void omap2_cr_to_e(struct cr_regs *cr, struct iotlb_entry *e)
-+{
-+	e->da		= cr->cam & MMU_CAM_VATAG_MASK;
-+	e->pa		= cr->ram & MMU_RAM_PADDR_MASK;
-+	e->valid	= cr->cam & MMU_CAM_V;
-+	e->pgsz		= cr->cam & MMU_CAM_PGSZ_MASK;
-+	e->endian	= cr->ram & MMU_RAM_ENDIAN_MASK;
-+	e->elsz		= cr->ram & MMU_RAM_ELSZ_MASK;
-+	e->mixed	= cr->ram & MMU_RAM_MIXED;
-+}
-+
-+static const struct iommu_functions omap2_iommu_ops = {
-+	.version	= IOMMU_ARCH_VERSION,
-+
-+	.enable		= omap2_iommu_enable,
-+	.disable	= omap2_iommu_disable,
-+	.fault_isr	= omap2_iommu_fault_isr,
-+
-+	.tlb_read_cr	= omap2_tlb_read_cr,
-+	.tlb_load_cr	= omap2_tlb_load_cr,
-+
-+	.cr_to_e	= omap2_cr_to_e,
-+	.cr_to_virt	= omap2_cr_to_virt,
-+	.alloc_cr	= omap2_alloc_cr,
-+	.cr_valid	= omap2_cr_valid,
-+	.dump_cr	= omap2_dump_cr,
-+
-+	.get_pte_attr	= omap2_get_pte_attr,
-+
-+	.save_ctx	= omap2_iommu_save_ctx,
-+	.restore_ctx	= omap2_iommu_restore_ctx,
-+	.dump_ctx	= omap2_iommu_dump_ctx,
-+};
-+
-+static int __init omap2_iommu_init(void)
-+{
-+	return install_iommu_arch(&omap2_iommu_ops);
-+}
-+module_init(omap2_iommu_init);
-+
-+static void __exit omap2_iommu_exit(void)
-+{
-+	uninstall_iommu_arch(&omap2_iommu_ops);
-+}
-+module_exit(omap2_iommu_exit);
-+
-+MODULE_AUTHOR("Hiroshi DOYU, Paul Mundt and Toshihiro Kobayashi");
-+MODULE_DESCRIPTION("omap iommu: omap2/3 architecture specific functions");
-+MODULE_LICENSE("GPL v2");
-diff --git a/arch/arm/plat-omap/include/mach/iommu2.h b/arch/arm/plat-omap/include/mach/iommu2.h
-new file mode 100644
-index 0000000..1a4fabd
---- /dev/null
-+++ b/arch/arm/plat-omap/include/mach/iommu2.h
-@@ -0,0 +1,94 @@
-+/*
-+ * omap iommu: omap2 architecture specific definitions
++ * omap iommu: omap3 device registration
 + *
 + * Copyright (C) 2008 Nokia Corporation
 + *
@@ -391,86 +53,103 @@ index 0000000..1a4fabd
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef __MACH_IOMMU2_H
-+#define __MACH_IOMMU2_H
++#include <linux/io.h>
++#include <linux/platform_device.h>
 +
-+/*
-+ * MMU Register offsets
-+ */
-+#define MMU_REVISION		0x00
-+#define MMU_SYSCONFIG		0x10
-+#define MMU_SYSSTATUS		0x14
-+#define MMU_IRQSTATUS		0x18
-+#define MMU_IRQENABLE		0x1c
-+#define MMU_WALKING_ST		0x40
-+#define MMU_CNTL		0x44
-+#define MMU_FAULT_AD		0x48
-+#define MMU_TTB			0x4c
-+#define MMU_LOCK		0x50
-+#define MMU_LD_TLB		0x54
-+#define MMU_CAM			0x58
-+#define MMU_RAM			0x5c
-+#define MMU_GFLUSH		0x60
-+#define MMU_FLUSH_ENTRY		0x64
-+#define MMU_READ_CAM		0x68
-+#define MMU_READ_RAM		0x6c
-+#define MMU_EMU_FAULT_AD	0x70
++#include <mach/iommu.h>
 +
-+#define MMU_REG_SIZE		256
++#define DEVNAME "omap-iommu"
 +
-+/*
-+ * MMU Register bit definitions
-+ */
-+#define MMU_LOCK_BASE_SHIFT	10
-+#define MMU_LOCK_BASE_MASK	(0x1f << MMU_LOCK_BASE_SHIFT)
-+#define MMU_LOCK_BASE(x)	\
-+	((x & MMU_LOCK_BASE_MASK) >> MMU_LOCK_BASE_SHIFT)
++/* Camera ISP MMU */
++#define OMAP3_MMU1_BASE		0x480bd400
++#define OMAP3_MMU1_IRQ		24
 +
-+#define MMU_LOCK_VICT_SHIFT	4
-+#define MMU_LOCK_VICT_MASK	(0x1f << MMU_LOCK_VICT_SHIFT)
-+#define MMU_LOCK_VICT(x)	\
-+	((x & MMU_LOCK_VICT_MASK) >> MMU_LOCK_VICT_SHIFT)
++/* IVA2.2 MMU */
++#define OMAP3_MMU2_BASE		0x5d000000
++#define OMAP3_MMU2_IRQ		28
 +
-+#define MMU_CAM_VATAG_SHIFT	12
-+#define MMU_CAM_VATAG_MASK \
-+	((~0UL >> MMU_CAM_VATAG_SHIFT) << MMU_CAM_VATAG_SHIFT)
-+#define MMU_CAM_P		(1 << 3)
-+#define MMU_CAM_V		(1 << 2)
-+#define MMU_CAM_PGSZ_MASK	3
-+#define MMU_CAM_PGSZ_1M		(0 << 0)
-+#define MMU_CAM_PGSZ_64K	(1 << 0)
-+#define MMU_CAM_PGSZ_4K		(2 << 0)
-+#define MMU_CAM_PGSZ_16M	(3 << 0)
++static struct resource iommu1_res[] = { /* Camera ISP MMU */
++	{
++		.start		= OMAP3_MMU1_BASE,
++		.end		= OMAP3_MMU1_BASE + MMU_REG_SIZE - 1,
++		.flags		= IORESOURCE_MEM,
++	},
++	{
++		.start		= OMAP3_MMU1_IRQ,
++		.flags		= IORESOURCE_IRQ,
++	},
++};
 +
-+#define MMU_RAM_PADDR_SHIFT	12
-+#define MMU_RAM_PADDR_MASK \
-+	((~0UL >> MMU_RAM_PADDR_SHIFT) << MMU_RAM_PADDR_SHIFT)
-+#define MMU_RAM_ENDIAN_SHIFT	9
-+#define MMU_RAM_ENDIAN_MASK	(1 << MMU_RAM_ENDIAN_SHIFT)
-+#define MMU_RAM_ENDIAN_BIG	(1 << MMU_RAM_ENDIAN_SHIFT)
-+#define MMU_RAM_ENDIAN_LITTLE	(0 << MMU_RAM_ENDIAN_SHIFT)
-+#define MMU_RAM_ELSZ_SHIFT	7
-+#define MMU_RAM_ELSZ_MASK	(3 << MMU_RAM_ELSZ_SHIFT)
-+#define MMU_RAM_ELSZ_8		(0 << MMU_RAM_ELSZ_SHIFT)
-+#define MMU_RAM_ELSZ_16		(1 << MMU_RAM_ELSZ_SHIFT)
-+#define MMU_RAM_ELSZ_32		(2 << MMU_RAM_ELSZ_SHIFT)
-+#define MMU_RAM_ELSZ_NONE	(3 << MMU_RAM_ELSZ_SHIFT)
-+#define MMU_RAM_MIXED_SHIFT	6
-+#define MMU_RAM_MIXED_MASK	(1 << MMU_RAM_MIXED_SHIFT)
-+#define MMU_RAM_MIXED		MMU_RAM_MIXED_MASK
++static struct resource iommu2_res[] = { /* IVA2.2 MMU */
++	{
++		.start		= OMAP3_MMU2_BASE,
++		.end		= OMAP3_MMU2_BASE + MMU_REG_SIZE - 1,
++		.flags		= IORESOURCE_MEM,
++	},
++	{
++		.start		= OMAP3_MMU2_IRQ,
++		.flags		= IORESOURCE_IRQ,
++	},
++};
 +
-+/*
-+ * register accessors
-+ */
-+static inline u32 iommu_read_reg(struct iommu *obj, size_t offs)
++static struct iommu_platform_data omap3_iommu_pdata[] = {
++	{
++		.name = "isp",
++		.nr_tlb_entries = 8,
++		.clk_name = "cam_ick",
++	},
++	{
++		.name = "iva2",
++		.nr_tlb_entries = 32,
++		.clk_name = "iva2_ck",
++	},
++};
++
++static void omap3_iommu_release(struct device *dev)
 +{
-+	return __raw_readl(obj->regbase + offs);
 +}
 +
-+static inline void iommu_write_reg(struct iommu *obj, u32 val, size_t offs)
-+{
-+	__raw_writel(val, obj->regbase + offs);
-+}
++static struct platform_device omap3_iommu_pdev[] = {
++	{
++		.name		= DEVNAME,
++		.id		= 1,
++		.num_resources	= ARRAY_SIZE(iommu1_res),
++		.resource	= iommu1_res,
++		.dev		= {
++			.release = omap3_iommu_release,
++			.platform_data = &omap3_iommu_pdata[0],
++		},
++	},
++	{
++		.name		= DEVNAME,
++		.id		= 2,
++		.num_resources	= ARRAY_SIZE(iommu2_res),
++		.resource	= iommu2_res,
++		.dev		= {
++			.release = omap3_iommu_release,
++			.platform_data = &omap3_iommu_pdata[1],
++		},
++	},
++};
 +
-+#endif /* __MACH_IOMMU2_H */
++static int __init omap3_iommu_init(void)
++{
++	int i;
++	for (i = 0; i < ARRAY_SIZE(omap3_iommu_pdev); i++)
++		platform_device_register(&omap3_iommu_pdev[i]);
++	return 0;
++}
++module_init(omap3_iommu_init);
++
++static void __exit omap3_iommu_exit(void)
++{
++	int i;
++	for (i = 0; i < ARRAY_SIZE(omap3_iommu_pdev); i++)
++		platform_device_unregister(&omap3_iommu_pdev[i]);
++}
++module_exit(omap3_iommu_exit);
++
++MODULE_AUTHOR("Hiroshi DOYU");
++MODULE_DESCRIPTION("omap iommu: omap3 device registration");
++MODULE_LICENSE("GPL v2");
 
