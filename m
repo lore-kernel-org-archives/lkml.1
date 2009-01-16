@@ -1,159 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbZAPLJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbZAPLNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932517AbZAPLJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZAPLJJ
+	id S932867AbZAPLNR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759950AbZAPLNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:09:09 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:56833 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759094AbZAPLJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:09:08 -0500
-Subject: Re: [PATCH] UBI: add ioctl compatibility
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200901151734.23870.arnd@arndb.de>
-References: <1232036381.25068.10.camel@localhost.localdomain>
-	 <200901151734.23870.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Jan 2009 13:08:58 +0200
-Message-Id: <1232104138.25068.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 16 Jan 2009 11:08:28.0919 (UTC) FILETIME=[C2A0D870:01C977CA]
-X-Nokia-AV: Clean
+	Fri, 16 Jan 2009 06:13:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59694 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757462AbZAPLNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:13:00 -0500
+Date: Fri, 16 Jan 2009 12:12:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/6] ftrace: move function tracer functions out of
+	trace.c
+Message-ID: <20090116111243.GA20082@elte.hu>
+References: <20090116045342.748642160@goodmis.org> <20090116045417.632296101@goodmis.org> <20090115224925.6b0e6c24.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090115224925.6b0e6c24.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 17:34 +0100, Arnd Bergmann wrote:
-> On Thursday 15 January 2009, Artem Bityutskiy wrote:
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 15 Jan 2009 23:53:43 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> > would you please glance if this patch all-right?
+> >  static void
+> > +function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
+> > +{
+> > +	struct trace_array *tr = func_trace;
+> > +	struct trace_array_cpu *data;
+> > +	unsigned long flags;
+> > +	long disabled;
+> > +	int cpu, resched;
+> > +	int pc;
+> > +
+> > +	if (unlikely(!ftrace_function_enabled))
+> > +		return;
 > 
-> No, it's not. New ioctl numbers should not be added to fs/compat_ioctl.c
-> but rather to the file that implements the file operations (ubi/cdev.c).
+> We're optimizing for the tracing-is-enabled case.  What's the thinking 
+> here?
 
-Thank you Arnd. Here is the corrected patch. Tested on x68_64 + 32-bit
-UBI tools.
+There's two levels here: first the patched in callsites. Those are NOPs in 
+the usual case - there's no overhead for the default 'function tracing is 
+built in but not enabled' case.
 
->From 8d1e92e1e277e3f9fb51491b248f3c6cbfc86083 Mon Sep 17 00:00:00 2001
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Fri, 16 Jan 2009 14:08:35 +0200
-Subject: [PATCH] UBI: add ioctl compatibility
+There's a second level: a /debug/tracing/tracing_enabled lightweight 
+dynamic flag to flip tracing on/off while the tracer is enabled. _That_ 
+one, if it ever matters to a codepath, is default-enabled.
 
-UBI ioctl's do not work when running 64-bit kernel and 32-bit
-user-land. Fix this by adding the compat_ioctl method.
+I.e. the above code sequence is correct.
 
-Also, UBI serializes all ioctls, so more than one ioctl at a time,
-and UBI does not seem to depend on anything else, so use
-unlocked_ioctl instead of ioctl (no BKL needed).
+Thanks,
 
-Reported-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
----
- drivers/mtd/ubi/cdev.c |   41 ++++++++++++++++++++++-------------------
- 1 files changed, 22 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/mtd/ubi/cdev.c b/drivers/mtd/ubi/cdev.c
-index a4a6e9a..c5f8a91 100644
---- a/drivers/mtd/ubi/cdev.c
-+++ b/drivers/mtd/ubi/cdev.c
-@@ -402,8 +402,8 @@ static ssize_t vol_cdev_write(struct file *file, const char __user *buf,
- 	return count;
- }
- 
--static int vol_cdev_ioctl(struct inode *inode, struct file *file,
--			  unsigned int cmd, unsigned long arg)
-+static long vol_cdev_ioctl(struct file *file, unsigned int cmd,
-+			   unsigned long arg)
- {
- 	int err = 0;
- 	struct ubi_volume_desc *desc = file->private_data;
-@@ -803,8 +803,8 @@ out_free:
- 	return err;
- }
- 
--static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
--			  unsigned int cmd, unsigned long arg)
-+static long ubi_cdev_ioctl(struct file *file, unsigned int cmd,
-+			   unsigned long arg)
- {
- 	int err = 0;
- 	struct ubi_device *ubi;
-@@ -814,7 +814,7 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
- 	if (!capable(CAP_SYS_RESOURCE))
- 		return -EPERM;
- 
--	ubi = ubi_get_by_major(imajor(inode));
-+	ubi = ubi_get_by_major(imajor(file->f_mapping->host));
- 	if (!ubi)
- 		return -ENODEV;
- 
-@@ -950,8 +950,8 @@ static int ubi_cdev_ioctl(struct inode *inode, struct file *file,
- 	return err;
- }
- 
--static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
--			   unsigned int cmd, unsigned long arg)
-+static long ctrl_cdev_ioctl(struct file *file, unsigned int cmd,
-+			    unsigned long arg)
- {
- 	int err = 0;
- 	void __user *argp = (void __user *)arg;
-@@ -1029,24 +1029,27 @@ static int ctrl_cdev_ioctl(struct inode *inode, struct file *file,
- 
- /* UBI control character device operations */
- const struct file_operations ubi_ctrl_cdev_operations = {
--	.ioctl = ctrl_cdev_ioctl,
--	.owner = THIS_MODULE,
-+	.owner          = THIS_MODULE,
-+	.unlocked_ioctl = ctrl_cdev_ioctl,
-+	.compat_ioctl   = ctrl_cdev_ioctl,
- };
- 
- /* UBI character device operations */
- const struct file_operations ubi_cdev_operations = {
--	.owner = THIS_MODULE,
--	.ioctl = ubi_cdev_ioctl,
--	.llseek = no_llseek,
-+	.owner          = THIS_MODULE,
-+	.llseek         = no_llseek,
-+	.unlocked_ioctl = ubi_cdev_ioctl,
-+	.compat_ioctl   = ubi_cdev_ioctl,
- };
- 
- /* UBI volume character device operations */
- const struct file_operations ubi_vol_cdev_operations = {
--	.owner   = THIS_MODULE,
--	.open    = vol_cdev_open,
--	.release = vol_cdev_release,
--	.llseek  = vol_cdev_llseek,
--	.read    = vol_cdev_read,
--	.write   = vol_cdev_write,
--	.ioctl   = vol_cdev_ioctl,
-+	.owner          = THIS_MODULE,
-+	.open           = vol_cdev_open,
-+	.release        = vol_cdev_release,
-+	.llseek         = vol_cdev_llseek,
-+	.read           = vol_cdev_read,
-+	.write          = vol_cdev_write,
-+	.unlocked_ioctl = vol_cdev_ioctl,
-+	.compat_ioctl   = vol_cdev_ioctl,
- };
--- 
-1.6.0.6
-
-
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+	Ingo
