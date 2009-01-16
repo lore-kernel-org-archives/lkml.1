@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765778AbZAPJ4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbZAPJ6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765778AbZAPJ4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 04:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762114AbZAPJ4K
+	id S932178AbZAPJ6p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 04:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761684AbZAPJ6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 04:56:10 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:45196 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761577AbZAPJ4E (ORCPT
+	Fri, 16 Jan 2009 04:58:34 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:38852 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120AbZAPJ6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 04:56:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=J6xUlsaJ6TV1O5MM+9lKzqO7Mxw6faQgDqXT/OssA0gIrDzzsEqdGlRBN9wLnOrFQ7
-         P/HL4gQFAMq3q+sqKptmhX8saLLRCzESGDAaHYBa1ZqHpQ9Fk/Xj5RRfg/h8qJl5YDbK
-         /GtVdFsoxIH6hA0E/tEmADJyzET7nMIC2vTwk=
-Message-ID: <25e057c00901160156w6058ade2j9c99ef727d8767ab@mail.gmail.com>
-Date: Fri, 16 Jan 2009 10:56:01 +0100
-From: "roel kluin" <roel.kluin@gmail.com>
-To: "Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>
-Subject: Re: [PATCH 01/10] omap mailbox: cleanup omap2 register definition with macro
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-In-Reply-To: <20090116082706.17571.31102.stgit@oreo.research.nokia.com>
+	Fri, 16 Jan 2009 04:58:32 -0500
+Date: Fri, 16 Jan 2009 10:57:47 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Ralf Baechle <ralf@linux-mips.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 27/85] [PATCH 07/44] [CVE-2009-0029] System call
+	wrapper infrastructure
+Message-ID: <20090116095747.GE5157@osiris.boeblingen.de.ibm.com>
+References: <20090115215237.906089480@mini.kroah.org> <20090115215950.GB17227@kroah.com> <496FBCD1.5050608@gmail.com> <200901160944.59773.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com>
-	 <20090116082706.17571.31102.stgit@oreo.research.nokia.com>
+In-Reply-To: <200901160944.59773.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/16 Hiroshi DOYU <Hiroshi.DOYU@nokia.com>:
-> Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> ---
->
->  arch/arm/mach-omap2/mailbox.c |   77 +++++++++++++++--------------------------
->  1 files changed, 29 insertions(+), 48 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
-> index 32b7af3..0609e2d 100644
-> --- a/arch/arm/mach-omap2/mailbox.c
-> +++ b/arch/arm/mach-omap2/mailbox.c
+On Fri, Jan 16, 2009 at 09:44:59AM +0100, Christian Borntraeger wrote:
+> Am Donnerstag 15 Januar 2009 schrieb Jiri Slaby:
+> > On 01/15/2009 10:59 PM, Greg KH wrote:
+> > > +
+> > > +#ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
+> > > +
+> > > +#define SYSCALL_DEFINE(name) static inline long SYSC_##name
+> > > +#define SYSCALL_DEFINEx(x, name, ...)                                        
+> \
+> > > +     asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__));          \
+> > > +     static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__));      \
+> > 
+> > Hmm, we don't support at least gcc 3.4.6 anymore :/. It seems to be the same 
+> as in:
+> 
+> I see two possible quick fixes:
+> -funit-at-a-time will allow these inline constructs (tested with 3.4.6 on i386 
+> with enabled syscall wrappers. x86_64 already sets this flag)
 
-> @@ -18,40 +18,19 @@
->  #include <mach/mailbox.h>
->  #include <mach/irqs.h>
->
-> -#define MAILBOX_REVISION               0x00
-> -#define MAILBOX_SYSCONFIG              0x10
-> -#define MAILBOX_SYSSTATUS              0x14
-> -#define MAILBOX_MESSAGE_0              0x40
-> -#define MAILBOX_MESSAGE_1              0x44
-> -#define MAILBOX_MESSAGE_2              0x48
-> -#define MAILBOX_MESSAGE_3              0x4c
-> -#define MAILBOX_MESSAGE_4              0x50
-> -#define MAILBOX_MESSAGE_5              0x54
-> -#define MAILBOX_FIFOSTATUS_0           0x80
-> -#define MAILBOX_FIFOSTATUS_1           0x84
-> -#define MAILBOX_FIFOSTATUS_2           0x88
-> -#define MAILBOX_FIFOSTATUS_3           0x8c
-> -#define MAILBOX_FIFOSTATUS_4           0x90
-> -#define MAILBOX_FIFOSTATUS_5           0x94
-> -#define MAILBOX_MSGSTATUS_0            0xc0
-> -#define MAILBOX_MSGSTATUS_1            0xc4
-> -#define MAILBOX_MSGSTATUS_2            0xc8
-> -#define MAILBOX_MSGSTATUS_3            0xcc
-> -#define MAILBOX_MSGSTATUS_4            0xd0
-> -#define MAILBOX_MSGSTATUS_5            0xd4
-> -#define MAILBOX_IRQSTATUS_0            0x100
-> -#define MAILBOX_IRQENABLE_0            0x104
-> -#define MAILBOX_IRQSTATUS_1            0x108
-> -#define MAILBOX_IRQENABLE_1            0x10c
-> -#define MAILBOX_IRQSTATUS_2            0x110
-> -#define MAILBOX_IRQENABLE_2            0x114
-> -#define MAILBOX_IRQSTATUS_3            0x118
-> -#define MAILBOX_IRQENABLE_3            0x11c
-> +#define MAILBOX_REVISION               0x000
-> +#define MAILBOX_SYSCONFIG              0x010
-> +#define MAILBOX_SYSSTATUS              0x014
-> +#define MAILBOX_MESSAGE(m)             (0x040 + 4 * (m))
-> +#define MAILBOX_FIFOSTATUS(m)          (0x080 + 4 * (m))
-> +#define MAILBOX_MSGSTATUS(m)           (0x0c0 + 4 * (m))
-> +#define MAILBOX_IRQSTATUS(u)           (0x100 + 8 * (u))
-> +#define MAILBOX_IRQENABLE(u)           (0x108 + 8 * (u))
-                                                                  ^^^^^^^
-shouldn't this be
-#define MAILBOX_IRQENABLE(u)           (0x104 + 8 * (u))
+If that helps: care to send a patch that enables this?
+Dependent on CONFIG_HAVE_SYSCALL_WRAPPERS?
 
->
-> -static unsigned long mbox_base;
-> +#define MAILBOX_IRQ_NEWMSG(u)          (1 << (2 * (u)))
-> +#define MAILBOX_IRQ_NOTFULL(u)         (1 << (2 * (u) + 1))
->
-> -#define MAILBOX_IRQ_NOTFULL(n)         (1 << (2 * (n) + 1))
-> -#define MAILBOX_IRQ_NEWMSG(n)          (1 << (2 * (n)))
-> +static unsigned long mbox_base;
->
->  struct omap_mbox2_fifo {
->        unsigned long msg;
+That is, if this is really a problem.
