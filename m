@@ -1,184 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762956AbZAPDoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761746AbZAPDtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762956AbZAPDoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZAPDn7
+	id S1761746AbZAPDtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZAPDtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:43:59 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54984 "EHLO mx2.suse.de"
+	Thu, 15 Jan 2009 22:49:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53351 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755467AbZAPDn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:43:58 -0500
-Date: Fri, 16 Jan 2009 04:43:56 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090116034356.GM17810@wotan.suse.de>
-References: <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de> <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com> <20090114155923.GC1616@wotan.suse.de> <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901151434150.28387@quilx.com>
-User-Agent: Mutt/1.5.9i
+	id S1754108AbZAPDti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 22:49:38 -0500
+Message-ID: <497003CC.8030503@redhat.com>
+Date: Thu, 15 Jan 2009 21:49:32 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       t-sato@yk.jp.nec.com
+Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
+References: <496EB639.6090800@redhat.com> <20090115162031.a512232b.akpm@linux-foundation.org>
+In-Reply-To: <20090115162031.a512232b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 02:47:02PM -0600, Christoph Lameter wrote:
-> On Thu, 15 Jan 2009, Nick Piggin wrote:
+Andrew Morton wrote:
+> On Wed, 14 Jan 2009 22:06:17 -0600
+> Eric Sandeen <sandeen@redhat.com> wrote:
 > 
-> > Definitely it is not uncontrollable. And not unchangeable. It is
-> > about the least sensitive part of the allocator because in a serious
-> > workload, the queues will continually be bounded by watermarks rather
-> > than timer reaping.
+>> Now that the filesystem freeze operation has been elevated
+>> to the VFS, and is just an ioctl away, some sort of safety net
+>> for unintentionally frozen root filesystems may be in order.
+>>
+>> The timeout thaw originally proposed did not get merged, but
+>> perhaps something like this would be useful in emergencies.
+>>
+>> This doesn't have to piggyback on the existing emergency sync
+>> sysrq, but it seems like a reasonable, simple addition to me.
+>>
+>> I've tested this on a non-root fs with multiple (nested) freezers,
+>> as well as on a system rendered unresponsive due to a frozen
+>> root fs.
 > 
-> The application that is interrupted has no control over when SLQB runs its
-> expiration. The longer the queues the longer the holdoff. Look at the
-> changelogs for various queue expiration things in the kernel. I fixed up a
-> couple of those over the years for latency reasons.
-
-Interrupts and timers etc. as well as preemption by kernel threads happen
-everywhere in the kernel. I have not seen any reason why slab queue reaping
-in particular is a problem.
-
-Any slab allocator is going to have a whole lot of theoretical problems and
-you simply won't be able to fix them all because some require an oracle or
-others fundamentally conflict with another theoretical problem.
-
-I concentrate on the main practical problems and the end result. If I see
-evidence of some problem caused, then I will do my best to fix it.
-
-
-> > > Object dispersal
-> > > in the kernel address space.
-> >
-> > You mean due to lower order allocations?
-> > 1. I have not seen any results showing this gives a practical performance
-> >    increase, let alone one that offsets the downsides of using higher
-> >    order allocations.
+> Worried.
 > 
-> Well yes with enterprise app you are likely not going to see it. Run HPC
-> and other low latency tests (Infiniband based and such).
+> Under what operational scenarios is ths feature actually needed/used?
 
-So do you have any results or not?
+Well, if you freeze root and do some things that require IO there, you
+can get stuck pretty easily
 
- 
-> > 2. Increased internal fragmentation may also have the opposite effect and
-> >    result in worse packing.
+(hacked xfs_io to call the ioctl here)
+
+[root@inode io]# ./xfs_io -r -x -F -c "freeze" /
+[root@inode io]# ls
+^Z
+^C
+<tap tap.. uhoh>
+
+>> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+>> ---
+>>
+>> Index: linux-2.6/drivers/char/sysrq.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/char/sysrq.c
+>> +++ linux-2.6/drivers/char/sysrq.c
+>> @@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
+>>  
+>>  static void sysrq_handle_sync(int key, struct tty_struct *tty)
+>>  {
+>> +	emergency_thaw();
+>>  	emergency_sync();
+>>  }
 > 
-> Memory allocations in latency critical appls are generally done in
-> contexts where high latencies are tolerable (f.e. at startup).
+> Kind of weird.   The thaw will happen after/during the sync().
+
+oh, hrm.  Maybe I didn't think enough about how it's handed off to
+pdflush; I could rearrange if that makes sense?  Or maybe handing to
+pdflush is wrong, it was just so convenient....
+
+> I guess that if the sync is blocked on a frozen fs then things will
+> sort themselves out.
 > 
-> > 3. There is no reason why SLQB can't use higher order allocations if this
-> >    is a significant win.
+> otoh, if all the pdflush threads are blocked on frozen filesystems
+> (possible?) then the emergency_thaw() simply won't do anything.
+
+Hm, maybe possible... I'll have to think about that.
+
+Thanks,
+-Eric
+
+>> ===================================================================
+>> --- linux-2.6.orig/fs/buffer.c
+>> +++ linux-2.6/fs/buffer.c
+>> @@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
+>>  }
+>>  EXPORT_SYMBOL(freeze_bdev);
+>>  
+>> +void do_thaw(unsigned long unused)
+>> +{
+>> +	struct super_block *sb;
+>> +	char b[BDEVNAME_SIZE];
+>> +
+>> +	list_for_each_entry(sb, &super_blocks, s_list) {
+>> +		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
+>> +			printk(KERN_WARNING "Emergency Thaw on %s\n",
+>> +			       bdevname(sb->s_bdev, b));
 > 
-> It still will have to move objects between queues? Or does it adapt the
-> slub method of "queue" per page?
-
-It has several queues that objects can move between. You keep asserting
-that this is a problem.
-
- 
-> > > Memory policy handling in the slab
-> > > allocator.
-> >
-> > I see no reason why this should be a problem. The SLUB merge just asserted
-> > it would be a problem. But actually SLAB seems to handle it just fine, and
-> > SLUB also doesn't always obey memory policies, so I consider that to be a
-> > worse problem, at least until it is justified by performance numbers that
-> > show otherwise.
+> hm, I made the args to bdevname() backwards.  Bad me.
 > 
-> Well I wrote the code in SLAB that does this. And AFAICT this was a very
-> bad hack that I had to put in after all the original developers of the
-> NUMA slab stuff vanished and things began to segfault.
+>> +	}
+>> +	printk(KERN_WARNING "Emergency Thaw complete\n");
+>> +}
 > 
-> SLUB obeys memory policies. It just uses the page allocator for this by
-> doing an allocation *without* specifying the node that memory has to come
-> from. SLAB manages memory strictly per node. So it always has to ask for
-> memory from a particular node. Hence the need to implement memory policies
-> in the allocator.
-
-You only go to the allocator when the percpu queue goes empty though, so
-if memory policy changes (eg context switch or something), then subsequent
-allocations will be of the wrong policy.
-
-That is what I call a hack, which is made in order to solve a percieved
-performance problem. The SLAB/SLQB method of checking policy is simple,
-obviously correct, and until there is a *demonstrated* performance problem
-with that, then I'm not going to change it.
-
-
-> > > Even seems to include periodic moving of objects between
-> > > queues.
-> >
-> > The queues expire slowly. Same as SLAB's arrays. You are describing the
-> > implementation, and not the problems it has.
-> 
-> Periodic movement again introduces processing spikes and pollution of the
-> cpu caches.
-
-I don't think this is a problem. Anyway, rt systems that care about such
-tiny latencies can easily prioritise this. And ones that don't care so
-much have many other sources of interrupts and background processing by
-the kernel or hardware interrupts.
-
-If this actually *is* a problem, I will allow an option to turn of periodic
-trimming of queues, and allow objects to remain in queues (like the page
-allocator does with its queues). And just provide hooks to reap them at
-low memory time.
-
- 
-> > There needs to be some fallback cases added to slowpaths to handle
-> > these things, but I don't see why it would take much work.
-> 
-> The need for that fallback comes from the SLAB methodology used....
-
-The fallback will probably be adapted from SLUB.
-
- 
-> > > SLQB maybe a good cleanup for SLAB. Its good that it is based on the
-> > > cleaned up code in SLUB but the fundamental design is SLAB (or rather the
-> > > Solaris allocator from which we got the design for all the queuing stuff
-> > > in the first place). It preserves many of the drawbacks of that code.
-> >
-> > It is _like_ slab. It avoids the major drawbacks of large footprint of
-> > array caches, and O(N^2) memory consumption behaviour, and corner cases
-> > where scalability is poor. The queueing behaviour of SLAB IMO is not
-> > a drawback and it is a big reaon why SLAB is so good.
-> 
-> Queuing and the explosions of the number of queues with the alien caches
-> resulted in the potential of portions of memory vanishing into these
-> queues. Queueing means unused objects are in those queues stemming from
-> pages that would otherwise (if the the free object would be "moved" back
-> to the page) be available for other kernel uses.
-
-It's strange. You percieve these theoretical problems with things that I
-actually consider is a distinct *advantage* of SLAB/SLQB. order-0 allocations,
-queueing, strictly obeying NUMA policies... 
-
-
-> > > If SLQB would replace SLAB then there would be a lot of shared code
-> > > (debugging for example). Having a generic slab allocator framework may
-> > > then be possible within which a variety of algorithms may be implemented.
-> >
-> > The goal is to replace SLAB and SLUB. Anything less would be a failure
-> > on behalf of SLQB. Shared code is not a bad thing, but the major problem
-> > is the actual core behaviour of the allocator because it affects almost
-> > everywhere in the kernel and splitting userbase is not a good thing.
-> 
-> I still dont see the problem that SLQB is addressing (aside from code
-> cleanup of SLAB). Seems that you feel that the queueing behavior of SLAB
-> is okay.
-
-It addresses O(NR_CPUS^2) memory consumption of kmem caches, and large
-constant consumption of array caches of SLAB. It addresses scalability
-eg in situations with lots of cores per node. It allows resizeable
-queues. It addresses the code complexity and bootstap hoops of SLAB.
-
-It addresses performance and higher order allocation problems of SLUB.
 
