@@ -1,121 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZAPCqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbZAPCtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756470AbZAPCqZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZAPCqL
+	id S1757271AbZAPCtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZAPCtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:46:11 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50486 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752785AbZAPCqJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:46:09 -0500
-Date: Fri, 16 Jan 2009 11:45:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: matthltc@us.ibm.com
-Cc: Paul Menage <menage@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Containers <containers@lists.linux-foundation.org>
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-Message-Id: <20090116114502.b3bd565d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1232072445.7955.40.camel@localhost>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
-	<20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
-	<1232072445.7955.40.camel@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 21:49:40 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40484 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbZAPCti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:49:38 -0500
+Date: Fri, 16 Jan 2009 13:49:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: linux-next: build problem with nfs tree (Was: Re:
+ [mmotm][PATCH] fix ia64 build error)
+Message-Id: <20090116134930.68e783aa.sfr@canb.auug.org.au>
+In-Reply-To: <20090115175917.8e0ae536.akpm@linux-foundation.org>
+References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
+	<20090116124949.7828a559.sfr@canb.auug.org.au>
+	<20090115175917.8e0ae536.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__16_Jan_2009_13_49_30_+1100_x5ylrawB2nGGw4h2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 18:20:45 -0800
-Matthew Helsley <matthltc@us.ibm.com> wrote:
+--Signature=_Fri__16_Jan_2009_13_49_30_+1100_x5ylrawB2nGGw4h2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 2009-01-09 at 15:32 +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 8 Jan 2009 22:26:46 -0800
-> > Paul Menage <menage@google.com> wrote:
-> > 
-> > > On Thu, Jan 8, 2009 at 9:32 PM, KAMEZAWA Hiroyuki
-> > > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > >
-> > > > Motivation: Simply classify Applications by cgroup
-> > > >  When using cgroup for classifying applications, some kind of "control" or
-> > > >  "account" subsys must be used. For flexible use of cgroup's nature of
-> > > >  classifying applications, NOOP is useful. It can be used regardless of
-> > > >  resource accounting unit or name spaces or some controls.
-> > > >  IOW, NOOP cgroup allows users to tie PIDs with some nickname.
-> > > 
-> > > I agree that the idea is useful. But to me it seems to a bit
-> > > artificial that you still have to mount some kind of subsystem purely
-> > > to get the grouping, and that you can only have one such grouping.
-> > > 
-> > > I think I'd prefer the ability to mount a cgroups hierarchy without
-> > > *any* subsystems (maybe with "-o none"?) which would give you a
-> > > similar effect, but without you needing to know about a special no-op
-> > > subsystem, and would allow you to have multiple "no-op" groupings.
-> > > 
-> > 
-> > Oh, it seems better idea. Then, we need no configs and no additional subsys.
-> > Thank you for a hint. I'll check how I can do it.
-> > 
-> > Thanks,
-> > -Kame
-> 
-> 	My feeling is this should be a signal subsystem rather than a NOOP
-> subsystem. Then, if users want the grouping for something besides
-> signaling, it doesn't matter if they don't issue any signals via the
-> signal.send file. Also, I think Paul's suggestion would be just as
-> useful for a signal subsystem.
-> 
-> 	What do you think?
-> 
+Hi Andrew,
 
-I think
-  - Paul's suggestion sounds attractive. But I can't see fundamental differences
-    from user's side between "implemented as subsys" and "implemetned as cgroup's
-    feature". I feel it's easier for user's cgroup library to handle subsys rather
-    than "we can mount it anywhere, multiple times!".
-    Flexiblity doesn't means it's easy to use.
+On Thu, 15 Jan 2009 17:59:17 -0800 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> I do most of my gitting across a DSL connection.  It makes GUIs
+> painful.
 
-  - About signal, there is a problem.
-    * cgroup's attach() is per thread.
-    * signal is per process.
-    To fix this gap, signal subsystem should be implemented as it is with some
-    *policy*. This doesn't match simple grouping by NOOP.
+Yeah, I will think on it ...
 
-  - And, I personally thinks that signal subsystem has to implement following
-    controls. (if we implement it.)
-    Assume that 
-      - we send SIGHUP to all process under /cgroup/group_A/ to restart.
-      - we send SIGABRT to tale coredump.
-    At doing this kind of things, the user should know the order target and has
-    specify order in many cases.
-    For example) 
-     send signal to one by one  ProcessA -> ProcessB -> ProceessC 
-                                or
-                                ProcessC -> ProcessB -> ProcessA
-     or
-       send all at once.
-     Which is better is case-by-case.
-     (In this area, "freezing" subsystem is also have problems.)
+> > I have dropped the nfs tree from linux-next for today.
+>=20
+> Just for this buglet?  That sounds a bit savage.
 
+There was another problem with the fscache code as well.  Also, this was
+reported the day before yesterday and got no response.  Also, the other
+patch that added EXPORT_SYMBOL(copy_page) "recently" was from
+December, *2007* ... Also, this is 2.6.30 material and they have a long
+time to fix it.
 
+Also, it is much easier on me :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks,
--Kame
-    
+--Signature=_Fri__16_Jan_2009_13_49_30_+1100_x5ylrawB2nGGw4h2
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> Cheers,
-> 	-Matt Helsley
-> 
-> PS: Adding containers@lists.linux-foundation.org to Cc.
-> 
-> 
+iEYEARECAAYFAklv9boACgkQjjKRsyhoI8wmTQCfbN1E8/S1qFd07V3Qkk/zY6bn
+tw4AoKnbdYGSA1MSIvTNc/Ug3fb2Utrl
+=Q7Zq
+-----END PGP SIGNATURE-----
 
+--Signature=_Fri__16_Jan_2009_13_49_30_+1100_x5ylrawB2nGGw4h2--
