@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936470AbZAPO3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935516AbZAPObr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936470AbZAPO3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935984AbZAPO2k
+	id S935516AbZAPObr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZAPObe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:28:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49962 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936429AbZAPO2i (ORCPT
+	Fri, 16 Jan 2009 09:31:34 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:45500 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756409AbZAPObd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:28:38 -0500
-Date: Fri, 16 Jan 2009 09:28:35 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] ftrace: add stack trace to function tracer
-In-Reply-To: <c62985530901160208r4400e438j7c27528019c1a6db@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0901160925480.22303@gandalf.stny.rr.com>
-References: <20090116004050.273665842@goodmis.org>  <20090116004121.302184848@goodmis.org> <c62985530901160208r4400e438j7c27528019c1a6db@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 Jan 2009 09:31:33 -0500
+Subject: Re: [PATCH] Btrfs: simplify iteration codes
+From: Chris Mason <chris.mason@oracle.com>
+To: Qinghuang Feng <qhfeng.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+In-Reply-To: <49703687.044e6e0a.04fa.257b@mx.google.com>
+References: <49703687.044e6e0a.04fa.257b@mx.google.com>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 09:31:14 -0500
+Message-Id: <1232116274.21473.15.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49709A3F.0246:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 16 Jan 2009, Fr?d?ric Weisbecker wrote:
-
-> Hi Steven,
+On Fri, 2009-01-16 at 15:25 +0800, Qinghuang Feng wrote:
+> merge list_for_each and list_entry to list_for_each_entry.
 > 
-> 2009/1/16 Steven Rostedt <rostedt@goodmis.org>:
-> > +static struct tracer_flags func_flags = {
-> > +       .val = 0, /* By default: all flags disabled */
-> > +       .opts = func_opts
-> > +};
-> > +
-> > +static int func_set_flag(u32 old_flags, u32 bit, int set)
-> > +{
-> > +       if (bit == TRACE_FUNC_OPT_STACK) {
-> > +               /* do nothing if already set */
-> > +               if (!!set == !!(func_flags.val & TRACE_FUNC_OPT_STACK))
-> > +                       return 0;
-> 
-> 
-> This is just a small thing but set will always be 1 or 0. And if you want
-> the current val of your options, you can take old_flags :-)
 
-I never assume something is set to 0 or 1 ;-)
+Thanks, I've queued this up.
 
-But I did overlook the "old_flags". Yeah that would be better to use.
+-chris
 
-> 
-> Would you prefer I send a patch to not call the set_flag callback
-> when the option set/unset by the user is already set/unset ?
-
-Hmm, good question. That's the way I do it, but would that make sense fo
-others?  Probably would be a good idea. We only want to know when the
-flag changes.
-
--- Steve
 
