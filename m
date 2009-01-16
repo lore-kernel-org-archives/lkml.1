@@ -1,31 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbZAPDDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZAPDSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759186AbZAPDDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758422AbZAPDDf
+	id S1757979AbZAPDSo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZAPDSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:03:35 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51238 "EHLO
+	Thu, 15 Jan 2009 22:18:34 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51864 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758416AbZAPDDe (ORCPT
+	with ESMTP id S1752661AbZAPDSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:03:34 -0500
-Date: Fri, 16 Jan 2009 12:02:27 +0900
+	Thu, 15 Jan 2009 22:18:33 -0500
+Date: Fri, 16 Jan 2009 12:17:25 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: matthltc@us.ibm.com, Paul Menage <menage@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "menage@google.com" <menage@google.com>,
        "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Containers <containers@lists.linux-foundation.org>
-Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
-Message-Id: <20090116120227.def88bc8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090116114502.b3bd565d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
-	<20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
-	<1232072445.7955.40.camel@localhost>
-	<20090116114502.b3bd565d.kamezawa.hiroyu@jp.fujitsu.com>
+       containers@lists.linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH] use hierarchy mutex in creation failure path
+Message-Id: <20090116121725.fff7dad9.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -35,23 +28,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 11:45:02 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> On Thu, 15 Jan 2009 18:20:45 -0800
-> Matthew Helsley <matthltc@us.ibm.com> wrote:
-> I think
->   - Paul's suggestion sounds attractive. But I can't see fundamental differences
->     from user's side between "implemented as subsys" and "implemetned as cgroup's
->     feature". I feel it's easier for user's cgroup library to handle subsys rather
->     than "we can mount it anywhere, multiple times!".
->     Flexiblity doesn't means it's easy to use.
-I should consider more....
+Now, cgrp->sibling is handled under hierarchy mutex.
+error route should do so, too.
 
-mutiple mount point means that the process can belongs to multiple nickname
-groups. oh yes, seems worth to try.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
+---
+ kernel/cgroup.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks,
--Kame
+Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
++++ mmotm-2.6.29-Jan14/kernel/cgroup.c
+@@ -2434,7 +2434,9 @@ static long cgroup_create(struct cgroup 
+ 
+  err_remove:
+ 
++	cgroup_lock_hierarchy(root);
+ 	list_del(&cgrp->sibling);
++	cgroup_unlock_hierarchy(root);
+ 	root->number_of_cgroups--;
+ 
+  err_destroy:
 
