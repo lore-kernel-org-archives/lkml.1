@@ -1,25 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934718AbZAPNni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbZAPNq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934718AbZAPNni (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 08:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933178AbZAPNm7
+	id S933982AbZAPNq5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 08:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbZAPNqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 08:42:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39957 "EHLO mx2.mail.elte.hu"
+	Fri, 16 Jan 2009 08:46:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40782 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932960AbZAPNm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 08:42:58 -0500
-Date: Fri, 16 Jan 2009 14:42:43 +0100
+	id S1755616AbZAPNqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 08:46:44 -0500
+Date: Fri, 16 Jan 2009 14:46:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
-Message-ID: <20090116134243.GC14874@elte.hu>
-References: <4970818A.76E4.0078.0@novell.com> <20090116124548.GC5421@elte.hu> <49709C94.76E4.0078.0@novell.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jan-Benedict Glaw <jbglaw@lug-owl.de>,
+       Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
+       Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090116134621.GD14874@elte.hu>
+References: <1231424833.11687.452.camel@twins> <20090108150448.2393aeb0@lxorguk.ukuu.org.uk> <20090108151046.GK18120@elte.hu> <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org> <20090115123614.GR11087@lug-owl.de> <alpine.LFD.1.10.0901151309420.5737@ftp.linux-mips.org> <20090115133252.28c36adb@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0901151353530.5737@ftp.linux-mips.org> <20090115141734.GA15732@elte.hu> <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49709C94.76E4.0078.0@novell.com>
+In-Reply-To: <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,26 +40,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+* Pavel Machek <pavel@suse.cz> wrote:
 
-> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 13:45 >>>
-> >
-> >* Jan Beulich <jbeulich@novell.com> wrote:
-> >
-> >> +	if (disable_apic) {
-> >> +#ifdef CONFIG_X86_IO_APIC
-> >> +		disable_ioapic_setup();
-> >> +#endif
-> >> +		return;
-> >> +	}
-> >
-> > Shouldnt that #ifdef be avoided by always providing the function - 
-> > just it is a NOP inline in the !CONFIG_X86_IO_APIC case?
+> > 
+> > * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> > 
+> > > On Thu, 15 Jan 2009, Alan Cox wrote:
+> > > 
+> > > > >  UP emulation of CMPXCHG and XADD for userland should be rather trivial, 
+> > > > > so why not include it like with LL/SC for MIPS?
+> > > > 
+> > > > Why not just ship an additional libc with the right options ?
+> > > 
+> > >  Does not work for MIPS as glibc has no equivalent code for pre-LL/SC 
+> > > CPUs and LL/SC is always used.  For the i386 the situation seems worse 
+> > > yet as for pre-i486 CPUs a generic C implementation of 
+> > > compare-and-exchange is used guaranteeing silent thread unsafety. :(
+> > > 
+> > >  IMO, a kernel emulation of CMPXCHG and XADD (both are used by 
+> > > sysdeps/i386/i486/bits/atomic.h in glibc) with an optional LOCK prefix, 
+> > > guaranteeing UP atomicity would be a cheap way to provide long-term i386 
+> > > userland support with little burden for both Linux and respective user 
+> > > software maintainers.  Certainly it adds some bloat to the kernel, but I 
+> > > think it is not an option that should be outright dismissed without 
+> > > consideration.
+> > 
+> > patches are welcome ...
 > 
-> That would make for a much bigger patch, since the io_apic.h doesn't 
-> (and imo shouldn't) be included without that config option.
+> Hehe, I guess the only long-term solution is to get shiny old 386 as a
+> part of Ingo's test farm ;-).
 
-But we are using io-apic functionality in that file, so we should include 
-io_apic.h, right?
+hehe :) Alas, Thomas has one and occasionally boots the kernel on it.
 
 	Ingo
