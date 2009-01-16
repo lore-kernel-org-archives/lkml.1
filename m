@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935678AbZAPAC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935806AbZAPADc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935678AbZAPAC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 19:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765715AbZAPACM
+	id S935806AbZAPADc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 19:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935179AbZAPACh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 19:02:12 -0500
-Received: from p3nlsmtp01.shr.prod.phx3.secureserver.net ([72.167.234.225]:43573
-	"HELO p3nlsmtp01.shr.prod.phx3.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757773AbZAPACK (ORCPT
+	Thu, 15 Jan 2009 19:02:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45856 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935225AbZAPACf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 19:02:10 -0500
-X-Greylist: delayed 10632 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Jan 2009 19:02:10 EST
-To: linux-kernel@vger.kernel.org
-Subject: Chicago Motorcycle Show Jan31 & Feb1 2009
-Date: Thu, 15 Jan 2009 13:44:01 -0700
-From: Paragons Promotions <noreply@paragonspromotion.com>
-Message-ID: <a80bbf75f6831e0c88b364139356144b@www.paragonspromotion.com>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Mailer: phplist v2.10.5
-X-MessageID: 7
-X-ListMember: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Thu, 15 Jan 2009 19:02:35 -0500
+Date: Thu, 15 Jan 2009 16:02:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org,
+       broonie@opensource.wolfsonmicro.com
+Subject: Re: [PATCH] mfd: Mark WM835x USB_SLV_500MA bit as accessible
+Message-Id: <20090115160200.1d6a0c93.akpm@linux-foundation.org>
+In-Reply-To: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chicago Motorcycle Show Jan 31 & Feb 1 2009
-<http://www.chicagomotorcycleswap.com>
+On Wed, 14 Jan 2009 14:55:01 +0000
+Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
- <http://www.chicagomotorcycleswap.com>
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm8350-regmap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+> index 68887b8..9a4cc95 100644
+> --- a/drivers/mfd/wm8350-regmap.c
+> +++ b/drivers/mfd/wm8350-regmap.c
+> @@ -3188,7 +3188,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+>  	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+>  	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
+>  	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+> -	{ 0xFCF7, 0xFCF7, 0xF800 }, /* R4   - System Control 2 */
+> +	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+>  	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+>  	{ 0xFB0E, 0xFB0E, 0x0000 }, /* R6   - Interface Control */
+>  	{ 0x0000, 0x0000, 0x0000 }, /* R7 */
 
- SHOW HOUR
-
- Saturday, January 31st
-
- Early Bird 8AM-11AM (Saturday only)
-
- General Public 11AM-7PM
-
- Sunday, February 1st
-
- 9 AM - 3 PM
-
- (No Early Bird on Sunday) 
-
- <http://www.chicagomotorcycleswap.com/celebrity.html>
- <http://www.chicagomotorcycleswap.com/bikeshow.html>
- <http://www.chicagomotorcycleswap.com/celebrity.html>
-
- <http://www.chicagomotorcycleswap.com/celebrity.html>
- <http://www.chicagomotorcycleswap.com/band.html>
-
- TICKETS
-
- VIP Ticket $20
-
- Advance Ticket $12
-
- Buy Tickets Now <http://www.chicagomotorcycleswap.com/tickets.html>
-
- <http://www.chicagomotorcycleswap.com/tickets.html>
- <http://www.chicagomotorcycleswap.com/tickets.html>
-
-
-
---
-If you do not want to receive any more newsletters, 
-http://www.paragonspromotion.com/lists/?p=unsubscribe&uid=f663adb692f1f470b9b762c3180c3460
-
-To update your preferences and to unsubscribe visit
-http://www.paragonspromotion.com/lists/?p=preferences&uid=f663adb692f1f470b9b762c3180c3460
-Forward a Message to Someone
-http://www.paragonspromotion.com/lists/?p=forward&uid=f663adb692f1f470b9b762c3180c3460&mid=7
-
-
---
-Powered by PHPlist, www.phplist.com --
-
-
+Why?
