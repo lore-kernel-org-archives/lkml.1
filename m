@@ -1,77 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZAPCx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZAPDBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbZAPCx3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZAPCxR
+	id S1756893AbZAPDBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZAPDBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:53:17 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53627 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbZAPCxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:53:16 -0500
-Date: Fri, 16 Jan 2009 03:53:10 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [patch 68/85] fs: symlink write_begin allocation context fix
-Message-ID: <20090116025310.GH17810@wotan.suse.de>
-References: <20090115215237.906089480@mini.kroah.org> <20090115220136.GQ17227@kroah.com> <20090115223117.GA30560@kroah.com>
+	Thu, 15 Jan 2009 22:01:13 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51118 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZAPDBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 22:01:12 -0500
+Date: Fri, 16 Jan 2009 12:00:01 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] cgroup:add css_is_populated
+Message-Id: <20090116120001.f37e1895.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115223117.GA30560@kroah.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 02:31:17PM -0800, Greg KH wrote:
-> On Thu, Jan 15, 2009 at 02:01:36PM -0800, Greg KH wrote:
-> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> 
-> Hm, I think I got the backport of this patch wrong in two place:
-> 
-> > --- a/mm/filemap.c
-> > +++ b/mm/filemap.c
-> > @@ -2033,7 +2033,7 @@ int pagecache_write_begin(struct file *f
-> >  		struct inode *inode = mapping->host;
-> >  		struct page *page;
-> >  again:
-> > -		page = __grab_cache_page(mapping, index);
-> > +		page = grab_cache_page_write_begin(mapping, index, flags);
-> 
-> I think this shouldn't be "flags", but 0, right?
+Li-san, If you don't like this, could you give me an idea for
+"How to check cgroup is fully ready or not" ?
 
-I think flags is right. That way, a caller of pagecache_write_begin (eg. page_symlink)
-can instruct it with AOP_FLAG_NOFS to prevent grab_cache_page from doing a GFP_KERNEL
-allocation.
-
-> > @@ -2263,7 +2268,7 @@ static ssize_t generic_perform_write_2co
-> >  			break;
-> >  		}
-> >  
-> > -		page = __grab_cache_page(mapping, index);
-> > +		page = grab_cache_page_write_begin(mapping, index, GFP_KERNEL);
-> 
-> And this one?  Is GFP_KERNEL ok, or 0?
-> 
-> Nick, your thoughts?
-
-This should be 0. grab_cache_page_write_begin takes write_begin aop flags rather
-than regular gfp flags (it's a bit confusing, sorry :P). 0 ~= GFP_KERNEL (wheras
-AOP_FLAG_NOFS ~= GFP_NOFS). So you have the right idea ;)
+BTW, why "we have a half filled direcotory - oh well" is allowed....
 
 Thanks,
-Nick
+-Kame
+
+
+
+On Thu, 15 Jan 2009 19:27:12 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> cgroup creation is done in several stages.
+> After allocated and linked to cgroup's hierarchy tree, all necessary
+> control files are created.
+> 
+> When using CSS_ID, scanning cgroups without cgrouo_lock(), status
+> of cgroup is important. At removal of cgroup/css, css_tryget() works fine
+> and we can write a safe code. At creation, we need some flag to show 
+> "This cgroup is not ready yet"
+> 
+> This patch adds CSS_POPULATED flag.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+> Index: mmotm-2.6.29-Jan14/include/linux/cgroup.h
+> ===================================================================
+> --- mmotm-2.6.29-Jan14.orig/include/linux/cgroup.h
+> +++ mmotm-2.6.29-Jan14/include/linux/cgroup.h
+> @@ -69,6 +69,7 @@ struct cgroup_subsys_state {
+>  enum {
+>  	CSS_ROOT, /* This CSS is the root of the subsystem */
+>  	CSS_REMOVED, /* This CSS is dead */
+> +	CSS_POPULATED, /* This CSS finished all initialization */
+>  };
+>  
+>  /*
+> @@ -90,6 +91,11 @@ static inline bool css_is_removed(struct
+>  	return test_bit(CSS_REMOVED, &css->flags);
+>  }
+>  
+> +static inline bool css_is_populated(struct cgroup_subsys_state *css)
+> +{
+> +	return test_bit(CSS_POPULATED, &css->flags);
+> +}
+> +
+>  /*
+>   * Call css_tryget() to take a reference on a css if your existing
+>   * (known-valid) reference isn't already ref-counted. Returns false if
+> Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
+> +++ mmotm-2.6.29-Jan14/kernel/cgroup.c
+> @@ -2326,8 +2326,10 @@ static int cgroup_populate_dir(struct cg
+>  	}
+>  
+>  	for_each_subsys(cgrp->root, ss) {
+> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
+>  		if (ss->populate && (err = ss->populate(ss, cgrp)) < 0)
+>  			return err;
+> +		set_bit(CSS_POPULATED, &css->flags);
+>  	}
+>  
+>  	return 0;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
