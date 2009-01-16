@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937869AbZAPWO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937816AbZAPWRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937869AbZAPWO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 17:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764363AbZAPWOr
+	id S937816AbZAPWRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 17:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764133AbZAPWRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 17:14:47 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39535 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764354AbZAPWOr (ORCPT
+	Fri, 16 Jan 2009 17:17:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50397 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761328AbZAPWRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 17:14:47 -0500
-Message-ID: <497106C5.60703@us.ibm.com>
-Date: Fri, 16 Jan 2009 16:14:29 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com> <87ljuf1s75.fsf@basil.nowhere.org> <4970CB6F.9000301@linux.vnet.ibm.com>
-In-Reply-To: <4970CB6F.9000301@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Jan 2009 17:17:21 -0500
+Date: Fri, 16 Jan 2009 14:15:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, prarit@redhat.com, dhowells@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, sam@ravnborg.org, kyle@mcmartin.ca,
+       tony.luck@intel.com, trond.myklebust@fys.uio.no
+Subject: Re: linux-next: build problem with nfs tree (Was: Re:
+ [mmotm][PATCH] fix ia64 build error)
+Message-Id: <20090116141557.0a3eaaac.akpm@linux-foundation.org>
+In-Reply-To: <20090116153417.891297ca.sfr@canb.auug.org.au>
+References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
+	<20090116124949.7828a559.sfr@canb.auug.org.au>
+	<20090115175917.8e0ae536.akpm@linux-foundation.org>
+	<20090116134930.68e783aa.sfr@canb.auug.org.au>
+	<20090116153417.891297ca.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Ashford wrote:
-> Andi Kleen wrote:
->> Paul Mackerras <paulus@samba.org> writes:
->>> The perf counter subsystem will, in Ingo's design, naturally try to
->>> schedule as many counters and groups on as it can.  Given a list of
->>> counters/groups, it could start with the first and keep on trying to
->>> add counters or groups while it can, essentially trying all possible
->>> combinations until it either fills up all the hardware counters or
->>> exhausts the possible combinations.  If it moves all the
->>> counters/groups that do fit on up to the head of the list, and then
->>> rotates them to the back of the list when the timeslice expires, that
->>> would probably be OK.  In fact the computation about what set of
->>> counters/groups to put on should be done when adding/removing a
->>> counter/group and when the timeslice expires, rather than at context
->>> switch time.  (I'm talking about the list of part-time counters/groups
->>> here, of course.)
->> One issue is that PMU counts can cover more than one CPU. One example
->> for this are the Uncore events on Nehalem (which cover a whole socket)
->> or when you are in AnyThreads monitoring mode (then you get events
->> from both SMT siblings in a core)
->>
->> With that you would need to examine other CPU's state at context switch
->> time. Probably not a good idea for scalability.
->>
->> -Andi
->>
-> 
-> Over time, it seems clear that we will see multi-core processor designs 
-> with increasingly large uncore/nest facilities, so this could become 
-> more and more of an issue.
-Ingo, I'll add my voice to the chorus here.  To reiterate the point, some PMUs count events that are external to the processor cores, and these events cannot be attributed to any one particular CPU -- and certainly not to a particular pid.  The current interface has a restriction that the user cannot pass -1 for both pid and cpu.  But it seems to me that's exactly what would be needed for such off-core events.  Can this feature fit in with the current interface or is some sort of extension needed?
+On Fri, 16 Jan 2009 15:34:17 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Thanks.
--Maynard
-> 
-> - Corey
-> 
-> Corey Ashford
-> Software Engineer
-> IBM Linux Technology Center, Linux Toolchain
-> Beaverton, OR
-> 503-578-3507
-> cjashfor@us.ibm.com
-> 
+> With the help of Paul Mackerras, I have come up with the shell script
+> below.  You run it with the commit id, the tag of the tree you care
+> about (e.g. next-20080115)(it defaults to the current top of tree) and
+> the name of the branch the represents Linus' tree (default to
+> origin/master).  It will spit out the (or a) tree that contains the
+> commit you asked about.
 
+hm.  Thanks.
+
+y:/usr/src/git26> git-checkout linux-next
+Switched to branch "linux-next"
+y:/usr/src/git26> who-committed.sh ba9a5918
+y:/usr/src/git26> who-committed.sh 2c3fb6b1b1a43ca089032e6523207f6687c962c1
+y:/usr/src/git26> 
