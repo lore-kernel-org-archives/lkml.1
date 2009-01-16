@@ -1,93 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937495AbZAPUtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937520AbZAPUuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937495AbZAPUtY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 15:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZAPUtB
+	id S937520AbZAPUuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 15:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbZAPUtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 15:49:01 -0500
-Received: from gw2.cosmosbay.com ([86.64.20.130]:41606 "EHLO gw2.cosmosbay.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755265AbZAPUtA convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 15:49:45 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35222 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756933AbZAPUto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 15:49:00 -0500
-Message-ID: <4970F2B6.1060508@cosmosbay.com>
-Date: Fri, 16 Jan 2009 21:48:54 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 16 Jan 2009 15:49:44 -0500
+Date: Fri, 16 Jan 2009 15:49:42 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26.6-rt11: BUGs (sleeping function called from invalid
+ context)
+In-Reply-To: <1232136975.6326.32.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901161548290.8586@gandalf.stny.rr.com>
+References: <1226083858.20569.14.camel@localhost.localdomain>  <alpine.DEB.1.10.0811071400570.3711@gandalf.stny.rr.com> <1232136975.6326.32.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: 2.6.27.9: splice_to_pipe() hung (blocked for more than 120 seconds)
-References: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
-In-Reply-To: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw2.cosmosbay.com [127.0.0.1]); Fri, 16 Jan 2009 21:48:54 +0100 (CET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CCed to netdev
 
-Vegard Nossum a écrit :
-> Hi,
+
+
+On Fri, 16 Jan 2009, Fernando Lopez-Lezcano wrote:
+
+> On Fri, 2008-11-07 at 14:01 -0500, Steven Rostedt wrote:
+> > Peter, I think we've seen this before. It is the highmem code sleeping.
+> > 
+> > On Fri, 7 Nov 2008, Fernando Lopez-Lezcano wrote:
+> > 
+> > > Three BUGs while booting 2.6.26.7 + rt11 (same hardware: no problems
+> > > with 2.6.24.7-rt21):
+> > > 
+> > > Nov  7 10:31:19 host kernel: BUG: sleeping function called from invalid
+> > > context IRQ-22(540) at arch/x86/mm/highmem_32.c:8
+> > > Nov  7 10:31:19 host kernel: in_atomic():0 [00000000], irqs_disabled():1
+> > > Nov  7 10:31:19 host kernel: Pid: 540, comm: IRQ-22 Not tainted
+> > > 2.6.26.7-1.rt11.1fc9.ccrma.i686.rt #1
+> > > Nov  7 10:31:19 host kernel: [<c041ff88>] __might_sleep+0xe8/0xed
+> > > Nov  7 10:31:19 host kernel: [<c041cd55>] kmap+0x42/0x55
+> > 
+> > As here.
 > 
-> Seeing some recent splice() discussions, I decided to explore this
-> system call. I have written a program which might look, well, not very
-> useful, but the fact is that it creates an unkillable zombie process.
-> Another funny side effect is that system load continually rises, even
-> though the system seems to stay fully interactive and functional.
-> 
-> After a while, I also get some messages like this:
-> 
-> Jan 15 20:11:37 localhost kernel: INFO: task a.out:7149 blocked for
-> more than 120 seconds.
-> Jan 15 20:11:37 localhost kernel: "echo 0 >
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Jan 15 20:11:37 localhost kernel: a.out         D ec6e2610     0  7149      1
-> Jan 15 20:11:37 localhost kernel:       ec5aad44 00000082 c042451f
-> ec6e2610 00989680 c07da67c c07ddb80 c07ddb80
-> Jan 15 20:11:37 localhost kernel:       c07ddb80 ec6e4c20 ec6e4e7c
-> c201db80 00000001 c201db80 470fed45 0000036b
-> Jan 15 20:11:37 localhost kernel:       ec5aad38 c0421027 ec6e263c
-> ec6e4e7c ec6e3fa8 85c129f4 ec6e4c20 ec6e4c20
-> Jan 15 20:11:37 localhost kernel: Call Trace:
-> Jan 15 20:11:37 localhost kernel: [<c064420f>] __mutex_lock_common+0x8a/0xd9
-> Jan 15 20:11:37 localhost kernel: [<c0644302>] __mutex_lock_slowpath+0x12/0x15
-> Jan 15 20:11:37 localhost kernel: [<c0644181>] mutex_lock+0x29/0x2d
-> Jan 15 20:11:37 localhost kernel: [<c04aa8f1>] splice_to_pipe+0x23/0x1f5
-> Jan 15 20:11:37 localhost kernel: [<c04ab290>]
-> __generic_file_splice_read+0x3ff/0x413
-> Jan 15 20:11:37 localhost kernel: [<c04ab324>]
-> generic_file_splice_read+0x80/0x9a
-> Jan 15 20:11:37 localhost kernel: [<c04a9e95>] do_splice_to+0x4e/0x5f
-> Jan 15 20:11:37 localhost kernel: [<c04aa010>] sys_splice+0x16a/0x1c8
-> Jan 15 20:11:37 localhost kernel: [<c0403cca>] syscall_call+0x7/0xb
-> Jan 15 20:11:37 localhost kernel: =======================
-> 
-> (but this was from such a system with 6 zombies and ~80 load. See
-> attachments for SysRq report with processes in blocked state, it has
-> similar info but for just one zombie.)
-> 
-> This happens with 2.6.27.9-73.fc9.i686 kernel. Maybe it was fixed
-> recently? (In any case, I don't think it is a regression.)
-> 
-> It seems to be not 100% reproducible. Sometimes it works, sometimes
-> not. Start the program, then after a while hit Ctrl-C. If it doesn't
-> exit, zombie count will rise and system state will be as described.
-> Compile with -lpthread.
-> 
+> Still happening in 2.6.26.8-rt13...
 
-I tried your program on latest git tree and could not reproduce any problem.
+Could you try this patch and see if it fixes your issue.
 
-(changed to 9 threads since I have 8 cpus)
+Thanks,
 
-Problem might be that your threads all fight on the same pipe, with
-a mutex protecting its inode.
+-- Steve
 
+---
+ drivers/ata/libata-sff.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-So mutex_lock() could possibly starve for more than 120 second ?
-
-Maybe you can reproduce the problem using standard read()/write() syscalls...
-
+Index: linux-2.6.26.8-rt13/drivers/ata/libata-sff.c
+===================================================================
+--- linux-2.6.26.8-rt13.orig/drivers/ata/libata-sff.c	2009-01-16 15:47:38.000000000 -0500
++++ linux-2.6.26.8-rt13/drivers/ata/libata-sff.c	2009-01-16 15:48:07.000000000 -0500
+@@ -740,9 +740,9 @@ unsigned int ata_sff_data_xfer_noirq(str
+ 	unsigned long flags;
+ 	unsigned int consumed;
+ 
+-	local_irq_save(flags);
++	local_irq_save_nort(flags);
+ 	consumed = ata_sff_data_xfer(dev, buf, buflen, rw);
+-	local_irq_restore(flags);
++	local_irq_restore_nort(flags);
+ 
+ 	return consumed;
+ }
+@@ -780,7 +780,7 @@ static void ata_pio_sector(struct ata_qu
+ 		unsigned long flags;
+ 
+ 		/* FIXME: use a bounce buffer */
+-		local_irq_save(flags);
++		local_irq_save_nort(flags);
+ 		buf = kmap_atomic(page, KM_IRQ0);
+ 
+ 		/* do the actual data transfer */
+@@ -788,7 +788,7 @@ static void ata_pio_sector(struct ata_qu
+ 				       do_write);
+ 
+ 		kunmap_atomic(buf, KM_IRQ0);
+-		local_irq_restore(flags);
++		local_irq_restore_nort(flags);
+ 	} else {
+ 		buf = page_address(page);
+ 		ap->ops->sff_data_xfer(qc->dev, buf + offset, qc->sect_size,
+@@ -918,14 +918,14 @@ next_sg:
+ 		unsigned long flags;
+ 
+ 		/* FIXME: use bounce buffer */
+-		local_irq_save(flags);
++		local_irq_save_nort(flags);
+ 		buf = kmap_atomic(page, KM_IRQ0);
+ 
+ 		/* do the actual data transfer */
+ 		consumed = ap->ops->sff_data_xfer(dev,  buf + offset, count, rw);
+ 
+ 		kunmap_atomic(buf, KM_IRQ0);
+-		local_irq_restore(flags);
++		local_irq_restore_nort(flags);
+ 	} else {
+ 		buf = page_address(page);
+ 		consumed = ap->ops->sff_data_xfer(dev,  buf + offset, count, rw);
