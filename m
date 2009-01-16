@@ -1,40 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbZAPBVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935711AbZAPBVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935438AbZAPBVS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbZAPBU6
+	id S935711AbZAPBVv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760742AbZAPBVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:20:58 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42706 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758594AbZAPBU5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:20:57 -0500
-Date: Fri, 16 Jan 2009 01:20:56 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mfd: Mark WM835x USB_SLV_500MA bit as accessible
-Message-ID: <20090116012056.GB16544@opensource.wolfsonmicro.com>
-References: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20090115160200.1d6a0c93.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115160200.1d6a0c93.akpm@linux-foundation.org>
-X-Cookie: Are you a turtle?
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 15 Jan 2009 20:21:04 -0500
+Received: from mga11.intel.com ([192.55.52.93]:29486 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759594AbZAPBVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 20:21:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,273,1231142400"; 
+   d="asc'?scan'208";a="422823338"
+Subject: Re: [PATCH crypto -v4 2/2] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+From: Huang Ying <ying.huang@intel.com>
+To: roel kluin <roel.kluin@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com>
+References: <1232008119.5937.200.camel@yhuang-dev.sh.intel.com>
+	 <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vMIvOK/mBmWMve5sk/UB"
+Date: Fri, 16 Jan 2009 09:20:58 +0800
+Message-Id: <1232068858.5937.222.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 04:02:00PM -0800, Andrew Morton wrote:
-> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> > -	{ 0xFCF7, 0xFCF7, 0xF800 }, /* R4   - System Control 2 */
-> > +	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+--=-vMIvOK/mBmWMve5sk/UB
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Why?
+On Thu, 2009-01-15 at 17:47 +0800, roel kluin wrote:
+> Sorry to bother,
+>=20
+> > +static int ecb_encrypt(struct blkcipher_desc *desc,
+> > +                      struct scatterlist *dst, struct scatterlist *src=
+,
+> > +                      unsigned int nbytes)
+> > +{
+> > +       struct crypto_aes_ctx *ctx =3D aes_ctx(crypto_blkcipher_ctx(des=
+c->tfm));
+> > +       struct blkcipher_walk walk;
+> > +       int err;
+> > +
+> > +       blkcipher_walk_init(&walk, dst, src, nbytes);
+> > +       err =3D blkcipher_walk_virt(desc, &walk);
+> > +
+> > +       kernel_fpu_begin();
+> > +       while ((nbytes =3D walk.nbytes)) {
+> > +               aesni_ecb_enc(ctx, walk.dst.virt.addr, walk.src.virt.ad=
+dr,
+> > +                             nbytes & AES_BLOCK_MASK);
+> > +               nbytes &=3D AES_BLOCK_SIZE - 1;
+> > +               err =3D blkcipher_walk_done(desc, &walk, nbytes);
+> > +       }
+> > +       kernel_fpu_end();
+> > +
+> > +       return err;
+> > +}
+>=20
+> if blkcipher_walk_{virt,done} returns an error, don't we have to break
+> out of the loop?
+> i.e.
+>=20
+> while (!err && (nbytes =3D walk.nbytes))
+>=20
+> (if that's erroneous, it occurs in other places as well)
 
-The code is out of sync with the silicon - this table provides the
-driver with a map of what access is provided in hardware, the fact that
-this was masked off is a bug in the driver.
+It seems that it is a bug.
+
+But it seems that the similar code in geode-aes.c and padlock-aes.c has
+same bug. I think we should fix them too.
+
+Best Regards,
+Huang Ying
+
+
+--=-vMIvOK/mBmWMve5sk/UB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklv4PcACgkQKhFGF+eHlpjVMgCghmO+C8bGtYbR2Kl2XXyBemeb
+MWkAnim3SAoUya0YLsQQRE+pk2WBm0Ze
+=TdQV
+-----END PGP SIGNATURE-----
+
+--=-vMIvOK/mBmWMve5sk/UB--
+
