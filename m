@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936027AbZAPRj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935816AbZAPRkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936027AbZAPRj1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 12:39:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbZAPRjL
+	id S935816AbZAPRkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 12:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbZAPRkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 12:39:11 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:46426 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760034AbZAPRjK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 12:39:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rH0ODxB+le/+ikh/u/uXOjO26u2Lle+1Q13Of9E5dW8ZYGWFUYD2QQ5ucUV8SPJ8Np
-         OTJvGoBqh7Axv9QrKWvUNjs8j24AFIIkjK8jlOXQEstGUqDos/xJ934ZhWtT5JmtTYqA
-         sMbW1ulp2kY9lxHEUcf9o4/EkHq3z8nt6GRVQ=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0901161106100.4940@axis700.grange>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
-	 <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
-	 <Pine.LNX.4.64.0901161106100.4940@axis700.grange>
-Date: Fri, 16 Jan 2009 10:39:08 -0700
-X-Google-Sender-Auth: 34841cf7c082ff18
-Message-ID: <e9c3a7c20901160939y6b3906fp41531730d4b752a@mail.gmail.com>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-From: Dan Williams <dan.j.williams@intel.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Jan 2009 12:40:21 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58252 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbZAPRkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 12:40:19 -0500
+Subject: Re: mmotm 2009-01-14-20-31 uploaded (gfs2)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com
+In-Reply-To: <20090116093550.ce7229d5.akpm@linux-foundation.org>
+References: <200901150432.n0F4WI66023742@imap1.linux-foundation.org>
+	 <496F8AED.3020604@oracle.com>
+	 <1232101203.3554.3.camel@localhost.localdomain>
+	 <20090116084352.9f35b822.akpm@linux-foundation.org>
+	 <1232125371.9571.587.camel@quoit> <4970BE8F.9090705@oracle.com>
+	 <20090116093550.ce7229d5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Fri, 16 Jan 2009 17:37:07 +0000
+Message-Id: <1232127427.9571.589.camel@quoit>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 3:09 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Ok, let's do it this way: Sascha has acked version 8 of patches 2 and 3.
-> And there seems to be no active framebuffer maintainer ATM. So, maybe you
-> could take patches 1-3 into your tree, so they are exposed to the public,
-> people have easier access to them in case they want to test (I had several
-> requests), and you update them in case you change async-tx API again:-) It
-> would be good to try and push them in for 2.6.29 - these are new drivers,
-> so, might still be possible to convince Andrew / Linus, if not, you could
-> keep them in your tree (and in next) until 2.6.30, then we'd add platform
-> bindings and the camera driver. What do you think?
+Hi,
 
-It will be weird to see drivers/video/ in a dmaengine pull request, but:
+On Fri, 2009-01-16 at 09:35 -0800, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 09:06:23 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > >>> which is not ideal, but I don't see any easy way to avoid the #ifdef,
+> > >>>
+> > >> Take a look in fs.h:
+> > >>
+> > >> #define generic_setlease(a, b, c) ({ -EINVAL; })
+> > >>
+> > >> If that wasn't a stupid macro, your code would have compiled and ran
+> > >> just as intended.
+> > >>
+> > > There doesn't seem to be an easy answer though. If I #define it to NULL,
+> > > that upsets other parts of the code that rely on that macro, and if I
+> > > turn it into a inline function which returns -EINVAL, then presumably I
+> > > can't take its address for my file_operations.
+> > 
+> > No, gcc will allow &inline_func and out-of-line it if it is needed (AFAIK;
+> > I've seen a few cases of that).
+> > 
+> 
+> yup.  It measn that we'll get a separate private copy of the
+> generic_setlease() code in each compilation unit which takes its
+> address, but I don't think that would kill us.
+> 
+> The prevention is of course to put the stub function in a core kernel
+> .c file and export it to modules.
+> 
+Ok, I'll have another look at this and try and cook something up,
 
-1/ as you point out it appears to be a free-for-all in that directory,
-so Sascha's ack seems to be all that is needed here.
-2/ merging the driver without any in-tree users does not make much sense
-3/ these are new drivers so the risk of causing a regression should be
-close to zero especially since none of the existing dmaengine users
-will pick up these private channels
+Steve.
 
-Can you send me the series, off-list, in a .tar.gz with Sascha's ack
-to make sure I am applying the latest.  I can not seem to find [PATCH
-2/4 v8] in my inbox...
 
-Thanks,
-Dan
