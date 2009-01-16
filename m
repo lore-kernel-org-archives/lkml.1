@@ -1,116 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936128AbZAPCXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936204AbZAPC01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936128AbZAPCXe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbZAPCXY
+	id S936204AbZAPC01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761727AbZAPC0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:23:24 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50268 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbZAPCXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:23:21 -0500
-Date: Fri, 16 Jan 2009 11:22:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
-Message-Id: <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <496FE791.9030208@cn.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>
-	<496FE30C.1090300@cn.fujitsu.com>
-	<20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>
-	<496FE791.9030208@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Jan 2009 21:26:16 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60614 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762151AbZAPC0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:26:15 -0500
+Message-ID: <496FEFCA.9050908@cn.fujitsu.com>
+Date: Fri, 16 Jan 2009 10:24:10 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>, Max Krasnyansky <maxk@qualcomm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpuset: fix possible deadlock in async_rebuild_sched_domains
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 09:49:05 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Lockdep reported some possible circular locking info when we tested cpuset on
+NUMA/fake NUMA box.
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Fri, 16 Jan 2009 09:29:48 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >>>  /*
-> >>> - * Dance down the hierarchy if needed to reclaim memory. We remember the
-> >>> - * last child we reclaimed from, so that we don't end up penalizing
-> >>> - * one child extensively based on its position in the children list.
-> >>> + * Visit the first child (need not be the first child as per the ordering
-> >>> + * of the cgroup list, since we track last_scanned_child) of @mem and use
-> >>> + * that to reclaim free pages from.
-> >>> + */
-> >>> +static struct mem_cgroup *
-> >>> +mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-> >>> +{
-> >>> +	struct mem_cgroup *ret = NULL;
-> >>> +	struct cgroup_subsys_state *css;
-> >>> +	int nextid, found;
-> >>> +
-> >>> +	if (!root_mem->use_hierarchy) {
-> >>> +		spin_lock(&root_mem->reclaim_param_lock);
-> >>> +		root_mem->scan_age++;
-> >>> +		spin_unlock(&root_mem->reclaim_param_lock);
-> >>> +		css_get(&root_mem->css);
-> >>> +		ret = root_mem;
-> >>> +	}
-> >>> +
-> >>> +	while (!ret) {
-> >>> +		rcu_read_lock();
-> >>> +		nextid = root_mem->last_scanned_child + 1;
-> >>> +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
-> >>> +				   &found);
-> >>> +		if (css && css_is_populated(css) && css_tryget(css))
-> >> I don't see why you need to check css_is_populated(css) ?
-> >>
-> > 
-> > Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
-> 
-> I think this is a rare case. It's just a very short period when a cgroup is
-> being created but not yet fully created.
-> 
-> > Second reason is for avoinding unnecessary calls to try_to_free_pages(),
-> > it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
-> > 
-> 
-> And if mem->res.usage == 0 is checked, css_is_popuated() is just redundant.
-> 
-Hmm ? Can I check mem->res.usage before css_tryget() ?
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.29-rc1-00224-ga652504 #111
+-------------------------------------------------------
+bash/2968 is trying to acquire lock:
+ (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
 
--Kame
+but task is already holding lock:
+ (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
 
+which lock already depends on the new lock.
+......
+-------------------------------------------------------
 
+Steps to reproduce:
+# mkdir /dev/cpuset
+# mount -t cpuset xxx /dev/cpuset
+# mkdir /dev/cpuset/0
+# echo 0 > /dev/cpuset/0/cpus
+# echo 0 > /dev/cpuset/0/mems
+# echo 1 > /dev/cpuset/0/memory_migrate
+# cat /dev/zero > /dev/null &
+# echo $! > /dev/cpuset/0/tasks
 
+This is because async_rebuild_sched_domains has the following lock sequence:
+run_workqueue(async_rebuild_sched_domains)
+	-> do_rebuild_sched_domains -> cgroup_lock
 
-> > THanks,
-> > -Kame
-> > 
-> >>> +			ret = container_of(css, struct mem_cgroup, css);
-> >>> +
-> >>> +		rcu_read_unlock();
-> >>> +		/* Updates scanning parameter */
-> >>> +		spin_lock(&root_mem->reclaim_param_lock);
-> >>> +		if (!css) {
-> >>> +			/* this means start scan from ID:1 */
-> >>> +			root_mem->last_scanned_child = 0;
-> >>> +			root_mem->scan_age++;
-> >>> +		} else
-> >>> +			root_mem->last_scanned_child = found;
-> >>> +		spin_unlock(&root_mem->reclaim_param_lock);
-> >>> +	}
-> >>> +
-> >>> +	return ret;
-> >>> +}
-> >>> +
-> 
+But, attaching tasks when memory_migrate is set has following:
+cgroup_lock_live_group(cgroup_tasks_write)
+	-> do_migrate_pages -> flush_work
+
+This patch fixes it by using a separate workqueue thread.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Max Krasnyansky <maxk@qualcomm.com>
+---
+ kernel/cpuset.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index a856788..f76db9d 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -61,6 +61,14 @@
+ #include <linux/cgroup.h>
+ 
+ /*
++ * Workqueue for cpuset related tasks.
++ *
++ * Using kevent workqueue may cause deadlock when memory_migrate
++ * is set. So we create a separate workqueue thread for cpuset.
++ */
++static struct workqueue_struct *cpuset_wq;
++
++/*
+  * Tracks how many cpusets are currently defined in system.
+  * When there is only one cpuset (the root cpuset) we can
+  * short circuit some hooks.
+@@ -831,7 +839,7 @@ static DECLARE_WORK(rebuild_sched_domains_work, do_rebuild_sched_domains);
+  */
+ static void async_rebuild_sched_domains(void)
+ {
+-	schedule_work(&rebuild_sched_domains_work);
++	queue_work(cpuset_wq, &rebuild_sched_domains_work);
+ }
+ 
+ /*
+@@ -2111,6 +2119,9 @@ void __init cpuset_init_smp(void)
+ 
+ 	hotcpu_notifier(cpuset_track_online_cpus, 0);
+ 	hotplug_memory_notifier(cpuset_track_online_nodes, 10);
++
++	cpuset_wq = create_singlethread_workqueue("cpuset");
++	BUG_ON(!cpuset_wq);
+ }
+ 
+ /**
+-- 
+1.6.0.3
+
 
