@@ -1,113 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936204AbZAPC01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936066AbZAPCaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936204AbZAPC01 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761727AbZAPC0Q
+	id S936066AbZAPCaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbZAPCaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:26:16 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60614 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1762151AbZAPC0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:26:15 -0500
-Message-ID: <496FEFCA.9050908@cn.fujitsu.com>
-Date: Fri, 16 Jan 2009 10:24:10 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>, Max Krasnyansky <maxk@qualcomm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpuset: fix possible deadlock in async_rebuild_sched_domains
-Content-Type: text/plain; charset=UTF-8
+	Thu, 15 Jan 2009 21:30:08 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:65489 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755240AbZAPCaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 21:30:06 -0500
+Date: Fri, 16 Jan 2009 11:25:07 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>
+Subject: Re: [BUGFIX][PATCH] memcg: get/put parents at create/free
+Message-Id: <20090116112507.701e044d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090116111702.fba37439.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
+	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
+	<20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
+	<20090115181243.8dad9052.akpm@linux-foundation.org>
+	<20090116111702.fba37439.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lockdep reported some possible circular locking info when we tested cpuset on
-NUMA/fake NUMA box.
+On Fri, 16 Jan 2009 11:17:02 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 15 Jan 2009 18:12:43 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 16 Jan 2009 10:50:09 +0900 Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > 
+> > > This version works well in my test.
+> > > 
+> > > Andrew, please pick up this one.
+> > > 
+> > > ===
+> > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > 
+> > > The lifetime of struct cgroup and struct mem_cgroup is different and
+> > > mem_cgroup has its own reference count for handling references from swap_cgroup.
+> > > 
+> > > This causes strange problem that the parent mem_cgroup dies while
+> > > child mem_cgroup alive, and this problem causes a bug in case of use_hierarchy==1
+> > > because res_counter_uncharge climbs up the tree.
+> > > 
+> > > This patch is for avoiding it by getting the parent at create, and
+> > > putting it at freeing.
+> > > 
+> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > Reviewed-by; KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > ---
+> > >  mm/memcontrol.c |   23 ++++++++++++++++++++++-
+> > >  1 files changed, 22 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > > index fb62b43..45e1b51 100644
+> > > --- a/mm/memcontrol.c
+> > > +++ b/mm/memcontrol.c
+> > > @@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+> > >  
+> > >  static void mem_cgroup_get(struct mem_cgroup *mem);
+> > >  static void mem_cgroup_put(struct mem_cgroup *mem);
+> > > +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
+> > > +static void mem_cgroup_get_parent(struct mem_cgroup *mem);
+> > >  
+> > >  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+> > >  					 struct page_cgroup *pc,
+> > > @@ -2185,10 +2187,28 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+> > >  
+> > >  static void mem_cgroup_put(struct mem_cgroup *mem)
+> > >  {
+> > > -	if (atomic_dec_and_test(&mem->refcnt))
+> > > +	if (atomic_dec_and_test(&mem->refcnt)) {
+> > > +		struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> > >  		__mem_cgroup_free(mem);
+> > > +		if (parent)
+> > > +			mem_cgroup_put(parent);
+> > > +	}
+> > > +}
+> > > +
+> > > +static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
+> > > +{
+> > > +	if (!mem->res.parent)
+> > > +		return NULL;
+> > > +	return mem_cgroup_from_res_counter(mem->res.parent, res);
+> > >  }
+> > >  
+> > > +static void mem_cgroup_get_parent(struct mem_cgroup *mem)
+> > > +{
+> > > +	struct mem_cgroup *parent = parent_mem_cgroup(mem);
+> > > +
+> > > +	if (parent)
+> > > +		mem_cgroup_get(parent);
+> > > +}
+> > >  
+> > >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> > >  static void __init enable_swap_cgroup(void)
+> > > @@ -2237,6 +2257,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+> > >  	if (parent)
+> > >  		mem->swappiness = get_swappiness(parent);
+> > >  	atomic_set(&mem->refcnt, 1);
+> > > +	mem_cgroup_get_parent(mem);
+> > >  	return &mem->css;
+> > >  free_out:
+> > >  	__mem_cgroup_free(mem);
+> > 
+> > It seems strange that we add a little helper function for the get(),
+> > but open-code the put()?
+> > 
+> Maybe I don't feel this as strange because I saw update history of this patch ;(
+> As you pointed out, I like open-code rather than helper here. Nishimura-san,
+> could you update ?
+> 
+Sure.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.29-rc1-00224-ga652504 #111
--------------------------------------------------------
-bash/2968 is trying to acquire lock:
- (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
+The patch has gone into mmotm already, so I'll send a fix patch.
 
-but task is already holding lock:
- (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
-
-which lock already depends on the new lock.
-......
--------------------------------------------------------
-
-Steps to reproduce:
-# mkdir /dev/cpuset
-# mount -t cpuset xxx /dev/cpuset
-# mkdir /dev/cpuset/0
-# echo 0 > /dev/cpuset/0/cpus
-# echo 0 > /dev/cpuset/0/mems
-# echo 1 > /dev/cpuset/0/memory_migrate
-# cat /dev/zero > /dev/null &
-# echo $! > /dev/cpuset/0/tasks
-
-This is because async_rebuild_sched_domains has the following lock sequence:
-run_workqueue(async_rebuild_sched_domains)
-	-> do_rebuild_sched_domains -> cgroup_lock
-
-But, attaching tasks when memory_migrate is set has following:
-cgroup_lock_live_group(cgroup_tasks_write)
-	-> do_migrate_pages -> flush_work
-
-This patch fixes it by using a separate workqueue thread.
-
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Max Krasnyansky <maxk@qualcomm.com>
----
- kernel/cpuset.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index a856788..f76db9d 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -61,6 +61,14 @@
- #include <linux/cgroup.h>
- 
- /*
-+ * Workqueue for cpuset related tasks.
-+ *
-+ * Using kevent workqueue may cause deadlock when memory_migrate
-+ * is set. So we create a separate workqueue thread for cpuset.
-+ */
-+static struct workqueue_struct *cpuset_wq;
-+
-+/*
-  * Tracks how many cpusets are currently defined in system.
-  * When there is only one cpuset (the root cpuset) we can
-  * short circuit some hooks.
-@@ -831,7 +839,7 @@ static DECLARE_WORK(rebuild_sched_domains_work, do_rebuild_sched_domains);
-  */
- static void async_rebuild_sched_domains(void)
- {
--	schedule_work(&rebuild_sched_domains_work);
-+	queue_work(cpuset_wq, &rebuild_sched_domains_work);
- }
- 
- /*
-@@ -2111,6 +2119,9 @@ void __init cpuset_init_smp(void)
- 
- 	hotcpu_notifier(cpuset_track_online_cpus, 0);
- 	hotplug_memory_notifier(cpuset_track_online_nodes, 10);
-+
-+	cpuset_wq = create_singlethread_workqueue("cpuset");
-+	BUG_ON(!cpuset_wq);
- }
- 
- /**
--- 
-1.6.0.3
+please wait for a while
 
 
+Thanks,
+Daisuke Nishimura.
