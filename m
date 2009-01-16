@@ -1,253 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935894AbZAPRJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936021AbZAPRKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935894AbZAPRJt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 12:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759843AbZAPRJg
+	id S936021AbZAPRKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 12:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZAPRKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 12:09:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37853 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760025AbZAPRJe (ORCPT
+	Fri, 16 Jan 2009 12:10:36 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:35349 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759843AbZAPRKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 12:09:34 -0500
-Date: Fri, 16 Jan 2009 09:09:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
-Message-Id: <20090116090928.e43c986e.akpm@linux-foundation.org>
-In-Reply-To: <1232117771.3224.21.camel@localhost.localdomain>
-References: <1232117771.3224.21.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 12:10:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:x-operating-system:user-agent:
+	x-gmailtapped-by:x-gmailtapped;
+	b=JicYeBv5f/hauDR7N9KLH5rpCwTGDeBVE/36/oyTVoMiHLDRI4t/SihXbt63xyHER
+	V4TJfyW0aQaoF21SRwndg==
+Date: Fri, 16 Jan 2009 09:09:38 -0800
+From: Mandeep Singh Baines <msb@google.com>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: hannes@cmpxchg.org, rientjes@google.com, mbligh@google.com,
+       thockin@google.com
+Subject: [PATCH] softlockup: fix to allow compiling with !DETECT_HUNG_TASK
+Message-ID: <20090116170938.GA11346@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
+User-Agent: Mutt/1.5.11
+X-GMailtapped-By: 172.24.198.77
+X-GMailtapped: msb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 09:56:11 -0500 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> This is acutally four bug fixes and part of a fusion update which was a
-> bit late processing through the merge window, but which should be
-> perfectly acceptable for -rc1.
+Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> ...
->
-> Full diff below.
+> doesnt build with !SOFTLOCKUP:
+> 
+> kernel/fork.c:1049: error: 'struct task_struct' has no member named 'last_switch_count'
+> kernel/fork.c:1050: error: 'struct task_struct' has no member named 'last_switch_timestamp'
+> 
+> Could you send a delta fix patch relative to -v4 please? Thanks,
+> 
+> 	Ingo
 
-I like full diffs.
+Oops. Will be more careful next time.
+
+---
+
+Fixes the following compile error:
+
+kernel/fork.c:1049: error: 'struct task_struct' has no member named 'last_switch_count'
+kernel/fork.c:1050: error: 'struct task_struct' has no member named 'last_switch_timestamp'
+
+Signed-off-by: Mandeep Singh Baines <msb@google.com>
+---
+ kernel/fork.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index fb1f5e9..d68e59b 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1045,7 +1045,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
  
-> --- a/drivers/message/fusion/mptbase.c
-> +++ b/drivers/message/fusion/mptbase.c
-> @@ -79,9 +79,22 @@ MODULE_VERSION(my_VERSION);
->  /*
->   *  cmd line parameters
->   */
-> -static int mpt_msi_enable = -1;
-> -module_param(mpt_msi_enable, int, 0);
-> -MODULE_PARM_DESC(mpt_msi_enable, " MSI Support Enable (default=0)");
-> +
-> +static int mpt_msi_enable_spi;
-> +module_param(mpt_msi_enable_spi, int, 0);
-> +MODULE_PARM_DESC(mpt_msi_enable_spi, " Enable MSI Support for SPI \
-> +		controllers (default=0)");
-> +
-> +static int mpt_msi_enable_fc;
-> +module_param(mpt_msi_enable_fc, int, 0);
-> +MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
-> +		controllers (default=0)");
-> +
-> +static int mpt_msi_enable_sas;
-> +module_param(mpt_msi_enable_sas, int, 1);
-> +MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
-> +		controllers (default=1)");
-> +
-> 
-> ...
-
-Those MODULE_PARM_DESC strings are going to come out funny-looking,
-with extra tabs and stuff.
-
-> +MODULE_PARM_DESC(mpt_debug_level, " debug level - refer to mptdebug.h \
-> +	- (default=0)");
-> +
-> +int mpt_fwfault_debug;
-> +EXPORT_SYMBOL(mpt_fwfault_debug);
-> +module_param_call(mpt_fwfault_debug, param_set_int, param_get_int,
-> +	  &mpt_fwfault_debug, 0600);
-> +MODULE_PARM_DESC(mpt_fwfault_debug, "Enable detection of Firmware fault"
-> +	" and halt Firmware on fault - (default=0)");
-
-That one got it right.
-
->  
->  #ifdef MFCNT
->  static int mfcounter = 0;
-> @@ -1751,16 +1774,25 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
->  		ioc->bus_type = SAS;
->  	}
->  
-> -	if (mpt_msi_enable == -1) {
-> -		/* Enable on SAS, disable on FC and SPI */
-> -		if (ioc->bus_type == SAS)
-> -			ioc->msi_enable = 1;
-> -		else
-> -			ioc->msi_enable = 0;
-> -	} else
-> -		/* follow flag: 0 - disable; 1 - enable */
-> -		ioc->msi_enable = mpt_msi_enable;
->  
-> +	switch (ioc->bus_type) {
-> +
-> +	case SAS:
-> +		ioc->msi_enable = mpt_msi_enable_sas;
-> +		break;
-> +
-> +	case SPI:
-> +		ioc->msi_enable = mpt_msi_enable_spi;
-> +		break;
-> +
-> +	case FC:
-> +		ioc->msi_enable = mpt_msi_enable_fc;
-> +		break;
-> +
-> +	default:
-> +		ioc->msi_enable = 0;
-> +		break;
-> +	}
->  	if (ioc->errata_flag_1064)
->  		pci_disable_io_access(pdev);
->  
-> @@ -6313,6 +6345,33 @@ mpt_print_ioc_summary(MPT_ADAPTER *ioc, char *buffer, int *size, int len, int sh
->  	*size = y;
->  }
->  
-> +
-> +/**
-> + *	mpt_halt_firmware - Halts the firmware if it is operational and panic
-> + *	the kernel
-> + *	@ioc: Pointer to MPT_ADAPTER structure
-> + *
-> + **/
-> +void
-> +mpt_halt_firmware(MPT_ADAPTER *ioc)
-> +{
-> +	u32	 ioc_raw_state;
-> +
-> +	ioc_raw_state = mpt_GetIocState(ioc, 0);
-> +
-> +	if ((ioc_raw_state & MPI_IOC_STATE_MASK) == MPI_IOC_STATE_FAULT) {
-> +		printk(MYIOC_s_ERR_FMT "IOC is in FAULT state (%04xh)!!!\n",
-> +			ioc->name, ioc_raw_state & MPI_DOORBELL_DATA_MASK);
-> +		panic("%s: IOC Fault (%04xh)!!!\n", ioc->name,
-> +			ioc_raw_state & MPI_DOORBELL_DATA_MASK);
-> +	} else {
-> +		CHIPREG_WRITE32(&ioc->chip->Doorbell, 0xC0FFEE00);
-> +		panic("%s: Firmware is halted due to command timeout\n",
-> +			ioc->name);
-> +	}
-> +}
-> +EXPORT_SYMBOL(mpt_halt_firmware);
-
-Doing a panic() after we've already detected an error is plain nasty. 
-Is there no way in which we can allow the kernel to continue?
-
-
->  /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
->  /*
->   *	Reset Handling
-> @@ -6345,6 +6404,8 @@ mpt_HardResetHandler(MPT_ADAPTER *ioc, int sleepFlag)
->  	printk(MYIOC_s_INFO_FMT "HardResetHandler Entered!\n", ioc->name);
->  	printk("MF count 0x%x !\n", ioc->mfcnt);
->  #endif
-> +	if (mpt_fwfault_debug)
-> +		mpt_halt_firmware(ioc);
->  
->  	/* Reset the adapter. Prevent more than 1 call to
->  	 * mpt_do_ioc_recovery at any instant in time.
-> diff --git a/drivers/message/fusion/mptbase.h b/drivers/message/fusion/mptbase.h
-> index dff048c..b3e981d 100644
-> --- a/drivers/message/fusion/mptbase.h
-> +++ b/drivers/message/fusion/mptbase.h
-> @@ -922,11 +922,14 @@ extern void	 mpt_free_fw_memory(MPT_ADAPTER *ioc);
->  extern int	 mpt_findImVolumes(MPT_ADAPTER *ioc);
->  extern int	 mptbase_sas_persist_operation(MPT_ADAPTER *ioc, u8 persist_opcode);
->  extern int	 mpt_raid_phys_disk_pg0(MPT_ADAPTER *ioc, u8 phys_disk_num, pRaidPhysDiskPage0_t phys_disk);
-> +extern void     mpt_halt_firmware(MPT_ADAPTER *ioc);
-> +
->  
->  /*
->   *  Public data decl's...
->   */
->  extern struct list_head	  ioc_list;
-> +extern int mpt_fwfault_debug;
->  
->  /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
->  #endif		/* } __KERNEL__ */
-> diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
-> index ee09041..e62c6bc 100644
-> --- a/drivers/message/fusion/mptscsih.c
-> +++ b/drivers/message/fusion/mptscsih.c
-> @@ -1846,6 +1846,9 @@ mptscsih_abort(struct scsi_cmnd * SCpnt)
->  	if (hd->timeouts < -1)
->  		hd->timeouts++;
->  
-> +	if (mpt_fwfault_debug)
-> +		mpt_halt_firmware(ioc);
-
-So one single global flag affects all controllers in the system?
-
-I guess that's OK if it's just a debug/diag thing.
-
->  	/* Most important!  Set TaskMsgContext to SCpnt's MsgContext!
->  	 * (the IO to be ABORT'd)
->  	 *
-> diff --git a/drivers/scsi/libiscsi_tcp.c b/drivers/scsi/libiscsi_tcp.c
-> index a745f91..e7705d3 100644
-> --- a/drivers/scsi/libiscsi_tcp.c
-> +++ b/drivers/scsi/libiscsi_tcp.c
-> @@ -177,7 +177,6 @@ int iscsi_tcp_segment_done(struct iscsi_tcp_conn *tcp_conn,
->  			   struct iscsi_segment *segment, int recv,
->  			   unsigned copied)
->  {
-> -	static unsigned char padbuf[ISCSI_PAD_LEN];
->  	struct scatterlist sg;
->  	unsigned int pad;
->  
-> @@ -233,7 +232,7 @@ int iscsi_tcp_segment_done(struct iscsi_tcp_conn *tcp_conn,
->  			debug_tcp("consume %d pad bytes\n", pad);
->  			segment->total_size += pad;
->  			segment->size = pad;
-> -			segment->data = padbuf;
-> +			segment->data = segment->padbuf;
->  			return 0;
->  		}
->  	}
-> diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
-> index 2d4f32b..9ad4d09 100644
-> --- a/drivers/scsi/qla2xxx/qla_init.c
-> +++ b/drivers/scsi/qla2xxx/qla_init.c
-> @@ -1258,35 +1258,48 @@ qla2x00_init_rings(scsi_qla_host_t *vha)
->  {
->  	int	rval;
->  	unsigned long flags = 0;
-> -	int cnt;
-> +	int cnt, que;
->  	struct qla_hw_data *ha = vha->hw;
-> -	struct req_que *req = ha->req_q_map[0];
-> -	struct rsp_que *rsp = ha->rsp_q_map[0];
-> +	struct req_que *req;
-> +	struct rsp_que *rsp;
-> +	struct scsi_qla_host *vp;
->  	struct mid_init_cb_24xx *mid_init_cb =
->  	    (struct mid_init_cb_24xx *) ha->init_cb;
-
-This cast worries me.  It's a cast between two complex data structures
-which appear to have nothing to do with each other.
-
-Oh well.  It _is_ a scsi driver :(
-
+ 	p->default_timer_slack_ns = current->timer_slack_ns;
+ 
+-#ifdef CONFIG_DETECT_SOFTLOCKUP
++#ifdef CONFIG_DETECT_HUNG_TASK
+ 	p->last_switch_count = 0;
+ 	p->last_switch_timestamp = 0;
+ #endif
+-- 
+1.5.4.5
 
