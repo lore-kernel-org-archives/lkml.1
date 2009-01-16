@@ -1,63 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbZAPH0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760440AbZAPHeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbZAPH0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZAPH0E
+	id S1760440AbZAPHeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 02:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbZAPHeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:26:04 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:54460 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbZAPH0B (ORCPT
+	Fri, 16 Jan 2009 02:34:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35969 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755928AbZAPHeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:26:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:bcc:subject:date:user-agent;
-        b=xxT6TvPgUKhwlhJ6+eCe0Tae1+ns4okpcEZxW1je8NcFzhkqwU2sUmmg4BLjFGlp4k
-         UnkKiIhr6UKPp7a54AafW7mLOc8XVjO1jH9tzK+8J17tymSdkHAdPuuWWP6xISLlHxfp
-         cvdXxXZ/xab0CwtA/F2aJcTuUbRxafhnKfhg8=
-Message-ID: <49703687.044e6e0a.04fa.257b@mx.google.com>
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: chris.mason@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: [PATCH] Btrfs: simplify iteration codes
-Date: Fri, 16 Jan 2009 15:25:54 +0800
-User-Agent: sniper-patch-carrier/1.06
+	Fri, 16 Jan 2009 02:34:07 -0500
+Message-ID: <4970385B.7030404@jp.fujitsu.com>
+Date: Fri, 16 Jan 2009 16:33:47 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+References: <200901042346.42723.rjw@sisk.pl> <200901151742.09227.rjw@sisk.pl> <200901152005.25370.rjw@sisk.pl> <200901152011.00216.rjw@sisk.pl>
+In-Reply-To: <200901152011.00216.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-merge list_for_each and list_entry to list_for_each_entry.
+Rafael J. Wysocki wrote:
+> On Thursday 15 January 2009, Rafael J. Wysocki wrote:
+>> On Thursday 15 January 2009, Rafael J. Wysocki wrote:
+>>> On Thursday 15 January 2009, Kenji Kaneshige wrote:
+>>>> Hidetoshi Seto wrote:
+>>>>> Rafael J. Wysocki wrote:
+>>>>>> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
+>>>>>>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
+>>>>>> [...]
+>>>>>>>> I'm sorry but I don't understand what the problem is.
+>>>>>>>> Do you mean pci_disable_msix() doesn't work on some platforms?
+>>>>>>> No, I don't.  It was just confusion on my side, sorry.
+>>>>>>>
+>>>>>>> Please have a look at the new version of the patch I sent yesterday
+>>>>>>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
+>>>>>> BTW, in your patch the first dummy pci_enable_msix() allocates just one
+>>>>>> vector, which means that the contents of both
+>>>>>> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
+>>>>>> if my reading of the spec (PCI 3.0 in this case) is correct.
+>>>>> According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
+>>>>> it seems your reading is not correct.
+>>>>>
+>>>>> Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
+>>>>> for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
+>>>>> Spec says that the port could be designed for software to configure entries
+>>>>> assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
+>>>>>
+>>>>> So if there is just one vector, it could be AAAA.
+>>> Our pci_enable_msix() doesn't do that.  It will always do A---.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index b187b53..70f0248 100644
---- a/fs/btrfs/volumes.c
-+++ b/fs/btrfs/volumes.c
-@@ -104,10 +104,8 @@ static noinline struct btrfs_device *__find_device(struct list_head *head,
- 						   u64 devid, u8 *uuid)
- {
- 	struct btrfs_device *dev;
--	struct list_head *cur;
- 
--	list_for_each(cur, head) {
--		dev = list_entry(cur, struct btrfs_device, dev_list);
-+	list_for_each_entry(dev, head, dev_list) {
- 		if (dev->devid == devid &&
- 		    (!uuid || !memcmp(dev->uuid, uuid, BTRFS_UUID_SIZE))) {
- 			return dev;
-@@ -118,11 +116,9 @@ static noinline struct btrfs_device *__find_device(struct list_head *head,
- 
- static noinline struct btrfs_fs_devices *find_fsid(u8 *fsid)
- {
--	struct list_head *cur;
- 	struct btrfs_fs_devices *fs_devices;
- 
--	list_for_each(cur, &fs_uuids) {
--		fs_devices = list_entry(cur, struct btrfs_fs_devices, list);
-+	list_for_each_entry(fs_devices, &fs_uuids, list) {
- 		if (memcmp(fsid, fs_devices->fsid, BTRFS_FSID_SIZE) == 0)
- 			return fs_devices;
- 	}
+Just above the implementation note, the spec says:
+  "Software is permitted to configure multiple MSI-X Table entries
+   with the same vector, and this may indeed be necessary when fewer
+   vectors are allocated than requested."
+while "software" refers to either system software or device driver software.
+
+So, yes, the our current implementation of system software (=Linux kernel)
+doesn't do that.
+However I'd like to note that doing that by "software" is not prohibited
+in PCI 3.0.
+
+>>>> BTW, I don't think pci_enable_msix() allows this kind of configuration.
+>>>> With the dummy pci_enable_msix() in my patch, it would be A---, I think.
+>>> And that exactly is why I'm not sure it's correct.
+>>>
+>>> Namely, if only the first entry is configured, the device is only able to use
+>>> one vector, represented by this entry, for any purpose.  Now, for instance, for
+>>> PCIE_CAPABILITIES_REG, there are two possibilities:
+>>> (1) the value in the register always points to the _valid_ entry in the MSI-X
+>>>     table and that would be the first one,
+>>> (2) the value in the register may point to an _invalid_ entry (1 - 3).
+
+The "invalid entry" is not defined.
+
+>>> You seem to assume that (2) is the case, but I'm not sure (that should follow
+>>> from the PCI Express spec, but it clearly doesn't, at least I couldn't find
+>>> any pointer in the spec).  IMO it wouldn't make sense, because the port
+>>> wouldn't have been able to generate interrupts for this service if only one
+>>> vector had been configured.
+>>>
+>>> Still, even though (2) is the case, but both PCIE_CAPABILITIES_REG and
+>>> PCI_ERR_ROOT_STATUS just happen to point to the same entry, which very well may
+>>> be possible, the second pci_enable_msix() in your patch will fail.
+>>>
+>>> In any case, I think we should
+>>> (a) get the number of the port's MSI-X table entries _first_, without enabling
+>>>     MSI-X,
+
+We cannot do this because both of PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS
+will indicate the number for MSI, not for MSI-X without enabling MSI-X.
+
+>>> (b) allocate as many MSI-X vectors as indicated by this number, even though
+>>>     some of them may not be used,
+>>> (c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
+>>>     which vector has been allocated to which service.
+>> (d) mask the unused vectors.
+> 
+> However, it's probably simpler to do something like in your patch, although
+> I don't like the dummy enabling of MSI-X at all.
+
+How about this?
+
+  #define PCIE_MSIX_ENTRY_HPPME MAGIC_NUMBER_1
+  #define PCIE_MSIX_ENTRY_AER   MAGIC_NUMBER_2
+
+  struct msix_entry msix_entries[] =
+                        {{0, PCIE_MSIX_ENTRY_HPPME}, {0, PCIE_MSIX_ENTRY_AER}};
+  status = pci_enable_msix(dev, msix_entries, nvec);
+
+And modify pci_enable_msix() to handle these magic numbers.
+
+Thanks,
+H.Seto
 
