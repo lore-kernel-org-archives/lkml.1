@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbZAPD0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZAPD1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbZAPD0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 22:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZAPD0H
+	id S1759950AbZAPD1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 22:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZAPD0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 22:26:07 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:19831 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754239AbZAPD0E (ORCPT
+	Thu, 15 Jan 2009 22:26:49 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:37516 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754229AbZAPD0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 22:26:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=WBsNiRt8q2V5mkuYS1zNEa6cvYNjLwEhUa2Tfez84+TounM73K1KOULmmlXOy24AUi
-         8YBFUiCXoca5S+nDu/VVWqCDbH8+XuJByQz8P9Aer8H1Lmobb6F4CQF7laz+31sgCArA
-         x3ijZGVDRDH02IVGicurXXzFLtsuSnqVdfD9U=
-Message-ID: <496FFE45.1070802@gmail.com>
-Date: Fri, 16 Jan 2009 12:25:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 15 Jan 2009 22:26:47 -0500
+Date: Fri, 16 Jan 2009 14:26:39 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: roel kluin <roel.kluin@gmail.com>,
+       Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH crypto -v4 2/2] AES-NI: Add support to Intel AES-NI
+	instructions for x86_64 platform
+Message-ID: <20090116032639.GA10390@gondor.apana.org.au>
+References: <1232008119.5937.200.camel@yhuang-dev.sh.intel.com> <25e057c00901150147t570d8ab6g3b2b99c60f10c3c2@mail.gmail.com> <1232068858.5937.222.camel@yhuang-dev.sh.intel.com> <20090116015356.GA9822@gondor.apana.org.au> <1232073422.13948.3.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: roel kluin <roel.kluin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
-       cl@linux-foundation.org, rusty@rustcorp.com.au, travis@sgi.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       steiner@sgi.com, hugh@veritas.com
-Subject: [PATCH x86/percpu] x86_64: initialize this_cpu_off to __per_cpu_load
-References: <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <25e057c00901150204x61c54d9fl91afe23477d1f12f@mail.gmail.com> <496F0F5E.3080404@kernel.org> <20090115113230.GH22850@elte.hu> <496F1FA6.6050204@kernel.org> <20090115122222.GI22850@elte.hu> <496F3577.4020303@kernel.org> <20090115133206.GA31416@elte.hu> <20090115133916.GA3417@elte.hu> <496FB09A.8020808@kernel.org> <496FE2B3.3060706@gmail.com>
-In-Reply-To: <496FE2B3.3060706@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232073422.13948.3.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86_64, if get_per_cpu_var() is used before per cpu area is setup
-(if lockdep is turned on, it happens), it needs this_cpu_off to point
-to __per_cpu_load.  Initialize accordingly.
+On Fri, Jan 16, 2009 at 10:37:02AM +0800, Huang Ying wrote:
+>
+> But after checking blkcipher_walk_done() in 2.6.28, If input argument
+> err != 0 and walk->flags & BLKCIPHER_WALK_SLOW != 0, when
+> blkcipher_walk_done() return non-zero, walk->nbytes != 0. So I think it
+> is a little fragile to use walk->nbytes == 0 indicate error.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
-Okay, this fixes the problem.  Tested with gcc-4.3.2 and binutils-2.19
-(openSUSE 11.1).  For all four variants I can test (64-smp, 64-up,
-32-smp, 32-up).  This and the previous merge fix patch are available
-in the following git branch.
+Right, that's a bug.  Although this case shouldn't occur unless
+wer have a buggy algorithm (that's why it's a WARN_ON).  But as
+we're handling it anyway, we should ensure that the result is sane.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+crypt: blkcipher - Fix WARN_ON handling in walk_done
 
- arch/x86/kernel/smpcommon.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+When we get left-over bits from a slow walk, it means that the
+underlying cipher has gone troppo.  However, as we're handling
+that case we should ensure that the caller terminates the walk.
 
-diff --git a/arch/x86/kernel/smpcommon.c b/arch/x86/kernel/smpcommon.c
-index 84395fa..7e15781 100644
---- a/arch/x86/kernel/smpcommon.c
-+++ b/arch/x86/kernel/smpcommon.c
-@@ -3,8 +3,13 @@
-  */
- #include <linux/module.h>
- #include <asm/smp.h>
-+#include <asm/sections.h>
+This patch does this by setting walk->nbytes to zero.
+
+Reported-by: Huang Ying <ying.huang@intel.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
+index 4a7e65c..d70a41c 100644
+--- a/crypto/blkcipher.c
++++ b/crypto/blkcipher.c
+@@ -124,6 +124,7 @@ int blkcipher_walk_done(struct blkcipher_desc *desc,
+ 	scatterwalk_done(&walk->in, 0, nbytes);
+ 	scatterwalk_done(&walk->out, 1, nbytes);
  
-+#ifdef CONFIG_X86_64
-+DEFINE_PER_CPU(unsigned long, this_cpu_off) = (unsigned long)__per_cpu_load;
-+#else
- DEFINE_PER_CPU(unsigned long, this_cpu_off);
-+#endif
- EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++err:
+ 	walk->total = nbytes;
+ 	walk->nbytes = nbytes;
  
- #ifdef CONFIG_X86_32
+@@ -132,7 +133,6 @@ int blkcipher_walk_done(struct blkcipher_desc *desc,
+ 		return blkcipher_walk_next(desc, walk);
+ 	}
+ 
+-err:
+ 	if (walk->iv != desc->info)
+ 		memcpy(desc->info, walk->iv, crypto_blkcipher_ivsize(tfm));
+ 	if (walk->buffer != walk->page)
+
+Thanks,
 -- 
-1.6.0.2
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
