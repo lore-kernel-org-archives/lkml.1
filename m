@@ -1,24 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762424AbZAPAVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbZAPAaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762424AbZAPAVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 19:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZAPAUu
+	id S1759411AbZAPAaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 19:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZAPA3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 19:20:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60794 "EHLO
+	Thu, 15 Jan 2009 19:29:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33529 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751733AbZAPAUt (ORCPT
+	by vger.kernel.org with ESMTP id S1752525AbZAPA3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 19:20:49 -0500
-Date: Thu, 15 Jan 2009 16:20:31 -0800
+	Thu, 15 Jan 2009 19:29:52 -0500
+Date: Thu, 15 Jan 2009 16:27:35 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
-Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-Message-Id: <20090115162031.a512232b.akpm@linux-foundation.org>
-In-Reply-To: <496EB639.6090800@redhat.com>
-References: <496EB639.6090800@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: matthew@wil.cx, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
+Subject: Re: Mainline kernel OLTP performance update
+Message-Id: <20090115162735.99277cc9.akpm@linux-foundation.org>
+In-Reply-To: <200901151824.38658.nickpiggin@yahoo.com.au>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	<20090115012147.GW29283@parisc-linux.org>
+	<20090114180431.f4a96543.akpm@linux-foundation.org>
+	<200901151824.38658.nickpiggin@yahoo.com.au>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,70 +35,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Jan 2009 22:06:17 -0600
-Eric Sandeen <sandeen@redhat.com> wrote:
+On Thu, 15 Jan 2009 18:24:36 +1100
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> Now that the filesystem freeze operation has been elevated
-> to the VFS, and is just an ioctl away, some sort of safety net
-> for unintentionally frozen root filesystems may be in order.
-> 
-> The timeout thaw originally proposed did not get merged, but
-> perhaps something like this would be useful in emergencies.
-> 
-> This doesn't have to piggyback on the existing emergency sync
-> sysrq, but it seems like a reasonable, simple addition to me.
-> 
-> I've tested this on a non-root fs with multiple (nested) freezers,
-> as well as on a system rendered unresponsive due to a frozen
-> root fs.
+> Given that SLAB and SLUB are fairly mature, I wonder what you'd think of
+> taking SLQB into -mm and making it the default there for a while, to see
+> if anybody reports a problem?
 
-Worried.
+Nobody would test it in interesting ways.
 
-Under what operational scenarios is ths feature actually needed/used?
+We'd get more testing in linux-next, but still not enough, and not of
+the right type.
 
-> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-> ---
-> 
-> Index: linux-2.6/drivers/char/sysrq.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/char/sysrq.c
-> +++ linux-2.6/drivers/char/sysrq.c
-> @@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
->  
->  static void sysrq_handle_sync(int key, struct tty_struct *tty)
->  {
-> +	emergency_thaw();
->  	emergency_sync();
->  }
+It would be better to just make the desision, merge it and forge ahead.
 
-Kind of weird.   The thaw will happen after/during the sync().
+Me, I'd be 100% behind the idea if it had a credible prospect of a net
+reduction in the number of slab allocator implementations.
 
-I guess that if the sync is blocked on a frozen fs then things will
-sort themselves out.
+I guess the naming convention will limit us to 26 of them.  Fortunate
+indeed that the kernel isn't written in cyrillic!
 
-otoh, if all the pdflush threads are blocked on frozen filesystems
-(possible?) then the emergency_thaw() simply won't do anything.
-
-> ===================================================================
-> --- linux-2.6.orig/fs/buffer.c
-> +++ linux-2.6/fs/buffer.c
-> @@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
->  }
->  EXPORT_SYMBOL(freeze_bdev);
->  
-> +void do_thaw(unsigned long unused)
-> +{
-> +	struct super_block *sb;
-> +	char b[BDEVNAME_SIZE];
-> +
-> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> +		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-> +			printk(KERN_WARNING "Emergency Thaw on %s\n",
-> +			       bdevname(sb->s_bdev, b));
-
-hm, I made the args to bdevname() backwards.  Bad me.
-
-> +	}
-> +	printk(KERN_WARNING "Emergency Thaw complete\n");
-> +}
 
