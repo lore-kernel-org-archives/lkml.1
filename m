@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935175AbZAPOKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935554AbZAPOKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935175AbZAPOKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbZAPOKG
+	id S935554AbZAPOKx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934969AbZAPOKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:10:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:48353 "EHLO ciao.gmane.org"
+	Fri, 16 Jan 2009 09:10:19 -0500
+Received: from rtr.ca ([76.10.145.34]:35185 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760039AbZAPOKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:10:03 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Johannes Schindelin <johannes.schindelin@gmx.de>
-Subject: Re: [PATCH] Morse code panics for 2.6.29-rc1
-Date: Fri, 16 Jan 2009 13:56:48 +0000 (UTC)
-Message-ID: <loom.20090116T134943-315@post.gmane.org>
-References: <20090111190503.GA20861@louise.pinerecords.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S934477AbZAPOKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 09:10:17 -0500
+Message-ID: <49709547.7060001@rtr.ca>
+Date: Fri, 16 Jan 2009 09:10:15 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>,
+       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
+       travis@sgi.com, linux-kernel@vger.kernel.org, steiner@sgi.com,
+       hugh@veritas.com
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+References: <496D8CEB.5060402@zytor.com>	<20090114093834.GA19799@elte.hu>	<496F0F50.6070200@kernel.org>	<20090115113045.GG22850@elte.hu>	<496F2032.5080502@kernel.org>	<20090115122611.GJ22850@elte.hu>	<496F346B.6020804@kernel.org>	<20090115130740.GE21839@elte.hu>	<496F38C7.5000403@kernel.org>	<20090115093007.4215b4b4.akpm@linux-foundation.org>	<20090115180259.GJ22472@elte.hu> <20090115103406.a85968f0.akpm@linux-foundation.org>
+In-Reply-To: <20090115103406.a85968f0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 141.5.11.5 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.5) Gecko/2008121623 Ubuntu/8.10 (intrepid) Firefox/3.0.5)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Szepe <szepe <at> pinerecords.com> writes:
-
+Andrew Morton wrote:
+> On Thu, 15 Jan 2009 19:02:59 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Bumped into this silly thing (morse code panics) by accident after
-> 6 years or so, and couldn't resist updating it for a recent kernel.
-> So, here goes, enjoy.
+>> * Andrew Morton <akpm@linux-foundation.org> wrote:
+..
+>>> I wonder if the preempt_disable()/preempt_enable() in here actually
+>>> does anything useful on any architecture.
+>> Provides "this is IRQ safe"
 > 
-> Patch against 2.6.29-rc1.
+> ?
+> 
+>> and "this is preempt safe" semantics.
+> 
+> Of course.  But do any architectures actually _need_ that for a single read?
+..
 
-Did you not mean to make compilation i8042_panic_blink() dependent on
-!CONFIG_MORSE_PANICS instead of removing it?
+If the target is unaligned, then RISC architectures will need protection there.
+If we can guarantee correct memory alignment of the target, then no / none.
 
-Ciao,
-Dscho
-
-
-
-
+Cheers
