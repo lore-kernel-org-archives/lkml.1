@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbZAPRgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936360AbZAPRg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935551AbZAPRgA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 12:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZAPRfv
+	id S936360AbZAPRg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 12:36:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936141AbZAPRgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 12:35:51 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:37908 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbZAPRfu (ORCPT
+	Fri, 16 Jan 2009 12:36:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35580 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757429AbZAPRgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 12:35:50 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=WbGqsMoX17z8aKz3831aHv/xLvpHNawNSBZRDPfJyKIehEFP2WOopVNHf7sQHbl5k
-	4hjwPzeMhQhYD9CmNANWQ==
-MIME-Version: 1.0
-In-Reply-To: <20090113132714.75c9ed96@hyperion.delvare>
-References: <20090113132714.75c9ed96@hyperion.delvare>
-Date: Fri, 16 Jan 2009 09:35:45 -0800
-Message-ID: <33307c790901160935v2495615fo4ee0998d348fa117@mail.gmail.com>
-Subject: Re: Bugzilla permissions
-From: Martin Bligh <mbligh@google.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: bugme-admin@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 Jan 2009 12:36:11 -0500
+Date: Fri, 16 Jan 2009 09:35:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com
+Subject: Re: mmotm 2009-01-14-20-31 uploaded (gfs2)
+Message-Id: <20090116093550.ce7229d5.akpm@linux-foundation.org>
+In-Reply-To: <4970BE8F.9090705@oracle.com>
+References: <200901150432.n0F4WI66023742@imap1.linux-foundation.org>
+	<496F8AED.3020604@oracle.com>
+	<1232101203.3554.3.camel@localhost.localdomain>
+	<20090116084352.9f35b822.akpm@linux-foundation.org>
+	<1232125371.9571.587.camel@quoit>
+	<4970BE8F.9090705@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.76
-X-GMailtapped: mbligh
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Dear bugzilla admin,
+On Fri, 16 Jan 2009 09:06:23 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Please send bugzilla admin emails to bugme-admin@linux-foundation.org
-(is linked from the front page of http://bugzilla.kernel.org). Sorry, I can't
-keep up with reading all of LKML nowadays ;-)
+> >>> which is not ideal, but I don't see any easy way to avoid the #ifdef,
+> >>>
+> >> Take a look in fs.h:
+> >>
+> >> #define generic_setlease(a, b, c) ({ -EINVAL; })
+> >>
+> >> If that wasn't a stupid macro, your code would have compiled and ran
+> >> just as intended.
+> >>
+> > There doesn't seem to be an easy answer though. If I #define it to NULL,
+> > that upsets other parts of the code that rely on that macro, and if I
+> > turn it into a inline function which returns -EINVAL, then presumably I
+> > can't take its address for my file_operations.
+> 
+> No, gcc will allow &inline_func and out-of-line it if it is needed (AFAIK;
+> I've seen a few cases of that).
+> 
 
-> Could you please unlock bugzilla so that everybody (starting with me)
-> is allowed to change the attachment types? I am a bit tired of having
-> to e-mail the person who created the attachment to ask him/her to
-> change the type from application/octet-stream to text/plain so that I
-> can see the attachment directly in my web browser. If we want people to
-> help with bugs, we must make it as easy for them as possible.
+yup.  It measn that we'll get a separate private copy of the
+generic_setlease() code in each compilation unit which takes its
+address, but I don't think that would kill us.
 
-Given that there's no real control on bugzilla accounts, I'm somewhat
-reluctant to make it a complete free for all and let any new user edit
-any bug. However, for anyone running a subsystem, or anyone else
-that I have a vague clue who they are (or any established developer
-will vouch for, anyone I can see git commits for, etc), I am perfectly
-willing to enable global edit on a individual basis. Hasn't been a big
-problem up until now, so I suspect it won't turn into one.
+The prevention is of course to put the stub function in a core kernel
+.c file and export it to modules.
 
-I enabled your account. Thanks for looking at bugs ;-)
-
-M.
