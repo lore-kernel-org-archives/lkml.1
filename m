@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934746AbZAPNt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbZAPNvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934746AbZAPNt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 08:49:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762764AbZAPNtr
+	id S934818AbZAPNvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 08:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762764AbZAPNu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 08:49:47 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51498 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760840AbZAPNtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 08:49:46 -0500
-Message-ID: <49709062.7070600@kernel.org>
-Date: Fri, 16 Jan 2009 22:49:22 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       roel kluin <roel.kluin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Brian Gerst <brgerst@gmail.com>, ebiederm@xmission.com,
-       rusty@rustcorp.com.au, travis@sgi.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, steiner@sgi.com, hugh@veritas.com
-Subject: Re: [patch] add optimized generic percpu accessors
-References: <496C9FB7.9050907@kernel.org> <496D8CEB.5060402@zytor.com> <20090114093834.GA19799@elte.hu> <25e057c00901150204x61c54d9fl91afe23477d1f12f@mail.gmail.com> <496F0F5E.3080404@kernel.org> <20090115113230.GH22850@elte.hu> <496F1FA6.6050204@kernel.org> <20090115122222.GI22850@elte.hu> <Pine.LNX.4.64.0901151430470.28153@quilx.com> <4970564F.8030004@kernel.org> <20090116132344.GB20593@elte.hu>
-In-Reply-To: <20090116132344.GB20593@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 16 Jan 2009 13:49:19 +0000 (UTC)
+	Fri, 16 Jan 2009 08:50:59 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:54956 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762229AbZAPNu6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 08:50:58 -0500
+Message-Id: <49709EF7.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 16 Jan 2009 13:51:35 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
+References: <4970818A.76E4.0078.0@novell.com>
+ <20090116124548.GC5421@elte.hu> <49709C94.76E4.0078.0@novell.com>
+ <20090116134243.GC14874@elte.hu>
+In-Reply-To: <20090116134243.GC14874@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>>> Ingo Molnar <mingo@elte.hu> 16.01.09 14:42 >>>
+>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>
+>> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 13:45 >>>
+>> >
+>> >* Jan Beulich <jbeulich@novell.com> wrote:
+>> >
+>> >> +	if (disable_apic) {
+>> >> +#ifdef CONFIG_X86_IO_APIC
+>> >> +		disable_ioapic_setup();
+>> >> +#endif
+>> >> +		return;
+>> >> +	}
+>> >
+>> > Shouldnt that #ifdef be avoided by always providing the function - 
+>> > just it is a NOP inline in the !CONFIG_X86_IO_APIC case?
+>> 
+>> That would make for a much bigger patch, since the io_apic.h doesn't 
+>> (and imo shouldn't) be included without that config option.
+>
+>But we are using io-apic functionality in that file, so we should include 
+>io_apic.h, right?
 
-Ingo Molnar wrote:
->>> Most of that is based on earlier patches by me.
->> Sorry, I didn't know that.  Ingo, please feel free to re-base the tree 
->> with updated credits.
-> 
-> Sure, i've rebased it and added this to the front of every affected patch:
-> 
-> [ Based on original patch from Christoph Lameter and Mike Travis. ]
+I don't generally (i.e. when !X86_IO_APIC) think so - anything accessing
+stuff from io_apic.c is guarded by a similar #ifdef.
 
-Good.
+Jan
 
-> I've also first pulled your latest tree, please base new changes and new 
-> pull requests on the tip/x86/percpu tree i just pushed out.
-> 
-> I also merged tip/x86/percpu into tip/master and resumed testing it.
-
-Great.
-
-> I suspect the next step will be to integrate Brian's "get rid of the rest 
-> of the PDA" patches?
-
-Yeap, Brian, any progress?  If you don't have the time, feel free to
-just shoot the patches my way.
-
-Thanks.
-
--- 
-tejun
