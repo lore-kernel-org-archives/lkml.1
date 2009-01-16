@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbZAPEDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbZAPEFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbZAPEDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 23:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbZAPEDm
+	id S1760114AbZAPEFM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 23:05:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZAPEEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 23:03:42 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:25932 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754655AbZAPEDl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 23:03:41 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Jm052ERhyuT2NTo9LV6c9opvhGFVTMyjqamaRQyPXMfDWQQiSzPyJiDFd26SqVvCeah4dNRERVqm4TlWtmqusZndTu6+4rpIqFBDgnDAzg/Mkm+Avluv5uAeoLVaKre3TEoempYpGChhGeYyrnOj5DRJSNu5kO30Ps5rYRQgwp4=  ;
-X-YMail-OSG: wVYhwYUVM1nOOqOmQorDPGmoHDwwLeAAJbzE9HdKgNj5wB8PisDe05EaZwj43laLkyqPUXc6t8EMDdxOOpze.9aiHhzTUqm3i3E1wZi3lFEYRE9EjVg9p4esR5j7xLslIgktsH1ZCGd4eKYfCrIgOmR2LI8aXv5F1OD9adcts0nCI3rLL3IHKYbSGfH0w9.IrPVTHM_QZZUz6lWsw1q96v.GNg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Mainline kernel OLTP performance update
-Date: Fri, 16 Jan 2009 15:03:12 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: matthew@wil.cx, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901151824.38658.nickpiggin@yahoo.com.au> <20090115162735.99277cc9.akpm@linux-foundation.org>
-In-Reply-To: <20090115162735.99277cc9.akpm@linux-foundation.org>
+	Thu, 15 Jan 2009 23:04:55 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:51463 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbZAPEEy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 23:04:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=pynYiOlSdIBq9vCUBthuleOti+xrMtg4zzgm6UrMhq+cKzIOJR/1XAy7Wa+jULw6XA
+         jqJ04cgHyALhfiMZQLZ02QcPUY5JCVm41iEvAj8yb4Nze2fvD4RQkjFrhdEHH706vFUN
+         fpMOKkLuBWrgKZafhz9HoK7yZRwujIOzDm900=
+Message-ID: <72dbd3150901152004m2e3d721bwf2cc633361f1fe40@mail.gmail.com>
+Date: Thu, 15 Jan 2009 20:04:53 -0800
+From: "David Rees" <drees76@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Disk IO Slowly Grinds to a (near) Halt
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901161503.13730.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009 11:27:35 Andrew Morton wrote:
-> On Thu, 15 Jan 2009 18:24:36 +1100
->
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > Given that SLAB and SLUB are fairly mature, I wonder what you'd think of
-> > taking SLQB into -mm and making it the default there for a while, to see
-> > if anybody reports a problem?
->
-> Nobody would test it in interesting ways.
->
-> We'd get more testing in linux-next, but still not enough, and not of
-> the right type.
+I've got a server running Fedora 9 server running kernel
+2.6.27.9-73.fc9 where inevitably, any sort of IO activity slows down
+significantly.
 
-It would be better than nothing, for SLQB, I guess.
+The machine is a basic Athlon 64 X2 5000+, 3GB RAM and 4 disks
+(2x250GB IDE and 2x1TB SATA) running in two software RAID1 arrays.
 
+One IDE drive is connected to the onboard (Nvidia MCP51 pata_amd), the
+other connected to a Promise (PDC20268 pata_pdc2027x) controller.
 
-> It would be better to just make the desision, merge it and forge ahead.
->
-> Me, I'd be 100% behind the idea if it had a credible prospect of a net
-> reduction in the number of slab allocator implementations.
+Both SATA drivers are connected to the onboard Nvidia MCP51 sata_nv controller.
 
->From the data we have so far, I think SLQB is a "credible prospect" to
-replace SLUB and SLAB. But then again, apparently SLUB was a credible
-prospect to replace SLAB when it was merged.
+I suspect that the culprit has something to do with the fact that this
+machine acts as a BackupPC server, and as such, has a filesystem with
+over 7million inodes on it (about 175GB in use on that partition), but
+that's just a hunch.
 
-Unfortunately I can't honestly say that some serious regression will not
-be discovered in SLQB that cannot be fixed. I guess that's never stopped
-us merging other rewrites before, though.
+A simple test to confirm the issue is to drop the caches, and then do
+a directory listing on an empty directory.  Doesn't matter which raid1
+array it's on.  On the normally performing systems I tested this
+typically took 0.15-0.45 seconds.  On this slow system, it takes over
+a second for the same test to run when it's acting up.  After a fresh
+reboot, it takes less than 0.2 seconds.
 
-I would like to see SLQB merged in mainline, made default, and wait for
-some number releases. Then we take what we know, and try to make an
-informed decision about the best one to take. I guess that is problematic
-in that the rest of the kernel is moving underneath us. Do you have
-another idea?
+Any ideas? The only thing that seems to help is rebooting the server.
+Let me know if there is any more information I can provide that would
+be helpful.
 
-
-> I guess the naming convention will limit us to 26 of them.  Fortunate
-> indeed that the kernel isn't written in cyrillic!
-
-I could have called it SL4B. 4 would be somehow fitting...
-
+-Dave
