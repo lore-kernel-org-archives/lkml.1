@@ -1,154 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935907AbZAPQsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933800AbZAPQuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935907AbZAPQsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 11:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760944AbZAPQqL
+	id S933800AbZAPQuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 11:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZAPQuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 11:46:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39256 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760025AbZAPQqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 11:46:06 -0500
-From: Gerd Hoffmann <kraxel@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org
-Cc: aarcange@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-       Gerd Hoffmann <kraxel@redhat.com>
-Subject: [PATCH 4/5] MIPS: Add preadv(2) and pwritev(2) syscalls.
-Date: Fri, 16 Jan 2009 17:45:43 +0100
-Message-Id: <1232124344-25892-5-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1232124344-25892-1-git-send-email-kraxel@redhat.com>
-References: <1232124344-25892-1-git-send-email-kraxel@redhat.com>
+	Fri, 16 Jan 2009 11:50:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38515 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753887AbZAPQuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 11:50:19 -0500
+Date: Fri, 16 Jan 2009 08:43:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com
+Subject: Re: mmotm 2009-01-14-20-31 uploaded (gfs2)
+Message-Id: <20090116084352.9f35b822.akpm@linux-foundation.org>
+In-Reply-To: <1232101203.3554.3.camel@localhost.localdomain>
+References: <200901150432.n0F4WI66023742@imap1.linux-foundation.org>
+	<496F8AED.3020604@oracle.com>
+	<1232101203.3554.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ralf Baechle <ralf@linux-mips.org>
+On Fri, 16 Jan 2009 10:20:03 +0000 Steven Whitehouse <swhiteho@redhat.com> wrote:
 
-From: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
----
- arch/mips/include/asm/unistd.h |   18 ++++++++++++------
- arch/mips/kernel/scall32-o32.S |    2 ++
- arch/mips/kernel/scall64-64.S  |    2 ++
- arch/mips/kernel/scall64-n32.S |    2 ++
- arch/mips/kernel/scall64-o32.S |    2 ++
- 5 files changed, 20 insertions(+), 6 deletions(-)
+> Hi,
+> 
+> On Thu, 2009-01-15 at 11:13 -0800, Randy Dunlap wrote:
+> > akpm@linux-foundation.org wrote:
+> > > The mm-of-the-moment snapshot 2009-01-14-20-31 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > and will soon be available at
+> > > 
+> > >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > 
+> > when CONFIG_FILE_LOCKING=n:
+> > 
+> > mmotm-2009-0114-2031/fs/gfs2/ops_file.c:746: error: 'generic_setlease' undeclared here (not in a function)
+> > 
+> > 
+> > since generic_setlease() is a macro/define in that case.
+> > 
+> Hmm, it looks like I'll have to do this, in that case:
+> 
+> diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+> index 99d726f..4580335 100644
+> --- a/fs/gfs2/ops_file.c
+> +++ b/fs/gfs2/ops_file.c
+> @@ -743,7 +743,9 @@ const struct file_operations *gfs2_file_fops_nolock = &(const struct file_operat
+>  	.fsync		= gfs2_fsync,
+>  	.splice_read	= generic_file_splice_read,
+>  	.splice_write	= generic_file_splice_write,
+> +#ifdef CONFIG_FILE_LOCKING
+>  	.setlease	= generic_setlease,
+> +#endif /* CONFIG_FILE_LOCKING */
+>  };
+>  
+>  const struct file_operations *gfs2_dir_fops_nolock = &(const struct file_operations){
+> 
+> 
+> which is not ideal, but I don't see any easy way to avoid the #ifdef,
+> 
 
-diff --git a/arch/mips/include/asm/unistd.h b/arch/mips/include/asm/unistd.h
-index a73e153..4000501 100644
---- a/arch/mips/include/asm/unistd.h
-+++ b/arch/mips/include/asm/unistd.h
-@@ -350,16 +350,18 @@
- #define __NR_dup3			(__NR_Linux + 327)
- #define __NR_pipe2			(__NR_Linux + 328)
- #define __NR_inotify_init1		(__NR_Linux + 329)
-+#define __NR_preadv			(__NR_Linux + 330)
-+#define __NR_pwritev			(__NR_Linux + 331)
- 
- /*
-  * Offset of the last Linux o32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		329
-+#define __NR_Linux_syscalls		331
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
- 
- #define __NR_O32_Linux			4000
--#define __NR_O32_Linux_syscalls		329
-+#define __NR_O32_Linux_syscalls		331
- 
- #if _MIPS_SIM == _MIPS_SIM_ABI64
- 
-@@ -656,16 +658,18 @@
- #define __NR_dup3			(__NR_Linux + 286)
- #define __NR_pipe2			(__NR_Linux + 287)
- #define __NR_inotify_init1		(__NR_Linux + 288)
-+#define __NR_preadv			(__NR_Linux + 289)
-+#define __NR_pwritev			(__NR_Linux + 290)
- 
- /*
-  * Offset of the last Linux 64-bit flavoured syscall
-  */
--#define __NR_Linux_syscalls		288
-+#define __NR_Linux_syscalls		290
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI64 */
- 
- #define __NR_64_Linux			5000
--#define __NR_64_Linux_syscalls		288
-+#define __NR_64_Linux_syscalls		290
- 
- #if _MIPS_SIM == _MIPS_SIM_NABI32
- 
-@@ -966,16 +970,18 @@
- #define __NR_dup3			(__NR_Linux + 290)
- #define __NR_pipe2			(__NR_Linux + 291)
- #define __NR_inotify_init1		(__NR_Linux + 292)
-+#define __NR_preadv			(__NR_Linux + 293)
-+#define __NR_pwritev			(__NR_Linux + 294)
- 
- /*
-  * Offset of the last N32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		292
-+#define __NR_Linux_syscalls		294
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_NABI32 */
- 
- #define __NR_N32_Linux			6000
--#define __NR_N32_Linux_syscalls		292
-+#define __NR_N32_Linux_syscalls		294
- 
- #ifdef __KERNEL__
- 
-diff --git a/arch/mips/kernel/scall32-o32.S b/arch/mips/kernel/scall32-o32.S
-index 51d1ba4..0198a9c 100644
---- a/arch/mips/kernel/scall32-o32.S
-+++ b/arch/mips/kernel/scall32-o32.S
-@@ -650,6 +650,8 @@ einval:	li	v0, -ENOSYS
- 	sys	sys_dup3		3
- 	sys	sys_pipe2		2
- 	sys	sys_inotify_init1	1
-+	sys	sys_preadv		6	/* 4330 */
-+	sys	sys_pwritev		6
- 	.endm
- 
- 	/* We pre-compute the number of _instruction_ bytes needed to
-diff --git a/arch/mips/kernel/scall64-64.S b/arch/mips/kernel/scall64-64.S
-index a9e1716..217e3ce 100644
---- a/arch/mips/kernel/scall64-64.S
-+++ b/arch/mips/kernel/scall64-64.S
-@@ -487,4 +487,6 @@ sys_call_table:
- 	PTR	sys_dup3
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	sys_preadv
-+	PTR	sys_pwritev			/* 5390 */
- 	.size	sys_call_table,.-sys_call_table
-diff --git a/arch/mips/kernel/scall64-n32.S b/arch/mips/kernel/scall64-n32.S
-index 30f3b63..f340963 100644
---- a/arch/mips/kernel/scall64-n32.S
-+++ b/arch/mips/kernel/scall64-n32.S
-@@ -413,4 +413,6 @@ EXPORT(sysn32_call_table)
- 	PTR	sys_dup3			/* 5290 */
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	sys_preadv
-+	PTR	sys_pwritev
- 	.size	sysn32_call_table,.-sysn32_call_table
-diff --git a/arch/mips/kernel/scall64-o32.S b/arch/mips/kernel/scall64-o32.S
-index fefef4a..b1d281a 100644
---- a/arch/mips/kernel/scall64-o32.S
-+++ b/arch/mips/kernel/scall64-o32.S
-@@ -533,4 +533,6 @@ sys_call_table:
- 	PTR	sys_dup3
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	compat_sys_preadv		/* 4330 */
-+	PTR	compat_sys_pwritev
- 	.size	sys_call_table,.-sys_call_table
--- 
-1.6.1
+Take a look in fs.h:
+
+#define generic_setlease(a, b, c) ({ -EINVAL; })
+
+If that wasn't a stupid macro, your code would have compiled and ran
+just as intended.
 
