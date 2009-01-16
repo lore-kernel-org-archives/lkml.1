@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZAPLZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765579AbZAPL2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbZAPLZs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbZAPLZf
+	id S1765579AbZAPL2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760172AbZAPL2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:25:35 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:42261 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754217AbZAPLZe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:25:34 -0500
-Date: Fri, 16 Jan 2009 12:24:35 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, jbenc@suse.cz
-Subject: Re: [patch 42/94] [PATCH 11/44] [CVE-2009-0029] System call
-	wrappers part 01
-Message-ID: <20090116112435.GB27146@osiris.boeblingen.de.ibm.com>
-References: <20090115194806.804618825@mini.kroah.org> <20090115195848.GP14419@kroah.com> <20090116110029.GA28778@atrey.karlin.mff.cuni.cz>
+	Fri, 16 Jan 2009 06:28:42 -0500
+Received: from www.tglx.de ([62.245.132.106]:38159 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754382AbZAPL2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:28:40 -0500
+Date: Fri, 16 Jan 2009 12:28:09 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       johnstul@us.ibm.com, lethal@linux-sh.org, mingo@redhat.com
+Subject: Re: [RESEND][PATCH] clockevent: let set_mode() setup delta
+ information
+In-Reply-To: <20090116081438.12388.15130.sendpatchset@rx1.opensource.se>
+Message-ID: <alpine.LFD.2.00.0901161227480.3400@localhost.localdomain>
+References: <20090116081438.12388.15130.sendpatchset@rx1.opensource.se>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090116110029.GA28778@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 12:00:29PM +0100, Pavel Machek wrote:
+On Fri, 16 Jan 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> > 2.6.28-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > commit 58fd3aa288939d3097fa04505b25c2f5e6e144d1 upstream.
-> > 
-> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Allow the set_mode() clockevent callback to decide and fill in delta
+> details such as shift, mult, max_delta_ns and min_delta_ns.
 > 
-> That does not make review exactly easy. Would it be possible to
-> inline upstream comment in the commit message?
+> With this change the clockevent can be registered without delta details
+> which allows us to keep the parent clock disabled until the clockevent
+> gets setup using set_mode().
 > 
-> ...upstream commit message is empty :-(.
-
-Yes, what should it contain anyway?
-"This converts the first 10 system calls to the system call wrapper
-infrastructure"? IMHO the subject says enough.
-
-> > -asmlinkage long
-> > -sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
-> > +SYSCALL_DEFINE2(nanosleep, struct timespec __user *, rqtp,
-> > +		struct timespec __user *, rmtp)
-> >  {
-> >  	struct timespec tu;
-> >  
+> Letting set_mode() fill in or update delta details allows us to save
+> power by disabling the parent clock while the clockevent is unused.
+> This may however make the parent clock rate change, so next time the
+> clockevent gets enabled we need let set_mode() to update the detla
+> details accordingly. Doing it at registration time is not enough.
 > 
-> Is it strictly neccessary to modify all the syscalls? 
+> Furthermore, the delta details seem unused in the case of periodic-only
+> clockevent drivers, so this change also allows registration of such
+> drivers without the delta details filled in.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-Not strictly necessary, but much easier to maintain in the long term.
-It's simply a just convert 'em all approach and never think again about
-this.
+Applied to tip/timers/clockevents
 
-Plus the ugliness of the 64 bit parameter special case handling makes it
-unlikely that we will ever have again a discussion how a new system call
-should pass an loff_t.
+Thanks,
+
+	tglx
