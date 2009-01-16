@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZAPHy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbZAPIBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbZAPHy0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbZAPHx7
+	id S1759378AbZAPIBg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZAPIB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:53:59 -0500
-Received: from mga10.intel.com ([192.55.52.92]:21492 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757140AbZAPHx4 (ORCPT
+	Fri, 16 Jan 2009 03:01:27 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:48567 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbZAPIB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:53:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,276,1231142400"; 
-   d="scan'208";a="422890133"
-Subject: Re: Mainline kernel OLTP performance update
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-In-Reply-To: <20090116065546.GJ31013@parisc-linux.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <200901161503.13730.nickpiggin@yahoo.com.au>
-	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
-	 <200901161746.25205.nickpiggin@yahoo.com.au>
-	 <20090116065546.GJ31013@parisc-linux.org>
-Content-Type: text/plain
-Date: Fri, 16 Jan 2009 15:53:50 +0800
-Message-Id: <1232092430.11429.52.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Fri, 16 Jan 2009 03:01:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=n2cRLnD+iHpHlQxV4ZlC76zMCZbxQ8kfMd6hapc4Y/pJ/yTCu1zYxZSGV26C+5lMh6
+         TQgQ6o5PwZsiEuQPYcaTAiQODR6kwwgtY3CIhdFE54iWqaPImK/flpunMH45xvJt902z
+         h0KCFdqFuiW0IIcrytSeEFZiZHSouXa2W+Qi8=
+Message-ID: <49703ED2.8010606@gmail.com>
+Date: Fri, 16 Jan 2009 00:01:22 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: conflicting memory types 40000000-48000000 write-combining<->uncached-minus
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 23:55 -0700, Matthew Wilcox wrote:
-> On Fri, Jan 16, 2009 at 05:46:23PM +1100, Nick Piggin wrote:
-> > Intel's OLTP shows SLQB is "neutral" to SLAB. That is, literally within
-> > their measurement confidence interval. If it comes down to it, I think we
-> > could get them to do more runs to narrow that down, but we're talking a
-> > couple of tenths of a percent already.
-> 
-> I think I can speak with some measure of confidence for at least the
-> OLTP-testing part of my company when I say that I have no objection to
-> Nick's planned merge scheme.
-> 
-> I believe the kernel benchmark group have also done some testing with
-> SLQB and have generally positive things to say about it (Yanmin added to
-> the gargantuan cc).
-We did run lots of benchmarks with SLQB. Comparing with SLUB, one highlighting of
-SLQB is with netperf UDP-U-4k. On my x86-64 machines, if I start 1 client and 1 server
-process and bind them to different physical cpus, the result of SLQB is about 20% better
-than SLUB's. If I start CPU_NUM clients and the same number of servers without binding,
-the results of SLQB is about 100% better than SLUB's. I think that's because SLQB
-doesn't pass through big object allocation to page allocator.
-netperf UDP-U-1k has less improvement with SLQB.
+this is probably an Xorg issue,
+but you never know);
+noticed this when doing a git-pull
+a few day's ago:
 
-The results of other benchmarks have variations. They are good on some machines,
-but bad on other machines. However, the variation is small. For example, hackbench's result
-with SLQB is about 1 second than with SLUB on 8-core stoakley. After we worked with
-Nick to do small code changing, SLQB's result is a little better than SLUB's
-with hackbench on stoakley.
+[   31.816030] [drm] Initialized radeon 1.29.0 20080528 on minor 0
+[   32.224553] [drm] Setting GART location based on new memory map
+[   32.225952] [drm] Loading R500 Microcode
+[   32.226010] [drm] Num pipes: 1
+[   32.226024] [drm] writeback test succeeded in 1 usecs
+[   32.611979] Xorg:2661 conflicting memory types 40000000-48000000 
+write-combining<->uncached-minus
+[   32.611983] reserve_memtype failed 0x40000000-0x48000000, track 
+write-combining, req write-combining
+[   32.968560] Xorg:2661 conflicting memory types 40000000-48000000 
+write-combining<->uncached-minus
+[   32.968565] reserve_memtype failed 0x40000000-0x48000000, track 
+write-combining, req write-combining
 
-We consider other variations as fluctuation.
+should I be concerned, or no?
 
-All the testing use default SLUB and SLQB configuration.
+regards;
 
-> 
-> Did slabtop get fixed to work with SLQB?
-> 
-
+Justin P. Mattock
