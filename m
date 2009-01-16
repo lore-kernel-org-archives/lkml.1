@@ -1,120 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbZAPE0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761263AbZAPE2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbZAPE0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 23:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZAPE0K
+	id S1761263AbZAPE2O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 23:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZAPE1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 23:26:10 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35583 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754673AbZAPE0I (ORCPT
+	Thu, 15 Jan 2009 23:27:55 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:44919 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754679AbZAPE1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 23:26:08 -0500
-Date: Fri, 16 Jan 2009 13:22:53 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: Re: [BUGFIX][PATCH] memcg: get/put parents at create/free
-Message-Id: <20090116132253.69cf80ea.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
-	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
-	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
-	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
-	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
-	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
-	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
-	<20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Jan 2009 23:27:54 -0500
+Date: Fri, 16 Jan 2009 15:27:49 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: compress - Add pcomp interface
+Message-ID: <20090116042749.GA11435@gondor.apana.org.au>
+References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be> <20090115030526.GA27726@gondor.apana.org.au> <alpine.LRH.2.00.0901151149080.16463@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0901151149080.16463@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a fix for memcg-get-put-parents-at-create-free.patch.
+On Thu, Jan 15, 2009 at 11:54:53AM +0100, Geert Uytterhoeven wrote:
+>
+> But there are pr_debug()s ;-)
 
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Well they must've turned invisible in the copy I received :)
 
-Andrew suggested that it's strange to add a little helper function for get(),
-while put() is open-code.
+> By "both alloc function", do you mean the .setup_comp() and .setup_decomp()
+> functions? If yes, then I understand.
 
-This patch also adds a few comments.
+Yes.
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/memcontrol.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+> (Yesterday, I thought you meant to have separate alloc functions instead of the
+> one crypto_alloc_pcomp())
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 45e1b51..92790e4 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -203,7 +203,6 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
- static void mem_cgroup_get(struct mem_cgroup *mem);
- static void mem_cgroup_put(struct mem_cgroup *mem);
- static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
--static void mem_cgroup_get_parent(struct mem_cgroup *mem);
- 
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 					 struct page_cgroup *pc,
-@@ -2195,6 +2194,9 @@ static void mem_cgroup_put(struct mem_cgroup *mem)
- 	}
- }
- 
-+/*
-+ * Returns the parent mem_cgroup in memcgroup hierarchy with hierarchy enabled.
-+ */
- static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
- {
- 	if (!mem->res.parent)
-@@ -2202,14 +2204,6 @@ static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
- 	return mem_cgroup_from_res_counter(mem->res.parent, res);
- }
- 
--static void mem_cgroup_get_parent(struct mem_cgroup *mem)
--{
--	struct mem_cgroup *parent = parent_mem_cgroup(mem);
--
--	if (parent)
--		mem_cgroup_get(parent);
--}
--
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- static void __init enable_swap_cgroup(void)
- {
-@@ -2247,6 +2241,13 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	if (parent && parent->use_hierarchy) {
- 		res_counter_init(&mem->res, &parent->res);
- 		res_counter_init(&mem->memsw, &parent->memsw);
-+		/*
-+		 * We increment refcnt of the parent to ensure that we can
-+		 * safely access it on res_counter_charge/uncharge.
-+		 * This refcnt will be decremented when freeing this
-+		 * mem_cgroup(see mem_cgroup_put).
-+		 */
-+		mem_cgroup_get(parent);
- 	} else {
- 		res_counter_init(&mem->res, NULL);
- 		res_counter_init(&mem->memsw, NULL);
-@@ -2257,7 +2258,6 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	if (parent)
- 		mem->swappiness = get_swappiness(parent);
- 	atomic_set(&mem->refcnt, 1);
--	mem_cgroup_get_parent(mem);
- 	return &mem->css;
- free_out:
- 	__mem_cgroup_free(mem);
+No we want a single tfm for this.
+
+If we ever get hardware that can handle only one of the two
+operations we can always implement software fallbacks as we
+do for hashing and encryption.
+
+> I doubt whether it's a good idea to drop the compatibility soon, as the
+> underlying LZO library in the kernel doesn't support partial (de)compression,
+> and needs significant rework to do so.
+
+Yes but LZO has exactly one user (ubifs) in the kernel and it can
+stick to the current interface until we convert it over.  It's
+just not worth the extra work to help a single user.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
