@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935244AbZAPOIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbZAPOJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935244AbZAPOIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 09:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbZAPOIj
+	id S935438AbZAPOJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 09:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbZAPOJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 09:08:39 -0500
-Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:1529 "EHLO
-	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764921AbZAPOIh (ORCPT
+	Fri, 16 Jan 2009 09:09:10 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:1982 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933738AbZAPOJJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 09:08:37 -0500
-Date: Fri, 16 Jan 2009 15:07:34 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <andi@firstfloor.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [GIT PULL] adaptive spinning mutexes
-Message-ID: <20090116140734.GG29002@vanheusden.com>
-References: <1231952436.14825.28.camel@laptop> <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu> <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org> <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain> <20090115180844.GL22472@elte.hu> <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain> <20090116005351.GD6763@linux.vnet.ibm.com> <alpine.LFD.2.00.0901151656060.3118@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Jan 2009 09:09:09 -0500
+Message-Id: <4970A338.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 16 Jan 2009 14:09:44 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
+References: <4970818A.76E4.0078.0@novell.com>
+ <20090116124548.GC5421@elte.hu> <49709C94.76E4.0078.0@novell.com>
+ <20090116134243.GC14874@elte.hu> <49709EF7.76E4.0078.0@novell.com>
+ <20090116135851.GA7153@elte.hu>
+In-Reply-To: <20090116135851.GA7153@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901151656060.3118@localhost.localdomain>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Fri Jan 16 21:27:58 CET 2009
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So I don't dispute at all that "mutex with spinning" performs better than 
-> a mutex, but I _do_ claim that it has some potentially huge downsides 
-> compared to a real spinlock. It may perform as well as a spinlock in the 
-> nice common case, but then when you hit the non-common case you see the 
-> difference between well-written code and badly written code.
+>>> Ingo Molnar <mingo@elte.hu> 16.01.09 14:58 >>>
+>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>
+>> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 14:42 >>>
+>> >
+>> >* Jan Beulich <jbeulich@novell.com> wrote:
+>> >
+>> >> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 13:45 >>>
+>> >> >
+>> >> >* Jan Beulich <jbeulich@novell.com> wrote:
+>> >> >
+>> >> >> +	if (disable_apic) {
+>> >> >> +#ifdef CONFIG_X86_IO_APIC
+>> >> >> +		disable_ioapic_setup();
+>> >> >> +#endif
+>> >> >> +		return;
+>> >> >> +	}
+>> >> >
+>> >> > Shouldnt that #ifdef be avoided by always providing the function - 
+>> >> > just it is a NOP inline in the !CONFIG_X86_IO_APIC case?
+>> >> 
+>> >> That would make for a much bigger patch, since the io_apic.h doesn't 
+>> >> (and imo shouldn't) be included without that config option.
+>> >
+>> >But we are using io-apic functionality in that file, so we should include 
+>> >io_apic.h, right?
+>> 
+>> I don't generally (i.e. when !X86_IO_APIC) think so - anything accessing
+>> stuff from io_apic.c is guarded by a similar #ifdef.
+>
+>and wrongly so - it proliferates ugly #ifdefs and sets us up for build 
+>failures like that. Developers cannot be expected to keep every build 
+>option in mind - we should provide an as homogenic and kconfig-invariant 
+>environment as possible.
 
-Make it mount-point dependant. Then your mail-spool can use the spinlock
-version and e.g. the /usr filesystem uses regular mutexes. Might be
-tricky to implement I guess.
+I mostly agree here, but think that this ought to be a separate cleanup patch.
 
+Jan
 
-Folkert van Heusden
-
--- 
-MultiTail cok yonlu kullanimli bir program, loglari okumak, verilen
-kommandolari yerine getirebilen. Filter, renk verme, merge, 'diff-
-view', vs.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
