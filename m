@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936697AbZAPSLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936746AbZAPSMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936697AbZAPSLy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763894AbZAPSId
+	id S936746AbZAPSMh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbZAPSIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:08:33 -0500
-Received: from styx.suse.cz ([82.119.242.94]:48000 "EHLO mail.suse.cz"
+	Fri, 16 Jan 2009 13:08:35 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47998 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762570AbZAPSIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:08:25 -0500
+	id S1762464AbZAPSIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:08:24 -0500
 From: Jan Kara <jack@suse.cz>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>
-Subject: [PATCH 11/11] reiserfs: Remove unnecessary quota functions
-Date: Fri, 16 Jan 2009 19:08:19 +0100
-Message-Id: <1232129299-22018-12-git-send-email-jack@suse.cz>
+       Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>
+Subject: [PATCH 07/11] quota: Use inode->i_blkbits to get block bits
+Date: Fri, 16 Jan 2009 19:08:15 +0100
+Message-Id: <1232129299-22018-8-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1232129299-22018-11-git-send-email-jack@suse.cz>
+In-Reply-To: <1232129299-22018-7-git-send-email-jack@suse.cz>
 References: <yes>
  <1232129299-22018-1-git-send-email-jack@suse.cz>
  <1232129299-22018-2-git-send-email-jack@suse.cz>
@@ -26,105 +26,86 @@ References: <yes>
  <1232129299-22018-5-git-send-email-jack@suse.cz>
  <1232129299-22018-6-git-send-email-jack@suse.cz>
  <1232129299-22018-7-git-send-email-jack@suse.cz>
- <1232129299-22018-8-git-send-email-jack@suse.cz>
- <1232129299-22018-9-git-send-email-jack@suse.cz>
- <1232129299-22018-10-git-send-email-jack@suse.cz>
- <1232129299-22018-11-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reiserfs_dquot_initialize() and reiserfs_dquot_drop() is no longer
-needed because of modified quota locking.
+From: Mingming Cao <cmm@us.ibm.com>
 
+Andrew has suggested to use inode->i_blkbits to get the block bits info,
+rather than use super block's blockbits. That should be faster and emit
+less code.
+
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/reiserfs/super.c |   58 +-------------------------------------------------
- 1 files changed, 2 insertions(+), 56 deletions(-)
+ include/linux/quotaops.h |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index f3c820b..317c035 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -629,8 +629,6 @@ static const struct super_operations reiserfs_sops = {
- #ifdef CONFIG_QUOTA
- #define QTYPE2NAME(t) ((t)==USRQUOTA?"user":"group")
+diff --git a/include/linux/quotaops.h b/include/linux/quotaops.h
+index 7369d04..69b502e 100644
+--- a/include/linux/quotaops.h
++++ b/include/linux/quotaops.h
+@@ -410,38 +410,32 @@ static inline void vfs_dq_free_space(struct inode *inode, qsize_t nr)
  
--static int reiserfs_dquot_initialize(struct inode *, int);
--static int reiserfs_dquot_drop(struct inode *);
- static int reiserfs_write_dquot(struct dquot *);
- static int reiserfs_acquire_dquot(struct dquot *);
- static int reiserfs_release_dquot(struct dquot *);
-@@ -639,8 +637,8 @@ static int reiserfs_write_info(struct super_block *, int);
- static int reiserfs_quota_on(struct super_block *, int, int, char *, int);
- 
- static struct dquot_operations reiserfs_quota_operations = {
--	.initialize = reiserfs_dquot_initialize,
--	.drop = reiserfs_dquot_drop,
-+	.initialize = dquot_initialize,
-+	.drop = dquot_drop,
- 	.alloc_space = dquot_alloc_space,
- 	.alloc_inode = dquot_alloc_inode,
- 	.free_space = dquot_free_space,
-@@ -1896,58 +1894,6 @@ static int reiserfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ static inline int vfs_dq_prealloc_block_nodirty(struct inode *inode, qsize_t nr)
+ {
+-	return vfs_dq_prealloc_space_nodirty(inode,
+-			nr << inode->i_sb->s_blocksize_bits);
++	return vfs_dq_prealloc_space_nodirty(inode, nr << inode->i_blkbits);
  }
  
- #ifdef CONFIG_QUOTA
--static int reiserfs_dquot_initialize(struct inode *inode, int type)
--{
--	struct reiserfs_transaction_handle th;
--	int ret, err;
--
--	/* We may create quota structure so we need to reserve enough blocks */
--	reiserfs_write_lock(inode->i_sb);
--	ret =
--	    journal_begin(&th, inode->i_sb,
--			  2 * REISERFS_QUOTA_INIT_BLOCKS(inode->i_sb));
--	if (ret)
--		goto out;
--	ret = dquot_initialize(inode, type);
--	err =
--	    journal_end(&th, inode->i_sb,
--			2 * REISERFS_QUOTA_INIT_BLOCKS(inode->i_sb));
--	if (!ret && err)
--		ret = err;
--      out:
--	reiserfs_write_unlock(inode->i_sb);
--	return ret;
--}
--
--static int reiserfs_dquot_drop(struct inode *inode)
--{
--	struct reiserfs_transaction_handle th;
--	int ret, err;
--
--	/* We may delete quota structure so we need to reserve enough blocks */
--	reiserfs_write_lock(inode->i_sb);
--	ret =
--	    journal_begin(&th, inode->i_sb,
--			  2 * REISERFS_QUOTA_DEL_BLOCKS(inode->i_sb));
--	if (ret) {
--		/*
--		 * We call dquot_drop() anyway to at least release references
--		 * to quota structures so that umount does not hang.
--		 */
--		dquot_drop(inode);
--		goto out;
--	}
--	ret = dquot_drop(inode);
--	err =
--	    journal_end(&th, inode->i_sb,
--			2 * REISERFS_QUOTA_DEL_BLOCKS(inode->i_sb));
--	if (!ret && err)
--		ret = err;
--      out:
--	reiserfs_write_unlock(inode->i_sb);
--	return ret;
--}
--
- static int reiserfs_write_dquot(struct dquot *dquot)
+ static inline int vfs_dq_prealloc_block(struct inode *inode, qsize_t nr)
  {
- 	struct reiserfs_transaction_handle th;
+-	return vfs_dq_prealloc_space(inode,
+-			nr << inode->i_sb->s_blocksize_bits);
++	return vfs_dq_prealloc_space(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline int vfs_dq_alloc_block_nodirty(struct inode *inode, qsize_t nr)
+ {
+- 	return vfs_dq_alloc_space_nodirty(inode,
+-			nr << inode->i_sb->s_blocksize_bits);
++	return vfs_dq_alloc_space_nodirty(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline int vfs_dq_alloc_block(struct inode *inode, qsize_t nr)
+ {
+-	return vfs_dq_alloc_space(inode,
+-			nr << inode->i_sb->s_blocksize_bits);
++	return vfs_dq_alloc_space(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline int vfs_dq_reserve_block(struct inode *inode, qsize_t nr)
+ {
+-	return vfs_dq_reserve_space(inode,
+-			nr << inode->i_blkbits);
++	return vfs_dq_reserve_space(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline int vfs_dq_claim_block(struct inode *inode, qsize_t nr)
+ {
+-	return vfs_dq_claim_space(inode,
+-			nr << inode->i_blkbits);
++	return vfs_dq_claim_space(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline
+@@ -452,12 +446,12 @@ void vfs_dq_release_reservation_block(struct inode *inode, qsize_t nr)
+ 
+ static inline void vfs_dq_free_block_nodirty(struct inode *inode, qsize_t nr)
+ {
+-	vfs_dq_free_space_nodirty(inode, nr << inode->i_sb->s_blocksize_bits);
++	vfs_dq_free_space_nodirty(inode, nr << inode->i_blkbits);
+ }
+ 
+ static inline void vfs_dq_free_block(struct inode *inode, qsize_t nr)
+ {
+-	vfs_dq_free_space(inode, nr << inode->i_sb->s_blocksize_bits);
++	vfs_dq_free_space(inode, nr << inode->i_blkbits);
+ }
+ 
+ /*
 -- 
 1.6.0.2
 
