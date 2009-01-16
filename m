@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935724AbZAPPEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbZAPPRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935724AbZAPPEO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 10:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759864AbZAPPD4
+	id S1755380AbZAPPRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 10:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZAPPRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 10:03:56 -0500
-Received: from mga01.intel.com ([192.55.52.88]:27634 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755785AbZAPPDz convert rfc822-to-8bit (ORCPT
+	Fri, 16 Jan 2009 10:17:06 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:52424 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbZAPPRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 10:03:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,277,1231142400"; 
-   d="scan'208";a="657679110"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Steven Rostedt <srostedt@redhat.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>
-Date: Fri, 16 Jan 2009 15:03:48 +0000
-Subject: RE: [patch 3/5] x86, ftrace, hw-branch-tracer: dump on oops
-Thread-Topic: [patch 3/5] x86, ftrace, hw-branch-tracer: dump on oops
-Thread-Index: Acl36oX/nK7SN/RNR72FRnUgJEWMQQAAEwxQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E0CDD7B78@irsmsx504.ger.corp.intel.com>
-References: <20090116115829.A30245@sedona.ch.intel.com>
- <1232117724.21980.80.camel@localhost.localdomain>
-In-Reply-To: <1232117724.21980.80.camel@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Jan 2009 10:17:04 -0500
+Subject: Re: Btrfs Snapshot Removal And General Project Status
+From: Chris Mason <chris.mason@oracle.com>
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <496DC1C6.7090307@turknet.net.tr>
+References: <496DC1C6.7090307@turknet.net.tr>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 10:16:51 -0500
+Message-Id: <1232119011.21473.24.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4970A4E7.0005:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Steven Rostedt [mailto:srostedt@redhat.com]
->Sent: Friday, January 16, 2009 3:55 PM
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
->markus.t.metzger@gmail.com
->Subject: Re: [patch 3/5] x86, ftrace, hw-branch-tracer: dump on oops
->
->BTW, you have two 1/5 patches but no 2/5 patch.
->
->On Fri, 2009-01-16 at 11:58 +0100, Markus Metzger wrote:
->> Dump the branch trace on an oops (based on ftrace_dump_on_oops).
->
->Does the ftrace_dump_on_oops not work?  We may want to change
->ftrace_dump to see if a tracer has been registered, and use its format
->for output.
+On Wed, 2009-01-14 at 12:43 +0200, Tarkan Erimer wrote:
+> Hi Chris,
+> 
 
-It does work and I am using it.
-It only works one time, though. Ftrace kills itself before dumping its buffer.
+Sorry for the delay, I missed this one somehow.
 
-The trace is collected in a separate buffer. trace_hw_branch_oops() reads that buffer and adds the trace to the ftrace buffer, so ftrace can then dump it.
+> For the last few days, I was playing with btrfs. It looks really very 
+> promising and fantastic! :-)
 
+Glad to hear it worked.
 
->>       bts_trace_stop(tr);
->>       unregister_hotcpu_notifier(&bts_hotcpu_notifier);
->> +
->> +     hw_branch_trace = NULL;
->
->unless you test hw_branch_trace for content, I usually never NULL the
->local tracer variable. This prevents races. The worst that can happen
->without nulling it, is that your tracer will write into another tracer's
->buffer. No real harm done. But if you have it as null and a race
->happens, you can crash the kernel.
+> Thanks for everybody who involved with this amazing file system project! 
+> ;-) Now, I play with snapshots. Creating snapshot is a breeze. 
+> Recovering from snapshots work very well without any problems as far as 
+> I tried. But; when I tried to remove the snapshot directories, I got an 
+> error message that says : "cannot remove directory `snap1': Directory 
+> not empty". But actually, it is empty. After that, I googled a bit and 
+> found at "http://btrfs.wiki.kernel.org/index.php/Project_ideas" at 
+> "Removal Snapshots" section, it states that it needs to be implement. 
+> But, it's unclear which state this feature is now.
+> 
 
-Sounds reasonable. I'll change it.
+That's right.  You did rm -rf dir, which is actually the slowest
+possible way to remove the snapshot ;)  A much more optimized version is
+possible, and already implemented as part of transaction commit.
 
-regards,
-markus.
+But, the fast version is basically the same as unlinking a directory
+that may or may not be in use.  We need to implement code to do that
+properly wrt the VFS.
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+> It could be perfect to prepare a document that shows the current status 
+> (completed, blah-blah % completed etc.) of the features,general status 
+> of the project and maybe deadlines of feature implementions. Like : 
+> "next release will have blah-blah features" etc.
+> 
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+A very good point, I'm in the process of documenting this better.
+
+> 
+> BTW, is there any temporary way to remove these snapshot directories 
+> before this "Remove Snapshot" feature implemented ? ;-)
+> 
+
+Unfortunately not, sorry.
+
+-chris
+
 
