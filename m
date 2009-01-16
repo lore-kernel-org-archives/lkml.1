@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZAPILT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZAPIMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbZAPILT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZAPILG
+	id S1760044AbZAPIMm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZAPIMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:11:06 -0500
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:31212 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754177AbZAPILF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:11:05 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=y9DLtm5MgetEsX/THn7+UidMdXYkTAObswbXAGfjpw+pIIfx8APgeM1UpNSbFuWZw8vwXwQEwcWGI/IIZmqJ6UpT07DaY2hiFliV0kdV3MAPmOmcz8SdEwX3KEwMmsImQyRv6fEmh1Uz+/DXB5rrtCxZENaJenpGWtJ9QeiLmx4=  ;
-X-YMail-OSG: jrAsRlsVM1lrmz5cWy8PqhWM5AkRyaEQP6HLVgKAVIYl9q8YtCmBZ3O6MRNAvznLBiPmsmfC4zyhOkKfs03fxYt8VQNvtkrjCerzr2Vljz6QiKUbVgwtXFyYpl_cggHRmFD37zu1Xggx_.I5rCUzzAV9srkXXv3HPgMPco_PiRqi8voeoLFtyWd14Met1T.wcdaIwaqCk7DUrL9mCg2ziRw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH] gpiolib: request fix V2
-Date: Fri, 16 Jan 2009 00:11:01 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org,
-       akpm@linux-foundation.org
-References: <20090116073406.11946.95332.sendpatchset@rx1.opensource.se>
-In-Reply-To: <20090116073406.11946.95332.sendpatchset@rx1.opensource.se>
+	Fri, 16 Jan 2009 03:12:33 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:65080 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752071AbZAPIMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 03:12:33 -0500
+Message-ID: <49704147.6000003@cn.fujitsu.com>
+Date: Fri, 16 Jan 2009 16:11:51 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901160011.01325.david-b@pacbell.net>
+To: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] trace_workqueue: use percpu data for workqueue stat
+References: <496F25A8.5040303@cn.fujitsu.com> <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com>
+In-Reply-To: <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+Frédéric Weisbecker wrote:
+> Hi Lai,
 > 
-> Fix request related issue in gpiolib:
->  - fix request-already-requested handling in gpio_request()
+> 2009/1/15 Lai Jiangshan <laijs@cn.fujitsu.com>:
+>> Impact: make trace_workqueue works well on NUMA
+>>
+>> It's not correct when (num_possible_cpus() < nr_cpumask_bits):
+>>        all_workqueue_stat = kmalloc(sizeof(struct workqueue_global_stats)
+>>                                     * num_possible_cpus(), GFP_KERNEL);
 > 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> 
+> What is the difference between num_possible_cpus() and nr_cpumask_bits actually?
+> It looks like nr_cpumask_bits binds to NR_CPUS on early time and after
+> it is set to
+> num_possible_cpus() , right?
+> In this case num_possible_cpus() seems more relevant...no?
+> 
+> (I'm pretty sure I'm wrong.... :-)
+> 
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+I wanted to reference to nr_cpu_ids, not nr_cpumask_bits(I made mistake yesterday)
 
-Appropriate for 2.6.28-stable.
+init/main.c
+static void __init setup_nr_cpu_ids(void)
+{
+	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+}
+setup_nr_cpu_ids() is called directly in main.c, it's earlier than early_initcall.
 
+So nr_cpu_ids is better than num_possible_cpus(), for maybe cpu_possible_mask=101B
+nr_cpu_ids=3, num_possible_cpus()=2, We will access to invalid memory when we use
+num_possible_cpus().
 
-> ---
-> 
->   Changes since V1:
->   - dropped the gpio_direction_input/output fixes
-> 
->  drivers/gpio/gpiolib.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- 0001/drivers/gpio/gpiolib.c
-> +++ work/drivers/gpio/gpiolib.c	2008-12-26 13:09:50.000000000 +0900
-> @@ -789,6 +789,7 @@ int gpio_request(unsigned gpio, const ch
->  	} else {
->  		status = -EBUSY;
->  		module_put(chip->owner);
-> +		goto done;
->  	}
->  
->  	if (chip->request) {
-> 
-> 
+but percpu data as my patch shows is better than nr_cpu_ids.
+
+Thanks, Lai.
+
 
 
