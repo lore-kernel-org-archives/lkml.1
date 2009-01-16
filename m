@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937633AbZAPVo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937673AbZAPVqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937633AbZAPVo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 16:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763761AbZAPVoO
+	id S937673AbZAPVqn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 16:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764136AbZAPVqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 16:44:14 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:40742 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763092AbZAPVoN (ORCPT
+	Fri, 16 Jan 2009 16:46:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41696 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763761AbZAPVqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 16:44:13 -0500
-Date: Fri, 16 Jan 2009 16:38:33 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [Patch] uml: fix a link error
-Message-ID: <20090116213833.GA11904@c2.user-mode-linux.org>
-References: <20090115194033.GA10926@hack.private> <20090116124158.4364e269.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090116124158.4364e269.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 16 Jan 2009 16:46:33 -0500
+Subject: Re: Compile error in drivers/video/backlight/mbp_nvidia_bl.c -
+ v2.6.28
+From: David Woodhouse <dwmw2@infradead.org>
+To: Martin Koegler <mkoegler@auto.tuwien.ac.at>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090116212703.GA11952@auto.tuwien.ac.at>
+References: <20090116080503.GA11855@auto.tuwien.ac.at>
+	 <1232129665.25018.8490.camel@macbook.infradead.org>
+	 <20090116212703.GA11952@auto.tuwien.ac.at>
+Content-Type: text/plain
+Date: Fri, 16 Jan 2009 21:35:20 +0000
+Message-Id: <1232141721.16367.125.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 12:41:58PM -0800, Andrew Morton wrote:
-> On Thu, 15 Jan 2009 19:40:33 +0000
-> Am__rico Wang <xiyou.wangcong@gmail.com> wrote:
-> >  #define sys_vm86old sys_ni_syscall
-> >  #define sys_vm86 sys_ni_syscall
-> > +#define sys_sigprocmask sigprocmask
-> >  
-> >  #define old_mmap old_mmap_i386
-> >  
+On Fri, 2009-01-16 at 22:27 +0100, Martin Koegler wrote:
 > 
-> For how long has this problem been present?
-> 
-> Why aren't lots of other people reporting it?
+> The bug is still present in:
+> commit 7cb36b6ccdca03bd87e8faca7fd920643dd1aec7
 
-There's no problem AFAICT.
+OK, I'll chase it up when I have decent connectivity again... hopefully
+in a few hours.
 
-This is just bogus.
+Thanks.
 
-As you point out, if sigprocmask were missing, people would have
-noticed.  Also, the proposed definition would pull in the libc
-system call wrapper, not the UML system call definition.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-				Jeff
