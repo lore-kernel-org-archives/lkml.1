@@ -1,54 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934056AbZAPBG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934100AbZAPBIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934056AbZAPBG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZAPBGT
+	id S934100AbZAPBIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZAPBII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:06:19 -0500
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:33347 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754144AbZAPBGS (ORCPT
+	Thu, 15 Jan 2009 20:08:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34560 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756441AbZAPBIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:06:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=aIVQFwTWAStbiBMLG39rZAsFP1sw/gqGo9FW8UzK0tBBFw+/OYOhsNs1upkG7R8z09lGCXPcV/EdvI9iAViW/c98Jhik+zHhyXeGNLZHiEtJVLInBfFSJT+GltxKo34sbhpqKGHI7b/Uxahco+Z1zS0EItChUmQSI6+iahLtziY=  ;
-X-YMail-OSG: ITeKb.wVM1k8NoxEPwgRbS5y47NPp.d5eAdJ0QmY8AWM7EshiE.KT64cJB7EBmXop0M_6gSPaE54IA50X.nZ33V6U0ax6.AeOIqHzx8EJvqICNq7Ga.jjVM2gllHLO7IszVk7bDfQzENsfxYlBqSH4Bks1prDB_7F8Ao0MGB9n71oxbDkfNVd1ZBcZuk
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.29-rc] regulator: minor cleanup of virtual consumer
-Date: Thu, 15 Jan 2009 17:06:15 -0800
-User-Agent: KMail/1.9.10
-Cc: broonie@opensource.wolfsonmicro.com, lrg@slimlogic.co.uk,
-       linux-kernel@vger.kernel.org
-References: <200901141316.27584.david-b@pacbell.net> <20090115161022.2b11ed41.akpm@linux-foundation.org>
-In-Reply-To: <20090115161022.2b11ed41.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 15 Jan 2009 20:08:07 -0500
+Date: Thu, 15 Jan 2009 17:07:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       oleg@redhat.com
+Subject: Re: [PATCH] getrusage: fill ru_ixrss, ru_idrss and ru_isrss values
+Message-Id: <20090115170746.1f851488.akpm@linux-foundation.org>
+In-Reply-To: <20090115153827.459ec787@psychotron.englab.brq.redhat.com>
+References: <20090115153827.459ec787@psychotron.englab.brq.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901151706.15872.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 January 2009, Andrew Morton wrote:
-> > -	else if (strncmp(buf, "standby", strlen("standby")) == 0)
-> > +	else if (sysfs_streq(buf, "standby\n") == 0)
-> >  		mode = REGULATOR_MODE_STANDBY;
+On Thu, 15 Jan 2009 15:38:27 +0100
+Jiri Pirko <jpirko@redhat.com> wrote:
+
+> This patch makes three values in rusage structure filled in getrusage
+> syscall. These values are in KB units so as the ->ru_maxrss value. They
+> are ru_ixrss, ru_idrss and ru_isrss. Note that also these values are
+> wrongly converted from pages to KBs by GNU time application (patch
+> posted to app. maintainer).
 > 
-> we don't need the \n's, do we?
+> These three values are actually accumulated memory usages. It means
+> that each (in the ideal case) jiffy we need to add appropriate mm->xxx
+> value to the counter. For this I'm using acct_update_integrals()
+> function that is already accumulating total_vm and rss accumulated
+> values for taskstats. I've extended this function to accumulate also
+> vm_shared and vm_stack values from mm->. In the same fashion the
+> task_struct is extended. I've also changed the accumulation time
+> measure interval from USECs to jiffies. That's correct because there
+> can't by lesser time interval then jiffy and we also achieve later
+> potential u64 overflow (I do not see why this was not done this way in
+> the first place). Three macros are added under the tast_struct
+> definition in sched.h (I'm not sure this is the right place). These
+> macros are actually getting appropriate i[xds]rss values from fields
+> added to task_struct.
+> 
+> The struct signal_struct was extended by six fields. These refer to
+> i[xds]rss values and i[xds]rss of childs. These are filled up in the
+> similar way as other near fields in __exit_signal() and
+> wait_task_zombie().
+> 
+> Note that taskstats can be possibly extended to pass accumulated
+> vm_shared and vm_stack too.
+> 
+> 
+> Please review and comment this patch - all comments are highly welcomed.
+> 
+> Btw wouldn't it be nice to have macro like K() (PAGEs->KBs) globally
+> defined instead of defining it on each spot in kernel where we need it?
+> FreeBSD has this - pgtok().
+> 
+> ...
+>
+>  include/linux/sched.h |   22 +++++++++++++++++++---
+>  kernel/exit.c         |    9 +++++++++
+>  kernel/fork.c         |    1 +
+>  kernel/sys.c          |   17 ++++++++++++++++-
+>  kernel/tsacct.c       |   24 ++++++++++++------------
+>  5 files changed, 57 insertions(+), 16 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 4da3b86..9303bc0 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -561,6 +561,7 @@ struct signal_struct {
+>  	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+>  	unsigned long inblock, oublock, cinblock, coublock;
+>  	unsigned long maxrss, cmaxrss;
+> +	unsigned long ixrss, idrss, isrss, cixrss, cidrss, cisrss;
+>  	struct task_io_accounting ioac;
+>  
+>  	/*
+> @@ -1327,9 +1328,11 @@ struct task_struct {
+>  	siginfo_t *last_siginfo; /* For ptrace use.  */
+>  	struct task_io_accounting ioac;
+>  #if defined(CONFIG_TASK_XACCT)
+> -	u64 acct_rss_mem1;	/* accumulated rss usage */
+> -	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
+> -	cputime_t acct_timexpd;	/* stime + utime since last update */
+> +	u64 acct_rss_mem1;		/* accumulated rss usage */
+> +	u64 acct_total_vm_mem1;		/* accumulated virtual memory usage */
+> +	u64 acct_shared_vm_mem1;	/* accumulated shared virtual memory usage */
+> +	u64 acct_stack_vm_mem1;		/* accumulated stack virtual memory usage */
+> +	cputime_t acct_timexpd;		/* stime + utime since last update */
+>  #endif
+>  #ifdef CONFIG_CPUSETS
+>  	nodemask_t mems_allowed;
+> @@ -1399,6 +1402,19 @@ struct task_struct {
+>  #endif
+>  };
 
-No, but ...
+This adds, what?  40 or 64 bytes to the task_struct?  Consuming more memory
+and worsening the kernel's cache hit rate.
 
-That's what saves an extra couple dozen bytes of
-memory ... the strings, with newlines, are used
-to *write* these sysfs attributes.
+It would be nice if the changelog were to contain comforting words
+which allow us to believe that this is all worthwhile.
 
-- Dave
+Perhaps it is time to allocate all this accounting stuff separately
+from the task_struct?
 
+Can ixrss ... cisrss be placed inside #ifdef CONFIG_TASK_XACCT?
+
+> +#if defined(CONFIG_TASK_XACCT)
+> +#define get_task_ixrss(tsk) jiffies_to_clock_t((tsk)->acct_shared_vm_mem1)
+> +#define get_task_idrss(tsk) jiffies_to_clock_t( \
+> +			(tsk)->acct_total_vm_mem1 - \
+> +			(tsk)->acct_shared_vm_mem1 - \
+> +			(tsk)->acct_stack_vm_mem1)
+> +#define get_task_isrss(tsk) jiffies_to_clock_t((tsk)->acct_stack_vm_mem1)
+> +#else
+> +#define get_task_ixrss(tsk) 0UL
+> +#define get_task_idrss(tsk) 0UL
+> +#define get_task_isrss(tsk) 0UL
+> +#endif
+
+erk.  Please implement all these in C.  It's nicer to read, doesn't
+evaluate the same expression multiple times and provides compile-time
+typechecking.
+
+Only implement in macros those things which *must* be implemented in
+macros.
+
+> +/* convert pages to KBs */
+> +#define K(x) ((x) << (PAGE_SHIFT - 10))
+> +	r->ru_maxrss = K(maxrss);
+> +	r->ru_ixrss = K(r->ru_ixrss);
+> +	r->ru_idrss = K(r->ru_idrss);
+> +	r->ru_isrss = K(r->ru_isrss);
+
+Yes, K() is a bit silly.
+
+Perhaps this is a sufficiently common operation to justify implementing
+it in printk() itself.
+
+	printk("%pK", &r->ru_ixrss))
+
+(I think).
+
+This would require that the passed-in number be consistently either
+32-bit or 64-bit, and we'd have no compile-time checking for this, so
+maybe not do this.
 
 
