@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935036AbZAPBJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935493AbZAPBJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935036AbZAPBJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 20:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbZAPBIw
+	id S935493AbZAPBJl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 20:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762239AbZAPBJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 20:08:52 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:40472 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756976AbZAPBIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 20:08:50 -0500
-Message-ID: <496FDE20.6070108@sgi.com>
-Date: Thu, 15 Jan 2009 17:08:48 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 15 Jan 2009 20:09:01 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1173 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934803AbZAPBI7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 20:08:59 -0500
+Date: Fri, 16 Jan 2009 01:08:45 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <20090116010844.GA6553@sirena.org.uk>
+References: <200811091531.46003.david-b@pacbell.net> <200901142303.09217.david-b@pacbell.net> <20090115122937.GC2147@sirena.org.uk> <200901151432.31130.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: new (common) WARNING message?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200901151432.31130.david-b@pacbell.net>
+X-Cookie: Your step will soil many countries.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+On Thu, Jan 15, 2009 at 02:32:30PM -0800, David Brownell wrote:
+> On Thursday 15 January 2009, Mark Brown wrote:
 
-I've been seeing these on and off for a while now.  They don't
-seem to affect anything but perhaps I should track them down?
+> > > That raises an issue:  how can Linux get such regulators to
+> > > turn off?  Clock frameworks have the same issue, and they
 
-Do you know what it means?  (I'm asking you because evidently
-debugobjects.c is from you?  I read the good explanation in the
-changelog of 3ac7fe5a, but it didn't clue me into what's going
-on. ;-)
+> > That's something that should be done by constraints - add a new flag
+> > that can be set.
 
-Thanks,
-Mike
---
+> That doesn't make any sense to me, any more than
+> adding a per-clock flag would.
 
-[ 1294.973592] ODEBUG: object is on stack, but not annotated
-[ 1294.974067] ------------[ cut here ]------------
-[ 1294.974067] WARNING: at /mdata/lwork/polaris3/travis/workareas/ingo-latest/linux-2.6-for-ingo/lib/debugobjects.c:253 __debug_object_init+0x27c/0x2f0()
-[ 1294.974067] Hardware name: X7DBT
-[ 1294.974067] Pid: 4150, comm: offline-test Tainted: G        W  2.6.29-rc1-4k-defconfig.01151634-00255-gc99dbbe-dirty #89
-[ 1294.974067] Call Trace:
-[ 1294.974067]  [<ffffffff81047e3f>] warn_slowpath+0xd3/0xf2
-[ 1294.974067]  [<ffffffff8106c64f>] ? trace_hardirqs_off+0xd/0xf
-[ 1294.974067]  [<ffffffff815ca6ac>] ? _spin_unlock_irqrestore+0x3d/0x4c
-[ 1294.974067]  [<ffffffff8125bebe>] ? __debug_check_no_obj_freed+0xf6/0x14c
-[ 1294.974067]  [<ffffffff81048d3c>] ? printk+0x6c/0x6e
-[ 1294.974067]  [<ffffffff8125c449>] ? __debug_object_init+0xf9/0x2f0
-[ 1294.974067]  [<ffffffff8125b3ae>] ? _raw_spin_unlock+0xc7/0xf6
-[ 1294.974067]  [<ffffffff8125c5cc>] __debug_object_init+0x27c/0x2f0
-[ 1294.974067]  [<ffffffff8125c66d>] debug_object_init+0x14/0x17
-[ 1294.974067]  [<ffffffff81052320>] init_timer+0x1d/0x2a
-[ 1294.974067]  [<ffffffff81025077>] hpet_cpuhp_notify+0xad/0x124
-[ 1294.974067]  [<ffffffff81025233>] ? hpet_work+0x0/0x21a
-[ 1294.974067]  [<ffffffff81062057>] notifier_call_chain+0x33/0x5b
-[ 1294.974067]  [<ffffffff810620ad>] __raw_notifier_call_chain+0xe/0x10
-[ 1294.974067]  [<ffffffff810620c3>] raw_notifier_call_chain+0x14/0x16
-[ 1294.974067]  [<ffffffff815c5190>] _cpu_up+0x115/0x155
-[ 1294.974067]  [<ffffffff815c527c>] cpu_up+0x65/0x73
-[ 1294.974067]  [<ffffffff815ac21d>] store_online+0x52/0x7b
-[ 1294.974067]  [<ffffffff812ff775>] sysdev_store+0x20/0x22
-[ 1294.974067]  [<ffffffff81134f6b>] sysfs_write_file+0xe9/0x11e
-[ 1294.974067]  [<ffffffff810e0da5>] vfs_write+0xea/0x148
-[ 1294.974067]  [<ffffffff810e0ec7>] sys_write+0x4c/0x72
-[ 1294.974067]  [<ffffffff8100c6cb>] system_call_fastpath+0x16/0x1b
-[ 1294.974067] ---[ end trace 4eaa2a86a8e2da24 ]---
+Well, the clock API doesn't have the concept of constraints or machine
+selectable per-clock options such as those set in constraints - it's the
+biggest difference between the two APIs.
+
+> > > I'm thinking it'd be worth having a similar Kconfig option
+> > > for regulators too.  It could kick in regulator core code to
+> > > call regulator_ops.disable() whenever regulator_dev.use_count
+> > > is zero, possibly warning if !regulator_ops.is_disabled().
+> > > (Handling constraints.always_on too.)
+
+> > Given the model the API has of not doing anything unless explicitly
+> > told to
+
+> ... e.g. by CONFIG_REGULATOR_DISABLE_UNUSED being explicitly
+> set, indicating that the regulator support for that platform
+> (and its drivers) is complete enough that it can safely paper
+> over such early init issues.
+
+Yeah, but user visible things in Kconfig aren't quite the same thing as
+having something in the machine definition set it up.  At present
+control is very firmly in the hands of the board setup code.
+
+> > I'd not expect to see this as a Kconfig option but rather as 
+> > something enabled per regulator or at least per board.
+
+> Why not, though?  That works well with clocks, once the
+> drivers are debugged.  Having dozens of fiddly little knobs
+> is not an advantage.
+
+There's got to be an explict knob, it's just a question of where it's
+exposed.
+
+For machines where it works it's something I'd expect the kernel to just
+do without having a Kconfig variable set up.  The machine driver is
+already going to have to explictly set up all the regulators that are in
+use in the system for this to work so the additional cost of requesting
+the feature if it were per-board doesn't feel onerous.  It also means
+that people configuring the kernel don't need to worry about how well
+the regulators are mapped out, which would be especially useful to
+anyone trying to build kernels that run on multiple boards.
+
+> The "boot_on" flag seems redundant with given "always_on"; as
+> a rule you can *tell* if the bootloader enabled a supply, so
+> the issue is more like whether it should stay on, even when no
+> driver wants it on.  Especially considering that bootloaders
+> seldom guarantee to enable only a minimal set of supplies.
+
+Yeah, I think that since there's no clean way for clients to disable a
+boot_on regulator currently it's only really useful in the very unsual
+case where you can't read the regulator state.  If it just enabled the
+regulator without incrementing the use count it may possibly useful for
+during boot.  I'd need to have a proper think about it to make sure.
