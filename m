@@ -1,43 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbZAPEci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762687AbZAPEeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbZAPEci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 23:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZAPEc2
+	id S1762687AbZAPEeg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 23:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbZAPEeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 23:32:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54742 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755098AbZAPEc1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 23:32:27 -0500
-Date: Fri, 16 Jan 2009 13:31:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>
-Subject: Re: [BUGFIX][PATCH] memcg: get/put parents at create/free
-Message-Id: <20090116133121.2f50d71d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090116132253.69cf80ea.nishimura@mxp.nes.nec.co.jp>
-References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
-	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
-	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
-	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
-	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
-	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
-	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
-	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
-	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
-	<20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
-	<20090116132253.69cf80ea.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 15 Jan 2009 23:34:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47631 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755277AbZAPEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Jan 2009 23:34:24 -0500
+Date: Fri, 16 Jan 2009 15:34:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: linux-next: build problem with nfs tree (Was: Re:
+ [mmotm][PATCH] fix ia64 build error)
+Message-Id: <20090116153417.891297ca.sfr@canb.auug.org.au>
+In-Reply-To: <20090116134930.68e783aa.sfr@canb.auug.org.au>
+References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
+	<20090116124949.7828a559.sfr@canb.auug.org.au>
+	<20090115175917.8e0ae536.akpm@linux-foundation.org>
+	<20090116134930.68e783aa.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -45,87 +37,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 13:22:53 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Hi Andrew,
 
-> This is a fix for memcg-get-put-parents-at-create-free.patch.
+On Fri, 16 Jan 2009 13:49:30 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> On Thu, 15 Jan 2009 17:59:17 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > I do most of my gitting across a DSL connection.  It makes GUIs
+> > painful.
 > 
+> Yeah, I will think on it ...
 
-Thank you, I'll test. 
+With the help of Paul Mackerras, I have come up with the shell script
+below.  You run it with the commit id, the tag of the tree you care
+about (e.g. next-20080115)(it defaults to the current top of tree) and
+the name of the branch the represents Linus' tree (default to
+origin/master).  It will spit out the (or a) tree that contains the
+commit you asked about.
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+-------------------------------------------------------------------------
+#!/bin/bash
 
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> Andrew suggested that it's strange to add a little helper function for get(),
-> while put() is open-code.
-> 
-> This patch also adds a few comments.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  mm/memcontrol.c |   20 ++++++++++----------
->  1 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 45e1b51..92790e4 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -203,7 +203,6 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
->  static void mem_cgroup_get(struct mem_cgroup *mem);
->  static void mem_cgroup_put(struct mem_cgroup *mem);
->  static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
-> -static void mem_cgroup_get_parent(struct mem_cgroup *mem);
->  
->  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
->  					 struct page_cgroup *pc,
-> @@ -2195,6 +2194,9 @@ static void mem_cgroup_put(struct mem_cgroup *mem)
->  	}
->  }
->  
-> +/*
-> + * Returns the parent mem_cgroup in memcgroup hierarchy with hierarchy enabled.
-> + */
->  static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
->  {
->  	if (!mem->res.parent)
-> @@ -2202,14 +2204,6 @@ static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
->  	return mem_cgroup_from_res_counter(mem->res.parent, res);
->  }
->  
-> -static void mem_cgroup_get_parent(struct mem_cgroup *mem)
-> -{
-> -	struct mem_cgroup *parent = parent_mem_cgroup(mem);
-> -
-> -	if (parent)
-> -		mem_cgroup_get(parent);
-> -}
-> -
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  static void __init enable_swap_cgroup(void)
->  {
-> @@ -2247,6 +2241,13 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	if (parent && parent->use_hierarchy) {
->  		res_counter_init(&mem->res, &parent->res);
->  		res_counter_init(&mem->memsw, &parent->memsw);
-> +		/*
-> +		 * We increment refcnt of the parent to ensure that we can
-> +		 * safely access it on res_counter_charge/uncharge.
-> +		 * This refcnt will be decremented when freeing this
-> +		 * mem_cgroup(see mem_cgroup_put).
-> +		 */
-> +		mem_cgroup_get(parent);
->  	} else {
->  		res_counter_init(&mem->res, NULL);
->  		res_counter_init(&mem->memsw, NULL);
-> @@ -2257,7 +2258,6 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	if (parent)
->  		mem->swappiness = get_swappiness(parent);
->  	atomic_set(&mem->refcnt, 1);
-> -	mem_cgroup_get_parent(mem);
->  	return &mem->css;
->  free_out:
->  	__mem_cgroup_free(mem);
-> 
+commit=$1
+[ "$commit" ] || {
+	echo "$0: <commit id> [<top tag> [<linus branch>]]" 1>&2
+	exit 1
+}
 
+top=$2
+[ "$top" ] || top=HEAD
+
+linus=$3
+[ "$linus" ] || linus=origin/master
+
+base=$(git merge-base "$linus" "$top")
+
+git log --first-parent --pretty='format:%H %P' "$base".."$top" |
+while read m p1 p2
+do
+	[ "$p2" ] || continue
+	git rev-list $base..$p2 | grep -q "$commit" || continue
+	branch=$(git show $m | sed -n "s/[ 	]*Merge .* '\([^']*\)'/\1/p")
+	tree=${branch%%/*}
+	[ "$tree" = "quilt" ] && tree=${branch##*/}
+	echo "$tree"
+	break
+done
+
+exit 0
+----------------------------------------------------------------------------
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
