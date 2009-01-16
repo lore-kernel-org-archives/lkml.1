@@ -1,34 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935438AbZAPCA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935795AbZAPCBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935438AbZAPCA5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 21:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbZAPCAS
+	id S935795AbZAPCBq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 21:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935227AbZAPCBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 21:00:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60797 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760048AbZAPCAK (ORCPT
+	Thu, 15 Jan 2009 21:01:02 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:64854 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935869AbZAPCAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 21:00:10 -0500
-Date: Thu, 15 Jan 2009 17:59:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Tony Luck <tony.luck@intel.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: linux-next: build problem with nfs tree (Was: Re:
- [mmotm][PATCH] fix ia64 build error)
-Message-Id: <20090115175917.8e0ae536.akpm@linux-foundation.org>
-In-Reply-To: <20090116124949.7828a559.sfr@canb.auug.org.au>
-References: <20090115200315.EBE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090115093514.f3f6b8ff.akpm@linux-foundation.org>
-	<20090116124949.7828a559.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 15 Jan 2009 21:00:51 -0500
+Date: Fri, 16 Jan 2009 10:50:09 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Paul Menage" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
+Subject: [BUGFIX][PATCH] memcg: get/put parents at create/free
+Message-Id: <20090116105009.7cabac46.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090113184533.6ffd2af9.nishimura@mxp.nes.nec.co.jp>
+	<20090114175121.275ecd59.nishimura@mxp.nes.nec.co.jp>
+	<7602a77a9fc6b1e8757468048fde749a.squirrel@webmail-b.css.fujitsu.com>
+	<20090115100330.37d89d3d.nishimura@mxp.nes.nec.co.jp>
+	<20090115110044.3a863af8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115111420.8559bdb3.nishimura@mxp.nes.nec.co.jp>
+	<20090115133814.a52460fa.nishimura@mxp.nes.nec.co.jp>
+	<20090115164537.d402e95f.nishimura@mxp.nes.nec.co.jp>
+	<20090115165453.271848d9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115171315.965da4e3.nishimura@mxp.nes.nec.co.jp>
+	<20090115172336.0ed780bb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115175131.9542ae59.nishimura@mxp.nes.nec.co.jp>
+	<20090115181056.74a938d5.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,65 +43,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 12:49:49 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+This version works well in my test.
 
-> Hi Andrew,
-> 
-> On Thu, 15 Jan 2009 09:35:14 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > On Thu, 15 Jan 2009 20:05:08 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > Applied after: linux-next.patch
-> > > ==
-> > > Subject: [PATCH] remove duplicate EXPORT_SYMBOL()
-> > > Impact: fix build error
-> > > 
-> > > In past, ia64_ksyms.c had EXPORT_SYMBOL(copy_page) in wrong place.
-> > > 
-> > > old code was
-> > > 
-> > > 	#include <asm/uaccess.h>
-> > > 	EXPORT_SYMBOL(__copy_user);
-> > > 	EXPORT_SYMBOL(__do_clear_user);
-> > > 	EXPORT_SYMBOL(__strlen_user);
-> > > 	EXPORT_SYMBOL(__strncpy_from_user);
-> > > 	EXPORT_SYMBOL(__strnlen_user);
-> > > 	EXPORT_SYMBOL(copy_page);
-> > > 
-> > > (but actually, copy_page is declared in asm/page.h)
-> > > 
-> > > And recently, commit bdc2619ab95d45d434c16d5c216bc6243761f6fb insert
-> > > EXPORT_SYMBOL(copy_page) into correct place.
-> > > 
-> > > then, duplicate EXPORT_SYMBOL create following build error.
-> > > 
-> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__kcrctab_copy_page'
-> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__kcrctab_copy_page' was here
-> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__kstrtab_copy_page'
-> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__kstrtab_copy_page' was here
-> > > arch/ia64/kernel/ia64_ksyms.c:65: error: redefinition of '__ksymtab_copy_page'
-> > > arch/ia64/kernel/ia64_ksyms.c:43: error: previous definition of '__ksymtab_copy_page' was here
-> > 
-> > Yes, this is a strange bug added by
-> > 
-> > commit 7aed50e09223e7623c7ab826efd53f097bed2f73
-> > Author:     Prarit Bhargava <prarit@redhat.com>
-> > AuthorDate: Sat Jan 10 02:25:44 2009 +0000
-> > Commit:     David Howells <dhowells@redhat.com>
-> > CommitDate: Sat Jan 10 02:25:44 2009 +0000
-> > 
-> >     CacheFiles: Add missing copy_page export for ia64
-> > 
-> > I don't see how it could have been tested :(
-> > 
-> > I also don't know which linux-next tree added that commit.  There's a
-> > way of working this out but I forgot it.
-> 
-> In gitk you can search backwards for a merge commit containing "sfr" :-)
+Andrew, please pick up this one.
 
-I do most of my gitting across a DSL connection.  It makes GUIs
-painful.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-> I have dropped the nfs tree from linux-next for today.
+The lifetime of struct cgroup and struct mem_cgroup is different and
+mem_cgroup has its own reference count for handling references from swap_cgroup.
 
-Just for this buglet?  That sounds a bit savage.
+This causes strange problem that the parent mem_cgroup dies while
+child mem_cgroup alive, and this problem causes a bug in case of use_hierarchy==1
+because res_counter_uncharge climbs up the tree.
+
+This patch is for avoiding it by getting the parent at create, and
+putting it at freeing.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Reviewed-by; KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |   23 ++++++++++++++++++++++-
+ 1 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fb62b43..45e1b51 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -202,6 +202,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+ 
+ static void mem_cgroup_get(struct mem_cgroup *mem);
+ static void mem_cgroup_put(struct mem_cgroup *mem);
++static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
++static void mem_cgroup_get_parent(struct mem_cgroup *mem);
+ 
+ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+ 					 struct page_cgroup *pc,
+@@ -2185,10 +2187,28 @@ static void mem_cgroup_get(struct mem_cgroup *mem)
+ 
+ static void mem_cgroup_put(struct mem_cgroup *mem)
+ {
+-	if (atomic_dec_and_test(&mem->refcnt))
++	if (atomic_dec_and_test(&mem->refcnt)) {
++		struct mem_cgroup *parent = parent_mem_cgroup(mem);
+ 		__mem_cgroup_free(mem);
++		if (parent)
++			mem_cgroup_put(parent);
++	}
++}
++
++static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem)
++{
++	if (!mem->res.parent)
++		return NULL;
++	return mem_cgroup_from_res_counter(mem->res.parent, res);
+ }
+ 
++static void mem_cgroup_get_parent(struct mem_cgroup *mem)
++{
++	struct mem_cgroup *parent = parent_mem_cgroup(mem);
++
++	if (parent)
++		mem_cgroup_get(parent);
++}
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ static void __init enable_swap_cgroup(void)
+@@ -2237,6 +2257,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if (parent)
+ 		mem->swappiness = get_swappiness(parent);
+ 	atomic_set(&mem->refcnt, 1);
++	mem_cgroup_get_parent(mem);
+ 	return &mem->css;
+ free_out:
+ 	__mem_cgroup_free(mem);
+
