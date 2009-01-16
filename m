@@ -1,136 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765469AbZAPIsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbZAPItj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765469AbZAPIsu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 03:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759083AbZAPIsb
+	id S1765647AbZAPItj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 03:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbZAPIt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 03:48:31 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57334 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756406AbZAPIs3 (ORCPT
+	Fri, 16 Jan 2009 03:49:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:27159 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756930AbZAPIt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 03:48:29 -0500
-Date: Fri, 16 Jan 2009 09:48:28 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Sato <t-sato@yk.jp.nec.com>
-Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-Message-ID: <20090116084828.GB4795@atrey.karlin.mff.cuni.cz>
-References: <496EB639.6090800@redhat.com>
+	Fri, 16 Jan 2009 03:49:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Uzo6okzp3TPD8gwm6ZWnYe+W11KK+888Rpe3iojNdj0lWl77Rf85lvWxjH/EGjKCzx
+         1RT3xc6UFYjkHL2DiJTPW0dT1TpBZadXaE38ll+VdTnvtMTvxTGNmhPJoEllk/+DYIP7
+         reqw0X2olAPmTWxZv3HZhu4HdC71dO/SP0lsY=
+Date: Fri, 16 Jan 2009 09:49:19 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] trace_workqueue: use percpu data for workqueue
+	stat
+Message-ID: <20090116084918.GA7376@nowhere>
+References: <496F25A8.5040303@cn.fujitsu.com> <c62985530901150509we244b70l4e7af5c6b6145f30@mail.gmail.com> <49704147.6000003@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <496EB639.6090800@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49704147.6000003@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now that the filesystem freeze operation has been elevated
-> to the VFS, and is just an ioctl away, some sort of safety net
-> for unintentionally frozen root filesystems may be in order.
+On Fri, Jan 16, 2009 at 04:11:51PM +0800, Lai Jiangshan wrote:
+> Frédéric Weisbecker wrote:
+> > Hi Lai,
+> > 
+> > 2009/1/15 Lai Jiangshan <laijs@cn.fujitsu.com>:
+> >> Impact: make trace_workqueue works well on NUMA
+> >>
+> >> It's not correct when (num_possible_cpus() < nr_cpumask_bits):
+> >>        all_workqueue_stat = kmalloc(sizeof(struct workqueue_global_stats)
+> >>                                     * num_possible_cpus(), GFP_KERNEL);
+> > 
+> > 
+> > What is the difference between num_possible_cpus() and nr_cpumask_bits actually?
+> > It looks like nr_cpumask_bits binds to NR_CPUS on early time and after
+> > it is set to
+> > num_possible_cpus() , right?
+> > In this case num_possible_cpus() seems more relevant...no?
+> > 
+> > (I'm pretty sure I'm wrong.... :-)
+> > 
 > 
-> The timeout thaw originally proposed did not get merged, but
-> perhaps something like this would be useful in emergencies.
+> I wanted to reference to nr_cpu_ids, not nr_cpumask_bits(I made mistake yesterday)
 > 
-> This doesn't have to piggyback on the existing emergency sync
-> sysrq, but it seems like a reasonable, simple addition to me.
+> init/main.c
+> static void __init setup_nr_cpu_ids(void)
+> {
+> 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+> }
+> setup_nr_cpu_ids() is called directly in main.c, it's earlier than early_initcall.
 > 
-> I've tested this on a non-root fs with multiple (nested) freezers,
-> as well as on a system rendered unresponsive due to a frozen
-> root fs.
+> So nr_cpu_ids is better than num_possible_cpus(), for maybe cpu_possible_mask=101B
+> nr_cpu_ids=3, num_possible_cpus()=2, We will access to invalid memory when we use
+> num_possible_cpus().
 
-Emergency Sync should not do this. Invent another key.
 
-...because otherwise, if you hit emergency sync but the system is
-still alive and relies on filesystem freezing, bad stuff will happen.
+Ok.
+But is it possible to enable a new possible cpu on runtime?
 
-								Pavel
-> ---
-> 
-> Index: linux-2.6/drivers/char/sysrq.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/char/sysrq.c
-> +++ linux-2.6/drivers/char/sysrq.c
-> @@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
->  
->  static void sysrq_handle_sync(int key, struct tty_struct *tty)
->  {
-> +	emergency_thaw();
->  	emergency_sync();
->  }
->  static struct sysrq_key_op sysrq_sync_op = {
-> Index: linux-2.6/fs/buffer.c
-> ===================================================================
-> --- linux-2.6.orig/fs/buffer.c
-> +++ linux-2.6/fs/buffer.c
-> @@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
->  }
->  EXPORT_SYMBOL(freeze_bdev);
->  
-> +void do_thaw(unsigned long unused)
-> +{
-> +	struct super_block *sb;
-> +	char b[BDEVNAME_SIZE];
-> +
-> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> +		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-> +			printk(KERN_WARNING "Emergency Thaw on %s\n",
-> +			       bdevname(sb->s_bdev, b));
-> +	}
-> +	printk(KERN_WARNING "Emergency Thaw complete\n");
-> +}
-> +
-> +/**
-> + * emergency_thaw -- force thaw every filesystem
-> + *
-> + * Used for emergency unfreeze of all filesystems via SysRq
-> + */
-> +void emergency_thaw(void)
-> +{
-> +	pdflush_operation(do_thaw, 0);
-> +}
-> +
->  /**
->   * thaw_bdev  -- unlock filesystem
->   * @bdev:	blockdevice to unlock
-> Index: linux-2.6/include/linux/buffer_head.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/buffer_head.h
-> +++ linux-2.6/include/linux/buffer_head.h
-> @@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
->  wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
->  int fsync_bdev(struct block_device *);
->  struct super_block *freeze_bdev(struct block_device *);
-> +void emergency_thaw(void);
->  int thaw_bdev(struct block_device *, struct super_block *);
->  int fsync_super(struct super_block *);
->  int fsync_no_super(struct block_device *);
-> Index: linux-2.6/Documentation/sysrq.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/sysrq.txt
-> +++ linux-2.6/Documentation/sysrq.txt
-> @@ -101,7 +101,8 @@ On all -  write a character to /proc/sys
->  
->  'r'     - Turns off keyboard raw mode and sets it to XLATE.
->  
-> -'s'     - Will attempt to sync all mounted filesystems.
-> +'s'     - Will attempt to sync all mounted filesystems, and unfreeze
-> +	  any frozen fileystems.
->  
->  't'     - Will dump a list of current tasks and their information to your
->            console.
+ 
+> but percpu data as my patch shows is better than nr_cpu_ids.
+
+
+Yeah that's right. And more proper.
+
+
+> Thanks, Lai.
 > 
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
