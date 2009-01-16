@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937559AbZAPVQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937660AbZAPVRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937559AbZAPVQg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 16:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764371AbZAPVQM
+	id S937660AbZAPVRI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 16:17:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932909AbZAPVQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 16:16:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51066 "EHLO ogre.sisk.pl"
+	Fri, 16 Jan 2009 16:16:49 -0500
+Received: from gw.goop.org ([64.81.55.164]:49879 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbZAPVQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 16:16:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 7/7] PCI PCIe portdrv: Implement pm object
-Date: Fri, 16 Jan 2009 22:15:46 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-tst; KDE/4.1.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
-References: <200901131434.28340.rjw@sisk.pl> <200901131448.41843.rjw@sisk.pl> <200901161020.01955.jbarnes@virtuousgeek.org>
-In-Reply-To: <200901161020.01955.jbarnes@virtuousgeek.org>
+	id S937580AbZAPVQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 16:16:48 -0500
+Message-ID: <4970F907.7030400@goop.org>
+Date: Fri, 16 Jan 2009 13:15:51 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mike Travis <travis@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PULL}: latest tip/cpus4096 changes
+References: <49704DF6.8040205@sgi.com> <20090116093442.GE4305@elte.hu> <4970BF1C.2020201@goop.org> <4970E614.5040607@sgi.com>
+In-Reply-To: <4970E614.5040607@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901162215.46845.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009, Jesse Barnes wrote:
-> On Tuesday, January 13, 2009 5:48 am Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Implement pm object for the PCI Express port driver in order to use
-> > the new power management framework and reduce the code size.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> I applied this series.
+Mike Travis wrote:
+>
+> Here tis... Christophe was kind enough to test it for me.  (I believe
+> he said you were on vacation, though he did mention that you had some
+> changes in the queue?)
+>   
 
-Thanks!
+That looks OK, but it will clash with some of the pending patches.  I'll 
+fix it up.
 
-> Hopefully you can Kenji-san can get on the same page 
-> wrt MSI vector handling so we can apply the last one from one of you. :)
-
-We will. :-)
-
-Best,
-Rafael
+    J
