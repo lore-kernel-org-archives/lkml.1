@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936545AbZAPShW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936876AbZAPShu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936545AbZAPShW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 13:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbZAPSg7
+	id S936876AbZAPShu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 13:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936673AbZAPSh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 13:36:59 -0500
-Received: from outbound-mail-308.bluehost.com ([67.222.53.254]:58813 "HELO
-	outbound-mail-308.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751546AbZAPSg6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 13:36:58 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=oDu8lyPkDFF8dMIAJ/9WzS0t/umNAhkqR4tiG2sPSYlH4/SVDiWy6itY+0E6roXjrCPRCK7s0i6lhXGpeJtmS13l04zsorPPimdkVuYX5KzKBfRqAyC7ollEP56nXldI;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] PCI/MSI: bugfix/utilize for msi_capability_init()
-Date: Fri, 16 Jan 2009 10:32:56 -0800
-User-Agent: KMail/1.9.10
-Cc: Jike Song <albcamus@gmail.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <4951F258.6040601@jp.fujitsu.com> <df9815e70812240101q23f6d59fj4121b19563a77d47@mail.gmail.com> <49532592.9050202@jp.fujitsu.com>
-In-Reply-To: <49532592.9050202@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 16 Jan 2009 13:37:28 -0500
+Received: from main.gmane.org ([80.91.229.2]:57895 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936574AbZAPShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 13:37:25 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [GIT PULL] adaptive spinning mutexes
+Date: Fri, 16 Jan 2009 13:37:10 -0500
+Message-ID: <4970D3D6.3040906@tmr.com>
+References: <1231863710.7141.3.camel@twins> <1231864854.7141.8.camel@twins>	 <alpine.LFD.2.00.0901130846320.6528@localhost.localdomain>	 <1231867314.7141.16.camel@twins> <1231952436.14825.28.camel@laptop>	 <20090114183319.GA18630@elte.hu> <20090114184746.GA21334@elte.hu>	 <20090114192811.GA19691@elte.hu> <20090115174440.GF29283@parisc-linux.org>	 <alpine.LFD.2.00.0901150958300.6528@localhost.localdomain>	 <20090115180844.GL22472@elte.hu>	 <alpine.LFD.2.00.0901151015270.6528@localhost.localdomain> <1232047618.8269.93.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901161032.56466.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
+In-Reply-To: <1232047618.8269.93.camel@think.oraclecorp.com>
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, December 24, 2008 10:17 pm Hidetoshi Seto wrote:
-> Jike Song wrote:
-> > On Wed, Dec 24, 2008 at 4:27 PM, Hidetoshi Seto
-> >
-> > <seto.hidetoshi@jp.fujitsu.com> wrote:
-> >> This patch fix a following bug and does a cleanup.
-> >>
-> >> bug:
-> >>        commit 5993760f7fc75b77e4701f1e56dc84c0d6cf18d5
-> >>        had a wrong change (since is_64 is boolean[0|1]):
-> >>
-> >> -               pci_write_config_dword(dev,
-> >> -                       msi_mask_bits_reg(pos,
-> >> is_64bit_address(control)), -                       maskbits);
-> >> +               pci_write_config_dword(dev, entry->msi_attrib.is_64,
-> >> maskbits);
-> >
-> > Yes, really a nasty bug. I'm feeling guilty...
-> > Should this fix hit 2.6.28 release?  I CCed Jesse for his point.
->
-> Unfortunately we failed to take this fix into Santa's bag...
->
-> Note that this bug affects mask condition after calling pci_enable_msi()
-> for devices with MSI capability with (optional) per-vector masking support.
-> Devices with MSI-X or MSI without masking support are safe.
-> Once unmask/mask_msi_irq() is called, the condition should be fixed.
->
-> And the wrong pci_write_config_dword() will have no effects because
-> target registers (fields in header, such as Vendor ID) are read-only.
+Chris Mason wrote:
+> On Thu, 2009-01-15 at 10:16 -0800, Linus Torvalds wrote:
+>> On Thu, 15 Jan 2009, Ingo Molnar wrote:
+>>> btw., i think spin-mutexes have a design advantage here: in a lot of code 
+>>> areas it's quite difficult to use spinlocks - cannot allocate memory, 
+>>> cannot call any code that can sporadically block (but does not _normally_ 
+>>> block), etc.
+>>>
+>>> With mutexes those atomicity constraints go away - and the performance 
+>>> profile should now be quite close to that of spinlocks as well.
+>> Umm. Except if you wrote the code nicely and used spinlocks, you wouldn't 
+>> hold the lock over all those unnecessary and complex operations.
+>>
+> 
+> While this is true, there are examples of places we should expect
+> speedups for this today.
+> 
+> Concurrent file creation/deletion in a single dir will often find things
+> hot in cache and not have to block anywhere (mail spools).
+> 
+And although not as common, NNTP servers using file per article storage.
 
-Sorry, finally picked this one up.  I've added a "cc: stable" on it as well, 
-so when I push it to Linus it can go into 2.6.28.x.
+> Concurrent O_DIRECT aio writes to the same file, where i_mutex is
+> dropped early on.
+> 
+> pipes should see a huge improvement.
+> 
+I'd like to see that. Didn't realize how slow pipes really are.
 
-In the future, please cc me on patches that are ready for upstream too, makes 
-it easier for me to track things.
+> I'll kick off some runs of my three benchmarks on ext3 for comparison.
+> If there are things less synthetic people would like to see, please let
+> me know.
+> 
+> -chris
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Thanks,
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
