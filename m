@@ -1,57 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbZAPG4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbZAPG4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758951AbZAPG4L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 01:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZAPGzu
+	id S1758048AbZAPG4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 01:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZAPG4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 01:55:50 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:60071 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbZAPGzt (ORCPT
+	Fri, 16 Jan 2009 01:56:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41127 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754155AbZAPG4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 01:55:49 -0500
-Date: Thu, 15 Jan 2009 23:55:47 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: Mainline kernel OLTP performance update
-Message-ID: <20090116065546.GJ31013@parisc-linux.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901161503.13730.nickpiggin@yahoo.com.au> <20090115201210.ca1a9542.akpm@linux-foundation.org> <200901161746.25205.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901161746.25205.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 16 Jan 2009 01:56:23 -0500
+Date: Thu, 15 Jan 2009 22:55:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: arhuaco@freaks-unidos.net
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       andy@openmoko.com
+Subject: Re: [PATCH 1/5] Add touchscreen filter API
+Message-Id: <20090115225532.8491d671.akpm@linux-foundation.org>
+In-Reply-To: <2accc2ff0901152105g7223c1c4xd993950453d3b2f3@mail.gmail.com>
+References: <20090113233743.26361.14313.stgit@fugue.noexisteestedominiotanlargo.biz>
+	<20090113233939.26361.18138.stgit@fugue.noexisteestedominiotanlargo.biz>
+	<20090115154716.63de462f.akpm@linux-foundation.org>
+	<2accc2ff0901152105g7223c1c4xd993950453d3b2f3@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 05:46:23PM +1100, Nick Piggin wrote:
-> Intel's OLTP shows SLQB is "neutral" to SLAB. That is, literally within
-> their measurement confidence interval. If it comes down to it, I think we
-> could get them to do more runs to narrow that down, but we're talking a
-> couple of tenths of a percent already.
+On Fri, 16 Jan 2009 00:05:20 -0500 "Nelson Castillo" <arhuaco@freaks-unidos.net> wrote:
 
-I think I can speak with some measure of confidence for at least the
-OLTP-testing part of my company when I say that I have no objection to
-Nick's planned merge scheme.
+> On Thu, Jan 15, 2009 at 6:47 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Tue, 13 Jan 2009 18:39:39 -0500
+> > Nelson <arhuaco@freaks-unidos.net> wrote:
+> >
+> >> From: Nelson Castillo <arhuaco@freaks-unidos.net>
+> >>
+> >> Generic filters are not useful by themselves. They define an API that
+> >> actual filters have to implement.
+> >>
+> >> Signed-off-by: Nelson Castillo <arhuaco@freaks-unidos.net>
+> >> ---
+> 
+> (cut)
+> 
+> >> +int ts_filter_create_chain(struct platform_device *pdev,
+> >> +                        struct ts_filter_api **api, void **config,
+> >> +                        struct ts_filter **list, int count_coords)
+> >> +{
+> >> +     int count = 0;
+> >> +     struct ts_filter *last = NULL;
+> >> +
+> >> +     if (!api)
+> >> +             return 0;
+> >> +
+> >> +     while (*api && count < MAX_TS_FILTER_CHAIN) {
+> >
+> >Why does MAX_TS_FILTER_CHAIN exist?  Why impose limits?
+> 
+> "api" is actually a static array that is not zero_terminated by
+> convention. It can be zero-terminated, though. This check avoids
+> overrunning the loop if MAX_TS_FILTER_CHAIN filters are used.
+> 
+> This snippet is taken from mach-gta02.c (link below) and
+> "filter_sequence" is what
+> we pass as the "api" array.
+> 
+> static struct s3c2410_ts_mach_info gta02_ts_cfg = {
+>         .delay = 10000,
+>         .presc = 0xff, /* slow as we can go */
+>         .filter_sequence = {
+>                 [0] = &ts_filter_group_api,
+>                 [1] = &ts_filter_median_api,
+>                 [2] = &ts_filter_mean_api,
+>                 [3] = &ts_filter_linear_api,
+>         },
+>         .filter_config = {
+>                 [0] = &gta02_ts_group_config,
+>                 [1] = &gta02_ts_median_config,
+>                 [2] = &gta02_ts_mean_config,
+>                 [3] = &gta02_ts_linear_config,
+>         },
+> };
 
-I believe the kernel benchmark group have also done some testing with
-SLQB and have generally positive things to say about it (Yanmin added to
-the gargantuan cc).
+so...  change the interface to require that the array be
+null-terminated, then fix callers.
 
-Did slabtop get fixed to work with SLQB?
+Null-terminating variable-length arrays in this manner is a quite
+common paradigm in the kernel.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> >> diff --git a/drivers/input/touchscreen/ts_filter.c b/drivers/input/touchscreen/ts_filter.c
+> >> new file mode 100644
+> >> index 0000000..1508388
+> >> --- /dev/null
+> >> +++ b/drivers/input/touchscreen/ts_filter.c
+> >
+> > Confused.  Nothing appears to use the two functions which this file adds.
+> 
+> http://git.openmoko.org/?p=kernel.git;a=shortlog;h=stable-tracking
+> 
+> This branch is tracking the upstream Linux kernel and patches are
+> rebased/updated
+> when things change upstream. Openmoko has been doing this since one
+> goal is to be able to use upstream kernels with no patches for OM
+> devices.
+> 
+> This is the driver can use the filters (s3c2410_ts.c) if they are
+> defined in the machine configuration:
+> 
+> http://git.openmoko.org/?p=kernel.git;a=blob_plain;f=drivers/input/touchscreen/s3c2410_ts.c;hb=stable-tracking
+> 
+> We are ready to send this driver upstream but before we need to trim
+> this file (mach-gta02.c) and send it:
+> 
+> http://git.openmoko.org/?p=kernel.git;a=blob_plain;f=arch/arm/mach-s3c2440/mach-gta02.c;hb=stable-tracking
+> 
+> We are depending on this mach-gta02.c file now and a streamlined
+> version of it must be sent upstream so that we can start adding
+> drivers. This file in turn depends on patches that are being sent
+> upstream also.
+> 
+> Thus we have a chicken and egg problem and we decided to send the
+> filters for review because they are in the stable-tracking branch and
+> they need to be suitable for upstream inclusion / included upstream.
+
+Please hold off on the unused code until some code which actually uses
+is is submitted as well.
+
+
