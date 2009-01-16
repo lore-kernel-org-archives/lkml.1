@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933587AbZAPMjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbZAPMqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933587AbZAPMjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbZAPMi7
+	id S932875AbZAPMqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZAPMqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:38:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57481 "EHLO mx2.mail.elte.hu"
+	Fri, 16 Jan 2009 07:46:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53943 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757024AbZAPMi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:38:58 -0500
-Date: Fri, 16 Jan 2009 13:38:44 +0100
+	id S1757765AbZAPMqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 07:46:21 -0500
+Date: Fri, 16 Jan 2009 13:45:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: John Hughes <john@Calva.COM>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: A patch to arch/i386/kernel/irq.c to help get backtraces of
-	(near) stack overflow situations
-Message-ID: <20090116123844.GB5421@elte.hu>
-References: <49707BA9.1040102@Calva.COM>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
+Message-ID: <20090116124548.GC5421@elte.hu>
+References: <4970818A.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49707BA9.1040102@Calva.COM>
+In-Reply-To: <4970818A.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,78 +34,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* John Hughes <john@Calva.COM> wrote:
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-> I'm working on a system that is using a bit too much stack to work 
-> reliably with 4K stacks (OpenSSI with DRBD for the root filesystem 
-> replication) and I find that the CONFIG_DEBUG_STACKOVERFLOW stuff works 
-> rather poorly - often the stack dump will cause a stack overflow itself.
->
-> Here's a little patch to irq.c to make stack overflow dumps use a 
-> separate stack.
->
-> It's based on 2.6.12 'cos that's how out of date I am.  :-)
+> +	if (disable_apic) {
+> +#ifdef CONFIG_X86_IO_APIC
+> +		disable_ioapic_setup();
+> +#endif
+> +		return;
+> +	}
 
-in recent kernel's there's an automatic maximum-stack-footprint tracer 
-plugin available. When you suspect stack overflow you can use it by 
-enabling:
-
-  CONFIG_STACK_TRACER=y
-
-and boot the kernel with the 'stacktrace' boot option. Then you'll get 
-such "worst-case stack footprint since bootup" entries in 
-/debug/tracing/stack_trace:
-
-
- # ls -l /debug/tracing/*stack*
- -rw-r--r-- 1 root root 0 2009-01-03 22:42 /debug/tracing/stack_max_size
- -r--r--r-- 1 root root 0 2009-01-03 22:42 /debug/tracing/stack_trace
-
- # cat /debug/tracing/*stack*
- 5624
-        Depth   Size      Location    (38 entries)
-        -----   ----      --------
-  0)     5496     232   lookup_address+0x51/0x20e
-  1)     5264     496   __change_page_attr_set_clr+0xa7/0xa15
-  2)     4768     128   kernel_map_pages+0x121/0x140
-  3)     4640     224   get_page_from_freelist+0x4bb/0x6ec
-  4)     4416     160   __alloc_pages_internal+0x150/0x4af
-  5)     4256      48   alloc_pages_current+0xbe/0xc7
-  6)     4208      16   alloc_slab_page+0x1e/0x6e
-  7)     4192      64   new_slab+0x51/0x1e2
-  8)     4128      96   __slab_alloc+0x260/0x3fa
-  9)     4032      80   kmem_cache_alloc+0xa8/0x120
- 10)     3952      48   radix_tree_preload+0x38/0x86
- 11)     3904      64   add_to_page_cache_locked+0x51/0xed
- 12)     3840      32   add_to_page_cache_lru+0x31/0x6b
- 13)     3808      64   find_or_create_page+0x56/0x7d
- 14)     3744      80   __getblk+0x136/0x262
- 15)     3664      32   __bread+0x13/0x82
- 16)     3632      64   ext3_get_branch+0x7b/0xef
- 17)     3568     368   ext3_get_blocks_handle+0xa2/0x907
- 18)     3200      96   ext3_get_block+0xc3/0x101
- 19)     3104     224   do_mpage_readpage+0x1ad/0x4d0
- 20)     2880     240   mpage_readpages+0xb6/0xf9
- 21)     2640      16   ext3_readpages+0x1f/0x21
- 22)     2624     144   __do_page_cache_readahead+0x147/0x1bd
- 23)     2480      48   do_page_cache_readahead+0x5b/0x68
- 24)     2432     112   filemap_fault+0x176/0x34b
- 25)     2320     160   __do_fault+0x58/0x410
- 26)     2160     176   handle_mm_fault+0x4b2/0xa3e
- 27)     1984     800   do_page_fault+0x86d/0xcec
- 28)     1184     208   page_fault+0x25/0x30
- 29)      976      16   clear_user+0x30/0x38
- 30)      960     288   load_elf_binary+0x61c/0x18f0
- 31)      672      80   search_binary_handler+0xd9/0x279
- 32)      592     176   load_script+0x1b3/0x1c8
- 33)      416      80   search_binary_handler+0xd9/0x279
- 34)      336      96   do_execve+0x1df/0x296
- 35)      240      64   sys_execve+0x43/0x5e
- 36)      176     176   stub_execve+0x6a/0xc0
-
-It uses precise stack frames and lists their sizes and the total depth of 
-each stack entry.
-
-Hope this helps,
+Shouldnt that #ifdef be avoided by always providing the function - just it 
+is a NOP inline in the !CONFIG_X86_IO_APIC case?
 
 	Ingo
