@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZAPPko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZAPPlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbZAPPko (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 10:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZAPPkb
+	id S1755161AbZAPPlP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 10:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbZAPPkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 10:40:31 -0500
-Received: from sandeen.net ([209.173.210.139]:22120 "EHLO mail.sandeen.net"
+	Fri, 16 Jan 2009 10:40:35 -0500
+Received: from thunk.org ([69.25.196.29]:42337 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbZAPPka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 10:40:30 -0500
-Message-ID: <4970AA6D.2040604@sandeen.net>
-Date: Fri, 16 Jan 2009 09:40:29 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
-MIME-Version: 1.0
+	id S1753706AbZAPPkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 10:40:33 -0500
+Date: Fri, 16 Jan 2009 10:40:26 -0500
+From: Theodore Tso <tytso@mit.edu>
 To: Valdis.Kletnieks@vt.edu
-CC: Eric Sandeen <sandeen@redhat.com>,
+Cc: Pavel Machek <pavel@suse.cz>, Eric Sandeen <sandeen@redhat.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
+       Takashi Sato <t-sato@yk.jp.nec.com>
 Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
-References: <496EB639.6090800@redhat.com> <20090115162031.a512232b.akpm@linux-foundation.org> <497003CC.8030503@redhat.com>            <4970060E.3080306@sandeen.net> <17214.1232120028@turing-police.cc.vt.edu>
-In-Reply-To: <17214.1232120028@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090116154026.GG10683@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Valdis.Kletnieks@vt.edu,
+	Pavel Machek <pavel@suse.cz>, Eric Sandeen <sandeen@redhat.com>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Takashi Sato <t-sato@yk.jp.nec.com>
+References: <496EB639.6090800@redhat.com> <20090116084828.GB4795@atrey.karlin.mff.cuni.cz> <16406.1232119029@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16406.1232119029@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 15 Jan 2009 21:59:10 CST, Eric Sandeen said:
+On Fri, Jan 16, 2009 at 10:17:09AM -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 16 Jan 2009 09:48:28 +0100, Pavel Machek said:
 > 
->> Oh, actually, I'd think not.  If the freeze was done properly by the
->> filesystem, all data was flushed, the fs was quiesced, and new IO was
->> blocked.  pdflush should never be visiting these...
+> > Emergency Sync should not do this. Invent another key.
+> > 
+> > ...because otherwise, if you hit emergency sync but the system is
+> > still alive and relies on filesystem freezing, bad stuff will happen.
 > 
-> Yes, but a lot of 'if's - and usually you're reaching for sysrq-S precisely
-> *because* you suspect that stuff wasn't happening properly on its own...
+> Under what conditions would a system be alive and relying on freezing,
+> *and* an emergency thaw would be worse than whatever reason you're doing
+> an emergency sync?
+> 
+> Hmm.. guess you *could* get into trouble if you tried to do a Sysrq-[not-s]
+> and hit the wrong key - but you have the same danger if you have *any*
+> sysrq- invoking an emergency_thaw and hit it by accident...
 
-Actually, only one if - if the fs implemented freeze properly.
+My biggest complaint is that the two operations are largely
+orthogonal.  Emergency sync and unfreeze are two very different
+operations, and while emergency sync is largely harmless, it just
+seems really unclean to combine the two.  For one thing, it'll be
+extremely non-obvious that emergency sync implies unfreeze, and
+changing the sysrq help to say emergency-Sync-and-unfreeze just
+screams "kludge"....
 
-Well, the use case I envision here is something like:
-
-# freeze /my/mount/point/to/fs/to/snapshot
-
-except oops, that wasn't mounted, and you just froze your root fs.
-
-I was thinking more recovery from admin error, not programming error...
-
-If we're using sysrq to work around any possible programming error, then
-we have a pretty tough job to make sure that it always works, no?
-
--Eric
+						- Ted
