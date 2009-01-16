@@ -1,55 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbZAPHg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbZAPHl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761993AbZAPHg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 02:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZAPHg1
+	id S1758032AbZAPHl1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 02:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZAPHlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 02:36:27 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62573 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbZAPHg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 02:36:26 -0500
-Message-ID: <497038CD.8010505@cn.fujitsu.com>
-Date: Fri, 16 Jan 2009 15:35:41 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 3/4] memcg: hierarchical reclaim by CSS ID
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>	<20090115192943.7c1df53a.kamezawa.hiroyu@jp.fujitsu.com>	<496FE30C.1090300@cn.fujitsu.com>	<20090116103810.5ef55cc3.kamezawa.hiroyu@jp.fujitsu.com>	<496FE791.9030208@cn.fujitsu.com> <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090116112211.ea4231aa.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Jan 2009 02:41:11 -0500
+Received: from mga03.intel.com ([143.182.124.21]:19581 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752231AbZAPHlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 02:41:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,276,1231142400"; 
+   d="asc'?scan'208";a="100638175"
+Subject: [PATCH crypto -v6 1/2] AES-NI: Add support to access underlying
+	blkcipher under cryptd ablkcipher
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-i1xFNzNRdz5//NAtqR0B"
+Date: Fri, 16 Jan 2009 15:41:06 +0800
+Message-Id: <1232091666.13948.52.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> +	while (!ret) {
->>>>> +		rcu_read_lock();
->>>>> +		nextid = root_mem->last_scanned_child + 1;
->>>>> +		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
->>>>> +				   &found);
->>>>> +		if (css && css_is_populated(css) && css_tryget(css))
->>>> I don't see why you need to check css_is_populated(css) ?
->>>>
->>> Main reason is for sanity. I don't like to hold css->refcnt of not populated css.
->> I think this is a rare case. It's just a very short period when a cgroup is
->> being created but not yet fully created.
->>
->>> Second reason is for avoinding unnecessary calls to try_to_free_pages(),
->>> it's heavy. I should also add mem->res.usage == 0 case for skipping but not yet.
->>>
->> And if mem->res.usage == 0 is checked, css_is_popuated() is just redundant.
->>
-> Hmm ? Can I check mem->res.usage before css_tryget() ?
-> 
 
-I think you can. If css != NULL, css is valid (otherwise how can we access css->flags
-in css_tryget), so mem is valid. Correct me if I'm wrong. :)
+--=-i1xFNzNRdz5//NAtqR0B
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+cryptd_alloc_ablkcipher() will allocate a cryptd-ed ablkcipher for
+specified algorithm name. The new allocated one is guaranteed to be
+cryptd-ed ablkcipher, so the blkcipher underlying can be gotten via
+cryptd_ablkcipher_child().
+
+
+v5:
+
+- Move declaration to crypto/cryptd.h
+
+- Fix allocation error processing in cryptd_alloc_ablkcipher()
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ crypto/cryptd.c         |   35 +++++++++++++++++++++++++++++++++++
+ include/crypto/cryptd.h |   27 +++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+)
+
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -12,6 +12,7 @@
+=20
+ #include <crypto/algapi.h>
+ #include <crypto/internal/hash.h>
++#include <crypto/cryptd.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -537,6 +538,40 @@ static struct crypto_template cryptd_tmp
+ 	.module =3D THIS_MODULE,
+ };
+=20
++struct cryptd_ablkcipher *cryptd_alloc_ablkcipher(const char *alg_name,
++						  u32 type, u32 mask)
++{
++	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
++	struct crypto_ablkcipher *tfm;
++
++	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
++		     "cryptd(%s)", alg_name) >=3D CRYPTO_MAX_ALG_NAME)
++		return ERR_PTR(-EINVAL);
++	tfm =3D crypto_alloc_ablkcipher(cryptd_alg_name, type, mask);
++	if (IS_ERR(tfm))
++		return ERR_CAST(tfm);
++	if (crypto_ablkcipher_tfm(tfm)->__crt_alg->cra_module !=3D THIS_MODULE) {
++		crypto_free_ablkcipher(tfm);
++		return ERR_PTR(-EINVAL);
++	}
++
++	return __cryptd_ablkcipher_cast(tfm);
++}
++EXPORT_SYMBOL_GPL(cryptd_alloc_ablkcipher);
++
++struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher =
+*tfm)
++{
++	struct cryptd_blkcipher_ctx *ctx =3D crypto_ablkcipher_ctx(&tfm->base);
++	return ctx->child;
++}
++EXPORT_SYMBOL_GPL(cryptd_ablkcipher_child);
++
++void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm)
++{
++	crypto_free_ablkcipher(&tfm->base);
++}
++EXPORT_SYMBOL_GPL(cryptd_free_ablkcipher);
++
+ static inline int cryptd_create_thread(struct cryptd_state *state,
+ 				       int (*fn)(void *data), const char *name)
+ {
+--- /dev/null
++++ b/include/crypto/cryptd.h
+@@ -0,0 +1,27 @@
++/*
++ * Software async crypto daemon
++ */
++
++#ifndef _CRYPTO_CRYPT_H
++#define _CRYPTO_CRYPT_H
++
++#include <linux/crypto.h>
++#include <linux/kernel.h>
++
++struct cryptd_ablkcipher {
++	struct crypto_ablkcipher base;
++};
++
++static inline struct cryptd_ablkcipher *__cryptd_ablkcipher_cast(
++	struct crypto_ablkcipher *tfm)
++{
++	return (struct cryptd_ablkcipher *)tfm;
++}
++
++/* alg_name should be algorithm to be cryptd-ed */
++struct cryptd_ablkcipher *cryptd_alloc_ablkcipher(const char *alg_name,
++						  u32 type, u32 mask);
++struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher =
+*tfm);
++void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm);
++
++#endif
+
+
+--=-i1xFNzNRdz5//NAtqR0B
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklwOg8ACgkQKhFGF+eHlpiMHQCgnUc42sm/spV+ay09ccje5EDR
+9bcAoI81QPAXpqLDyjhS0CeXy/o5rdfQ
+=kUBh
+-----END PGP SIGNATURE-----
+
+--=-i1xFNzNRdz5//NAtqR0B--
 
