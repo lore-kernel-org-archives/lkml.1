@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935015AbZAPNzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbZAPN7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935015AbZAPNzv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 08:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbZAPNzH
+	id S933152AbZAPN7Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 08:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZAPN7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 08:55:07 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:40082 "EHLO mummy.ncsc.mil"
+	Fri, 16 Jan 2009 08:59:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37840 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763887AbZAPNzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 08:55:06 -0500
-Subject: Re: 2.6.29-rc1 vs selinux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-In-Reply-To: <200901160321.26749.gene.heskett@gmail.com>
-References: <200901160321.26749.gene.heskett@gmail.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 16 Jan 2009 08:51:40 -0500
-Message-Id: <1232113900.13917.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753797AbZAPN7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 08:59:07 -0500
+Date: Fri, 16 Jan 2009 14:58:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: fully honor "nolapic" (take 2)
+Message-ID: <20090116135851.GA7153@elte.hu>
+References: <4970818A.76E4.0078.0@novell.com> <20090116124548.GC5421@elte.hu> <49709C94.76E4.0078.0@novell.com> <20090116134243.GC14874@elte.hu> <49709EF7.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49709EF7.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 03:21 -0500, Gene Heskett wrote:
-> One of the things that was bugging me was that after having booted 2.6.29-rc1, 
-> rebooting to 2.6.28 final always caused an automatic relabel, which on this 
-> box with a bit over a terrabyte in drives, takes an extra 20 minutes to do.
+
+* Jan Beulich <jbeulich@novell.com> wrote:
+
+> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 14:42 >>>
+> >
+> >* Jan Beulich <jbeulich@novell.com> wrote:
+> >
+> >> >>> Ingo Molnar <mingo@elte.hu> 16.01.09 13:45 >>>
+> >> >
+> >> >* Jan Beulich <jbeulich@novell.com> wrote:
+> >> >
+> >> >> +	if (disable_apic) {
+> >> >> +#ifdef CONFIG_X86_IO_APIC
+> >> >> +		disable_ioapic_setup();
+> >> >> +#endif
+> >> >> +		return;
+> >> >> +	}
+> >> >
+> >> > Shouldnt that #ifdef be avoided by always providing the function - 
+> >> > just it is a NOP inline in the !CONFIG_X86_IO_APIC case?
+> >> 
+> >> That would make for a much bigger patch, since the io_apic.h doesn't 
+> >> (and imo shouldn't) be included without that config option.
+> >
+> >But we are using io-apic functionality in that file, so we should include 
+> >io_apic.h, right?
 > 
-> So I grepped the .config's and there is no mention of SELINUX in the output of 
-> a make oldconfig for 2.6.29-rc1, based on a 2.6.28 .config input.
-> 
-> I see the security/selinux directory still exists in the src tree.  Is this a 
-> kconfig bug, or is selinux outta here?
+> I don't generally (i.e. when !X86_IO_APIC) think so - anything accessing
+> stuff from io_apic.c is guarded by a similar #ifdef.
 
-Can you post your .config file?
-selinux depends on SECURITY_NETWORK && AUDIT && NET && INET
+and wrongly so - it proliferates ugly #ifdefs and sets us up for build 
+failures like that. Developers cannot be expected to keep every build 
+option in mind - we should provide an as homogenic and kconfig-invariant 
+environment as possible.
 
-(possibly it should be using select instead of depends?)
-
--- 
-Stephen Smalley
-National Security Agency
-
+	Ingo
