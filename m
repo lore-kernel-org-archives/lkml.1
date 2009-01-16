@@ -1,305 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbZAPLxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbZAPLzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762245AbZAPLxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 06:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZAPLxk
+	id S1762626AbZAPLzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 06:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbZAPLzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 06:53:40 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40230 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbZAPLxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 06:53:38 -0500
-Date: Fri, 16 Jan 2009 12:55:46 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Paul.Clements@steeleye.com
-Subject: nbd: add locking to nbd_ioctl
-Message-ID: <20090116115512.GA10771@elf.ucw.cz>
+	Fri, 16 Jan 2009 06:55:44 -0500
+Received: from ports.donpac.ru ([80.254.111.81]:45531 "EHLO ports.donpac.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757670AbZAPLzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 06:55:43 -0500
+X-Greylist: delayed 2206 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Jan 2009 06:55:43 EST
+Date: Fri, 16 Jan 2009 14:18:13 +0300
+From: Andrey Panin <pazke@donpac.ru>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jan-Benedict Glaw <jbglaw@lug-owl.de>,
+       Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <jkosina@suse.cz>,
+       Adam Osuchowski <adwol@zonk.pl>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Is 386 processor still supported?
+Message-ID: <20090116111813.GA3125@ports.donpac.ru>
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+	"Maciej W. Rozycki" <macro@linux-mips.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Jan-Benedict Glaw <jbglaw@lug-owl.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Jiri Kosina <jkosina@suse.cz>, Adam Osuchowski <adwol@zonk.pl>,
+	linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>
+References: <1231424833.11687.452.camel@twins> <20090108150448.2393aeb0@lxorguk.ukuu.org.uk> <20090108151046.GK18120@elte.hu> <alpine.LFD.1.10.0901130047160.10547@ftp.linux-mips.org> <20090115123614.GR11087@lug-owl.de> <alpine.LFD.1.10.0901151309420.5737@ftp.linux-mips.org> <20090115133252.28c36adb@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0901151353530.5737@ftp.linux-mips.org> <20090115141734.GA15732@elte.hu> <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090116090002.GD4795@atrey.karlin.mff.cuni.cz>
+X-Uname: Linux 2.6.18-4-powerpc64 ppc64
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 016, 01 16, 2009 at 10:00:02AM +0100, Pavel Machek wrote:
+> > 
+> > * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> > 
+> > > On Thu, 15 Jan 2009, Alan Cox wrote:
+> > > 
+> > > > >  UP emulation of CMPXCHG and XADD for userland should be rather trivial, 
+> > > > > so why not include it like with LL/SC for MIPS?
+> > > > 
+> > > > Why not just ship an additional libc with the right options ?
+> > > 
+> > >  Does not work for MIPS as glibc has no equivalent code for pre-LL/SC 
+> > > CPUs and LL/SC is always used.  For the i386 the situation seems worse 
+> > > yet as for pre-i486 CPUs a generic C implementation of 
+> > > compare-and-exchange is used guaranteeing silent thread unsafety. :(
+> > > 
+> > >  IMO, a kernel emulation of CMPXCHG and XADD (both are used by 
+> > > sysdeps/i386/i486/bits/atomic.h in glibc) with an optional LOCK prefix, 
+> > > guaranteeing UP atomicity would be a cheap way to provide long-term i386 
+> > > userland support with little burden for both Linux and respective user 
+> > > software maintainers.  Certainly it adds some bloat to the kernel, but I 
+> > > think it is not an option that should be outright dismissed without 
+> > > consideration.
+> > 
+> > patches are welcome ...
+> 
+> Hehe, I guess the only long-term solution is to get shiny old 386 as a
+> part of Ingo's test farm ;-).
 
-The code was written with "oh big kernel lock, please protect me from
-all the evil" mentality: it does not locks its own data structures, it
-just hopes that big kernel lock somehow helps.
+It's not so difficult BTW, i386EX CPUs are still used in embedded world.
+Example: http://www.embeddedarm.com/products/board-detail.php?product=TS-3300
+It even has ethernet and price is reasonable (for embedded board of course) :)
 
-It does not. (My fault).
-
-So this uses tx_lock to protect data structures from concurrent use
-between ioctl and worker threads.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index 34f80fa..81c94a4 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -559,74 +557,68 @@ static void do_nbd_request(struct reques
- 	}
- }
- 
--static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
--		     unsigned int cmd, unsigned long arg)
--{
--	struct nbd_device *lo = bdev->bd_disk->private_data;
--	struct file *file;
--	int error;
--	struct request sreq ;
--	struct task_struct *thread;
--
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--
--	BUG_ON(lo->magic != LO_MAGIC);
--
--	/* Anyone capable of this syscall can do *real bad* things */
--	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
--			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
-+/* Must be called with tx_lock held */
- 
-+static int __nbd_ioctl(struct block_device *bdev, struct nbd_device *lo, 
-+		       unsigned int cmd, unsigned long arg)
-+{
- 	switch (cmd) {
- 	case NBD_DISCONNECT:
- 	        printk(KERN_INFO "%s: NBD_DISCONNECT\n", lo->disk->disk_name);
--		blk_rq_init(NULL, &sreq);
--		sreq.cmd_type = REQ_TYPE_SPECIAL;
--		nbd_cmd(&sreq) = NBD_CMD_DISC;
--		/*
--		 * Set these to sane values in case server implementation
--		 * fails to check the request type first and also to keep
--		 * debugging output cleaner.
--		 */
--		sreq.sector = 0;
--		sreq.nr_sectors = 0;
--                if (!lo->sock)
--			return -EINVAL;
--		mutex_lock(&lo->tx_lock);
--                nbd_send_req(lo, &sreq);
--		mutex_unlock(&lo->tx_lock);
-+		{
-+			struct request sreq;
-+
-+			blk_rq_init(NULL, &sreq);
-+			sreq.cmd_type = REQ_TYPE_SPECIAL;
-+			nbd_cmd(&sreq) = NBD_CMD_DISC;
-+			/*
-+			 * Set these to sane values in case server implementation
-+			 * fails to check the request type first and also to keep
-+			 * debugging output cleaner.
-+			 */
-+			sreq.sector = 0;
-+			sreq.nr_sectors = 0;
-+			if (!lo->sock)
-+				return -EINVAL;
-+			nbd_send_req(lo, &sreq);
-+		}
-                 return 0;
-  
- 	case NBD_CLEAR_SOCK:
--		error = 0;
--		mutex_lock(&lo->tx_lock);
--		lo->sock = NULL;
--		mutex_unlock(&lo->tx_lock);
--		file = lo->file;
--		lo->file = NULL;
--		nbd_clear_que(lo);
--		BUG_ON(!list_empty(&lo->queue_head));
--		if (file)
--			fput(file);
--		return error;
--	case NBD_SET_SOCK:
--		if (lo->file)
--			return -EBUSY;
--		error = -EINVAL;
--		file = fget(arg);
--		if (file) {
--			struct inode *inode = file->f_path.dentry->d_inode;
--			if (S_ISSOCK(inode->i_mode)) {
--				lo->file = file;
--				lo->sock = SOCKET_I(inode);
--				if (max_part > 0)
--					bdev->bd_invalidated = 1;
--				error = 0;
--			} else {
-+		{
-+			struct file *file;
-+
-+			lo->sock = NULL;
-+			file = lo->file;
-+			lo->file = NULL;
-+			nbd_clear_que(lo);
-+			BUG_ON(!list_empty(&lo->queue_head));
-+			if (file)
- 				fput(file);
-+		}
-+	return 0;
-+
-+	case NBD_SET_SOCK:
-+		{
-+			struct file *file;
-+			if (lo->file)
-+				return -EBUSY;
-+			file = fget(arg);
-+			if (file) {
-+				struct inode *inode = file->f_path.dentry->d_inode;
-+				if (S_ISSOCK(inode->i_mode)) {
-+					lo->file = file;
-+					lo->sock = SOCKET_I(inode);
-+					if (max_part > 0)
-+						bdev->bd_invalidated = 1;
-+					return 0;
-+				} else {
-+					fput(file);
-+				}
- 			}
- 		}
--		return error;
-+		return -EINVAL;
-+
- 	case NBD_SET_BLKSIZE:
- 		lo->blksize = arg;
- 		lo->bytesize &= ~(lo->blksize-1);
-@@ -634,47 +626,65 @@ static int nbd_ioctl(struct block_device
- 		set_blocksize(bdev, lo->blksize);
- 		set_capacity(lo->disk, lo->bytesize >> 9);
- 		return 0;
-+
- 	case NBD_SET_SIZE:
- 		lo->bytesize = arg & ~(lo->blksize-1);
- 		bdev->bd_inode->i_size = lo->bytesize;
- 		set_blocksize(bdev, lo->blksize);
- 		set_capacity(lo->disk, lo->bytesize >> 9);
- 		return 0;
-+
- 	case NBD_SET_TIMEOUT:
- 		lo->xmit_timeout = arg * HZ;
- 		return 0;
-+
- 	case NBD_SET_SIZE_BLOCKS:
- 		lo->bytesize = ((u64) arg) * lo->blksize;
- 		bdev->bd_inode->i_size = lo->bytesize;
- 		set_blocksize(bdev, lo->blksize);
- 		set_capacity(lo->disk, lo->bytesize >> 9);
- 		return 0;
-+
- 	case NBD_DO_IT:
--		if (lo->pid)
--			return -EBUSY;
--		if (!lo->file)
--			return -EINVAL;
--		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
--		if (IS_ERR(thread))
--			return PTR_ERR(thread);
--		wake_up_process(thread);
--		error = nbd_do_it(lo);
--		kthread_stop(thread);
--		if (error)
--			return error;
--		sock_shutdown(lo, 1);
--		file = lo->file;
--		lo->file = NULL;
--		nbd_clear_que(lo);
--		printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
--		if (file)
--			fput(file);
--		lo->bytesize = 0;
--		bdev->bd_inode->i_size = 0;
--		set_capacity(lo->disk, 0);
--		if (max_part > 0)
--			ioctl_by_bdev(bdev, BLKRRPART, 0);
--		return lo->harderror;
-+		{
-+			struct task_struct *thread;
-+			struct file *file;
-+			int error;
-+
-+			if (lo->pid)
-+				return -EBUSY;
-+			if (!lo->file)
-+				return -EINVAL;
-+
-+			mutex_unlock(&lo->tx_lock);
-+
-+			thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
-+			if (IS_ERR(thread)) {
-+				mutex_lock(&lo->tx_lock);
-+				return PTR_ERR(thread);
-+			}
-+			wake_up_process(thread);
-+			error = nbd_do_it(lo);
-+			kthread_stop(thread);
-+
-+			mutex_lock(&lo->tx_lock);
-+			if (error)
-+				return error;
-+			sock_shutdown(lo, 0);
-+			file = lo->file;
-+			lo->file = NULL;
-+			nbd_clear_que(lo);
-+			printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
-+			if (file)
-+				fput(file);
-+			lo->bytesize = 0;
-+			bdev->bd_inode->i_size = 0;
-+			set_capacity(lo->disk, 0);
-+			if (max_part > 0)
-+				ioctl_by_bdev(bdev, BLKRRPART, 0);
-+			return lo->harderror;
-+		}
-+
- 	case NBD_CLEAR_QUE:
- 		/*
- 		 * This is for compatibility only.  The queue is always cleared
-@@ -682,6 +692,7 @@ static int nbd_ioctl(struct block_device
- 		 */
- 		BUG_ON(!lo->sock && !list_empty(&lo->queue_head));
- 		return 0;
-+
- 	case NBD_PRINT_DEBUG:
- 		printk(KERN_INFO "%s: next = %p, prev = %p, head = %p\n",
- 			bdev->bd_disk->disk_name,
-@@ -689,7 +700,29 @@ static int nbd_ioctl(struct block_device
- 			&lo->queue_head);
- 		return 0;
- 	}
--	return -EINVAL;
-+}
-+
-+
-+static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
-+		     unsigned int cmd, unsigned long arg)
-+{
-+	struct nbd_device *lo = bdev->bd_disk->private_data;
-+	int error;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	BUG_ON(lo->magic != LO_MAGIC);
-+
-+	/* Anyone capable of this syscall can do *real bad* things */
-+	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
-+			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
-+
-+	mutex_lock(&lo->tx_lock);
-+	error = __nbd_ioctl(bdev, lo, cmd, arg);
-+	mutex_unlock(&lo->tx_lock);
-+
-+	return error;
- }
- 
- static struct block_device_operations nbd_fops =
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
