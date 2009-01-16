@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbZAPMYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbZAPMZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762186AbZAPMYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 07:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZAPMYp
+	id S932875AbZAPMZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 07:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757871AbZAPMZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 07:24:45 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:55731 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753062AbZAPMYo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 07:24:44 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: dedekind@infradead.org
-Subject: Re: [PATCH] UBI: add ioctl compatibility
-Date: Fri, 16 Jan 2009 13:24:34 +0100
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1232036381.25068.10.camel@localhost.localdomain> <200901151734.23870.arnd@arndb.de> <1232104138.25068.22.camel@localhost.localdomain>
-In-Reply-To: <1232104138.25068.22.camel@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 16 Jan 2009 07:25:35 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:33360 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757384AbZAPMZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 07:25:34 -0500
+Date: Fri, 16 Jan 2009 13:25:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Takashi Iwai <tiwai@suse.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ALSA fixes (#2) for 2.6.29-rc1
+In-Reply-To: <s5hd4eo60su.wl%tiwai@suse.de>
+Message-ID: <alpine.LRH.1.10.0901161324380.29435@twin.jikos.cz>
+References: <s5hd4eo60su.wl%tiwai@suse.de>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901161324.35271.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/2shzqaQtQvB1hJDXPH9Qtl80Qy0ZNCGyLpie
- E6k9yiFSDIeimGJvnYeVEaeWN0AoDA9zkgAjGSX5LA5fuw89jx
- zMzl1xcjHZxmztI6zhBow==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009, Artem Bityutskiy wrote:
-> Thank you Arnd. Here is the corrected patch. Tested on x68_64 + 32-bit
-> UBI tools.
-> 
+On Thu, 15 Jan 2009, Takashi Iwai wrote:
 
-Looks better now, but the compat_ versions are still missing the
-compat_ptr() conversions. Those only make a difference on s390,
-so you wouldn't see the problem on x86_64.
+> Signed-off-by: Peter Stokes (1):
+>       ALSA: USB quirk for Logitech Quickcam Pro 9000 name
 
-	Arnd <><
+BTW this doen't seem to be really correct :)
+
+-- 
+Jiri Kosina
+SUSE Labs
+
