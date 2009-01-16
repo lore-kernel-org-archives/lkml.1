@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbZAPATT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762424AbZAPAVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932550AbZAPATT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Jan 2009 19:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZAPAS7
+	id S1762424AbZAPAVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Jan 2009 19:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZAPAUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Jan 2009 19:18:59 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:37142 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752449AbZAPAS6 (ORCPT
+	Thu, 15 Jan 2009 19:20:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60794 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751733AbZAPAUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Jan 2009 19:18:58 -0500
-Date: Fri, 16 Jan 2009 11:18:24 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, tj@kernel.org, hpa@zytor.com, brgerst@gmail.com,
-       ebiederm@xmission.com, cl@linux-foundation.org, rusty@rustcorp.com.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org, steiner@sgi.com,
-       hugh@veritas.com, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Message-ID: <20090116001824.GA9221@gondor.apana.org.au>
-References: <20090115183942.GA6325@elte.hu> <20090116001200.GA9137@gondor.apana.org.au> <20090116001544.GA11073@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090116001544.GA11073@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 15 Jan 2009 19:20:49 -0500
+Date: Thu, 15 Jan 2009 16:20:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       t-sato@yk.jp.nec.com
+Subject: Re: [PATCH] Allow SysRq emergency sync to thaw frozen filesystems
+Message-Id: <20090115162031.a512232b.akpm@linux-foundation.org>
+In-Reply-To: <496EB639.6090800@redhat.com>
+References: <496EB639.6090800@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 01:15:44AM +0100, Ingo Molnar wrote:
->
-> > So if you could design the API such that we have a variant of add/inc 
-> > that automatically disables/enables preemption then we can optimise that 
-> > away on x86.
+On Wed, 14 Jan 2009 22:06:17 -0600
+Eric Sandeen <sandeen@redhat.com> wrote:
+
+> Now that the filesystem freeze operation has been elevated
+> to the VFS, and is just an ioctl away, some sort of safety net
+> for unintentionally frozen root filesystems may be in order.
 > 
-> Yeah. percpu_add(var, 1) does exactly that on x86.
+> The timeout thaw originally proposed did not get merged, but
+> perhaps something like this would be useful in emergencies.
+> 
+> This doesn't have to piggyback on the existing emergency sync
+> sysrq, but it seems like a reasonable, simple addition to me.
+> 
+> I've tested this on a non-root fs with multiple (nested) freezers,
+> as well as on a system rendered unresponsive due to a frozen
+> root fs.
 
-Awesome! Sounds like we can finally do away with those nasty
-hacks in the SNMP macros.
+Worried.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Under what operational scenarios is ths feature actually needed/used?
+
+> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+> ---
+> 
+> Index: linux-2.6/drivers/char/sysrq.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/char/sysrq.c
+> +++ linux-2.6/drivers/char/sysrq.c
+> @@ -151,6 +151,7 @@ static struct sysrq_key_op sysrq_reboot_
+>  
+>  static void sysrq_handle_sync(int key, struct tty_struct *tty)
+>  {
+> +	emergency_thaw();
+>  	emergency_sync();
+>  }
+
+Kind of weird.   The thaw will happen after/during the sync().
+
+I guess that if the sync is blocked on a frozen fs then things will
+sort themselves out.
+
+otoh, if all the pdflush threads are blocked on frozen filesystems
+(possible?) then the emergency_thaw() simply won't do anything.
+
+> ===================================================================
+> --- linux-2.6.orig/fs/buffer.c
+> +++ linux-2.6/fs/buffer.c
+> @@ -258,6 +258,29 @@ struct super_block *freeze_bdev(struct b
+>  }
+>  EXPORT_SYMBOL(freeze_bdev);
+>  
+> +void do_thaw(unsigned long unused)
+> +{
+> +	struct super_block *sb;
+> +	char b[BDEVNAME_SIZE];
+> +
+> +	list_for_each_entry(sb, &super_blocks, s_list) {
+> +		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
+> +			printk(KERN_WARNING "Emergency Thaw on %s\n",
+> +			       bdevname(sb->s_bdev, b));
+
+hm, I made the args to bdevname() backwards.  Bad me.
+
+> +	}
+> +	printk(KERN_WARNING "Emergency Thaw complete\n");
+> +}
+
