@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759950AbZAQONQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbZAQOP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759950AbZAQONQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 09:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbZAQOM7
+	id S1760965AbZAQOP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 09:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756600AbZAQOPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 09:12:59 -0500
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:56589 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755194AbZAQOM6 (ORCPT
+	Sat, 17 Jan 2009 09:15:10 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:51797 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756488AbZAQOPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 09:12:58 -0500
-Date: Sat, 17 Jan 2009 15:12:49 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Bodo Eggert <7eggert@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
-In-Reply-To: <20090115223557.GC10429@ioremap.net>
-Message-ID: <alpine.LSU.0.999.0901171504480.7336@be1.lrz>
-References: <bTx3z-8bU-23@gated-at.bofh.it> <bTxdg-8sZ-23@gated-at.bofh.it>
- <bTxdg-8sZ-21@gated-at.bofh.it> <bTxmW-hf-1@gated-at.bofh.it>
- <bTRYr-2up-21@gated-at.bofh.it> <E1LNBGL-00021y-C8@be1.7eggert.dyndns.org>
- <20090114192216.GA18123@ioremap.net> <alpine.LSU.0.999.0901152243330.9772@be1.lrz>
- <20090115223557.GC10429@ioremap.net>
+	Sat, 17 Jan 2009 09:15:08 -0500
+X-BigFish: VPS-31(z21eWz1432R62a3L98dR936eQ1805M9320imzzzzz32i6bh63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KDMCWS-01-NOH-01
+Date: Sat, 17 Jan 2009 15:14:53 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Tim Blechmann <tim@klingt.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com
+Subject: Re: 2.6.28-rc9: oprofile regression
+Message-ID: <20090117141453.GA21604@erda.amd.com>
+References: <49544497.9020900@linux.intel.com> <1230894257.6072.10.camel@thinkpad> <alpine.LFD.2.00.0901141739580.3598@localhost.localdomain> <1231957184.13033.70.camel@thinkpad> <alpine.LFD.2.00.0901150940250.3598@localhost.localdomain> <1232010853.6541.4.camel@thinkpad> <alpine.LFD.2.00.0901152135110.3400@localhost.localdomain> <1232067181.6134.74.camel@thinkpad> <alpine.LFD.2.00.0901160956170.3400@localhost.localdomain> <1232199169.7016.12.camel@thinkpad>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1232199169.7016.12.camel@thinkpad>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2009 14:14:53.0901 (UTC) FILETIME=[F7CF67D0:01C978AD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009, Evgeniy Polyakov wrote:
-> On Thu, Jan 15, 2009 at 10:50:58PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
-
-> > > This does not work if processes are short-living and are spawned by the
-> > > parent on demand.
-> > 
-> > They will have the same name, too. Your Kenny-killer will fail, too.
+On 17.01.09 14:32:49, Tim Blechmann wrote:
+> hm, it seems a bit more complicated than i originally thought.
 > 
-> It is not always the case, processes start executing different binaries
-> and change the names, that's at least what I observed in the particular
-> root case of the discussion.
-
-In that case, you can use a wrapper script.
-
-> > > If processes have different priority in regards to oom
-> > > condition, this problem can not be solved with existing interfaces
-> > > without changing the application. So effectively there is no solution.
-> > 
-> > ACK, but being a child should count. Maybe the weight for childs should be 
-> > increased, if it does not do the right thing? Or maybe the childs do share 
-> > much (most of the) memory, so killing the parent is the right thing if you 
-> > want to free some RAM?
+> trying to reconstruct commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8, i
+> found, that resetting counter_width in ppro_setup_ctrs, causes the
+> issue. reverting part of the patch, resolved the issue:
 > 
-> There could be lots of heuristics applied for the different cases, but
-> without changing the application, they are somewhat limited to
-> long-living processes only. There are really lots of cases when it does
-> not stand.
+> --- a/arch/x86/oprofile/op_model_ppro.c
+> +++ b/arch/x86/oprofile/op_model_ppro.c
+> @@ -79,8 +79,8 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+>         if (cpu_has_arch_perfmon) {
+>                 union cpuid10_eax eax;
+>                 eax.full = cpuid_eax(0xa);
+> -               if (counter_width < eax.split.bit_width)
+> -                       counter_width = eax.split.bit_width;
+> +//             if (counter_width < eax.split.bit_width)
+> +//                     counter_width = eax.split.bit_width;
+>         }
+>  
+>         /* clear all counters */
+> 
+> 
+> however, trying to apply this patch to 2.6.28, the behavior is the same
+> as before (one NMI) ... so possibly, it is a combination of two bugs,
+> with similar symptoms ... 
 
-If it's short-lived enough, the processes will out-die the OOM-Killer.
-You can only win by by suspending or killing the factory.
+Tim, could you revert 7c64ade53a6f977d73f16243865c42ceae999aea too?
+
+If this not helps, last chance is
+59512900baab03c5629f2ff5efad1d5d4e682ece, but this seems to be save.
+
+-Robert
+
 -- 
-Why do men die before their wives?
-They want to.
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
