@@ -1,134 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765935AbZAQUaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbZAQUeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765935AbZAQUaI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 15:30:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZAQU3z
+	id S932403AbZAQUeY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 15:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZAQUeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 15:29:55 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:47403 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754587AbZAQU3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 15:29:54 -0500
-Date: Sat, 17 Jan 2009 12:26:38 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
-       bastian@waldi.eu.org
-Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7][v7] Container-init signal semantics
-Message-ID: <20090117202638.GA11825@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sat, 17 Jan 2009 15:34:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43543 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754587AbZAQUeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 15:34:14 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090117082623.GB24905@elte.hu>
+References: <20090117082623.GB24905@elte.hu> <20090115181612.GA27762@elte.hu> <16916.1232172471@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Michael LeMay <mdlemay@epoch.ncsc.mil>,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Paul Moore <paul.moore@hp.com>, Eric Paris <eparis@redhat.com>
+Subject: Re: [slab corruption] BUG key_jar: Poison overwritten
+Date: Sat, 17 Jan 2009 20:33:22 +0000
+Message-ID: <31147.1232224402@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Container-init must behave like global-init to processes within the
-container and hence it must be immune to unhandled fatal signals from
-within the container (i.e SIG_DFL signals that terminate the process).
+> The problem was not reproducible - i tried the same config once more and 
+> it didnt produce the bug. (this system has no known hardware flukes)
 
-But the same container-init must behave like a normal process to 
-processes in ancestor namespaces and so if it receives the same fatal
-signal from a process in ancestor namespace, the signal must be
-processed.
+Having thought about it some more, we can't necessarily pin the blame on the
+key management code.  I think it more likely due to the previous owner of the
+page as it's the guard poisoning that got corrupted, not the allocated key
+struct.  The problem is we don't know who that was.  I wonder if it's
+practical to store a recent history of page allocs and releases in a circular
+buffer.
 
-Implementing these semantics requires that send_signal() determine pid
-namespace of the sender but since signals can originate from workqueues/
-interrupt-handlers, determining pid namespace of sender may not always
-be possible or safe.
-
-This patchset implements the design/simplified semantics suggested by
-Oleg Nesterov.  The simplified semantics for container-init are:
-
-	- container-init must never be terminated by a signal from a
-	  descendant process.
-
-	- container-init must never be immune to SIGKILL from an ancestor
-	  namespace (so a process in parent namespace must always be able
-	  to terminate a descendant container).
-
-	- container-init may be immune to unhandled fatal signals (like
-	  SIGUSR1) even if they are from ancestor namespace (SIGKILL is
-	  the only reliable signal from ancestor namespace).
-
-Patches in this set:
-
-	[PATCH 1/7] Remove 'handler' parameter to tracehook functions
-	[PATCH 2/7] Protect init from unwanted signals more
-	[PATCH 3/7] Add from_ancestor_ns parameter to send_signal()
-	[PATCH 4/7] Protect cinit from unblocked SIG_DFL signals
-	[PATCH 5/7] Protect cinit from blocked fatal signals
-	[PATCH 6/7] SI_USER: Masquerade si_pid when crossing pid ns boundary
-	[PATCH 7/7] proc: Show SIG_DFL signals to init as "ignored" signals
-
-Changelog[v7]:
-	- siginfo_from_user() and siginfo_from_ancestor_ns() are fairly simple
-	  and used only in send_signal(). Remove them and move the logic into
-	  send_signal() (Drop old patch 4, update new patch 4/7)
-
-	- Update /proc/pid/status to include SIG_DFL signals to init in the
-	  "ignored" set (and remove the TODO in Patch 0/7) (Patch 7/7)
-
-Changelog[v6]:
-
-	- Patches 3,4: Have kill_pid_info_as_uid() pass in 'from_ancestor_ns'
-	  parameter to __send_signal() and remove SI_ASYNCIO check in
-	  siginfo_from_user().
-	- Patches 4,6: Update changelog and simplify code
-
-Changelog[v5]:
-	- Patch 2/6: Remove SIG_IGN check in sig_task_ignored() and let
-	  sig_handler_ignored() check SIG_IGN.
-        - Patch 3/6. Put siginfo_from_ancestor_ns() back under CONFIG_PID_NS
-	  and remove warning in rt_sigqueueinfo().
-	- (Patch 5/6)Simplify check in get_signal_to_deliver()
-	- (Patch 6/6)Simplify masquerading pid
-	- LTP-20081219-intermediate showed no new errors on 2.6.28-rc5-mm2.
-
-Changelog[v4]:
-	- [Bugfix] Patch 3/7. Check ns == NULL in siginfo_from_ancestor_ns().
-	  Although http://lkml.org/lkml/2008/12/16/502 makes it less likely
-	  that ns == NULL, looks like an explicit check won't hurt ?
-	- Remove SIGNAL_UNKILLABLE_FROM_NS flag and simplify logic as
-	  suggested by Oleg Nesterov.
-	- Dropped patch that set SIGNAL_UNKILLABLE_FROM_NS and set
-	  SIGNAL_UNKILLABLE in patch 5/7 to be bisect-safe.
-	- Add a warning in rt_sigqueueinfo() if SI_ASYNCIO is used
-	  (patch 3/7)
-	- Added two patches (6/7 and 7/7) to masquerade si_pid for
-	  SI_USER and SI_TKILL
-
-
-Changelog[v3]:
-	Changes based on discussions of previous version:
-		http://lkml.org/lkml/2008/11/25/458
-
-	Major changes:
-
-	- Define SIGNAL_UNKILLABLE_FROM_NS and use in container-inits to
-	  skip fatal signals from same namespace but process SIGKILL/SIGSTOP
-	  from ancestor namespace.
-	- Use SI_FROMUSER() and si_code != SI_ASYNCIO to determine if
-	  it is safe to dereference pid-namespace of caller. Highly
-	  experimental :-)
-	- Masquerading si_pid when crossing namespace boundary: relevant
-	  patches merged in -mm and dropped from this set.
-
-	Minor changes:
-
-	- Remove 'handler' parameter to tracehook functions
-	- Update sig_ignored() to drop SIG_DFL signals to global init early
-	  (tried to address Roland's  and Oleg's comments)
-	- Use 'same_ns' flag to drop SIGKILL/SIGSTOP to cinit from same
-	  namespace
-
-
-Limitations/side-effects of current design
-
-	- Container-init is immune to suicide - kill(getpid(), SIGKILL) is
-	  ignored. Use exit() :-)
+David
