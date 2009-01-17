@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765523AbZAQQvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765279AbZAQQyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765523AbZAQQvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbZAQQvE
+	id S1765279AbZAQQyT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZAQQyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:51:04 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:47114 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbZAQQvC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:51:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=osqFrVbttkmN/swynvfdcqoqRkvuXobSTK25K2HLD/FqwhepIzT0Njrqx/Go1QRNpE
-         pEjwl0LxdXmLfSeWd+YgUQwzEB2qVURokaHgy1NWXP2pr+6/VGXrvIbKyHinRGAPGyr+
-         SAP/DvbzFNGWQlKa889bUuBpd+o/zGE1AL8MM=
-Message-ID: <c384c5ea0901170850q4c72d8bcpc76eb635950aaa2e@mail.gmail.com>
-Date: Sat, 17 Jan 2009 17:50:59 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-Cc: "Jens Axboe" <axboe@kernel.dk>, "Andrea Arcangeli" <andrea@suse.de>,
-       akpm@linux-foundation.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20090117162657.GA31965@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 17 Jan 2009 11:54:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37036 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755328AbZAQQyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 11:54:08 -0500
+Subject: Re: [GIT PULL -tip] x86: fix 22 make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090117164747.GA7192@localhost>
+References: <1232209856.3388.5.camel@localhost.localdomain>
+	 <20090117164108.GG10825@elte.hu>  <20090117164747.GA7192@localhost>
+Content-Type: text/plain
+Date: Sat, 17 Jan 2009 22:23:44 +0530
+Message-Id: <1232211224.3966.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Mathieu et al,
+On Sat, 2009-01-17 at 19:47 +0300, Cyrill Gorcunov wrote:
+> [Ingo Molnar - Sat, Jan 17, 2009 at 05:41:08PM +0100]
+> | 
+> | * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> | 
+> | > Hello Ingo,
+> | > 
+> | > The following changes since commit 206e00df0967f6e91d792df7f1d4ff352eb42f8f:
+> | >   Ingo Molnar (1):
+> | >         Merge branch 'x86/urgent'
+> | > 
+> | > are available in the git repository at:
+> | > 
+> | >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tiptop.git master
+> | > 
+> | > Jaswinder Singh Rajput (8):
+> | >       x86: boot.h fix make headers_check
+> | >       x86: e820.h fix make headers_check
+> | >       x86: kvm.h fix make headers_check
+> | >       x86: mce.h fix make headers_check
+> | >       x86: mtrr.h fix make headers_check
+> | >       x86: ptrace-abi.h fix make headers_check
+> | >       x86: sigcontext.h fix make headers_check
+> | >       x86: swab.h fix make headers_check
+> | > 
+> | >  arch/x86/include/asm/boot.h       |    2 ++
+> | >  arch/x86/include/asm/e820.h       |   11 ++++++++---
+> | >  arch/x86/include/asm/kvm.h        |    2 +-
+> | >  arch/x86/include/asm/mce.h        |    5 +----
+> | >  arch/x86/include/asm/mtrr.h       |    1 +
+> | >  arch/x86/include/asm/ptrace-abi.h |    5 ++++-
+> | >  arch/x86/include/asm/sigcontext.h |    2 +-
+> | >  arch/x86/include/asm/swab.h       |   21 +++++++++++++++++++--
+> | >  8 files changed, 37 insertions(+), 12 deletions(-)
+> | 
+> | Pulled into tip/core/header-fixes and started testing them, thanks 
+> | Jaswinder!
+> | 
+> | 	Ingo
+> | 
+> 
+> I thought some of them I've already fixed, no?
+> 
 
-On Sat, Jan 17, 2009 at 5:26 PM, Mathieu Desnoyers
-<mathieu.desnoyers@polymtl.ca> wrote:
-> A long standing I/O regression (since 2.6.18, still there today) has hit
-> Slashdot recently :
-> http://bugzilla.kernel.org/show_bug.cgi?id=12309
+I just prepared these patches now based on the latest -tip and try to
+remove all the remaining warnings for x86 headers files:
 
-Are you sure you are solving the *actual* problem?
+  INSTALL include/asm (52 files)
+  CHECK   include/asm (52 files)
 
-The bugzilla entry shows a bisect attempt that leads to a patch
-involving negative clock jumps.
-http://bugzilla.kernel.org/show_bug.cgi?id=12309#c29
+Thanks
+--
+JSR
 
-with a corrected link to the bisect patch:
-http://bugzilla.kernel.org/show_bug.cgi?id=12309#c30
 
-Wouldn't a negative clock jump be very influential to the
-(time-driven) I/O schedulers and be a more probable cause?
-
-Regards,
--- 
-Leon
-
-p.s. Added Thomas to the CC list as his name is on the patch Signed-off-by list.
