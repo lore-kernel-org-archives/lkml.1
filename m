@@ -1,143 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764734AbZAQSMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765637AbZAQS1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764734AbZAQSMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 13:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZAQSMC
+	id S1765637AbZAQS1V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 13:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764085AbZAQS1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 13:12:02 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56039 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759794AbZAQSMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 13:12:00 -0500
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a
- question
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: hooanon05@yahoo.co.jp
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <10394.1232214142@jrobl>
-References: <7471.1231827621@jrobl>
-	 <1231852628.6954.4.camel@norville.austin.ibm.com>
-	 <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl>
-	 <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl>
-	 <1232210546.7015.8.camel@norville.austin.ibm.com>  <10394.1232214142@jrobl>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 18:11:56 +0000
-Message-Id: <1232215916.7015.78.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sat, 17 Jan 2009 13:27:03 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:59509 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1762761AbZAQS1B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 13:27:01 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-kbuild@vger.kernel.org
+Subject: Should EXTRA_FIRMWARE include full path to output directory?
+Date: Sat, 17 Jan 2009 21:26:15 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1325630.A9ChXFn69Y";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200901172126.29358.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 02:42 +0900, hooanon05@yahoo.co.jp wrote:
-> Dave Kleikamp:
-> > Does this function make sense (un-compiled, un-tested)?
-> > 
-> > void ecryptfs_update_inode_from_lower(struct dentry *dentry)
-> > {
-> > 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
-> > 
-> > 	if (d_unhashed(lower_dentry))
-> > 		d_drop(dentry);
-> > 	else {
-> > 		struct inode *inode = dentry->d_inode;
-> > 		struct inode *lower_inode = lower_dentry->d_inode;
-> > 
-> > 		inode->i_nlink = lower_inode->i_nlink;
-> > 		inode->i_ctime = lower_inode->i_ctime;
-> > 		/* Should anything else go here ? */
-> > 	}
-> > }
-> 
-> Yes, testing by d_unhashed() is best, I think.
-> But all inode attributes are maintained by ecryptfs_interpose(), so you
-> don't need to handle them.
+--nextPart1325630.A9ChXFn69Y
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-maybe ecryptfs_interpose() should be checking d_unhashed().
+{pts/1}% LC_ALL=3DC make -C ~/src/linux-git O=3D$HOME/build/linux-2.6.29
+make: Entering directory `/home/bor/src/linux-git'
+  Using /home/bor/src/linux-git as source for kernel
+ln -fsn /home/bor/src/linux-git source
+  GEN     /home/bor/build/linux-2.6.29/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    /home/bor/src/linux-git/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+/home/bor/src/linux-git/firmware/Makefile:156: warning: overriding commands=
+=20
+for target `firmware/e100/d101m_ucode.bin.gen.S'
+/home/bor/src/linux-git/firmware/Makefile:153: warning: ignoring old=20
+commands for target `firmware/e100/d101m_ucode.bin.gen.S'
+  AS      firmware/e100/d101m_ucode.bin.gen.o
+firmware/e100/d101m_ucode.bin.gen.S: Assembler messages:
+firmware/e100/d101m_ucode.bin.gen.S:5: Error: file not found:=20
+/home/bor/src/linux-git/firmware/e100/d101m_ucode.bin
+make[2]: *** [firmware/e100/d101m_ucode.bin.gen.o] Error 1
+make[1]: *** [firmware] Error 2
+make: *** [sub-make] Error 2
+make: Leaving directory `/home/bor/src/linux-git'
+{pts/1}% grep e100 ~/build/linux-2.6.29/.config
+CONFIG_EXTRA_FIRMWARE=3D"e100/d101m_ucode.bin"
 
-> And I found another bug in ecryptfs_link().
-> Here is a patch including that.
-> 
-> 
-> J. R. Okajima
-> 
-> ----------------------------------------------------------------------
-> refine ecryptfs_link()
-> 
-> ecryptfs_link() doesn't need to,,,
-> - copy i_nlink and i_size for the target inode since they are already
->   handled by ecryptfs_interpose(). (I don't know why i_size was
->   necessary)
 
-For a regular file, the size of the upper inode is not the same as the
-size of the lower inode.  The lower inode includes the header blocks
-which are not visible in the upper inode.  So ecryptfs_interpose() will
-overwrite the correct upper inode size.
+--nextPart1325630.A9ChXFn69Y
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> - maintain dir attributes based upon the lower dir, instead of
->   lower_new_dentry. (another bug)
-> - several d_drop()s. do it only when the lower_new_dentry is d_drop()ed
->   by the lower fs or vfs_link() failed.
-> - testing lower_new_dentry->d_inode after vfs_link() succeeded.
-> 
-> Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
-> 
-> diff -u -p -r1.1 inode.c
-> --- inode.c	19 Dec 2008 03:05:27 -0000	1.1
-> +++ inode.c	17 Jan 2009 17:26:53 -0000
-> @@ -405,10 +407,8 @@ static int ecryptfs_link(struct dentry *
->  	struct dentry *lower_old_dentry;
->  	struct dentry *lower_new_dentry;
->  	struct dentry *lower_dir_dentry;
-> -	u64 file_size_save;
->  	int rc;
-> 
-> -	file_size_save = i_size_read(old_dentry->d_inode);
->  	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
->  	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
->  	dget(lower_old_dentry);
-> @@ -416,23 +416,23 @@ static int ecryptfs_link(struct dentry *
->  	lower_dir_dentry = lock_parent(lower_new_dentry);
->  	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
->  		      lower_new_dentry);
-> -	if (rc || !lower_new_dentry->d_inode)
-> -		goto out_lock;
-> -	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
-> -	if (rc)
-> -		goto out_lock;
-> -	fsstack_copy_attr_times(dir, lower_new_dentry->d_inode);
-> -	fsstack_copy_inode_size(dir, lower_new_dentry->d_inode);
-> -	old_dentry->d_inode->i_nlink =
-> -		ecryptfs_inode_to_lower(old_dentry->d_inode)->i_nlink;
-> -	i_size_write(new_dentry->d_inode, file_size_save);
-> -out_lock:
-> +	if (!rc) {
-> +		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
-> +		fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
-> +		if (!d_unhashed(lower_new_dentry)
-> +		    /* && lower_new_dentry->d_inode */) {
-> +			rc = ecryptfs_interpose(lower_new_dentry, new_dentry,
-> +						dir->i_sb, 0);
-> +			if (!rc)
-> +				goto out_lock; /* success */
-> +		}
-> +	}
-> + out_drop:
-> +	d_drop(new_dentry);
-> + out_lock:
->  	unlock_dir(lower_dir_dentry);
->  	dput(lower_new_dentry);
->  	dput(lower_old_dentry);
-> -	d_drop(lower_old_dentry);
-> -	d_drop(new_dentry);
-> -	d_drop(old_dentry);
->  	return rc;
->  }
-> 
--- 
-David Kleikamp
-IBM Linux Technology Center
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEABECAAYFAklyIsoACgkQR6LMutpd94xMZwCbBPA1h8HQjWKNFBflqJRrwN4t
+wPAAnia0u0B7AHpaSb3RcxjQUAf+43GZ
+=Cz6u
+-----END PGP SIGNATURE-----
+
+--nextPart1325630.A9ChXFn69Y--
