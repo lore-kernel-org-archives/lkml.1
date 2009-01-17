@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932708AbZAQTsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765007AbZAQUEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932708AbZAQTsr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 14:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbZAQTse
+	id S1765007AbZAQUEB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 15:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZAQUDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 14:48:34 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:59437 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932418AbZAQTsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 14:48:33 -0500
-Message-ID: <49723602.4090202@sgi.com>
-Date: Sat, 17 Jan 2009 11:48:18 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: Pavel Machek <pavel@suse.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.29-rc1: [SOLVED] thinkpad problems during resume
-References: <20090113081316.GA2292@elf.ucw.cz> <20090116104455.GA3283@elf.ucw.cz> <200901171546.15987.borntraeger@de.ibm.com> <200901171648.34155.borntraeger@de.ibm.com>
-In-Reply-To: <200901171648.34155.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 17 Jan 2009 15:03:51 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:64090 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbZAQUDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 15:03:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HoRQ3hWVnZZAzIYdd8OIi61Sj8x5xjOZEgQkSQc2/Vh2NRCBEkfe+HHeCMOzGepHnM
+         lF55/x/waZqC1aV4VEUaHuug8M3SxxKAWptIql6mPMD591FPfKAr2mqGE7gfwBDp7l1I
+         NWy2djrOgCClJ0UwNmNVKTFSNZ04q1csGBtOY=
+Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
+From: Ben Gamari <bgamari@gmail.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jens Axboe <axboe@kernel.dk>, Andrea Arcangeli <andrea@suse.de>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+In-Reply-To: <20090117162657.GA31965@Krystal>
+References: <20090117004439.GA11492@Krystal>
+	 <20090117162657.GA31965@Krystal>
+Content-Type: text/plain
+Date: Sat, 17 Jan 2009 15:03:46 -0500
+Message-Id: <1232222626.3666.14.camel@mercury.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Borntraeger wrote:
->> commit e39ad415ac15116df213dfa2aa2a4f1b0857af9c
->> Author: Mike Travis <travis@sgi.com>
->> Date:   Sun Jan 4 05:18:10 2009 -0800
->>
->>     cpumask: use work_on_cpu in acpi-cpufreq.c for read_measured_perf_ctrs
->>
->> makes cpu hotplug working again. Resume from suspend to ram is still broken
->> on my Thinkpad. Looks like there is yet another patch to find....
->>
->> Ingo, Mike: reverting e39ad415ac15116df213dfa2aa2a4f1b0857af9c fixes cpu
->> hotplug on my thinkpad. Any idea how to proceed? Should we revert that
->> patch in Linus git until we know what was wrong?
-> 
-> I forgot to revert the usb patch.
-> Current status:
-> 2.6.29-rc2 + 
-> reverted e39ad415ac15116df213dfa2aa2a4f1b0857af9c (cpumask: use work_on_cpu in 
-> acpi-cpufreq.c for read_measured_perf_ctrs) + 
-> reverted a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 (USB: fix up suspend and 
-> resume for PCI host controllers)
-> 
-> has a working suspend to ram on my T61p. With any of these two patches not 
-> reverted resume hangs.
-> 
-> Christian
+On Sat, 2009-01-17 at 11:26 -0500, Mathieu Desnoyers wrote:
+> This patch implements a basic test to make sure we never merge more than 128
+> requests into the same request if it is the "last_merge" request. I have not
+> been able to trigger the problem again with the fix applied. It might not be in
+> a perfect state : there may be better solutions to the problem, but I think it
+> helps pointing out where the culprit lays.
 
-Could you try one more experiment?  With your working system, please cherry
-pick these commits and try it again?
+Unfortunately, it seems like the patch hasn't really fixed much. After
+porting it forward to Linus' master, I haven't exhibited any difference
+in real world use cases (e.g. desktop use cases while building a
+kernel).
 
-68564a4... work_on_cpu: don't try to get_online_cpus() in work_on_cpu.
-e1d9ec6... work_on_cpu: Use our own workqueue.
-6eb714c... cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+Given Jen's remarks, I suppose this isn't too surprising. Does anyone
+else with greater familiarity with the block I/O subsystem have any more
+ideas about the source of the slowdown? It seems like the recent patches
+incorporating blktrace support into ftrace could be helpful for further
+data collection, correct?
 
->From git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git
+- Ben
 
-If that works, then try and un-revert e39ad415ac and see if it's fixed as well?
 
-(The underlying work_on_cpu() function was causing these problems, but the 1st two
-of the above should fix it.)
 
-Thanks!
-Mike
