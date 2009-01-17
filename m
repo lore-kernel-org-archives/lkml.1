@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbZAQPMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbZAQPTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762560AbZAQPMv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 10:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbZAQPMl
+	id S1762498AbZAQPTx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 10:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbZAQPTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 10:12:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:20257 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757971AbZAQPMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 10:12:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=Tul6tmjsx/vNQu3FfOT4ekU/DRvIUv6GpguPcfW8TnecvLhfCbyMrTMc7p9Mdk7K/q
-         YFBvFrEjrZvnyrQ/B5fUWt8vZ/nn47CydZ2VlIDCv2MyXcqkWMrYIpU/p4wlQfgfe9QC
-         dosu3wTM56pUmJR3ScAXHBtxoqkTdC+IuIqs0=
-Message-ID: <4971F400.4070701@gmail.com>
-Date: Sat, 17 Jan 2009 16:06:40 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
-MIME-Version: 1.0
-To: rpurdie@rpsys.net, broonie@opensource.wolfsonmicro.com
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] leds: Fix bounds checking of wm8350->pmic.led
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Jan 2009 10:19:43 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:62292 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758162AbZAQPTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 10:19:42 -0500
+Date: Sat, 17 Jan 2009 16:19:35 +0100 (MET)
+Message-Id: <200901171519.n0HFJZuf028704@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: mingo@elte.hu
+Subject: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3 warnings
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix bounds checking of wm8350->pmic.led
+Commit ec5679e513305f1411753e5f5489935bd638af23 "eliminate warn_on_slowpath()"
+changed __WARN() to call warn_slowpath() with a NULL value for the format
+string parameter. Now every WARN_ON() triggers a warning from gcc-3.2.3:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
-index 7aa3524..5056e23 100644
---- a/drivers/regulator/wm8350-regulator.c
-+++ b/drivers/regulator/wm8350-regulator.c
-@@ -1435,7 +1435,7 @@ int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
- 	struct platform_device *pdev;
- 	int ret;
- 
--	if (lednum > ARRAY_SIZE(wm8350->pmic.led) || lednum < 0) {
-+	if (lednum >= ARRAY_SIZE(wm8350->pmic.led) || lednum < 0) {
- 		dev_err(wm8350->dev, "Invalid LED index %d\n", lednum);
- 		return -ENODEV;
- 	}
+In file included from include/linux/kmod.h:22,
+                 from include/linux/module.h:13,
+                 from include/linux/crypto.h:21,
+                 from arch/x86/kernel/asm-offsets_32.c:7,
+                 from arch/x86/kernel/asm-offsets.c:2:
+include/linux/gfp.h: In function `allocflags_to_migratetype':
+include/linux/gfp.h:104: warning: null format string
+
+Compiling kernel 2.6.29-rc2 with a minimalistic .config for my 486
+generates 1767 'null format string' warnings.
+
+warn_slowpath() is declared with attribute((format(printf, 3, 4))),
+and gcc-3.2.3 warns if the format string parameter is NULL. gcc-3.3
+and newer do not warn in that case.
+
+Since gcc-3.2 is still a supported compiler for the kernel, this is
+a regression.
+
+(Just FYI. I don't consider this serious enough to warrant reverting
+that cleanup patch or declaring gcc-3.2.3 too old. I can always update
+my 486 to gcc-3.3.6 if the warnings start to bug me too much.)
+
+/Mikael
