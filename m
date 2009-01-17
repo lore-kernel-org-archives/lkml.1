@@ -1,317 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbZAQCFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764102AbZAQCNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbZAQCFh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 21:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZAQCF1
+	id S1764102AbZAQCNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 21:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbZAQCNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 21:05:27 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54058 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbZAQCF0 (ORCPT
+	Fri, 16 Jan 2009 21:13:25 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:14847 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756024AbZAQCNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 21:05:26 -0500
-Date: Fri, 16 Jan 2009 20:05:25 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 3/3] mqueue namespace: adapt sysctl
-Message-ID: <20090117020525.GC8708@us.ibm.com>
-References: <20090117020248.GA8615@us.ibm.com>
+	Fri, 16 Jan 2009 21:13:25 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=6V8UYlqU7dT0cOAPPFoA:9 a=lvNORoJwPhrFLgUF5moA:7 a=N-pWVER_bjKnhL2JwJpO_hlna3wA:4 a=QTwTi9j1NaIA:10 a=9PoNLtlm7FgA:10
+Message-ID: <49713EBF.2090600@shaw.ca>
+Date: Fri, 16 Jan 2009 20:13:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117020248.GA8615@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Newsgroups: gmane.linux.kernel
+To: David Relson <relson@osagesoftware.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28 and Slab corruption: ext3_inode_cache
+References: <20090116181702.1db3ca64@osage.osagesoftware.com>
+In-Reply-To: <20090116181702.1db3ca64@osage.osagesoftware.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Largely inspired from ipc/ipc_sysctl.c. This patch isolates the mqueue
-sysctl stuff in its own file.
+David Relson wrote:
+> G'day,
+> 
+> I'm seeing a number of these messages, followed within minutes with my
+> workstation freezing.  Attached is a copy of /var/log/messages from the
+> first one (today at 13:50) to system freeze (at 14:09).  I've also
+> attached the output of "zcat /proc/config.gz".  
+> 
+> Kernel:  2.6.28-gentoo
+> 
+> The hardware is:
+> 
+>   mobo:  ASUS M2A_VM
+>   cpu:   AMD64 x2 5000
+>   ram:   4GB Crucial Ballistics
+>   hd:    Seagate ST3500320AS (SATA)
+> 
+> What additional info is needed?
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- include/linux/ipc_namespace.h |   14 +++++
- init/Kconfig                  |    6 ++
- ipc/Makefile                  |    1 +
- ipc/mq_sysctl.c               |  125 +++++++++++++++++++++++++++++++++++++++++
- ipc/mqueue.c                  |   65 +---------------------
- 5 files changed, 147 insertions(+), 64 deletions(-)
- create mode 100644 ipc/mq_sysctl.c
+Did you follow the messages' advice?
 
-diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-index a73bbef..9f57f55 100644
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -121,4 +121,18 @@ static inline void put_ipc_ns(struct ipc_namespace *ns)
- {
- }
- #endif
-+
-+#ifdef CONFIG_POSIX_MQUEUE_SYSCTL
-+
-+struct ctl_table_header;
-+extern struct ctl_table_header *mq_register_sysctl_table(void);
-+
-+#else /* CONFIG_POSIX_MQUEUE_SYSCTL */
-+
-+static inline struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return NULL;
-+}
-+
-+#endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 8084385..f926c10 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -148,6 +148,12 @@ config POSIX_MQUEUE
- 
- 	  If unsure, say Y.
- 
-+config POSIX_MQUEUE_SYSCTL
-+	bool
-+	depends on POSIX_MQUEUE
-+	depends on SYSCTL
-+	default y
-+
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 65c3843..4e1955e 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
- obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
-+obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
- 
-diff --git a/ipc/mq_sysctl.c b/ipc/mq_sysctl.c
-new file mode 100644
-index 0000000..81f01b7
---- /dev/null
-+++ b/ipc/mq_sysctl.c
-@@ -0,0 +1,125 @@
-+/*
-+ *  Copyright (C) 2007 IBM Corporation
-+ *
-+ *  Author: Cedric Le Goater <clg@fr.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation, version 2 of the
-+ *  License.
-+ */
-+
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/sysctl.h>
-+
-+/*
-+ * Define the ranges various user-specified maximum values can
-+ * be set to.
-+ */
-+#define MIN_MSGMAX	1		/* min value for msg_max */
-+#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
-+#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
-+#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
-+
-+static void *get_mq(ctl_table *table)
-+{
-+	char *which = table->data;
-+	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
-+	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
-+	return which;
-+}
-+
-+#ifdef CONFIG_PROC_FS
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
-+					lenp, ppos);
-+}
-+#else /* CONFIG_PROC_FS */
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_PROC_FS */
-+
-+static int msg_max_limit_min = MIN_MSGMAX;
-+static int msg_max_limit_max = MAX_MSGMAX;
-+
-+static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
-+static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
-+
-+static ctl_table mq_sysctls[] = {
-+	{
-+		.procname	= "queues_max",
-+		.data		= &init_ipc_ns.mq_queues_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec,
-+	},
-+	{
-+		.procname	= "msg_max",
-+		.data		= &init_ipc_ns.mq_msg_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_max_limit_min,
-+		.extra2		= &msg_max_limit_max,
-+	},
-+	{
-+		.procname	= "msgsize_max",
-+		.data		= &init_ipc_ns.mq_msgsize_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_maxsize_limit_min,
-+		.extra2		= &msg_maxsize_limit_max,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_dir[] = {
-+	{
-+		.procname	= "mqueue",
-+		.mode		= 0555,
-+		.child		= mq_sysctls,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_root[] = {
-+	{
-+		.ctl_name	= CTL_FS,
-+		.procname	= "fs",
-+		.mode		= 0555,
-+		.child		= mq_sysctl_dir,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return register_sysctl_table(mq_sysctl_root);
-+}
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index b51a6d3..5fc8d57 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -47,15 +47,6 @@
- #define STATE_PENDING	1
- #define STATE_READY	2
- 
--/*
-- * Define the ranges various user-specified maximum values can
-- * be set to.
-- */
--#define MIN_MSGMAX	1		/* min value for msg_max */
--#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
--#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
--#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
--
- struct ext_wait_queue {		/* queue of sleeping tasks */
- 	struct task_struct *task;
- 	struct list_head list;
-@@ -1296,60 +1287,6 @@ void mq_put_mnt(struct ipc_namespace *ns)
- 	mntput(ns->mq_mnt);
- }
- 
--static int msg_max_limit_min = MIN_MSGMAX;
--static int msg_max_limit_max = MAX_MSGMAX;
--
--static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
--static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
--
--static ctl_table mq_sysctls[] = {
--	{
--		.procname	= "queues_max",
--		.data		= &init_ipc_ns.mq_queues_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
--	{
--		.procname	= "msg_max",
--		.data		= &init_ipc_ns.mq_msg_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_max_limit_min,
--		.extra2		= &msg_max_limit_max,
--	},
--	{
--		.procname	= "msgsize_max",
--		.data		= &init_ipc_ns.mq_msgsize_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_maxsize_limit_min,
--		.extra2		= &msg_maxsize_limit_max,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_dir[] = {
--	{
--		.procname	= "mqueue",
--		.mode		= 0555,
--		.child		= mq_sysctls,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_root[] = {
--	{
--		.ctl_name	= CTL_FS,
--		.procname	= "fs",
--		.mode		= 0555,
--		.child		= mq_sysctl_dir,
--	},
--	{ .ctl_name = 0 }
--};
--
- static int __init init_mqueue_fs(void)
- {
- 	int error;
-@@ -1361,7 +1298,7 @@ static int __init init_mqueue_fs(void)
- 		return -ENOMEM;
- 
- 	/* ignore failues - they are not fatal */
--	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
-+	mq_sysctl_table = mq_register_sysctl_table();
- 
- 	error = register_filesystem(&mqueue_fs_type);
- 	if (error)
--- 
-1.5.4.3
-
+Jan 16 13:50:17 osage Single bit error detected. Probably bad RAM.
+Jan 16 13:50:17 osage Run memtest86+ or a similar memory test tool.
