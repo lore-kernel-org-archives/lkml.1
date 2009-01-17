@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbZAQLFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbZAQLIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbZAQLFT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 06:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZAQLFD
+	id S1761375AbZAQLIu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 06:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZAQLIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 06:05:03 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:45353 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbZAQLFA (ORCPT
+	Sat, 17 Jan 2009 06:08:41 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:55856 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755508AbZAQLIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 06:05:00 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Jens Axboe <axboe@suse.de>
-Subject: [PATCH 1/1] relay: fix lock imbalance in relay_late_setup_files
-Date: Sat, 17 Jan 2009 12:04:36 +0100
-Message-Id: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1
+	Sat, 17 Jan 2009 06:08:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DPxtEzNt1OL/uf8SW1NGpqTZTqzRgCdSdP/hYXhxT0HjneE3jynMJPF3ZSoEvJUyET
+         r7Di95k9IP5Q3YIVCEFN7+h4XwDu1cIUCULflOBvC2vx+obicE2sJoUDn19LqWfUn6vb
+         XsF5l5Rs0hhFJrXTwNyhWhUGAJ8I0MVlrAiaM=
+Date: Sat, 17 Jan 2009 12:08:18 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Martin Bligh <mbligh@google.com>
+Cc: Jean Delvare <khali@linux-fr.org>, bugme-admin@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Bugzilla permissions
+Message-ID: <20090117110814.GA10385@joi>
+References: <20090113132714.75c9ed96@hyperion.delvare> <33307c790901160935v2495615fo4ee0998d348fa117@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <33307c790901160935v2495615fo4ee0998d348fa117@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One fail path in relay_late_setup_files() omits
-mutex_unlock(&relay_channels_mutex);
-Add it.
+On Fri, Jan 16, 2009 at 09:35:45AM -0800, Martin Bligh wrote:
+> Given that there's no real control on bugzilla accounts, I'm somewhat
+> reluctant to make it a complete free for all and let any new user edit
+> any bug. However, for anyone running a subsystem, or anyone else
+> that I have a vague clue who they are (or any established developer
+> will vouch for, anyone I can see git commits for, etc), I am perfectly
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Jens Axboe <axboe@suse.de>
----
- kernel/relay.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Couldn't it be automatic?
+Pulling once a day, refreshing mail list by:
+git shortlog -e -s|sed "s/.*<\([^>]*\)>/\1/"
+and wiring it into bugzilla permission system shouldn't be too time consuming...
 
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 8ca1587..738bc85 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -714,8 +714,10 @@ int relay_late_setup_files(struct rchan *chan,
- 
- 	mutex_lock(&relay_channels_mutex);
- 	/* Is chan already set up? */
--	if (unlikely(chan->has_base_filename))
-+	if (unlikely(chan->has_base_filename)) {
-+		mutex_unlock(&relay_channels_mutex);
- 		return -EEXIST;
-+	}
- 	chan->has_base_filename = 1;
- 	chan->parent = parent;
- 	curr_cpu = get_cpu();
--- 
-1.6.1
-caught by stanse
+> willing to enable global edit on a individual basis. Hasn't been a big
+> problem up until now, so I suspect it won't turn into one.
+
+Marcin
