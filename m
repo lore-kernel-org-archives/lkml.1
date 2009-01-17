@@ -1,63 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765724AbZAQTQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765903AbZAQTjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765724AbZAQTQN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 14:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762628AbZAQTP5
+	id S1765903AbZAQTjd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 14:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763887AbZAQTjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 14:15:57 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:1083 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760683AbZAQTP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 14:15:56 -0500
-Date: Sat, 17 Jan 2009 20:14:30 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] ftrace interface for blktrace
-Message-ID: <20090117191430.GA30821@kernel.dk>
-References: <20090116181611.GE6562@ghostprotocols.net> <20090117190913.GA17722@elte.hu>
+	Sat, 17 Jan 2009 14:39:21 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35771 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763840AbZAQTjU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 14:39:20 -0500
+Date: Sat, 17 Jan 2009 20:39:17 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: linux-btrfs@vger.kernel.org
+cc: bug-glibc@gnu.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: btrfs: readdir problem workaround for 32-bit off_t
+Message-ID: <alpine.LSU.2.00.0901172026180.14987@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117190913.GA17722@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17 2009, Ingo Molnar wrote:
-> 
-> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
-> 
-> > Hi Jens,
-> > 
-> > 	The patch below adds a ftrace interface for blktrace, allowing 
-> > people to use it without any required userspace tools, using sysfs to 
-> > setup the act_mask, pid, start_lba, end_lba.
-> 
-> Very nice patch!
-> 
-> Jens, i'm wondering what's your take on this direction is. I think the 
-> consolidation effect is great and the built-in IO tracing capabilities are 
-> very nice.
+Hi,
 
-I like the current patch, from a quick look. I'll look more soonish
-(monday). I've always liked the concept of being able to mix various
-traces into the same stream, since it makes it MUCH easier to see what
-on earth is going wrong. What I didn't like in the patches Acme did was
-the enable part, I'll need to look into that. Again, from a quick look,
-what is the BKL doing in there?!
 
-> We can still get the raw events too and do user-space post-processing, 
-> when that is desired - so this does not limit anything that blktrace was 
-> able to do before - it only extends on it.
-> 
-> Is there any particular blktrace feature you can think of that is not 
-> present in the blktrace ftrace plugin?
 
-Can't answer that yet, I'll give it a more thorough look next week.
+I am seeing abnormal kernel<->userland interaction for range-exceeding 
+offsets during readdir.
+A suggested patch for btrfs is below, but I think there could also
+be involvement of (read: a bug in) Glibc.
+Would the copied parties please have a look, as it may spans both glibc 
+and btrfs.
 
+
+Thanks,
+Jan
+
+parent 81841fa96da5597a411f5f274a664f186b2d2549 (v2.6.29-rc2-21-g81841fa)
+commit fa8ea6611fedecba8e5fdf2a5dfd82affa5a982e
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Sat Jan 17 20:26:25 2009 +0100
+
+btrfs: readdir problem workaround for 32-bit off_t
+
+Kernel is i586, as is the userland.
+
+btrfs sets filp->f_pos == (2^63-1) when it has reached the
+end of a directory. This is problematic.
+
+In obtuse 32-bit mode (no _FILE_OFFSET_BITS), readdir(3) will not return 
+the last entry.
+
+However, when compiled with -D_FILE_OFFSET_BITS=64, it will return the 
+last entry. But telldir() will return (uint32_t)-1, which does not quite 
+match up with the 2^63-1.
+
+	$ cat test.c
+	#include <dirent.h>
+	#include <stdio.h>
+
+	int main(int argc, const char **argv)
+	{
+		DIR *r = opendir(argv[1]);
+		struct dirent *de;
+
+		while ((de = readdir(r)) != NULL)
+			printf("%lld %s\n", (long long)telldir(r), de->d_name);
+		return 0;
+	}
+	$ gcc test.c -o test -ggdb3
+	$ ./test /tmp/z
+	2 .
+	2 ..
+	3 a
+	4 b
+	5 lib
+
+	$ gcc test.c -o test -ggdb3 -D_FILE_OFFSET_BITS=64
+	$ ./test /tmp/z
+	2 .
+	2 ..
+	3 a
+	4 b
+	5 lib
+	4294967295 strace.log
+
+This has deep effects and my boot hangs. (Got btrfs as the root fs.)
+
+I have no idea who exactly of Glibc and btrfs is at fault with what,
+but this change makes btrfs usable for the moment.
+
+Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ fs/btrfs/inode.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 8adfe05..901be02 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -3264,10 +3264,7 @@ skip:
+ 	}
+ 
+ 	/* Reached end of directory/root. Bump pos past the last item. */
+-	if (key_type == BTRFS_DIR_INDEX_KEY)
+-		filp->f_pos = INT_LIMIT(typeof(filp->f_pos));
+-	else
+-		filp->f_pos++;
++	filp->f_pos++;
+ nopos:
+ 	ret = 0;
+ err:
 -- 
-Jens Axboe
+# Created with git-export-patch
 
