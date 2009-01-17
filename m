@@ -1,123 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764968AbZAQRmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbZAQSIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764968AbZAQRmm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 12:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZAQRmb
+	id S1764215AbZAQSIt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 13:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbZAQSIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 12:42:31 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:33827 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758538AbZAQRma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 12:42:30 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <1232210546.7015.8.camel@norville.austin.ibm.com>
-References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl> <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl> <1232210546.7015.8.camel@norville.austin.ibm.com>
-Date: Sun, 18 Jan 2009 02:42:22 +0900
-Message-ID: <10394.1232214142@jrobl>
+	Sat, 17 Jan 2009 13:08:39 -0500
+Received: from THUNK.ORG ([69.25.196.29]:41513 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756059AbZAQSIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 13:08:38 -0500
+Date: Sat, 17 Jan 2009 13:08:35 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: We La <w.landgraf@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc2 rt2860 driver
+Message-ID: <20090117180835.GR10683@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	We La <w.landgraf@yahoo.com>, linux-kernel@vger.kernel.org
+References: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 17, 2009 at 06:30:01AM -0800, We La wrote:
+> 3) eth cards don't work more since 2.6.27 .  ifconfig eth0
+> successful, but no connection.  I suppose that's a problem of the
+> kernel config (because on other compilations/configurations it
+> works) -- perhaps of the iptables, package treatment, or routing,
+> not of the eth drivers themselves. However, although searching long
+> time, I don't find out the reason.  This should be checked, and
+> removed from the kernel config such options which potentially turn
+> networking not longer working.
 
-Dave Kleikamp:
-> Does this function make sense (un-compiled, un-tested)?
-> 
-> void ecryptfs_update_inode_from_lower(struct dentry *dentry)
-> {
-> 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
-> 
-> 	if (d_unhashed(lower_dentry))
-> 		d_drop(dentry);
-> 	else {
-> 		struct inode *inode = dentry->d_inode;
-> 		struct inode *lower_inode = lower_dentry->d_inode;
-> 
-> 		inode->i_nlink = lower_inode->i_nlink;
-> 		inode->i_ctime = lower_inode->i_ctime;
-> 		/* Should anything else go here ? */
-> 	}
-> }
+That's not a useful bug report.  "eth0" is the name given to a large
+number of different ethernet drivers.  For example on my X61 laptop,
+running 2.6.29-rc1, eth0 works just fine --- and it refers to the
+e1000e driver.  i.e., from my boot-time dmesg:
 
-Yes, testing by d_unhashed() is best, I think.
-But all inode attributes are maintained by ecryptfs_interpose(), so you
-don't need to handle them.
+[    1.383904] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+[    1.384002] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+[    1.384165] e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[    1.384285] e1000e 0000:00:19.0: setting latency timer to 64
+[    1.384536] e1000e 0000:00:19.0: irq 27 for MSI/MSI-X
+[    1.590106] 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:16:d3:cc:a4:27
+[    1.590236] 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
+[    1.590370] 0000:00:19.0: eth0: MAC: 5, PHY: 6, PBA No: ffffff-0ff
 
-And I found another bug in ecryptfs_link().
-Here is a patch including that.
+On my Lenovo S10 netbook, eth0 refers to the Broadcom Tigon3 (tg3)
+driver.  From my boot-time dmesg: (this happens to be a 2.6.28 kernel
+since I was testing a reported ext4 problem at the time, but
+2.6.29-rc1 also works just fine)
 
+[    1.962792] tg3.c:v3.94 (August 14, 2008)
+[    1.962979] tg3 0000:02:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.963149] tg3 0000:02:00.0: setting latency timer to 64
+[    2.193004] eth0: Tigon3 [partno(BCM95906) rev c002 PHY(5906)] (PCI Express) 10/100Base-TX Ethernet 00:1e:68:f0:94:f8
+[    2.193187] eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[0]
+[    2.193356] eth0: dma_rwctrl[76180000] dma_mask[64-bit]
 
-J. R. Okajima
+As for why it doesn't work on your system, we really need to know what
+device driver is involved.  If you send the dmesg output right after
+your system booted on 2 6.27 system, where your ethernet device
+worked, and a dmesg output after your system booted on a 2.6.28
+kernel, where you are having trouble, and your kernel .config from
+2.6.28, we probably can help you.  At a guess you probably didn't
+configure the right network driver, or maybe for some reason the
+ethernet device didn't come up correctly (does ifconfig -a show the
+eth0 device?), or some other user/configuration error.  It certainly
+isn'ta problem with all "eth cards", as you seem to suggest.
 
-----------------------------------------------------------------------
-refine ecryptfs_link()
+Regards,
 
-ecryptfs_link() doesn't need to,,,
-- copy i_nlink and i_size for the target inode since they are already
-  handled by ecryptfs_interpose(). (I don't know why i_size was
-  necessary)
-- maintain dir attributes based upon the lower dir, instead of
-  lower_new_dentry. (another bug)
-- several d_drop()s. do it only when the lower_new_dentry is d_drop()ed
-  by the lower fs or vfs_link() failed.
-- testing lower_new_dentry->d_inode after vfs_link() succeeded.
-
-Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
-
-diff -u -p -r1.1 inode.c
---- inode.c	19 Dec 2008 03:05:27 -0000	1.1
-+++ inode.c	17 Jan 2009 17:26:53 -0000
-@@ -405,10 +407,8 @@ static int ecryptfs_link(struct dentry *
- 	struct dentry *lower_old_dentry;
- 	struct dentry *lower_new_dentry;
- 	struct dentry *lower_dir_dentry;
--	u64 file_size_save;
- 	int rc;
- 
--	file_size_save = i_size_read(old_dentry->d_inode);
- 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
- 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
- 	dget(lower_old_dentry);
-@@ -416,23 +416,23 @@ static int ecryptfs_link(struct dentry *
- 	lower_dir_dentry = lock_parent(lower_new_dentry);
- 	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
- 		      lower_new_dentry);
--	if (rc || !lower_new_dentry->d_inode)
--		goto out_lock;
--	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
--	if (rc)
--		goto out_lock;
--	fsstack_copy_attr_times(dir, lower_new_dentry->d_inode);
--	fsstack_copy_inode_size(dir, lower_new_dentry->d_inode);
--	old_dentry->d_inode->i_nlink =
--		ecryptfs_inode_to_lower(old_dentry->d_inode)->i_nlink;
--	i_size_write(new_dentry->d_inode, file_size_save);
--out_lock:
-+	if (!rc) {
-+		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
-+		fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
-+		if (!d_unhashed(lower_new_dentry)
-+		    /* && lower_new_dentry->d_inode */) {
-+			rc = ecryptfs_interpose(lower_new_dentry, new_dentry,
-+						dir->i_sb, 0);
-+			if (!rc)
-+				goto out_lock; /* success */
-+		}
-+	}
-+ out_drop:
-+	d_drop(new_dentry);
-+ out_lock:
- 	unlock_dir(lower_dir_dentry);
- 	dput(lower_new_dentry);
- 	dput(lower_old_dentry);
--	d_drop(lower_old_dentry);
--	d_drop(new_dentry);
--	d_drop(old_dentry);
- 	return rc;
- }
- 
+						- Ted
