@@ -1,91 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764114AbZAQAow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766002AbZAQArs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764114AbZAQAow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 19:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZAQAom
+	id S1766002AbZAQArs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 19:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZAQArg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 19:44:42 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:56070 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753911AbZAQAol (ORCPT
+	Fri, 16 Jan 2009 19:47:36 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47124 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbZAQArf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 19:44:41 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkQFAHO3cElMQWt2/2dsb2JhbACBbMp0hXI
-Date: Fri, 16 Jan 2009 19:44:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jens Axboe <jens.axboe@oracle.com>, Andrea Arcangeli <andrea@suse.de>,
-       akpm@linux-foundation.org, Ben Gamari <bgamari@gmail.com>,
-       ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
-Subject: [Regression] High latency when doing large I/O
-Message-ID: <20090117004439.GA11492@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:20:49 up 16 days, 18 min,  5 users,  load average: 0.60, 0.38,
-	0.35
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 16 Jan 2009 19:47:35 -0500
+Date: Fri, 16 Jan 2009 19:47:33 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: WARNING: at kernel/trace/ftrace.c:434 ftrace_bug+0xdb/0x2b1()
+ in 2.6.29-rc1-next-20090116
+In-Reply-To: <1232144843.6614.14.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901161939320.9232@gandalf.stny.rr.com>
+References: <1232144843.6614.14.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-A long standing I/O regression (since 2.6.18, still there today) has hit
-Slashdot recently :
-http://bugzilla.kernel.org/show_bug.cgi?id=12309
-http://it.slashdot.org/article.pl?sid=09/01/15/049201
-
-I've taken a trace reproducing the wrong behavior on my machine and I
-think it's getting us somewhere.
-
-LTTng 0.83, kernel 2.6.28
-Machine : Intel Xeon E5405 dual quad-core, 16GB ram
-(just created a new block-trace.c LTTng probe which is not released yet.
-It basically replaces blktrace)
 
 
-echo 3 > /proc/sys/vm/drop_caches
+On Fri, 16 Jan 2009, Eric Paris wrote:
 
-lttctl -C -w /tmp/trace -o channel.mm.bufnum=8 -o channel.block.bufnum=64 trace
+> Running 2.6.29-rc1-next-20090116 on vmware server x86_64 I see this at
+> boot up.  Doesn't appear to cause any problem, no idea what kind of
+> thermal problem this is causing me on my VM  :)
+> 
+> The last linux-next kernel I ran was 2.6.29-rc1-next-20090114 and I do
+> not remember seeing this.  But me not remembering doesn't mean it wasn't
+> there.....
+> 
+> Any information I can collect or what I can do just let me know.
+> 
+> -Eric
+> 
+> [    0.036825] ACPI: Core revision 20081204
+> [    0.098568] ftrace: converting mcount calls to 0f 1f 44 00 00
+> [    0.099101] ftrace: allocating 21076 entries in 166 pages
+> [    0.105983] ------------[ cut here ]------------
+> [    0.105983] WARNING: at kernel/trace/ftrace.c:434 ftrace_bug+0xdb/0x2b1()
+> [    0.105983] Hardware name: VMware Virtual Platform
+> [    0.105983] Modules linked in:
+> [    0.105983] Pid: 0, comm: swapper Not tainted 2.6.29-rc1-next-20090116 #252
+> [    0.105983] Call Trace:
+> [    0.105983]  [<ffffffff810515bc>] warn_slowpath+0xd8/0xf7
+> [    0.105983]  [<ffffffff8101562d>] ? dump_trace+0x26b/0x27a
+> [    0.105983]  [<ffffffff810763c7>] ? find_usage_backwards+0x2c/0xf2
+> [    0.105983]  [<ffffffff810777e0>] ? check_usage_backwards+0x2e/0x52
+> [    0.105983]  [<ffffffff810762d0>] ? graph_unlock+0x6b/0x77
+> [    0.105983]  [<ffffffff81077d33>] ? mark_lock+0x34b/0x35b
+> [    0.105983]  [<ffffffff81077d95>] ? mark_held_locks+0x52/0x72
+> [    0.105983]  [<ffffffff813ba274>] ? __mutex_lock_common+0x41a/0x43f
+> [    0.105983]  [<ffffffff81018e63>] ? sched_clock+0x9/0xc
+> [    0.105983]  [<ffffffff810bc8ab>] ? pagefault_enable+0x9/0x1a
+> [    0.105983]  [<ffffffff810bc90a>] ? probe_kernel_write+0x4e/0x74
+> [    0.105983]  [<ffffffff810bc8ab>] ? pagefault_enable+0x9/0x1a
+> [    0.105983]  [<ffffffff810bc97e>] ? probe_kernel_read+0x4e/0x78
+> [    0.105983]  [<ffffffff8122346e>] ? acpi_thermal_notify+0x7/0xc1
+> [    0.105983]  [<ffffffff81029a9f>] ? ftrace_modify_code+0x46/0x75
+> [    0.105983]  [<ffffffff8122346e>] ? acpi_thermal_notify+0x7/0xc1
+> [    0.105983]  [<ffffffff810aaecb>] ftrace_bug+0xdb/0x2b1
+> [    0.105983]  [<ffffffff8122346e>] ? acpi_thermal_notify+0x7/0xc1
+> [    0.105983]  [<ffffffff810acc10>] ftrace_convert_nops+0x23d/0x2da
+> [    0.105983]  [<ffffffff81713fd3>] ftrace_init+0x116/0x121
+> [    0.105983]  [<ffffffff81213a84>] ? acpi_enable_subsystem+0x3c/0x90
+> [    0.105983]  [<ffffffff816f5d99>] start_kernel+0x40e/0x41e
+> [    0.105983]  [<ffffffff816f5140>] ? early_idt_handler+0x0/0x71
+> [    0.105983]  [<ffffffff816f52c3>] x86_64_start_reservations+0xae/0xb2
+> [    0.105983]  [<ffffffff816f53d3>] x86_64_start_kernel+0xe9/0xf4
+> [    0.105983] ---[ end trace a7919e7f17c0a725 ]---
+> [    0.105983] ftrace failed to modify [<ffffffff8122346e>] acpi_thermal_notify+0x7/0xc1
+> [    0.105983]  actual: 0f:1f:44:00:00
 
-dd if=/dev/zero of=/tmp/newfile bs=1M count=1M
-cp -ax music /tmp   (copying 1.1GB of mp3)
+Hmm, someone reported something similar before too. You don't need to 
+worry, but this is one of the function tracer self tests failing. In which 
+case, you will loose the ability to use the function tracer.
 
-ls  (takes 15 seconds to get the directory listing !)
+What happen is that on boot up, the dynamic function tracer will convert 
+all calls to mcount into a nop. When it does this, it does several self 
+checks to make sure it is not destroying anything, (remember a e1000e 
+bug?)  If it detects anything abnormal, it aborts and this is one of those 
+detections triggering.
 
-lttctl -D trace
+When it went to modify the location to the call of mcount in 
+acpi_thermal_notify into a nop, it checked to see if that loctation was 
+indeed a call to mcount. But it was not. Instead it was already a nop!
+This means that it somehow converted the acpi_thermal_notify twice, and 
+the second time it failed because it was not what it expected.
 
-I looked at the trace (especially at the ls surroundings), and bash is
-waiting for a few seconds for I/O in the exec system call (to exec ls).
+If you still see this on boot up, could you cat out:
 
-While this happens, we have dd doing lots and lots of bio_queue. There
-is a bio_backmerge after each bio_queue event. This is reasonable,
-because dd is writing to a contiguous file.
+# mount -t debugfs none /sys/kernel/debug
+# cat /sys/kernel/debug/tracing/dyn_ftrace_total_info
 
-However, I wonder if this is not the actual problem. We have dd which
-has the head request in the elevator request queue. It is progressing
-steadily by plugging/unplugging the device periodically and gets its
-work done. However, because requests are being dequeued at the same
-rate others are being merged, I suspect it stays at the top of the queue
-and does not let the other unrelated requests run.
+And perhaps, if possible, could I get a copy of the vmlinux that was 
+built, and a CONFIG to go with it.
 
-There is a test in the blk-merge.c which makes sure that merged requests
-do not get bigger than a certain size. However, if the request is
-steadily dequeued, I think this test is not doing anything.
+Thanks,
 
-If you are interested in looking at the trace I've taken, I could
-provide it.
+-- Steve
 
-Does that make sense ?
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
