@@ -1,254 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbZAQJ56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762931AbZAQKBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbZAQJ56 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 04:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762024AbZAQJ5i
+	id S1762931AbZAQKBB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 05:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbZAQKAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 04:57:38 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:38090 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759049AbZAQJ5f (ORCPT
+	Sat, 17 Jan 2009 05:00:52 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:34043 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756135AbZAQKAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 04:57:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=vBK039GqelAtQBccgIphMiWLYXbztnRCotjKWcy41ZnHFSTfHqNL2Vz4Q/Vs1UiNnk
-         awAnp+rXpL+P+yK6T3jgmx4/0wosUrld4GPYX02xovq+0GD+QxiV327uT5auQph8YLrh
-         YewIjrQa8/3mxbOo2J9oJq1kSYc3iupWQdVjE=
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.28 2/2] mach-pxa: add and use batch set/get gpio
-Date: Sat, 17 Jan 2009 17:57:18 +0800
-Message-Id: <12321862462894-git-send-email-jayakumar.lkml@gmail.com>
-X-Mailer: git-send-email 1.5.2.3
-In-Reply-To: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-To: unlisted-recipients:; (no To-header on input)
+	Sat, 17 Jan 2009 05:00:51 -0500
+Subject: Re: ext3: call blkdev_issue_flush on fsync
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp
+In-Reply-To: <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+References: <20090114103532.GA18834@duck.suse.cz>
+	 <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz>
+	 <20090114141204.GD6222@mit.edu> <20090114143756.GF19950@duck.suse.cz>
+	 <20090114165952.GH6222@mit.edu>
+	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090115234544.GA7579@duck.suse.cz>
+	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090116163039.GE10617@duck.suse.cz>
+	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Sat, 17 Jan 2009 19:00:49 +0900
+Message-Id: <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for pxa specific batch set/get of gpio. This
-is exported to gpiolib via the gpio_chip interface and then used within
-am300epd.c
+On Sat, 2009-01-17 at 18:47 +0900, Fernando Luis Vázquez Cao wrote:
+> On Fri, 2009-01-16 at 17:30 +0100, Jan Kara wrote:
+> > On Fri 16-01-09 22:55:01, Fernando Luis Vázquez Cao wrote:
+> > > To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> > > should force a disk flush explicitly when there is dirty data/metadata
+> > > and the journal didn't emit a write barrier (either because metadata is
+> > > not being synched or barriers are disabled).
+> > > 
+> > > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > > ---
+> >   Only two minor nits:
+> > 
+> > > --- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
+> > > +++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
+> > > @@ -27,6 +27,7 @@
+> > >  #include <linux/sched.h>
+> > >  #include <linux/writeback.h>
+> > >  #include <linux/jbd.h>
+> > > +#include <linux/blkdev.h>
+> > >  #include <linux/ext3_fs.h>
+> > >  #include <linux/ext3_jbd.h>
+> > >  
+> > > @@ -45,6 +46,8 @@
+> > >  int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+> > >  {
+> > >  	struct inode *inode = dentry->d_inode;
+> > > +	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
+> > > +	unsigned long i_state = inode->i_state;
+> > >  	int ret = 0;
+> > >  
+> > >  	J_ASSERT(ext3_journal_current_handle() == NULL);
+> > > @@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
+> > >  	 */
+> > >  	if (ext3_should_journal_data(inode)) {
+> > >  		ret = ext3_force_commit(inode->i_sb);
+> > > +		if (!(journal->j_flags & JFS_BARRIER))
+> > > +			goto no_journal_barrier;
+> > >  		goto out;
+> > >  	}
+> > >  
+> > > -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> > > -		goto out;
+> > > +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
+> > > +		goto flush_blkdev;
+> > >  
+> > >  	/*
+> > >  	 * The VFS has written the file data.  If the inode is unaltered
+> > >  	 * then we need not start a commit.
+> > >  	 */
+> > > -	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > > +	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > >  		struct writeback_control wbc = {
+> > >  			.sync_mode = WB_SYNC_ALL,
+> > >  			.nr_to_write = 0, /* sys_fsync did this */
+> > >  		};
+> > >  		ret = sync_inode(inode, &wbc);
+> > > +		if (journal && !(journal->j_flags & JFS_BARRIER))
+> > > +			goto no_journal_barrier;
+> >   I cannot imagine "journal" will be NULL here.
+> 
+> I'll try to check whether that is always so just in case.
+> 
+> >   And we can also optimize here a bit and do "goto out" because here
+> > we know the barrier has been issued.
+> 
+> Yep, I was considering the same optimization. By the way, I was
+> wondering if we should honor ext3 and ext4's "barrier" mount option for
+> sys_fsync()/sys_fdatasync() and do not force a flush when "barrier=1".
 
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-embedded@vger.kernel.org
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
----
- arch/arm/mach-pxa/Kconfig             |    1 +
- arch/arm/mach-pxa/am300epd.c          |   23 ++++++------
- arch/arm/mach-pxa/gpio.c              |   63 +++++++++++++++++++++++++++++++++
- arch/arm/mach-pxa/include/mach/gpio.h |   48 +++++++++++++++++++++++++
- 4 files changed, 124 insertions(+), 11 deletions(-)
+The last phrase should read " do not force a flush when "barrier=0" ".
 
-diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
-index f844425..1b3e631 100644
---- a/arch/arm/mach-pxa/Kconfig
-+++ b/arch/arm/mach-pxa/Kconfig
-@@ -41,6 +41,7 @@ config GUMSTIX_AM200EPD
- 	bool "Enable AM200EPD board support"
- 
- config GUMSTIX_AM300EPD
-+	select GPIOLIB_BATCH
- 	bool "Enable AM300EPD board support"
- 
- endchoice
-diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
-index 4bd10a1..c065368 100644
---- a/arch/arm/mach-pxa/am300epd.c
-+++ b/arch/arm/mach-pxa/am300epd.c
-@@ -187,24 +187,25 @@ static void am300_cleanup(struct broadsheetfb_par *par)
- 
- static u16 am300_get_hdb(struct broadsheetfb_par *par)
- {
--	u16 res = 0;
--	int i;
--
--	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
--		res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
-+	int err;
-+	u32 val;
- 
--	return res;
-+	err = gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, 16, &val);
-+	if (err) {
-+		dev_err(&am300_device->dev, "get failed: %d\n", err);
-+		return 0;
-+	}
-+	return (u16) val;
- }
- 
- static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
- {
--	int i;
--
--	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
--		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
-+	int err;
-+	err = gpio_set_batch(DB0_GPIO_PIN, data, 0xFFFF, 16);
-+	if (err)
-+		dev_err(&am300_device->dev, "set failed: %d\n", err);
- }
- 
--
- static void am300_set_ctl(struct broadsheetfb_par *par, unsigned char bit,
- 				u8 state)
- {
-diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
-index 5fec1e4..46371a1 100644
---- a/arch/arm/mach-pxa/gpio.c
-+++ b/arch/arm/mach-pxa/gpio.c
-@@ -162,6 +162,67 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/*
-+ * Set output GPIO level in batches
-+ */
-+static int pxa_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 values, u32 bitmask, int width)
-+{
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	/* bitmask is used twice in shifted form */
-+	bitmask <<= offset;
-+
-+	values = (values << offset) & bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
-+
-+	values = ~values & bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Get output GPIO level in batches
-+ */
-+static int pxa_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 bitmask, int width, u32 *result)
-+{
-+	u32 values;
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	values = __raw_readl(pxa->regbase + GPLR_OFFSET);
-+
-+	/* shift the result back into original position */
-+	*result = (values >> offset) & bitmask;
-+	return 0;
-+}
-+#endif
-+
-+/* this is done this way so that we can insert an ifdef-able value
-+ * into the following GPIO_CHIP macro
-+ */
-+#ifdef CONFIG_GPIOLIB_BATCH
-+#define SET_BATCH_MACRO	.set_batch 	  = pxa_gpio_set_batch,
-+#define GET_BATCH_MACRO	.get_batch	  = pxa_gpio_get_batch,
-+#else
-+#define SET_BATCH_MACRO
-+#define GET_BATCH_MACRO
-+#endif
-+
- #define GPIO_CHIP(_n)							\
- 	[_n] = {							\
- 		.regbase = GPIO##_n##_BASE,				\
-@@ -173,6 +234,8 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 			.set		  = pxa_gpio_set,		\
- 			.base		  = (_n) * 32,			\
- 			.ngpio		  = 32,				\
-+			SET_BATCH_MACRO					\
-+			GET_BATCH_MACRO					\
- 		},							\
- 	}
- 
-diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
-index 2c538d8..46d9022 100644
---- a/arch/arm/mach-pxa/include/mach/gpio.h
-+++ b/arch/arm/mach-pxa/include/mach/gpio.h
-@@ -56,6 +56,54 @@ static inline void gpio_set_value(unsigned gpio, int value)
- 	}
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+static inline int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
-+					int bitwidth)
-+{
-+	int err = 0;
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+
-+		shift = gpio % 32;
-+		bitmask <<= shift;
-+
-+		values = (values << shift) & bitmask;
-+		if (values)
-+			GPSR(gpio) = values;
-+
-+		values = ~values & bitmask;
-+		if (values)
-+			GPCR(gpio) = values;
-+	} else {
-+		err = __gpio_set_batch(gpio, values, bitmask, bitwidth);
-+	}
-+	return err;
-+}
-+
-+static inline int gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth,
-+					u32 *result)
-+{
-+	int ret = 0;
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+		u32 values;
-+
-+		shift = gpio % 32;
-+
-+		values = GPLR(gpio);
-+
-+		*result = (values >> shift) & bitmask;
-+	} else {
-+		ret = __gpio_get_batch(gpio, bitmask, bitwidth, result);
-+	}
-+	return ret;
-+}
-+#endif
-+
- #define gpio_cansleep __gpio_cansleep
- 
- #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
--- 
-1.5.2.3
+Sorry for the noise.
+
+- Fernando
 
