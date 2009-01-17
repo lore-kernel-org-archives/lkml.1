@@ -1,311 +1,543 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762397AbZAQJyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbZAQJ5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762397AbZAQJyd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 04:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbZAQJyX
+	id S1762730AbZAQJ5n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 04:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbZAQJ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 04:54:23 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37439 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756548AbZAQJyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 04:54:20 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX190HethR8d0cdxNq5CaFjclAwm43STBSiLsXeeXAS
-	d5wIEzvGRzp9uy
-Subject: Re: [git pull] scheduler fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232173776.7073.21.camel@marge.simson.net>
-References: <20090111144305.GA7154@elte.hu>
-	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
-	 <1231964647.14825.59.camel@laptop>
-	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-	 <1232173776.7073.21.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 10:54:14 +0100
-Message-Id: <1232186054.6813.48.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.39
+	Sat, 17 Jan 2009 04:57:30 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:5014 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756572AbZAQJ50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 04:57:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=b7tjebGUcGfbxLrdhlek7LEaNqijlLfjLi7V/vbQqnNCAFJQTHe+eQ8mB4wA+umAJM
+         Vmw4CGPTmHSYlqPQX6RA3w2YC8TXzhxIvWvXayDvVrzlhTOmQPvDTZIdua9+O6DKuMkI
+         aZjteYfk976D6+q3C9h5vQVE0nusq4nMZ7MKk=
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
+Date: Sat, 17 Jan 2009 17:57:17 +0800
+Message-Id: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
+X-Mailer: git-send-email 1.5.2.3
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 07:29 +0100, Mike Galbraith wrote:
-> On Fri, 2009-01-16 at 20:40 -0800, Andrew Morton wrote:
-> > On Wed, 14 Jan 2009 21:24:07 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > On Wed, 2009-01-14 at 12:15 -0800, Andrew Morton wrote:
-> > > > On Sun, 11 Jan 2009 15:43:05 +0100
-> > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > Please pull the latest sched-fixes-for-linus git tree
-> > > > 
-> > > > In http://bugzilla.kernel.org/show_bug.cgi?id=12309 the reporters have
-> > > > identified what appears to be a sched-related performance regression. 
-> > > > A fairly long-term one - post-2.6.18, perhaps.
-> > > > 
-> > > > Testcase code has been added today.  Could someone please take a look
-> > > > sometime?
-> > > 
-> > > There appear to be two different bug reports in there. One about iowait,
-> > > and one I'm not quite sure what it is about.
-> > > 
-> > > The second thing shows some numbers and a test case, but I fail to see
-> > > what the problem is with it.
-> > 
-> > I had no problem seeing the problem: a gigantic performance regression
-> > in two CPU-scheduler intensive workloads.
-> 
-> I can reproduce a very bad latency hit, investigating.
+Hi friends,
 
-Dunno about the IO bits, but..
+This is v4 of batch support for gpiolib. Thanks to David Brownell, Eric Miao,
+David Hylands, Robin, Ben, Jamie and others for prior feedback. The post for
+v3 summarized the previous discussion. Since then the changes I've made are:
+- split the patches into generic and arch specific
+- optimizing the empty mask case
+- adjusting the API to add error returns
+- documenting this optional API in gpio.txt
+- cleanup of the commenting
+
+Please let me know your thoughts and feedback.
+
+Thanks,
+jaya
+
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Eric Miao <eric.miao@marvell.com>
+Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-embedded@vger.kernel.org
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+---
+ Documentation/gpio.txt     |   60 ++++++++
+ drivers/gpio/Kconfig       |    5 +
+ drivers/gpio/gpiolib.c     |  323 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-generic/gpio.h |   19 +++-
+ 4 files changed, 406 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
+index b1b9887..d7e5fe9 100644
+--- a/Documentation/gpio.txt
++++ b/Documentation/gpio.txt
+@@ -185,6 +185,66 @@ and not to need spinlocks.  Such optimized calls can make bitbanging
+ applications a lot more efficient (in both space and time) than spending
+ dozens of instructions on subroutine calls.
  
-The problem with the C++ testcases seems to be wake_up_all() plunking a
-genuine thundering herd onto runqueues.  The sleeper fairness logic
-places the entire herd left of min_vruntime, meaning N*sched_latency
-pain for the poor sods who are setting the runqueue pace.
-
-You _could_ scale according to runqueue load, but that has a globally
-negative effect on sleeper fairness, important for many loads.  The
-below is my diagnostic machete in action looking for an alternative.
-Notice how I carefully removed lkml before showing this masterpiece.
-
-Oh, what the heck, I much prefer offline for diagnostic tinkerings, but
-full disclosure and all that... delicate tummies beware!
-
-This doesn't make interactivity wonderful of course, fair schedulers
-don't do wonderful under heavy load, but this did prevent seizure.
-
-(it's likely somewhat broken on top of being butt ugly.. diag hack;)
-
-Suggestions welcome. 
-
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index ef609f8..e20e557 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -143,6 +143,12 @@ int out_of_line_wait_on_bit(void *, int, int (*)(void *), unsigned);
- int out_of_line_wait_on_bit_lock(void *, int, int (*)(void *), unsigned);
- wait_queue_head_t *bit_waitqueue(void *, int);
- 
-+#define WAKE_SYNC	1
-+#define WAKE_FAIR	2
-+#define WAKE_BUDDY	4
-+#define WAKE_PREEMPT	8
-+#define WAKE_NORMAL	(WAKE_FAIR | WAKE_BUDDY | WAKE_PREEMPT)
++[OPTIONAL] Spinlock-Safe GPIO Batch access
++------------------------------------------
++The original GPIO API implements single bit access to GPIO pins. Some
++drivers for devices that treat GPIO as a mechanism for bulk data transfer
++may find the performance of the single bit API to be inadequate. In this
++scenario, the user can consider enabling the batch access API. This API is
++as follows:
 +
- #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
- #define wake_up_nr(x, nr)		__wake_up(x, TASK_NORMAL, nr, NULL)
- #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 52bbf1c..ee52d89 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2258,13 +2258,13 @@ static int sched_balance_self(int cpu, int flag)
-  */
- static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
- {
--	int cpu, orig_cpu, this_cpu, success = 0;
-+	int cpu, orig_cpu, this_cpu, success = 0, herd = sync & WAKE_FAIR;
- 	unsigned long flags;
- 	long old_state;
- 	struct rq *rq;
- 
- 	if (!sched_feat(SYNC_WAKEUPS))
--		sync = 0;
-+		sync &= ~WAKE_SYNC;
- 
- #ifdef CONFIG_SMP
- 	if (sched_feat(LB_WAKEUP_UPDATE)) {
-@@ -2334,7 +2334,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
- out_activate:
- #endif /* CONFIG_SMP */
- 	schedstat_inc(p, se.nr_wakeups);
--	if (sync)
-+	if (sync & WAKE_SYNC)
- 		schedstat_inc(p, se.nr_wakeups_sync);
- 	if (orig_cpu != cpu)
- 		schedstat_inc(p, se.nr_wakeups_migrate);
-@@ -2342,7 +2342,7 @@ out_activate:
- 		schedstat_inc(p, se.nr_wakeups_local);
- 	else
- 		schedstat_inc(p, se.nr_wakeups_remote);
--	activate_task(rq, p, 1);
-+	activate_task(rq, p, 1 + !herd);
- 	success = 1;
- 
- out_running:
-@@ -4692,12 +4692,19 @@ static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
- {
- 	wait_queue_t *curr, *next;
- 
++	/* BATCH GPIO INPUT */
++int gpio_get_batch(unsigned gpio, u32 bitmask, int maskwidth, u32 *result);
 +
-+	if (!nr_exclusive)
-+		sync &= ~(WAKE_FAIR | WAKE_BUDDY);
++The following examples help explain how this function is to be used.
++ Q: How to get gpio pins 0 through 7? (8 bits)
++ A: gpio_get_batch(gpio=0, bitmask=0xFF, width=8, &result) result=0xnn
++ Q: How to get gpio pins 58 through 73? (16 bits)
++ A: gpio_get_batch(gpio=58, bitmask=0xFFFF, width=16, &result) result=0xnnnn
++ Q: How to get gpio pins 16 through 47? (32 bits)
++ A: gpio_get_batch(offset=16, bitmask=0xFFFFFFFF, width=32, &result)
++ A: result=0xnnnnnnnn
 +
- 	list_for_each_entry_safe(curr, next, &q->task_list, task_list) {
- 		unsigned flags = curr->flags;
- 
- 		if (curr->func(curr, mode, sync, key) &&
- 				(flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)
- 			break;
++	/* BATCH GPIO OUTPUT */
++int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int maskwidth);
 +
-+		/* Only one preemptive wakeup per herd. */
-+		sync &= ~WAKE_PREEMPT;
- 	}
- }
++The following examples help explain how this function is to be used.
++ Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
++ A: gpio_set_batch(gpio=0, values=0x0, bitmask=0xFF, width=8);
++ Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
++ A: gpio_set_batch(gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16);
++ Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
++ A: gpio_set_batch(gpio=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32);
++
++The following example shows the use of the batch API and a comparison with
++the original single bit API:
++
++Original input method which loops through a set of pins:
++-       for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
++-               res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
++
++Batch input method:
+++       u16 val;
+++       err = gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, 16, &val);
++
++Original output method:
++-       for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
++-               gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
++Batch output method:
+++       int err;
+++       err = gpio_set_batch(DB0_GPIO_PIN, data, 0xFFFF, 16);
++
++Using these calls for GPIOs that can't safely be accessed without sleeping
++(see below) is an error.
++
++Platform-specific implementations are encouraged to optimize the two
++calls by checking if the batch get/set requested can be achieved within the
++platform's fast path access to gpio registers. For example, if the starting
++gpio and width of bits to be written is contained within a single register
++then the platform specific implementation may choose to execute it. If the
++request is more complex, then the platform specific implementation can
++choose to call upon the platform independent __gpio_get/set_batch functions
++which are able to cross gpio_chip boundaries.
  
-@@ -4714,7 +4721,7 @@ void __wake_up(wait_queue_head_t *q, unsigned int mode,
- 	unsigned long flags;
+ GPIO access that may sleep
+ --------------------------
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 3d25654..474070b 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -37,6 +37,11 @@ menuconfig GPIOLIB
  
- 	spin_lock_irqsave(&q->lock, flags);
--	__wake_up_common(q, mode, nr_exclusive, 0, key);
-+	__wake_up_common(q, mode, nr_exclusive, WAKE_NORMAL, key);
- 	spin_unlock_irqrestore(&q->lock, flags);
- }
- EXPORT_SYMBOL(__wake_up);
-@@ -4724,7 +4731,7 @@ EXPORT_SYMBOL(__wake_up);
-  */
- void __wake_up_locked(wait_queue_head_t *q, unsigned int mode)
- {
--	__wake_up_common(q, mode, 1, 0, NULL);
-+	__wake_up_common(q, mode, 1, WAKE_NORMAL, NULL);
- }
+ if GPIOLIB
  
++config GPIOLIB_BATCH
++	bool "Batch GPIO support"
++	help
++	  Say Y here to add the capability to batch set/get GPIOs.
++
+ config DEBUG_GPIO
+ 	bool "Debug GPIO calls"
+ 	depends on DEBUG_KERNEL
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 35e7aea..a9cf75e 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -643,6 +643,323 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
+ 
+ #endif /* CONFIG_GPIO_SYSFS */
+ 
++#ifdef CONFIG_GPIOLIB_BATCH
++/**
++ * __generic_gpio_set_batch() - Set batch of gpio pins in provided gpio_chip.
++ * @chip: gpio_chip containing this set of pins
++ * @offset: starting gpio pin
++ * @values: values to assign including masked bits
++ * @bitmask: the bitmask to be applied to values
++ * @width: the width of the bitmask
++ * Context: any
++ *
++ * This provides a generic platform independent set_batch capability.
++ * It invokes the associated gpio_chip.set() method to actually set the
++ * value. gpio_chip-s that don't implement their own optimized
++ * set_batch function are assigned this function as a default.
++ *
++ * The following examples help explain how this function works.
++ * Q: How to set gpio pins at offset 0 through 7 to all 0? (8 bits)
++ * A: offset=0, values=0x0, bitmask=0xFF, width=8
++ * Q: How to set gpio pins at offset 26 through 31 to all 1? (6 bits)
++ * A: offset=26, values=0x3F, bitmask=0x3F, width=6
++ * Q: How to set gpio pins at offset 16 through 31 to 0xCAFE? (16 bits)
++ * A: offset=16, values=0xCAFE, bitmask=0xFFFF, width=16
++ * Q: Why isn't width calculated from the mask here?
++ * A: This function is intended to be called repetitively and doing the
++ * bit shift looping to calculate the width here would be an undesirable
++ * penalty. Instead, the width is provided by the caller, thus avoiding
++ * the performance penalty since it is a fixed value known by the caller.
++ *
++ * Returns a negative errno if the caller supplied bad data, such as
++ * offset or width in excess of this chips gpio. Otherwise, we return zero
++ * as a success code.
++ */
++static int __generic_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
++					u32 values, u32 bitmask, int width)
++{
++	int i;
++	int value;
++	u32 mask;
++
++	/*
++	 * If the caller attempted to exceed the number of gpios that
++	 * are in this chip, then we flag that as an invalid value for
++	 * either the offset or the width supplied.
++	 */
++	if (offset + width >  chip->ngpio)
++		return -EINVAL;
++
++	/*
++	 * We start the loop and continue till we reach the width
++	 * of the bitmask that is provided to us.
++	 */
++	for (i = 0; i < width; i++) {
++		/*
++		 * If this bit is enabled by the bitmask then
++		 * we perform the set. If it is disabled we leave
++		 * it alone.
++		 */
++		mask = 1 << i;
++		if (bitmask & mask) {
++			value = values & mask;
++			chip->set(chip, offset + i, value);
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * __generic_gpio_get_batch() - Get batch of gpio pins in provided gpio_chip.
++ * @chip: gpio_chip containing this set of pins
++ * @offset: starting gpio pin
++ * @values: values to assign including masked bits
++ * @bitmask: the bitmask to be applied to values
++ * @width: the width of the bitmask
++ * @result: the result to be returned
++ * Context: any
++ *
++ * This provides a generic platform independent get_batch capability.
++ * It invokes the associated gpio_chip.get() method to actually set the
++ * value. gpio_chip-s that don't implement their own optimized
++ * get_batch function are assigned this function as a default.
++ *
++ * The following examples help explain how this function works.
++ * Q: How to get gpio pins at offset 0 through 7? (8 bits)
++ * A: offset=0, bitmask=0xFF, width=8, result=0xnn
++ * Q: How to get gpio pins at offset 26 through 31? (6 bits)
++ * A: offset=26, bitmask=0x3F, width=6, result=0xnn
++ * Q: How to get gpio pins at offset 16 through 31? (16 bits)
++ * A: offset=16, bitmask=0xFFFF, width=16, result=0xnnnn
++ * Q: Why isn't width calculated from the mask here?
++ * A: This function is intended to be called repetitively and doing the
++ * bit shift looping to calculate the width here would be an undesirable
++ * penalty. Instead, the width is provided by the caller, thus avoiding
++ * the performance penalty since it is a fixed value known by the caller.
++ *
++ * Returns a negative errno if the caller supplied bad data, such as
++ * offset or width in excess of this chips gpio. Otherwise, we return zero
++ * as a success code.
++ * Context: any
++ */
++static int __generic_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
++					u32 bitmask, int width, u32 *result)
++{
++	int i;
++	u32 mask;
++	u32 values = 0;
++
++	/*
++	 * If the caller attempted to exceed the number of gpios that
++	 * are in this chip, then we flag that as an invalid value for
++	 * either the offset or the width supplied.
++	 */
++	if (offset + width >  chip->ngpio)
++		return -EINVAL;
++
++	/*
++	 * We start the loop and continue till we reach the width
++	 * of the bitmask that is provided to us.
++	 */
++	for (i = 0; i < width; i++) {
++		/*
++		 * If this bit is enabled by the bitmask then
++		 * we perform the get. If it is disabled we leave
++		 * it alone thus leaving it as 0 because we initialized
++		 * values.
++		 */
++		mask = 1 << i;
++		if (bitmask & mask) {
++			if (chip->get(chip, offset + i))
++				values |= mask;
++		}
++	}
++
++	*result = values;
++	return 0;
++}
++
++/**
++ * __gpio_set_batch() - set batch of gpio pins across multiple gpio_chip-s
++ * @gpio: starting gpio pin
++ * @values: values to assign including masked bits
++ * @bitmask: the bitmask to be applied to values
++ * @bitwidth: the width of the bitmask
++ * Context: any
++ *
++ * This function is platform independent and uses the starting gpio and
++ * bitwidth information to iterate through the set of required gpio_chips
++ * to use their set_batch capability in order to set a batch of gpio pins.
++ * This function handles going across gpio_chip boundaries. It is intended
++ * to be called from arch/mach specific code if they detect that the caller
++ * requires functionality outside the fast-path.
++ *
++ * The following examples help explain how this function is to be used.
++ * Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
++ * A: gpio=0, values=0x0, bitmask=0xFF, width=8
++ * Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
++ * A: gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16
++ * Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
++ * A: offset=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32
++ * Q: Why isn't width calculated from the mask here?
++ * A: This function is intended to be called repetitively and doing the
++ * bit shift looping to calculate the width here would be an undesirable
++ * penalty. Instead, the width is provided by the caller, thus avoiding
++ * the performance penalty since it is a fixed value known by the caller.
++ *
++ * Returns a negative errno if the caller supplied bad data, such as
++ * gpio or width in excess of the platforms max gpio. Otherwise, we return
++ * zero as a success code.
++ *
++ */
++int __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth)
++{
++	struct gpio_chip *chip;
++	int i = 0;
++	int value, width, remwidth;
++	u32 mask;
++	int ret;
++
++	/*
++	 * If the caller attempted to exceed the number of gpios that
++	 * are available here, then we flag that as an invalid value for
++	 * either the gpio or the width supplied.
++	 */
++	if ((bitwidth > 32) || (gpio + bitwidth >  ARCH_NR_GPIOS))
++		return -EINVAL;
++
++	do {
++		chip = gpio_to_chip(gpio + i);
++		WARN_ON(extra_checks && chip->can_sleep);
++
++		value = values >> i; /* shift off the used data bits */
++
++		/* Work out the remaining width in this chip. */
++		remwidth = ((chip->base + (int) chip->ngpio) -
++					((int) gpio + i));
++
++		/*
++		 * Check if the remaining bits to be handled are less than
++		 * the remaining width in this chip.
++		 */
++		width = min(bitwidth, remwidth);
++
++		/* Shift off the used mask bits. */
++		mask = bitmask >> i;
++
++		/* Now adjust mask by width of this set. */
++		mask &= ((1 << width) - 1);
++
++		/* If the mask is empty, then we can skip this chip. */
++		if (mask) {
++			ret = chip->set_batch(chip, gpio + i - chip->base,
++						value, mask, width);
++			if (ret)
++				return ret;
++		}
++
++		/* deduct the used bits from our todolist */
++		i += width;
++		bitwidth -= width;
++	} while (bitwidth);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(__gpio_set_batch);
++
++/**
++ * __gpio_get_batch() - get batch of gpio pins across multiple gpio_chip-s
++ * @gpio: starting gpio pin
++ * @bitmask: the bitmask to be applied to values
++ * @bitwidth: the width of the bitmask
++ * @result: returned values
++ * Context: any
++ *
++ * This function is platform independent and uses the starting gpio and
++ * bitwidth information to iterate through the set of required gpio_chips
++ * to use their get_batch capability in order to get a batch of gpio pins.
++ * This function handles going across gpio_chip boundaries. It is intended
++ * to be called from arch/mach specific code if they detect that the caller
++ * requires functionality outside the fast-path.
++ *
++ * The following examples help explain how this function is to be used.
++ * Q: How to get gpio pins 0 through 7? (8 bits)
++ * A: gpio=0, bitmask=0xFF, width=8, result=0xnn
++ * Q: How to get gpio pins 58 through 73? (16 bits)
++ * A: gpio=58, bitmask=0xFFFF, width=16, result=0xnnnn
++ * Q: How to get gpio pins 16 through 47? (32 bits)
++ * A: offset=16, bitmask=0xFFFFFFFF, width=32, result=0xnnnnnnnn
++ * Q: Why isn't width calculated from the mask here?
++ * A: This function is intended to be called repetitively and doing the
++ * bit shift looping to calculate the width here would be an undesirable
++ * penalty. Instead, the width is provided by the caller, thus avoiding
++ * the performance penalty since it is a fixed value known by the caller.
++ *
++ * Returns a negative errno if the caller supplied bad data, such as
++ * gpio or width in excess of the platforms max gpio. Otherwise, we return
++ * zero as a success code
++ *
++ */
++int __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth, u32 *result)
++{
++	struct gpio_chip *chip;
++	int i = 0;
++	int width, remwidth;
++	u32 mask;
++	u32 values = 0;
++	u32 value;
++	int ret;
++
++	/*
++	 * If the caller attempted to exceed the number of gpios that
++	 * are available here, then we flag that as an invalid value for
++	 * either the gpio or the width supplied.
++	 */
++	if ((bitwidth > 32) || (gpio + bitwidth >  ARCH_NR_GPIOS))
++		return -EINVAL;
++
++	do {
++		chip = gpio_to_chip(gpio + i);
++		WARN_ON(extra_checks && chip->can_sleep);
++
++		/* Work out the remaining width in this chip. */
++		remwidth = ((chip->base + (int) chip->ngpio) -
++					((int) gpio + i));
++
++		/*
++		 * Check if the remaining bits to be handled are less than
++		 * the remaining width in this chip.
++		 */
++		width = min(bitwidth, remwidth);
++
++		/* shift off the used mask bits */
++		mask = bitmask >> i;
++		/* now adjust mask by width of get */
++		mask &= ((1 << width) - 1);
++
++		/* If the mask is empty, then we can skip this chip. */
++		if (mask) {
++			ret = chip->get_batch(chip, gpio + i - chip->base,
++						mask, width, &value);
++			if (ret)
++				return ret;
++
++			/* shift result back into correct position */
++			values |= value << i;
++		}
++
++		/* deduct the used bits from our todolist */
++		i += width;
++		bitwidth -= width;
++	} while (bitwidth);
++
++	*result = values;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(__gpio_get_batch);
++#endif
++
  /**
-@@ -4744,13 +4751,13 @@ void
- __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)
- {
- 	unsigned long flags;
--	int sync = 1;
-+	int sync = WAKE_NORMAL | WAKE_SYNC;
- 
- 	if (unlikely(!q))
- 		return;
- 
- 	if (unlikely(!nr_exclusive))
--		sync = 0;
-+		sync &= ~WAKE_SYNC;
- 
- 	spin_lock_irqsave(&q->lock, flags);
- 	__wake_up_common(q, mode, nr_exclusive, sync, NULL);
-@@ -4773,7 +4780,7 @@ void complete(struct completion *x)
- 
- 	spin_lock_irqsave(&x->wait.lock, flags);
- 	x->done++;
--	__wake_up_common(&x->wait, TASK_NORMAL, 1, 0, NULL);
-+	__wake_up_common(&x->wait, TASK_NORMAL, 1, WAKE_NORMAL, NULL);
- 	spin_unlock_irqrestore(&x->wait.lock, flags);
- }
- EXPORT_SYMBOL(complete);
-@@ -4790,7 +4797,7 @@ void complete_all(struct completion *x)
- 
- 	spin_lock_irqsave(&x->wait.lock, flags);
- 	x->done += UINT_MAX/2;
--	__wake_up_common(&x->wait, TASK_NORMAL, 0, 0, NULL);
-+	__wake_up_common(&x->wait, TASK_NORMAL, 0, WAKE_NORMAL, NULL);
- 	spin_unlock_irqrestore(&x->wait.lock, flags);
- }
- EXPORT_SYMBOL(complete_all);
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5cc1c16..3e40d7e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -661,7 +661,7 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
- }
- 
- static void
--place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
-+place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
- {
- 	u64 vruntime = cfs_rq->min_vruntime;
- 
-@@ -671,12 +671,12 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 	 * little, place the new task so that it fits in the slot that
- 	 * stays open at the end.
- 	 */
--	if (initial && sched_feat(START_DEBIT))
-+	if (!wakeup && sched_feat(START_DEBIT))
- 		vruntime += sched_vslice(cfs_rq, se);
- 
--	if (!initial) {
-+	if (wakeup) {
- 		/* sleeps upto a single latency don't count. */
--		if (sched_feat(NEW_FAIR_SLEEPERS)) {
-+		if (sched_feat(NEW_FAIR_SLEEPERS && wakeup == 1)) {
- 			unsigned long thresh = sysctl_sched_latency;
- 
- 			/*
-@@ -709,7 +709,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
- 	account_entity_enqueue(cfs_rq, se);
- 
- 	if (wakeup) {
--		place_entity(cfs_rq, se, 0);
-+		place_entity(cfs_rq, se, wakeup);
- 		enqueue_sleeper(cfs_rq, se);
+  * gpiochip_add() - register a gpio_chip
+  * @chip: the chip to register, with chip->base initialized
+@@ -683,6 +1000,12 @@ int gpiochip_add(struct gpio_chip *chip)
+ 		}
+ 		chip->base = base;
  	}
++#ifdef CONFIG_GPIOLIB_BATCH
++	if (!chip->set_batch)
++		chip->set_batch = __generic_gpio_set_batch;
++	if (!chip->get_batch)
++		chip->get_batch = __generic_gpio_get_batch;
++#endif
  
-@@ -1189,6 +1189,9 @@ wake_affine(struct sched_domain *this_sd, struct rq *this_rq,
- 	if (!(this_sd->flags & SD_WAKE_AFFINE) || !sched_feat(AFFINE_WAKEUPS))
- 		return 0;
+ 	/* these GPIO numbers must not be managed by another gpio_chip */
+ 	for (id = base; id < base + chip->ngpio; id++) {
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 81797ec..29478d2 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -44,6 +44,10 @@ struct module;
+  *	returns either the value actually sensed, or zero
+  * @direction_output: configures signal "offset" as output, or returns error
+  * @set: assigns output value for signal "offset"
++ * @set_batch: batch assigns output values for signals starting at
++ *	"offset" with mask in "bitmask" all within this gpio_chip
++ * @get_batch: batch fetches values for consecutive signals starting at
++ *	"offset" with mask in "bitmask" all within this gpio_chip
+  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
+  *	implementation may not sleep
+  * @dbg_show: optional routine to show contents in debugfs; default code
+@@ -84,7 +88,14 @@ struct gpio_chip {
+ 						unsigned offset, int value);
+ 	void			(*set)(struct gpio_chip *chip,
+ 						unsigned offset, int value);
+-
++#ifdef CONFIG_GPIOLIB_BATCH
++	int			(*set_batch)(struct gpio_chip *chip,
++						unsigned offset, u32 values,
++						u32 bitmask, int width);
++	int			(*get_batch)(struct gpio_chip *chip,
++						unsigned offset, u32 bitmask,
++						int width, u32 *result);
++#endif
+ 	int			(*to_irq)(struct gpio_chip *chip,
+ 						unsigned offset);
  
-+	/* Clear flags unused by this function. */
-+	sync = sync & WAKE_SYNC;
-+
- 	if (sync && (curr->se.avg_overlap > sysctl_sched_migration_cost ||
- 			p->se.avg_overlap > sysctl_sched_migration_cost))
- 		sync = 0;
-@@ -1392,9 +1395,11 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
- 	 * Also, during early boot the idle thread is in the fair class, for
- 	 * obvious reasons its a bad idea to schedule back to the idle thread.
- 	 */
--	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
-+	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle) &&
-+			sync & WAKE_BUDDY)
- 		set_last_buddy(se);
--	set_next_buddy(pse);
-+	if (sync & WAKE_BUDDY)
-+		set_next_buddy(pse);
+@@ -124,6 +135,12 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
+  */
+ extern int __gpio_get_value(unsigned gpio);
+ extern void __gpio_set_value(unsigned gpio, int value);
++#ifdef CONFIG_GPIOLIB_BATCH
++extern int __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
++				int bitwidth);
++extern int __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth,
++				u32 *result);
++#endif
  
- 	/*
- 	 * We can come here with TIF_NEED_RESCHED already set from new task
-@@ -1416,10 +1421,10 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
- 		return;
- 	}
+ extern int __gpio_cansleep(unsigned gpio);
  
--	if (!sched_feat(WAKEUP_PREEMPT))
-+	if (!sched_feat(WAKEUP_PREEMPT) || !sync & WAKE_PREEMPT)
- 		return;
- 
--	if (sched_feat(WAKEUP_OVERLAP) && (sync ||
-+	if (sched_feat(WAKEUP_OVERLAP) && (sync & WAKE_SYNC||
- 			(se->avg_overlap < sysctl_sched_migration_cost &&
- 			 pse->avg_overlap < sysctl_sched_migration_cost))) {
- 		resched_task(curr);
-@@ -1650,7 +1655,7 @@ static void task_new_fair(struct rq *rq, struct task_struct *p)
- 	sched_info_queued(p);
- 
- 	update_curr(cfs_rq);
--	place_entity(cfs_rq, se, 1);
-+	place_entity(cfs_rq, se, 0);
- 
- 	/* 'curr' will be NULL if the child belongs to a different group */
- 	if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&
-@@ -1721,7 +1726,7 @@ static void moved_group_fair(struct task_struct *p)
- 	struct cfs_rq *cfs_rq = task_cfs_rq(p);
- 
- 	update_curr(cfs_rq);
--	place_entity(cfs_rq, &p->se, 1);
-+	place_entity(cfs_rq, &p->se, 0);
- }
- #endif
- 
-
-
+-- 
+1.5.2.3
 
