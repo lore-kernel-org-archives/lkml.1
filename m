@@ -1,111 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbZAQL6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbZAQMAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbZAQL6z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 06:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbZAQL6p
+	id S1761367AbZAQMAg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 07:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZAQMAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 06:58:45 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:52693 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbZAQL6o (ORCPT
+	Sat, 17 Jan 2009 07:00:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44876 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756247AbZAQMAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 06:58:44 -0500
-Date: Fri, 16 Jan 2009 22:48:30 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] pids: refactor vnr/nr_ns helpers to make them safe
-Message-ID: <20090116214830.GA10374@localdomain>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <20090116055520.GA28131@redhat.com> <20090116103522.GA32212@hawkmoon.kerlabs.com> <20090116204540.GA32686@redhat.com>
+	Sat, 17 Jan 2009 07:00:24 -0500
+Subject: Re: [git pull] scheduler fixes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1232188484.6813.85.camel@marge.simson.net>
+References: <20090111144305.GA7154@elte.hu>
+	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
+	 <1231964647.14825.59.camel@laptop>
+	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
+	 <1232173776.7073.21.camel@marge.simson.net>
+	 <1232186054.6813.48.camel@marge.simson.net>
+	 <1232186877.14073.59.camel@laptop>
+	 <1232188484.6813.85.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sat, 17 Jan 2009 13:00:17 +0100
+Message-Id: <1232193617.14073.67.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090116204540.GA32686@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 09:45:40PM +0100, Oleg Nesterov wrote:
-> Hi Louis,
+On Sat, 2009-01-17 at 11:34 +0100, Mike Galbraith wrote:
+> > Right, how about we flip the 'initial' case in place_entity() for !
+> > nr_exclusive wakeups.
 > 
-> On 01/16, Louis Rilling wrote:
-> >
-> > On 16/01/09  6:55 +0100, Oleg Nesterov wrote:
-> > > +			struct pid_namespace *ns)
-> > >  {
-> > > -	return pid_nr_ns(task_pid(tsk), ns);
-> > > +	pid_t nr = 0;
-> > > +
-> > > +	rcu_read_lock();
-> > > +	if (!ns)
-> > > +		ns = current->nsproxy->pid_ns;
-> > > +	if (likely(pid_alive(task))) {
-> >
-> > I don't see what this pid_alive() check buys you. Since tasklist_lock is not
-> > enforced, nothing prevents another CPU from detaching the pid right after the
-> > check.
-> 
-> pid_alive() should be renamed. We use it to make sure the task didn't pass
-> __unhash_process().
-> 
-> Yes, you are right, nothing prevents another CPU from detaching the pid right
-> after the  check. But this is fine: we read ->pids[].pid under rcu_read_lock(),
-> and if it is NULL pid_nr_ns() returns. So, we don't need pid_alive() check at
-> all.
-> 
-> However, we can not use task->group_leader unless we verify the task is still
-> alive. That is why we need this check. We do not clear ->group_leader when
-> the task exits, so we can't do
-> 
-> 		rcu_read_lock();
-> 		if (task->group_leader)
-> 			do_something(task->group_leader);
-> 		rcu_unread_lock();
-> 
-> Instead we use pid_alive() before using ->group_leader.
+> Wouldn't that be more drastic than sleep denial?
 
-Ok I see now. Since RCU is locked and pid_alive(task) has been true at
-some point, task->group_leader cannot be freed because release_task()
-does not release task->group_leader before releasing task. IOW
-release_task() can't have started releasing task->group_leader before
-rcu_read_lock().
+Strictly speaking that DEBIT thing is valid for each wakeup, IIRC we
+restricted it to clone() only because that was where we could actually
+observe these latency spikes using a fork-bomb.
 
-Thank you for your explanation!
+This reduces the latency hits to around 400ms, which is about right for
+the given load.
 
-> 
-> > I'm also a bit puzzled by your description with using tasklist_lock when task !=
-> > current, and not seeing tasklist_lock anywhere in the patch. Does this mean that
-> > "safe" is for "no access to freed memory is done, but caller has to take
-> > tasklist_lock or may get 0 as return value"?
-> 
-> I am not sure I understand the question...
-> 
-> This patch doesn't use tasklist, it relies on rcu. With this patch the caller
-> doesn't need tasklist/rcu to call these helpers (but of course, the caller
-> must ensure that task_struct is stable).
-> 
-> But, whatever the caller does, it can get 0 as return value anyway if the
-> task exists, this is correct. Or I misunderstood you?
+---
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index f34cf42..d344605 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -671,7 +671,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 	 * little, place the new task so that it fits in the slot that
+ 	 * stays open at the end.
+ 	 */
+-	if (initial && sched_feat(START_DEBIT))
++	if ((initial && sched_feat(START_DEBIT)) ||
++			(!initial && sched_feat(WAKER_DEBIT)))
+ 		vruntime += sched_vslice(cfs_rq, se);
+ 
+ 	if (!initial) {
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index 4569bfa..b5fddf0 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -1,4 +1,4 @@
+-SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
++SCHED_FEAT(NEW_FAIR_SLEEPERS, 0)
+ SCHED_FEAT(NORMALIZED_SLEEPER, 0)
+ SCHED_FEAT(ADAPTIVE_GRAN, 1)
+ SCHED_FEAT(WAKEUP_PREEMPT, 1)
+@@ -15,3 +15,4 @@ SCHED_FEAT(ASYM_EFF_LOAD, 1)
+ SCHED_FEAT(WAKEUP_OVERLAP, 0)
+ SCHED_FEAT(LAST_BUDDY, 1)
+ SCHED_FEAT(OWNER_SPIN, 1)
++SCHED_FEAT(WAKER_DEBIT, 1)
 
-My question was probably badly phrased. When reading the patch
-description I thought that the point was to fix the helpers so that
-tasklist_lock would be taken whenever task != current. Of course your
-patch does not do this, and I'm perfectly fine with this.
 
-Thanks,
-
-Louis
-
--- 
-Dr Louis Rilling			Kerlabs - IRISA
-Skype: louis.rilling			Campus Universitaire de Beaulieu
-Phone: (+33|0) 2 99 84 71 52		Avenue du General Leclerc
-Fax: (+33|0) 2 99 84 71 71		35042 Rennes CEDEX - France
-http://www.kerlabs.com/
