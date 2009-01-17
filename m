@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932844AbZAQUqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933113AbZAQUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932844AbZAQUqv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 15:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbZAQUql
+	id S933113AbZAQUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 15:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763953AbZAQUss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 15:46:41 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51320
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754587AbZAQUqk (ORCPT
+	Sat, 17 Jan 2009 15:48:48 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:48207 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763080AbZAQUss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 15:46:40 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Date: Sat, 17 Jan 2009 03:28:14 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       jdike@addtoit.com, linux-kernel@vger.kernel.org
-References: <20090115194033.GA10926@hack.private> <20090116124158.4364e269.akpm@linux-foundation.org>
-In-Reply-To: <20090116124158.4364e269.akpm@linux-foundation.org>
+	Sat, 17 Jan 2009 15:48:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gcYcQRADp/z7xPlNh++fcxmJBc2DvBJh53obzdrJSUHSiRl8O6w5cMor0QWyZ/htw7GHSJRFMNlOYe/AHvkXgRThWeWPW8+hAukFGTUIPXfSMtFrVbRu/XPOY7fOZfh1uqdOxFiXA+IuAdrmUYu5MbPijNvlQ292ArJKfMMu6RI=  ;
+X-YMail-OSG: 9wvs01QVM1ko3DZWA8Evhvv9AHJ11RCz1sc5zFYJHG2Z0d.ym3bzjMkCmVgmr7nzrb6MbvJNDYnDm4xrLVSWK5255OMUEa_04uHVdroWqIfw0GlMsaDiXGT8wWfsGMp1JmWQ6onPppSPX7CmM2YUyUmeITH6Bl.nbdrDAPqr_Ga9NAHC4p_6z4Y3GTpD
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+Reply-To: dbrownell@users.sourceforge.net
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/6] omap iommu: tlb and pagetable primitives
+Date: Sat, 17 Jan 2009 12:48:45 -0800
+User-Agent: KMail/1.9.10
+Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org
+References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com> <20090116083709.18344.74524.stgit@oreo.research.nokia.com> <20090117160608.GA12341@n2100.arm.linux.org.uk>
+In-Reply-To: <20090117160608.GA12341@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200901170328.15178.rob@landley.net>
+Message-Id: <200901171248.45757.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 January 2009 14:41:58 Andrew Morton wrote:
-> > diff --git a/arch/um/sys-i386/sys_call_table.S
-> > b/arch/um/sys-i386/sys_call_table.S index 00e5f52..04147dc 100644
-> > --- a/arch/um/sys-i386/sys_call_table.S
-> > +++ b/arch/um/sys-i386/sys_call_table.S
-> > @@ -6,6 +6,7 @@
-> >
-> >  #define sys_vm86old sys_ni_syscall
-> >  #define sys_vm86 sys_ni_syscall
-> > +#define sys_sigprocmask sigprocmask
-> >
-> >  #define old_mmap old_mmap_i386
->
-> For how long has this problem been present?
->
-> Why aren't lots of other people reporting it?
+On Saturday 17 January 2009, Russell King - ARM Linux wrote:
+> > +#ifdef DEBUG_VERBOSE
+> > +             dev_dbg(obj->dev, "%s:\ta new pte:%p\n", __func__, iopte);
+> > +#endif
+> 
+> Not sure wrapping these in DEBUG_VERBOSE is necessary.  dev_dbg() is a
+> no-op unless DEBUG is defined.
 
-I'm not sure User Mode Linux still has a lot of users regularly testing the 
-latest and greatest version.  (QEMU and KVM kinda took the wind out of its 
-sails.)
+Use dev_vdbg() to get the "NOP unless VERBOSE is set" semantics.
 
-I still find it useful to be able to stick printfs into the code and debug 
-stuff even when the console isn't working, but I haven't been able to build a 
-version of 2.6.28 that works for me at all:
-
-cat > mini.conf << EOF
-CONFIG_BINFMT_ELF=y
-CONFIG_HOSTFS=y
-CONFIG_LBD=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_STDERR_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_STATIC_LINK=y
-CONFIG_NO_HZ=y
-CONFIG_UNEVICTABLE_LRU=y
-EOF
-make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf
-make ARCH=um -j 3
-./linux rw init=/bin/bash rootfstype=hostfs
-
-The result panics (twice) and exits, instead of giving me a shell prompt.  
-Built and run on stock Ubuntu 8.10.  (I posted about it on tuesday, but nobody 
-replied...)
-
-Rob
