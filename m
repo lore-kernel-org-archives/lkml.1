@@ -1,119 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765903AbZAQTjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbZAQTkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765903AbZAQTjd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 14:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763887AbZAQTjV
+	id S1765612AbZAQTkr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 14:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763908AbZAQTkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 14:39:21 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35771 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763840AbZAQTjU (ORCPT
+	Sat, 17 Jan 2009 14:40:37 -0500
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:39167 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763785AbZAQTkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 14:39:20 -0500
-Date: Sat, 17 Jan 2009 20:39:17 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: linux-btrfs@vger.kernel.org
-cc: bug-glibc@gnu.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: btrfs: readdir problem workaround for 32-bit off_t
-Message-ID: <alpine.LSU.2.00.0901172026180.14987@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 17 Jan 2009 14:40:37 -0500
+Date: Sat, 17 Jan 2009 20:38:41 +0100
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: linux kernel without file system
+Message-ID: <20090117193841.GB5003@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel> <1231926744.11907.12.camel@skunk> <ac3eb2510901140234m29ca516bocd0e7dd997122a7b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510901140234m29ca516bocd0e7dd997122a7b@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* Kay Sievers <kay.sievers@vrfy.org> wrote:
+
+> There are no device nodes in sysfs to talk to the device, only
+> attributes, which are mostly plain small text files.
+
+Actually, it would be really cool if all serial port operations
+could be done via sysfs, so we don't need the device node 
+(including all its ioctl()) at all.
 
 
+BTW: did I already mention that I don't like ioctl() ?
 
-I am seeing abnormal kernel<->userland interaction for range-exceeding 
-offsets during readdir.
-A suggested patch for btrfs is below, but I think there could also
-be involvement of (read: a bug in) Glibc.
-Would the copied parties please have a look, as it may spans both glibc 
-and btrfs.
-
-
-Thanks,
-Jan
-
-parent 81841fa96da5597a411f5f274a664f186b2d2549 (v2.6.29-rc2-21-g81841fa)
-commit fa8ea6611fedecba8e5fdf2a5dfd82affa5a982e
-Author: Jan Engelhardt <jengelh@medozas.de>
-Date:   Sat Jan 17 20:26:25 2009 +0100
-
-btrfs: readdir problem workaround for 32-bit off_t
-
-Kernel is i586, as is the userland.
-
-btrfs sets filp->f_pos == (2^63-1) when it has reached the
-end of a directory. This is problematic.
-
-In obtuse 32-bit mode (no _FILE_OFFSET_BITS), readdir(3) will not return 
-the last entry.
-
-However, when compiled with -D_FILE_OFFSET_BITS=64, it will return the 
-last entry. But telldir() will return (uint32_t)-1, which does not quite 
-match up with the 2^63-1.
-
-	$ cat test.c
-	#include <dirent.h>
-	#include <stdio.h>
-
-	int main(int argc, const char **argv)
-	{
-		DIR *r = opendir(argv[1]);
-		struct dirent *de;
-
-		while ((de = readdir(r)) != NULL)
-			printf("%lld %s\n", (long long)telldir(r), de->d_name);
-		return 0;
-	}
-	$ gcc test.c -o test -ggdb3
-	$ ./test /tmp/z
-	2 .
-	2 ..
-	3 a
-	4 b
-	5 lib
-
-	$ gcc test.c -o test -ggdb3 -D_FILE_OFFSET_BITS=64
-	$ ./test /tmp/z
-	2 .
-	2 ..
-	3 a
-	4 b
-	5 lib
-	4294967295 strace.log
-
-This has deep effects and my boot hangs. (Got btrfs as the root fs.)
-
-I have no idea who exactly of Glibc and btrfs is at fault with what,
-but this change makes btrfs usable for the moment.
-
-Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
----
- fs/btrfs/inode.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
-
-diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-index 8adfe05..901be02 100644
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -3264,10 +3264,7 @@ skip:
- 	}
- 
- 	/* Reached end of directory/root. Bump pos past the last item. */
--	if (key_type == BTRFS_DIR_INDEX_KEY)
--		filp->f_pos = INT_LIMIT(typeof(filp->f_pos));
--	else
--		filp->f_pos++;
-+	filp->f_pos++;
- nopos:
- 	ret = 0;
- err:
+cu
 -- 
-# Created with git-export-patch
-
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
