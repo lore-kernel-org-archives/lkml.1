@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764519AbZAQQVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764819AbZAQQWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764519AbZAQQVh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZAQQV2
+	id S1764819AbZAQQWJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763054AbZAQQVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:21:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60764 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752680AbZAQQV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:21:27 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18i5iE1M/4iAkmuGCGuSdbaNRXapdA7aLXvcd/eT3
-	kl22ZxXAZi7E2y
-Subject: Re: [git pull] scheduler fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, Kevin Shanahan <kmshanah@ucwb.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090117160115.GA31601@elte.hu>
-References: <1231964647.14825.59.camel@laptop>
-	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-	 <1232173776.7073.21.camel@marge.simson.net>
-	 <1232186054.6813.48.camel@marge.simson.net>
-	 <1232186877.14073.59.camel@laptop>
-	 <1232188484.6813.85.camel@marge.simson.net>
-	 <1232193617.14073.67.camel@laptop>
-	 <1232194752.6273.5.camel@marge.simson.net>
-	 <20090117044316.bda7d0bd.akpm@linux-foundation.org>
-	 <1232198574.16303.8.camel@marge.simson.net>
-	 <20090117160115.GA31601@elte.hu>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 17:21:21 +0100
-Message-Id: <1232209281.5987.4.camel@marge.simson.net>
+	Sat, 17 Jan 2009 11:21:51 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58322 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763010AbZAQQVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 11:21:50 -0500
+Date: Sat, 17 Jan 2009 16:21:39 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 3/6] omap iommu: omap3 iommu device registration
+Message-ID: <20090117162139.GB12341@n2100.arm.linux.org.uk>
+References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com> <20090116083719.18344.28959.stgit@oreo.research.nokia.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090116083719.18344.28959.stgit@oreo.research.nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 17:01 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Sat, 2009-01-17 at 04:43 -0800, Andrew Morton wrote:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=12465 just popped up - another
-> > > scheduler regression.  It has been bisected.
-> > 
-> > Seems pretty clear.  I'd suggest reverting it.
-> 
-> We can revert it (and will revert it if no solution is found), but i'd 
-> also like to understand why it happens, because that kind of regression 
-> from this change is unexpected - we might be hiding some bug that could 
-> pop up under less debuggable circumstances, so we need to understand it 
-> while we have a chance.
+On Fri, Jan 16, 2009 at 10:37:20AM +0200, Hiroshi DOYU wrote:
+> +#include <linux/io.h>
 
-Agree.  However, with the sched_mc stuff, mysql+oltp now does better
-with NEWIDLE on than off as well, as does an nfs kbuild.
+Is linux/io.h needed, or will a more specific include be better?
 
-	-Mike
+> +#include <linux/platform_device.h>
+> +
+> +#include <mach/iommu.h>
+> +
+> +#define DEVNAME "omap-iommu"
 
+I'm not sure this DEVNAME definition really helps anything.
+
+> +static void omap3_iommu_release(struct device *dev)
+> +{
+> +}
+
+Err, no.  Never ever ever provide a NULL release function.  Providing
+such a function is a screaming message that what you're doing is buggy.
+
+And if you get a warning through not providing such a function, it's
+telling you that what your overall approach with the driver API is
+buggy (and you haven't understood the implications of refcounted
+object management.)
+
+> +
+> +static struct platform_device omap3_iommu_pdev[] = {
+> +	{
+> +		.name		= DEVNAME,
+> +		.id		= 1,
+> +		.num_resources	= ARRAY_SIZE(iommu1_res),
+> +		.resource	= iommu1_res,
+> +		.dev		= {
+> +			.release = omap3_iommu_release,
+> +			.platform_data = &omap3_iommu_pdata[0],
+> +		},
+> +	},
+> +	{
+> +		.name		= DEVNAME,
+> +		.id		= 2,
+> +		.num_resources	= ARRAY_SIZE(iommu2_res),
+> +		.resource	= iommu2_res,
+> +		.dev		= {
+> +			.release = omap3_iommu_release,
+> +			.platform_data = &omap3_iommu_pdata[1],
+> +		},
+> +	},
+> +};
+> +
+> +static int __init omap3_iommu_init(void)
+> +{
+> +	int i;
+> +	for (i = 0; i < ARRAY_SIZE(omap3_iommu_pdev); i++)
+> +		platform_device_register(&omap3_iommu_pdev[i]);
+> +	return 0;
+> +}
+> +module_init(omap3_iommu_init);
+> +
+> +static void __exit omap3_iommu_exit(void)
+> +{
+> +	int i;
+> +	for (i = 0; i < ARRAY_SIZE(omap3_iommu_pdev); i++)
+> +		platform_device_unregister(&omap3_iommu_pdev[i]);
+
+So... this can never be bug free - you can _never_ unregister statically
+allocated devices.  Not even if you provide an empty release function.
+
+If you want to register and unregister device structures, it must be
+done using the correct APIs, and in the case of platform devices, that's
+the platform_device_alloc(), platform_device_add() and
+platform_device_unregister() APIs.
