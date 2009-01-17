@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZAQOaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbZAQOq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbZAQOaX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 09:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZAQOaF
+	id S1761123AbZAQOq3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 09:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbZAQOqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 09:30:05 -0500
-Received: from n75.bullet.mail.sp1.yahoo.com ([98.136.44.51]:44205 "HELO
-	n75.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755797AbZAQOaE (ORCPT
+	Sat, 17 Jan 2009 09:46:20 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:43832 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757856AbZAQOqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 09:30:04 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 408885.58811.bm@omp103.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=iPVUBvc7fxtKNK6Fib6Jc8BlYMyqkM6lekkjvpApzi/reGb2ggnESOtrMXE2redTKsVTABi/pmP9ZNTvCGChE+g/3Xoudfop7M2VW7KGWjTQ0w8YlwY8j+H3BPe5Bra8vfYesOtA8LScrRgzibFvtb53KtmZKDEutBztdPb/tYk=;
-X-YMail-OSG: 3C3mEscVM1nRtllNrf7D0y3VmTsAJAmh6kOnp5Fr448ZZNXoGkfpFI8fQj2jStghBA2xEUR9tAVmWu_Y1SCzgQ7UcgiwviZV2VLBEeqgX02ghOFR_kmQlZT.Twh_RPqBbucC8XXBj5..VJRPcj7i.cohTm09J7mnlEFzoDrzlFY5KOjAUJP6XW.fAu3vzmYnReY17yQj_gBjG5Auo8jIk05EceCs4411ik1OjUh7IOPirPcu3TX2ZrE-
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Sat, 17 Jan 2009 06:30:01 -0800 (PST)
-From: We La <w.landgraf@yahoo.com>
-Reply-To: w.landgraf@yahoo.com
-Subject: 2.6.29-rc2 rt2860 driver
-To: linux-kernel@vger.kernel.org
+	Sat, 17 Jan 2009 09:46:19 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.29-rc1: thinkpad problems during resume
+Date: Sat, 17 Jan 2009 15:46:15 +0100
+User-Agent: KMail/1.9.9
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>
+References: <20090113081316.GA2292@elf.ucw.cz> <b6a2187b0901130533m118e9401k8a7152d6f5982708@mail.gmail.com> <20090116104455.GA3283@elf.ucw.cz>
+In-Reply-To: <20090116104455.GA3283@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901171546.15987.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) In the press was published that 2.6.29 would include the rt2860 WIFI driver.  However, in 2.6.29-rc2 one find nowhere this driver. rt2x00 don't work, at least ifconfig ra0 up gives a error message.  and to compile it from source code, works with 2.6.26.X but not with 2.6.29-rc2 (plenty error messages) What's the situation of the rt2860 driver ??  The only senseful criterion for inclusion of a driver in the kernel is not the maturity of the code, but the number of sellings of that hardware in the shops, and that driver is necessary for msi wind notebooks, so it should be included into the kernel.
+Am Freitag 16 Januar 2009 schrieb Pavel Machek:
+> Hi!
+>
+> > >> > Please let me know if that helped.
+> > >>
+> > >> I tested rc1+ these two reverts yesterday on my T61p. Doesnt work.
+> > >> There must be at least one more patch that broke S2R on my thinkpad.
+> > >> In fact, it is cpu hotplug that is broken (unplug works).
+> > >
+> > > I reproduced that: echo 0 > online works, echo 1 > online hangs. Will
+> > > compile SMP-less kernel to verify that there are no more problems...
 
-2) With 2.6.29-rc2 (and msi wind), compiz starts but quickly crashs. In 2.6.26.X it was stable. That should be verified / corrected (regression)
+I made some progress on my T61p. git from yesterday + a revert of
+commit e39ad415ac15116df213dfa2aa2a4f1b0857af9c
+Author: Mike Travis <travis@sgi.com>
+Date:   Sun Jan 4 05:18:10 2009 -0800
 
-3)  eth cards don't work more since 2.6.27 .  ifconfig eth0  successful, but no connection.     I suppose that's a problem of the kernel config (because on other compilations/configurations it works) -- perhaps of the iptables, package treatment, or routing, not of the eth drivers themselves. However, although searching long time, I don't find out the reason.  This should be checked, and removed from the kernel config such options which potentially turn networking not longer working.
+    cpumask: use work_on_cpu in acpi-cpufreq.c for read_measured_perf_ctrs
 
-w.landgraf@yahoo.com
-Linux SYS
-mirror: ftp://ftp5.gwdg.de/pub/linux/install/sys/
-ftp://ftp.uni-siegen.de/pub/sys-linux   
+makes cpu hotplug working again. Resume from suspend to ram is still broken on 
+my Thinkpad. Looks like there is yet another patch to find....
 
-
-
-      
-
+Ingo, Mike: reverting e39ad415ac15116df213dfa2aa2a4f1b0857af9c fixes cpu 
+hotplug on my thinkpad. Any idea how to proceed? Should we revert that patch 
+in Linus git until we know what was wrong?
