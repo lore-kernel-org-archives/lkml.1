@@ -1,44 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbZAQGIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbZAQGSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbZAQGIv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 01:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZAQGIl
+	id S1758821AbZAQGSc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 01:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZAQGST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 01:08:41 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34977 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751779AbZAQGIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 01:08:40 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090115181612.GA27762@elte.hu>
-References: <20090115181612.GA27762@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Michael LeMay <mdlemay@epoch.ncsc.mil>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Paul Moore <paul.moore@hp.com>, Eric Paris <eparis@redhat.com>
-Subject: Re: [slab corruption] BUG key_jar: Poison overwritten
-Date: Sat, 17 Jan 2009 06:07:51 +0000
-Message-ID: <16916.1232172471@redhat.com>
+	Sat, 17 Jan 2009 01:18:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50206
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752343AbZAQGSS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 01:18:18 -0500
+Date: Fri, 16 Jan 2009 22:18:19 -0800 (PST)
+Message-Id: <20090116.221819.38800947.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-01-16
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090116223145.GA8233@tuxdriver.com>
+References: <20090116223145.GA8233@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 16 Jan 2009 17:31:46 -0500
 
-> -tip testing found the rather scary looking slab corruption:
+> Here is another batch of fixes intended for 2.6.29.  Most of them are
+> simple/obvious and/or their changelog cites the bug they are fixing.
+> The "cfg80211: make handle_band() and handle_channel() wiphy specific"
+> patch is a pre-requisite to the other patches from Luis.
 
-Unfortunately, I'm not in a position to look into this much right now:-(.
-I'll see if I can find a test machine next week, but if not, it'll be Feb
-before I can do anything about it.
-
-That said, what sort of testing were you doing?
-
-David
+Pulled, thanks a lot John.
