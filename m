@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933193AbZAQXnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933323AbZAQXnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933193AbZAQXnA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 18:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763257AbZAQXmv
+	id S933323AbZAQXnr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 18:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZAQXni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 18:42:51 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62566 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763013AbZAQXmu (ORCPT
+	Sat, 17 Jan 2009 18:43:38 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52358 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbZAQXnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 18:42:50 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: 2.6.29-rc1: [SOLVED] thinkpad problems during resume
-Date: Sun, 18 Jan 2009 00:42:40 +0100
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <20090113081316.GA2292@elf.ucw.cz> <200901171648.34155.borntraeger@de.ibm.com> <49723602.4090202@sgi.com>
-In-Reply-To: <49723602.4090202@sgi.com>
+	Sat, 17 Jan 2009 18:43:37 -0500
+Message-ID: <49726C56.6080905@zytor.com>
+Date: Sat, 17 Jan 2009 15:40:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3 warnings
+References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu> <49723912.6020108@zytor.com> <20090117204421.GA1700@bombadil.infradead.org> <alpine.LFD.2.00.0901181032350.3006@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901181032350.3006@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901180042.40284.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Could you try one more experiment?  With your working system, please cherry
-> pick these commits and try it again?
->
-> 68564a4... work_on_cpu: don't try to get_online_cpus() in work_on_cpu.
-> e1d9ec6... work_on_cpu: Use our own workqueue.
-> 6eb714c... cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and
-> drv_write
->
-> From
-> git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for
->-ingo.git
->
-> If that works, then try and un-revert e39ad415ac and see if it's fixed as
-> well?
+Linus Torvalds wrote:
+> 
+> Don't do this. That just forces a load off a complex pointer instead, with 
+> no upsides. At least if it was
+> 
+> 	extern const char warn_slowpath_nofmt[];
+> 
+> it would only load the pointer itself, which is still a fairly  expensive 
+> op, but at least doesn't require the extra memory load.
+> 
+> But you'd be better off jusst making it something like
+> 
+> 	#define NO_FMT ((const char *)(-1))
+> 
+> instead, which is really much more obvious, and doesn't need any of that 
+> "get a pointer" overhead.
+> 
 
-Yes that works.
+At least on x86, the two ops should be the same cost?
 
-29-rc2 + your 3 patches cherry-picked + revert of 
-a0d4922da2e4ccb0973095d8d29f36f6b1b5f703( usb problem) can suspend/resume. 
-If you like, you can add an
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
-to your three patches.
+	-hpa
 
-Christian
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
