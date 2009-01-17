@@ -1,108 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbZAQHvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbZAQIM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759269AbZAQHvv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 02:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZAQHvn
+	id S1759755AbZAQIM0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 03:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZAQIMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 02:51:43 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39414 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755360AbZAQHvm (ORCPT
+	Sat, 17 Jan 2009 03:12:15 -0500
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:30857 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754050AbZAQIMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 02:51:42 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type;
-	b=Eo0r2c0Te5pIVx5jIDgRDOvPMLWqQtkZpjP9G2+gCP8JgHZx56iKpjXqAtUmidOTp
-	Ntw8RAWCaLzcQm2NNfRSA==
-Date: Fri, 16 Jan 2009 23:51:35 -0800 (PST)
-From: Paul Turner <pjt@google.com>
-To: linux-kernel@vger.kernel.org
-cc: adobriyan@gmail.com
-Subject: Migration of kernel interfaces to seq_files breaks pread() consumers
-Message-ID: <Pine.LNX.4.64.0901162229420.12858@kitami.corp.google.com>
+	Sat, 17 Jan 2009 03:12:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMAfcUl5LBUR/2dsb2JhbADLN4Vy
+X-IronPort-AV: E=Sophos;i="4.37,280,1231075800"; 
+   d="scan'208";a="284902357"
+Date: Sat, 17 Jan 2009 19:12:10 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Mike Waychison <mikew@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v1 0/8] Deferred dput() and iput() -- reducing lock
+	contention
+Message-ID: <20090117081210.GL8071@disturbed>
+Mail-Followup-To: Mike Waychison <mikew@google.com>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20090117022936.20425.43248.stgit@crlf.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117022936.20425.43248.stgit@crlf.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 16, 2009 at 06:29:36PM -0800, Mike Waychison wrote:
+> We've noticed that at times it can become very easy to have a system begin to
+> livelock on dcache_lock/inode_lock (specifically in atomic_dec_and_lock()) when
+> a lot of dentries are getting finalized at the same time (massive delete and
+> large fdtable destructions are two paths I've seen cause problems).
+> 
+> This patchset is an attempt to try and reduce the locking overheads associated
+> with final dput() and final iput().  This is done by batching dentries and
+> inodes into per-process queues and processing them in 'parallel' to consolidate
+> some of the locking.
 
-(Specifically) Several interfaces under /proc have been migrated to use 
-seq_files.  This was previously observed to be a problem with VMware's 
-reading of /proc/uptime.  We're now running into the same problem on  
-/proc/<pid>/stat; we have many consumers performing preads on this 
-interface which break under new kernels.
+Hmmmm. This deferring of dput/iput will have the same class of
+effects on filesystems as the recent reverted changes to make
+generic_delete_inode() an asynchronous process. That is, it
+temporally separates the transaction for namespace deletion (i.e.
+unlink) from the transaction that completes the inode deletion that
+occurs, typically, during ->clear_inode. See the recent thread
+titled:
 
-Reverting these migrations presents other problems and doesn't scale with 
-everyones' pet dependencies over an abi that's been
-broken :(
+[PATCH] async: Don't call async_synchronize_full_special() while holding sb_lock
 
-Part of the problem in implementing pread in seq_files is that we don't  
-know know whether the read was issued by pread(2) or read(2).  It's not 
-nice to shoehorn this information down the stack.  I've attached a 
-skeleton patch which shows one way we could push it up (although something 
-like a second f_pos would be necessary to make it maintain pread 
-semantics against reads).
+For more details.
 
-One advantage of this style of approach is that it doesn't break on 
-partial record reads.  But it's a little gross at the same time.
+I suspect that change is likely to cause worse problems than the
+async changes in that it doesn't have a cap on the number of
+deferred operations.....
 
-Comments?  Ideas? 
+> Besides various workload testing,
 
-Thanks,
+Details?
 
-- Paul
+Cheers,
 
---
- fs/read_write.c    |   10 ++++++++++
- fs/seq_file.c      |    2 ++
- include/linux/fs.h |    2 ++
- 3 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 2fc2980..744094a 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -407,6 +407,16 @@ asmlinkage ssize_t sys_pread64(unsigned int fd, char __user *buf,
- 		ret = -ESPIPE;
- 		if (file->f_mode & FMODE_PREAD)
- 			ret = vfs_read(file, buf, count, &pos);
-+		else if (file->f_mode & FMODE_SEQ_FILE) {
-+			/*
-+			 * We break the pread semantic and actually make it
-+			 * seek, this prevents inconsistent record reads across
-+			 * boundaries.
-+			 */
-+			vfs_llseek(file, pos, SEEK_SET);
-+			ret = vfs_read(file, buf, count, &pos);
-+			file_pos_write(file, pos);
-+		}
- 		fput_light(file, fput_needed);
- 	}
- 
-diff --git a/fs/seq_file.c b/fs/seq_file.c
-index 3f54dbd..f8c5379 100644
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -50,6 +50,8 @@ int seq_open(struct file *file, const struct seq_operations *op)
- 
- 	/* SEQ files support lseek, but not pread/pwrite */
- 	file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
-+	file->f_mode |= FMODE_SEQ_FILE;
-+
- 	return 0;
- }
- EXPORT_SYMBOL(seq_open);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 5f7b912..c3b5916 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -76,6 +76,8 @@ extern int dir_notify_enable;
-    behavior for cross-node execution/opening_for_writing of files */
- #define FMODE_EXEC	16
- 
-+#define FMODE_SEQ_FILE_PREAD	32
-+
- #define RW_MASK		1
- #define RWA_MASK	2
- #define READ 0
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
