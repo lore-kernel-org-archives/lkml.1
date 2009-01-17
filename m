@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbZAQJL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbZAQJjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbZAQJL1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 04:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbZAQJLI
+	id S1762032AbZAQJjP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 04:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZAQJiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 04:11:08 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:53191 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755840AbZAQJLA (ORCPT
+	Sat, 17 Jan 2009 04:38:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58714 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756829AbZAQJiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 04:11:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AUNNU+Isf0rZxGawu3zdZATM+sAwf8Iv1XDlgw0vN5H+lxm9PxSx/OYsLk9Bkg2xuJ
-         ZlO4tF2H5PySrS1RfrYPDs2dxBtV+wPEamWifKpFDooiNp+8vMo+aPWrE0M31ZsyqqzK
-         oc4wzVjN1DU75xJCTgtCtMv1za8mSOIca7zdc=
-Message-ID: <4971A09E.1050503@gmail.com>
-Date: Sat, 17 Jan 2009 01:10:54 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-CC: lkml <linux-kernel@vger.kernel.org>, John Stoffel <john@stoffel.org>
-Subject: Re: 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com>
-In-Reply-To: <49719B53.8050300@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Jan 2009 04:38:52 -0500
+Date: Sat, 17 Jan 2009 10:53:39 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net, maynardj@us.ibm.com
+Subject: Re: [patch] Performance Counters for Linux, v4
+Message-ID: <20090117095339.GD1475@one.firstfloor.org>
+References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com> <87ljuf1s75.fsf@basil.nowhere.org> <4970CB6F.9000301@linux.vnet.ibm.com> <18801.13239.198051.944029@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18801.13239.198051.944029@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru wrote:
-> Justin P. Mattock wrote:
->> I'm not seeing this with firefox over here.
->> The setup I have is the latest beta,
->> located in /usr/lib/firefox/ with a soft link to /usr/bin/
->> I don't have gnome2 vfs installed though.
->> just a bare firefox with 2 plugins(flash,null)
->> located in /.mozilla/plugins/
->> for restorecon.
->>
->> not sure what distro you have, but with ubuntu
->> I noticed a quit a bit of other links created.
->> that is installing through apt-get, rather
->> just downloading the source and putting it wherever.
->>
->> regards;
->>
->> Justin P. Mattock
->>
-> I'm running ubuntu 8.10, with 2 custom kernels 2.6.28 and 2.6.29-rc2.
->
-> I've done a little bit more testing. This time with 4 version of 
-> firefox (3.0.5-ubuntu, 3.0.4, 3.1.b2, 3.2.a1) straight from 
-> mozilla.org, except the ubuntu one.
-> What I found is that all versions crash when loading iGoogle, sofar 
-> the only site that makes it crash, except 3.2a1.
-> Since iGoogle is my hompage, they all crash once loading is done 
-> (except 3.2a1), unless I'm fast enough and load a different page.
-> But, _every_ version crashes if I go to Preferences->Main or 
-> Preferences->Applications.
->
-> None of this crashing happens if I'm booted into a .28 kernel, only on 
-> a .29-rc kernel.
-> Henceforth, I still think it's a kernel regression, but one that's 
-> going to be almost impossible to debug!
-> I've hit the most narrow minded bug on the planet! Very sad....
-> Seems like I always hit the undebugable regressions that nobody else 
-> sees ;-(
->
-> Justin Madru
->
-what happens when you download the source?
-then once unpacked issue ./firefox
-just to see what happens without any plugins/apps.
+On Sat, Jan 17, 2009 at 12:26:15PM +1100, Paul Mackerras wrote:
+> Corey Ashford writes:
+> 
+> > Over time, it seems clear that we will see multi-core processor designs 
+> > with increasingly large uncore/nest facilities, so this could become 
+> > more and more of an issue.
+> 
+> Those nest events still get counted on counters that are in the CPU
+> core, right? 
 
-over here I have the beta no apps
-basically as light as possible just flash
-(since all web sites use that.)
+Nope, Nehalem uncore counters are separate per socket. The uncore
+has its own counters.
 
-I did have a crash though,
-but was due to me not allowing
-an allow rule for SELinux(too lazy at the moment);
-but besides any allow rules I'm not having any issues.
-(knock on wood).
+You can program them to interrupt some fixed CPU thread (but 
+it's not necessarily the thread who caused the event) or all CPU threads
+on the socket.
 
-you can also try renaming gnome2 gconf  and
-.mozilla just to see
+I found these semantics quite hard to fit into oprofile too because
+it also has too many per cpu events assumptions.
 
-regards;
+> So that sounds like they can be counted by one or more
+> per-cpu perf_counter instances.  That means that you're measuring them
+> across all processes.  Does it make any sense to try to attribute
+> those events to individual processes?  How would one do that?
 
-Justin P. Mattock
+You can't (except by forcing only a single thread to run on 
+the socket). The hardware doesn't know otherwise.
+
+perfmon3 has a concept of counters which are system wide.
+While that's also not a 100% match on a multi socket system
+it's better than assigning it to some random CPU.
+
+> 
+> Clearly, something has to know enough about the system topology to
+> know how many counters are needed and which (virtual) cpus they should
+
+Hmm you want to create new virtual cpus for this?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
