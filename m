@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbZAQXZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbZAQXaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932415AbZAQXZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 18:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbZAQXZO
+	id S932909AbZAQXaG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 18:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761666AbZAQX3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 18:25:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46475 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761082AbZAQXZN (ORCPT
+	Sat, 17 Jan 2009 18:29:55 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:43199 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761625AbZAQX3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 18:25:13 -0500
-Message-ID: <497268B7.40301@zytor.com>
-Date: Sat, 17 Jan 2009 15:24:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 17 Jan 2009 18:29:54 -0500
+X-Greylist: delayed 3819 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Jan 2009 18:29:54 EST
+From: David Wagner <daw@cs.berkeley.edu>
+Message-Id: <200901172226.n0HMQEEJ024690@taverner.cs.berkeley.edu>
+Subject: Checking module parameters
+To: linux-kernel@vger.kernel.org
+Date: Sat, 17 Jan 2009 14:26:14 -0800 (PST)
+Secret-Bounce-Tag: 9a029cbee41caf2ca77a77efa3c13981
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tvignaud@mandriva.com" <tvignaud@mandriva.com>
-Subject: Re: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
-References: <20090109223520.GC6472@linux-os.sc.intel.com> <4967D223.1090703@zytor.com> <20090109224804.GD6472@linux-os.sc.intel.com> <20090117174224.GA1409@ucw.cz>
-In-Reply-To: <20090117174224.GA1409@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Fri 2009-01-09 14:48:04, Suresh Siddha wrote:
->> On Fri, Jan 09, 2009 at 02:39:31PM -0800, H. Peter Anvin wrote:
->>> Suresh Siddha wrote:
->>>> Here X is trying to map first 8KB of memory using /dev/mem. Existing
->>>> code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
->>>> code changes don't allow to map memory with different attributes
->>>> at the same time.
->>>>
->>> Why was 0-4 KB marked as non-RAM?  It is most definitely RAM, and should
->>> be WB.
->> While in reality it is RAM, we have CONFIG_STRICT_DEVMEM which doesn't allow
->> apps to map RAM pages using /dev/mem. And to allow app's to map the
->> legacy 0-4KB bios data page, we consider it as non-RAM.
-> 
-> Fix config_strict_devmem? Ram is ram, and we should not li for
-> strict_devmem benefit...
-> 
+Is there a way to tell what options have been applied to a currently
+loaded kernel module?
 
-*As far as I understand* this is only considered non-RAM for the purpose
-of strict_devmem?
+I'm trying to force libata to use 1.5Gbps rather than 3Gbps, so I created
+a file /etc/modprobe.d/local containing:
+  options libata force=1.5Gbps
+However my SATA drive gets loaded at 3Gbps.  I'm trying to figure out how
+to debug this so that I can tell whether the option got correctly applied
+to the libata module, and if not, how to force the SATA link to 1.5Gbps.
+Any suggestions or ideas?
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+(I can't set libata.force=1.5Gbps as a kernel argument because on my
+Fedora kernel, libata is loaded as a module rather than built into the
+kernel.  I can't run "modprobe libata force=1.5Gbps" by hand because
+I've got SATA drives, so the libata module is automatically loaded before
+I get shell access.)
