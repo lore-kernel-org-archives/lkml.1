@@ -1,910 +1,451 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbZAQNh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZAQNlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759618AbZAQNh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 08:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZAQNhr
+	id S1760608AbZAQNlg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 08:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757590AbZAQNl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 08:37:47 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:64931 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbZAQNhp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 08:37:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kQAvzHFObEwap3j951449jtRfd3nCqlSiAa4wJAN99P2uxX+atPvwccRXNoGJmATzh
-         ywbQdDdsoBik/X3P/x2Y75j0bZ6jP9e3UfbcHlu2ZTc0VV9vkiKgW3TRDaptXwZZGto7
-         A2o/4RtmphH1A5GQkmcJ1lZ4P/9zSRDyDhdLw=
-Date: Sat, 17 Jan 2009 14:37:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] ftrace interface for blktrace
-Message-ID: <20090117133737.GA8413@nowhere>
-References: <20090116181611.GE6562@ghostprotocols.net>
+	Sat, 17 Jan 2009 08:41:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53490 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757507AbZAQNlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 08:41:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: [PATCH PCI PCIe portdrv: Fix allocation of interrupts (rev. 5) (was: Re: [PATCH] PCI PCIe portdrv: Fix allocation ...)
+Date: Sat, 17 Jan 2009 14:40:42 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200901131457.58164.rjw@sisk.pl> <496F0CA8.7040001@jp.fujitsu.com> <200901170119.54262.rjw@sisk.pl>
+In-Reply-To: <200901170119.54262.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090116181611.GE6562@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901171440.42840.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 04:16:11PM -0200, Arnaldo Carvalho de Melo wrote:
-> Hi Jens,
+On Saturday 17 January 2009, Rafael J. Wysocki wrote:
+> On Thursday 15 January 2009, Kenji Kaneshige wrote:
+> > Hidetoshi Seto wrote:
+> > > Kenji Kaneshige wrote:
+> > >> Rafael J. Wysocki wrote:
+> > >>> Hi,
+> > >>>
+> > >>> The patch below fixes the problem with MSI-X vectors allocation by the PCIe
+> > >>> port driver.  It applies on top of the series of PCIe port driver cleanups and
+> > >>> bug fixes I've just sent.
+> > >>>
+> > >>> Please review.
+> > >>>
+> > >> The patch seems to still have the following assumptions.
+> > >>
+> > >>  - The number of MSI-X table entries is less than or equal to two.
+> > >>  - MSI-X table entries are mapped only to PME/HP and/or AER.
+> > > 
+> > > It is not true.
+> > > 
+> > 
+> > Maybe I should have said:
+> > 
+> > The patch will not work if any of PME/HP or AER requires entry
+> > other than first two.
+> > 
+> > > If any of PME/HP and AER requires entry other than first two ([0],[1]),
+> > > this code will give up MSI-X and fall back to MSI (or INTx).
+> > > 
+> > 
+> > Yes. My opinion is MSI-X should work even if PME/HP or AER requires
+> > entry other than first two.
+> > 
+> > > In other words, the portdrv will use MSI-X only if entries for PME/PM
+> > > and AER is in the first two entries of the MSI-X table.
+> > > 
+> > 
+> > This is exactly my worry, and it's why I want to eliminate the
+> > assumptions above.
 > 
-> 	The patch below adds a ftrace interface for blktrace, allowing
-> people to use it without any required userspace tools, using sysfs to setup the
-> act_mask, pid, start_lba, end_lba.
-> 	Example usage:
+> OK, appended is yet another version of the patch.
 > 
-> [root@f10-1 ~]# mount -t debugfs none /sys/kernel/debug/
-> [root@f10-1 ~]# ls /sys/block/sda/sda1/trace/
-> act_mask  enable  end_lba  pid  start_lba
+> If MSI-X are supported, it allocates as many vectors as there are entries
+> in the port's MSI-X table, but no more than 32, and figures out which of them
+> will be used for the port services.
 
+The patch didn't check which services are available during the MSI-X set up
+which was wrong.
 
-That reminds me it would be good to provide a more powerful tracer options
-Api, to set numeric or string values for the options, like the kernel
-parameters..... So you would avoid to implement your own way to do it.
-I should put my hands into it one day.
+Also, in the meantime, i thought it might be a good idea to free the interrupt
+routing table entries that aren't going to be used after all.
 
+The patch below adds this to the previous version and checks for the
+availability of port services in the MSI-X setup resume.  I hope it will
+be acceptable to everyone.
 
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/available_tracers 
-> blk function_graph wakeup function sched_switch nop
-> [root@f10-1 ~]# echo blk > /sys/kernel/debug/tracing/current_tracer 
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace
-> # tracer: blk
-> #
-> # DEV   CPU TIMESTAMP     PID ACT FLG
-> #  |     |     |           |   |   |
-> [root@f10-1 ~]# echo 1 > /sys/block/sda/sda1/trace/enable 
-> [root@f10-1 ~]# tail /sys/kernel/debug/tracing/trace
->   8,1    0   143.070085  1208  P  NS [tail]
->   8,1    0   143.070087  1208  I RBS 4154375 + 8 [tail]
->   8,1    0   143.070091  1208  A WBS 4155391 + 16 <- (8,1) 4155328
->   8,1    0   143.070091  1208  Q   R 4155391 + 16 [tail]
->   8,1    0   143.070094  1208  G  RB 4155391 + 16 [tail]
->   8,1    0   143.070094  1208  I RBS 4155391 + 16 [tail]
->   8,1    0   143.070097  1208  U  WS [tail] 2
->   8,1    0   143.070101  1208  D  WB 4154375 + 8 [tail]
->   8,1    0   143.070341  1208  D  WB 4155391 + 16 [tail]
->   8,1    0   143.070635     0  C  RS 4154375 + 8 [0]
+Thanks,
+Rafael
 
+---
+Subject: PCI PCIe portdrv: Fix allocation of interrupts (rev. 5)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-nice!
+If MSI-X interrupt mode is used by the PCI Express port driver, too
+many vectors are allocated and it is not ensured that the right
+vectors will be used for the right services.  Namely, the PCI Express
+specification states that both PCI Express native PME and PCI Express
+hotplug will always use the same MSI or MSI-X message for signalling
+interrupts, which implies that the same vector will be used by both
+of them.  Also, the VC service does not use interrupts at all.
+Moreover, is not clear which of the vectors allocated by
+pci_enable_msix() in the current code will be used for PME and
+hotplug and which of them will be used for AER if all of these
+services are configured.
 
+For these reasons, rework the allocation of interrupts for PCI
+Express ports so that if MSI-X are enabled, the right vectors will be
+used for the right purposes.
 
-> [root@f10-1 ~]#
-> 
-> 	Filters can be set using:
-> 
-> [root@f10-1 ~]# echo write,sync > /sys/block/sda/sda1/trace/act_mask 
-> [root@f10-1 ~]# cat /sys/block/sda/sda1/trace/act_mask 
-> 0xa
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/msi.c               |   24 +++-
+ drivers/pci/pcie/portdrv.h      |    6 +
+ drivers/pci/pcie/portdrv_core.c |  195 ++++++++++++++++++++++++++++++++--------
+ include/linux/pci.h             |    5 +
+ include/linux/pcieport_if.h     |   12 +-
+ 5 files changed, 194 insertions(+), 48 deletions(-)
 
-That would be better to see the thing as a string, like you set it.
-
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -31,6 +31,141 @@ static void release_pcie_device(struct d
+ }
  
-> 	One can go on interactively adding more filters, for instance:
-> 
-> [root@f10-1 ~]# echo `pidof kjournald` > /sys/block/sda/sda1/trace/pid
-> [root@f10-1 ~]# cat /sys/block/sda/sda1/trace/pid
-> 423
-
-
-Or why not simply kjournald? :-)
-
-
-> 	And use the existing ftrace infrastructure to, for instance,
-> replicate the btrace (blktrace -o - | blkparse) functionality by simply
-> using cat:
-> 
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace_pipe 
->   8,1    0   457.253356   423  A WBS 6335 + 8 <- (8,1) 6272
->   8,1    0   457.253360   423  Q   R 6335 + 8 [kjournald]
->   8,1    0   457.253367   423  G  RB 6335 + 8 [kjournald]
->   8,1    0   457.253372   423  I RBS 6335 + 8 [kjournald]
->   8,1    0   457.253376   423  A WBS 6343 + 8 <- (8,1) 6280
->   8,1    0   457.253376   423  Q   R 6343 + 8 [kjournald]
->   8,1    0   457.253378   423  M   W 6343 + 8 [kjournald]
->   8,1    0   457.253380   423  A WBS 6351 + 8 <- (8,1) 6288
-> CONTROL+C
-> [root@f10-1 ~]#
-> 
-> 	This patch was done on Linus tree, I'll now work with it on
-> linux-tip so that I can experiment with binary tracing, i.e to ask for
-> the output of /sys/kernel/debug/tracing/trace_pipe to be raw, exactly
-> the one provide by relayfs based variant, so that we will be able to
-> continue using blkparse to validate the trace entries, as a debugging
-> aid.
-
-
-But I guess there will be some changes to bring on the tracing to make
-it support binary flow...
-
-
-> 	Also there are other interesting things that one gets from using
-> the ftrace infrastructure, such as being able to set see traffic that
-> happens in just a cpuset (/sys/kernel/debug/tracing/tracing_cpumask),
-> and others that I plan to add such as what Steve did in "[PATCH 2/2]
-> ftrace: add stack trace to function tracer", so that we could have
-> things like (made up example):
-> 
-> [root@f10-1 ~]# cat /sys/kernel/debug/tracing/trace_pipe 
->   8,1    0   457.253356   423  A WBS 6335 + 8 <- (8,1) 6272
->   8,1    0   457.253360   423  Q   R 6335 + 8 [kjournald]
->   8,1    0   457.253367   423  G  RB 6335 + 8 [kjournald]
->   8,1    0   457.253372   423  I RBS 6335 + 8 [kjournald]
->  <= sync_buffer
->  <= __wait_on_bit
->  <= out_of_line_wait_on_bit
->  <= __wait_on_buffer
->  <= sync_dirty_buffer
->  <= journal_commit_transaction
->  <= kjournald
->   8,1    0   457.253376   423  A WBS 6343 + 8 <- (8,1) 6280
->   8,1    0   457.253376   423  Q   R 6343 + 8 [kjournald]
->   8,1    0   457.253378   423  M   W 6343 + 8 [kjournald]
->   8,1    0   457.253380   423  A WBS 6351 + 8 <- (8,1) 6288
-
-
-Cool, but I guess you will not need this ftrace plugin to do it.
-stack traces entries for tracing are already supported for a while.
-
+ /**
++ * pcie_port_msix_add_entry - add entry to given array of MSI-X entries
++ * @entries: Array of MSI-X entries
++ * @new_entry: Index of the entry to add to the array
++ * @nr_entries: Number of entries aleady in the array
++ *
++ * Return value: Position of the added entry in the array
++ */
++static int pcie_port_msix_add_entry(
++	struct msix_entry *entries, int new_entry, int nr_entries)
++{
++	int j;
++
++	for (j = 0; j < nr_entries; j++)
++		if (entries[j].entry == new_entry)
++			return j;
++
++	entries[j].entry = new_entry;
++	return j;
++}
++
++/**
++ * pcie_port_enable_msix - try to set up MSI-X as interrupt mode for given port
++ * @dev: PCI Express port to handle
++ * @vectors: Array of interrupt vectors to populate
++ * @mask: Bitmask of port capabilities returned by get_port_device_capability()
++ *
++ * Return value: 0 on success, error code on failure
++ */
++static int pcie_port_enable_msix(struct pci_dev *dev, int *vectors, int mask)
++{
++	struct msix_entry *msix_entries;
++	int idx[PCIE_PORT_DEVICE_MAXSERVICES];
++	int nr_entries, status, pos, i, nvec;
++	u16 reg16;
++	u32 reg32;
++
++	nr_entries = pci_msix_table_size(dev);
++	if (!nr_entries)
++		return -EINVAL;
++	if (nr_entries > PCIE_PORT_MAX_MSIX_ENTRIES)
++		nr_entries = PCIE_PORT_MAX_MSIX_ENTRIES;
++
++	msix_entries = kzalloc(sizeof(*msix_entries) * nr_entries, GFP_KERNEL);
++	if (!msix_entries)
++		return -ENOMEM;
++
++	/*
++	 * Allocate as many entries as the device wants temporarily, so that we
++	 * can check which of them will be useful.
++	 */
++	for (i = 0; i < nr_entries; i++)
++		msix_entries[i].entry = i;
++
++	status = pci_enable_msix(dev, msix_entries, nr_entries);
++	if (status)
++		goto Exit;
++
++	for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++)
++		idx[i] = -1;
++	status = -EIO;
++	nvec = 0;
++
++	if (mask & (PCIE_PORT_SERVICE_PME | PCIE_PORT_SERVICE_HP)) {
++		int entry;
++
++		/*
++		 * The code below follows the PCI Express Base Specification 2.0
++		 * stating in Section 6.1.6 that "PME and Hot-Plug Event
++		 * interrupts (when both are implemented) always share the same
++		 * MSI or MSI-X vector, as indicated by the Interrupt Message
++		 * Number field in the PCI Express Capabilities register", where
++		 * according to Section 7.8.2 of the specification "For MSI-X,
++		 * the value in this field indicates which MSI-X Table entry is
++		 * used to generate the interrupt message."
++		 */
++		pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
++		pci_read_config_word(dev, pos + PCIE_CAPABILITIES_REG, &reg16);
++		entry = (reg16 >> 9) & PCIE_PORT_MSI_VECTOR_MASK;
++		if (entry >= nr_entries)
++			goto Error;
++
++		i = pcie_port_msix_add_entry(msix_entries, entry, nvec);
++		if (i == nvec)
++			nvec++;
++
++		idx[PCIE_PORT_SERVICE_PME_SHIFT] = i;
++		idx[PCIE_PORT_SERVICE_HP_SHIFT] = i;
++	}
++
++	if (mask & PCIE_PORT_SERVICE_AER) {
++		int entry;
++
++		/*
++		 * The code below follows Section 7.10.10 of the PCI Express
++		 * Base Specification 2.0 stating that bits 31-27 of the Root
++		 * Error Status Register contain a value indicating which of the
++		 * MSI/MSI-X vectors assigned to the port is going to be used
++		 * for AER, where "For MSI-X, the value in this register
++		 * indicates which MSI-X Table entry is used to generate the
++		 * interrupt message."
++		 */
++		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
++		pci_read_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, &reg32);
++		entry = reg32 >> 27;
++		if (entry >= nr_entries)
++			goto Error;
++
++		i = pcie_port_msix_add_entry(msix_entries, entry, nvec);
++		if (i == nvec)
++			nvec++;
++
++		idx[PCIE_PORT_SERVICE_AER_SHIFT] = i;
++	}
++
++	/* Drop the temporary MSI-X setup */
++	pci_disable_msix(dev);
++
++	/* Now allocate the MSI-X vectors for real */
++	status = pci_enable_msix(dev, msix_entries, nvec);
++	if (status)
++		goto Error;
++
++	for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++)
++		vectors[i] = idx[i] >= 0 ? msix_entries[idx[i]].vector : -1;
++
++ Exit:
++	kfree(msix_entries);
++	return status;
++
++ Error:
++	pci_disable_msix(dev);
++	goto Exit;
++}
++
++/**
+  * assign_interrupt_mode - choose interrupt mode for PCI Express port services
+  *                         (INTx, MSI-X, MSI) and set up vectors
+  * @dev: PCI Express port to handle
+@@ -42,49 +177,31 @@ static void release_pcie_device(struct d
+ static int assign_interrupt_mode(struct pci_dev *dev, int *vectors, int mask)
+ {
+ 	struct pcie_port_data *port_data = pci_get_drvdata(dev);
+-	int i, pos, nvec, status = -EINVAL;
+-	int interrupt_mode = PCIE_PORT_NO_IRQ;
+-
+-	/* Set INTx as default */
+-	for (i = 0, nvec = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++) {
+-		if (mask & (1 << i)) 
+-			nvec++;
+-		vectors[i] = dev->irq;
+-	}
+-	if (dev->pin)
+-		interrupt_mode = PCIE_PORT_INTx_MODE;
++	int irq, interrupt_mode = PCIE_PORT_NO_IRQ;
++	int i;
  
-> 	More polishing is needed, I wrote the patch this way just to
-> show where things are different, with new code, for registering the
-> tracer, bits stolen from the userspace blktrace, allowing config via
-> sysfs at the bottom.
-> 
-> 	Ideally we would move this to kernel/trace/block.c, break it
-> into smaller self contained patches, etc.
-> 
-> Comments?
-> 
-> - Arnaldo
-> 
->  block/blktrace.c      |  578 +++++++++++++++++++++++++++++++++++++++++++++++++-
->  fs/partitions/check.c |    7 
->  2 files changed, 583 insertions(+), 2 deletions(-)
-> 
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index b0a2cae..10985f9 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -25,9 +25,13 @@
->  #include <linux/time.h>
->  #include <trace/block.h>
->  #include <asm/uaccess.h>
-> +#include <../kernel/trace/trace.h>
-
-
-Yeah, it really needs to be moved on kernel/trace :-)
-
-
->  static unsigned int blktrace_seq __read_mostly = 1;
->  
-> +static struct trace_array *blk_tr;
-> +static int __read_mostly  blk_tracer_enabled;
-> +
->  /* Global reference count of probes */
->  static DEFINE_MUTEX(blk_probe_mutex);
->  static atomic_t blk_probes_ref = ATOMIC_INIT(0);
-> @@ -43,6 +47,9 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
->  {
->  	struct blk_io_trace *t;
->  
-> +	if (!bt->rchan)
-> +		return;
-> +
->  	t = relay_reserve(bt->rchan, sizeof(*t) + len);
->  	if (t) {
->  		const int cpu = smp_processor_id();
-> @@ -90,6 +97,9 @@ void __trace_note_message(struct blk_trace *bt, const char *fmt, ...)
->  	unsigned long flags;
->  	char *buf;
->  
-> +	if (!bt->msg_data)
-> +		return;
-> +
->  	local_irq_save(flags);
->  	buf = per_cpu_ptr(bt->msg_data, smp_processor_id());
->  	va_start(args, fmt);
-> @@ -131,13 +141,14 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
->  		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
->  {
->  	struct task_struct *tsk = current;
-> +	struct ring_buffer_event *event = NULL;
->  	struct blk_io_trace *t;
->  	unsigned long flags;
->  	unsigned long *sequence;
->  	pid_t pid;
->  	int cpu;
->  
-> -	if (unlikely(bt->trace_state != Blktrace_running))
-> +	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
->  		return;
->  
->  	what |= ddir_act[rw & WRITE];
-> @@ -158,6 +169,25 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
->  	 */
->  	local_irq_save(flags);
-
-
-Is the local_irq_save still needed here? Note that the ring buffer is safe by itself.
-
-> +	if (blk_tr) {
-> +		struct trace_array_cpu *data;
-> +
-> +		tracing_record_cmdline(current);
-> +		cpu = raw_smp_processor_id();
-
-
-I think you can use smp_processor_id(). There is no risk of tracing recursion here.
-
-
-> +		data = blk_tr->data[cpu];
-> +
-> +		if (unlikely(atomic_read(&data->disabled)))
-> +			goto out_local_irq_restore;
-> +
-> +		event = ring_buffer_lock_reserve(blk_tr->buffer,
-> +						 sizeof(*t) + pdu_len, &flags);
-> +		if (!event)
-> +			goto out_local_irq_restore;
-> +		
-> +		t = ring_buffer_event_data(event);
-> +		goto record_it;
-> +	}
-> +
->  	if (unlikely(tsk->btrace_seq != blktrace_seq))
->  		trace_note_tsk(bt, tsk);
->  
-> @@ -169,19 +199,26 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
->  		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
->  		t->sequence = ++(*sequence);
->  		t->time = ktime_to_ns(ktime_get());
-
-You already have a timestamp for each entry on the ring buffer.
-
-> +		t->cpu = cpu;
-
-
-Ditto. But perhaps you can be preempted between the block action and the trace insertion.
-I'm not sure of the context here.. So perhaps you must keep it.
-
-
-> +record_it:
->  		t->sector = sector;
->  		t->bytes = bytes;
->  		t->action = what;
->  		t->pid = pid;
->  		t->device = bt->dev;
-> -		t->cpu = cpu;
->  		t->error = error;
->  		t->pdu_len = pdu_len;
->  
->  		if (pdu_len)
->  			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
-> +
-> +		if (blk_tr) {
-> +			ring_buffer_unlock_commit(blk_tr->buffer, event, flags);
-> +			trace_wake_up();
-> +		}
->  	}
->  
-> +out_local_irq_restore:
->  	local_irq_restore(flags);
->  }
->  
-> @@ -888,3 +925,540 @@ static void blk_unregister_tracepoints(void)
->  
->  	tracepoint_synchronize_unregister();
->  }
-> +
-> +/*
-> + * struct blk_io_tracer formatting routines
-> + */
-> +
-> +static void fill_rwbs(char *rwbs, struct blk_io_trace *t)
-> +{
-> +        int i = 0;
-> +
-> +        if (t->action & BLK_TC_DISCARD)	   rwbs[i++] = 'D';
-> +        else if (t->action & BLK_TC_WRITE) rwbs[i++] = 'W';
-> +        else if (t->bytes)		   rwbs[i++] = 'R';
-> +        else				   rwbs[i++] = 'N';
-> +
-> +        if (t->action & BLK_TC_AHEAD)	   rwbs[i++] = 'A';
-> +        if (t->action & BLK_TC_BARRIER)	   rwbs[i++] = 'B';
-> +        if (t->action & BLK_TC_SYNC)	   rwbs[i++] = 'S';
-> +        if (t->action & BLK_TC_META)	   rwbs[i++] = 'M';
-> +
-> +        rwbs[i] = '\0';
-> +}
-> +
-> +static inline void *pdu_start(struct blk_io_trace *t)
-> +{
-> +	return t + 1;
-> +}
-> +
-> +static inline u32 t_sec(const struct blk_io_trace *t)
-> +{
-> +	return t->bytes >> 9;
-> +}
-> +
-> +static __u64 get_pdu_int(struct blk_io_trace *t)
-> +{
-> +	__u64 *val = pdu_start(t);
-> +
-> +	return be64_to_cpu(*val);
-> +}
-> +
-> +static void get_pdu_remap(struct blk_io_trace *t, struct blk_io_trace_remap *r)
-> +{
-> +	struct blk_io_trace_remap *__r = pdu_start(t);
-> +	__u64 sector = __r->sector;
-> +
-> +	r->device = be32_to_cpu(__r->device);
-> +	r->device_from = be32_to_cpu(__r->device_from);
-> +	r->sector = be64_to_cpu(sector);
-> +}
-> +
-> +static int blk_log_action(struct trace_iterator *iter, struct blk_io_trace *t,
-> +			  const char *act)
-> +{
-> +	char rwbs[6];
-> +	unsigned long long ts	= ns2usecs(iter->ts);
-> +	unsigned long usec_rem	= do_div(ts, USEC_PER_SEC);
-> +	unsigned secs		= (unsigned long)ts;
-> +
-> +	fill_rwbs(rwbs, t);
-> +	return trace_seq_printf(&iter->seq,
-> +				"%3d,%-3d %2d %5d.%06lu %5u %2s %3s ",
-> +				MAJOR(t->device), MINOR(t->device), iter->cpu,
-> +				secs, usec_rem, t->pid, act, rwbs);
-> +}
-> +
-> +static int blk_log_generic(struct trace_iterator *iter, struct blk_io_trace *t,
-> +			   const char *act)
-> +{
-> +	int ret = blk_log_action(iter, t, act);
-> +	if (ret) {
-> +		const char *cmd = trace_find_cmdline(t->pid);
-> +
-> +		if (t_sec(t))
-> +			ret = trace_seq_printf(&iter->seq, "%llu + %u [%s]\n",
-> +					       (unsigned long long)t->sector,
-> +					       t_sec(t), cmd);
-> +		else
-> +			ret = trace_seq_printf(&iter->seq, "[%s]\n", cmd);
-> +	}
-> +	return ret;
-> +}
-> +
-> +static int blk_log_with_err(struct trace_iterator *iter, struct blk_io_trace *t,
-> +			    const char *act)
-> +{
-> +	int ret = blk_log_action(iter, t, act);
-> +	if (ret) {
-> +		if (t_sec(t))
-> +			ret = trace_seq_printf(&iter->seq, "%llu + %u [%d]\n",
-> +					       (unsigned long long)t->sector,
-> +					       t_sec(t), t->error);
-> +		else
-> +			ret = trace_seq_printf(&iter->seq, "%llu [%d]\n",
-> +					       (unsigned long long)t->sector,
-> +					       t->error);
-> +	}
-> +	return ret;
-> +}
-> +
-> +static int blk_log_remap(struct trace_iterator *iter, struct blk_io_trace *t)
-> +{
-> +	int ret = blk_log_action(iter, t, "A");
-> +	if (ret) {
-> +		struct blk_io_trace_remap r = { .device = 0, };
-> +
-> +		get_pdu_remap(t, &r);
-> +		t->device = r.device_from;
-> +		ret = trace_seq_printf(&iter->seq, "%llu + %u <- (%d,%d) %llu\n",
-> +				       (unsigned long long)t->sector,
-> +				       t_sec(t), MAJOR(r.device), MINOR(r.device),
-> +				       (unsigned long long)r.sector);
-> +	}
-> +	return ret;
-> +}
-> +
-> +static int blk_log_plug(struct trace_iterator *iter, struct blk_io_trace *t)
-> +{
-> +	int ret = blk_log_action(iter, t, "P");
-> +	if (ret)
-> +		ret = trace_seq_printf(&iter->seq, "[%s]\n",
-> +				       trace_find_cmdline(t->pid));
-> +	return ret;
-> +}
-> +
-> +static int blk_log_unplug(struct trace_iterator *iter, struct blk_io_trace *t,
-> +			  const char *act)
-> +{
-> +	int ret = blk_log_action(iter, t, act);
-> +	if (ret)
-> +		ret = trace_seq_printf(&iter->seq, "[%s] %u\n",
-> +				       trace_find_cmdline(t->pid),
-> +				       get_pdu_int(t));
-> +	return ret;
-> +}
-> +
-> +static int blk_log_split(struct trace_iterator *iter, struct blk_io_trace *t,
-> +			 const char *act)
-> +{
-> +	int ret = blk_log_action(iter, t, act);
-> +	if (ret)
-> +		ret = trace_seq_printf(&iter->seq, "%llu / %u [%s]\n",
-> +				       (unsigned long long)t->sector,
-> +				       get_pdu_int(t),
-> +				       trace_find_cmdline(t->pid));
-> +	return ret;
-> +}
-> +
-> +/*
-> + * struct tracer operations
-> + */
-> +
-> +static void blk_tracer_print_header(struct seq_file *m)
-> +{
-> +	seq_puts(m, "# DEV   CPU TIMESTAMP     PID ACT FLG\n"
-> +		    "#  |     |     |           |   |   |\n");
-> +}
-> +
-> +static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
-> +{
-> +	struct trace_seq *s = &iter->seq;
-> +	struct blk_io_trace *t = (struct blk_io_trace *)iter->ent;
-> +	const u16 what = t->action & ((1 << BLK_TC_SHIFT) - 1);
-> +	int ret;
-> +
-> +	switch (what) {
-> +	case __BLK_TA_ISSUE:	    ret = blk_log_generic(iter, t, "D"); break;
-> +	case __BLK_TA_INSERT:	    ret = blk_log_generic(iter, t, "I"); break;
-> +	case __BLK_TA_QUEUE:	    ret = blk_log_generic(iter, t, "Q"); break;
-> +	case __BLK_TA_BOUNCE:	    ret = blk_log_generic(iter, t, "B"); break;
-> +	case __BLK_TA_BACKMERGE:    ret = blk_log_generic(iter, t, "M"); break;
-> +	case __BLK_TA_FRONTMERGE:   ret = blk_log_generic(iter, t, "F"); break;
-> +	case __BLK_TA_GETRQ:	    ret = blk_log_generic(iter, t, "G"); break;
-> +	case __BLK_TA_SLEEPRQ:	    ret = blk_log_generic(iter, t, "S"); break;
-> +	case __BLK_TA_REQUEUE:	    ret = blk_log_with_err(iter, t, "R"); break;
-> +	case __BLK_TA_COMPLETE:	    ret = blk_log_with_err(iter, t, "C"); break;
-> +	case __BLK_TA_PLUG:	    ret = blk_log_plug(iter, t); break;
-> +	case __BLK_TA_UNPLUG_IO:    ret = blk_log_unplug(iter, t, "U"); break;
-> +	case __BLK_TA_UNPLUG_TIMER: ret = blk_log_unplug(iter, t, "UT"); break;
-> +	case __BLK_TA_REMAP:	    ret = blk_log_remap(iter, t); break;
-> +	case __BLK_TA_SPLIT:	    ret = blk_log_split(iter, t, "X"); break;
-> +	default:
-> +		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
-> +		break;
-> +	}
-> +
-> +	if (ret == 0)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	return TRACE_TYPE_HANDLED;
-> +}
-> +
-> +static void blk_tracer_start(struct trace_array *tr)
-> +{
-> +	int cpu;
-> +
-> +	tr->time_start = ftrace_now(tr->cpu);
-> +
-> +	for_each_online_cpu(cpu)
-> +		tracing_reset(tr, cpu);
-> +
-> +	mutex_lock(&blk_probe_mutex);
-> +	if (atomic_add_return(1, &blk_probes_ref) == 1)
-> +		if (blk_register_tracepoints())
-> +			atomic_dec(&blk_probes_ref);
-> +	mutex_unlock(&blk_probe_mutex);
-
-
-Is this mutex really needed? You already use an atomic test that make
-your wall.
-
-
-> +}
-> +
-> +static int blk_tracer_init(struct trace_array *tr)
-> +{
-> +	blk_tr = tr;
-> +	blk_tracer_start(tr);
-> +	mutex_lock(&blk_probe_mutex);
-> +	blk_tracer_enabled++;
-
-
-I think you will not have more than one blk_tracer_init() call
-while your tracer is enabled.
-
-So, unless there are other callsites that use your tracer, I guess this counter
-is useless.
-
-> +	mutex_unlock(&blk_probe_mutex);
-> +	return 0;
-> +}
-> +
-> +static void blk_tracer_stop(struct trace_array *tr)
-> +{
-> +	mutex_lock(&blk_probe_mutex);
-> +	if (atomic_dec_and_test(&blk_probes_ref))
-> +		blk_unregister_tracepoints();
-> +	mutex_unlock(&blk_probe_mutex);
-> +}
-> +
-> +static void blk_tracer_reset(struct trace_array *tr)
-> +{
-> +	if (!atomic_read(&blk_probes_ref))
-> +		return;
-> +
-> +	mutex_lock(&blk_probe_mutex);
-> +	blk_tracer_enabled--;
-> +	WARN_ON(blk_tracer_enabled < 0);
-
-
-Ditto, I don't think that can happen.
-
-
-> +	mutex_unlock(&blk_probe_mutex);
-> +
-> +	blk_tracer_stop(tr);
-> +}
-> +
-> +static struct tracer blk_tracer __read_mostly = {
-> +	.name		= "blk",
-> +	.init		= blk_tracer_init,
-> +	.reset		= blk_tracer_reset,
-> +	.start		= blk_tracer_start,
-> +	.stop		= blk_tracer_stop,
-> +	.print_header	= blk_tracer_print_header,
-> +	.print_line	= blk_tracer_print_line,
-> +};
-> +
-> +static int __init init_blk_tracer(void)
-> +{
-> +	return register_tracer(&blk_tracer);
-> +}
-> +
-> +device_initcall(init_blk_tracer);
-> +
-> +static int blk_trace_remove_queue(struct request_queue *q)
-> +{
-> +	struct blk_trace *bt;
-> +
-> +	bt = xchg(&q->blk_trace, NULL);
-> +	if (bt == NULL)
-> +		return -EINVAL;
-> +
-> +	kfree(bt);
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Setup everything required to start tracing
-> + */
-> +static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
-> +{
-> +	struct blk_trace *old_bt, *bt = NULL;
-> +	int ret;
-> +
-> +	ret = -ENOMEM;
-> +	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
-> +	if (!bt)
-> +		goto err;
-> +
-> +	bt->dev = dev;
-> +	bt->act_mask = (u16)-1;
-
-That looks strange on a first view.
-Why not ~0 ? But that doesn't really matter...
-
-> +	bt->end_lba = -1ULL;
-> +	bt->trace_state = Blktrace_running;
-> +
-> +	old_bt = xchg(&q->blk_trace, bt);
-> +	if (old_bt != NULL) {
-> +		(void)xchg(&q->blk_trace, old_bt);
-> +		kfree(bt);
-> +		ret = -EBUSY;
-> +	}
-> +	return 0;
-> +err:
-> +	return ret;
-> +}
-> +
-> +/*
-> + * sysfs interface to enable and configure tracing
-> + */
-> +
-> +static ssize_t sysfs_blk_trace_enable_show(struct device *dev,
-> +					   struct device_attribute *attr,
-> +					   char *buf)
-> +{
-> +	struct hd_struct *p = dev_to_part(dev);
-> +	struct block_device *bdev;
-> +	ssize_t ret = -ENXIO;
-> +
-> +	lock_kernel();
-
-Ouch, I hope you will add a comment to explain why you are using the bkl
-here, I guess this is block related but I'm not sure of anything :-)
-
-> +	bdev = bdget(part_devt(p));
-> +	if (bdev != NULL) {
-> +		struct request_queue *q = bdev_get_queue(bdev);
-> +
-> +		if (q != NULL) {
-> +			mutex_lock(&bdev->bd_mutex);
-> +			ret = sprintf(buf, "%u\n", !!q->blk_trace);
-
-I guess you can be a bit racy here and drop the mutex. That wouldn't matter.
-
-> +			mutex_unlock(&bdev->bd_mutex);
-> +		}
-> +
-> +		bdput(bdev);
-> +	}
-> +
-> +	unlock_kernel();
-> +	return ret;
-> +}
-> +
-> +static ssize_t sysfs_blk_trace_enable_store(struct device *dev,
-> +					    struct device_attribute *attr,
-> +					    const char *buf, size_t count)
-> +{
-> +	struct block_device *bdev;
-> +	struct request_queue *q;
-> +	struct hd_struct *p;
-> +	int value;
-> +	ssize_t ret = -ENXIO;
-> +
-> +	if (count == 0 || sscanf(buf, "%d", &value) != 1)
-> +		goto out;
-> +
-> +	lock_kernel();
-> +	p = dev_to_part(dev);
-> +	bdev = bdget(part_devt(p));
-> +	if (bdev == NULL)
-> +		goto out_unlock_kernel;
-> +
-> +	q = bdev_get_queue(bdev);
-> +	if (q == NULL)
-> +		goto out_bdput;
-> +
-> +	mutex_lock(&bdev->bd_mutex);
-> +	if (value)
-> +		ret = blk_trace_setup_queue(q, bdev->bd_dev);
-> +	else
-> +		ret = blk_trace_remove_queue(q);
-> +	mutex_unlock(&bdev->bd_mutex);
-> +
-> +	if (ret == 0)
-> +		ret = count;
-> +out_bdput:
-> +	bdput(bdev);
-> +out_unlock_kernel:
-> +	unlock_kernel();
-> +out:
-> +	return ret;
-> +}
-> +
-> +static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
-> +					 struct device_attribute *attr,
-> +					 char *buf);
-> +static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
-> +					  struct device_attribute *attr,
-> +					  const char *buf, size_t count);
-> +#define BLK_TRACE_DEVICE_ATTR(_name) \
-> +	DEVICE_ATTR(_name, S_IRUGO | S_IWUSR, \
-> +		    sysfs_blk_trace_attr_show, \
-> +		    sysfs_blk_trace_attr_store)
-> +
-> +static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR,
-> +		   sysfs_blk_trace_enable_show, sysfs_blk_trace_enable_store);
-> +static BLK_TRACE_DEVICE_ATTR(act_mask);
-> +static BLK_TRACE_DEVICE_ATTR(pid);
-> +static BLK_TRACE_DEVICE_ATTR(start_lba);
-> +static BLK_TRACE_DEVICE_ATTR(end_lba);
-> +
-> +static struct attribute *blk_trace_attrs[] = {
-> +	&dev_attr_enable.attr,
-> +	&dev_attr_act_mask.attr,
-> +	&dev_attr_pid.attr,
-> +	&dev_attr_start_lba.attr,
-> +	&dev_attr_end_lba.attr,
-> +	NULL
-> +};
-> +
-> +struct attribute_group blk_trace_attr_group = {
-> +	.name  = "trace",
-> +	.attrs = blk_trace_attrs,
-> +};
-> +
-> +static int blk_str2act_mask(const char *str)
-> +{
-> +	int mask = 0;
-> +	char *copy = kstrdup(str, GFP_KERNEL), *s;
-> +
-> +	if (copy == NULL)
-> +		return -ENOMEM;
-> +
-> +	s = strstrip(copy);
-> +
-> +	while (1) {
-> +		char *sep = strchr(s, ',');
-> +
-> +		if (sep != NULL)
-> +			*sep = '\0';
-> +
-> +		if (strcasecmp(s, "barrier") == 0)
-> +			mask |= BLK_TC_BARRIER;
-> +		else if (strcasecmp(s, "complete") == 0)
-> +			mask |= BLK_TC_COMPLETE;
-> +		else if (strcasecmp(s, "fs") == 0)
-> +			mask |= BLK_TC_FS;
-> +		else if (strcasecmp(s, "issue") == 0)
-> +			mask |= BLK_TC_ISSUE;
-> +		else if (strcasecmp(s, "pc") == 0)
-> +			mask |= BLK_TC_PC;
-> +		else if (strcasecmp(s, "queue") == 0)
-> +			mask |= BLK_TC_QUEUE;
-> +		else if (strcasecmp(s, "read") == 0)
-> +			mask |= BLK_TC_READ;
-> +		else if (strcasecmp(s, "requeue") == 0)
-> +			mask |= BLK_TC_REQUEUE;
-> +		else if (strcasecmp(s, "sync") == 0)
-> +			mask |= BLK_TC_SYNC;
-> +		else if (strcasecmp(s, "write") == 0)
-> +			mask |= BLK_TC_WRITE;
-> +
-> +		if (sep == NULL)
-> +			break;
-> +
-> +		s = sep + 1;
-> +	}
-> +	kfree(copy);
-> +
-> +	return mask;
-> +}
-> +
-> +static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
-> +					 struct device_attribute *attr,
-> +					 char *buf)
-> +{
-> +	struct hd_struct *p = dev_to_part(dev);
-> +	struct request_queue *q;
-> +	struct block_device *bdev;
-> +	ssize_t ret = -ENXIO;
-> +
-> +	lock_kernel();
-> +	bdev = bdget(part_devt(p));
-> +	if (bdev == NULL)
-> +		goto out_unlock_kernel;
-> +
-> +	q = bdev_get_queue(bdev);
-> +	if (q == NULL)
-> +		goto out_bdput;
-> +	mutex_lock(&bdev->bd_mutex);
-> +	if (q->blk_trace == NULL)
-> +		ret = sprintf(buf, "disabled\n");
-> +	else if (attr == &dev_attr_act_mask)
-> +		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
-> +	else if (attr == &dev_attr_pid)
-> +		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
-> +	else if (attr == &dev_attr_start_lba)
-> +		ret = sprintf(buf, "%llu\n", q->blk_trace->start_lba);
-> +	else if (attr == &dev_attr_end_lba)
-> +		ret = sprintf(buf, "%llu\n", q->blk_trace->end_lba);
-> +	mutex_unlock(&bdev->bd_mutex);
-> +out_bdput:
-> +	bdput(bdev);
-> +out_unlock_kernel:
-> +	unlock_kernel();
-> +	return ret;
-> +}
-> +
-> +static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
-> +					  struct device_attribute *attr,
-> +					  const char *buf, size_t count)
-> +{
-> +	struct block_device *bdev;
-> +	struct request_queue *q;
-> +	struct hd_struct *p;
-> +	u64 value;
-> +	ssize_t ret = -ENXIO;
-> +
-> +	if (count == 0)
-> +		goto out;
-> +
-> +	if (attr == &dev_attr_act_mask) {
-> +		if (sscanf(buf, "%llx", &value) != 1) {
-> +			/* Assume it is a list of trace category names */
-> +			value = blk_str2act_mask(buf);
-> +			if (value < 0)
-> +				goto out;
-> +		}
-> +	} else if (sscanf(buf, "%llu", &value) != 1)
-> +		goto out;
-> +
-> +	lock_kernel();
-> +	p = dev_to_part(dev);
-> +	bdev = bdget(part_devt(p));
-> +	if (bdev == NULL)
-> +		goto out_unlock_kernel;
-> +
-> +	q = bdev_get_queue(bdev);
-> +	if (q == NULL)
-> +		goto out_bdput;
-> +
-> +	mutex_lock(&bdev->bd_mutex);
-> +	ret = 0;
-> +	if (q->blk_trace == NULL)
-> +		ret = blk_trace_setup_queue(q, bdev->bd_dev);
-> +
-> +	if (ret == 0) {
-> +		if (attr == &dev_attr_act_mask)
-> +			q->blk_trace->act_mask = value;
-> +		else if (attr == &dev_attr_pid)
-> +			q->blk_trace->pid = value;
-> +		else if (attr == &dev_attr_start_lba)
-> +			q->blk_trace->start_lba = value;
-> +		else if (attr == &dev_attr_end_lba)
-> +			q->blk_trace->end_lba = value;
-> +		ret = count;
-> +	}
-> +	mutex_unlock(&bdev->bd_mutex);
-> +out_bdput:
-> +	bdput(bdev);
-> +out_unlock_kernel:
-> +	unlock_kernel();
-> +out:
-> +	return ret;
-> +}
-> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-> index 6d72024..01714ef 100644
-> --- a/fs/partitions/check.c
-> +++ b/fs/partitions/check.c
-> @@ -268,6 +268,10 @@ ssize_t part_fail_store(struct device *dev,
->  }
->  #endif
->  
-> +#ifdef CONFIG_BLK_DEV_IO_TRACE
-> +extern struct attribute_group blk_trace_attr_group;
-> +#endif
-> +
->  static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
->  static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
->  static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
-> @@ -294,6 +298,9 @@ static struct attribute_group part_attr_group = {
->  
->  static struct attribute_group *part_attr_groups[] = {
->  	&part_attr_group,
-> +#ifdef CONFIG_BLK_DEV_IO_TRACE
-> +	&blk_trace_attr_group,
-> +#endif
->  	NULL
->  };
-
-
-
-This tracer looks good :-)
-
-  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+ 	/* Check MSI quirk */
+ 	if (port_data->port_type == PCIE_RC_PORT && pcie_mch_quirk)
+-		return interrupt_mode;
++		goto Fallback;
++
++	/* Try to use MSI-X if supported */
++	if (!pcie_port_enable_msix(dev, vectors, mask))
++		return PCIE_PORT_MSIX_MODE;
++
++	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
++	if (!pci_enable_msi(dev))
++		interrupt_mode = PCIE_PORT_MSI_MODE;
++
++ Fallback:
++	if (interrupt_mode == PCIE_PORT_NO_IRQ && dev->pin)
++		interrupt_mode = PCIE_PORT_INTx_MODE;
++
++	irq = interrupt_mode != PCIE_PORT_NO_IRQ ? dev->irq : -1;
++	for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++)
++		vectors[i] = irq;
++
++	vectors[PCIE_PORT_SERVICE_VC_SHIFT] = -1;
+ 
+-	/* Select MSI-X over MSI if supported */		
+-	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
+-	if (pos) {
+-		struct msix_entry msix_entries[PCIE_PORT_DEVICE_MAXSERVICES] = 
+-			{{0, 0}, {0, 1}, {0, 2}, {0, 3}};
+-		status = pci_enable_msix(dev, msix_entries, nvec);
+-		if (!status) {
+-			int j = 0;
+-
+-			interrupt_mode = PCIE_PORT_MSIX_MODE;
+-			for (i = 0; i < PCIE_PORT_DEVICE_MAXSERVICES; i++) {
+-				if (mask & (1 << i)) 
+-					vectors[i] = msix_entries[j++].vector;
+-			}
+-		}
+-	} 
+-	if (status) {
+-		pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
+-		if (pos) {
+-			status = pci_enable_msi(dev);
+-			if (!status) {
+-				interrupt_mode = PCIE_PORT_MSI_MODE;
+-				for (i = 0;i < PCIE_PORT_DEVICE_MAXSERVICES;i++)
+-					vectors[i] = dev->irq;
+-			}
+-		}
+-	} 
+ 	return interrupt_mode;
+ }
+ 
+Index: linux-2.6/include/linux/pcieport_if.h
+===================================================================
+--- linux-2.6.orig/include/linux/pcieport_if.h
++++ linux-2.6/include/linux/pcieport_if.h
+@@ -16,10 +16,14 @@
+ #define PCIE_ANY_PORT			7
+ 
+ /* Service Type */
+-#define PCIE_PORT_SERVICE_PME		1	/* Power Management Event */
+-#define PCIE_PORT_SERVICE_AER		2	/* Advanced Error Reporting */
+-#define PCIE_PORT_SERVICE_HP		4	/* Native Hotplug */
+-#define PCIE_PORT_SERVICE_VC		8	/* Virtual Channel */
++#define PCIE_PORT_SERVICE_PME_SHIFT	0	/* Power Management Event */
++#define PCIE_PORT_SERVICE_PME		(1 << PCIE_PORT_SERVICE_PME_SHIFT)
++#define PCIE_PORT_SERVICE_AER_SHIFT	1	/* Advanced Error Reporting */
++#define PCIE_PORT_SERVICE_AER		(1 << PCIE_PORT_SERVICE_AER_SHIFT)
++#define PCIE_PORT_SERVICE_HP_SHIFT	2	/* Native Hotplug */
++#define PCIE_PORT_SERVICE_HP		(1 << PCIE_PORT_SERVICE_HP_SHIFT)
++#define PCIE_PORT_SERVICE_VC_SHIFT	3	/* Virtual Channel */
++#define PCIE_PORT_SERVICE_VC		(1 << PCIE_PORT_SERVICE_VC_SHIFT)
+ 
+ /* Root/Upstream/Downstream Port's Interrupt Mode */
+ #define PCIE_PORT_NO_IRQ		(-1)
+Index: linux-2.6/drivers/pci/pcie/portdrv.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv.h
++++ linux-2.6/drivers/pci/pcie/portdrv.h
+@@ -25,6 +25,12 @@
+ #define PCIE_CAPABILITIES_REG		0x2
+ #define PCIE_SLOT_CAPABILITIES_REG	0x14
+ #define PCIE_PORT_DEVICE_MAXSERVICES	4
++#define PCIE_PORT_MSI_VECTOR_MASK	0x1f
++/*
++ * According to the PCI Express Base Specification 2.0, the indices of the MSI-X
++ * table entires used by port services must not exceed 31
++ */
++#define PCIE_PORT_MAX_MSIX_ENTRIES	32
+ 
+ #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+ 
+Index: linux-2.6/drivers/pci/msi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/msi.c
++++ linux-2.6/drivers/pci/msi.c
+@@ -670,6 +670,23 @@ static int msi_free_irqs(struct pci_dev*
+ }
+ 
+ /**
++ * pci_msix_table_size - return the number of device's MSI-X table entries
++ * @dev: pointer to the pci_dev data structure of MSI-X device function
++ */
++int pci_msix_table_size(struct pci_dev *dev)
++{
++	int pos;
++	u16 control;
++
++	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
++	if (!pos)
++		return 0;
++
++	pci_read_config_word(dev, msi_control_reg(pos), &control);
++	return multi_msix_capable(control);
++}
++
++/**
+  * pci_enable_msix - configure device's MSI-X capability structure
+  * @dev: pointer to the pci_dev data structure of MSI-X device function
+  * @entries: pointer to an array of MSI-X entries
+@@ -686,9 +703,8 @@ static int msi_free_irqs(struct pci_dev*
+  **/
+ int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec)
+ {
+-	int status, pos, nr_entries;
++	int status, nr_entries;
+ 	int i, j;
+-	u16 control;
+ 
+ 	if (!entries)
+  		return -EINVAL;
+@@ -697,9 +713,7 @@ int pci_enable_msix(struct pci_dev* dev,
+ 	if (status)
+ 		return status;
+ 
+-	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
+-	pci_read_config_word(dev, msi_control_reg(pos), &control);
+-	nr_entries = multi_msix_capable(control);
++	nr_entries = pci_msix_table_size(dev);
+ 	if (nvec > nr_entries)
+ 		return -EINVAL;
+ 
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -799,6 +799,10 @@ static inline void pci_msi_shutdown(stru
+ static inline void pci_disable_msi(struct pci_dev *dev)
+ { }
+ 
++static inline int pci_msix_table_size(struct pci_dev *dev)
++{
++	return 0;
++}
+ static inline int pci_enable_msix(struct pci_dev *dev,
+ 				  struct msix_entry *entries, int nvec)
+ {
+@@ -823,6 +827,7 @@ static inline int pci_msi_enabled(void)
+ extern int pci_enable_msi(struct pci_dev *dev);
+ extern void pci_msi_shutdown(struct pci_dev *dev);
+ extern void pci_disable_msi(struct pci_dev *dev);
++extern int pci_msix_table_size(struct pci_dev *dev);
+ extern int pci_enable_msix(struct pci_dev *dev,
+ 	struct msix_entry *entries, int nvec);
+ extern void pci_msix_shutdown(struct pci_dev *dev);
 
