@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765637AbZAQS1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbZAQScV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765637AbZAQS1V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 13:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764085AbZAQS1D
+	id S932189AbZAQScV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 13:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765370AbZAQScF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 13:27:03 -0500
-Received: from flock1.newmail.ru ([82.204.219.207]:59509 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762761AbZAQS1B (ORCPT
+	Sat, 17 Jan 2009 13:32:05 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:14643 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765346AbZAQScE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 13:27:01 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kbuild@vger.kernel.org
-Subject: Should EXTRA_FIRMWARE include full path to output directory?
-Date: Sat, 17 Jan 2009 21:26:15 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+	Sat, 17 Jan 2009 13:32:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:in-reply-to:x-operating-system:
+	user-agent:x-gmailtapped-by:x-gmailtapped;
+	b=ap0vipRGvCz4KJyXYMeNAL9znF/qB8yJHzQTOU/bU7f62Owcg/qwby9xdQkvv2edY
+	lmO7kTuIh2I8mNqITQTEw==
+Date: Sat, 17 Jan 2009 10:31:48 -0800
+From: Mandeep Singh Baines <msb@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hannes@cmpxchg.org, rientjes@google.com,
+       mbligh@google.com, thockin@google.com
+Subject: [PATCH] softlockup: fix potential race in hung_task when resetting timeout
+Message-ID: <20090117183148.GA20173@google.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1325630.A9ChXFn69Y";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901172126.29358.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090116171832.GA18799@elte.hu>
+X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
+User-Agent: Mutt/1.5.11
+X-GMailtapped-By: 172.28.16.76
+X-GMailtapped: msb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1325630.A9ChXFn69Y
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Patch against tip/core/softlockup.
 
-{pts/1}% LC_ALL=3DC make -C ~/src/linux-git O=3D$HOME/build/linux-2.6.29
-make: Entering directory `/home/bor/src/linux-git'
-  Using /home/bor/src/linux-git as source for kernel
-ln -fsn /home/bor/src/linux-git source
-  GEN     /home/bor/build/linux-2.6.29/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    /home/bor/src/linux-git/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-/home/bor/src/linux-git/firmware/Makefile:156: warning: overriding commands=
-=20
-for target `firmware/e100/d101m_ucode.bin.gen.S'
-/home/bor/src/linux-git/firmware/Makefile:153: warning: ignoring old=20
-commands for target `firmware/e100/d101m_ucode.bin.gen.S'
-  AS      firmware/e100/d101m_ucode.bin.gen.o
-firmware/e100/d101m_ucode.bin.gen.S: Assembler messages:
-firmware/e100/d101m_ucode.bin.gen.S:5: Error: file not found:=20
-/home/bor/src/linux-git/firmware/e100/d101m_ucode.bin
-make[2]: *** [firmware/e100/d101m_ucode.bin.gen.o] Error 1
-make[1]: *** [firmware] Error 2
-make: *** [sub-make] Error 2
-make: Leaving directory `/home/bor/src/linux-git'
-{pts/1}% grep e100 ~/build/linux-2.6.29/.config
-CONFIG_EXTRA_FIRMWARE=3D"e100/d101m_ucode.bin"
+---
 
+A potential race exists if sysctl_hung_task_timeout_secs is reset to 0
+while inside check_hung_uniterruptible_tasks(). If check_task() is
+entered, a comparison with 0 will result in a false hung_task being
+detected.
 
---nextPart1325630.A9ChXFn69Y
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+If sysctl_hung_task_panic is set, the system will panic.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Signed-off-by: Mandeep Singh Baines <msb@google.com>
+---
+ kernel/hung_task.c |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
-iEYEABECAAYFAklyIsoACgkQR6LMutpd94xMZwCbBPA1h8HQjWKNFBflqJRrwN4t
-wPAAnia0u0B7AHpaSb3RcxjQUAf+43GZ
-=Cz6u
------END PGP SIGNATURE-----
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index ba5a77c..ba8ccd4 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -72,7 +72,8 @@ static unsigned long get_timestamp(void)
+ 	return cpu_clock(this_cpu) >> 30LL;  /* 2^30 ~= 10^9 */
+ }
+ 
+-static void check_hung_task(struct task_struct *t, unsigned long now)
++static void check_hung_task(struct task_struct *t, unsigned long now,
++			    unsigned long timeout)
+ {
+ 	unsigned long switch_count = t->nvcsw + t->nivcsw;
+ 
+@@ -84,8 +85,7 @@ static void check_hung_task(struct task_struct *t, unsigned long now)
+ 		t->last_switch_timestamp = now;
+ 		return;
+ 	}
+-	if ((long)(now - t->last_switch_timestamp) <
+-					sysctl_hung_task_timeout_secs)
++	if ((long)(now - t->last_switch_timestamp) < timeout)
+ 		return;
+ 	if (!sysctl_hung_task_warnings)
+ 		return;
+@@ -96,8 +96,7 @@ static void check_hung_task(struct task_struct *t, unsigned long now)
+ 	 * complain:
+ 	 */
+ 	printk(KERN_ERR "INFO: task %s:%d blocked for more than "
+-			"%ld seconds.\n", t->comm, t->pid,
+-			sysctl_hung_task_timeout_secs);
++			"%ld seconds.\n", t->comm, t->pid, timeout);
+ 	printk(KERN_ERR "\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\""
+ 			" disables this message.\n");
+ 	sched_show_task(t);
+@@ -115,7 +114,7 @@ static void check_hung_task(struct task_struct *t, unsigned long now)
+  * a really long time (120 seconds). If that happens, print out
+  * a warning.
+  */
+-static void check_hung_uninterruptible_tasks(void)
++static void check_hung_uninterruptible_tasks(unsigned long timeout)
+ {
+ 	int max_count = sysctl_hung_task_check_count;
+ 	unsigned long now = get_timestamp();
+@@ -134,7 +133,7 @@ static void check_hung_uninterruptible_tasks(void)
+ 			goto unlock;
+ 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+ 		if (t->state == TASK_UNINTERRUPTIBLE)
+-			check_hung_task(t, now);
++			check_hung_task(t, now, timeout);
+ 	} while_each_thread(g, t);
+  unlock:
+ 	read_unlock(&tasklist_lock);
+@@ -180,8 +179,17 @@ static int watchdog(void *dummy)
+ 	update_poll_jiffies();
+ 
+ 	for ( ; ; ) {
++		unsigned long timeout;
++
+ 		while (schedule_timeout_interruptible(hung_task_poll_jiffies));
+-		check_hung_uninterruptible_tasks();
++
++		/*
++		 * Need to cache timeout here to avoid timeout being set
++		 * to 0 via sysctl while inside check_hung_*_tasks().
++		 */
++		timeout = sysctl_hung_task_timeout_secs;
++		if (timeout)
++			check_hung_uninterruptible_tasks(timeout);
+ 	}
+ 
+ 	return 0;
+-- 
+1.5.4.5
 
---nextPart1325630.A9ChXFn69Y--
