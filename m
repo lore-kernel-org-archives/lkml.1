@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764858AbZAQQh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764341AbZAQQlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764858AbZAQQh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZAQQhU
+	id S1764341AbZAQQlS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZAQQlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:37:20 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46816 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756228AbZAQQhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:37:19 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+4nWRMS7+41TDlAcMWNpMhws20qU4TAC7XARdgbu
-	pjEpDR7JzzdGg7
-Subject: Re: [git pull] scheduler fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, Kevin Shanahan <kmshanah@ucwb.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090117162519.GD10825@elte.hu>
-References: <1232173776.7073.21.camel@marge.simson.net>
-	 <1232186054.6813.48.camel@marge.simson.net>
-	 <1232186877.14073.59.camel@laptop>
-	 <1232188484.6813.85.camel@marge.simson.net>
-	 <1232193617.14073.67.camel@laptop>
-	 <1232194752.6273.5.camel@marge.simson.net>
-	 <20090117044316.bda7d0bd.akpm@linux-foundation.org>
-	 <1232198574.16303.8.camel@marge.simson.net>
-	 <20090117160115.GA31601@elte.hu> <1232209281.5987.4.camel@marge.simson.net>
-	 <20090117162519.GD10825@elte.hu>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 17:37:12 +0100
-Message-Id: <1232210232.5987.20.camel@marge.simson.net>
+	Sat, 17 Jan 2009 11:41:02 -0500
+Received: from mail.klingt.org ([86.59.21.178]:50678 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752831AbZAQQlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 11:41:00 -0500
+Subject: Re: 2.6.28-rc9: oprofile regression
+From: Tim Blechmann <tim@klingt.org>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com
+In-Reply-To: <20090117155635.GC21604@erda.amd.com>
+References: <alpine.LFD.2.00.0901141739580.3598@localhost.localdomain>
+	 <1231957184.13033.70.camel@thinkpad>
+	 <alpine.LFD.2.00.0901150940250.3598@localhost.localdomain>
+	 <1232010853.6541.4.camel@thinkpad>
+	 <alpine.LFD.2.00.0901152135110.3400@localhost.localdomain>
+	 <1232067181.6134.74.camel@thinkpad>
+	 <alpine.LFD.2.00.0901160956170.3400@localhost.localdomain>
+	 <1232199169.7016.12.camel@thinkpad> <20090117141453.GA21604@erda.amd.com>
+	 <1232204963.17299.8.camel@thinkpad>  <20090117155635.GC21604@erda.amd.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-GL1Z8yuO42F1tmc1qxcr"
+Date: Sat, 17 Jan 2009 17:40:36 +0100
+Message-Id: <1232210436.6710.80.camel@thinkpad>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+X-Mailer: Evolution 2.24.2 
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Sat, 17 Jan 2009 17:40:38 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 17:25 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Sat, 2009-01-17 at 17:01 +0100, Ingo Molnar wrote:
-> > > * Mike Galbraith <efault@gmx.de> wrote:
-> > > 
-> > > > On Sat, 2009-01-17 at 04:43 -0800, Andrew Morton wrote:
-> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=12465 just popped up - another
-> > > > > scheduler regression.  It has been bisected.
-> > > > 
-> > > > Seems pretty clear.  I'd suggest reverting it.
-> > > 
-> > > We can revert it (and will revert it if no solution is found), but i'd 
-> > > also like to understand why it happens, because that kind of 
-> > > regression from this change is unexpected - we might be hiding some 
-> > > bug that could pop up under less debuggable circumstances, so we need 
-> > > to understand it while we have a chance.
-> > 
-> > Agree.  However, with the sched_mc stuff, mysql+oltp now does better 
-> > with NEWIDLE on than off as well, as does an nfs kbuild.
-> 
-> Didnt you come up with the verdict that sched_mc=2 is not a win - or has 
-> that changed? If we should change the defaults then please send a 
-> re-tuning patch against the latest code.
 
-sched_mc=2 was better than sched_mc=1.  The other balancing changes put
-a dent in mysql+oltp peak and immediately after peak.  Setting
-sched_mc=2 brought back the loss that was otherwise there all the way
-through the curve back to 28 level, so with sched_mc=2, there was only
-the slight loss of peak, and larger loss of post-peak.
+--=-GL1Z8yuO42F1tmc1qxcr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Still, the ping delays of multiple seconds are completely unacceptable and 
-> need to be understood, or these will come back and might bite us in a lot 
-> less fortunate place. NEWIDLE and WAKE_BALANCE has micro-effects on 
-> latencies - anything in the user-visible range is highly anomalous at 
-> these low load levels.
-> 
-> 	Ingo
+> Hmm, strange. Actually 7c64ade53a6f977d73f16243865c42ceae999aea fixed
+> a similiar bug, see here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D11908
+>=20
+> Your patch with 2.6.28, does:
+>=20
+>  grep NMI /proc/interrupts
+>=20
+> returns exactly 1 NMI per core or some more?
+
+that bug is similar, but it reports different numbers of NMIs for the
+cores.
+i get exactly one NMI per core, for each time, i start oprofile:
+
+NMI: 0
+opcontrol -s
+(wait)
+opcontrol --deinit
+NMI: 1
+opcontrol -s
+(wait)
+opcontrol --deinit
+NMI: 2
+
+hth, tim
+
+--
+tim@klingt.org
+http://tim.klingt.org
+
+Which is more musical, a truck passing by a factory or a truck passing
+by a music school?
+  John Cage
+
+--=-GL1Z8yuO42F1tmc1qxcr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklyCgIACgkQdL+4qsZfVsu8BACgkuoPO6Az1z0cJVyJCTdp7CDj
+8sgAnimS9U1434l/8Awr4jZtKBK2gfHP
+=HM8A
+-----END PGP SIGNATURE-----
+
+--=-GL1Z8yuO42F1tmc1qxcr--
 
