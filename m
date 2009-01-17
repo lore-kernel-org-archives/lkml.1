@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765007AbZAQUEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZAQUFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765007AbZAQUEB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 15:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZAQUDv
+	id S932235AbZAQUFF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 15:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbZAQUEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 15:03:51 -0500
-Received: from mail-gx0-f21.google.com ([209.85.217.21]:64090 "EHLO
-	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbZAQUDu (ORCPT
+	Sat, 17 Jan 2009 15:04:52 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35998 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754682AbZAQUEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 15:03:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=HoRQ3hWVnZZAzIYdd8OIi61Sj8x5xjOZEgQkSQc2/Vh2NRCBEkfe+HHeCMOzGepHnM
-         lF55/x/waZqC1aV4VEUaHuug8M3SxxKAWptIql6mPMD591FPfKAr2mqGE7gfwBDp7l1I
-         NWy2djrOgCClJ0UwNmNVKTFSNZ04q1csGBtOY=
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-From: Ben Gamari <bgamari@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jens Axboe <axboe@kernel.dk>, Andrea Arcangeli <andrea@suse.de>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-In-Reply-To: <20090117162657.GA31965@Krystal>
-References: <20090117004439.GA11492@Krystal>
-	 <20090117162657.GA31965@Krystal>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 15:03:46 -0500
-Message-Id: <1232222626.3666.14.camel@mercury.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Sat, 17 Jan 2009 15:04:52 -0500
+Message-ID: <49723912.6020108@zytor.com>
+Date: Sat, 17 Jan 2009 12:01:22 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
+Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3	warnings
+References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu>
+In-Reply-To: <20090117161817.GA10825@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 11:26 -0500, Mathieu Desnoyers wrote:
-> This patch implements a basic test to make sure we never merge more than 128
-> requests into the same request if it is the "last_merge" request. I have not
-> been able to trigger the problem again with the fix applied. It might not be in
-> a perfect state : there may be better solutions to the problem, but I think it
-> helps pointing out where the culprit lays.
+Ingo Molnar wrote:
+> 
+> hm, that's unfortunate. GCC seems totally on crack for not accepting a 
+> NULL format string.
+> 
 
-Unfortunately, it seems like the patch hasn't really fixed much. After
-porting it forward to Linus' master, I haven't exhibited any difference
-in real world use cases (e.g. desktop use cases while building a
-kernel).
+Why should it?  I don't think a NULL pointer as the format to a
+printf-style function is well defined.
 
-Given Jen's remarks, I suppose this isn't too surprising. Does anyone
-else with greater familiarity with the block I/O subsystem have any more
-ideas about the source of the slowdown? It seems like the recent patches
-incorporating blktrace support into ftrace could be helpful for further
-data collection, correct?
+	-hpa
 
-- Ben
-
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
