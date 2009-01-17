@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762861AbZAQPtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763844AbZAQPuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762861AbZAQPtw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 10:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbZAQPtm
+	id S1763844AbZAQPuu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 10:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762032AbZAQPuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 10:49:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34261 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761968AbZAQPtl (ORCPT
+	Sat, 17 Jan 2009 10:50:25 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:38827 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762070AbZAQPuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 10:49:41 -0500
-Subject: Re: [git pull] scheduler fixes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232197197.25807.2.camel@marge.simson.net>
-References: <20090111144305.GA7154@elte.hu>
-	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
-	 <1231964647.14825.59.camel@laptop>
-	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-	 <1232173776.7073.21.camel@marge.simson.net>
-	 <1232186054.6813.48.camel@marge.simson.net>
-	 <1232186877.14073.59.camel@laptop>
-	 <1232188484.6813.85.camel@marge.simson.net>
-	 <1232193617.14073.67.camel@laptop>
-	 <1232194752.6273.5.camel@marge.simson.net>
-	 <1232197197.25807.2.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 16:49:23 +0100
-Message-Id: <1232207363.5027.5.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sat, 17 Jan 2009 10:50:23 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.29-rc1: [SOLVED] thinkpad problems during resume
+Date: Sat, 17 Jan 2009 16:48:34 +0100
+User-Agent: KMail/1.9.9
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>
+References: <20090113081316.GA2292@elf.ucw.cz> <20090116104455.GA3283@elf.ucw.cz> <200901171546.15987.borntraeger@de.ibm.com>
+In-Reply-To: <200901171546.15987.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901171648.34155.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 13:59 +0100, Mike Galbraith wrote:
-> On Sat, 2009-01-17 at 13:19 +0100, Mike Galbraith wrote:
-> 
-> > Ouch, that doesn't look like it will be nice at all for interactivity.
-> 
-> Actually, it's not as bad as expected, merely lethargic slug.
+> commit e39ad415ac15116df213dfa2aa2a4f1b0857af9c
+> Author: Mike Travis <travis@sgi.com>
+> Date:   Sun Jan 4 05:18:10 2009 -0800
+>
+>     cpumask: use work_on_cpu in acpi-cpufreq.c for read_measured_perf_ctrs
+>
+> makes cpu hotplug working again. Resume from suspend to ram is still broken
+> on my Thinkpad. Looks like there is yet another patch to find....
+>
+> Ingo, Mike: reverting e39ad415ac15116df213dfa2aa2a4f1b0857af9c fixes cpu
+> hotplug on my thinkpad. Any idea how to proceed? Should we revert that
+> patch in Linus git until we know what was wrong?
 
-Right, just ran the thing on my laptop and sluggish but 'usable' at load
->100 seems perfectly good to me.
+I forgot to revert the usb patch.
+Current status:
+2.6.29-rc2 + 
+reverted e39ad415ac15116df213dfa2aa2a4f1b0857af9c (cpumask: use work_on_cpu in 
+acpi-cpufreq.c for read_measured_perf_ctrs) + 
+reverted a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 (USB: fix up suspend and 
+resume for PCI host controllers)
 
+has a working suspend to ram on my T61p. With any of these two patches not 
+reverted resume hangs.
+
+Christian
