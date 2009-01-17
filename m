@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765249AbZAQQtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765523AbZAQQvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765249AbZAQQtp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759849AbZAQQtg
+	id S1765523AbZAQQvU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbZAQQvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:49:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:29349 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759631AbZAQQte (ORCPT
+	Sat, 17 Jan 2009 11:51:04 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:47114 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754297AbZAQQvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:49:34 -0500
+	Sat, 17 Jan 2009 11:51:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=Ia8ToQQObFTNm/lARNoJNHlqoJkJoplJ9WLOBRl+8vuWOJgIIvxErTkcDHQKmI0tzz
-         1VHGMOc8nxE/zsi2rj9w8LCpCPl8aDopfrwNXMpcdSBS2t9akZX4mHgO8xeF9K9RDJ3d
-         U5Fd43Dx+4A1AWXfMpnDdZ2GpC7bkUS6zK3Yw=
-Message-ID: <8db1092f0901170849i5d22d855r9ccb63182dd8dd75@mail.gmail.com>
-Date: Sat, 17 Jan 2009 17:49:31 +0100
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Christian Borntraeger" <borntraeger@de.ibm.com>
-Subject: Re: 2.6.29-rc1: [SOLVED] thinkpad problems during resume
-Cc: "Pavel Machek" <pavel@suse.cz>, "Jeff Chua" <jeff.chua.linux@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Mike Travis" <travis@sgi.com>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <200901171648.34155.borntraeger@de.ibm.com>
+        b=osqFrVbttkmN/swynvfdcqoqRkvuXobSTK25K2HLD/FqwhepIzT0Njrqx/Go1QRNpE
+         pEjwl0LxdXmLfSeWd+YgUQwzEB2qVURokaHgy1NWXP2pr+6/VGXrvIbKyHinRGAPGyr+
+         SAP/DvbzFNGWQlKa889bUuBpd+o/zGE1AL8MM=
+Message-ID: <c384c5ea0901170850q4c72d8bcpc76eb635950aaa2e@mail.gmail.com>
+Date: Sat, 17 Jan 2009 17:50:59 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
+Cc: "Jens Axboe" <axboe@kernel.dk>, "Andrea Arcangeli" <andrea@suse.de>,
+       akpm@linux-foundation.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20090117162657.GA31965@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20090113081316.GA2292@elf.ucw.cz>
-	 <20090116104455.GA3283@elf.ucw.cz>
-	 <200901171546.15987.borntraeger@de.ibm.com>
-	 <200901171648.34155.borntraeger@de.ibm.com>
+References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/17 Christian Borntraeger <borntraeger@de.ibm.com>:
->
-> I forgot to revert the usb patch.
-> Current status:
-> 2.6.29-rc2 +
-> reverted e39ad415ac15116df213dfa2aa2a4f1b0857af9c (cpumask: use work_on_cpu in
-> acpi-cpufreq.c for read_measured_perf_ctrs) +
-> reverted a0d4922da2e4ccb0973095d8d29f36f6b1b5f703 (USB: fix up suspend and
-> resume for PCI host controllers)
->
-> has a working suspend to ram on my T61p. With any of these two patches not
-> reverted resume hangs.
->
+Hello Mathieu et al,
 
-Great work. Thanks. On my HP Compaq nx6310 revert this patches also
-helps: suspend to ram/disk works.
+On Sat, Jan 17, 2009 at 5:26 PM, Mathieu Desnoyers
+<mathieu.desnoyers@polymtl.ca> wrote:
+> A long standing I/O regression (since 2.6.18, still there today) has hit
+> Slashdot recently :
+> http://bugzilla.kernel.org/show_bug.cgi?id=12309
 
-Thanks again :-)
+Are you sure you are solving the *actual* problem?
 
+The bugzilla entry shows a bisect attempt that leads to a patch
+involving negative clock jumps.
+http://bugzilla.kernel.org/show_bug.cgi?id=12309#c29
 
+with a corrected link to the bisect patch:
+http://bugzilla.kernel.org/show_bug.cgi?id=12309#c30
+
+Wouldn't a negative clock jump be very influential to the
+(time-driven) I/O schedulers and be a more probable cause?
+
+Regards,
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Leon
+
+p.s. Added Thomas to the CC list as his name is on the patch Signed-off-by list.
