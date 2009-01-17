@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbZAQGDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZAQGDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbZAQGDc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 01:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZAQGDU
+	id S1753322AbZAQGDw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 01:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbZAQGD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 01:03:20 -0500
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:38151 "EHLO
-	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbZAQGDU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 01:03:20 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <1232125169.15209.19.camel@norville.austin.ibm.com>
-References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl> <1232125169.15209.19.camel@norville.austin.ibm.com>
-Date: Sat, 17 Jan 2009 15:03:12 +0900
-Message-ID: <7210.1232172192@jrobl>
+	Sat, 17 Jan 2009 01:03:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38674 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755615AbZAQGD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 01:03:27 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: dhowells@redhat.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>
+Subject: FS-Cache fixes for IA64 export and AFS linkage
+Date: Sat, 17 Jan 2009 06:00:44 +0000
+Message-ID: <16871.1232172044@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Dave Kleikamp:
-> I think you're hitting on something here.  I never understood  the need
-> for the d_drop()s, but taking them out broke things.  They probably are
-> just papering over bugs where the ecryptfs inode is not being properly
-> updated after changes are made to the lower inode.
+I've dropped the patch to export copy_page() for IA64 from my patchset and
+updated the AFS patch so that it no longer produces link errors if
+CONFIG_AFS_FS=y and CONFIG_FSCACHE=m but CONFIG_AFS_FSCACHE=n.
 
-As long as cifs_hardlink() calls d_drop() for the target dentry (as the
-old version of NFS did), ecryptfs may have to call d_drop() too. But I
-believe the d_drop() for the source dentry is unnecessary, as long as
-the inode attributes are maintained correctly.
-Additionally, when the lower filesystem does NOT call d_drop(), ecryptfs
-has no necessary to call it. I'd like to suggest ecryptfs_link() to
-check it by d_unhashed().
+These patches are now available as:
 
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-44.tar.bz2
 
-J. R. Okajima
+and I've updated my GIT tree for Trond to pull:
+
+	http://git.kernel.org/?p=linux/kernel/git/dhowells/linux-2.6-nfs-fscache.git;a=shortlog
+
+David
