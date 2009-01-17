@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbZAQOW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZAQOaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbZAQOW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 09:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZAQOWs
+	id S1760217AbZAQOaX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 09:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZAQOaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 09:22:48 -0500
-Received: from kandzendo.ru ([195.178.208.66]:37231 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754731AbZAQOWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 09:22:47 -0500
-Date: Sat, 17 Jan 2009 17:22:45 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
-Message-ID: <20090117142245.GA10801@ioremap.net>
-References: <bTx3z-8bU-23@gated-at.bofh.it> <bTxdg-8sZ-23@gated-at.bofh.it> <bTxdg-8sZ-21@gated-at.bofh.it> <bTxmW-hf-1@gated-at.bofh.it> <bTRYr-2up-21@gated-at.bofh.it> <E1LNBGL-00021y-C8@be1.7eggert.dyndns.org> <20090114192216.GA18123@ioremap.net> <alpine.LSU.0.999.0901152243330.9772@be1.lrz> <20090115223557.GC10429@ioremap.net> <alpine.LSU.0.999.0901171504480.7336@be1.lrz>
+	Sat, 17 Jan 2009 09:30:05 -0500
+Received: from n75.bullet.mail.sp1.yahoo.com ([98.136.44.51]:44205 "HELO
+	n75.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755797AbZAQOaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 09:30:04 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 408885.58811.bm@omp103.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=iPVUBvc7fxtKNK6Fib6Jc8BlYMyqkM6lekkjvpApzi/reGb2ggnESOtrMXE2redTKsVTABi/pmP9ZNTvCGChE+g/3Xoudfop7M2VW7KGWjTQ0w8YlwY8j+H3BPe5Bra8vfYesOtA8LScrRgzibFvtb53KtmZKDEutBztdPb/tYk=;
+X-YMail-OSG: 3C3mEscVM1nRtllNrf7D0y3VmTsAJAmh6kOnp5Fr448ZZNXoGkfpFI8fQj2jStghBA2xEUR9tAVmWu_Y1SCzgQ7UcgiwviZV2VLBEeqgX02ghOFR_kmQlZT.Twh_RPqBbucC8XXBj5..VJRPcj7i.cohTm09J7mnlEFzoDrzlFY5KOjAUJP6XW.fAu3vzmYnReY17yQj_gBjG5Auo8jIk05EceCs4411ik1OjUh7IOPirPcu3TX2ZrE-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Sat, 17 Jan 2009 06:30:01 -0800 (PST)
+From: We La <w.landgraf@yahoo.com>
+Reply-To: w.landgraf@yahoo.com
+Subject: 2.6.29-rc2 rt2860 driver
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.0.999.0901171504480.7336@be1.lrz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-ID: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17, 2009 at 03:12:49PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
-> > > > This does not work if processes are short-living and are spawned by the
-> > > > parent on demand.
-> > > 
-> > > They will have the same name, too. Your Kenny-killer will fail, too.
-> > 
-> > It is not always the case, processes start executing different binaries
-> > and change the names, that's at least what I observed in the particular
-> > root case of the discussion.
-> 
-> In that case, you can use a wrapper script.
+1) In the press was published that 2.6.29 would include the rt2860 WIFI driver.  However, in 2.6.29-rc2 one find nowhere this driver. rt2x00 don't work, at least ifconfig ra0 up gives a error message.  and to compile it from source code, works with 2.6.26.X but not with 2.6.29-rc2 (plenty error messages) What's the situation of the rt2860 driver ??  The only senseful criterion for inclusion of a driver in the kernel is not the maturity of the code, but the number of sellings of that hardware in the shops, and that driver is necessary for msi wind notebooks, so it should be included into the kernel.
 
-That may be a solution, except that not very convenient, since there may
-be really lots of executables and cooking up a special script for
-everyone will not scale well.
+2) With 2.6.29-rc2 (and msi wind), compiz starts but quickly crashs. In 2.6.26.X it was stable. That should be verified / corrected (regression)
 
-> > There could be lots of heuristics applied for the different cases, but
-> > without changing the application, they are somewhat limited to
-> > long-living processes only. There are really lots of cases when it does
-> > not stand.
-> 
-> If it's short-lived enough, the processes will out-die the OOM-Killer.
-> You can only win by by suspending or killing the factory.
+3)  eth cards don't work more since 2.6.27 .  ifconfig eth0  successful, but no connection.     I suppose that's a problem of the kernel config (because on other compilations/configurations it works) -- perhaps of the iptables, package treatment, or routing, not of the eth drivers themselves. However, although searching long time, I don't find out the reason.  This should be checked, and removed from the kernel config such options which potentially turn networking not longer working.
 
-No, admin will limit/forbid the connection from the DoSing clients,
-server must always live to handle proper users.
+w.landgraf@yahoo.com
+Linux SYS
+mirror: ftp://ftp5.gwdg.de/pub/linux/install/sys/
+ftp://ftp.uni-siegen.de/pub/sys-linux   
 
--- 
-	Evgeniy Polyakov
+
+
+      
+
