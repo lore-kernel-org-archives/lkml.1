@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbZAQWSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765951AbZAQWWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295AbZAQWSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 17:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760537AbZAQWRy
+	id S1765951AbZAQWWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 17:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbZAQWWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 17:17:54 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:60228 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756705AbZAQWRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 17:17:53 -0500
-Date: Sat, 17 Jan 2009 23:19:32 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
-       greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-Message-ID: <20090117221932.GA4956@uranus.ravnborg.org>
-References: <1232223441.3966.22.camel@localhost.localdomain> <1232228261.27094.0.camel@macbook.infradead.org>
-Mime-Version: 1.0
+	Sat, 17 Jan 2009 17:22:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47517 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753916AbZAQWWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 17:22:05 -0500
+Date: Sat, 17 Jan 2009 23:19:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7][v7] proc: Show SIG_DFL signals to init as
+	"ignored" signals
+Message-ID: <20090117221909.GB3962@redhat.com>
+References: <20090117202638.GA11825@us.ibm.com> <20090117203753.GH11825@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232228261.27094.0.camel@macbook.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090117203753.GH11825@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 08:37:41AM +1100, David Woodhouse wrote:
-> On Sun, 2009-01-18 at 01:47 +0530, Jaswinder Singh Rajput wrote:
-> > --- a/include/linux/dvb/audio.h
-> > +++ b/include/linux/dvb/audio.h
-> > @@ -24,9 +24,8 @@
-> >  #ifndef _DVBAUDIO_H_
-> >  #define _DVBAUDIO_H_
-> >  
-> > -#ifdef __KERNEL__
-> >  #include <linux/types.h>
-> > -#else
-> > +#ifndef __KERNEL__
-> >  #include <stdint.h>
-> >  #endif
-> >  
-> 
-> That patch looks wrong, and unnecessary. It was fine before.
-Nope - include/linux/dvb/audio.h failed to include linux/types.h
-despite the fact that is uses __u32 etc.
+On 01/17, Sukadev Bhattiprolu wrote:
+>
+> Init processes ignore SIG_DFL signals unless they are from an ancestor
+> namespace.  Ensure /proc/pid/status correcly reports these signals.
 
-But why the _kernel_ should include a userspace header is
-much more questionable.
+This is the user-visible change, and I don't really understand why do we
+need it.
 
-	Sam
+Imho, this patch can confuse the user-space. Why should we report that,
+say, SIGCONT is ignored by the global init?
+
+
+Even if I am wrong, I believe this change is orthogonal to rhis series,
+and should be posted separately.
+
+Oleg.
+
