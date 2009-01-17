@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbZAQTkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZAQTrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765612AbZAQTkr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 14:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763908AbZAQTkh
+	id S932086AbZAQTrd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 14:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763908AbZAQTrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 14:40:37 -0500
-Received: from s15216962.onlinehome-server.info ([217.160.22.205]:39167 "EHLO
-	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763785AbZAQTkh (ORCPT
+	Sat, 17 Jan 2009 14:47:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:39185 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759874AbZAQTrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 14:40:37 -0500
-Date: Sat, 17 Jan 2009 20:38:41 +0100
-From: Enrico Weigelt <weigelt@metux.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: linux kernel without file system
-Message-ID: <20090117193841.GB5003@nibiru.local>
-Reply-To: weigelt@metux.de
-References: <496DA678.1090701@wpkg.org> <20090114093422.GA9771@frolo.macqel> <1231926744.11907.12.camel@skunk> <ac3eb2510901140234m29ca516bocd0e7dd997122a7b@mail.gmail.com>
-Mime-Version: 1.0
+	Sat, 17 Jan 2009 14:47:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sb6ikmI/3Xuvbwxmdp5hjv+s19yu2uGTU7Cr3smfshKtOlcVoqH+HTMGoQn+uiWLay
+         NSwmJ40SHz2PJJBl2WPvCrh/mjyCSINnAESxXAmSvYZEtoyHexUoyzVZnTSb9sAKNQw7
+         8HrRNwCSwR5zFThUPs+0jSTyf5E3ccgLFmhSc=
+Date: Sat, 17 Jan 2009 21:41:16 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org, Jens Axboe <axboe@suse.de>
+Subject: Re: [PATCH 1/1] relay: fix lock imbalance in relay_late_setup_files
+Message-ID: <20090117194116.GA5558@localhost>
+References: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ac3eb2510901140234m29ca516bocd0e7dd997122a7b@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
-X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
-X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
-X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
-X-Killer: 23, endloesung, Weltuntergang, 
-X-Doof: wer das liest ist doof
+In-Reply-To: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kay Sievers <kay.sievers@vrfy.org> wrote:
+On Sat, Jan 17, 2009 at 12:04:36PM +0100, Jiri Slaby wrote:
+> One fail path in relay_late_setup_files() omits
+> mutex_unlock(&relay_channels_mutex);
+> Add it.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> Cc: Jens Axboe <axboe@suse.de>
 
-> There are no device nodes in sysfs to talk to the device, only
-> attributes, which are mostly plain small text files.
-
-Actually, it would be really cool if all serial port operations
-could be done via sysfs, so we don't need the device node 
-(including all its ioctl()) at all.
+Oh, I missed that. Looks good to me.
 
 
-BTW: did I already mention that I don't like ioctl() ?
+	Thanks,
+	Eduard
 
-cu
--- 
----------------------------------------------------------------------
- Enrico Weigelt    ==   metux IT service - http://www.metux.de/
----------------------------------------------------------------------
- Please visit the OpenSource QM Taskforce:
- 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
- Patches / Fixes for a lot dozens of packages in dozens of versions:
-	http://patches.metux.de/
----------------------------------------------------------------------
