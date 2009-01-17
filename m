@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbZAQXh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933193AbZAQXnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933140AbZAQXh7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 18:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761680AbZAQXht
+	id S933193AbZAQXnA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 18:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763257AbZAQXmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 18:37:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32821 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761620AbZAQXhs (ORCPT
+	Sat, 17 Jan 2009 18:42:51 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:62566 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763013AbZAQXmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 18:37:48 -0500
-Date: Sun, 18 Jan 2009 10:37:22 +1100 (EST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kyle McMartin <kyle@infradead.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Mikael Pettersson <mikpe@it.uu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3
- warnings
-In-Reply-To: <20090117204421.GA1700@bombadil.infradead.org>
-Message-ID: <alpine.LFD.2.00.0901181032350.3006@localhost.localdomain>
-References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu> <49723912.6020108@zytor.com> <20090117204421.GA1700@bombadil.infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 17 Jan 2009 18:42:50 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: 2.6.29-rc1: [SOLVED] thinkpad problems during resume
+Date: Sun, 18 Jan 2009 00:42:40 +0100
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <20090113081316.GA2292@elf.ucw.cz> <200901171648.34155.borntraeger@de.ibm.com> <49723602.4090202@sgi.com>
+In-Reply-To: <49723602.4090202@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901180042.40284.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Could you try one more experiment?  With your working system, please cherry
+> pick these commits and try it again?
+>
+> 68564a4... work_on_cpu: don't try to get_online_cpus() in work_on_cpu.
+> e1d9ec6... work_on_cpu: Use our own workqueue.
+> 6eb714c... cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and
+> drv_write
+>
+> From
+> git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for
+>-ingo.git
+>
+> If that works, then try and un-revert e39ad415ac and see if it's fixed as
+> well?
 
+Yes that works.
 
-On Sat, 17 Jan 2009, Kyle McMartin wrote:
-> 
-> How about something utterly evil? (Since you can't pass a zero-length
-> string to a printf attributed function either...)
+29-rc2 + your 3 patches cherry-picked + revert of 
+a0d4922da2e4ccb0973095d8d29f36f6b1b5f703( usb problem) can suspend/resume. 
+If you like, you can add an
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
+to your three patches.
 
-Don't do this. That just forces a load off a complex pointer instead, with 
-no upsides. At least if it was
+Christian
 
-	extern const char warn_slowpath_nofmt[];
-
-it would only load the pointer itself, which is still a fairly  expensive 
-op, but at least doesn't require the extra memory load.
-
-But you'd be better off jusst making it something like
-
-	#define NO_FMT ((const char *)(-1))
-
-instead, which is really much more obvious, and doesn't need any of that 
-"get a pointer" overhead.
-
-		Linus
