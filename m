@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765006AbZAQWPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765615AbZAQWRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765006AbZAQWPJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 17:15:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbZAQWO5
+	id S1765615AbZAQWRP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 17:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZAQWQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 17:14:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36717 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758636AbZAQWO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 17:14:56 -0500
-Date: Sat, 17 Jan 2009 23:12:42 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
-       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/7][v7] Protect cinit from unblocked SIG_DFL signals
-Message-ID: <20090117221242.GA3962@redhat.com>
-References: <20090117202638.GA11825@us.ibm.com> <20090117203621.GE11825@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117203621.GE11825@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 17 Jan 2009 17:16:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54396 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757760AbZAQWQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 17:16:57 -0500
+X-Authenticated: #815327
+X-Provags-ID: V01U2FsdGVkX18VB70g4tsVby8Ho7xNK98vT6BRoM4gKCf8KmfRzZ
+	nYFqColq1KmoqX
+Date: Sat, 17 Jan 2009 23:16:51 +0100
+From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: ext4-stable build failure (Re: Ext4 tree backports for 2.6.27.10
+ and 2.6.28)
+Message-ID: <20090117231651.78b2cce5@highlander.home.lan>
+In-Reply-To: <E1LOG9D-0006h4-7R@closure.thunk.org>
+References: <E1LOG9D-0006h4-7R@closure.thunk.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/fbmCJe6QILaJEzIoBW9xfC1";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/17, Sukadev Bhattiprolu wrote:
->
-> @@ -1331,7 +1341,7 @@ int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
->  		goto ret;
->
->  	ret = 1; /* the signal is ignored */
-> -	if (!prepare_signal(sig, t))
-> +	if (!prepare_signal(sig, t, 1))
+--Sig_/fbmCJe6QILaJEzIoBW9xfC1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, just noticed. This looks wrong, it should be prepare_signal(sig, t, 0),
-no?
+Hello,
 
-For example, /sbin/init can create the posix timer with sigev_signo = SIGKILL
-and it won't be killed before this patch.
+On Sat, 17 Jan 2009 13:43:55 -0500
+"Theodore Ts'o" <tytso@mit.edu> wrote:
 
-This also looks wrong from the masquerading pov.
+>=20
+> I've created a couple of ext4 backport branches which have been uploaded
+> to the ext4 git tree:
+>=20
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git=20
+>    http://git.kernel.org/?p=3Dlinux/kernel/git/tytso/ext4.git
+>=20
 
+kernel 2.6.28 with ext4-stable fails to build for SMP on AMD64.
 
-Otherwise, the patches 1-6 are imho fine.
+Building modules, stage 2.
+MODPOST 905 modules
+ERROR: "inode_lock" [fs/ext4/ext4.ko] undefined!
 
-Oleg.
+I had to revert 5cb8613e44b6e6c77dcf231d691b96c91a5adeab (ext4: Add a
+delayed allocation debugging ioctl), after that it works.
 
+Regards
+Malte Schr=C3=B6der
+
+--Sig_/fbmCJe6QILaJEzIoBW9xfC1
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklyWNMACgkQ4q3E2oMjYtUxlACgzjK+7pVjiEI6Ju3zSHE8r1/t
+kRcAn3JrdpLOvDBpQGtlq4XbcCGT01DI
+=mfUA
+-----END PGP SIGNATURE-----
+
+--Sig_/fbmCJe6QILaJEzIoBW9xfC1--
