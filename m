@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbZAQAOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933375AbZAQAR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbZAQAOQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 19:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762717AbZAQAN7
+	id S933375AbZAQAR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 19:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762963AbZAQARU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 19:13:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51598 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762671AbZAQAN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 19:13:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: 2.6.29-rc1: thinkpad problems during resume
-Date: Sat, 17 Jan 2009 01:13:09 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Pavel Machek <pavel@suse.cz>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20090113081316.GA2292@elf.ucw.cz> <200901162306.11853.rjw@sisk.pl> <49711EBC.5050101@sgi.com>
-In-Reply-To: <49711EBC.5050101@sgi.com>
+	Fri, 16 Jan 2009 19:17:20 -0500
+Received: from mail.impinj.com ([206.169.229.170]:45860 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762898AbZAQART (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 19:17:19 -0500
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+Subject: Re: amd5536udc interrupts bug
+Date: Fri, 16 Jan 2009 16:17:18 -0800
+User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <49661E83.2070703@arcor.de> <200901141449.37246.vlobanov@speakeasy.net> <496F012C.9020004@arcor.de>
+In-Reply-To: <496F012C.9020004@arcor.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901170113.09724.rjw@sisk.pl>
+Message-Id: <200901161617.18351.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 17 Jan 2009 00:17:18.0626 (UTC) FILETIME=[F5550020:01C97838]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 January 2009, Mike Travis wrote:
-> Rafael J. Wysocki wrote:
-> > On Friday 16 January 2009, Pavel Machek wrote:
-> >> On Tue 2009-01-13 23:21:17, Jeff Chua wrote:
-> >>> On Tue, Jan 13, 2009 at 10:36 PM, Pavel Machek <pavel@suse.cz> wrote:
-> >>>> resumes fine with CONFIG_SMP unset.
-> >>> On my X60s, I had problem with s2ram, and I switch to the following ...
-> >>>
-> >>> echo mem > /sys/power/state
-> >>>
-> >>> Try and see if it works for you.
-> >> I tried that; unlike s2ram, this actually produces some oopses that
-> >> can be viewed. Unfortunately, they scroll a bit too fast.
-> >>
-> >> cpu hotplug vs. cpufreq seems to be responsible in my case, looking at
-> >> the logs from "echo 1 > online".
-> > 
-> > There are three patches from Mike Travis that can help:
-> > http://lkml.org/lkml/2009/1/16/377
-> > 
-> > Thanks,
-> > Rafael
-> 
-> Note that these don't really fix anything, just replaces the current
-> method of using set_cpus_allowed with the work_on_cpu call.  If
-> the laptop worked before the [bad] patch, then it should work again
-> now with this one.
+On Thursday 15 January 2009 01:26:04 Thomas Dahlmann wrote:
+> > It seems that the ultimate cause for all this strangeness was a mis-wired
+> > board: the vendor at long last admitted that the VBUS signal is not
+> > connected in the hardware. Why they didn't simply document this fact, and
+> > thereby save me a lot of wasted effort, remains a mystery.
+> >
+> > As a workaround, they suggested setting bit 0x00000010 in the ctl
+> > register, which is strangely enough inside the "reserved" space according
+> > to the AMD data book. Worth a shot, I thought. After hacking up the
+> > amd5536udc driver even more to do this operation at load time, the
+> > register states change to:
+> >
+> > cap=0x000083EA
+> > mux=0x00000007
+> > ctl=0x00000193
+> >
+> > Seems that a few other "reserved" bits also raised in response. (I still
+> > do not understand exactly how they wired up the CS5536 IO chip to be
+> > different from the data book, but oh well.) In this mode, the USB link is
+> > finally detected, and the board is finally able to enumerate itself as a
+> > g_zero device.
+>
+> This reserved bit seems to be an alias to the earlier mentioned PUEN bit
+> which allows to connect the pull up manually regardless of VBUS.
+> You will find that bit at page 276 in
+>
+> http://www.amd.com/files/connectivitysolutions/aufamily/au1200/32798e_Au120
+>0_ds.pdf
+>
+> If you compare the registers you will find that UDC controller of
+> Au1200 is 99.9% compatible with UDC of CS5536. Same for
+> CS5536 UOC and Au1200 OTG Controller. But OTG Controller of
+> Au1200 has more functionality and bits.
+>
+> Unfortunately this bit is not the complete solution for your problem.
+> When setting PUE then connect and disconnect events cannot be
+> detected by UDC. If you disconnect and connect again you
+> probably will notice that there will be no new enumeration as
+> expected.
 
-Thanks for the clarification, I misread the changelogs.
+Interestingly enough, when running in this configuration, unplugging and 
+replugging the cable does cause a re-enumeration. Hmmmm.
 
-OK, so we still have a cpufreq vs CPU hotplug problem, it seems.  I can't
-reproduce it myself, though.
+-- Vadim Lobanov
 
-Thanks,
-Rafael
