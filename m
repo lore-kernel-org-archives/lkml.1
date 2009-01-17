@@ -1,138 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765821AbZAQSoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766011AbZAQStj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765821AbZAQSoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 13:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763315AbZAQSn7
+	id S1766011AbZAQStj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 13:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763315AbZAQSta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 13:43:59 -0500
-Received: from THUNK.ORG ([69.25.196.29]:39328 "EHLO thunker.thunk.org"
+	Sat, 17 Jan 2009 13:49:30 -0500
+Received: from main.gmane.org ([80.91.229.2]:59256 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761857AbZAQSn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 13:43:57 -0500
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-cc: stable@kernel.org
-Subject: Ext4 tree backports for 2.6.27.10 and 2.6.28
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1LOG9D-0006h4-7R@closure.thunk.org>
-Date: Sat, 17 Jan 2009 13:43:55 -0500
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1763220AbZAQSt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 13:49:29 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: warn_slowpath in dev_watchdog
+Date: Sat, 17 Jan 2009 18:49:18 +0000 (UTC)
+Message-ID: <gkt97e$ti0$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pc212s.cs.york.ac.uk
+User-Agent: Pan/0.133 (House of Butterflies)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On an ever so slightly modified 2.6.28. I think this only happens when 
+the upstream router/switch goes out to lunch and packets are being sent. 
+It is reproducible but only appears on a home network...
 
-I've created a couple of ext4 backport branches which have been uploaded
-to the ext4 git tree:
+[  204.704065] ------------[ cut here ]------------
+[  204.704074] WARNING: at net/sched/sch_generic.c:226 dev_watchdog
++0x22b/0x240()
+[  204.704080] NETDEV WATCHDOG: eth0 (atl2): transmit timed out
+[  204.704087] Pid: 0, comm: swapper Not tainted 2.6.28skw-00025-gaee9cf6 
+#7
+[  204.704092] Call Trace:
+[  204.704103]  [<c0126373>] warn_slowpath+0x63/0x80
+[  204.704114]  [<c0140030>] ? timekeeping_resume+0xc0/0xf0
+[  204.704125]  [<c022366e>] ? strlcpy+0x1e/0x60
+[  204.704132]  [<c037bf5b>] dev_watchdog+0x22b/0x240
+[  204.704141]  [<c03e5fb7>] ? _spin_unlock_irq+0x27/0x30
+[  204.704149]  [<c014a04f>] ? trace_hardirqs_on_caller+0x7f/0x150
+[  204.704157]  [<c014a12b>] ? trace_hardirqs_on+0xb/0x10
+[  204.704166]  [<c012eafd>] run_timer_softirq+0x14d/0x1b0
+[  204.704173]  [<c037bd30>] ? dev_watchdog+0x0/0x240
+[  204.704181]  [<c012aadd>] ? __do_softirq+0x3d/0x110
+[  204.704188]  [<c037bd30>] ? dev_watchdog+0x0/0x240
+[  204.704196]  [<c012ab06>] __do_softirq+0x66/0x110
+[  204.704203]  [<c012abd8>] ? do_softirq+0x28/0x60
+[  204.704211]  [<c012ac05>] do_softirq+0x55/0x60
+[  204.704218]  [<c012af67>] irq_exit+0x67/0x80
+[  204.704226]  [<c0105745>] do_IRQ+0x65/0xc0
+[  204.704233]  [<c0103ea8>] common_interrupt+0x28/0x30
+[  204.704241]  [<c014007b>] ? sync_cmos_clock+0x1b/0xb0
+[  204.704251]  [<c0277f13>] ? acpi_idle_enter_bm+0x1f2/0x223
+[  204.704259]  [<c0337928>] cpuidle_idle_call+0x68/0xc0
+[  204.704265]  [<c0101f2b>] cpu_idle+0x3b/0x80
+[  204.704273]  [<c03da22d>] rest_init+0x4d/0x60
+[  204.704278] ---[ end trace 2f4b380121b45313 ]---
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 
-   http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
+-- 
+Sitsofe
 
-The master branch contains the latest ext4 patch queue, against Linus's
-tip; currently, this is versus 2.6.29-rc2.  The 'for_linus' tag is
-located on this branch, and currently contains a number of urgent fixes
-that I plan to be pushing to Linus after he gets back from
-linux.conf.au.  They are mostly fixes that prevent OOPS or cpu lockups
-when ext4 mounts an intentionally corrupted filesystem.
-
-The ext4-stable branch is based off of 2.6.28, and contains all of the
-patches which were pushed to linus during the 2.6.29-rc1 merge window,
-plus the fixes listed above in the 'master' branch.  It is designed for
-people who want the very latest in the ext4 tree versus a stable kernel.
-
-The for-stable branch is currently based off of 2.6.28, and contains a
-candidate set of patches to be included in the 2.6.28.y stable tree.
-Ext4 developers --- I would appreciate it if you could review the
-patches on the ext4-stable tree, and see if I missed any patches which
-in your opinion should be pushed to the 2.6.28.y tree.  Furthermore, if
-some folks could test the for-stable branch and let me know whether or
-not you found it stable, I would appreciate it.  Some of the patches
-were relatively painful to backport, given the desire to remove
-"non-critical" patches, so I'm not 100% certain I got the backports
-completely right.  Please test!
-
-The for-stable-2.6.27 is currently based off of 2.6.27.11, and it
-contains a candidate set of patches to be incuded in the 2.6.27.y tree.
-It was even more difficult to backport these patches to 2.6.27.y, and so
-I would **really** appreciate if some folks could review and test this
-branch.  In addition, a number of changes (in particular some of
-Aneesh's resize race condition patches) were painful enough that I
-decided to abort and not try to do the backport.  It was late, and I was
-getting tired....  If someone would like to try to backport some of
-these missing patches, I would appreciate it; Aneesh, you might have
-better luck since they were originally your patches, and they were
-complicated enough that I was worried that there might have been
-prerequisites that I had missed so they would function correctly.
-
-The patch backports can be summarized in this table below.  It contains
-the original mainline commit ID, the commit ID in the 2.6.28 for-stable
-branch, and the commit ID in the for-stable-2.6.27 branch.  If you see
-"-----" in the column for the 2.6.27-stable column, those were patches
-which I did not backport due to lack of valor/courage at 11pm at night.
-
-      	    		     	     	- Ted
-
-mainline 2.6.28  2.6.27
-    commit-description
--------------------------------------------------------------------------
-f99b2589 485f02f 11599d0
-    ext4: Add support for non-native signed/unsigned htree hash algorithms
-
-2a21e37e 7426272 8443aef
-    ext4: tone down ext4_da_writepages warnings
-
-791b7f08 2efd58c c7eef47
-    ext4: Fix the delalloc writepages to allocate blocks at the right offset.
-
-565a9617 ce99b0d b2a193d
-    ext4: avoid ext4_error when mounting a fs with a single bg
-
-ff7ef329 3a04ef3 626e5b9
-    ext4: Widen type of ext4_sb_info.s_mb_maxs[]
-
-fd98496f f97e641 dc270b3
-    jbd2: Add barrier not supported test to journal_wait_on_commit_record
-
-032115fc b9475aa c1944c2
-    ext4: Don't overwrite allocation_context ac_status
-
-e21675d4 c31a2b2 -----
-    ext4: Add blocks added during resize to bitmap
-
-920313a7 2a4f6ca -----
-    ext4: Use EXT4_GROUP_INFO_NEED_INIT_BIT during resize
-
-c3a326a6 66364e6 24a5c92
-    ext4: cleanup mballoc header files
-
-7a2fcbf7 39a0b8b -----
-    ext4: don't use blocks freed but not yet committed in buddy cache init
-    
-e8134b27 83a082c c712c85
-    ext4: Fix race between read_block_bitmap() and mark_diskspace_used()
-
-39341867 8e53df4 4d3302c
-    ext4: Fix the race between read_inode_bitmap() and ext4_new_inode()
-
-e97fcd95 20d6100 7e081e8
-    jbd2: Add BH_JBDPrivateStart
-
-2ccb5fb9 92f1c0e -----
-    ext4: Use new buffer_head flag to check uninit group bitmaps initialization
-
-648f5879 51eef9f 469a48a
-    ext4: mark the blocks/inode bitmap beyond end of group as used
-
-8556e8f3 5a2c7ad 686beef
-    ext4: Don't allow new groups to be added during block allocation
-
-29eaf024 39d994e 0c56383
-    ext4: Init the complete page while building buddy cache
-
-0087d9fb 808dfdb -----
-    ext4: Fix s_dirty_blocks_counter if block allocation failed with nodelalloc
-
-4ec11028 cf7da20 -----
-    ext4: Add sanity checks for the superblock before mounting the filesystem
