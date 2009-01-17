@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764531AbZAQQMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbZAQQSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764531AbZAQQMu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761813AbZAQQMi
+	id S1764183AbZAQQSd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbZAQQSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:12:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59150 "EHLO mx3.mail.elte.hu"
+	Sat, 17 Jan 2009 11:18:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44012 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762361AbZAQQMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:12:34 -0500
-Date: Sat, 17 Jan 2009 17:12:22 +0100
+	id S1755569AbZAQQSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 11:18:24 -0500
+Date: Sat, 17 Jan 2009 17:18:17 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20090117161222.GC31601@elte.hu>
-References: <20090111144305.GA7154@elte.hu> <20090114121521.197dfc5e.akpm@linux-foundation.org> <1231964647.14825.59.camel@laptop> <20090116204049.f4d6ef1c.akpm@linux-foundation.org> <1232173776.7073.21.camel@marge.simson.net> <1232186054.6813.48.camel@marge.simson.net>
+To: Mikael Pettersson <mikpe@it.uu.se>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3
+	warnings
+Message-ID: <20090117161817.GA10825@elte.hu>
+References: <200901171519.n0HFJZuf028704@harpo.it.uu.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232186054.6813.48.camel@marge.simson.net>
+In-Reply-To: <200901171519.n0HFJZuf028704@harpo.it.uu.se>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: 0.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3982]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-> Dunno about the IO bits, but..
->  
-> The problem with the C++ testcases seems to be wake_up_all() plunking a 
-> genuine thundering herd onto runqueues.  The sleeper fairness logic 
-> places the entire herd left of min_vruntime, meaning N*sched_latency 
-> pain for the poor sods who are setting the runqueue pace.
+> Commit ec5679e513305f1411753e5f5489935bd638af23 "eliminate warn_on_slowpath()"
+> changed __WARN() to call warn_slowpath() with a NULL value for the format
+> string parameter. Now every WARN_ON() triggers a warning from gcc-3.2.3:
+> 
+> In file included from include/linux/kmod.h:22,
+>                  from include/linux/module.h:13,
+>                  from include/linux/crypto.h:21,
+>                  from arch/x86/kernel/asm-offsets_32.c:7,
+>                  from arch/x86/kernel/asm-offsets.c:2:
+> include/linux/gfp.h: In function `allocflags_to_migratetype':
+> include/linux/gfp.h:104: warning: null format string
+> 
+> Compiling kernel 2.6.29-rc2 with a minimalistic .config for my 486
+> generates 1767 'null format string' warnings.
+> 
+> warn_slowpath() is declared with attribute((format(printf, 3, 4))),
+> and gcc-3.2.3 warns if the format string parameter is NULL. gcc-3.3
+> and newer do not warn in that case.
+> 
+> Since gcc-3.2 is still a supported compiler for the kernel, this is
+> a regression.
+> 
+> (Just FYI. I don't consider this serious enough to warrant reverting 
+> that cleanup patch or declaring gcc-3.2.3 too old. I can always update 
+> my 486 to gcc-3.3.6 if the warnings start to bug me too much.)
 
-100 wakeup pairs that all run and ping-pong between each other?
-
-That creates 200 tasks with an average system load of 100.0, on a 
-dual-core system. Is that a fair representation of some real workload, or 
-just an unrealistic "gee, look, given enough tasks running I can overload 
-the system _this bad_" example?
+hm, that's unfortunate. GCC seems totally on crack for not accepting a 
+NULL format string.
 
 	Ingo
