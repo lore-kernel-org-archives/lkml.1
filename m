@@ -1,353 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934847AbZAQCcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938065AbZAQCct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934847AbZAQCcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 21:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765026AbZAQC35
+	id S938065AbZAQCct (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 21:32:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbZAQCaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 21:29:57 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:20124 "EHLO
+	Fri, 16 Jan 2009 21:30:06 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:20128 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760928AbZAQC3z (ORCPT
+	with ESMTP id S934146AbZAQCaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 21:29:55 -0500
+	Fri, 16 Jan 2009 21:30:00 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=from:subject:to:date:message-id:in-reply-to:references:
 	user-agent:mime-version:content-type:
 	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=ZIf9XfvtdAG6/Cp3cedcXx5k1gLxxBPqXgoyUkT7pujpWz5ne7oWyZyYnznZ+BFHu
-	lc0QlkfXzKK9Opx0LPvDg==
+	b=VKp8HlEq8ErkkndK/OC7WlQDPThoS9XFZXzB2GApTuqTek7f2A7wunoR4jFSs5fad
+	onZ4swDlBoFGuQLp6ePbA==
 From: Mike Waychison <mikew@google.com>
-Subject: [PATCH v1 3/8] Deferred batching of iput()
+Subject: [PATCH v1 4/8] Fixing iput() called from put_super path
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Date: Fri, 16 Jan 2009 18:29:52 -0800
-Message-ID: <20090117022952.20425.91639.stgit@crlf.corp.google.com>
+Date: Fri, 16 Jan 2009 18:29:57 -0800
+Message-ID: <20090117022957.20425.52953.stgit@crlf.corp.google.com>
 In-Reply-To: <20090117022936.20425.43248.stgit@crlf.corp.google.com>
 References: <20090117022936.20425.43248.stgit@crlf.corp.google.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.35
+X-GMailtapped-By: 172.24.198.73
 X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the postponed_inodes structure which is used to batch iputs so
-that they can later be processed in parallel.
+Delaying iput introduces a problem when it comes to unmounting.  The problem
+lies in fs-specific put_super callbacks that will issue iput()s and assume that
+the iputs on their final inodes (for metadata inodes and the like) which causes
+problems with deferred iput() as the super_block may go away before the inodes
+are finalized.
 
-Each CPU gets an on-heap allocated postponed_inodes structure that is protected
-by disabling pre-emption and ensuring that they are only ever accessed from
-their respective CPU.
-
-The idea is to enqueue inodes until we fill a postponed_inodes allocated on the
-heap.  If we then see a postponed_inodes queue that is full, we try to allocate
-a new one to replace it and process the full queue.  We handle page allocation
-errors by processing pending inodes in place using a dummy on-stack structure
-(iput_drain_slowpath).
-
-Draining of the pending iput()s is tacked onto the draining of pending dput()s
-instead of being kept seperate so that we don't have to schedule work on all
-CPUs twice.
-
-Processing of the actual final iput is still serial and will be addressed in a
-later patch.
+This patch goes and marks all inodes in a super_block whenever we see that the
+inodes are being invalidated with S_SYNCIPUT, which causes us to shortcircuit
+the deferred iput and perform a synchronous iput.
 
 Signed-off-by: Mike Waychison <mikew@google.com>
 ---
 
- fs/dcache.c        |    1 
- fs/inode.c         |  211 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    2 
- 3 files changed, 212 insertions(+), 2 deletions(-)
+ fs/block_dev.c       |    2 +-
+ fs/ext2/super.c      |    2 +-
+ fs/gfs2/glock.c      |    2 +-
+ fs/gfs2/ops_fstype.c |    2 +-
+ fs/inode.c           |   19 ++++++++++++++-----
+ fs/ntfs/super.c      |    2 +-
+ fs/smbfs/inode.c     |    2 +-
+ fs/super.c           |    4 ++--
+ include/linux/fs.h   |    3 ++-
+ 9 files changed, 24 insertions(+), 14 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 9760bdb..2c2ac62 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -545,6 +545,7 @@ static void dput_drain_per_cpu(struct work_struct *dummy)
- 		dput_drain_slowpath();
- 		put_cpu_var(postponed_dentries);
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index b3c1eff..eb6517e 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -1400,7 +1400,7 @@ int __invalidate_device(struct block_device *bdev)
+ 		 * hold).
+ 		 */
+ 		shrink_dcache_sb(sb);
+-		res = invalidate_inodes(sb);
++		res = invalidate_inodes(sb, 1);
+ 		drop_super(sb);
  	}
-+	iput_drain_cpu();
- }
+ 	invalidate_bdev(bdev);
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index da8bdea..190dfc9 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -1185,7 +1185,7 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
+ 	es = sbi->s_es;
+ 	if (((sbi->s_mount_opt & EXT2_MOUNT_XIP) !=
+ 	    (old_mount_opt & EXT2_MOUNT_XIP)) &&
+-	    invalidate_inodes(sb))
++	    invalidate_inodes(sb, 0))
+ 		ext2_warning(sb, __func__, "busy inodes while remounting "\
+ 			     "xip remain in cache (no functional problem)");
+ 	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY))
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 6b983ae..4d95373 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -1574,7 +1574,7 @@ void gfs2_gl_hash_clear(struct gfs2_sbd *sdp)
+ 		}
  
- void dput_drain_all(void)
+ 		down_write(&gfs2_umount_flush_sem);
+-		invalidate_inodes(sdp->sd_vfs);
++		invalidate_inodes(sdp->sd_vfs, 1);
+ 		up_write(&gfs2_umount_flush_sem);
+ 		msleep(10);
+ 	}
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index f91eebd..5099ca5 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -1205,7 +1205,7 @@ fail_locking:
+ fail_lm:
+ 	gfs2_gl_hash_clear(sdp);
+ 	gfs2_lm_unmount(sdp);
+-	while (invalidate_inodes(sb))
++	while (invalidate_inodes(sb, 1))
+ 		yield();
+ fail_sys:
+ 	gfs2_sys_fs_del(sdp);
 diff --git a/fs/inode.c b/fs/inode.c
-index 913ab2d..56cf6e2 100644
+index 56cf6e2..9aa574d 100644
 --- a/fs/inode.c
 +++ b/fs/inode.c
-@@ -23,6 +23,7 @@
- #include <linux/inotify.h>
- #include <linux/mount.h>
- #include <linux/async.h>
-+#include <linux/cpu.h>
- 
+@@ -335,7 +335,8 @@ static void dispose_list(struct list_head *head)
  /*
-  * This is needed for the following functions:
-@@ -384,6 +385,13 @@ int invalidate_inodes(struct super_block * sb)
+  * Invalidate all inodes for a device.
+  */
+-static int invalidate_list(struct list_head *head, struct list_head *dispose)
++static int invalidate_list(struct list_head *head, struct list_head *dispose,
++			   int umount)
+ {
+ 	struct list_head *next;
+ 	int busy = 0, count = 0;
+@@ -358,6 +359,8 @@ static int invalidate_list(struct list_head *head, struct list_head *dispose)
+ 			break;
+ 		inode = list_entry(tmp, struct inode, i_sb_list);
+ 		invalidate_inode_buffers(inode);
++		if (umount)
++			inode->i_flags |= S_SYNCIPUT;
+ 		if (!atomic_read(&inode->i_count)) {
+ 			list_move(&inode->i_list, dispose);
+ 			inode->i_state |= I_FREEING;
+@@ -374,12 +377,13 @@ static int invalidate_list(struct list_head *head, struct list_head *dispose)
+ /**
+  *	invalidate_inodes	- discard the inodes on a device
+  *	@sb: superblock
++ *	@umount: are we unmounting?
+  *
+  *	Discard all of the inodes for a given superblock. If the discard
+  *	fails because there are busy inodes then a non zero value is returned.
+  *	If the discard is successful all the inodes have been discarded.
+  */
+-int invalidate_inodes(struct super_block * sb)
++int invalidate_inodes(struct super_block *sb, int umount)
+ {
+ 	int busy;
  	LIST_HEAD(throw_away);
+@@ -394,7 +398,7 @@ int invalidate_inodes(struct super_block * sb)
  
- 	mutex_lock(&iprune_mutex);
-+
-+	/* We have to drain any pending iput()s as they will affect whether we
-+	 * see inodes as busy or not (consider inodes put in put_super()). We
-+	 * also have to do this while under iprune_mutex otherwise
-+	 * shrink_icache_memory may stumble in and race with us. */
-+	iput_drain_all();
-+
  	spin_lock(&inode_lock);
  	inotify_unmount_inodes(&sb->s_inodes);
- 	busy = invalidate_list(&sb->s_inodes, &throw_away);
-@@ -1242,6 +1250,114 @@ static inline void iput_final(struct inode *inode)
- 	drop(inode);
- }
+-	busy = invalidate_list(&sb->s_inodes, &throw_away);
++	busy = invalidate_list(&sb->s_inodes, &throw_away, umount);
+ 	spin_unlock(&inode_lock);
  
-+static void real_iput(struct inode *inode)
-+{
-+	if (atomic_dec_and_lock(&inode->i_count, &inode_lock))
-+		iput_final(inode);
-+}
-+
-+struct postponed_inodes {
-+	unsigned size;
-+	unsigned nr;
-+	struct inode **inodes;
-+};
-+
-+static DEFINE_PER_CPU(struct postponed_inodes *, postponed_inodes);
-+
-+static unsigned postponed_inodes_per_page(void)
-+{
-+	return (PAGE_SIZE - sizeof(struct postponed_inodes)) /
-+		(sizeof(struct inode *));
-+}
-+
-+static struct postponed_inodes *new_postponed_inodes(void)
-+{
-+	struct postponed_inodes *ppi;
-+	struct page *page;
-+
-+	page = alloc_page(GFP_KERNEL);
-+	if (!page)
-+		return NULL;
-+
-+	ppi = page_address(page);
-+
-+	ppi->size = postponed_inodes_per_page();
-+	ppi->nr = 0;
-+	ppi->inodes = (struct inode **)(ppi + 1);
-+
-+	return ppi;
-+}
-+
-+struct postponed_inodes_onstack {
-+	struct postponed_inodes ppi;
-+	struct inode *inode;
-+};
-+
-+static struct postponed_inodes *init_ppi_onstack(
-+		struct postponed_inodes_onstack *ppi_onstack)
-+{
-+	struct postponed_inodes *ppi;
-+	ppi = &ppi_onstack->ppi;
-+	ppi->size = 1;
-+	ppi->nr = 0;
-+	ppi->inodes = &ppi_onstack->inode;
-+	return ppi;
-+}
-+
-+static int pending_iput_full(struct postponed_inodes *ppi)
-+{
-+	return ppi->nr == ppi->size;
-+}
-+
-+static void add_pending_iput(struct postponed_inodes *ppi, struct inode *inode)
-+{
-+	ppi->inodes[ppi->nr++] = inode;
-+}
-+
-+static void process_postponed_inodes(struct postponed_inodes *ppi)
-+{
-+	unsigned i;
-+	for (i = 0; i < ppi->nr; i++)
-+		real_iput(ppi->inodes[i]);
-+}
-+
-+static void release_postponed_inodes(struct postponed_inodes *ppi)
-+{
-+	process_postponed_inodes(ppi);
-+	free_page((unsigned long)ppi);
-+}
-+
-+static void postpone_iput(struct inode *inode)
-+{
-+	struct postponed_inodes *ppi, *new_ppi;
-+
-+again:
-+	ppi = get_cpu_var(postponed_inodes);
-+	if (!pending_iput_full(ppi)) {
-+		add_pending_iput(ppi, inode);
-+		put_cpu_var(postponed_inodes);
-+		return;
-+	}
-+
-+	/* Need to flush out existing pending inodes */
-+	put_cpu_var(postponed_inodes);
-+	/* Allocate more space.. */
-+	new_ppi = new_postponed_inodes();
-+	if (!new_ppi) {
-+		struct postponed_inodes_onstack ppi_onstack;
-+
-+		ppi = init_ppi_onstack(&ppi_onstack);
-+		add_pending_iput(ppi, inode);
-+		process_postponed_inodes(ppi);
-+		return;
-+	}
-+	ppi = get_cpu_var(postponed_inodes);
-+	__get_cpu_var(postponed_inodes) = new_ppi;
-+	put_cpu_var(postponed_inodes);
-+	process_postponed_inodes(ppi);
-+	goto again;
-+}
-+
- /**
-  *	iput	- put an inode 
-  *	@inode: inode to put
-@@ -1256,8 +1372,8 @@ void iput(struct inode *inode)
+ 	dispose_list(&throw_away);
+@@ -1372,8 +1376,12 @@ void iput(struct inode *inode)
  	if (inode) {
  		BUG_ON(inode->i_state == I_CLEAR);
  
--		if (atomic_dec_and_lock(&inode->i_count, &inode_lock))
--			iput_final(inode);
-+		if (!atomic_add_unless(&inode->i_count, -1, 1))
-+			postpone_iput(inode);
+-		if (!atomic_add_unless(&inode->i_count, -1, 1))
+-			postpone_iput(inode);
++		if (!(inode->i_flags & S_SYNCIPUT)) {
++			if (!atomic_add_unless(&inode->i_count, -1, 1))
++				postpone_iput(inode);
++		} else {
++			real_iput(inode);
++		}
  	}
  }
  
-@@ -1468,6 +1584,88 @@ static int __init set_ihash_entries(char *str)
- }
- __setup("ihash_entries=", set_ihash_entries);
+@@ -1663,6 +1671,7 @@ static void iput_drain_per_cpu_cb(struct work_struct *dummy)
  
-+static int __cpuinit cpuup_callback(struct notifier_block *nfb,
-+				    unsigned long action, void *hcpu)
-+{
-+	long cpu = (long)hcpu;
-+	struct postponed_inodes **pppi = &per_cpu(postponed_inodes, cpu);
-+
-+	switch (action) {
-+	case CPU_UP_PREPARE:
-+		*pppi = new_postponed_inodes();
-+		if (*pppi == NULL)
-+			return NOTIFY_STOP;
-+		break;
-+	case CPU_DEAD:
-+		release_postponed_inodes(*pppi);
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block __cpuinitdata inode_put_cache_notifier = {
-+	&cpuup_callback, NULL, 0
-+};
-+
-+/**
-+ * iput_drain_slowpath - drain out the postponed inodes on this cpu
-+ *
-+ * Iterates through and loops until all pending inodes on this cpu are iput.
-+ * Must be called with pre-emption disabled, but may re-enable pre-emtion.
-+ * Returns with pre-emption disabled.  Caller is required to ensure that this
-+ * thread is affine to the cpu.
-+ */
-+static void iput_drain_cpu_slowpath(void)
-+{
-+	struct postponed_inodes *ppi;
-+
-+	ppi = __get_cpu_var(postponed_inodes);
-+	while (ppi->nr) {
-+		struct postponed_inodes_onstack ppi_onstack;
-+		struct postponed_inodes *tmp_ppi;
-+		struct inode *inode;
-+
-+		inode = ppi->inodes[--ppi->nr];
-+
-+		tmp_ppi = init_ppi_onstack(&ppi_onstack);
-+		add_pending_iput(ppi, inode);
-+		put_cpu_var(postponed_inodes);
-+		process_postponed_inodes(ppi);
-+		ppi = get_cpu_var(postponed_inodes);
-+	}
-+}
-+
-+/**
-+ * iput_drain_cpu - Drain all pending iputs on this CPU
-+ *
-+ * Must be called affine to the CPU.
-+ */
-+void iput_drain_cpu(void)
-+{
-+	struct postponed_inodes *ppi, *new_ppi;
-+
-+	new_ppi = new_postponed_inodes();
-+	ppi = get_cpu_var(postponed_inodes);
-+	if (new_ppi) {
-+		__get_cpu_var(postponed_inodes) = new_ppi;
-+		put_cpu_var(postponed_inodes);
-+		release_postponed_inodes(ppi);
-+	} else {
-+		iput_drain_cpu_slowpath();
-+		put_cpu_var(postponed_inodes);
-+	}
-+}
-+
-+static void iput_drain_per_cpu_cb(struct work_struct *dummy)
-+{
-+	iput_drain_cpu();
-+}
-+
-+void iput_drain_all(void)
-+{
-+	schedule_on_each_cpu(iput_drain_per_cpu_cb);
-+}
-+
- /*
-  * Initialize the waitqueues and inode hash table.
-  */
-@@ -1498,6 +1696,7 @@ void __init inode_init_early(void)
- void __init inode_init(void)
+ void iput_drain_all(void)
  {
- 	int loop;
-+	long cpu;
++	/* TODO: error checking? */
+ 	schedule_on_each_cpu(iput_drain_per_cpu_cb);
+ }
  
- 	/* inode slab cache */
- 	inode_cachep = kmem_cache_create("inode_cache",
-@@ -1508,6 +1707,14 @@ void __init inode_init(void)
- 					 init_once);
- 	register_shrinker(&icache_shrinker);
+diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+index 4a46743..04220f3 100644
+--- a/fs/ntfs/super.c
++++ b/fs/ntfs/super.c
+@@ -3051,7 +3051,7 @@ iput_tmp_ino_err_out_now:
+ 	 * method again... FIXME: Do we need to do this twice now because of
+ 	 * attribute inodes? I think not, so leave as is for now... (AIA)
+ 	 */
+-	if (invalidate_inodes(sb)) {
++	if (invalidate_inodes(sb, 1)) {
+ 		ntfs_error(sb, "Busy inodes left. This is most likely a NTFS "
+ 				"driver bug.");
+ 		/* Copied from fs/super.c. I just love this message. (-; */
+diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
+index fc27fbf..4def57a 100644
+--- a/fs/smbfs/inode.c
++++ b/fs/smbfs/inode.c
+@@ -229,7 +229,7 @@ smb_invalidate_inodes(struct smb_sb_info *server)
+ {
+ 	VERBOSE("\n");
+ 	shrink_dcache_sb(SB_of(server));
+-	invalidate_inodes(SB_of(server));
++	invalidate_inodes(SB_of(server), 1);
+ }
  
-+	for_each_online_cpu(cpu) {
-+		struct postponed_inodes *ppi = new_postponed_inodes();
-+		if (!ppi)
-+			panic("Couldn't allocate initial iput caches\n");
-+		per_cpu(postponed_inodes, cpu) = ppi;
-+	}
-+	register_cpu_notifier(&inode_put_cache_notifier);
-+
- 	/* Hash may have been set up in inode_init_early */
- 	if (!hashdist)
- 		return;
+ /*
+diff --git a/fs/super.c b/fs/super.c
+index 534840f..244b6f5 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -306,7 +306,7 @@ void generic_shutdown_super(struct super_block *sb)
+ 		async_synchronize_full_special(&sb->s_async_list);
+ 
+ 		/* bad name - it should be evict_inodes() */
+-		invalidate_inodes(sb);
++		invalidate_inodes(sb, 1);
+ 		lock_kernel();
+ 
+ 		if (sop->write_super && sb->s_dirt)
+@@ -315,7 +315,7 @@ void generic_shutdown_super(struct super_block *sb)
+ 			sop->put_super(sb);
+ 
+ 		/* Forget any remaining inodes */
+-		if (invalidate_inodes(sb)) {
++		if (invalidate_inodes(sb, 1)) {
+ 			printk("VFS: Busy inodes after unmount of %s. "
+ 			   "Self-destruct in 5 seconds.  Have a nice day...\n",
+ 			   sb->s_id);
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 6022f44..47eaa71 100644
+index 47eaa71..aa90620 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1908,6 +1908,8 @@ extern ino_t iunique(struct super_block *, ino_t);
- extern int inode_needs_sync(struct inode *inode);
- extern void generic_delete_inode(struct inode *inode);
- extern void generic_drop_inode(struct inode *inode);
-+extern void iput_drain_cpu(void);
-+extern void iput_drain_all(void);
+@@ -161,6 +161,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_SYNCIPUT	1024	/* Filesystem going down, use sync iput() */
  
- extern struct inode *ilookup5_nowait(struct super_block *sb,
- 		unsigned long hashval, int (*test)(struct inode *, void *),
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -1805,7 +1806,7 @@ extern int check_disk_change(struct block_device *);
+ extern int __invalidate_device(struct block_device *);
+ extern int invalidate_partition(struct gendisk *, int);
+ #endif
+-extern int invalidate_inodes(struct super_block *);
++extern int invalidate_inodes(struct super_block *, int umount);
+ unsigned long __invalidate_mapping_pages(struct address_space *mapping,
+ 					pgoff_t start, pgoff_t end,
+ 					bool be_atomic);
 
