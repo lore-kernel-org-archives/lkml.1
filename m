@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765549AbZAQQ7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764973AbZAQRCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765549AbZAQQ7l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761667AbZAQQ7b
+	id S1764973AbZAQRCM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 12:02:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbZAQRB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:59:31 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57874 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759269AbZAQQ7a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:59:30 -0500
-Date: Sat, 17 Jan 2009 16:59:20 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 6/6] omap2 iommu: entries for Kconfig and Makefile
-Message-ID: <20090117165920.GD12341@n2100.arm.linux.org.uk>
-References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com> <20090116083735.18344.92890.stgit@oreo.research.nokia.com>
-Mime-Version: 1.0
+	Sat, 17 Jan 2009 12:01:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40658 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758436AbZAQRBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 12:01:55 -0500
+Date: Sat, 17 Jan 2009 18:01:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip] x86: fix 22 make headers_check warnings
+Message-ID: <20090117170147.GM10825@elte.hu>
+References: <1232209856.3388.5.camel@localhost.localdomain> <20090117164108.GG10825@elte.hu> <20090117164747.GA7192@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090116083735.18344.92890.stgit@oreo.research.nokia.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090117164747.GA7192@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 10:37:35AM +0200, Hiroshi DOYU wrote:
-> Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> ---
-> 
->  arch/arm/mach-omap2/Makefile |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
-> index bbd12bc..443e71f 100644
-> --- a/arch/arm/mach-omap2/Makefile
-> +++ b/arch/arm/mach-omap2/Makefile
-> @@ -24,6 +24,11 @@ endif
->  obj-$(CONFIG_ARCH_OMAP2)		+= clock24xx.o
->  obj-$(CONFIG_ARCH_OMAP3)		+= clock34xx.o
->  
-> +obj-$(CONFIG_OMAP_IOMMU)		+= iommu2.o
-> +ifeq ($(CONFIG_ARCH_OMAP3),y)
-> +obj-$(CONFIG_OMAP_IOMMU)		+= omap3-iommu.o
-> +endif
-> +
 
-I can see this expanding still further... so what about nipping it now
-before it gets out of hand:
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-iommu-y					+= iommu2.o
-iommu-$(CONFIG_ARCH_OMAP3)		+= omap3-iommu.o
-
-obj-$(CONFIG_OMAP_IOMMU)		+= $(iommu-y)
-
->  # Specific board support
->  obj-$(CONFIG_MACH_OMAP_GENERIC)		+= board-generic.o
->  obj-$(CONFIG_MACH_OMAP_H4)		+= board-h4.o
+> [Ingo Molnar - Sat, Jan 17, 2009 at 05:41:08PM +0100]
+> | 
+> | * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> | 
+> | > Hello Ingo,
+> | > 
+> | > The following changes since commit 206e00df0967f6e91d792df7f1d4ff352eb42f8f:
+> | >   Ingo Molnar (1):
+> | >         Merge branch 'x86/urgent'
+> | > 
+> | > are available in the git repository at:
+> | > 
+> | >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tiptop.git master
+> | > 
+> | > Jaswinder Singh Rajput (8):
+> | >       x86: boot.h fix make headers_check
+> | >       x86: e820.h fix make headers_check
+> | >       x86: kvm.h fix make headers_check
+> | >       x86: mce.h fix make headers_check
+> | >       x86: mtrr.h fix make headers_check
+> | >       x86: ptrace-abi.h fix make headers_check
+> | >       x86: sigcontext.h fix make headers_check
+> | >       x86: swab.h fix make headers_check
+> | > 
+> | >  arch/x86/include/asm/boot.h       |    2 ++
+> | >  arch/x86/include/asm/e820.h       |   11 ++++++++---
+> | >  arch/x86/include/asm/kvm.h        |    2 +-
+> | >  arch/x86/include/asm/mce.h        |    5 +----
+> | >  arch/x86/include/asm/mtrr.h       |    1 +
+> | >  arch/x86/include/asm/ptrace-abi.h |    5 ++++-
+> | >  arch/x86/include/asm/sigcontext.h |    2 +-
+> | >  arch/x86/include/asm/swab.h       |   21 +++++++++++++++++++--
+> | >  8 files changed, 37 insertions(+), 12 deletions(-)
+> | 
+> | Pulled into tip/core/header-fixes and started testing them, thanks 
+> | Jaswinder!
+> | 
+> | 	Ingo
+> | 
 > 
+> I thought some of them I've already fixed, no?
+
+ah, indeed - tip/x86/setup-lzma is currently not in tip/master (due to a 
+breakage that is being investigated), that's why i missed it.
+
+So i took out the boot.h change from core/headers-fixes and your fix will 
+take precedence.
+
+btw:
+
+> Cyrill Gorcunov wrote:
+> > Small series of headers cleanup, easy to bisect.
+> > make headers_check still complains about vars
+> > being found in comments but this is just a false
+> > alarm. Please review.
 > 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> Applied patch 1 to tip:x86/setup-lzma, and patches 2, 4 and 5 to
+> tip:x86/header-fixes.
+
+those x86/header-fixes bits from you are in core/headers-fixes now:
+
+ dbca1df: x86: headers cleanup - setup.h
+ a7c4e68: x86: headers cleanup - sigcontext32.h
+ 4440270: x86: headers cleanup - prctl.h
+
+So i think we are all sorted, agreed?
+
+	Ingo
