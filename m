@@ -1,46 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbZAQUeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932239AbZAQUi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbZAQUeY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 15:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZAQUeP
+	id S932239AbZAQUi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 15:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZAQUiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 15:34:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43543 "EHLO mx2.redhat.com"
+	Sat, 17 Jan 2009 15:38:17 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48689 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754587AbZAQUeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 15:34:14 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090117082623.GB24905@elte.hu>
-References: <20090117082623.GB24905@elte.hu> <20090115181612.GA27762@elte.hu> <16916.1232172471@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Michael LeMay <mdlemay@epoch.ncsc.mil>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Paul Moore <paul.moore@hp.com>, Eric Paris <eparis@redhat.com>
-Subject: Re: [slab corruption] BUG key_jar: Poison overwritten
-Date: Sat, 17 Jan 2009 20:33:22 +0000
-Message-ID: <31147.1232224402@redhat.com>
+	id S1755785AbZAQUiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 15:38:16 -0500
+Date: Sat, 17 Jan 2009 12:35:00 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7][v7] Remove 'handler' parameter to tracehook functions
+Message-ID: <20090117203500.GB11825@us.ibm.com>
+References: <20090117202638.GA11825@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117202638.GA11825@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> The problem was not reproducible - i tried the same config once more and 
-> it didnt produce the bug. (this system has no known hardware flukes)
+From: Oleg Nesterov <oleg@redhat.com>
+Date: Wed, 24 Dec 2008 13:35:17 -0800
+Subject: [PATCH 1/7][v7] Remove 'handler' parameter to tracehook functions
 
-Having thought about it some more, we can't necessarily pin the blame on the
-key management code.  I think it more likely due to the previous owner of the
-page as it's the guard poisoning that got corrupted, not the allocated key
-struct.  The problem is we don't know who that was.  I wonder if it's
-practical to store a recent history of page allocs and releases in a circular
-buffer.
+Based on an earlier patch submitted by Oleg Nesterov and comments
+from Roland McGrath (http://lkml.org/lkml/2008/11/19/258).
 
-David
+The handler parameter is currently unused in the tracehook functions.
+Besides, the tracehook functions are called with siglock held, so the
+functions can check the handler if they later need to.
+
+Removing the parameter simiplifies changes to sig_ignored() in a follow-on
+patch.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/ptrace.c  |    2 +-
+ include/linux/tracehook.h |   13 ++++---------
+ kernel/signal.c           |    6 +++---
+ 3 files changed, 8 insertions(+), 13 deletions(-)
+
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 0a6d8c1..d6ef716 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1585,6 +1585,6 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+ 	 * system call instruction.
+ 	 */
+ 	if (test_thread_flag(TIF_SINGLESTEP) &&
+-	    tracehook_consider_fatal_signal(current, SIGTRAP, SIG_DFL))
++	    tracehook_consider_fatal_signal(current, SIGTRAP))
+ 		send_sigtrap(current, regs, 0, TRAP_BRKPT);
+ }
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index 6186a78..eb4c654 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -388,17 +388,14 @@ static inline void tracehook_signal_handler(int sig, siginfo_t *info,
+  * tracehook_consider_ignored_signal - suppress short-circuit of ignored signal
+  * @task:		task receiving the signal
+  * @sig:		signal number being sent
+- * @handler:		%SIG_IGN or %SIG_DFL
+  *
+  * Return zero iff tracing doesn't care to examine this ignored signal,
+  * so it can short-circuit normal delivery and never even get queued.
+- * Either @handler is %SIG_DFL and @sig's default is ignore, or it's %SIG_IGN.
+  *
+  * Called with @task->sighand->siglock held.
+  */
+ static inline int tracehook_consider_ignored_signal(struct task_struct *task,
+-						    int sig,
+-						    void __user *handler)
++						    int sig)
+ {
+ 	return (task_ptrace(task) & PT_PTRACED) != 0;
+ }
+@@ -407,19 +404,17 @@ static inline int tracehook_consider_ignored_signal(struct task_struct *task,
+  * tracehook_consider_fatal_signal - suppress special handling of fatal signal
+  * @task:		task receiving the signal
+  * @sig:		signal number being sent
+- * @handler:		%SIG_DFL or %SIG_IGN
+  *
+  * Return nonzero to prevent special handling of this termination signal.
+- * Normally @handler is %SIG_DFL.  It can be %SIG_IGN if @sig is ignored,
+- * in which case force_sig() is about to reset it to %SIG_DFL.
++ * Normally handler for signal is %SIG_DFL.  It can be %SIG_IGN if @sig is
++ * ignored, in which case force_sig() is about to reset it to %SIG_DFL.
+  * When this returns zero, this signal might cause a quick termination
+  * that does not give the debugger a chance to intercept the signal.
+  *
+  * Called with or without @task->sighand->siglock held.
+  */
+ static inline int tracehook_consider_fatal_signal(struct task_struct *task,
+-						  int sig,
+-						  void __user *handler)
++						  int sig)
+ {
+ 	return (task_ptrace(task) & PT_PTRACED) != 0;
+ }
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 2a64304..7945e71 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -72,7 +72,7 @@ static int sig_ignored(struct task_struct *t, int sig)
+ 	/*
+ 	 * Tracers may want to know about even ignored signals.
+ 	 */
+-	return !tracehook_consider_ignored_signal(t, sig, handler);
++	return !tracehook_consider_ignored_signal(t, sig);
+ }
+ 
+ /*
+@@ -316,7 +316,7 @@ int unhandled_signal(struct task_struct *tsk, int sig)
+ 		return 1;
+ 	if (handler != SIG_IGN && handler != SIG_DFL)
+ 		return 0;
+-	return !tracehook_consider_fatal_signal(tsk, sig, handler);
++	return !tracehook_consider_fatal_signal(tsk, sig);
+ }
+ 
+ 
+@@ -775,7 +775,7 @@ static void complete_signal(int sig, struct task_struct *p, int group)
+ 	    !(signal->flags & (SIGNAL_UNKILLABLE | SIGNAL_GROUP_EXIT)) &&
+ 	    !sigismember(&t->real_blocked, sig) &&
+ 	    (sig == SIGKILL ||
+-	     !tracehook_consider_fatal_signal(t, sig, SIG_DFL))) {
++	     !tracehook_consider_fatal_signal(t, sig))) {
+ 		/*
+ 		 * This signal will be fatal to the whole group.
+ 		 */
+-- 
+1.5.2.5
+
