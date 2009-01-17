@@ -1,111 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbZAQJrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbZAQJwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760756AbZAQJrc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 04:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZAQJrW
+	id S1761913AbZAQJwP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 04:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZAQJvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 04:47:22 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33636 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbZAQJrU (ORCPT
+	Sat, 17 Jan 2009 04:51:54 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:49043 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754008AbZAQJvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 04:47:20 -0500
-Subject: Re: ext3: call blkdev_issue_flush on fsync
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-       fernando@kic.ac.jp
-In-Reply-To: <20090116163039.GE10617@duck.suse.cz>
-References: <20090114103532.GA18834@duck.suse.cz>
-	 <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz>
-	 <20090114141204.GD6222@mit.edu> <20090114143756.GF19950@duck.suse.cz>
-	 <20090114165952.GH6222@mit.edu>
-	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090115234544.GA7579@duck.suse.cz>
-	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090116163039.GE10617@duck.suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Sat, 17 Jan 2009 18:47:19 +0900
-Message-Id: <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 17 Jan 2009 04:51:52 -0500
+Date: Sat, 17 Jan 2009 09:51:43 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Rob Landley <rob@landley.net>
+Cc: Valdis.Kletnieks@vt.edu,
+       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
+Message-ID: <20090117095143.GA20389@shareable.org>
+References: <495FEEAF.5020005@zytor.com> <200901160011.11679.rob@landley.net> <15458.1232117682@turing-police.cc.vt.edu> <200901161554.02054.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901161554.02054.rob@landley.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 17:30 +0100, Jan Kara wrote:
-> On Fri 16-01-09 22:55:01, Fernando Luis Vázquez Cao wrote:
-> > To ensure that bits are truly on-disk after an fsync or fdatasync, we
-> > should force a disk flush explicitly when there is dirty data/metadata
-> > and the journal didn't emit a write barrier (either because metadata is
-> > not being synched or barriers are disabled).
-> > 
-> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> > ---
->   Only two minor nits:
+Rob Landley wrote:
+> On Friday 16 January 2009 08:54:42 Valdis.Kletnieks@vt.edu wrote:
+> > On Fri, 16 Jan 2009 00:11:09 CST, Rob Landley said:
+> > > P.S.  I still hope autoconf dies off and the world wakes up and moves
+> > > away from that.  And from makefiles for that matter.  But in the
+> > > meantime, I can work around it with enough effort.
+> >
+> > What do you propose autoconf and makefiles get replaced by?
 > 
-> > --- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
-> > +++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/sched.h>
-> >  #include <linux/writeback.h>
-> >  #include <linux/jbd.h>
-> > +#include <linux/blkdev.h>
-> >  #include <linux/ext3_fs.h>
-> >  #include <linux/ext3_jbd.h>
-> >  
-> > @@ -45,6 +46,8 @@
-> >  int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
-> >  {
-> >  	struct inode *inode = dentry->d_inode;
-> > +	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
-> > +	unsigned long i_state = inode->i_state;
-> >  	int ret = 0;
-> >  
-> >  	J_ASSERT(ext3_journal_current_handle() == NULL);
-> > @@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
-> >  	 */
-> >  	if (ext3_should_journal_data(inode)) {
-> >  		ret = ext3_force_commit(inode->i_sb);
-> > +		if (!(journal->j_flags & JFS_BARRIER))
-> > +			goto no_journal_barrier;
-> >  		goto out;
-> >  	}
-> >  
-> > -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-> > -		goto out;
-> > +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
-> > +		goto flush_blkdev;
-> >  
-> >  	/*
-> >  	 * The VFS has written the file data.  If the inode is unaltered
-> >  	 * then we need not start a commit.
-> >  	 */
-> > -	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
-> > +	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
-> >  		struct writeback_control wbc = {
-> >  			.sync_mode = WB_SYNC_ALL,
-> >  			.nr_to_write = 0, /* sys_fsync did this */
-> >  		};
-> >  		ret = sync_inode(inode, &wbc);
-> > +		if (journal && !(journal->j_flags & JFS_BARRIER))
-> > +			goto no_journal_barrier;
->   I cannot imagine "journal" will be NULL here.
 
-I'll try to check whether that is always so just in case.
+> I've never built pidgin from source, but I've got the output of the binutils 
+> build in a log file. 
+> How many of these tests are actually necessary on an Linux system:
 
->   And we can also optimize here a bit and do "goto out" because here
-> we know the barrier has been issued.
+None, but then it's not a Linux-only program that you're compiling.
+(Nor is it Linux-in-2009-only).
 
-Yep, I was considering the same optimization. By the way, I was
-wondering if we should honor ext3 and ext4's "barrier" mount option for
-sys_fsync()/sys_fdatasync() and do not force a flush when "barrier=1".
-What are your thoughts on this?
+If you _know_ you're running on Linux from a particular era, you can
+provide a config.cache file with the correct answers already filled in.
 
+I agree that Autoconf sucks (I've written enough sucking Autoconf
+macros myself, I hate it), but the tough part is providing a suitable
+replacement when you still want portable source code.
+
+> It just goes on and on and on like this.  Tests like "checking
+> whether byte ordering is bigendian... no" means "Either I didn't
+> know endian.h existed, or I don't trust it to be there".  How about
+> the long stretches checking for the existence of header files
+> specified by posix?
+
+You seem to be arguing for "let's make all our programs Linux-specific
+(and Glibc-specific in many cases)".  Given all the problems you've
+seen with cross-compiling, let alone compiling for different OS
+platforms, that seems a little odd.
+
+-- Jamie
