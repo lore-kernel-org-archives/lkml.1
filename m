@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbZAQIwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbZAQI67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbZAQIwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 03:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbZAQIw2
+	id S1761530AbZAQI67 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 03:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZAQI6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 03:52:28 -0500
-Received: from viefep16-int.chello.at ([62.179.121.36]:18548 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756058AbZAQIw1 (ORCPT
+	Sat, 17 Jan 2009 03:58:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:11502 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbZAQI6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 03:52:27 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [git pull] scheduler fixes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-References: <20090111144305.GA7154@elte.hu>
-	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
-	 <1231964647.14825.59.camel@laptop>
-	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 17 Jan 2009 09:52:31 +0100
-Message-Id: <1232182351.7141.37.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sat, 17 Jan 2009 03:58:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=qUwdof6BeIYY8/zRwhZGZa9Ggq0xM/he+uwhZbmCBg/Xp3f96sSOrjyL5NXl0fnWRv
+         +tZEKjf36SSFUGA7eYVrSS6AWwTJEW2O0T+jSPh93t5BzC5DI5+F8l0/FgcE9guekfDw
+         gPm+cu29z51VzWYKFGQWM64cCUqvYca1Gkc8M=
+Message-ID: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com>
+Date: Sat, 17 Jan 2009 09:58:47 +0100
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-16 at 20:40 -0800, Andrew Morton wrote:
-> On Wed, 14 Jan 2009 21:24:07 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > On Wed, 2009-01-14 at 12:15 -0800, Andrew Morton wrote:
-> > > On Sun, 11 Jan 2009 15:43:05 +0100
-> > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > Please pull the latest sched-fixes-for-linus git tree
-> > > 
-> > > In http://bugzilla.kernel.org/show_bug.cgi?id=12309 the reporters have
-> > > identified what appears to be a sched-related performance regression. 
-> > > A fairly long-term one - post-2.6.18, perhaps.
-> > > 
-> > > Testcase code has been added today.  Could someone please take a look
-> > > sometime?
-> > 
-> > There appear to be two different bug reports in there. One about iowait,
-> > and one I'm not quite sure what it is about.
-> > 
-> > The second thing shows some numbers and a test case, but I fail to see
-> > what the problem is with it.
-> 
-> I had no problem seeing the problem: a gigantic performance regression
-> in two CPU-scheduler intensive workloads.
+During suspend to ram:
+[  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
+code: suspend_to_ram./2958
+[  131.287012] caller is retrigger_next_event+0x13/0xb0
+[  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
+[  131.287012] Call Trace:
+[  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
+[  131.287012]  [<c01473b3>] retrigger_next_event+0x13/0xb0
+[  131.287012]  [<c01489b7>] raw_notifier_call_chain+0x17/0x20
+[  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
+[  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
+[  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
+[  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
+[  131.287012]  [<c0159c7b>] suspend_devices_and_enter+0xeb/0x160
+[  131.287012]  [<c015a47f>] freeze_processes+0x4f/0xa0
+[  131.287012]  [<c0159e3d>] enter_state+0xfd/0x150
+[  131.287012]  [<c0159f1c>] state_store+0x8c/0xd0
+[  131.287012]  [<c0159e90>] state_store+0x0/0xd0
+[  131.287012]  [<c0250d54>] kobj_attr_store+0x24/0x30
+[  131.287012]  [<c01e25d1>] sysfs_write_file+0xa1/0x110
+[  131.287012]  [<c01e2530>] sysfs_write_file+0x0/0x110
+[  131.287012]  [<c019bf48>] vfs_write+0xa8/0x140
+[  131.287012]  [<c019c0b1>] sys_write+0x41/0x80
+[  131.287012]  [<c010348d>] sysenter_do_call+0x12/0x21
+[  131.287012]  [<c03b0000>] init_cyrix+0x72/0x444
+[  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
+code: suspend_to_ram./2958
+[  131.287012] caller is retrigger_next_event+0x65/0xb0
+[  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
+[  131.287012] Call Trace:
+[  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
+[  131.287012]  [<c0147405>] retrigger_next_event+0x65/0xb0
+[  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
+[  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
+[  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
+[  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
+[  131.287012]  [<c0159c7b>] suspend_devices_and_enter+0xeb/0x160
+[  131.287012]  [<c015a47f>] freeze_processes+0x4f/0xa0
+[  131.287012]  [<c0159e3d>] enter_state+0xfd/0x150
+[  131.287012]  [<c0159f1c>] state_store+0x8c/0xd0
+[  131.287012]  [<c0159e90>] state_store+0x0/0xd0
+[  131.287012]  [<c0250d54>] kobj_attr_store+0x24/0x30
+[  131.287012]  [<c01e25d1>] sysfs_write_file+0xa1/0x110
+[  131.287012]  [<c01e2530>] sysfs_write_file+0x0/0x110
+[  131.287012]  [<c019bf48>] vfs_write+0xa8/0x140
+[  131.287012]  [<c019c0b1>] sys_write+0x41/0x80
+[  131.287012]  [<c010348d>] sysenter_do_call+0x12/0x21
+[  131.287012]  [<c03b0000>] init_cyrix+0x72/0x444
 
-Right, but it wasn't clearly stated what the issue was, and there seem
-to be two with that testcase
-
- 1) the total running time increases
- 2) it causes some severe latency spikes
-
-Now why it was stuck in with that iowait thing I have no clue, as it
-doesn't do anything with iowait, I ran the thing (well, both things) and
-iowait is 0%.
-
-Of course we'll try and fix these issues -- but as far as I'm concerned
-its utterly unrelated to the iowait thing.
-
-> I can see some other problems, too.
-
-The universe is full of problems, mixing them all up doesn't get us
-anywhere.
-
+After this system works OK.
+config, dmesg:
+http://www.unixy.pl/maciek/download/kernel/2.6.29-rc2/pc/
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
