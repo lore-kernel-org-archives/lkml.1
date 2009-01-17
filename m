@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZAQVLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbZAQVRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932383AbZAQVLr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 16:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZAQVLj
+	id S1759993AbZAQVRn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 16:17:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbZAQVRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 16:11:39 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33393 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbZAQVLi (ORCPT
+	Sat, 17 Jan 2009 16:17:31 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:39100 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758044AbZAQVRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 16:11:38 -0500
-Message-ID: <497248AE.10500@zytor.com>
-Date: Sat, 17 Jan 2009 13:07:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 17 Jan 2009 16:17:30 -0500
+Date: Sat, 17 Jan 2009 14:17:23 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
+Message-ID: <20090117211723.GB30719@parisc-linux.org>
+References: <1232117771.3224.21.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Kyle McMartin <kyle@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux-kernel@vger.kernel.org
-Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3	warnings
-References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu> <49723912.6020108@zytor.com> <20090117204421.GA1700@bombadil.infradead.org>
-In-Reply-To: <20090117204421.GA1700@bombadil.infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232117771.3224.21.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle McMartin wrote:
-> 
-> How about something utterly evil? (Since you can't pass a zero-length
-> string to a printf attributed function either...)
-> 
+On Fri, Jan 16, 2009 at 09:56:11AM -0500, James Bottomley wrote:
+>       mpt fusion: Add separate msi enable disable for FC,SPI,SAS
 
-?!
-
-*That* should definitely be permitted... anything else is an utter bug.
-
-On the other hand, having a global empty string in the kernel isn't a
-bad thing.
-
-	-hpa
+I thought we rejected this one as being completely bogus?  I certainly
+don't remember seeing even an excuse for it after I challenged it.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
