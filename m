@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbZAQPYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762989AbZAQPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762876AbZAQPYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 10:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbZAQPYI
+	id S1762989AbZAQPmA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 10:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbZAQPlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 10:24:08 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:47976 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758922AbZAQPYG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 10:24:06 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: jbarnes@virtuousgeek.org
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [PATCH] PCI: pciehp_core, fix lock imbalance
-Date: Sat, 17 Jan 2009 16:23:55 +0100
-Message-Id: <1232205835-21854-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1
+	Sat, 17 Jan 2009 10:41:49 -0500
+Received: from netgear.net.ru ([195.178.208.66]:55259 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1760902AbZAQPls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 10:41:48 -0500
+Date: Sat, 17 Jan 2009 18:41:47 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux killed Kenny, bastard!
+Message-ID: <20090117154147.GA12863@ioremap.net>
+References: <bTEeI-5Y0-15@gated-at.bofh.it> <bTGTe-1K5-3@gated-at.bofh.it> <bTNi6-3kb-9@gated-at.bofh.it> <bTOea-4QT-1@gated-at.bofh.it> <bTQ6f-7Qs-1@gated-at.bofh.it> <bTQpv-5o-3@gated-at.bofh.it> <bTQzd-iK-5@gated-at.bofh.it> <bTXhp-2IA-31@gated-at.bofh.it> <bTZjb-62D-25@gated-at.bofh.it> <E1LOCze-00020X-GT@be1.7eggert.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LOCze-00020X-GT@be1.7eggert.dyndns.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-set_lock_status omits mutex_unlock in fail path. Add the omitted
-unlock.
+On Sat, Jan 17, 2009 at 04:21:50PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
+> > The only sane way to use oom_adj is
+> > to disable oom killer for the task or make its score very small or very
+> > big, there is really no way to make a finegrained tuning, since score
+> > changes and userspace does not know the algorithm.
+> 
+> It does not need to know, it just has to tune until it's about level with
+> the other normal processes if it's to be a normal process, and add or
+> substract one or two to oom_adj if it's avery (un)important process.
 
-As a result a lockup caused by this can be triggered from userspace
-by writing 1 to /sys/bus/pci/slots/.../lock often enough.
+Did you try such tuning yourself? I submitted documentation update on
+how score is calculated, there is really no way admin can do that in
+some script or manually, and relying on oom_score content is not very
+precise since it jumps all over the range depending on the read time.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
----
- drivers/pci/hotplug/pciehp_core.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+So, forget that you can tune oom_adj system-wide, it is only possible to
+effectively enable or disable it. If there are two identical processes,
+it is possible in theory to tune them against each other, but practice
+and theory are the same only in theory, in practice one of the processes
+will suddenly start doing different things and all your calculus
+immediately become wrong.
 
-diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-index 5482d4e..c248554 100644
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -126,8 +126,10 @@ static int set_lock_status(struct hotplug_slot *hotplug_slot, u8 status)
- 	mutex_lock(&slot->ctrl->crit_sect);
- 
- 	/* has it been >1 sec since our last toggle? */
--	if ((get_seconds() - slot->last_emi_toggle) < 1)
-+	if ((get_seconds() - slot->last_emi_toggle) < 1) {
-+		mutex_unlock(&slot->ctrl->crit_sect);
- 		return -EINVAL;
-+	}
- 
- 	/* see what our current state is */
- 	retval = get_lock_status(hotplug_slot, &value);
+OOM scores can not be reliably tuned system-wide.
+
 -- 
-1.6.1
-caught by stanse
+	Evgeniy Polyakov
