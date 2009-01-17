@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbZAQVRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbZAQV1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbZAQVRn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 16:17:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbZAQVRb
+	id S932663AbZAQV1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 16:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762409AbZAQV1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 16:17:31 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:39100 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758044AbZAQVRa (ORCPT
+	Sat, 17 Jan 2009 16:27:39 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:38697 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762315AbZAQV1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 16:17:30 -0500
-Date: Sat, 17 Jan 2009 14:17:23 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] firs round of SCSI bug fixes for 2.6.29-rc1
-Message-ID: <20090117211723.GB30719@parisc-linux.org>
-References: <1232117771.3224.21.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232117771.3224.21.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 17 Jan 2009 16:27:38 -0500
+Subject: Re: btrfs: readdir problem workaround for 32-bit off_t
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: linux-btrfs@vger.kernel.org, bug-glibc@gnu.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LSU.2.00.0901172026180.14987@fbirervta.pbzchgretzou.qr>
+References: <alpine.LSU.2.00.0901172026180.14987@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Sat, 17 Jan 2009 16:27:21 -0500
+Message-Id: <1232227641.28343.3.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.49724D3F.006D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 09:56:11AM -0500, James Bottomley wrote:
->       mpt fusion: Add separate msi enable disable for FC,SPI,SAS
+On Sat, 2009-01-17 at 20:39 +0100, Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> 
+> I am seeing abnormal kernel<->userland interaction for range-exceeding 
+> offsets during readdir.
+> A suggested patch for btrfs is below, but I think there could also
+> be involvement of (read: a bug in) Glibc.
+> Would the copied parties please have a look, as it may spans both glibc 
+> and btrfs.
+> 
 
-I thought we rejected this one as being completely bogus?  I certainly
-don't remember seeing even an excuse for it after I challenged it.
+Thanks for looking into this.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Your patch is how the code originally looked, but it can lead to loops
+in buggy userland (a git bug hit this).   My plan was to mask off the
+limit the same way XFS now does.
+
+This is a btrfs bug, not glibc.
+
+-chris
+
+
