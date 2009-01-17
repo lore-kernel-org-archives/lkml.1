@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762746AbZAQQJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764133AbZAQQMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762746AbZAQQJE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbZAQQIg
+	id S1764133AbZAQQMT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761813AbZAQQMC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:08:36 -0500
-Received: from flock1.newmail.ru ([82.204.219.207]:43958 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762818AbZAQQIe (ORCPT
+	Sat, 17 Jan 2009 11:12:02 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:22281 "EHLO
+	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759576AbZAQQMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:08:34 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: e1000-devel@lists.soutceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [2.6.29-rc2 regression] e100: netconsole not functional because of missing firmware
-Date: Sat, 17 Jan 2009 19:08:25 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sat, 17 Jan 2009 11:12:00 -0500
+X-Greylist: delayed 902 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Jan 2009 11:12:00 EST
+X-BigFish: VPS-60(z21eWz1432R62a3L98dR936eQ1805M179dRzzzzz32i6bh43j)
+X-WSS-ID: 0KDMHM8-04-01Q-01
+Date: Sat, 17 Jan 2009 16:56:35 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Tim Blechmann <tim@klingt.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com
+Subject: Re: 2.6.28-rc9: oprofile regression
+Message-ID: <20090117155635.GC21604@erda.amd.com>
+References: <alpine.LFD.2.00.0901141739580.3598@localhost.localdomain> <1231957184.13033.70.camel@thinkpad> <alpine.LFD.2.00.0901150940250.3598@localhost.localdomain> <1232010853.6541.4.camel@thinkpad> <alpine.LFD.2.00.0901152135110.3400@localhost.localdomain> <1232067181.6134.74.camel@thinkpad> <alpine.LFD.2.00.0901160956170.3400@localhost.localdomain> <1232199169.7016.12.camel@thinkpad> <20090117141453.GA21604@erda.amd.com> <1232204963.17299.8.camel@thinkpad>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2731052.VCk4V9YsH4";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901171908.28533.arvidjaar@mail.ru>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1232204963.17299.8.camel@thinkpad>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2009 15:56:35.0787 (UTC) FILETIME=[2CD151B0:01C978BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2731052.VCk4V9YsH4
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 17.01.09 16:09:23, Tim Blechmann wrote:
+> > > however, trying to apply this patch to 2.6.28, the behavior is the same
+> > > as before (one NMI) ... so possibly, it is a combination of two bugs,
+> > > with similar symptoms ... 
+> > 
+> > Tim, could you revert 7c64ade53a6f977d73f16243865c42ceae999aea too?
+> > 
+> > If this not helps, last chance is
+> > 59512900baab03c5629f2ff5efad1d5d4e682ece, but this seems to be save.
+> 
+> i tried to revert both commits, however the behavior doesn't seem to
+> change. will try to apply the working patch to the child commits, maybe
+> i can find something interesting ...
 
-[    1.958127] e100 0000:00:0a.0: PCI INT A -> Link[LNKD] -> GSI 11=20
-(level, low)
- -> IRQ 11
-[    1.986079] e100 0000:00:0a.0: PME# disabled
-[    1.987930] e100: eth0: e100_probe: addr 0xf7efd000, irq 11, MAC addr=20
-00:00:39:d7:14:a1
-[    1.989358] netconsole: local port 6665
-[    1.989848] netconsole: local IP 10.0.0.1
-[    1.990427] netconsole: interface eth0
-[    1.990895] netconsole: remote port 6666
-[    1.991382] netconsole: remote IP 10.0.0.2
-[    1.991890] netconsole: remote ethernet address 00:17:42:21:27:e4
-[    1.992680] netconsole: device eth0 not up yet, forcing it
-[    2.008509] e100: eth0: e100_request_firmware: Failed to load=20
-firmware "e100/d101m_ucode.bin": -22
-[    2.010461] netconsole: failed to open eth0
-[    2.010996] netconsole: cleaning up
+Hmm, strange. Actually 7c64ade53a6f977d73f16243865c42ceae999aea fixed
+a similiar bug, see here:
+http://bugzilla.kernel.org/show_bug.cgi?id=11908
 
-This has been working all the time without requiring any external=20
-firmware to be present. Why it suddenly refuses to work now?
+Your patch with 2.6.28, does:
 
+ grep NMI /proc/interrupts
 
---nextPart2731052.VCk4V9YsH4
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+returns exactly 1 NMI per core or some more?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> 
+> best, tim
+> 
+> btw, i am not very familiar with kernel programming, but is it safe to
+> have `static u64 *reset_value' uninitialized, or should it be
+> initialized to NULL?
 
-iEYEABECAAYFAklyAnwACgkQR6LMutpd94xQzgCfbRkub0iY10Od/4WBW95ahIvg
-P/EAoLUI8uXRsnZS3ykKEY5baSpr5giQ
-=jczN
------END PGP SIGNATURE-----
+External and static variables should be gaaranteed to be initialized
+to zero. Only local variables are uninitialized.
 
---nextPart2731052.VCk4V9YsH4--
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
