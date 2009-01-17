@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762530AbZAQDIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbZAQDW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762530AbZAQDIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Jan 2009 22:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZAQDIA
+	id S1759484AbZAQDW3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Jan 2009 22:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZAQDWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Jan 2009 22:08:00 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:53440 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753032AbZAQDIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Jan 2009 22:08:00 -0500
-Date: Fri, 16 Jan 2009 21:07:53 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: put trigger in to detect mismatched apic versions.
-Message-ID: <20090117030752.GB127262@sgi.com>
-References: <49704DF6.8040205@sgi.com> <20090116092540.GC4305@elte.hu> <4970C984.30202@sgi.com> <20090116223011.GB3899@elte.hu> <497116A8.5080900@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497116A8.5080900@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 16 Jan 2009 22:22:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34130 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbZAQDWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Jan 2009 22:22:18 -0500
+Date: Fri, 16 Jan 2009 22:22:16 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eric Paris <eparis@redhat.com>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: WARNING: at kernel/trace/ftrace.c:434 ftrace_bug+0xdb/0x2b1()
+ in 2.6.29-rc1-next-20090116
+In-Reply-To: <1232159830.20005.0.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0901162214330.9232@gandalf.stny.rr.com>
+References: <1232144843.6614.14.camel@localhost.localdomain>  <alpine.DEB.1.10.0901161939320.9232@gandalf.stny.rr.com> <1232159830.20005.0.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 03:22:16PM -0800, Mike Travis wrote:
-> Ingo Molnar wrote:
-> > * Mike Travis <travis@sgi.com> wrote:
-> > 
-> >> Hi Ingo,
-> >>
-> >> I did notice that the versions all came up the same, and that the checks 
-> >> were very specific.  I was trying to be as transparent and unintrusive 
-> >> as possible.  Since there's so few calls, I though this was a good 
-> >> approach but apparently I was wrong.
-> >>
-> >> I like the idea of collapsing the array down to one and checking to see 
-> >> if all apic's have the same version, but is this really the case? Must 
-> >> all apics be the same?
-> > 
-> > Could you please send a patch that doesnt change the code, only adds a 
-> > 'boot APIC version' kind of variable as an apic_version __read_mostly 
-> > variable and does a WARN_ONCE() if that mismatches? We can then stick that 
-> > into -tip and see whether it triggers.
-> > 
-> > The max array size is ~128K, right? So if the WARN_ONCE() does not 
-> > trigger, we can just drop the array and use the central apic_version 
-> > variable ...
-> > 
-> > And even if it _does_ trigger, the version incompatibilities between APIC 
-> > protocols are very rare. They only happen across wildly different CPU 
-> > architectures like when going from very old external apics to integrated 
-> > apics, or going from apics to x-apics. We wont see any mixing across those 
-> > boundaries.
-> > 
-> > 	Ingo
+
+On Fri, 16 Jan 2009, Eric Paris wrote:
+
+> On Fri, 2009-01-16 at 19:47 -0500, Steven Rostedt wrote:
 > 
-> Btw, I checked with our UV architect and the problem is that we need a
-> 16 bit apic id which is what caused the MAX_APICS to be bumped to 32k.
-> The lower 8 bits are the normal apic id, and the upper bit relate to
-> the node.  This means cpu 0 on node 0 has the same apic id as cpu 0 on
-> node 1, etc.  I also asked about whether we could rely on always having
+> > And perhaps, if possible, could I get a copy of the vmlinux that was 
+> > built, and a CONFIG to go with it.
+> 
+> So I didn't see it when I rebuilt without any of my patch stack, I'm
+> trying to build them back in to see if it was one of mine....
 
-Not strictly true. The apicids in the ACPI tables are always globally unique
-across the entire system. Because of the size of UV systems, UV needs 16 bit
-apicids. This fits in the ACPI apicid id/eid fields.
+I'm looking at the dump of the vmlinux, and here's something that is 
+interesting:
 
-The actual processor apicid register is unfortunately only 11 bits and there are
-some restrictions on the actual values loaded into the apicid register.
+  0x815d45e0 19132281 ffffffff f9132281 ffffffff ..".......".....
+  0x815d45f0 51152281 ffffffff 7e152281 ffffffff Q.".....~.".....
+  0x815d4600 b0152281 ffffffff e2152281 ffffffff ..".......".....
+  0x815d4610 0b162281 ffffffff 42162281 ffffffff ..".....B.".....
+  0x815d4620 d8162281 ffffffff 33172281 ffffffff ..".....3.".....
+  0x815d4630 26182281 ffffffff 21192281 ffffffff &.".....!.".....
+  0x815d4640 091d2281 ffffffff 3f1d2281 ffffffff ..".....?.".....
+  0x815d4650 94232281 ffffffff 1d242281 ffffffff .#"......$".....
+  0x815d4660 c1242281 ffffffff 0d252281 ffffffff .$"......%".....
+  0x815d4670 56252281 ffffffff 1d262281 ffffffff V%"......&".....
+  0x815d4680 9f262281 ffffffff ef272281 ffffffff .&"......'".....
+  0x815d4690 06282281 ffffffff 2a282281 ffffffff .(".....*(".....
+  0x815d46a0 d82c2281 ffffffff fd2c2281 ffffffff .,"......,".....
+  0x815d46b0 342d2281 ffffffff 942d2281 ffffffff 4-"......-".....
+  0x815d46c0 f32f2281 ffffffff 5c302281 ffffffff ./".....\0".....
+  0x815d46d0 12312281 ffffffff 9f312281 ffffffff .1"......1".....
+  0x815d46e0 3d322281 ffffffff 62322281 ffffffff =2".....b2".....
+  0x815d46f0 87322281 ffffffff ac322281 ffffffff .2"......2".....
+  0x815d4700 de322281 ffffffff b6332281 ffffffff .2"......3".....
+  0x815d4710 df342281 ffffffff 51152281 ffffffff .4".....Q.".....
+  0x815d4720 7e152281 ffffffff b0152281 ffffffff ~.".......".....
+  0x815d4730 e2152281 ffffffff 0b162281 ffffffff ..".......".....
+  0x815d4740 42162281 ffffffff d8162281 ffffffff B.".......".....
+  0x815d4750 33172281 ffffffff 26182281 ffffffff 3.".....&.".....
+  0x815d4760 21192281 ffffffff 091d2281 ffffffff !.".......".....
+  0x815d4770 3f1d2281 ffffffff 94232281 ffffffff ?."......#".....
+  0x815d4780 1d242281 ffffffff c1242281 ffffffff .$"......$".....
+  0x815d4790 0d252281 ffffffff 56252281 ffffffff .%".....V%".....
+  0x815d47a0 1d262281 ffffffff 9f262281 ffffffff .&"......&".....
+  0x815d47b0 ef272281 ffffffff 06282281 ffffffff .'"......(".....
+  0x815d47c0 2a282281 ffffffff d82c2281 ffffffff *("......,".....
+  0x815d47d0 fd2c2281 ffffffff 342d2281 ffffffff .,".....4-".....
+  0x815d47e0 942d2281 ffffffff f32f2281 ffffffff .-"....../".....
+  0x815d47f0 5c302281 ffffffff 12312281 ffffffff \0"......1".....
+  0x815d4800 9f312281 ffffffff 3d322281 ffffffff .1".....=2".....
+  0x815d4810 62322281 ffffffff 87322281 ffffffff b2"......2".....
+  0x815d4820 ac322281 ffffffff de322281 ffffffff .2"......2".....
+  0x815d4830 b6332281 ffffffff df342281 ffffffff .3"......4".....
+  0x815d4840 9d352281 ffffffff c1352281 ffffffff .5"......5".....
 
-If we can put unique ids into the apicid register, we do. If we
-can't, the function that reads the apicid will automatically supply the rest
-of the bits.  Most of the kernel is unaware that the processor apicid
-register may have only a subset of the bits that are in the ACPI tables.
 
+The entries from 0x815d45f0 to 0x815d4710 are identical to the entries 
+from 0x815d4711 to 0x815d4831. Due to the history of the code, the entries 
+are added first into a link list, and then the addresses are modifed in 
+reverse order. Since b6332281 ffffffff was last (executed first) it was 
+the first one to see the change.
 
---- jack
+I'm betting that you had an old version of the thermal.o that had the 
+mcount_loc already in, and somehow had the recordmcount.o executed again 
+on it, creating a duplicate copy. This would cause such an error. By 
+rebuilding the whole tree, you fixed things up.
+
+-- Steve
+
