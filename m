@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbZAQQp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764741AbZAQQrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764029AbZAQQp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 11:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbZAQQpS
+	id S1764741AbZAQQrf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 11:47:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbZAQQrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 11:45:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47697 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757181AbZAQQpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 11:45:16 -0500
-Date: Sat, 17 Jan 2009 17:44:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] platform/x86: eeepc-laptop uses INPUT
-Message-ID: <20090117164457.GJ10825@elte.hu>
-References: <20090114162502.GA20451@elte.hu> <20090117024119.GB2291@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117024119.GB2291@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1408]
+	Sat, 17 Jan 2009 11:47:23 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:55728 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758060AbZAQQrW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 11:47:22 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH 1/1] NET: net_namespace, fix lock imbalance
+Date: Sat, 17 Jan 2009 17:47:12 +0100
+Message-Id: <1232210832-30041-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+register_pernet_gen_subsys omits mutex_unlock in one fail path.
+Fix it.
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ net/core/net_namespace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> eeepc-laptop uses the input layer, so needs to depend on it.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> 
-> ---
-> 
-> Ugh. The drivers in here seem to use a mixture of select and depends - 
-> I've just followed what was already being used, but have no idea what 
-> the convention really is here.
-> 
-> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-> index e65448e..d4908e0 100644
-> --- a/drivers/platform/x86/Kconfig
-> +++ b/drivers/platform/x86/Kconfig
-> @@ -281,6 +281,7 @@ config EEEPC_LAPTOP
->  	select BACKLIGHT_CLASS_DEVICE
->  	select HWMON
->  	select RFKILL
-> +	select INPUT
+diff --git a/net/core/net_namespace.c b/net/core/net_namespace.c
+index 55cffad..55151fa 100644
+--- a/net/core/net_namespace.c
++++ b/net/core/net_namespace.c
+@@ -341,8 +341,8 @@ again:
+ 	rv = register_pernet_operations(first_device, ops);
+ 	if (rv < 0)
+ 		ida_remove(&net_generic_ids, *id);
+-	mutex_unlock(&net_mutex);
+ out:
++	mutex_unlock(&net_mutex);
+ 	return rv;
+ }
+ EXPORT_SYMBOL_GPL(register_pernet_gen_subsys);
+-- 
+1.6.1
 
-hm, that looks wrong - selecting an interactive option like CONFIG_INPUT 
-is a bad idea and can lead to further dependency problems. depends-on 
-might be better. (any distro kernel will have INPUT enabled anyway, so 
-this is not a reduction in utility)
-
-	Ingo
