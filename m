@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765332AbZAQRQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765355AbZAQRVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765332AbZAQRQW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 12:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762729AbZAQRQO
+	id S1765355AbZAQRVB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 12:21:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbZAQRUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 12:16:14 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:63599 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761658AbZAQRQN (ORCPT
+	Sat, 17 Jan 2009 12:20:50 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54136 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbZAQRUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 12:16:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEAFGecUlMQWt2/2dsb2JhbACBbMpWhXM
-Date: Sat, 17 Jan 2009 12:15:56 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Andrea Arcangeli <andrea@suse.de>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-Message-ID: <20090117171556.GA32572@Krystal>
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <c384c5ea0901170850q4c72d8bcpc76eb635950aaa2e@mail.gmail.com>
+	Sat, 17 Jan 2009 12:20:49 -0500
+Date: Sat, 17 Jan 2009 17:20:37 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 07/10] omap mailbox: add save_/restore_ctx() for PM
+Message-ID: <20090117172037.GF12341@n2100.arm.linux.org.uk>
+References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com> <20090116082737.17571.53738.stgit@oreo.research.nokia.com> <20090117171044.GE12341@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <c384c5ea0901170850q4c72d8bcpc76eb635950aaa2e@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:11:28 up 16 days, 17:09,  3 users,  load average: 0.72, 0.46,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090117171044.GE12341@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Leon Woestenberg (leon.woestenberg@gmail.com) wrote:
-> Hello Mathieu et al,
+On Sat, Jan 17, 2009 at 05:10:44PM +0000, Russell King - ARM Linux wrote:
+> On Fri, Jan 16, 2009 at 10:27:37AM +0200, Hiroshi DOYU wrote:
+> > diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+> > index a877305..544dde9 100644
+> > --- a/arch/arm/mach-omap2/mailbox.c
+> > +++ b/arch/arm/mach-omap2/mailbox.c
+> > @@ -32,6 +32,8 @@
+> >  #define MAILBOX_IRQ_NEWMSG(u)		(1 << (2 * (u)))
+> >  #define MAILBOX_IRQ_NOTFULL(u)		(1 << (2 * (u) + 1))
+> >  
+> > +#define MBOX_REG_SIZE			0x120
+> > +
+> >  static void __iomem *mbox_base;
+> >  
+> >  struct omap_mbox2_fifo {
+> > @@ -47,6 +49,7 @@ struct omap_mbox2_priv {
+> >  	unsigned long irqstatus;
+> >  	u32 newmsg_bit;
+> >  	u32 notfull_bit;
+> > +	char ctx[MBOX_REG_SIZE];
 > 
-> On Sat, Jan 17, 2009 at 5:26 PM, Mathieu Desnoyers
-> <mathieu.desnoyers@polymtl.ca> wrote:
-> > A long standing I/O regression (since 2.6.18, still there today) has hit
-> > Slashdot recently :
-> > http://bugzilla.kernel.org/show_bug.cgi?id=12309
+> 	u32 ctx[MOX_REG_SIZE / sizeof(u32)];
 > 
-> Are you sure you are solving the *actual* problem?
+> ?
 > 
-> The bugzilla entry shows a bisect attempt that leads to a patch
-> involving negative clock jumps.
-> http://bugzilla.kernel.org/show_bug.cgi?id=12309#c29
+> >  };
+> >  
+> >  static struct clk *mbox_ick_handle;
+> > @@ -167,6 +170,36 @@ static int omap2_mbox_is_irq(struct omap_mbox *mbox,
+> >  	return (enable & status & bit);
+> >  }
+> >  
+> > +static void omap2_mbox_save_ctx(struct omap_mbox *mbox)
+> > +{
+> > +	int i;
+> > +	struct omap_mbox2_priv *p = mbox->priv;
+> > +
+> > +	for (i = 0; i < MBOX_REG_SIZE; i += sizeof(u32)) {
+> > +		u32 val;
+> > +
+> > +		val = mbox_read_reg(i);
+> > +		*(u32 *)(p->ctx + i) = val;
 > 
-> with a corrected link to the bisect patch:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12309#c30
-> 
-> Wouldn't a negative clock jump be very influential to the
-> (time-driven) I/O schedulers and be a more probable cause?
-> 
+> 		p->ctx[i] = mbox_read_reg(i);
 
-When a merge is done, the lowest timestamp between the existing request
-and the new request to merge is kept as a start_time value for the
-merged request we end up with. In this case, that would probably make
-that request stay on top of the queue even if unrelated interactive I/O
-requests come.
+Hmm, don't forget 'i' is an offset not an index, so...
 
-I suspect that this negative clock jump could have hidden the problem by
-making the start time of the interactive request lower than the start
-time of the merged request.
+£define MBOX_NR_REGS (MBOX_REG_SIZE / sizeof(u32))
 
-Mathieu
+	for (i = 0; i < MBOX_NR_REGS; i++) {
+		p->ctx[i] = mbox_read_reg(i * sizeof(u32));
 
-> Regards,
-> -- 
-> Leon
-> 
-> p.s. Added Thomas to the CC list as his name is on the patch Signed-off-by list.
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+(you'll have to excuse the '£' there - my keyboard currently does not have
+a 'hash' key for some Fedora 9 post upgrade silly reason.)
