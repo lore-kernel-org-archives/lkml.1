@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbZAQIse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbZAQIwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760807AbZAQIse (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 03:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZAQIsZ
+	id S1761354AbZAQIwh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 03:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbZAQIw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 03:48:25 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:61561 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755652AbZAQIsY (ORCPT
+	Sat, 17 Jan 2009 03:52:28 -0500
+Received: from viefep16-int.chello.at ([62.179.121.36]:18548 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756058AbZAQIw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 03:48:24 -0500
-Message-ID: <49719B53.8050300@gawab.com>
-Date: Sat, 17 Jan 2009 00:48:19 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
-MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>, John Stoffel <john@stoffel.org>
-Subject: Re: 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com>
-In-Reply-To: <49715039.2090406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 17 Jan 2009 03:52:27 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [git pull] scheduler fixes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
+References: <20090111144305.GA7154@elte.hu>
+	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
+	 <1231964647.14825.59.camel@laptop>
+	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 17 Jan 2009 09:52:31 +0100
+Message-Id: <1232182351.7141.37.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> I'm not seeing this with firefox over here.
-> The setup I have is the latest beta,
-> located in /usr/lib/firefox/ with a soft link to /usr/bin/
-> I don't have gnome2 vfs installed though.
-> just a bare firefox with 2 plugins(flash,null)
-> located in /.mozilla/plugins/
-> for restorecon.
->
-> not sure what distro you have, but with ubuntu
-> I noticed a quit a bit of other links created.
-> that is installing through apt-get, rather
-> just downloading the source and putting it wherever.
->
-> regards;
->
-> Justin P. Mattock
->
-I'm running ubuntu 8.10, with 2 custom kernels 2.6.28 and 2.6.29-rc2.
+On Fri, 2009-01-16 at 20:40 -0800, Andrew Morton wrote:
+> On Wed, 14 Jan 2009 21:24:07 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > On Wed, 2009-01-14 at 12:15 -0800, Andrew Morton wrote:
+> > > On Sun, 11 Jan 2009 15:43:05 +0100
+> > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > Please pull the latest sched-fixes-for-linus git tree
+> > > 
+> > > In http://bugzilla.kernel.org/show_bug.cgi?id=12309 the reporters have
+> > > identified what appears to be a sched-related performance regression. 
+> > > A fairly long-term one - post-2.6.18, perhaps.
+> > > 
+> > > Testcase code has been added today.  Could someone please take a look
+> > > sometime?
+> > 
+> > There appear to be two different bug reports in there. One about iowait,
+> > and one I'm not quite sure what it is about.
+> > 
+> > The second thing shows some numbers and a test case, but I fail to see
+> > what the problem is with it.
+> 
+> I had no problem seeing the problem: a gigantic performance regression
+> in two CPU-scheduler intensive workloads.
 
-I've done a little bit more testing. This time with 4 version of firefox 
-(3.0.5-ubuntu, 3.0.4, 3.1.b2, 3.2.a1) straight from mozilla.org, except 
-the ubuntu one.
-What I found is that all versions crash when loading iGoogle, sofar the 
-only site that makes it crash, except 3.2a1.
-Since iGoogle is my hompage, they all crash once loading is done (except 
-3.2a1), unless I'm fast enough and load a different page.
-But, _every_ version crashes if I go to Preferences->Main or 
-Preferences->Applications.
+Right, but it wasn't clearly stated what the issue was, and there seem
+to be two with that testcase
 
-None of this crashing happens if I'm booted into a .28 kernel, only on a 
-.29-rc kernel.
-Henceforth, I still think it's a kernel regression, but one that's going 
-to be almost impossible to debug!
-I've hit the most narrow minded bug on the planet! Very sad....
-Seems like I always hit the undebugable regressions that nobody else 
-sees ;-(
+ 1) the total running time increases
+ 2) it causes some severe latency spikes
 
-Justin Madru
+Now why it was stuck in with that iowait thing I have no clue, as it
+doesn't do anything with iowait, I ran the thing (well, both things) and
+iowait is 0%.
+
+Of course we'll try and fix these issues -- but as far as I'm concerned
+its utterly unrelated to the iowait thing.
+
+> I can see some other problems, too.
+
+The universe is full of problems, mixing them all up doesn't get us
+anywhere.
+
