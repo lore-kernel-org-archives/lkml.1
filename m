@@ -1,84 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765355AbZAQRVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764968AbZAQRmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765355AbZAQRVB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 12:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbZAQRUu
+	id S1764968AbZAQRmm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 12:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZAQRmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 12:20:50 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54136 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752930AbZAQRUt (ORCPT
+	Sat, 17 Jan 2009 12:42:31 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:33827 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758538AbZAQRma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 12:20:49 -0500
-Date: Sat, 17 Jan 2009 17:20:37 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 07/10] omap mailbox: add save_/restore_ctx() for PM
-Message-ID: <20090117172037.GF12341@n2100.arm.linux.org.uk>
-References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com> <20090116082737.17571.53738.stgit@oreo.research.nokia.com> <20090117171044.GE12341@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090117171044.GE12341@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 17 Jan 2009 12:42:30 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
+In-Reply-To: <1232210546.7015.8.camel@norville.austin.ibm.com>
+References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl> <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl> <1232210546.7015.8.camel@norville.austin.ibm.com>
+Date: Sun, 18 Jan 2009 02:42:22 +0900
+Message-ID: <10394.1232214142@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17, 2009 at 05:10:44PM +0000, Russell King - ARM Linux wrote:
-> On Fri, Jan 16, 2009 at 10:27:37AM +0200, Hiroshi DOYU wrote:
-> > diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
-> > index a877305..544dde9 100644
-> > --- a/arch/arm/mach-omap2/mailbox.c
-> > +++ b/arch/arm/mach-omap2/mailbox.c
-> > @@ -32,6 +32,8 @@
-> >  #define MAILBOX_IRQ_NEWMSG(u)		(1 << (2 * (u)))
-> >  #define MAILBOX_IRQ_NOTFULL(u)		(1 << (2 * (u) + 1))
-> >  
-> > +#define MBOX_REG_SIZE			0x120
-> > +
-> >  static void __iomem *mbox_base;
-> >  
-> >  struct omap_mbox2_fifo {
-> > @@ -47,6 +49,7 @@ struct omap_mbox2_priv {
-> >  	unsigned long irqstatus;
-> >  	u32 newmsg_bit;
-> >  	u32 notfull_bit;
-> > +	char ctx[MBOX_REG_SIZE];
-> 
-> 	u32 ctx[MOX_REG_SIZE / sizeof(u32)];
-> 
-> ?
-> 
-> >  };
-> >  
-> >  static struct clk *mbox_ick_handle;
-> > @@ -167,6 +170,36 @@ static int omap2_mbox_is_irq(struct omap_mbox *mbox,
-> >  	return (enable & status & bit);
-> >  }
-> >  
-> > +static void omap2_mbox_save_ctx(struct omap_mbox *mbox)
-> > +{
-> > +	int i;
-> > +	struct omap_mbox2_priv *p = mbox->priv;
-> > +
-> > +	for (i = 0; i < MBOX_REG_SIZE; i += sizeof(u32)) {
-> > +		u32 val;
-> > +
-> > +		val = mbox_read_reg(i);
-> > +		*(u32 *)(p->ctx + i) = val;
-> 
-> 		p->ctx[i] = mbox_read_reg(i);
 
-Hmm, don't forget 'i' is an offset not an index, so...
+Dave Kleikamp:
+> Does this function make sense (un-compiled, un-tested)?
+> 
+> void ecryptfs_update_inode_from_lower(struct dentry *dentry)
+> {
+> 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
+> 
+> 	if (d_unhashed(lower_dentry))
+> 		d_drop(dentry);
+> 	else {
+> 		struct inode *inode = dentry->d_inode;
+> 		struct inode *lower_inode = lower_dentry->d_inode;
+> 
+> 		inode->i_nlink = lower_inode->i_nlink;
+> 		inode->i_ctime = lower_inode->i_ctime;
+> 		/* Should anything else go here ? */
+> 	}
+> }
 
-£define MBOX_NR_REGS (MBOX_REG_SIZE / sizeof(u32))
+Yes, testing by d_unhashed() is best, I think.
+But all inode attributes are maintained by ecryptfs_interpose(), so you
+don't need to handle them.
 
-	for (i = 0; i < MBOX_NR_REGS; i++) {
-		p->ctx[i] = mbox_read_reg(i * sizeof(u32));
+And I found another bug in ecryptfs_link().
+Here is a patch including that.
 
-(you'll have to excuse the '£' there - my keyboard currently does not have
-a 'hash' key for some Fedora 9 post upgrade silly reason.)
+
+J. R. Okajima
+
+----------------------------------------------------------------------
+refine ecryptfs_link()
+
+ecryptfs_link() doesn't need to,,,
+- copy i_nlink and i_size for the target inode since they are already
+  handled by ecryptfs_interpose(). (I don't know why i_size was
+  necessary)
+- maintain dir attributes based upon the lower dir, instead of
+  lower_new_dentry. (another bug)
+- several d_drop()s. do it only when the lower_new_dentry is d_drop()ed
+  by the lower fs or vfs_link() failed.
+- testing lower_new_dentry->d_inode after vfs_link() succeeded.
+
+Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+
+diff -u -p -r1.1 inode.c
+--- inode.c	19 Dec 2008 03:05:27 -0000	1.1
++++ inode.c	17 Jan 2009 17:26:53 -0000
+@@ -405,10 +407,8 @@ static int ecryptfs_link(struct dentry *
+ 	struct dentry *lower_old_dentry;
+ 	struct dentry *lower_new_dentry;
+ 	struct dentry *lower_dir_dentry;
+-	u64 file_size_save;
+ 	int rc;
+ 
+-	file_size_save = i_size_read(old_dentry->d_inode);
+ 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
+ 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
+ 	dget(lower_old_dentry);
+@@ -416,23 +416,23 @@ static int ecryptfs_link(struct dentry *
+ 	lower_dir_dentry = lock_parent(lower_new_dentry);
+ 	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
+ 		      lower_new_dentry);
+-	if (rc || !lower_new_dentry->d_inode)
+-		goto out_lock;
+-	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
+-	if (rc)
+-		goto out_lock;
+-	fsstack_copy_attr_times(dir, lower_new_dentry->d_inode);
+-	fsstack_copy_inode_size(dir, lower_new_dentry->d_inode);
+-	old_dentry->d_inode->i_nlink =
+-		ecryptfs_inode_to_lower(old_dentry->d_inode)->i_nlink;
+-	i_size_write(new_dentry->d_inode, file_size_save);
+-out_lock:
++	if (!rc) {
++		fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
++		fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
++		if (!d_unhashed(lower_new_dentry)
++		    /* && lower_new_dentry->d_inode */) {
++			rc = ecryptfs_interpose(lower_new_dentry, new_dentry,
++						dir->i_sb, 0);
++			if (!rc)
++				goto out_lock; /* success */
++		}
++	}
++ out_drop:
++	d_drop(new_dentry);
++ out_lock:
+ 	unlock_dir(lower_dir_dentry);
+ 	dput(lower_new_dentry);
+ 	dput(lower_old_dentry);
+-	d_drop(lower_old_dentry);
+-	d_drop(new_dentry);
+-	d_drop(old_dentry);
+ 	return rc;
+ }
+ 
