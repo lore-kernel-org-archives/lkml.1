@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbZARXEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZARX3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbZARXEk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 18:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZARXEb
+	id S1754507AbZARX3q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 18:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZARX3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 18:04:31 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:43349 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753164AbZARXEa (ORCPT
+	Sun, 18 Jan 2009 18:29:37 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52902
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZARX3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 18:04:30 -0500
-Date: Mon, 19 Jan 2009 00:04:28 +0100
-To: linux-kernel@vger.kernel.org
-Subject: Re: dri /dev node disappeared with 2.6.29-rc1
-Message-ID: <20090118230428.GA18509@gamma.logic.tuwien.ac.at>
-References: <20090115134249.GP28392@gamma.logic.tuwien.ac.at>
+	Sun, 18 Jan 2009 18:29:37 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: Re: [uml-devel] [Patch] uml: fix a link error
+Date: Sun, 18 Jan 2009 17:29:30 -0600
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
+Cc: user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
+       linux-kernel@vger.kernel.org
+References: <20090115194033.GA10926@hack.private> <200901170328.15178.rob@landley.net> <20090118083237.GA3292@hack.private>
+In-Reply-To: <20090118083237.GA3292@hack.private>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090115134249.GP28392@gamma.logic.tuwien.ac.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Disposition: inline
+Message-Id: <200901181729.31682.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please cc)
+On Sunday 18 January 2009 02:32:37 Américo Wang wrote:
+> >The result panics (twice) and exits, instead of giving me a shell prompt.
+> >Built and run on stock Ubuntu 8.10.  (I posted about it on tuesday, but
+> > nobody replied...)
+>
+> Hi, Rob.
+>
+> I tried what you said, it works very fine here, on my Fedora 10.
+> Could you please tell us which kernel your host is using?
 
-On Do, 15 Jan 2009, preining wrote:
-> switching from 2.6.28-rc9 to 2.6.29-rc1 my /dev/dri/* entries got lost.
+Ubuntu 8.10 stock kernel, calls itself "2.6.27-9-generic".
 
-Confirmed again with 2.6.29-rc2.
+> and the guest?
 
-Anyone at least commenting on this post, my previous, or the post 
-	[PATCH] drm/i915: why does kconfig hate?
+Checking tuesday's bug report, it said:
 
-There is something hosed here.
+> Linux version 2.6.28 (landley@driftwood) (gcc version 4.3.2 (Ubuntu 
+> 4.3.2-1ubuntu11) ) #6 Tue Jan 13 01:54:34 CST 2009
 
-> Hardware is intel GM45:
-> [    1.225368] agpgart-intel 0000:00:00.0: Intel Mobile Intel® GM45 Express Chipset
-> [    1.230650] agpgart-intel 0000:00:00.0: detected 65532K stolen memory
-> [    1.239716] PM: Adding info for No Bus:agpgart
-> [    1.239844] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
-> [    1.240093] PM: Adding info for No Bus:tpm0
-> [    1.564241] [drm] Initialized drm 1.1.0 20060810
-> 
-> but X tells me:
-> (II) intel(0): Kernel reported 1264128 total, 1 used
-> (II) intel(0): I830CheckAvailableMemory: 5056508 kB available
-> drmOpenDevice: node name is /dev/dri/card0
-> drmOpenDevice: open result is -1, (No such device)
-> drmOpenDevice: open result is -1, (No such device)
-> drmOpenDevice: Open failed
-> drmOpenDevice: node name is /dev/dri/card0
-> drmOpenDevice: open result is -1, (No such device)
-> drmOpenDevice: open result is -1, (No such device)
-> drmOpenDevice: Open failed
-> [drm] failed to load kernel module "i915"
-> 
-> ...
-> 
-> I see the post 
-> 	[PATCH] drm/i915: why does kconfig hate?
-> but using that patch I still get:
-> 	drivers/gpu/drm/Kconfig:8:error: found recursive dependency: DRM
-> -> <choice> -> DRM_I915 -> FB -> FB_I810 -> AGP -> DRM
-> 
-> Any chance to fix that, or some suggestion?
+It's the vanilla tarball (albeit extracted from source control according to 
+the v2.6.28 tag rather than downloaded).
 
-Best wishes
+Possibly a gcc 4.3 issue?
 
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-PUDSEY (n.)
-The curious-shaped flat wads of dough left on a kitchen table after
-someone has been cutting scones out of it.
-			--- Douglas Adams, The Meaning of Liff
+Rob
