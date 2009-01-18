@@ -1,109 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZARUsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbZARUvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZARUsx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 15:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbZARUsk
+	id S1756672AbZARUvz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 15:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbZARUvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 15:48:40 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:11238 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754427AbZARUsj (ORCPT
+	Sun, 18 Jan 2009 15:51:47 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:47786 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754906AbZARUvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 15:48:39 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2.6.30] cxgb3 - ease msi-x settings conditions
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, wenxiong@us.ibm.com
-Date: Sun, 18 Jan 2009 12:48:36 -0800
-Message-ID: <20090118204836.10826.2994.stgit@speedy5>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Jan 2009 15:51:46 -0500
+Date: Sun, 18 Jan 2009 21:53:30 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: auto-convert size types in userspace headers
+Message-ID: <20090118205330.GC2978@uranus.ravnborg.org>
+References: <49567EB5.5030409@zytor.com> <1230549153-31754-1-git-send-email-vapier@gentoo.org> <20081229140356.GB7327@uranus.ravnborg.org> <49595ED1.2080701@zytor.com> <20081230104351.GB486@uranus.ravnborg.org> <495A5D97.7070706@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495A5D97.7070706@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Tue, Dec 30, 2008 at 09:42:47AM -0800, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> > On Mon, Dec 29, 2008 at 03:35:45PM -0800, H. Peter Anvin wrote:
+> >> Sam Ravnborg wrote:
+> >>> On Mon, Dec 29, 2008 at 06:12:33AM -0500, Mike Frysinger wrote:
+> >>>> Rather than constantly fixing up size type breakage in userspace headers,
+> >>>> auto convert the types u_intXX_t, uintXX_t, intXX_t, uXX, and sXX to the
+> >>>> appropriate __uXX or __sXX type.
+> >>> Is this the right thing to do?
+> >>> uintXX_t belongs to a namespace that the kernel should not use.
+> >>>
+> >>> So being restrictive here would be better I think.
+> >> That's the whole point right here.
+> >>
+> >> All of these types can be -- and are -- used by the kernel internally,
+> >> but should only be exported as __uXX or __sXX.
+> >>
+> >> This is the auto-conversion idea I brought up earlier.
+> > 
+> > So the patch from Mike has your "Acked-by"?
+> > 
+> 
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-The driver currently drops to line interrupt mode
-if it did not get all the msi-x vectors it requested.
+Hi hpa.
 
-Allow msi-x settings when a minimal amount of vectors
-is provided.
+Despite your ack I chickened out on this one.
+We have enough crunch in the userspace headers for now,
+so lets see where we end with this before doing any autoconversion.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
-
- drivers/net/cxgb3/adapter.h    |    1 +
- drivers/net/cxgb3/cxgb3_main.c |   23 +++++++++++++++--------
- 2 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index a89d8cc..5fb7c68 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -230,6 +230,7 @@ struct adapter {
- 	unsigned int slow_intr_mask;
- 	unsigned long irq_stats[IRQ_NUM_STATS];
- 
-+	int msix_nvectors;
- 	struct {
- 		unsigned short vec;
- 		char desc[22];
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 0089746..52131bd 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -338,7 +338,7 @@ static void free_irq_resources(struct adapter *adapter)
- 
- 		free_irq(adapter->msix_info[0].vec, adapter);
- 		for_each_port(adapter, i)
--		    n += adap2pinfo(adapter, i)->nqsets;
-+			n += adap2pinfo(adapter, i)->nqsets;
- 
- 		for (i = 0; i < n; ++i)
- 			free_irq(adapter->msix_info[i + 1].vec,
-@@ -2752,7 +2752,7 @@ static void set_nqsets(struct adapter *adap)
- 	int i, j = 0;
- 	int num_cpus = num_online_cpus();
- 	int hwports = adap->params.nports;
--	int nqsets = SGE_QSETS;
-+	int nqsets = adap->msix_nvectors - 1;
- 
- 	if (adap->params.rev > 0 && adap->flags & USING_MSIX) {
- 		if (hwports == 2 &&
-@@ -2781,18 +2781,25 @@ static void set_nqsets(struct adapter *adap)
- static int __devinit cxgb_enable_msix(struct adapter *adap)
- {
- 	struct msix_entry entries[SGE_QSETS + 1];
-+	int vectors;
- 	int i, err;
- 
--	for (i = 0; i < ARRAY_SIZE(entries); ++i)
-+	vectors = ARRAY_SIZE(entries);
-+	for (i = 0; i < vectors; ++i)
- 		entries[i].entry = i;
- 
--	err = pci_enable_msix(adap->pdev, entries, ARRAY_SIZE(entries));
-+	while ((err = pci_enable_msix(adap->pdev, entries, vectors)) > 0)
-+		vectors = err;
-+
-+	if (!err && vectors < (adap->params.nports + 1))
-+		err = -1;
-+
- 	if (!err) {
--		for (i = 0; i < ARRAY_SIZE(entries); ++i)
-+		for (i = 0; i < vectors; ++i)
- 			adap->msix_info[i].vec = entries[i].vector;
--	} else if (err > 0)
--		dev_info(&adap->pdev->dev,
--		       "only %d MSI-X vectors left, not using MSI-X\n", err);
-+		adap->msix_nvectors = vectors;
-+	}
-+
- 	return err;
- }
- 
-
+	Sam
