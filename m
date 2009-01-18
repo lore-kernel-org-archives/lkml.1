@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbZARVo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZARWGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbZARVo6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 16:44:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZARVos
+	id S1753355AbZARWGW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 17:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZARWGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 16:44:48 -0500
-Received: from gate.crashing.org ([63.228.1.57]:57423 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbZARVor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 16:44:47 -0500
-Subject: Re: [BUG] 2.6.28-git12: "powerpc/pci: Reserve legacy regions on
- PCI" broke my G3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <200901172246.n0HMkvrv004832@harpo.it.uu.se>
-References: <200901172246.n0HMkvrv004832@harpo.it.uu.se>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 08:44:20 +1100
-Message-Id: <1232315060.23611.44.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sun, 18 Jan 2009 17:06:10 -0500
+Received: from mail-fx0-f26.google.com ([209.85.220.26]:54438 "EHLO
+	mail-fx0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751653AbZARWGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 17:06:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:disposition-notification-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=TlEQW97O1lBah1/Xl0rxTEM/uMCY5lkXXgecXoJdCAYnxQvW7lIdhdl+C9YNuD396L
+         9XZIh/CgVhpNQxwD9UcAPLmr4pFzzjqj6QSiUIHt5WzIzEve67tw4dz7PJ8G6DwzaE3z
+         PnEoPQF0odvnmPyjjxcaC7s5HnuPPqN1gxsyE=
+From: Leonardo Potenza <leo.potenza@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] x86: fix section mismatch warnings in kernel/setup_percpu.c
+Date: Sun, 18 Jan 2009 23:03:56 +0100
+User-Agent: KMail/1.9.9
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901182303.56911.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 23:46 +0100, Mikael Pettersson wrote:
-> The 2.6.29-rc kernels hang during boot on my PowerMac G3 (Beige).
-> The last messages I see on the console are
-> 
-> Kernel command line: ramdisk_size=8192
-> irq: Found primary Apple PIC /pci/mac-io for 64 irqs
-> irq: System has 64 possible interrupts
-> 
-> and then it hangs until I reboot it. Unfortunately I don't have a serial cable
-> compatible with the G3's serial port so I can't set up a serial console.
-> 
-> Eventually I narrowed the cause down to "powerpc/pci: Reserve legacy regions on PCI"
-> (commit c1f343028d35ba4e88cd4a3c44e0d8b8a84264ee) in 2.6.28-git12. Reverting that
-> from 2.6.29-rc2 results in a kernel that boots ok and works reliably.
-> 
-> The problem seems system specific as both my G5 and my G4 had no problems at all
-> with 2.6.29-rc1.
+From: Leonardo Potenza <lpotenza@inwind.it>
 
-Thanks, I'll try to narrow it down, but it will take a week or so as I'm
-away attending LCA. I think I have one of these Beige G3's in the office
-somewhere....
+The function setup_cpu_local_masks() has been marked __init, in order to remove the following section mismatch messages:
 
-Cheers,
-Ben.
+WARNING: vmlinux.o(.text+0x3c2c7): Section mismatch in reference from the function setup_cpu_local_masks() to the function .init.text:alloc_bootmem_cpumask_var()
+The function setup_cpu_local_masks() references
+the function __init alloc_bootmem_cpumask_var().
+This is often because setup_cpu_local_masks lacks a __init 
+annotation or the annotation of alloc_bootmem_cpumask_var is wrong.
 
+WARNING: vmlinux.o(.text+0x3c2d3): Section mismatch in reference from the function setup_cpu_local_masks() to the function .init.text:alloc_bootmem_cpumask_var()
+The function setup_cpu_local_masks() references
+the function __init alloc_bootmem_cpumask_var().
+This is often because setup_cpu_local_masks lacks a __init 
+annotation or the annotation of alloc_bootmem_cpumask_var is wrong.
+
+WARNING: vmlinux.o(.text+0x3c2df): Section mismatch in reference from the function setup_cpu_local_masks() to the function .init.text:alloc_bootmem_cpumask_var()
+The function setup_cpu_local_masks() references
+the function __init alloc_bootmem_cpumask_var().
+This is often because setup_cpu_local_masks lacks a __init 
+annotation or the annotation of alloc_bootmem_cpumask_var is wrong.
+
+WARNING: vmlinux.o(.text+0x3c2eb): Section mismatch in reference from the function setup_cpu_local_masks() to the function .init.text:alloc_bootmem_cpumask_var()
+The function setup_cpu_local_masks() references
+the function __init alloc_bootmem_cpumask_var().
+This is often because setup_cpu_local_masks lacks a __init 
+annotation or the annotation of alloc_bootmem_cpumask_var is wrong.
+
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
+Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_percpu.c	2009-01-18 22:20:13.000000000 +0100
++++ linux-2.6/arch/x86/kernel/setup_percpu.c	2009-01-18 22:21:19.000000000 +0100
+@@ -136,7 +136,7 @@ static void __init setup_cpu_pda_map(voi
+ #ifdef CONFIG_X86_64
+ 
+ /* correctly size the local cpu masks */
+-static void setup_cpu_local_masks(void)
++static void __init setup_cpu_local_masks(void)
+ {
+ 	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
+ 	alloc_bootmem_cpumask_var(&cpu_callin_mask);
