@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZAREC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZARESb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbZAREC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 23:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZARECr
+	id S1760681AbZARESb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 23:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZARESN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 23:02:47 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55490 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754489AbZARECq (ORCPT
+	Sat, 17 Jan 2009 23:18:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47201 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbZARESL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 23:02:46 -0500
-To: John Hughes <john@Calva.COM>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A patch to arch/i386/kernel/irq.c to help get backtraces of (near) stack overflow situations
-From: Andi Kleen <andi@firstfloor.org>
-References: <49707BA9.1040102@Calva.COM>
-Date: Sun, 18 Jan 2009 05:01:59 +0100
-In-Reply-To: <49707BA9.1040102@Calva.COM> (John Hughes's message of "Fri, 16 Jan 2009 13:20:57 +0100")
-Message-ID: <87k58tdzyg.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 17 Jan 2009 23:18:11 -0500
+Date: Sat, 17 Jan 2009 23:18:00 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Kyle McMartin <kyle@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
+       greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+Message-ID: <20090118041800.GB671@bombadil.infradead.org>
+References: <1232223441.3966.22.camel@localhost.localdomain> <1232228261.27094.0.camel@macbook.infradead.org> <20090117221932.GA4956@uranus.ravnborg.org> <1232247901.3097.12.camel@localhost.localdomain> <20090118033339.GA671@bombadil.infradead.org> <1232249904.3097.15.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232249904.3097.15.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Hughes <john@Calva.COM> writes:
+On Sun, Jan 18, 2009 at 09:08:24AM +0530, Jaswinder Singh Rajput wrote:
+> If this file is _ONLY_ for userspace and kernel cannot use it then what
+> is the point of keeping this file in kernel headers.
+> 
 
-> Here's a little patch to irq.c to make stack overflow dumps use a
-> separate stack.
+There is effectively no point, especially when they reference a variable
+that may or may not exist in the userspace code including it... It seems
+entirely mtd-utils dependent.
 
-This has been fixed last year in mainline with 
-04b361abfdc522239e3a071f3afdebf5787d9f03
+Dave, will you queue Adrian's patch to nuke it?
 
-Morale: If you use ancient kernels you miss a lot of bugfixes.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
