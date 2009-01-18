@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZAREWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbZAREXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZAREWw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 23:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757993AbZAREVU
+	id S1763975AbZAREXS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 23:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759743AbZAREVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 23:21:20 -0500
-Received: from mga14.intel.com ([143.182.124.37]:35184 "EHLO mga14.intel.com"
+	Sat, 17 Jan 2009 23:21:24 -0500
+Received: from mga14.intel.com ([143.182.124.37]:46977 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbZAREVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 23:21:12 -0500
+	id S1758649AbZAREVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 23:21:21 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,282,1231142400"; 
-   d="scan'208";a="101153964"
+   d="scan'208";a="101153982"
 From: Yu Zhao <yu.zhao@intel.com>
 To: jbarnes@virtuousgeek.org, dwmw2@infradead.org
 Cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v2 3/6] VT-d: add queue invalidation fault status support
-Date: Sun, 18 Jan 2009 12:17:31 +0800
-Message-Id: <1232252254-7614-4-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v2 6/6] VT-d: support the device IOTLB
+Date: Sun, 18 Jan 2009 12:17:34 +0800
+Message-Id: <1232252254-7614-7-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
 References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
@@ -27,272 +27,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check fault register after submitting an queue invalidation request.
+Support device IOTLB (i.e. ATS) for both native and KVM environments.
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- drivers/pci/dmar.c           |   59 +++++++++++++++++++++++++++++++----------
- drivers/pci/intr_remapping.c |   21 ++++++++------
- include/linux/intel-iommu.h  |    4 ++-
- 3 files changed, 59 insertions(+), 25 deletions(-)
+ drivers/pci/intel-iommu.c   |   97 +++++++++++++++++++++++++++++++++++++++++-
+ include/linux/intel-iommu.h |    1 +
+ 2 files changed, 95 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index bd37b3c..0c87ebd 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -671,19 +671,49 @@ static inline void reclaim_free_desc(struct q_inval *qi)
- 	}
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index df92764..fb84d82 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -125,6 +125,7 @@ static inline void context_set_fault_enable(struct context_entry *context)
  }
  
-+static int qi_check_fault(struct intel_iommu *iommu, int index)
+ #define CONTEXT_TT_MULTI_LEVEL 0
++#define CONTEXT_TT_DEV_IOTLB	1
+ 
+ static inline void context_set_translation_type(struct context_entry *context,
+ 						unsigned long value)
+@@ -240,6 +241,8 @@ struct device_domain_info {
+ 	struct list_head global; /* link to global list */
+ 	u8 bus;			/* PCI bus numer */
+ 	u8 devfn;		/* PCI devfn number */
++	int qdep;		/* invalidate queue depth */
++	struct intel_iommu *iommu; /* IOMMU used by this device */
+ 	struct pci_dev *dev; /* it's NULL for PCIE-to-PCI bridge */
+ 	struct dmar_domain *domain; /* pointer to domain */
+ };
+@@ -914,6 +917,75 @@ static int __iommu_flush_iotlb(struct intel_iommu *iommu, u16 did,
+ 	return 0;
+ }
+ 
++static struct device_domain_info *
++iommu_support_dev_iotlb(struct dmar_domain *domain, u8 bus, u8 devfn)
 +{
-+	u32 fault;
-+	int head;
-+	struct q_inval *qi = iommu->qi;
-+	int wait_index = (index + 1) % QI_LENGTH;
++	int found = 0;
++	unsigned long flags;
++	struct device_domain_info *info;
++	struct intel_iommu *iommu = device_to_iommu(bus, devfn);
 +
-+	fault = readl(iommu->reg + DMAR_FSTS_REG);
++	if (!ecap_dev_iotlb_support(iommu->ecap))
++		return NULL;
 +
-+	/*
-+	 * If IQE happens, the head points to the descriptor associated
-+	 * with the error. No new descriptors are fetched until the IQE
-+	 * is cleared.
-+	 */
-+	if (fault & DMA_FSTS_IQE) {
-+		head = readl(iommu->reg + DMAR_IQH_REG);
-+		if ((head >> DMAR_IQ_OFFSET) == index) {
-+			memcpy(&qi->desc[index], &qi->desc[wait_index],
-+					sizeof(struct qi_desc));
-+			__iommu_flush_cache(iommu, &qi->desc[index],
-+					sizeof(struct qi_desc));
-+			writel(DMA_FSTS_IQE, iommu->reg + DMAR_FSTS_REG);
-+			return -EINVAL;
++	if (!iommu->qi)
++		return NULL;
++
++	spin_lock_irqsave(&device_domain_lock, flags);
++	list_for_each_entry(info, &domain->devices, link)
++		if (info->dev && info->bus == bus && info->devfn == devfn) {
++			found = 1;
++			break;
 +		}
-+	}
++	spin_unlock_irqrestore(&device_domain_lock, flags);
 +
-+	return 0;
++	if (!found)
++		return NULL;
++
++	if (!dmar_find_matched_atsr_unit(info->dev))
++		return NULL;
++
++	info->iommu = iommu;
++	info->qdep = pci_ats_qdep(info->dev);
++	if (!info->qdep)
++		return NULL;
++
++	return info;
 +}
 +
- /*
-  * Submit the queued invalidation descriptor to the remapping
-  * hardware unit and wait for its completion.
-  */
--void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
-+int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- {
-+	int rc = 0;
- 	struct q_inval *qi = iommu->qi;
- 	struct qi_desc *hw, wait_desc;
- 	int wait_index, index;
- 	unsigned long flags;
- 
- 	if (!qi)
--		return;
-+		return 0;
- 
- 	hw = qi->desc;
- 
-@@ -701,7 +731,8 @@ void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 
- 	hw[index] = *desc;
- 
--	wait_desc.low = QI_IWD_STATUS_DATA(2) | QI_IWD_STATUS_WRITE | QI_IWD_TYPE;
-+	wait_desc.low = QI_IWD_STATUS_DATA(QI_DONE) |
-+			QI_IWD_STATUS_WRITE | QI_IWD_TYPE;
- 	wait_desc.high = virt_to_phys(&qi->desc_status[wait_index]);
- 
- 	hw[wait_index] = wait_desc;
-@@ -712,13 +743,11 @@ void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 	qi->free_head = (qi->free_head + 2) % QI_LENGTH;
- 	qi->free_cnt -= 2;
- 
--	spin_lock(&iommu->register_lock);
- 	/*
- 	 * update the HW tail register indicating the presence of
- 	 * new descriptors.
- 	 */
--	writel(qi->free_head << 4, iommu->reg + DMAR_IQT_REG);
--	spin_unlock(&iommu->register_lock);
-+	writel(qi->free_head << DMAR_IQ_OFFSET, iommu->reg + DMAR_IQT_REG);
- 
- 	while (qi->desc_status[wait_index] != QI_DONE) {
- 		/*
-@@ -728,6 +757,10 @@ void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 		 * a deadlock where the interrupt context can wait indefinitely
- 		 * for free slots in the queue.
- 		 */
-+		rc = qi_check_fault(iommu, index);
++static void iommu_enable_dev_iotlb(struct device_domain_info *info)
++{
++	pci_enable_ats(info->dev, VTD_PAGE_SHIFT);
++}
++
++static void iommu_disable_dev_iotlb(struct device_domain_info *info)
++{
++	if (info->dev && pci_ats_enabled(info->dev))
++		pci_disable_ats(info->dev);
++}
++
++static void iommu_flush_dev_iotlb(struct dmar_domain *domain,
++				  u64 addr, unsigned int mask)
++{
++	int rc;
++	u16 sid;
++	unsigned long flags;
++	struct device_domain_info *info;
++
++	spin_lock_irqsave(&device_domain_lock, flags);
++	list_for_each_entry(info, &domain->devices, link) {
++		if (!info->dev || !pci_ats_enabled(info->dev))
++			continue;
++
++		sid = info->bus << 8 | info->devfn;
++		rc = qi_flush_dev_iotlb(info->iommu, sid,
++					info->qdep, addr, mask);
 +		if (rc)
-+			break;
++			printk(KERN_ERR "IOMMU: flush device IOTLB failed\n");
++	}
++	spin_unlock_irqrestore(&device_domain_lock, flags);
++}
 +
- 		spin_unlock(&qi->q_lock);
- 		cpu_relax();
- 		spin_lock(&qi->q_lock);
-@@ -737,6 +770,8 @@ void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 
- 	reclaim_free_desc(qi);
- 	spin_unlock_irqrestore(&qi->q_lock, flags);
+ static int iommu_flush_iotlb_psi(struct intel_iommu *iommu, u16 did,
+ 	u64 addr, unsigned int pages, int non_present_entry_flush)
+ {
+@@ -937,6 +1009,9 @@ static int iommu_flush_iotlb_psi(struct intel_iommu *iommu, u16 did,
+ 		rc = iommu->flush.flush_iotlb(iommu, did, addr, mask,
+ 						DMA_TLB_PSI_FLUSH,
+ 						non_present_entry_flush);
++	if (!rc && !non_present_entry_flush)
++		iommu_flush_dev_iotlb(iommu->domains[did], addr, mask);
 +
-+	return rc;
+ 	return rc;
  }
  
- /*
-@@ -749,13 +784,13 @@ void qi_global_iec(struct intel_iommu *iommu)
- 	desc.low = QI_IEC_TYPE;
- 	desc.high = 0;
+@@ -1461,6 +1536,7 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ 	unsigned long ndomains;
+ 	int id;
+ 	int agaw;
++	struct device_domain_info *info;
  
-+	/* should never fail */
- 	qi_submit_sync(&desc, iommu);
- }
+ 	pr_debug("Set context mapping for %02x:%02x.%d\n",
+ 		bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
+@@ -1526,7 +1602,11 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ 	context_set_domain_id(context, id);
+ 	context_set_address_width(context, iommu->agaw);
+ 	context_set_address_root(context, virt_to_phys(pgd));
+-	context_set_translation_type(context, CONTEXT_TT_MULTI_LEVEL);
++	info = iommu_support_dev_iotlb(domain, bus, devfn);
++	if (info)
++		context_set_translation_type(context, CONTEXT_TT_DEV_IOTLB);
++	else
++		context_set_translation_type(context, CONTEXT_TT_MULTI_LEVEL);
+ 	context_set_fault_enable(context);
+ 	context_set_present(context);
+ 	domain_flush_cache(domain, context, sizeof(*context));
+@@ -1538,6 +1618,8 @@ static int domain_context_mapping_one(struct dmar_domain *domain,
+ 		iommu_flush_write_buffer(iommu);
+ 	else
+ 		iommu->flush.flush_iotlb(iommu, 0, 0, 0, DMA_TLB_DSI_FLUSH, 0);
++	if (info)
++		iommu_enable_dev_iotlb(info);
  
- int qi_flush_context(struct intel_iommu *iommu, u16 did, u16 sid, u8 fm,
- 		     u64 type, int non_present_entry_flush)
- {
--
- 	struct qi_desc desc;
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
  
- 	if (non_present_entry_flush) {
-@@ -769,10 +804,7 @@ int qi_flush_context(struct intel_iommu *iommu, u16 did, u16 sid, u8 fm,
- 			| QI_CC_GRAN(type) | QI_CC_TYPE;
- 	desc.high = 0;
+@@ -1679,6 +1761,7 @@ static void domain_remove_dev_info(struct dmar_domain *domain)
+ 			info->dev->dev.archdata.iommu = NULL;
+ 		spin_unlock_irqrestore(&device_domain_lock, flags);
  
--	qi_submit_sync(&desc, iommu);
--
--	return 0;
--
-+	return qi_submit_sync(&desc, iommu);
- }
- 
- int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
-@@ -802,10 +834,7 @@ int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
- 	desc.high = QI_IOTLB_ADDR(addr) | QI_IOTLB_IH(ih)
- 		| QI_IOTLB_AM(size_order);
- 
--	qi_submit_sync(&desc, iommu);
--
--	return 0;
--
-+	return qi_submit_sync(&desc, iommu);
- }
- 
- /*
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index f78371b..45effc5 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -207,7 +207,7 @@ int alloc_irte(struct intel_iommu *iommu, int irq, u16 count)
- 	return index;
- }
- 
--static void qi_flush_iec(struct intel_iommu *iommu, int index, int mask)
-+static int qi_flush_iec(struct intel_iommu *iommu, int index, int mask)
- {
- 	struct qi_desc desc;
- 
-@@ -215,7 +215,7 @@ static void qi_flush_iec(struct intel_iommu *iommu, int index, int mask)
- 		   | QI_IEC_SELECTIVE;
- 	desc.high = 0;
- 
--	qi_submit_sync(&desc, iommu);
-+	return qi_submit_sync(&desc, iommu);
- }
- 
- int map_irq_to_irte_handle(int irq, u16 *sub_handle)
-@@ -283,6 +283,7 @@ int clear_irte_irq(int irq, struct intel_iommu *iommu, u16 index)
- 
- int modify_irte(int irq, struct irte *irte_modified)
- {
-+	int rc;
- 	int index;
- 	struct irte *irte;
- 	struct intel_iommu *iommu;
-@@ -303,14 +304,15 @@ int modify_irte(int irq, struct irte *irte_modified)
- 	set_64bit((unsigned long *)irte, irte_modified->low | (1 << 1));
- 	__iommu_flush_cache(iommu, irte, sizeof(*irte));
- 
--	qi_flush_iec(iommu, index, 0);
--
-+	rc = qi_flush_iec(iommu, index, 0);
- 	spin_unlock(&irq_2_ir_lock);
--	return 0;
++		iommu_disable_dev_iotlb(info);
+ 		iommu = device_to_iommu(info->bus, info->devfn);
+ 		iommu_detach_dev(iommu, info->bus, info->devfn);
+ 		free_devinfo_mem(info);
+@@ -2296,8 +2379,14 @@ static void flush_unmaps(void)
+ 		iommu->flush.flush_iotlb(iommu, 0, 0, 0,
+ 					 DMA_TLB_GLOBAL_FLUSH, 0);
+ 		for (j = 0; j < deferred_flush[i].next; j++) {
+-			__free_iova(&deferred_flush[i].domain[j]->iovad,
+-					deferred_flush[i].iova[j]);
++			unsigned long mask;
++			struct iova *iova = deferred_flush[i].iova[j];
 +
-+	return rc;
- }
- 
- int flush_irte(int irq)
- {
-+	int rc;
- 	int index;
- 	struct intel_iommu *iommu;
- 	struct irq_2_iommu *irq_iommu;
-@@ -326,10 +328,10 @@ int flush_irte(int irq)
- 
- 	index = irq_iommu->irte_index + irq_iommu->sub_handle;
- 
--	qi_flush_iec(iommu, index, irq_iommu->irte_mask);
-+	rc = qi_flush_iec(iommu, index, irq_iommu->irte_mask);
- 	spin_unlock(&irq_2_ir_lock);
- 
--	return 0;
-+	return rc;
- }
- 
- struct intel_iommu *map_ioapic_to_ir(int apic)
-@@ -355,6 +357,7 @@ struct intel_iommu *map_dev_to_ir(struct pci_dev *dev)
- 
- int free_irte(int irq)
- {
-+	int rc = 0;
- 	int index, i;
- 	struct irte *irte;
- 	struct intel_iommu *iommu;
-@@ -375,7 +378,7 @@ int free_irte(int irq)
- 	if (!irq_iommu->sub_handle) {
- 		for (i = 0; i < (1 << irq_iommu->irte_mask); i++)
- 			set_64bit((unsigned long *)irte, 0);
--		qi_flush_iec(iommu, index, irq_iommu->irte_mask);
-+		rc = qi_flush_iec(iommu, index, irq_iommu->irte_mask);
++			mask = (iova->pfn_hi - iova->pfn_lo + 1) << PAGE_SHIFT;
++			mask = ilog2(mask >> VTD_PAGE_SHIFT);
++			iommu_flush_dev_iotlb(deferred_flush[i].domain[j],
++					iova->pfn_lo << PAGE_SHIFT, mask);
++			__free_iova(&deferred_flush[i].domain[j]->iovad, iova);
+ 		}
+ 		deferred_flush[i].next = 0;
  	}
+@@ -2784,6 +2873,7 @@ static void vm_domain_remove_one_dev_info(struct dmar_domain *domain,
+ 				info->dev->dev.archdata.iommu = NULL;
+ 			spin_unlock_irqrestore(&device_domain_lock, flags);
  
- 	irq_iommu->iommu = NULL;
-@@ -385,7 +388,7 @@ int free_irte(int irq)
++			iommu_disable_dev_iotlb(info);
+ 			iommu_detach_dev(iommu, info->bus, info->devfn);
+ 			free_devinfo_mem(info);
  
- 	spin_unlock(&irq_2_ir_lock);
+@@ -2832,6 +2922,7 @@ static void vm_domain_remove_all_dev_info(struct dmar_domain *domain)
  
--	return 0;
-+	return rc;
- }
+ 		spin_unlock_irqrestore(&device_domain_lock, flags1);
  
- static void iommu_set_intr_remapping(struct intel_iommu *iommu, int mode)
++		iommu_disable_dev_iotlb(info);
+ 		iommu = device_to_iommu(info->bus, info->devfn);
+ 		iommu_detach_dev(iommu, info->bus, info->devfn);
+ 
 diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index 5323ad9..0a220c9 100644
+index d82bdac..609af82 100644
 --- a/include/linux/intel-iommu.h
 +++ b/include/linux/intel-iommu.h
-@@ -53,6 +53,7 @@
- #define	DMAR_PHMLIMIT_REG 0x78	/* pmrr high limit */
- #define DMAR_IQH_REG	0x80	/* Invalidation queue head register */
- #define DMAR_IQT_REG	0x88	/* Invalidation queue tail register */
-+#define DMAR_IQ_OFFSET	4	/* Invalidation queue head/tail offset */
- #define DMAR_IQA_REG	0x90	/* Invalidation queue addr register */
- #define DMAR_ICS_REG	0x98	/* Invalidation complete status register */
- #define DMAR_IRTA_REG	0xb8    /* Interrupt remapping table addr register */
-@@ -194,6 +195,7 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
- /* FSTS_REG */
- #define DMA_FSTS_PPF ((u32)2)
- #define DMA_FSTS_PFO ((u32)1)
-+#define DMA_FSTS_IQE (1 << 4)
- #define dma_fsts_fault_record_index(s) (((s) >> 8) & 0xff)
+@@ -123,6 +123,7 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
+ #define ecap_qis(e)		((e) & 0x2)
+ #define ecap_eim_support(e)	((e >> 4) & 0x1)
+ #define ecap_ir_support(e)	((e >> 3) & 0x1)
++#define ecap_dev_iotlb_support(e)	(((e) >> 2) & 0x1)
+ #define ecap_max_handle_mask(e) ((e >> 20) & 0xf)
  
- /* FRCD_REG, 32 bits access */
-@@ -329,7 +331,7 @@ extern int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
- 			  unsigned int size_order, u64 type,
- 			  int non_present_entry_flush);
  
--extern void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
-+extern int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
- 
- extern void *intel_alloc_coherent(struct device *, size_t, dma_addr_t *, gfp_t);
- extern void intel_free_coherent(struct device *, size_t, void *, dma_addr_t);
 -- 
 1.5.6.4
 
