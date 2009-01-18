@@ -1,229 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbZARQqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbZARQql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934633AbZARQqJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 11:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933813AbZARQkt
+	id S934680AbZARQql (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 11:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934262AbZARQla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 11:40:49 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:46613 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934183AbZARQkr (ORCPT
+	Sun, 18 Jan 2009 11:41:30 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49222 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762102AbZARQl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 11:40:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=MuztJbgz8sVwRNdOdq1Br6wpMImyElMTx78WuvYsaToK+yRgzi4Mt/P/6gcqvw1Z3v
-         q9ej5Qfqe5bMGohzX4ZVQA7llTnXQad3CrI31YVlZbUmydiQMo6/0ZGBf6MCRcXgdWCU
-         nGEqb0dKvIEWaZ65HI9tV3bJJNW9Q2FGEkETk=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Anton Vorontsov <cbou@mail.ru>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Philipp Zabel <philipp.zabel@gmail.com>
-Subject: [RFC] power: add optional OTG transceiver and voltage regulator support to pda_power
-Date: Sun, 18 Jan 2009 17:40:27 +0100
-Message-Id: <1232296827-16471-1-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Sun, 18 Jan 2009 11:41:29 -0500
+Subject: Re: x86/Voyager
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Brian Gerst <brgerst@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090118071427.GA29613@elte.hu>
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
+	 <1232115396-26367-1-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-2-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-3-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-4-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-5-git-send-email-brgerst@gmail.com>
+	 <4972B8AB.8040001@kernel.org>
+	 <73c1f2160901172157j6cd731e5s187e98a069a3ab96@mail.gmail.com>
+	 <4972C53C.5050509@kernel.org>
+	 <73c1f2160901172251t34e824ecue6323ce04fc494e9@mail.gmail.com>
+	 <20090118071427.GA29613@elte.hu>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 10:41:25 -0600
+Message-Id: <1232296885.3247.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows machines to use an OTG transceiver driver instead of
-supplying a custom is_usb_online callback to check USB power.
-Also, in the case that the OTG transceiver handles charger control when
-connected to USB, a regulator named "ac_draw" can be supplied instead of
-the custom set_charge callback to control the charger when connected to AC.
+On Sun, 2009-01-18 at 08:14 +0100, Ingo Molnar wrote:
+> * Brian Gerst <brgerst@gmail.com> wrote:
+> 
+> > On Sun, Jan 18, 2009 at 12:59 AM, Tejun Heo <tj@kernel.org> wrote:
+> > > Brian Gerst wrote:
+> > >> On Sun, Jan 18, 2009 at 12:05 AM, Tejun Heo <tj@kernel.org> wrote:
+> > >>> Hello,
+> > >>>
+> > >>>> --- a/arch/x86/kernel/setup_percpu.c
+> > >>>> +++ b/arch/x86/kernel/setup_percpu.c
+> > >>>> @@ -147,6 +147,9 @@ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+> > >>>>  #endif
+> > >>>>  EXPORT_SYMBOL(__per_cpu_offset);
+> > >>>>
+> > >>>> +DEFINE_PER_CPU(int, cpu_number);
+> > >>>> +EXPORT_PER_CPU_SYMBOL(cpu_number);
+> > >>> This is inside CONFIG_HAVE_SETUP_PER_CPU_AREA.  I think voyage would
+> > >>> be unhappy with this change.
+> > >>
+> > >> Is there any specific reason Voyager doesn't use the x86
+> > >> setup_per_cpu_areas() function?  I don't see anything on a quick
+> > >> glance that would not work.  The x86 code is pretty much a superset of
+> > >> the default code in init/main.c.
+> > >
+> > > I have no idea at all.  Given that not many people can test it, I
+> > > figured just leaving it alone would be the best course but if it can
+> > > be merged, all the better.
+> > 
+> > Unfortunately Voyager doesn't compile currently for unrelated reasons.
+> >  I'll take a look at incorporating it into these patches, but I can't 
+> > even do a compile test right now.
 
-The check for (transceiver->state == OTG_STATE_B_PERIPHERAL) in
-otg_is_usb_online is probably too simple, I'm just using this with a peripheral
-only device and gpio_vbus + bq24022. I'm not sure which other OTG states
-can supply power.
+What are "unrelated reasons"?, 2.6.28 compiles and boots for me, except
+some of the compile fixes (which are regressions, by the way) aren't
+included in spite of being sent several times.
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
----
- drivers/power/pda_power.c |   89 +++++++++++++++++++++++++++++++++++++++------
- include/linux/pda_power.h |    2 +
- 2 files changed, 79 insertions(+), 12 deletions(-)
+I've put them up here:
 
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
-index b56a704..e4c5a50 100644
---- a/drivers/power/pda_power.c
-+++ b/drivers/power/pda_power.c
-@@ -12,11 +12,14 @@
- 
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/err.h>
- #include <linux/interrupt.h>
- #include <linux/power_supply.h>
- #include <linux/pda_power.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/timer.h>
- #include <linux/jiffies.h>
-+#include <linux/usb/otg.h>
- 
- static inline unsigned int get_irq_flags(struct resource *res)
- {
-@@ -35,6 +38,11 @@ static struct timer_list supply_timer;
- static struct timer_list polling_timer;
- static int polling;
- 
-+#ifdef CONFIG_USB_OTG_UTILS
-+static struct otg_transceiver *transceiver;
-+#endif
-+static struct regulator *ac_draw;
-+
- enum {
- 	PDA_PSY_OFFLINE = 0,
- 	PDA_PSY_ONLINE = 1,
-@@ -104,18 +112,35 @@ static void update_status(void)
- 
- static void update_charger(void)
- {
--	if (!pdata->set_charge)
--		return;
--
--	if (new_ac_status > 0) {
--		dev_dbg(dev, "charger on (AC)\n");
--		pdata->set_charge(PDA_POWER_CHARGE_AC);
--	} else if (new_usb_status > 0) {
--		dev_dbg(dev, "charger on (USB)\n");
--		pdata->set_charge(PDA_POWER_CHARGE_USB);
--	} else {
--		dev_dbg(dev, "charger off\n");
--		pdata->set_charge(0);
-+	static int regulator_enabled = 0;
-+	int max_uA = pdata->ac_max_uA;
-+
-+	if (pdata->set_charge) {
-+		if (new_ac_status > 0) {
-+			dev_dbg(dev, "charger on (AC)\n");
-+			pdata->set_charge(PDA_POWER_CHARGE_AC);
-+		} else if (new_usb_status > 0) {
-+			dev_dbg(dev, "charger on (USB)\n");
-+			pdata->set_charge(PDA_POWER_CHARGE_USB);
-+		} else {
-+			dev_dbg(dev, "charger off\n");
-+			pdata->set_charge(0);
-+		}
-+	} else if (ac_draw) {
-+		if (new_ac_status > 0) {
-+			regulator_set_current_limit(ac_draw, max_uA, max_uA);
-+			if (!regulator_enabled) {
-+				dev_dbg(dev, "charger on (AC)\n");
-+				regulator_enable(ac_draw);
-+				regulator_enabled = 1;
-+			}
-+		} else {
-+			if (regulator_enabled) {
-+				dev_dbg(dev, "charger off\n");
-+				regulator_disable(ac_draw);
-+				regulator_enabled = 0;
-+			}
-+		}
- 	}
- }
- 
-@@ -194,6 +219,13 @@ static void polling_timer_func(unsigned long unused)
- 		  jiffies + msecs_to_jiffies(pdata->polling_interval));
- }
- 
-+#ifdef CONFIG_USB_OTG_UTILS
-+static int otg_is_usb_online(void)
-+{
-+	return (transceiver->state == OTG_STATE_B_PERIPHERAL);
-+}
-+#endif
-+
- static int pda_power_probe(struct platform_device *pdev)
- {
- 	int ret = 0;
-@@ -227,6 +259,9 @@ static int pda_power_probe(struct platform_device *pdev)
- 	if (!pdata->polling_interval)
- 		pdata->polling_interval = 2000;
- 
-+	if (!pdata->ac_max_uA)
-+		pdata->ac_max_uA = 500000;
-+
- 	setup_timer(&charger_timer, charger_timer_func, 0);
- 	setup_timer(&supply_timer, supply_timer_func, 0);
- 
-@@ -240,6 +275,13 @@ static int pda_power_probe(struct platform_device *pdev)
- 		pda_psy_usb.num_supplicants = pdata->num_supplicants;
- 	}
- 
-+	ac_draw = regulator_get(dev, "ac_draw");
-+	if (IS_ERR(ac_draw)) {
-+		dev_dbg(dev, "couldn't get ac_draw regulator\n");
-+		ac_draw = NULL;
-+		ret = PTR_ERR(ac_draw);
-+	}
-+
- 	if (pdata->is_ac_online) {
- 		ret = power_supply_register(&pdev->dev, &pda_psy_ac);
- 		if (ret) {
-@@ -261,6 +303,13 @@ static int pda_power_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+#ifdef CONFIG_USB_OTG_UTILS
-+	transceiver = otg_get_transceiver();
-+	if (transceiver && !pdata->is_usb_online) {
-+		pdata->is_usb_online = otg_is_usb_online;
-+	}
-+#endif
-+
- 	if (pdata->is_usb_online) {
- 		ret = power_supply_register(&pdev->dev, &pda_psy_usb);
- 		if (ret) {
-@@ -300,10 +349,18 @@ usb_irq_failed:
- usb_supply_failed:
- 	if (pdata->is_ac_online && ac_irq)
- 		free_irq(ac_irq->start, &pda_psy_ac);
-+#ifdef CONFIG_USB_OTG_UTILS
-+	if (transceiver)
-+		otg_put_transceiver(transceiver);
-+#endif
- ac_irq_failed:
- 	if (pdata->is_ac_online)
- 		power_supply_unregister(&pda_psy_ac);
- ac_supply_failed:
-+	if (ac_draw) {
-+		regulator_put(ac_draw);
-+		ac_draw = NULL;
-+	}
- 	if (pdata->exit)
- 		pdata->exit(dev);
- init_failed:
-@@ -327,6 +384,14 @@ static int pda_power_remove(struct platform_device *pdev)
- 		power_supply_unregister(&pda_psy_usb);
- 	if (pdata->is_ac_online)
- 		power_supply_unregister(&pda_psy_ac);
-+#ifdef CONFIG_USB_OTG_UTILS
-+	if (transceiver)
-+		otg_put_transceiver(transceiver);
-+#endif
-+	if (ac_draw) {
-+		regulator_put(ac_draw);
-+		ac_draw = NULL;
-+	}
- 	if (pdata->exit)
- 		pdata->exit(dev);
- 
-diff --git a/include/linux/pda_power.h b/include/linux/pda_power.h
-index cb7d10f..d4cf7a2 100644
---- a/include/linux/pda_power.h
-+++ b/include/linux/pda_power.h
-@@ -31,6 +31,8 @@ struct pda_power_pdata {
- 	unsigned int wait_for_status; /* msecs, default is 500 */
- 	unsigned int wait_for_charger; /* msecs, default is 500 */
- 	unsigned int polling_interval; /* msecs, default is 2000 */
-+
-+	unsigned long ac_max_uA; /* current to draw when on AC */
- };
- 
- #endif /* __PDA_POWER_H__ */
--- 
-1.5.6.5
+git://git.kernel.org/pub/scm/linux/kernel/git/jejb/voyager-2.6.git
+
+I haven't included the cpumask fixes (so it won't compile on 2.6.29-rc2
+yet) because I'll have to try to polish them to fit in with whatever's
+going on.  Plus there's some type of initramfs boot failure that I need
+to investigate.  However, usually I wait until the x86 churn is
+finished, which is a lot later into the -rc cycle than this before
+fixing up all the breakage.
+
+> Peter/James, what's the current status of x86/Voyager cleanups?
+
+The only outstanding problem I can see in 2.6.29 is a cpumask screw up
+caused by Mike Travis ... it looks easily fixable, he just forgot to
+convert voyager.
+
+I have to say that putting the SMP CPU definitions in cpu/common.c
+hedged around with ifdefs for type looks really to be the wrong thing to
+do.  We already have compile selected files with these types, the
+definition should be in there.
+
+> A couple of months ago i made a few suggestions about how to convert 
+> Voyager to the cleaner x86_quirks 'quirks HAL' (from the current fragile 
+> and hard and expensive to maintain 'compile time HAL'), but it didnt seem 
+> to go anywhere. See the discussion of this timeframe:
+> 
+>     http://lkml.org/lkml/2008/11/3/53
+> 
+> The VisWS subarch (which was a similarly excentric design that was only a 
+> PC in terms of having Intel CPUs) has been converted to CONFIG_X86_VISWS 
+> already, with arch/x86/kernel/visws_quirks.c holding the optional quirk 
+> handlers.
+> 
+> The desired end result would be to have a CONFIG_X86_VOYAGER=y build mode 
+> that adds the quirk handlers to an otherwise generic kernel, with most of 
+> the quirks concentrated into a single arch/x86/kernel/voyager_quirks.c 
+> file - instead of having a full subarch for x86/Voyager. Both 
+> arch/x86/mach-voyager/ and arch/x86/include/asm/mach-voyager/ would go 
+> away in the end - because all functionality is merged into the generic 
+> code and the quirks would be in voyager_quirks.c.
+
+You appear to have forgotten that we already had this discussion here:
+
+http://marc.info/?t=122539020300002
+
+But to precis, the bottom line is that I'm concerned about the damage to
+mainline x86 this would cause because voyager is a vastly different
+beast.  We'd be doubling at least the number of function pointer
+indirections, plus the current quirk stuff is inadequate: voyager needs
+boot time separation to handle the unique SUS maps and other things, so
+there'd be a big intrusion into the boot system as well.
+
+> I'd be glad to lend a helping hand both with the patches and with testing 
+> on non-Voyager - especially the SMP bits probably need extensions on the 
+> x86_quirks side. (And i'm sure the other x86 maintainers would we glad to 
+> help out with this process too.)
+> 
+> x86/Voyager is the last holdout in this area, and with an active kernel 
+> developer like James behind it it ought to be fixable - should James have 
+> the time/interest.
+
+But no-one's yet made any argument for why it's a worthwhile thing to be
+doing.
+
+> If there's no time/interest in that then we can temporarily mark Voyager 
+> CONFIG_BROKEN until cleanup/fix patches arrive.
+
+It's not broken and I've already sent you the cleanup/fix patches ... I
+can send them directly to Linus as voyager maintainer if you prefer.
+
+James
+
 
