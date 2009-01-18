@@ -1,112 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbZARCsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbZARCtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761439AbZARCsU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 21:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZARCrt
+	id S1762294AbZARCtb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 21:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZARCtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 21:47:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42364 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753598AbZARCrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 21:47:47 -0500
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
-       greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1232230980.27094.15.camel@macbook.infradead.org>
-References: <1232223441.3966.22.camel@localhost.localdomain>
-	 <1232228261.27094.0.camel@macbook.infradead.org>
-	 <20090117221932.GA4956@uranus.ravnborg.org>
-	 <1232230980.27094.15.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Sun, 18 Jan 2009 08:16:20 +0530
-Message-Id: <1232246780.3097.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+	Sat, 17 Jan 2009 21:49:22 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:60240 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756168AbZARCtV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 21:49:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=k9fePcftlgJtMin2DGzuG9gCh4cqx0MYSLoZd9mzREmN/1FCUo8T5YqeWp2s9WGKag
+         VbcvO+0kwpZF7XgP2cpKwvBWgSOmujDpg3GKi14tK8DvlFaruZoabMBaOqDh9rJ4ETHd
+         GrGTyEneK8nE5v646GfQpAPQfb2BWGxPOpKX8=
+Message-ID: <497298AB.7030109@gmail.com>
+Date: Sat, 17 Jan 2009 18:49:15 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Justin Madru <jdm64@gawab.com>
+CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>
+Subject: Re: 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49728EBF.40401@gawab.com>
+In-Reply-To: <49728EBF.40401@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+Justin Madru wrote:
+> Justin P. Mattock wrote:
+>> Justin Madru wrote:
+>>> Justin P. Mattock wrote:
+>>>> Justin Madru wrote:
+>>>>> Ok, more preliminary testing has returned that at least in the 
+>>>>> case of the iGoogle page crashing, it's related to google talk.
+>>>>> Because right after it connects to the google talk server the 
+>>>>> crash happens.
+>>>>> And why it doesn't crash on firefox 3.2 is because for some reason 
+>>>>> the talk feature doesn't load on that version of firefox.
+>>>>> I still get the crashes when going to Preferences->Main or 
+>>>>> Preferences->Applications.
+>>>>>
+>>>>> I tried the suggested moving of .gconf* .gnome* .mozilla*
+>>>>> The only thing that did was make firefox crash when going to 
+>>>>> Preference.
+>>>>> I did not try compiling firefox from source, but I did test with 
+>>>>> the binaries straight from mozilla.
+>>>>> I also tried disabling any plugin/extention (I only have flash and 
+>>>>> AdBlockerPlus), but no change.
+>>>>>
+>>>> What I should of said, is to maybe uninstall/disable any of those 
+>>>> apps or plugins
+>>>> that are automatically triggered when loading firefox.
+>>>> (although renaming some of  the  .* files is good, freshens it up);
+>>>> So when you don't go to google talk you can surf?
+>>>
+>>> So far only a connection to talkgadget.google.com or the 2 tabs in 
+>>> preferences make firefox crash.
+>>> Other than that I've yet to run into another site that makes it 
+>>> crash, and can browse just fine.
+>>> Actually, other than this bug .29-rc2 is running rather nicely ;-)
+>>>
+>>> Ok, this time I maded sure I uninstalled/disabled everything I could.
+>>> Sill.... same results. So, I decided to try something different. 
+>>> Test with Epiphany.
+>>> I tried both with the geko and webkit backends.
+>>> Same results, a crash when going to my iGoogle page that has google 
+>>> talk applet.
+>>>
+>>> But, this time epiphany left an error to the console that gives a 
+>>> clue to the cause:
+>>>
+>>> $ epiphany-webkit                                                ** 
+>>> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
+>>> the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
+>>> from the grid
+>>> console message:  @1: Unsafe JavaScript attempt to access frame with 
+>>> URL
+>>> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
+>>>
+>>> from frame with URL
+>>> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
+>>>
+>>> Domains, protocols and ports must match.
+>>> console message:  @1: Unsafe JavaScript attempt to access frame
+>>> with URL http://www.google.com/ig from frame with URL
+>>> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
+>>>
+>>> Domains, protocols and ports must match.
+>>> console message:  @1: Unsafe JavaScript attempt to access frame
+>>> with URL http://www.google.com/ig from frame with URL
+>>> http://talkgadget.google.com/talkgadget/blank. Domains,
+>>> protocols and ports must match.
+>>> Segmentation fault
+>>>
+>>> So, it's complaining about matching domains, protocols and ports.
+>>> Henceforth, I would surmise that the bug is related to the network 
+>>> code?
+>>>
+>>> Justin Madru
+>>>
+>> Well positive side is you can at least  grab youre news and info.
+>> bad side is you can't access igoogle(or whatever it's called).
+>>
+>> Domains, protocols and ports must match.
+>> probably the culprit(if you found the correct location
+>> that's causing this);
+>>
+>> regards;
+>>
+>> Justin P. Mattock
+>>
+> It's only half positive because I use the google rss reader of igoogle.
+> Unfortunately, there's the stupid google talk app that won't go away, 
+> that causes the crash!
+> But I can fortunately use firefox 3.2 because google talk says it 
+> doesn't support that browser and doesn't load.
+>
+> I'll do a git bisect if I can, and report back in a few days.
+>
+> Justin Madru
+>
+I suppose you can go in and manually
+delete google talk. but then you never know what
+will happen after that.
 
-On Sun, 2009-01-18 at 09:23 +1100, David Woodhouse wrote:
-> On Sat, 2009-01-17 at 23:19 +0100, Sam Ravnborg wrote:
-> > Nope - include/linux/dvb/audio.h failed to include linux/types.h
-> > despite the fact that is uses __u32 etc.
-> 
-> Er, good point. I saw the <stdint.h> and assumed it was using only
-> proper C types... but then it wouldn't have triggered the warning, would
-> it? Too much time in tin cans and not enough sleep...
-> 
+regards;
 
-Here is the list of 33  warnings this patchset solves:
-
-  CHECK   include/linux/can (3 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/can/bcm.h:29: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/dvb (8 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/audio.h:133: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/dmx.h:27: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/dmx.h:90: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/frontend.h:29: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/frontend.h:76: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/net.h:27: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/net.h:31: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/video.h:29: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/video.h:102: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/hdlc (1 files)
-  CHECK   include/linux/isdn (1 files)
-  CHECK   include/linux/netfilter (49 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/netfilter/xt_conntrack.h:40: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/netfilter_arp (2 files)
-  CHECK   include/linux/netfilter_bridge (16 files)
-  CHECK   include/linux/netfilter_ipv4 (46 files)
-  CHECK   include/linux/netfilter_ipv6 (20 files)
-  CHECK   include/linux/nfsd (6 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/export.h:13: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/nfsfh.h:17: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/nfsfh.h:28: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/stats.h:32: leaks CONFIG_NFSD to userspace where it is not valid
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/syscall.h:12: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/syscall.h:104: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/raid (2 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/raid/md_p.h:85: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/spi (1 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/spi/spidev.h:83: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/sunrpc (1 files)
-  CHECK   include/linux/tc_act (6 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_gact.h:19: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_mirred.h:16: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_pedit.h:19: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/tc_ematch (4 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_cmp.h:8: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_meta.h:18: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_nbyte.h:8: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_text.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/linux/usb (8 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/usb/cdc.h:50: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/usb/gadgetfs.h:21: include of <linux/types.h> is preferred over <asm/types.h>
-  CHECK   include/linux/wimax (1 files)
-  CHECK   include/mtd (6 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/mtd/inftl-user.h:61: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/rdma (1 files)
-  CHECK   include/sound (9 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/sound/hdsp.h:33: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  CHECK   include/video (3 files)
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/sisfb.h:25: include of <linux/types.h> is preferred over <asm/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/sisfb.h:78: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/uvesafb.h:5: found __[us]{8,16,32,64} type without #include <linux/types.h>
-
---
-JSR
-
+Justin P. Mattock
