@@ -1,139 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933874AbZARPjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933925AbZARPtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933874AbZARPjx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 10:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765577AbZARPjm
+	id S933925AbZARPtq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 10:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbZARPtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 10:39:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44513 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765506AbZARPjl (ORCPT
+	Sun, 18 Jan 2009 10:49:35 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:40800 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932147AbZARPte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 10:39:41 -0500
-Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in
- hres_timers_resume
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200901181642.00886.arvidjaar@mail.ru>
-References: <200901181642.00886.arvidjaar@mail.ru>
-Content-Type: text/plain
-Date: Sun, 18 Jan 2009 16:39:29 +0100
-Message-Id: <1232293169.5204.14.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sun, 18 Jan 2009 10:49:34 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #12415] WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:689
+Date: Sun, 18 Jan 2009 16:49:31 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <XU-8icArWLM.A.UpG.8GfaJB@chimera> <200901121215.31749.borntraeger@de.ibm.com> <200901121347.42799.rjw@sisk.pl>
+In-Reply-To: <200901121347.42799.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901181649.32054.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 16:41 +0300, Andrey Borzenkov wrote:
-> [17854.688347] =================================
-> [17854.688347] [ INFO: inconsistent lock state ]
-> [17854.688347] 2.6.29-rc2-1avb #1
-> [17854.688347] ---------------------------------
-> [17854.688347] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> [17854.688347] pm-suspend/18240 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> [17854.688347]  (&cpu_base->lock){++..}, at: [<c0136fcc>] retrigger_next_event+0x5c/0xa0
-> [17854.688347] {in-hardirq-W} state was registered at:
-> [17854.688347]   [<c01443cd>] __lock_acquire+0x79d/0x1930
-> [17854.688347]   [<c01455bc>] lock_acquire+0x5c/0x80
-> [17854.688347]   [<c03092e5>] _spin_lock+0x35/0x70
-> [17854.688347]   [<c0136e61>] hrtimer_run_queues+0x31/0x140
-> [17854.688347]   [<c0128d98>] run_local_timers+0x8/0x20
-> [17854.688347]   [<c0128dd3>] update_process_times+0x23/0x60
-> [17854.688347]   [<c013e274>] tick_periodic+0x24/0x80
-> [17854.688347]   [<c013e2e2>] tick_handle_periodic+0x12/0x70
-> [17854.688347]   [<c0104e24>] timer_interrupt+0x14/0x20
-> [17854.688347]   [<c01607b9>] handle_IRQ_event+0x29/0x60
-> [17854.688347]   [<c0161c59>] handle_level_irq+0x69/0xe0
-> [17854.688347]   [<ffffffff>] 0xffffffff
-> [17854.688347] irq event stamp: 55771
-> [17854.688347] hardirqs last  enabled at (55771): [<c0309125>] _spin_unlock_irqrestore+0x35/0x60
-> [17854.688347] hardirqs last disabled at (55770): [<c0309419>] _spin_lock_irqsave+0x19/0x80
-> [17854.688347] softirqs last  enabled at (54836): [<c0124f54>] __do_softirq+0xc4/0x110
-> [17854.688347] softirqs last disabled at (54831): [<c01049ae>] do_softirq+0x8e/0xe0
-> [17854.688347] 
-> [17854.688347] other info that might help us debug this:
-> [17854.688347] 3 locks held by pm-suspend/18240:
-> [17854.688347]  #0:  (&buffer->mutex){--..}, at: [<c01dd4c5>] sysfs_write_file+0x25/0x100
-> [17854.688347]  #1:  (pm_mutex){--..}, at: [<c015056f>] enter_state+0x4f/0x140
-> [17854.688347]  #2:  (dpm_list_mtx){--..}, at: [<c027880f>] device_pm_lock+0xf/0x20
-> [17854.688347] 
-> [17854.688347] stack backtrace:
-> [17854.688347] Pid: 18240, comm: pm-suspend Not tainted 2.6.29-rc2-1avb #1
-> [17854.688347] Call Trace:
-> [17854.688347]  [<c0306248>] ? printk+0x18/0x20
-> [17854.688347]  [<c0141fac>] print_usage_bug+0x16c/0x1d0
-> [17854.688347]  [<c0142bcf>] mark_lock+0x8bf/0xc90
-> [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
-> [17854.688347]  [<c01441b0>] __lock_acquire+0x580/0x1930
-> [17854.688347]  [<c030916d>] ? _spin_unlock+0x1d/0x20
-> [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
-> [17854.688347]  [<c013dd38>] ? clockevents_program_event+0x98/0x160
-> [17854.688347]  [<c0142fe8>] ? mark_held_locks+0x48/0x90
-> [17854.688347]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
-> [17854.688347]  [<c0143229>] ? trace_hardirqs_on_caller+0x139/0x190
-> [17854.688347]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
-> [17854.688347]  [<c01455bc>] lock_acquire+0x5c/0x80
-> [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
-> [17854.688347]  [<c03092e5>] _spin_lock+0x35/0x70
-> [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
-> [17854.688347]  [<c0136fcc>] retrigger_next_event+0x5c/0xa0
-> [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
-> [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
-> [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
-> [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
-> [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
-> [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
-> [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
-> [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
-> [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
-> [17854.688347]  [<c0150660>] ? state_store+0x0/0xc0
-> [17854.688347]  [<c0202da4>] kobj_attr_store+0x24/0x30
-> [17854.688347]  [<c01dd53c>] sysfs_write_file+0x9c/0x100
-> [17854.688347]  [<c019916c>] vfs_write+0x9c/0x160
-> [17854.688347]  [<c0103494>] ? restore_nocheck_notrace+0x0/0xe
-> [17854.688347]  [<c01dd4a0>] ? sysfs_write_file+0x0/0x100
-> [17854.688347]  [<c01992ed>] sys_write+0x3d/0x70
-> [17854.688347]  [<c0103371>] sysenter_do_call+0x12/0x31
+Am Montag 12 Januar 2009 schrieb Rafael J. Wysocki:
+> On Monday 12 January 2009, Christian Borntraeger wrote:
+> > Am Sonntag 11 Januar 2009 schrieb Rafael J. Wysocki:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.28.  Please verify if it still should be listed and let me
+> > > know (either way).
+> > >
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12415
+> > > Subject		: WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:689
+> > > Submitter	: Christian Borntraeger <borntraeger@de.ibm.com>
+> > > Date		: 2009-01-05 10:36 (7 days old)
+> > > References	: http://marc.info/?l=linux-wireless&m=123115178019082&w=4
+> >
+> > Meanwhile I have updated the device firmware and the kernel level. The
+> > problems has disappeared.
+>
+> Thanks for the update, the bug has been closed.
 
-Not sure what caused this to trigger, but it looks like
-timekeeping_resume() isn't called with IRQs disabled (and the code
-doesn't seem to expect that since it uses write_seqlock_irqsave).
-
-hres_timers_resume() however calls retrigger_next_event() which does
-require IRQs disabled and doesn't do that.
-
-Like said, I'm not sure what caused this since the code in question
-doesn't seem to have changed since April 2007.
-
-Anyway, does the below patch cure trouble?
----
-Subject: hrtimer: fix irq recursion deadlock
-
-retrigger_next_event() requires IRQs disabled, provide that for the
-resume callback.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 2c40ee8..430103d 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -614,8 +614,12 @@ void clock_was_set(void)
-  */
- void hres_timers_resume(void)
- {
-+	unsigned long flags;
-+
- 	/* Retrigger the CPU local events: */
-+	local_irq_save(flags);
- 	retrigger_next_event(NULL);
-+	local_irq_restore(flags);
- }
- 
- /*
+Since suspend/resume now works I have seen this problem again.
+I dont know how to trigger this, but I have made several suspend/resume cycles 
+since yesterday:
 
 
+[11182.292341] WARNING: at drivers/net/wireless/iwlwifi/iwl-sta.c:689 
+iwl_set_dynamic_key+0x4be/0x4d0()
+[11182.292343] Hardware name: 64575GG
+[11182.292344] no space for new kewModules linked in: psmouse
+[11182.292349] Pid: 21185, comm: events/1 Not tainted 
+2.6.29-rc2-self-00004-g812c74b #164
+[11182.292350] Call Trace:
+[11182.292355]  [<c014ccb7>] warn_slowpath+0x87/0xe0
+[11182.292358]  [<c036c66f>] iwl_send_cmd_async+0x3f/0x90
+[11182.292360]  [<c011f69a>] __switch_to+0xca/0x1d0
+[11182.292363]  [<c03711ef>] iwl_send_add_sta+0x7f/0x120
+[11182.292366]  [<c014666f>] finish_task_switch+0x1f/0xb0
+[11182.292369]  [<c05469ed>] schedule_timeout+0xbd/0xf0
+[11182.292372]  [<c0370fe0>] iwl_add_sta_callback+0x0/0x70
+[11182.292374]  [<c013ab65>] default_spin_lock_flags+0x5/0x10
+[11182.292377]  [<c054804d>] _spin_lock_irqsave+0x3d/0x60
+[11182.292379]  [<c03720de>] iwl_set_dynamic_key+0x4be/0x4d0
+[11182.292381]  [<c013ab65>] default_spin_lock_flags+0x5/0x10
+[11182.292383]  [<c054804d>] _spin_lock_irqsave+0x3d/0x60
+[11182.292385]  [<c0370e56>] iwl_find_station+0xd6/0x110
+[11182.292388]  [<c0373951>] iwl_scan_cancel_timeout+0x21/0x90
+[11182.292390]  [<c037576b>] iwl_mac_set_key+0x8b/0x160
+[11182.292393]  [<c03756e0>] iwl_mac_set_key+0x0/0x160
+[11182.292395]  [<c0530340>] __ieee80211_key_todo+0xd0/0x260
+[11182.292398]  [<c015e5b3>] queue_delayed_work_on+0xa3/0xd0
+[11182.292400]  [<c05305ef>] ieee80211_key_todo+0xf/0x20
+[11182.292403]  [<c015dd8b>] run_workqueue+0x6b/0x130
+[11182.292405]  [<c013ab65>] default_spin_lock_flags+0x5/0x10
+[11182.292407]  [<c054804d>] _spin_lock_irqsave+0x3d/0x60
+[11182.292409]  [<c0530600>] key_todo+0x0/0x10
+[11182.292412]  [<c015ded8>] worker_thread+0x88/0xf0
+[11182.292414]  [<c01619d0>] autoremove_wake_function+0x0/0x50
+[11182.292417]  [<c015de50>] worker_thread+0x0/0xf0
+[11182.292419]  [<c0161609>] kthread+0x39/0x70
+[11182.292420]  [<c01615d0>] kthread+0x0/0x70
+[11182.292423]  [<c01210d3>] kernel_thread_helper+0x7/0x14
+[11182.292424] ---[ end trace 94103c51f16e0890 ]---
