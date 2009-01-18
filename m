@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbZARJFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932107AbZARJHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932177AbZARJFv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 04:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763226AbZARJE6
+	id S932107AbZARJHX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 04:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758356AbZARJGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 04:04:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43609 "EHLO hera.kernel.org"
+	Sun, 18 Jan 2009 04:06:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59603 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762906AbZARJEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 04:04:55 -0500
-Message-ID: <4972F0AD.4030603@kernel.org>
-Date: Sun, 18 Jan 2009 18:04:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1758147AbZARJGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 04:06:51 -0500
+Date: Sun, 18 Jan 2009 10:06:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       miaox@cn.fujitsu.com, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] cpuset: fix possible deadlock in
+	async_rebuild_sched_domains
+Message-ID: <20090118090635.GB27144@elte.hu>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org> <4972E311.5010603@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/17] x86-64: Convert irqstacks to per-cpu
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232115396-26367-1-git-send-email-brgerst@gmail.com> <1232115396-26367-2-git-send-email-brgerst@gmail.com> <1232115396-26367-3-git-send-email-brgerst@gmail.com> <4972B6D9.4080101@kernel.org> <73c1f2160901172105p8ba1aa4v708e746d5548a79d@mail.gmail.com> <4972B967.4010606@kernel.org> <20090118083637.GA21940@elte.hu>
-In-Reply-To: <20090118083637.GA21940@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 09:04:44 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4972E311.5010603@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo, Brian.
 
-Ingo Molnar wrote:
->> Sure, that's an option too but it might as well be done when making 
->> those percpu variables.  I don't really see why those two changes should 
->> be separate.  There isn't any reason why they shouldn't be separate 
->> either but if you're already mucking around every user...
-> 
-> yes, we should do the rename in this same patch as both patches have no 
-> impact on the actual kernel image. (sans source code line and string 
-> related deltas in the image.) Feel free to do the rename in his patch - 
-> that's the fastest way.
-> 
-> I'd suggest to rename from:
-> 
->   DECLARE_PER_CPU(char, irqstack[IRQSTACKSIZE]);
->   DECLARE_PER_CPU(char *, irqstackptr);
-> 
-> to:
-> 
->   DECLARE_PER_CPU(char, irq_stack[IRQSTACKSIZE]);
->   DECLARE_PER_CPU(char *, irq_stack_ptr);
-> 
-> In other cases, lets get Brian's patches in without further latencies so 
-> that we drain his pending-patches pipeline and get a consolidated base 
-> everyone can work from. Brian already had an unfortunate (and 
-> time-consuming) rebase/conflict-resolution pass due to us moving the 
-> percpu code from under him. We can do non-critical followups in separate 
-> delta patches.
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Alright, there are other places where renaming would be nice -
-kernelstack, oldrsp, irqcount, irqstackptr and isidle.  I'll rename
-them as I add the patches.  Here's the plan.
+> Lockdep reported some possible circular locking info when we tested cpuset on
+> NUMA/fake NUMA box.
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.29-rc1-00224-ga652504 #111
+> -------------------------------------------------------
+> bash/2968 is trying to acquire lock:
+>  (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
+> 
+> but task is already holding lock:
+>  (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
+> 
+> which lock already depends on the new lock.
+> ......
+> -------------------------------------------------------
+> 
+> Steps to reproduce:
+> # mkdir /dev/cpuset
+> # mount -t cpuset xxx /dev/cpuset
+> # mkdir /dev/cpuset/0
+> # echo 0 > /dev/cpuset/0/cpus
+> # echo 0 > /dev/cpuset/0/mems
+> # echo 1 > /dev/cpuset/0/memory_migrate
+> # cat /dev/zero > /dev/null &
+> # echo $! > /dev/cpuset/0/tasks
+> 
+> This is because async_rebuild_sched_domains has the following lock sequence:
+> run_workqueue(async_rebuild_sched_domains)
+> 	-> do_rebuild_sched_domains -> cgroup_lock
+> 
+> But, attaching tasks when memory_migrate is set has following:
+> cgroup_lock_live_group(cgroup_tasks_write)
+> 	-> do_migrate_pages -> flush_work
+> 
+> This can be fixed by using a separate workqueue thread.
+> 
+> But queuing a work to an other thread is adding some overhead for cpuset.
 
-	01-04	: w/ renames
-	05	: will mark voyage broken
-	06-12	: w/ renames
-	13-17	: will wait for update
+Can you measure any overhead from that? In any case, this is triggered on 
+admin activities (when reconfiguring cpusets), so it's a slowpath and thus 
+using existing infrastructure is preferred in the 99.9% of the cases. 
 
-If anyone doesn't like it.  Please scream.
+Thanks,
 
-Thanks.
-
--- 
-tejun
+	Ingo
