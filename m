@@ -1,117 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbZAREfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZARExO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763636AbZAREfo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 23:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZAREfd
+	id S1759057AbZARExO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 23:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZAREw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 23:35:33 -0500
-Received: from kroah.org ([198.145.64.141]:43148 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751187AbZAREfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 23:35:32 -0500
-Date: Sat, 17 Jan 2009 20:31:19 -0800
-From: Greg KH <greg@kroah.com>
-To: Grissiom <chaos.proton@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: WARNING: at drivers/usb/storage/transport.c:584
-Message-ID: <20090118043119.GA6715@kroah.com>
-References: <a0adeea50901151717v562fb5a9oaf5d80b4bf559d05@mail.gmail.com> <a0adeea50901171958k1d7fe2esc7cf42878216702@mail.gmail.com>
+	Sat, 17 Jan 2009 23:52:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34786 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751488AbZAREw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 23:52:58 -0500
+Message-ID: <4972B5A1.9090708@kernel.org>
+Date: Sun, 18 Jan 2009 13:52:49 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a0adeea50901171958k1d7fe2esc7cf42878216702@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 16/17] x86-64: Remove the PDA
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232115396-26367-1-git-send-email-brgerst@gmail.com> <1232115396-26367-2-git-send-email-brgerst@gmail.com> <1232115396-26367-3-git-send-email-brgerst@gmail.com> <1232115396-26367-4-git-send-email-brgerst@gmail.com> <1232115396-26367-5-git-send-email-brgerst@gmail.com> <1232115396-26367-6-git-send-email-brgerst@gmail.com> <1232115396-26367-7-git-send-email-brgerst@gmail.com> <1232115396-26367-8-git-send-email-brgerst@gmail.com> <1232115396-26367-9-git-send-email-brgerst@gmail.com> <1232115396-26367-10-git-send-email-brgerst@gmail.com> <1232115396-26367-11-git-send-email-brgerst@gmail.com> <1232115396-26367-12-git-send-email-brgerst@gmail.com> <1232115396-26367-13-git-send-email-brgerst@gmail.com> <1232115396-26367-14-git-send-email-brgerst@gmail.com> <1232115396-26367-15-git-send-email-brgerst@gmail.com> <1232115396-26367-16-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1232115396-26367-16-git-send-email-brgerst@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 04:52:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 11:58:16AM +0800, Grissiom wrote:
-> On Fri, Jan 16, 2009 at 09:17, Grissiom <chaos.proton@gmail.com> wrote:
-> >
-> > In the last git version of kernel, when I copy some data to a USB disk
-> > I got this WARNING:
-> >
-> > [ 6394.109641] ------------[ cut here ]------------
-> > [ 6394.109655] WARNING: at drivers/usb/storage/transport.c:584
-> > last_sector_hacks+0x139/0x190()
-> > [ 6394.109662] Hardware name: Inspiron 1501
-> > [ 6394.109670] sdb: Successful last sector success at 1993648, device
-> > 10d6:1101:0100
-> > [ 6394.109676] Modules linked in: fuse ricoh_mmc b43
-> > [ 6394.109693] Pid: 6937, comm: usb-storage Not tainted
-> > 2.6.29-rc1-g14-rfkill-nophy-ledon-00224-ga652504 #68
-> > [ 6394.109700] Call Trace:
-> > [ 6394.109715]  [<c012a099>] warn_slowpath+0x99/0xc0
-> > [ 6394.109727]  [<c014e3c7>] mark_held_locks+0x67/0x80
-> > [ 6394.109738]  [<c04dc560>] _spin_unlock_irq+0x20/0x40
-> > [ 6394.109746]  [<c014e5d9>] trace_hardirqs_on_caller+0x149/0x1a0
-> > [ 6394.109754]  [<c04dc500>] _spin_unlock_irqrestore+0x20/0x60
-> > [ 6394.109763]  [<c04d9101>] wait_for_common+0xf1/0x120
-> > [ 6394.109775]  [<c0125c20>] default_wake_function+0x0/0x10
-> > [ 6394.109783]  [<c0381e9e>] usb_stor_msg_common+0xde/0x140
-> > [ 6394.109792]  [<c0381d69>] last_sector_hacks+0x139/0x190
-> > [ 6394.109802]  [<c0382d95>] usb_stor_invoke_transport+0x1f5/0x2a0
-> > [ 6394.109810]  [<c014e3c7>] mark_held_locks+0x67/0x80
-> > [ 6394.109818]  [<c04dc560>] _spin_unlock_irq+0x20/0x40
-> > [ 6394.109826]  [<c014e5d9>] trace_hardirqs_on_caller+0x149/0x1a0
-> > [ 6394.109834]  [<c0383474>] usb_stor_control_thread+0x154/0x1d0
-> > [ 6394.109843]  [<c04dc1cb>] _spin_lock_irqsave+0x4b/0x60
-> > [ 6394.109851]  [<c04dc52c>] _spin_unlock_irqrestore+0x4c/0x60
-> > [ 6394.109860]  [<c0383320>] usb_stor_control_thread+0x0/0x1d0
-> > [ 6394.109868]  [<c014e5d9>] trace_hardirqs_on_caller+0x149/0x1a0
-> > [ 6394.109876]  [<c0383320>] usb_stor_control_thread+0x0/0x1d0
-> > [ 6394.109885]  [<c013def2>] kthread+0x42/0x70
-> > [ 6394.109893]  [<c013deb0>] kthread+0x0/0x70
-> > [ 6394.109902]  [<c0103c03>] kernel_thread_helper+0x7/0x14
-> > [ 6394.109909] ---[ end trace fd10fd16313bc8b9 ]---
-> >
-> > Since there is no change in drivers/usb/storage/transport.c in the
-> > newest git, I think the problem is still there. Have some one any
-> > advise? Thanks
-> >
-> > --
-> > Cheers,
-> > Grissiom
-> 
-> The same problem still happen in rc2. Here is the new dmesg:
-> 
-> [  746.620234] ------------[ cut here ]------------
-> [  746.620245] WARNING: at drivers/usb/storage/transport.c:584
-> last_sector_hacks+0x139/0x190()
-> [  746.620252] Hardware name: Inspiron 1501
-> [  746.620259] sdb: Successful last sector success at 15701758, device
-> 0781:5151:0200
-> [  746.620265] Modules linked in: fuse ricoh_mmc b43
-> [  746.620283] Pid: 2064, comm: usb-storage Not tainted
-> 2.6.29-rc2-g14-rfkill-nophy-ledon #69
-> [  746.620289] Call Trace:
-> [  746.620302]  [<c012a079>] warn_slowpath+0x99/0xc0
-> [  746.620313]  [<c014e3a7>] mark_held_locks+0x67/0x80
-> [  746.620325]  [<c04dcaa0>] _spin_unlock_irq+0x20/0x40
-> [  746.620333]  [<c014e5b9>] trace_hardirqs_on_caller+0x149/0x1a0
-> [  746.620342]  [<c04dca00>] _read_unlock+0x20/0x40
-> [  746.620350]  [<c04d9641>] wait_for_common+0xf1/0x120
-> [  746.620361]  [<c0125bd0>] default_wake_function+0x0/0x10
-> [  746.620370]  [<c0381ede>] usb_stor_msg_common+0xde/0x140
-> [  746.620379]  [<c0381da9>] last_sector_hacks+0x139/0x190
-> [  746.620389]  [<c0382dd5>] usb_stor_invoke_transport+0x1f5/0x2a0
-> [  746.620398]  [<c014e3a7>] mark_held_locks+0x67/0x80
-> [  746.620406]  [<c04dcaa0>] _spin_unlock_irq+0x20/0x40
-> [  746.620414]  [<c014e5b9>] trace_hardirqs_on_caller+0x149/0x1a0
-> [  746.620423]  [<c03834b4>] usb_stor_control_thread+0x154/0x1d0
-> [  746.620432]  [<c04dca6c>] _spin_unlock_irqrestore+0x4c/0x60
-> [  746.620441]  [<c0383360>] usb_stor_control_thread+0x0/0x1d0
-> [  746.620450]  [<c014e5b9>] trace_hardirqs_on_caller+0x149/0x1a0
-> [  746.620458]  [<c0383360>] usb_stor_control_thread+0x0/0x1d0
-> [  746.620468]  [<c013ded2>] kthread+0x42/0x70
-> [  746.620475]  [<c013de90>] kthread+0x0/0x70
-> [  746.620485]  [<c0103c03>] kernel_thread_helper+0x7/0x14
-> [  746.620492] ---[ end trace 61eaa6579ab68377 ]---
-> 
-> This happens exactly when the USB disk plugged in. Can someone fix this?
+Hello,
 
-Alan, this is for you :)
+Brian Gerst wrote:
+> Now that the PDA is empty except for the stack canary, it can be removed.
+> The irqstack is moved to the start of the per-cpu section.  If the stack
+> protector is enabled, the canary overlaps the bottom 48 bytes of the irqstack
+> on SMP.  On UP it is a seperate variable, since it is the only thing referenced
+> via %gs.
 
-thanks,
+Eh... I don't know.  Locating stack canary at hard 40byte offset is a
+dirty thing to do one way or another.  I kind of like doing it
+directly in the linker script as it makes the dirty nature more
+obvious and doesn't require hunting down the definition in the first
+section.
 
-greg k-h
+How about something like the following?
+
+#define CANARY_OFFSET	40
+#define CANARY_SIZE	8
+
+DECLARE_PER_CPU(unsigned long, stack_canary);
+
+and in linker script,
+
+PERCPU_VADDR_PREALLOC(0, :percpu, CANARY_OFFSET + CANARY_SIZE)
+per_cpu__stack_canary = __per_cpu_start + CANARY_OFFSET;
+
+> diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+> index a09abb8..c52af06 100644
+> --- a/arch/x86/kernel/vmlinux_64.lds.S
+> +++ b/arch/x86/kernel/vmlinux_64.lds.S
+> @@ -4,6 +4,10 @@
+>  
+>  #define LOAD_OFFSET __START_KERNEL_map
+>  
+> +#define PER_CPU_SECTIONS \
+> +	*(.data.percpu.irqstack) \
+> +	DEFAULT_PER_CPU_SECTIONS
+> +
+
+Where is this used?
+
+>  #define PERCPU_VADDR(vaddr, phdr)					\
+>  	PERCPU_PROLOG(vaddr)						\
+> +		*(.data.percpu.first)					\
+>  		*(.data.percpu.page_aligned)				\
+>  		*(.data.percpu)						\
+>  		*(.data.percpu.shared_aligned)				\
+
+If this is gonna go in the generic PERCPU script directly, why just
+not add DEFINE_PER_CPU_FIRST() too?
+
+Thanks.
+
+-- 
+tejun
