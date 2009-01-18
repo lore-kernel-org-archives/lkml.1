@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZARTnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZARTno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZARTnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZARTnJ
+	id S1754085AbZARTno (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZARTn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:43:09 -0500
-Received: from waste.org ([66.93.16.53]:50047 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752125AbZARTnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:43:08 -0500
-Subject: Re: [Patch] slob: clean up the code
-From: Matt Mackall <mpm@selenic.com>
-To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, cl@linux-foundation.org,
-       penberg@cs.helsinki.fi, linux-mm@kvack.org,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20090118180038.GB3292@hack.private>
-References: <20090118180038.GB3292@hack.private>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 18 Jan 2009 13:41:58 -0600
-Message-Id: <1232307718.5202.14.camel@calx>
+	Sun, 18 Jan 2009 14:43:27 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:39262 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753593AbZARTn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 14:43:27 -0500
+Date: Sun, 18 Jan 2009 20:45:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
+Message-ID: <20090118194510.GA2507@uranus.ravnborg.org>
+References: <1232287474.3130.19.camel@localhost.localdomain> <20090118172800.GB22624@elte.hu> <20090118185034.GA26908@elte.hu> <20090118190836.GA2294@uranus.ravnborg.org> <20090118190941.GC858@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118190941.GC858@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 02:00 +0800, Américo Wang wrote:
-> - Use NULL instead of plain 0;
+On Sun, Jan 18, 2009 at 08:09:41PM +0100, Ingo Molnar wrote:
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Sun, Jan 18, 2009 at 07:50:34PM +0100, Ingo Molnar wrote:
+> > > 
+> > > hm, i just noticed this detail:
+> > > 
+> > > commit 3521c5eef990515719614e212b26ea49e610d072
+> > > Author: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > Date:   Sat Jan 17 19:25:46 2009 +0530
+> > > 
+> > >     headers_check fix: x86, swab.h
+> > >     
+> > >     fix the following 'make headers_check' warnings:
+> > >     
+> > >       usr/include/asm/swab.h:4: include of <linux/types.h> is preferred over <asm/types.h>
+> > >       usr/include/asm/swab.h:7: found __[us]{8,16,32,64} type without #include <linux/types.h>
+> > >       usr/include/asm/swab.h:10: leaks CONFIG_X86 to userspace where it is not valid
+> > >       usr/include/asm/swab.h:40: leaks CONFIG_X86 to userspace where it is not valid
+> > >     
+> > >     Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > diff --git a/arch/x86/include/asm/swab.h b/arch/x86/include/asm/swab.h
+> > > index 306d417..613be68 100644
+> > > --- a/arch/x86/include/asm/swab.h
+> > > +++ b/arch/x86/include/asm/swab.h
+> > > @@ -1,12 +1,15 @@
+> > >  #ifndef _ASM_X86_SWAB_H
+> > >  #define _ASM_X86_SWAB_H
+> > >  
+> > > -#include <asm/types.h>
+> > > +#include <linux/types.h>
+> > > +#ifdef __KERNEL__
+> > >  #include <linux/compiler.h>
+> > > +#endif /* __KERNEL__ */
+> > 
+> > compiler.h includes should be nuked by make headers_instll automatically.
+> 
+> So the compiler.h include can be left there, and headers_check will not 
+> warn about it?
 
-Good.
+Correct.
 
-> - Rename slob_page() to is_slob_page();
-
-Ok.
-
-> - Define slob_page() to convert void* to struct slob_page*;
-
-Ok. The general "struct page vs page" confusion isn't really improved by
-this but at least this makes it a bit less ugly.
-
-> - Rename slob_new_page() to slob_new_pages();
-
-Don't care about this one. We've long had a notion of a "high order
-page" (singular) of size 2^n pages.
-
-> - Define slob_free_pages() accordingly.
-
-This is a trivial wrapper function with one user.
-
-But this patch is probably fine in it's current form, I don't care
-enough about the above to respin it.
-
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+	Sam
