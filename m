@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbZARVSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbZARVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757812AbZARVSU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 16:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZARVSH
+	id S1757081AbZARVYe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 16:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZARVYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 16:18:07 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53547 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755607AbZARVSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 16:18:05 -0500
-Date: Sun, 18 Jan 2009 22:18:03 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-cc: Arjan van de Ven <arjan@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Steve Brokenshire <sbrokenshire@xestia.co.uk>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-In-Reply-To: <49739BFA.4030609@msgid.tls.msk.ru>
-Message-ID: <alpine.LSU.2.00.0901182217320.30423@fbirervta.pbzchgretzou.qr>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <20080226112840.GA29465@uranus.ravnborg.org> <alpine.LSU.2.00.0812262026320.11203@fbirervta.pbzchgretzou.qr> <20081226194833.GA8306@uranus.ravnborg.org> <alpine.LSU.2.00.0812262049040.12031@fbirervta.pbzchgretzou.qr>
- <20090118210416.GE2978@uranus.ravnborg.org> <20090118130908.390eb07b@infradead.org> <49739BFA.4030609@msgid.tls.msk.ru>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Sun, 18 Jan 2009 16:24:21 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:22972 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbZARVYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 16:24:21 -0500
+Message-ID: <49739E02.9060400@msgid.tls.msk.ru>
+Date: Mon, 19 Jan 2009 00:24:18 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: sam@ravnborg.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild: install to a single directory
+References: <alpine.LSU.2.00.0901172055100.15992@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LSU.2.00.0901172055100.15992@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Engelhardt wrote:
+> Hi,
+> 
+> This proposed change will collect all kernel modules in the
+> single directory, e.g. /lib/modules/2.6.29-rc2/kernel/, without
+> any further directory structure. About 475 inodes (with
+> almost-allmodconfig) less are used, which should result
+> in faster directory traversal (less seeks).
 
-On Sunday 2009-01-18 22:15, Michael Tokarev wrote:
->Arjan van de Ven wrote:
->> On Sun, 18 Jan 2009 22:04:16 +0100
->> Sam Ravnborg <sam@ravnborg.org> wrote:
->[]
->>> Can I ask you to redo this patch.
->>> I want a way to swith off compression, but it should default be
->>> enable. So if KBUILD_MODULE_NOCOMPRESS is undefined we will compress
->>> the modules when we install them.
->> 
->> especially since the decompression is an option for the module tools,
->> it should be an option for the kernel... 
->> since it does add a dependency for the module tools (and one that you
->> might not need; for example I disabled it just to remove a build
->> requires)
->
->By the way, I for one use busybox for initramfs stuff, since a long
->time ago.  And it (still?) does not support decompression of kernel
->modules, as of the latest (1.13) version...  I don't think I'm alone
->using busybox this way, and it looks like decompression support
->should be added to it first, and next to the kernel.. ;)
+While I agree that current deep-n-wide directory structure is
+not very useful.. It still helps in many situations.  For
+example, I sometimes need to remember which module name this
+particular scsi or network or [s]ata controller needs, and
+looking at /lib/modules/$foo/kernel/driver/scsi is usually
+sufficient since there isn't many of them in there.  Or,
+see (old, compat) -t option to modprobe(8).
 
-If we went by that metric, the kernel would still be in its infancy.
+In the other words, if to change anything at all, something
+in-between is needed instead.  No current deep-n-wide often
+single-driver-in-directory structure, and not everything in
+one place either.
+
+Maybe add a make variable to tell kbuild to use specified
+directory to install modules in this dir to, or to specify
+that "this module should go to the parent dir" (eliminates
+many driver-in-a-dir cases).
+
+/mjt
