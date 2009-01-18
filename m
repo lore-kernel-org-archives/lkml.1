@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZARX3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZARXai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbZARX3q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 18:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZARX3h
+	id S1755093AbZARXai (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 18:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZARXa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 18:29:37 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52902
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbZARX3h (ORCPT
+	Sun, 18 Jan 2009 18:30:26 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:47890 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbZARXaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 18:29:37 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Date: Sun, 18 Jan 2009 17:29:30 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
-       linux-kernel@vger.kernel.org
-References: <20090115194033.GA10926@hack.private> <200901170328.15178.rob@landley.net> <20090118083237.GA3292@hack.private>
-In-Reply-To: <20090118083237.GA3292@hack.private>
+	Sun, 18 Jan 2009 18:30:25 -0500
+Message-ID: <4973BB3F.8090702@oracle.com>
+Date: Sun, 18 Jan 2009 15:29:03 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200901181729.31682.rob@landley.net>
+To: David Howells <dhowells@redhat.com>
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Tony Luck <tony.luck@intel.com>
+Subject: Re: FS-Cache fixes for IA64 export and AFS linkage
+References: <16871.1232172044@redhat.com>
+In-Reply-To: <16871.1232172044@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4973BB44.00CA:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 January 2009 02:32:37 Américo Wang wrote:
-> >The result panics (twice) and exits, instead of giving me a shell prompt.
-> >Built and run on stock Ubuntu 8.10.  (I posted about it on tuesday, but
-> > nobody replied...)
->
-> Hi, Rob.
->
-> I tried what you said, it works very fine here, on my Fedora 10.
-> Could you please tell us which kernel your host is using?
+David Howells wrote:
+> I've dropped the patch to export copy_page() for IA64 from my patchset and
+> updated the AFS patch so that it no longer produces link errors if
+> CONFIG_AFS_FS=y and CONFIG_FSCACHE=m but CONFIG_AFS_FSCACHE=n.
+> 
+> These patches are now available as:
+> 
+> 	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-44.tar.bz2
+> 
+> and I've updated my GIT tree for Trond to pull:
+> 
+> 	http://git.kernel.org/?p=linux/kernel/git/dhowells/linux-2.6-nfs-fscache.git;a=shortlog
 
-Ubuntu 8.10 stock kernel, calls itself "2.6.27-9-generic".
+Ack.  Builds for me.  Thanks.
 
-> and the guest?
-
-Checking tuesday's bug report, it said:
-
-> Linux version 2.6.28 (landley@driftwood) (gcc version 4.3.2 (Ubuntu 
-> 4.3.2-1ubuntu11) ) #6 Tue Jan 13 01:54:34 CST 2009
-
-It's the vanilla tarball (albeit extracted from source control according to 
-the v2.6.28 tag rather than downloaded).
-
-Possibly a gcc 4.3 issue?
-
-Rob
+-- 
+~Randy
