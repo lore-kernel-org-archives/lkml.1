@@ -1,90 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZARTom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZARTsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbZARTom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZARTob
+	id S1755312AbZARTsq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbZARTsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:44:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56052 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbZARTob (ORCPT
+	Sun, 18 Jan 2009 14:48:38 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:63130 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753662AbZARTsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:44:31 -0500
-Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in
- hres_timers_resume
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200901182232.57186.arvidjaar@mail.ru>
-References: <200901181642.00886.arvidjaar@mail.ru>
-	 <1232293169.5204.14.camel@laptop> <20090118172511.GA22624@elte.hu>
-	 <200901182232.57186.arvidjaar@mail.ru>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 18 Jan 2009 20:44:20 +0100
-Message-Id: <1232307860.5204.23.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8bit
+	Sun, 18 Jan 2009 14:48:37 -0500
+Message-ID: <49738736.50500@gentoo.org>
+Date: Sun, 18 Jan 2009 19:47:02 +0000
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090101)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: Linux 2.6.27.12
+References: <20090118185254.GA6478@kroah.com>
+In-Reply-To: <20090118185254.GA6478@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=4iK7pjradFxviD00-tQA:9 a=EAycwt2fY-WPhpLKvFfrBEzD2lcA:4 a=SKpDKCWXRSQA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 22:32 +0300, Andrey Borzenkov wrote:
-> On 18 января 2009 20:25:11 Ingo Molnar wrote:
-> 
-> > Rafael, can you think of anything in the s2ram code that would have
-> >
-> > changed the irqs-off status of hres_timers_resume() in this codepath:
-> > > > [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
-> > > > [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
-> > > > [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
-> > > > [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
-> > > > [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
-> > > > [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
-> > > > [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
-> > > > [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
-> > > > [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
-> >
-> > ?
-> >
-> 
-> As far as I can tell, timekeeping_resume is called via class ->resume 
-> method; and according to comments in sysdev_resume() and 
-> device_power_up(), they are called with interrupts disabled.
-> 
-> Looking at suspend_enter, irqs *are* disabled at this point.
-> 
-> So it actually looks like something (may be some driver) unconditionally 
-> enabled irqs in resume path.
-> 
-> I believe the patch should be hold back until this is clarified.
+Greg KH wrote:
+> We (the -stable team) are announcing the release of the 2.6.27.11
+> kernel.
 
-Something like so then?
+Thanks! Are you accepting patches for a 2.6.27.13, or is this the end 
+for 2.6.27?
 
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index c98c31e..53868b8 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -341,13 +341,17 @@ static void __sysdev_resume(struct sys_device *dev)
- 	struct sysdev_driver *drv;
- 
- 	/* First, call the class-specific one */
--	if (cls->resume)
-+	if (cls->resume) {
- 		cls->resume(dev);
-+		WARN(!irqs_disabled(), "%Fp enabled IRQs\n", cls->resume);
-+	}
- 
- 	/* Call auxillary drivers next. */
- 	list_for_each_entry(drv, &cls->drivers, entry) {
--		if (drv->resume)
-+		if (drv->resume) {
- 			drv->resume(dev);
-+			WARN(!irqs_disabled(), "%Fp enabled IRQs\n", drv->resume);
-+		}
- 	}
- }
- 
-
+Cheers,
+Daniel
 
