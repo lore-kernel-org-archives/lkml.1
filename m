@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765415AbZARNRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765627AbZARNcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765415AbZARNRX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 08:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbZARNRO
+	id S1765627AbZARNcv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 08:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbZARNcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 08:17:14 -0500
-Received: from netgear.net.ru ([195.178.208.66]:47759 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756028AbZARNRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 08:17:14 -0500
-Date: Sun, 18 Jan 2009 16:17:15 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux killed Kenny, bastard!
-Message-ID: <20090118131715.GB19292@ioremap.net>
-References: <bTNi6-3kb-9@gated-at.bofh.it> <bTOea-4QT-1@gated-at.bofh.it> <bTQ6f-7Qs-1@gated-at.bofh.it> <bTQpv-5o-3@gated-at.bofh.it> <bTQzd-iK-5@gated-at.bofh.it> <bTXhp-2IA-31@gated-at.bofh.it> <bTZjb-62D-25@gated-at.bofh.it> <E1LOCze-00020X-GT@be1.7eggert.dyndns.org> <20090117154147.GA12863@ioremap.net> <alpine.LSU.0.999.0901181337430.6179@be1.lrz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.0.999.0901181337430.6179@be1.lrz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 18 Jan 2009 08:32:41 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:40902 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757242AbZARNck (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 08:32:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=pMcyzFdhOJrISUsyTk+5toNR39m6jEvTANAJrTdwZGpGUxx8HUxYQzldGmfGJ+FThd
+         Nott98BOX/xoy8IOanix3Idi/g58VbJcV8kgdzxWd535+WLk6BH2qJ4het/25djvwVOW
+         +hcIz8G1j/0X5homGlKi0DYO3ngT9osq/s+R4=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Philipp Zabel <philipp.zabel@gmail.com>
+Subject: [PATCH] regulator: move bq24022 init back to module_init instead of subsys_initcall
+Date: Sun, 18 Jan 2009 14:32:27 +0100
+Message-Id: <1232285547-6518-1-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 01:49:58PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
-> > OOM scores can not be reliably tuned system-wide.
-> 
-> As I said, if a program starts misbehaving, it's mostly not sane to keep
-> it alive. Besides that, the oom_adj allows you to special case some
-> processes to be immortal or to be kenny, but you should be prepared for 
-> trouble then.
+This workaround was needed when regulator/ was not linked before both
+power/ and usb/otg/ in drivers/Makefile. Now that it is even linked
+before mfd/, this patch makes sure that bq24022 isn't probed before the
+GPIO expander is set up.
 
-oom_adj can turn off the oom-killer for given PID and make it
-essentially immortal, it practically can not faingrainely tune this.
-But even than can only be achieved with lots of problems, that's the
-main point of the patch: to make things simple for the people who know
-what they are doing.
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/regulator/bq24022.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/regulator/bq24022.c b/drivers/regulator/bq24022.c
+index ebae7c0..21682d5 100644
+--- a/drivers/regulator/bq24022.c
++++ b/drivers/regulator/bq24022.c
+@@ -165,11 +165,7 @@ static void __exit bq24022_exit(void)
+ 	platform_driver_unregister(&bq24022_driver);
+ }
+ 
+-/*
+- * make sure this is probed before gpio_vbus and pda_power,
+- * but after asic3 or other GPIO expander drivers.
+- */
+-subsys_initcall(bq24022_init);
++module_init(bq24022_init);
+ module_exit(bq24022_exit);
+ 
+ MODULE_AUTHOR("Philipp Zabel");
 -- 
-	Evgeniy Polyakov
+1.5.6.5
+
