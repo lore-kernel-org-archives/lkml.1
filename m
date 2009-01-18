@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756268AbZARUjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZARUlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756268AbZARUjs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 15:39:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZARUjh
+	id S1756590AbZARUlQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 15:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZARUlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 15:39:37 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:50502 "EHLO mail.dvmed.net"
+	Sun, 18 Jan 2009 15:41:00 -0500
+Received: from tservice.ru ([195.178.208.66]:60128 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbZARUjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 15:39:36 -0500
-Message-ID: <49739371.5030107@garzik.org>
-Date: Sun, 18 Jan 2009 15:39:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752929AbZARUk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 15:40:59 -0500
+Date: Sun, 18 Jan 2009 23:41:00 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
+Message-ID: <20090118204100.GA31507@ioremap.net>
+References: <bTRYr-2up-21@gated-at.bofh.it> <E1LNBGL-00021y-C8@be1.7eggert.dyndns.org> <20090114192216.GA18123@ioremap.net> <alpine.LSU.0.999.0901152243330.9772@be1.lrz> <20090115223557.GC10429@ioremap.net> <alpine.LSU.0.999.0901171504480.7336@be1.lrz> <20090117142245.GA10801@ioremap.net> <alpine.LSU.0.999.0901181333160.6179@be1.lrz> <20090118131303.GA19292@ioremap.net> <alpine.LSU.0.999.0901182107260.9821@be1.lrz>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Frans Pop <elendil@planet.nl>, tj@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] libata hibernation fixes
-References: <20081104062734.GA4420@havoc.gtf.org> <200901111343.49901.rjw@sisk.pl> <200901181120.08992.elendil@planet.nl> <200901182125.04060.rjw@sisk.pl>
-In-Reply-To: <200901182125.04060.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.0.999.0901182107260.9821@be1.lrz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday 18 January 2009, Frans Pop wrote:
->> Rafael J. Wysocki wrote:
->>> There is a name conflict with a change applied after this patchset had
->>> been created.  The appended patch fixes it for me.
->> [...]
->>> @@ -483,7 +483,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
->>>         const struct dmi_system_id *d; 
->>>
->>>         for (d = list; d->ident; d++)
->>> -               if (dmi_match(d))
->>> +               if (dmi_matches(d))
->>>                         return d;
->> I get two warnings when compiling your patch with this correction on top:
+On Sun, Jan 18, 2009 at 09:25:49PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
+> > It is not about who should not be killed, but who should _be_ in the
+> > first raw.
 > 
-> Hm, there were more patches than one, so I'm not sure.  When I apply all of
-> them, I don't see these error, but perhaps I should resend the entire series.
-> Will do tomorrow.
+> If it comes to the killing, it will start with the first row, or using your 
+> patch, with the only man in the first row, named kenny. Now imagine a 
+> phalanx of spawned kennies protecting a running-wild application from being 
+> killed ...
+>
+> If you set the oom_adj to mark the goat under normal conditions, the system 
+> will adjust itself to abnormal conditions.
 
-That would be useful...  I was planning to regenerate the series, but 
-this would save time.
+Admin who sets is up knows what he is doing. Hope you will not argue
+about the case, when admin will disable the oom-killer and will not be
+able to log in.
 
-Thanks!
+Once again: this is an additional tunable which allows to easily solve
+the problem showed here multiple times. And whily you did not try to
+tune oom-adj yourself you continue arguing that it works the best. It
+does not. Any solution for the showed problem is not a simple and
+nice-looking, the one I proposed imo looks the most convenient for the
+people who really work with the systems where described behaviour was
+observed.
 
-	Jeff
+> > > > No, admin will limit/forbid the connection from the DoSing clients,
+> > > > server must always live to handle proper users.
+> > > 
+> > > If there is no memory, the admin can't even log in.
+> > 
+> > Admin can observe the situation via kvm or sometimes netconsole and
+> > tune the system for the next run.
+> 
+> So your kill-kenny does not only require having exactly one goat system-wide 
+> and no process having the same process name, but also constant supervision.
+> I think it's a really great design!
 
+You should reread (better twice) what we are talking about here and what
+and why patch was proposed. And how it works too.
 
-
-
+-- 
+	Evgeniy Polyakov
