@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZASAAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZASAAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbZASAAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 19:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZASAAL
+	id S1754236AbZASAAo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 19:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZASAAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 19:00:11 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44599 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753451AbZASAAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 19:00:07 -0500
-Date: Mon, 19 Jan 2009 10:59:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
-Message-Id: <20090119105956.573d434f.sfr@canb.auug.org.au>
-In-Reply-To: <1232273454.23100.9.camel@localhost.localdomain>
-References: <1232273454.23100.9.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__19_Jan_2009_10_59_56_+1100_yW1SjCS.8Ur0/7TB"
+	Sun, 18 Jan 2009 19:00:24 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:50550 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755413AbZASAAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 19:00:22 -0500
+Message-ID: <4973C26F.70400@oracle.com>
+Date: Sun, 18 Jan 2009 15:59:43 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Simon W Bock <sbock@uni-tuebingen.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: KALLSYMS always enabled in 'make gconfig' on PS3 kernel
+References: <4972C77B.1070800@uni-tuebingen.de>
+In-Reply-To: <4972C77B.1070800@uni-tuebingen.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4973C271.01E9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__19_Jan_2009_10_59_56_+1100_yW1SjCS.8Ur0/7TB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Simon W Bock wrote:
+> Hi All,
+> this seems to be the most appropriate place to report it...
 
-Hi Jaswinder,
+Yes, or linux-kbuild@vger.kernel.org
 
-On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel=
-.org> wrote:
->
->=20
-> /home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/pkt_cls.h:3=
-06: leaks CONFIG_NET to userspace where it is not valid
-> /home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/pkt_cls.h:3=
-07: leaks CONFIG_NET to userspace where it is not valid
+> I try to compile a kernel on and for the PS3 using Geoff Levand's
+> sources
+> http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux.git;a=summary
+> and did a 'make ps3_defconfig' before doing 'make gconfig'.
+> Now I'd care much more for 300k less in kernel size than for full
+> symbols in the OOPS, so I would like to deselect KALLSYMS and
+> KALLSYMS_ALL. The latter is even suggested to disable in the help text.
+> But whatever I do, those two are always selected. Even when I deselect
+> them using vi, the next time I do a 'make gconfig' on the config-file
+> they are on again.
 
-> diff --git a/include/linux/pkt_cls.h b/include/linux/pkt_cls.h
-> index 3c842ed..7a45e09 100644
-> --- a/include/linux/pkt_cls.h
-> +++ b/include/linux/pkt_cls.h
-> @@ -304,8 +304,8 @@ enum
->  	TCA_FW_UNSPEC,
->  	TCA_FW_CLASSID,
->  	TCA_FW_POLICE,
-> -	TCA_FW_INDEV, /*  used by CONFIG_NET_CLS_IND */
-> -	TCA_FW_ACT, /* used by CONFIG_NET_CLS_ACT */
-> +	TCA_FW_INDEV,	/* used by NET_CLS_IND */
-> +	TCA_FW_ACT,	/* used by NET_CLS_ACT */
->  	TCA_FW_MASK,
+First, this isn't gconfig-specific.  xconfig or menuconfig should
+have the same behavior.  At least I see it in xconfig also.
 
-Again, surely we can improve the tool to not warn about these.  If nothing
-else, the actual warning is not correct.
+> Is this done for some special reason? Or can they be turned off?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+All 3 of the KALLSYMS kconfig symbols are under the kconfig menu
+prompt:  "Configure standard kernel features (for small systems)",
+which is not enabled in ps3_defconfig AFAICT (unless Geoff's is
+modified from that I can see/test in linux-next).  All that you
+need to do is enable that config symbol (called CONFIG_EMBEDDED)
+and then you can modify the KALLSYMS config symbols.
 
---Signature=_Mon__19_Jan_2009_10_59_56_+1100_yW1SjCS.8Ur0/7TB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklzwnwACgkQjjKRsyhoI8z8EgCfT3FPenjEJksupLYaYyUDIzhi
-Rt8AoK+U630Xyfiau/jzUFW9XGrooUbk
-=+Tn1
------END PGP SIGNATURE-----
-
---Signature=_Mon__19_Jan_2009_10_59_56_+1100_yW1SjCS.8Ur0/7TB--
+HTH.
+-- 
+~Randy
