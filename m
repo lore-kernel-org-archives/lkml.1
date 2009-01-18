@@ -1,99 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934036AbZARPww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934095AbZARP4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934036AbZARPww (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 10:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbZARPwh
+	id S934095AbZARP4f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 10:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933683AbZARP4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 10:52:37 -0500
-Received: from mail-gx0-f21.google.com ([209.85.217.21]:37426 "EHLO
-	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933064AbZARPwg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 10:52:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=Z6aRYZvr9tiZRVrSdEIyTMM/w3VQfe9vwpaSy5Q27wgO6sWfvh7V3TfXtpGKZbeK21
-         lO9vVTRPcuhxIUkGDny0W7M4am0HCVNjgPLF+MiJ2hzqeIM9L/4ujf9KNhPTUQq1EPIk
-         q5uKwusKyltS1Yxjpd44DFtICYC38tac5JZNQ=
-Date: Sun, 18 Jan 2009 09:52:31 -0600
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>,
-       jie.yang@atheros.com, atl1-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: Re: [atl2] warn_slowpath in dev_watchdog
-Message-ID: <20090118095231.2c73c448@osprey.hogchain.net>
-In-Reply-To: <767752.95325.qm@web110601.mail.gq1.yahoo.com>
-References: <gkt97e$ti0$1@ger.gmane.org>
-	<20090117194045.649f55a0@osprey.hogchain.net>
-	<767752.95325.qm@web110601.mail.gq1.yahoo.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+	Sun, 18 Jan 2009 10:56:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38380 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933567AbZARP4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 10:56:22 -0500
+Subject: Re: [PATCH 2/3] drivers/gpu/drm: fix sparse warnings: unexport
+ symbols
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: dri-devel@lists.sourceforge.net, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090118152848.4179.85741.stgit@vmbox.hanneseder.net>
+References: <20090118152725.4179.40835.stgit@vmbox.hanneseder.net>
+	 <20090118152848.4179.85741.stgit@vmbox.hanneseder.net>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 21:26:04 +0530
+Message-Id: <1232294164.24415.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Jan 2009 02:18:33 -0800 (PST)
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> Hi,
+On Sun, 2009-01-18 at 16:28 +0100, Hannes Eder wrote:
+> Fix this sparse warnings:
 > 
+>   drivers/gpu/drm/drm_crtc_helper.c:137:6: warning: symbol 'drm_helper_probe_connector_modes' was not declared. Should it be static?
+>   drivers/gpu/drm/drm_modes.c:360:6: warning: symbol 'drm_mode_validate_clocks' was not declared. Should it be static?
 > 
-> > From: Jay Cliburn <jcliburn@gmail.com>
-> > 
-> > On Sat, 17 Jan 2009 18:49:18 +0000 (UTC)
-> > Sitsofe Wheeler wrote:
-> > 
-> > > On an ever so slightly modified 2.6.28. I think this only happens
-> > > when the upstream router/switch goes out to lunch and packets are
-> > > being sent. It is reproducible but only appears on a home
-> > > network...
-> > > 
-> > > [  204.704065] ------------[ cut here ]------------
-> > > [  204.704074] WARNING: at net/sched/sch_generic.c:226
-> > > dev_watchdog +0x22b/0x240()
-> > > [  204.704080] NETDEV WATCHDOG: eth0 (atl2): transmit timed out
-> > 
-> > Please provide your complete dmesg output.
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  drivers/gpu/drm/drm_crtc_helper.c |    6 +++---
+>  drivers/gpu/drm/drm_modes.c       |    7 +++----
+>  2 files changed, 6 insertions(+), 7 deletions(-)
 > 
-> Unfortunately I only saved that snippet of the log (I can provide you
-> a full dmesg but it won't be from a run where this problem occured).
+> diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
+> index d8a982b..a0b2601 100644
+> --- a/drivers/gpu/drm/drm_crtc_helper.c
+> +++ b/drivers/gpu/drm/drm_crtc_helper.c
+> @@ -134,8 +134,9 @@ void drm_helper_probe_single_connector_modes(struct drm_connector *connector,
+>  }
+>  EXPORT_SYMBOL(drm_helper_probe_single_connector_modes);
+>  
+> -void drm_helper_probe_connector_modes(struct drm_device *dev, uint32_t maxX,
+> -				      uint32_t maxY)
+> +static void drm_helper_probe_connector_modes(struct drm_device *dev,
+> +					     uint32_t maxX,
+> +					     uint32_t maxY)
+>  {
+>  	struct drm_connector *connector;
+>  
+> @@ -143,7 +144,6 @@ void drm_helper_probe_connector_modes(struct drm_device *dev, uint32_t maxX,
+>  		drm_helper_probe_single_connector_modes(connector, maxX, maxY);
+>  	}
+>  }
+> -EXPORT_SYMBOL(drm_helper_probe_connector_modes);
+>  
 
-I'd like to see the full dmesg that includes the warning, if you can
-obtain it next time it occurs.  Meanwhile, please see if this patch
-helps.
+hmm, what you are trying to do ?
 
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index 8571e8c..376226c 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -555,14 +555,18 @@ static void atl2_check_for_link(struct atl2_adapter *adapter)
- 	atl2_read_phy_reg(&adapter->hw, MII_BMSR, &phy_data);
- 	spin_unlock(&adapter->stats_lock);
- 
--	/* notify upper layer link down ASAP */
- 	if (!(phy_data & BMSR_LSTATUS)) { /* Link Down */
--		if (netif_carrier_ok(netdev)) { /* old link state: Up */
--		printk(KERN_INFO "%s: %s NIC Link is Down\n",
--			atl2_driver_name, netdev->name);
--		adapter->link_speed = SPEED_0;
--		netif_carrier_off(netdev);
--		netif_stop_queue(netdev);
-+		if (netif_carrier_ok(netdev)) {
-+			/*
-+			 * Notify the upper layer and restart the netdev
-+			 * watchdog timer while we try to recover the link.
-+			 */
-+			netif_carrier_off(netdev);
-+			netif_stop_queue(netdev);
-+			netdev->trans_start = jiffies;
-+			printk(KERN_INFO "%s: %s NIC Link is Down\n",
-+				atl2_driver_name, netdev->name);
-+			adapter->link_speed = SPEED_0;
- 		}
- 	}
- 	schedule_work(&adapter->link_chg_task);
+> 
+>  /**
+> diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+> index 7c36f16..c0cfe39 100644
+> --- a/drivers/gpu/drm/drm_modes.c
+> +++ b/drivers/gpu/drm/drm_modes.c
+> @@ -357,9 +357,9 @@ EXPORT_SYMBOL(drm_mode_validate_size);
+>   * sure each mode falls within a given range (defined by @min and @max
+>   * arrays) and sets @mode->status as needed.
+>   */
+> -void drm_mode_validate_clocks(struct drm_device *dev,
+> -			      struct list_head *mode_list,
+> -			      int *min, int *max, int n_ranges)
+> +static void drm_mode_validate_clocks(struct drm_device *dev,
+> +				     struct list_head *mode_list,
+> +				     int *min, int *max, int n_ranges)
+>  {
+>  	struct drm_display_mode *mode;
+>  	int i;
+> @@ -376,7 +376,6 @@ void drm_mode_validate_clocks(struct drm_device *dev,
+>  			mode->status = MODE_CLOCK_RANGE;
+>  	}
+>  }
+> -EXPORT_SYMBOL(drm_mode_validate_clocks);
+
+??
+
+--
+JSR
+
+
