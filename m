@@ -1,75 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbZARUL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZARUM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbZARUL6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 15:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZARULr
+	id S1755276AbZARUM0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 15:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZARUMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 15:11:47 -0500
-Received: from 203-96-159-182.paradise.net.nz ([203.96.159.182]:49749 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754227AbZARULq (ORCPT
+	Sun, 18 Jan 2009 15:12:01 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47700 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755663AbZARUL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 15:11:46 -0500
-Message-ID: <49738B8C.7020404@bluewatersys.com>
-Date: Mon, 19 Jan 2009 09:05:32 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-CC: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-In-Reply-To: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 18 Jan 2009 15:11:58 -0500
+Subject: Re: x86/Voyager
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Brian Gerst <brgerst@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090118181748.GA24570@elte.hu>
+References: <1232115396-26367-2-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-3-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-4-git-send-email-brgerst@gmail.com>
+	 <1232115396-26367-5-git-send-email-brgerst@gmail.com>
+	 <4972B8AB.8040001@kernel.org>
+	 <73c1f2160901172157j6cd731e5s187e98a069a3ab96@mail.gmail.com>
+	 <4972C53C.5050509@kernel.org>
+	 <73c1f2160901172251t34e824ecue6323ce04fc494e9@mail.gmail.com>
+	 <20090118071427.GA29613@elte.hu>
+	 <1232296885.3247.17.camel@localhost.localdomain>
+	 <20090118181748.GA24570@elte.hu>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 14:11:54 -0600
+Message-Id: <1232309514.3247.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaya Kumar wrote:
-> Hi friends,
+On Sun, 2009-01-18 at 19:17 +0100, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
+> > On Sun, 2009-01-18 at 08:14 +0100, Ingo Molnar wrote:
+> > > * Brian Gerst <brgerst@gmail.com> wrote:
+> > > 
+> > > > On Sun, Jan 18, 2009 at 12:59 AM, Tejun Heo <tj@kernel.org> wrote:
+> > > > > Brian Gerst wrote:
+> > > > >> On Sun, Jan 18, 2009 at 12:05 AM, Tejun Heo <tj@kernel.org> wrote:
+> > > > >>> Hello,
+> > > > >>>
+> > > > >>>> --- a/arch/x86/kernel/setup_percpu.c
+> > > > >>>> +++ b/arch/x86/kernel/setup_percpu.c
+> > > > >>>> @@ -147,6 +147,9 @@ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+> > > > >>>>  #endif
+> > > > >>>>  EXPORT_SYMBOL(__per_cpu_offset);
+> > > > >>>>
+> > > > >>>> +DEFINE_PER_CPU(int, cpu_number);
+> > > > >>>> +EXPORT_PER_CPU_SYMBOL(cpu_number);
+> > > > >>> This is inside CONFIG_HAVE_SETUP_PER_CPU_AREA.  I think voyage would
+> > > > >>> be unhappy with this change.
+> > > > >>
+> > > > >> Is there any specific reason Voyager doesn't use the x86
+> > > > >> setup_per_cpu_areas() function?  I don't see anything on a quick
+> > > > >> glance that would not work.  The x86 code is pretty much a superset of
+> > > > >> the default code in init/main.c.
+> > > > >
+> > > > > I have no idea at all.  Given that not many people can test it, I
+> > > > > figured just leaving it alone would be the best course but if it can
+> > > > > be merged, all the better.
+> > > > 
+> > > > Unfortunately Voyager doesn't compile currently for unrelated reasons.
+> > > >  I'll take a look at incorporating it into these patches, but I can't 
+> > > > even do a compile test right now.
+> > 
+> > What are "unrelated reasons"?, 2.6.28 compiles and boots for me, except
+> > some of the compile fixes (which are regressions, by the way) aren't
+> > included in spite of being sent several times.
+> >
+> > I've put them up here:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/jejb/voyager-2.6.git
+> 
+> These are not complete as you did not implement the cleanups that we 
+> suggested - and hence they are not acceptable (i.e. consider this a NAK). 
 
-> +
-> +	/* BATCH GPIO OUTPUT */
-> +int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int maskwidth);
-> +
-> +The following examples help explain how this function is to be used.
-> + Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
-> + A: gpio_set_batch(gpio=0, values=0x0, bitmask=0xFF, width=8);
-> + Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
-> + A: gpio_set_batch(gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16);
-> + Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
-> + A: gpio_set_batch(gpio=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32);
-> +
+They were build fixes for a -rc kernel.  Even if I agreed with your new
+feature work, that's inappropriate for the -rc stage (and actually would
+take much longer).  Holding regressions fixes hostage to new feature
+work is wrong.
 
-Can the gpio_set_batch function be used to set non-consecutive gpios?
-For example:
+> They just prolongue the pain of subarchitectures.
 
-  gpio_set_batch(0, 0x0, 0x88, 8);
+The pain being where you break it and I fix it?
 
-To clear gpios 3 and 7? It looks like the pxa implementation will
-support this, but can it be guaranteed for other architectures? If so,
-can we put an example in the documentation. If not, can we make it clear
-that you shouldn't do this in the documentation. Also , in the latter
-case is it necessary to pass the bitmask, since it will just be ((1 <<
-bitwidth) - 1)?
+> Your previous round of fixes were problematic: i remember them breaking 
+> the normal x86 build at least twice - showing the collateral cost of 
+> subarchitectures.
 
-~Ryan
+I thought I fixed everything: it works for me (tm) on all my PC like x86
+boxes ... if it's broken on something more esoteric, you'll actually
+need to send me details so I can fix it.  What exactly is broken?
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
+>  If we had the x86/Voyager complications isolated in a 
+> single arch/x86/kernel/voyager_quicks.c module, via a qx86_quirks and 
+> similar mechanisms the end result would be far more maintainable.
+> 
+> > I haven't included the cpumask fixes (so it won't compile on 2.6.29-rc2 
+> > yet) because I'll have to try to polish them to fit in with whatever's 
+> > going on.  Plus there's some type of initramfs boot failure that I need 
+> > to investigate.  However, usually I wait until the x86 churn is 
+> > finished, which is a lot later into the -rc cycle than this before 
+> > fixing up all the breakage.
+> > 
+> > > Peter/James, what's the current status of x86/Voyager cleanups?
+> > 
+> > The only outstanding problem I can see in 2.6.29 is a cpumask screw up 
+> > caused by Mike Travis ... it looks easily fixable, he just forgot to 
+> > convert voyager.
+> > 
+> > I have to say that putting the SMP CPU definitions in cpu/common.c 
+> > hedged around with ifdefs for type looks really to be the wrong thing to 
+> > do.  We already have compile selected files with these types, the 
+> > definition should be in there.
+> > 
+> > > A couple of months ago i made a few suggestions about how to convert 
+> > > Voyager to the cleaner x86_quirks 'quirks HAL' (from the current 
+> > > fragile and hard and expensive to maintain 'compile time HAL'), but it 
+> > > didnt seem to go anywhere. See the discussion of this timeframe:
+> > > 
+> > >     http://lkml.org/lkml/2008/11/3/53
+> > > 
+> > > The VisWS subarch (which was a similarly excentric design that was 
+> > > only a PC in terms of having Intel CPUs) has been converted to 
+> > > CONFIG_X86_VISWS already, with arch/x86/kernel/visws_quirks.c holding 
+> > > the optional quirk handlers.
+> > > 
+> > > The desired end result would be to have a CONFIG_X86_VOYAGER=y build 
+> > > mode that adds the quirk handlers to an otherwise generic kernel, with 
+> > > most of the quirks concentrated into a single 
+> > > arch/x86/kernel/voyager_quirks.c file - instead of having a full 
+> > > subarch for x86/Voyager. Both arch/x86/mach-voyager/ and 
+> > > arch/x86/include/asm/mach-voyager/ would go away in the end - because 
+> > > all functionality is merged into the generic code and the quirks would 
+> > > be in voyager_quirks.c.
+> > 
+> > You appear to have forgotten that we already had this discussion here:
+> > 
+> > http://marc.info/?t=122539020300002
+> 
+> Why would i have forgotten that? We asked you to do those cleanups and 
+> offered help. AFAICS you have not submitted patches to that effect and you 
+> did not address the review feedback we gave you on your patches. If you 
+> have sent patches that implement my x86_quirks suggestions then please 
+> show me the URIs.
 
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
+I addressed all the review issues ... even that thread you quote has my
+reply as its last entry.
+
+> > But to precis, the bottom line is that I'm concerned about the damage to 
+> > mainline x86 this would cause because voyager is a vastly different 
+> > beast.  We'd be doubling at least the number of function pointer 
+> > indirections, plus the current quirk stuff is inadequate: voyager needs 
+> > boot time separation to handle the unique SUS maps and other things, so 
+> > there'd be a big intrusion into the boot system as well.
+> > 
+> > > I'd be glad to lend a helping hand both with the patches and with testing 
+> > > on non-Voyager - especially the SMP bits probably need extensions on the 
+> > > x86_quirks side. (And i'm sure the other x86 maintainers would we glad to 
+> > > help out with this process too.)
+> > > 
+> > > x86/Voyager is the last holdout in this area, and with an active kernel 
+> > > developer like James behind it it ought to be fixable - should James have 
+> > > the time/interest.
+> > 
+> > But no-one's yet made any argument for why it's a worthwhile thing to be 
+> > doing.
+> 
+> Because the sub-arch code is butt-ugly.
+> 
+> x86 subarchitectures are a hack that should never have gone upstream - and 
+> we are now reversing that braindamage, step by step. Subarchitectures are 
+> a compile-time "HAL", but a highly non-transparent one at that. They 
+> complicates the x86 architecture in a couple of key structures and very 
+> fundamentally so - and that results in continued complications in critical 
+> areas of the x86 code.
+
+Right: it's a compile time HAL.  Your "cleanup" is to convert it to a
+runtime one, which is a lot more complex because voyager still has to
+influence the x86 path in those locations regardless: it's not an x86 PC
+architecture and so is never going to be able to boot through an APIC/MP
+table SMP boot sequence.
+
+I'm not actually bothered by the complexity, though ... it would be cool
+for me to have a kernel that boots on both voyager and a PC.  What
+worries me is the cost (both in terms of execution time and maintenance
+burden) this would impose on the standard PC path.
+
+The other thing I will point out is that if you think a runtime HAL
+simplification could be applied to the current kernel, a compile time
+HAL could equally well be done.
+
+> One example where this shows up in full force in the Kconfig space. For 
+> example in arch/x86/Kconfig we have _more than 20_ VOYAGER quirks:
+> 
+> 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+> 	select HAVE_ARCH_KGDB if !X86_VOYAGER
+> 	def_bool X86_64_SMP || (X86_SMP && !X86_VOYAGER)
+> 	depends on !SMP || !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
+> 	depends on (X86_32 && !X86_VOYAGER) || X86_64
+> 	depends on !X86_VOYAGER
+> 	depends on X86_SMP || (X86_VOYAGER && SMP) || (64BIT && ACPI_SLEEP)
+> 	depends on X86_VOYAGER
+> 	depends on X86_MPPARSE || X86_VOYAGER
+> 	depends on X86_32 && PCI && !X86_VOYAGER && X86_MPPARSE && PCI_GODIRECT
+> 	depends on !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	depends on X86_32 && !SMP && !(X86_VOYAGER || X86_GENERICARCH)
+> 	depends on X86_64 || (X86_32 && (X86_UP_APIC || (SMP && !X86_VOYAGER) || X86_GENERICARCH))
+> 	depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP && !X86_VOYAGER) || X86_GENERICARCH))
+> 	depends on !X86_VOYAGER
+> 	depends on SMP && HOTPLUG && !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 	bool "MCA support" if !X86_VOYAGER
+> 	default y if X86_VOYAGER
+> 	depends on !X86_VOYAGER
+> 
+> The VISWS code was in a similar situation not so long ago. It was a quirky 
+> subarchitecture similar to Voyager: it had no standard PC compatibility at 
+> all, other than the use of Intel CPUs.
+
+Hmm, but what that shows is that the PC configuration path is complex
+anyway.  Voyager doesn't really make that much more so (as shown by the
+fact that most of those depends have things other than voyager in them).
+
+> VISWS had about 20 quirks in arch/x86/Kconfig that needlessly complicated 
+> the picture there. It caused a number of build breakages and complicated 
+> development for many cycles.
+> 
+> After we merged the VISWS subarch into the generic code its quirk count in 
+> arch/x86/Kconfig went down to _one_ only. The whole VISWS impact has 
+> dwindled down to almost zero. The difference is significant, and we'd like 
+> to see the same kind of cleanup happen with x86/Voyager too.
+> 
+> There's countless of other areas where the elimination of subarchitectures 
+> simplifies the code and shrinks x86 maintenance costs.
+
+Visws isn't very different from a standard PC ... it's really only about
+how the apics get included and a few SGI specific things (like mem
+configuration, reboot and power off).
+
+I think the runtime piece is probably doable ... largely because
+virtualisation has already cost us hugely via function pointers in this
+area, so the extra additions to pull in the few voyager differences
+might not be that noticeable.
+
+I really don't see how the boot path can be simplified by this ... in
+fact, I think it will grow in complexity.
+
+So ... the probable way to get this to work is to boot x86 as a UP
+system and then enable SMP later on (voyager can boot a standard UP
+kernel because the SUS can emulate a UP PC) ... basically switch to SMP
+using alternatives and then bring the CPUs up via hotplug.  This
+approach is really very different from the way x86 works today, where
+the SMP structures are sprayed throughout the architecture specific
+directory.
+
+It can work, though ... hotplug bringup is how we boot parisc SMP as
+well ... I just think it will be a lot of perturbation to x86.
+
+> > > If there's no time/interest in that then we can temporarily mark 
+> > > Voyager CONFIG_BROKEN until cleanup/fix patches arrive.
+> > 
+> > It's not broken and I've already sent you the cleanup/fix patches ... I 
+> > can send them directly to Linus as voyager maintainer if you prefer.
+> 
+> Well, i'm NAK-ing those patches in their current form - x86/Voyager should 
+> be restructured like the other ex subarchitectures were done - or we'll 
+> have to mark it CONFIG_BROKEN until the right kind of patches arrive. 
+> 
+> Please send patches to the x86 maintainers and implement the cleanups we 
+> have asked for - or let us know if you dont have time/interest in doing 
+> so.
+
+Look, I've already told you your quirks don't work because of the way
+voyager boots.
+
+However, voyager can make use of the current quirks you have ... it's
+just there'll be a lot left over when that's all over, plus some pieces
+of the infrastructure itself will need adjusting.  So why don't we do
+this:  Fix what's broken now (or show me what needs adjusting about the
+fixes) and I'll update voyager to use the current quirks infrastructure
+(and update the infrastructure).  Then we can both look at what's left
+over when that's finished?
+
+James
+
+
