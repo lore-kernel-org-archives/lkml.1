@@ -1,263 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934137AbZARPb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933874AbZARPjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934137AbZARPb0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 10:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbZARPaM
+	id S933874AbZARPjx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 10:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765577AbZARPjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 10:30:12 -0500
-Received: from mail-ew0-f12.google.com ([209.85.219.12]:43630 "EHLO
-	mail-ew0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765091AbZARPaH (ORCPT
+	Sun, 18 Jan 2009 10:39:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44513 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765506AbZARPjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 10:30:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=gR0xsmjah2Q3zbTuGeiT1dAz6xMaT27XrLtCjeobpzb6lJOqVX1ICqEsX+3T0R2M6r
-         M4x2m7PBnAIpY0g7vcNYYJcGWVjk+I9ahCOV9m65tXah7tTYsAMJfsFTO2ZRIYPwwHY7
-         rxi3t2kRsyFqt3DVfwUzxVGv+yeIEsHLEcmf8=
-Date: Sun, 18 Jan 2009 16:32:21 +0100
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Jens Axboe <axboe@suse.de>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] splice: fix deadlock
-Message-ID: <20090118153221.GA20980@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 18 Jan 2009 10:39:41 -0500
+Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in
+ hres_timers_resume
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200901181642.00886.arvidjaar@mail.ru>
+References: <200901181642.00886.arvidjaar@mail.ru>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 16:39:29 +0100
+Message-Id: <1232293169.5204.14.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8e1d58b03b47d937bc5e53d902bac6e690709034 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 18 Jan 2009 16:07:29 +0100
-Subject: [PATCH] splice: fix deadlock
+On Sun, 2009-01-18 at 16:41 +0300, Andrey Borzenkov wrote:
+> [17854.688347] =================================
+> [17854.688347] [ INFO: inconsistent lock state ]
+> [17854.688347] 2.6.29-rc2-1avb #1
+> [17854.688347] ---------------------------------
+> [17854.688347] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> [17854.688347] pm-suspend/18240 [HC0[0]:SC0[0]:HE1:SE1] takes:
+> [17854.688347]  (&cpu_base->lock){++..}, at: [<c0136fcc>] retrigger_next_event+0x5c/0xa0
+> [17854.688347] {in-hardirq-W} state was registered at:
+> [17854.688347]   [<c01443cd>] __lock_acquire+0x79d/0x1930
+> [17854.688347]   [<c01455bc>] lock_acquire+0x5c/0x80
+> [17854.688347]   [<c03092e5>] _spin_lock+0x35/0x70
+> [17854.688347]   [<c0136e61>] hrtimer_run_queues+0x31/0x140
+> [17854.688347]   [<c0128d98>] run_local_timers+0x8/0x20
+> [17854.688347]   [<c0128dd3>] update_process_times+0x23/0x60
+> [17854.688347]   [<c013e274>] tick_periodic+0x24/0x80
+> [17854.688347]   [<c013e2e2>] tick_handle_periodic+0x12/0x70
+> [17854.688347]   [<c0104e24>] timer_interrupt+0x14/0x20
+> [17854.688347]   [<c01607b9>] handle_IRQ_event+0x29/0x60
+> [17854.688347]   [<c0161c59>] handle_level_irq+0x69/0xe0
+> [17854.688347]   [<ffffffff>] 0xffffffff
+> [17854.688347] irq event stamp: 55771
+> [17854.688347] hardirqs last  enabled at (55771): [<c0309125>] _spin_unlock_irqrestore+0x35/0x60
+> [17854.688347] hardirqs last disabled at (55770): [<c0309419>] _spin_lock_irqsave+0x19/0x80
+> [17854.688347] softirqs last  enabled at (54836): [<c0124f54>] __do_softirq+0xc4/0x110
+> [17854.688347] softirqs last disabled at (54831): [<c01049ae>] do_softirq+0x8e/0xe0
+> [17854.688347] 
+> [17854.688347] other info that might help us debug this:
+> [17854.688347] 3 locks held by pm-suspend/18240:
+> [17854.688347]  #0:  (&buffer->mutex){--..}, at: [<c01dd4c5>] sysfs_write_file+0x25/0x100
+> [17854.688347]  #1:  (pm_mutex){--..}, at: [<c015056f>] enter_state+0x4f/0x140
+> [17854.688347]  #2:  (dpm_list_mtx){--..}, at: [<c027880f>] device_pm_lock+0xf/0x20
+> [17854.688347] 
+> [17854.688347] stack backtrace:
+> [17854.688347] Pid: 18240, comm: pm-suspend Not tainted 2.6.29-rc2-1avb #1
+> [17854.688347] Call Trace:
+> [17854.688347]  [<c0306248>] ? printk+0x18/0x20
+> [17854.688347]  [<c0141fac>] print_usage_bug+0x16c/0x1d0
+> [17854.688347]  [<c0142bcf>] mark_lock+0x8bf/0xc90
+> [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
+> [17854.688347]  [<c01441b0>] __lock_acquire+0x580/0x1930
+> [17854.688347]  [<c030916d>] ? _spin_unlock+0x1d/0x20
+> [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
+> [17854.688347]  [<c013dd38>] ? clockevents_program_event+0x98/0x160
+> [17854.688347]  [<c0142fe8>] ? mark_held_locks+0x48/0x90
+> [17854.688347]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
+> [17854.688347]  [<c0143229>] ? trace_hardirqs_on_caller+0x139/0x190
+> [17854.688347]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
+> [17854.688347]  [<c01455bc>] lock_acquire+0x5c/0x80
+> [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
+> [17854.688347]  [<c03092e5>] _spin_lock+0x35/0x70
+> [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
+> [17854.688347]  [<c0136fcc>] retrigger_next_event+0x5c/0xa0
+> [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
+> [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
+> [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
+> [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
+> [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
+> [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
+> [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
+> [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
+> [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
+> [17854.688347]  [<c0150660>] ? state_store+0x0/0xc0
+> [17854.688347]  [<c0202da4>] kobj_attr_store+0x24/0x30
+> [17854.688347]  [<c01dd53c>] sysfs_write_file+0x9c/0x100
+> [17854.688347]  [<c019916c>] vfs_write+0x9c/0x160
+> [17854.688347]  [<c0103494>] ? restore_nocheck_notrace+0x0/0xe
+> [17854.688347]  [<c01dd4a0>] ? sysfs_write_file+0x0/0x100
+> [17854.688347]  [<c01992ed>] sys_write+0x3d/0x70
+> [17854.688347]  [<c0103371>] sysenter_do_call+0x12/0x31
 
-splice from a file or socket needs to lock both the file/socket and the
-pipe inodes. pipe_wait() unlocks only the pipe lock, regardless of the
-order in which they were taken.
+Not sure what caused this to trigger, but it looks like
+timekeeping_resume() isn't called with IRQs disabled (and the code
+doesn't seem to expect that since it uses write_seqlock_irqsave).
 
-This patch adds an additional (optional) argument to pipe_wait(); if
-specified, pipe_wait() will unlock and reacquire both inode locks.
+hres_timers_resume() however calls retrigger_next_event() which does
+require IRQs disabled and doesn't do that.
 
-It fixes the lockup that occurs with the test-case below, but please
-review carefully. Consider this patch a proposal rather than a fix.
+Like said, I'm not sure what caused this since the code in question
+doesn't seem to have changed since April 2007.
 
- #define _GNU_SOURCE
-
- #include <sys/socket.h>
- #include <sys/types.h>
-
- #include <fcntl.h>
- #include <errno.h>
- #include <pthread.h>
- #include <signal.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <unistd.h>
-
- static int sock_fd[2];
- static int pipe_fd[2];
-
- #define N 16384
-
- static void *do_write(void *unused)
- {
- 	unsigned int i;
-
- 	for (i = 0; i < N; ++i)
- 		write(pipe_fd[1], "x", 1);
-
- 	return NULL;
- }
-
- static void *do_read(void *unused)
- {
- 	unsigned int i;
- 	char c;
-
- 	for (i = 0; i < N; ++i)
- 		read(sock_fd[0], &c, 1);
-
- 	return NULL;
- }
-
- static void *do_splice(void *unused)
- {
- 	unsigned int i;
-
- 	for (i = 0; i < N; ++i)
- 		splice(pipe_fd[0], NULL, sock_fd[1], NULL, 1, 0);
-
- 	return NULL;
- }
-
- int main(int argc, char *argv[])
- {
- 	pthread_t writer;
- 	pthread_t reader;
- 	pthread_t splicer[2];
-
- 	while (1) {
- 		if (socketpair(AF_UNIX, SOCK_STREAM, 0, sock_fd) == -1)
- 			exit(EXIT_FAILURE);
-
- 		if (pipe(pipe_fd) == -1)
- 			exit(EXIT_FAILURE);
-
- 		pthread_create(&writer, NULL, &do_write, NULL);
- 		pthread_create(&reader, NULL, &do_read, NULL);
- 		pthread_create(&splicer[0], NULL, &do_splice, NULL);
- 		pthread_create(&splicer[1], NULL, &do_splice, NULL);
-
- 		pthread_join(writer, NULL);
- 		pthread_join(reader, NULL);
- 		pthread_join(splicer[0], NULL);
- 		pthread_join(splicer[1], NULL);
-
- 		printf("failed to deadlock, retrying...\n");
- 	}
-
- 	return EXIT_SUCCESS;
- }
-
-Cc: Jens Axboe <axboe@suse.de>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+Anyway, does the below patch cure trouble?
 ---
- fs/fifo.c                 |    2 +-
- fs/pipe.c                 |   19 +++++++++++--------
- fs/splice.c               |    8 ++++----
- include/linux/pipe_fs_i.h |    4 ++--
- 4 files changed, 18 insertions(+), 15 deletions(-)
+Subject: hrtimer: fix irq recursion deadlock
 
-diff --git a/fs/fifo.c b/fs/fifo.c
-index f8f97b8..bd2bfc6 100644
---- a/fs/fifo.c
-+++ b/fs/fifo.c
-@@ -20,7 +20,7 @@ static void wait_for_partner(struct inode* inode, unsigned int *cnt)
- 	int cur = *cnt;	
- 
- 	while (cur == *cnt) {
--		pipe_wait(inode->i_pipe);
-+		pipe_wait(inode->i_pipe, NULL);
- 		if (signal_pending(current))
- 			break;
- 	}
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 3a48ba5..eb7b893 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -37,8 +37,13 @@
-  * -- Manfred Spraul <manfred@colorfullife.com> 2002-05-09
+retrigger_next_event() requires IRQs disabled, provide that for the
+resume callback.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 2c40ee8..430103d 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -614,8 +614,12 @@ void clock_was_set(void)
   */
- 
--/* Drop the inode semaphore and wait for a pipe event, atomically */
--void pipe_wait(struct pipe_inode_info *pipe)
-+/*
-+ * Drop the inode semaphore and wait for a pipe event, atomically.
-+ *
-+ * inode2 specifies another inode lock to drop. May be NULL if no such other
-+ * inode exists.
-+ */
-+void pipe_wait(struct pipe_inode_info *pipe, struct inode *inode2)
+ void hres_timers_resume(void)
  {
- 	DEFINE_WAIT(wait);
- 
-@@ -47,12 +52,10 @@ void pipe_wait(struct pipe_inode_info *pipe)
- 	 * is considered a noninteractive wait:
- 	 */
- 	prepare_to_wait(&pipe->wait, &wait, TASK_INTERRUPTIBLE);
--	if (pipe->inode)
--		mutex_unlock(&pipe->inode->i_mutex);
-+	inode_double_unlock(pipe->inode, inode2);
- 	schedule();
- 	finish_wait(&pipe->wait, &wait);
--	if (pipe->inode)
--		mutex_lock(&pipe->inode->i_mutex);
-+	inode_double_lock(pipe->inode, inode2);
++	unsigned long flags;
++
+ 	/* Retrigger the CPU local events: */
++	local_irq_save(flags);
+ 	retrigger_next_event(NULL);
++	local_irq_restore(flags);
  }
  
- static int
-@@ -377,7 +380,7 @@ redo:
- 			wake_up_interruptible_sync(&pipe->wait);
-  			kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
- 		}
--		pipe_wait(pipe);
-+		pipe_wait(pipe, NULL);
- 	}
- 	mutex_unlock(&inode->i_mutex);
- 
-@@ -550,7 +553,7 @@ redo2:
- 			do_wakeup = 0;
- 		}
- 		pipe->waiting_writers++;
--		pipe_wait(pipe);
-+		pipe_wait(pipe, NULL);
- 		pipe->waiting_writers--;
- 	}
- out:
-diff --git a/fs/splice.c b/fs/splice.c
-index 4ed0ba4..e79e906 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -240,7 +240,7 @@ ssize_t splice_to_pipe(struct pipe_inode_info *pipe,
- 		}
- 
- 		pipe->waiting_writers++;
--		pipe_wait(pipe);
-+		pipe_wait(pipe, NULL);
- 		pipe->waiting_writers--;
- 	}
- 
-@@ -690,7 +690,7 @@ ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
- 			do_wakeup = 0;
- 		}
- 
--		pipe_wait(pipe);
-+		pipe_wait(pipe, sd->u.file->f_mapping->host);
- 	}
- 
- 	if (do_wakeup) {
-@@ -1523,7 +1523,7 @@ static int link_ipipe_prep(struct pipe_inode_info *pipe, unsigned int flags)
- 				break;
- 			}
- 		}
--		pipe_wait(pipe);
-+		pipe_wait(pipe, NULL);
- 	}
- 
- 	mutex_unlock(&pipe->inode->i_mutex);
-@@ -1563,7 +1563,7 @@ static int link_opipe_prep(struct pipe_inode_info *pipe, unsigned int flags)
- 			break;
- 		}
- 		pipe->waiting_writers++;
--		pipe_wait(pipe);
-+		pipe_wait(pipe, NULL);
- 		pipe->waiting_writers--;
- 	}
- 
-diff --git a/include/linux/pipe_fs_i.h b/include/linux/pipe_fs_i.h
-index 8e41202..be2d399 100644
---- a/include/linux/pipe_fs_i.h
-+++ b/include/linux/pipe_fs_i.h
-@@ -134,8 +134,8 @@ struct pipe_buf_operations {
-    memory allocation, whereas PIPE_BUF makes atomicity guarantees.  */
- #define PIPE_SIZE		PAGE_SIZE
- 
--/* Drop the inode semaphore and wait for a pipe event, atomically */
--void pipe_wait(struct pipe_inode_info *pipe);
-+/* Drop the inode semaphore(s) and wait for a pipe event, atomically */
-+void pipe_wait(struct pipe_inode_info *pipe, struct inode *inode2);
- 
- struct pipe_inode_info * alloc_pipe_info(struct inode * inode);
- void free_pipe_info(struct inode * inode);
--- 
-1.5.6.6
+ /*
+
 
