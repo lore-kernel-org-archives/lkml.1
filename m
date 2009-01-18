@@ -1,37 +1,67 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934842AbZARQrq (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 18 Jan 2009 11:47:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934296AbZARQp4
+	id S1756107AbZASACQ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 18 Jan 2009 19:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZASAB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 11:45:56 -0500
-Received: from mail-gx0-f25.google.com ([209.85.217.25]:57719 "EHLO
-	mail-gx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934744AbZARQpy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 11:45:54 -0500
-Message-ID: <497358be.034c6e0a.5123.ffffd039@mx.google.com>
-From: "iTunes Card" <p.elaine.p@gmail.com>
-Subject: iTunes Gift Card with 60% off
-To: linux-howto@metalab.unc.edu
-Content-Type: text/plain;
-	charset="GB2312"
-MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-Reply-To: p.elaine.p@gmail.com
-Date: Mon, 19 Jan 2009 00:27:51 +0800
+	Sun, 18 Jan 2009 19:01:57 -0500
+Received: from delivery-a-04.cablevision.net.mx ([200.77.170.4]:29092 "EHLO
+	delivery-a-04.cablevision.net.mx" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753045AbZASAB4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 19:01:56 -0500
+X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Jan 2009 19:01:56 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcDAPRPc0kKAwFr/2dsb2JhbAAIh3KFWrQQjSaFc4I6
+X-IronPort-AV: E=Sophos;i="4.37,285,1231135200"; 
+   d="scan'208";a="274014604"
+Date: Sun, 18 Jan 2009 15:56:16 -0800
+From: Curso Sky Running <653skynevado@cablevision.net.mx>
+Subject: =?windows-1252?Q?Enero_25._=FAltimos_lugares...?=
+To: Clasificados <NOREPLY@yahoo.it>
+Reply-to: Curso Sky Running <NOREPLY@yahoo.it>
+Message-id: <410-220091018235615913@fertrejo-PC>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1252
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S934842AbZARQrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756107AbZASACQ@vger.kernel.org>
 
-RGVhciBmcmllbmQ6DQogDQpJIHNlbGwgVVMgaVR1bmVzIEdpZnQgQ2FyZCAkNTAsICQ3NSwgJDEw
-MCwgJDE1MCwgJDIwMCB3aXRoIGdyZWF0IGRpc2NvdW50LCA2MCUgb2ZmIHlvdSBvbmx5IG5lZWQg
-cGF5IDQwJS4gDQogDQpUaGlzIGlzIG15IG5ldyBVUyBpVHVuZXMgR2lmdCBDYXJkIHNob3AgV2Vi
-c2l0ZSBsaW5rOg0KIA0KaHR0cDovL2l0dW5lc2dpZnRjYXJkZGlzY291bnQuYmxvZ3Nwb3QuY29t
-Lw0KIA0KWW91IGNhbiBidXkgYWxsIFVTIGlUdW5lcyBHaWZ0IENhcmQgJDUwLCAkNzUsICQxMDAs
-ICQxNTAsICQyMDAgIHdpdGggZ3JlYXQgZGlzY291bnQsIHlvdSBvbmx5IG5lZWQgcGF5IDQwJS4g
-DQogDQpUaGlzIGlzIG15IHNob3AgY3VzdG9tZXIgc2VydmljZSBFbWFpbCwgeW91IGNhbiBjb250
-YWN0IG1lIHdpdGggdGhpcyBFbWFpbDoNCmdvb2RzZWxsZXIyMDA5MTFAZ21haWwuY29tDQogDQpX
-ZWxjb21lIHRvIHB1cmNoYXNlIFVTIGlUdW5lcyBHaWZ0IENhcmQhIEhvcGUgZG8gYnVzaW5lc3Mg
-d2l0aCB5b3UgYWdhaW4uIFdlbGNvbWUgdG8gcHVyY2hhc2UgVVMgaVR1bmVzIEdpZnQgQ2FyZCEg
-DQo=
+
+Curso  Sky Running
+Nevado de Toluca - próximo domingo. Enero 25
+
+Video
+http://mx.youtube.com/watch?v=mGvpSDsbNGQ&eurl=http://www.deporte6am.com/
+
+Inscripciones
+http://www.deporte6am.com/skyrunning/
+
+Atentamente
+Deporte6am
+http://www.deporte6am.com
+Tel. 51350564
+
+
+______________________________
+
+Estimado(a) Deportista:
+
+Publica tu Clasificado GRATIS.
+
+http://www.deporte6am.com/clasificados
+
+Instrucciones:
+1. click en POST AD.
+2. Recibes e-mail automático.
+3. Activas clasificado en e-mail recibido.
+
+
+Atentamente
+Deporte6am
+http://www.deporte6am.com
+borrar de lista nuevomtb100k@yahoo.it
+
+
+
