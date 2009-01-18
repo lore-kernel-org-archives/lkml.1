@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZARTno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZARTom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZARTno (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbZARTn1
+	id S1755530AbZARTom (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZARTob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:43:27 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:39262 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbZARTn1 (ORCPT
+	Sun, 18 Jan 2009 14:44:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56052 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753611AbZARTob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:43:27 -0500
-Date: Sun, 18 Jan 2009 20:45:10 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
-Message-ID: <20090118194510.GA2507@uranus.ravnborg.org>
-References: <1232287474.3130.19.camel@localhost.localdomain> <20090118172800.GB22624@elte.hu> <20090118185034.GA26908@elte.hu> <20090118190836.GA2294@uranus.ravnborg.org> <20090118190941.GC858@elte.hu>
+	Sun, 18 Jan 2009 14:44:31 -0500
+Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in
+ hres_timers_resume
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200901182232.57186.arvidjaar@mail.ru>
+References: <200901181642.00886.arvidjaar@mail.ru>
+	 <1232293169.5204.14.camel@laptop> <20090118172511.GA22624@elte.hu>
+	 <200901182232.57186.arvidjaar@mail.ru>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 18 Jan 2009 20:44:20 +0100
+Message-Id: <1232307860.5204.23.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118190941.GC858@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 08:09:41PM +0100, Ingo Molnar wrote:
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
+On Sun, 2009-01-18 at 22:32 +0300, Andrey Borzenkov wrote:
+> On 18 января 2009 20:25:11 Ingo Molnar wrote:
 > 
-> > On Sun, Jan 18, 2009 at 07:50:34PM +0100, Ingo Molnar wrote:
-> > > 
-> > > hm, i just noticed this detail:
-> > > 
-> > > commit 3521c5eef990515719614e212b26ea49e610d072
-> > > Author: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > Date:   Sat Jan 17 19:25:46 2009 +0530
-> > > 
-> > >     headers_check fix: x86, swab.h
-> > >     
-> > >     fix the following 'make headers_check' warnings:
-> > >     
-> > >       usr/include/asm/swab.h:4: include of <linux/types.h> is preferred over <asm/types.h>
-> > >       usr/include/asm/swab.h:7: found __[us]{8,16,32,64} type without #include <linux/types.h>
-> > >       usr/include/asm/swab.h:10: leaks CONFIG_X86 to userspace where it is not valid
-> > >       usr/include/asm/swab.h:40: leaks CONFIG_X86 to userspace where it is not valid
-> > >     
-> > >     Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > > diff --git a/arch/x86/include/asm/swab.h b/arch/x86/include/asm/swab.h
-> > > index 306d417..613be68 100644
-> > > --- a/arch/x86/include/asm/swab.h
-> > > +++ b/arch/x86/include/asm/swab.h
-> > > @@ -1,12 +1,15 @@
-> > >  #ifndef _ASM_X86_SWAB_H
-> > >  #define _ASM_X86_SWAB_H
-> > >  
-> > > -#include <asm/types.h>
-> > > +#include <linux/types.h>
-> > > +#ifdef __KERNEL__
-> > >  #include <linux/compiler.h>
-> > > +#endif /* __KERNEL__ */
-> > 
-> > compiler.h includes should be nuked by make headers_instll automatically.
+> > Rafael, can you think of anything in the s2ram code that would have
+> >
+> > changed the irqs-off status of hres_timers_resume() in this codepath:
+> > > > [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
+> > > > [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
+> > > > [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
+> > > > [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
+> > > > [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
+> > > > [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
+> > > > [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
+> > > > [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
+> > > > [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
+> >
+> > ?
+> >
 > 
-> So the compiler.h include can be left there, and headers_check will not 
-> warn about it?
+> As far as I can tell, timekeeping_resume is called via class ->resume 
+> method; and according to comments in sysdev_resume() and 
+> device_power_up(), they are called with interrupts disabled.
+> 
+> Looking at suspend_enter, irqs *are* disabled at this point.
+> 
+> So it actually looks like something (may be some driver) unconditionally 
+> enabled irqs in resume path.
+> 
+> I believe the patch should be hold back until this is clarified.
 
-Correct.
+Something like so then?
 
-	Sam
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index c98c31e..53868b8 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -341,13 +341,17 @@ static void __sysdev_resume(struct sys_device *dev)
+ 	struct sysdev_driver *drv;
+ 
+ 	/* First, call the class-specific one */
+-	if (cls->resume)
++	if (cls->resume) {
+ 		cls->resume(dev);
++		WARN(!irqs_disabled(), "%Fp enabled IRQs\n", cls->resume);
++	}
+ 
+ 	/* Call auxillary drivers next. */
+ 	list_for_each_entry(drv, &cls->drivers, entry) {
+-		if (drv->resume)
++		if (drv->resume) {
+ 			drv->resume(dev);
++			WARN(!irqs_disabled(), "%Fp enabled IRQs\n", drv->resume);
++		}
+ 	}
+ }
+ 
+
+
