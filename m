@@ -1,105 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbZARAFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932721AbZARAO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbZARAFa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 19:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZARAFW
+	id S932721AbZARAO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 19:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZARAOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 19:05:22 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:6540 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbZARAFU (ORCPT
+	Sat, 17 Jan 2009 19:14:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58982 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZARAOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 19:05:20 -0500
-Message-ID: <4972723B.4000201@gawab.com>
-Date: Sat, 17 Jan 2009 16:05:15 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+	Sat, 17 Jan 2009 19:14:16 -0500
+Message-ID: <4972738A.6030506@zytor.com>
+Date: Sat, 17 Jan 2009 16:10:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>
-Subject: Re: 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com>
-In-Reply-To: <497260FE.4010102@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3 warnings
+References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu> <49723912.6020108@zytor.com> <20090117204421.GA1700@bombadil.infradead.org> <alpine.LFD.2.00.0901181032350.3006@localhost.localdomain> <49726C56.6080905@zytor.com> <alpine.LFD.2.00.0901181045550.3006@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901181045550.3006@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> Justin Madru wrote:
->> Ok, more preliminary testing has returned that at least in the case 
->> of the iGoogle page crashing, it's related to google talk.
->> Because right after it connects to the google talk server the crash 
->> happens.
->> And why it doesn't crash on firefox 3.2 is because for some reason 
->> the talk feature doesn't load on that version of firefox.
->> I still get the crashes when going to Preferences->Main or 
->> Preferences->Applications.
->>
->> I tried the suggested moving of .gconf* .gnome* .mozilla*
->> The only thing that did was make firefox crash when going to Preference.
->> I did not try compiling firefox from source, but I did test with the 
->> binaries straight from mozilla.
->> I also tried disabling any plugin/extention (I only have flash and 
->> AdBlockerPlus), but no change.
->>
-> What I should of said, is to maybe uninstall/disable any of those apps 
-> or plugins
-> that are automatically triggered when loading firefox.
-> (although renaming some of  the  .* files is good, freshens it up);
-> So when you don't go to google talk you can surf?
+Linus Torvalds wrote:
+> 
+> On Sat, 17 Jan 2009, H. Peter Anvin wrote:
+>> At least on x86, the two ops should be the same cost?
+> 
+> Not with the code Kyle had, which forces a memory load.
+> 
+> But yes, with a constant address, it at least comes close. But with a 
+> small explicit constant value, the compiler can often do even better. For 
+> example, you can generate a 64-bit -1 in many ways, while a 64-bit random 
+> address is much more work to generate.
+> 
+> Of course, I don't know how much gcc takes advantage of this. Maybe it 
+> always just generates a silly "movq" rather than being smarter about it 
+> (eg "orl $-1,reg" can do it in four bytes, I think, because you can use a 
+> single-byte constant).
+> 
+> Of course, zero is even easier to generate, so NULL is the best constant 
+> of all, but generally small integers are more amenable to optimization 
+> than generic addresses. They're also generally easier to test for.
+> 
 
-So far only a connection to talkgadget.google.com or the 2 tabs in 
-preferences make firefox crash.
-Other than that I've yet to run into another site that makes it crash, 
-and can browse just fine.
-Actually, other than this bug .29-rc2 is running rather nicely ;-)
+When compiling with -O2 -mcmodel=kernel on gcc 4.3.2, you end up with
+the same 7-byte sequence:
 
-Ok, this time I maded sure I uninstalled/disabled everything I could.
-Sill.... same results. So, I decided to try something different. Test 
-with Epiphany.
-I tried both with the geko and webkit backends.
-Same results, a crash when going to my iGoogle page that has google talk 
-applet.
+   4:   48 c7 c7 00 00 00 00    mov    $0x0,%rdi
+                        7: R_X86_64_32S bluttan
+  10:   48 c7 c7 ff ff ff ff    mov    $0xffffffffffffffff,%rdi
 
-But, this time epiphany left an error to the console that gives a clue 
-to the cause:
+With -Os -mcmodel=kernel, it's a bit better:
 
-$ epiphany-webkit                                                
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
-the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) from 
-the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) from 
-the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
-from the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
-from the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
-from the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
-from the grid
-** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
-from the grid
-console message:  @1: Unsafe JavaScript attempt to access frame with URL
-http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js
-from frame with URL
-http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true.
-Domains, protocols and ports must match.
-console message:  @1: Unsafe JavaScript attempt to access frame
-with URL http://www.google.com/ig from frame with URL
-http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card.
-Domains, protocols and ports must match.
-console message:  @1: Unsafe JavaScript attempt to access frame
-with URL http://www.google.com/ig from frame with URL
-http://talkgadget.google.com/talkgadget/blank. Domains,
-protocols and ports must match.
-Segmentation fault
 
-So, it's complaining about matching domains, protocols and ports.
-Henceforth, I would surmise that the bug is related to the network code?
+   4:   48 c7 c7 00 00 00 00    mov    $0x0,%rdi
+                        7: R_X86_64_32S bluttan
+  10:   48 83 cf ff             or     $0xffffffffffffffff,%rdi
 
-Justin Madru
+I would have expected it to have used leaq in the first case, but it's
+the same length (7 bytes) and probably has higher latencies.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
+
