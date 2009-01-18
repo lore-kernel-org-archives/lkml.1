@@ -1,107 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbZARChQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761439AbZARCsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600AbZARChQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 21:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZARChA
+	id S1761439AbZARCsU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 21:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZARCrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 21:37:00 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54611 "EHLO mx2.redhat.com"
+	Sat, 17 Jan 2009 21:47:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42364 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752675AbZARChA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 21:37:00 -0500
-Date: Sun, 18 Jan 2009 03:32:11 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH v3] wait: prevent waiter starvation in
-	__wait_on_bit_lock
-Message-ID: <20090118023211.GA14539@redhat.com>
-References: <20090117215110.GA3300@redhat.com> <20090118013802.GA12214@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118013802.GA12214@cmpxchg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753598AbZARCrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 21:47:47 -0500
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
+       greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1232230980.27094.15.camel@macbook.infradead.org>
+References: <1232223441.3966.22.camel@localhost.localdomain>
+	 <1232228261.27094.0.camel@macbook.infradead.org>
+	 <20090117221932.GA4956@uranus.ravnborg.org>
+	 <1232230980.27094.15.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 08:16:20 +0530
+Message-Id: <1232246780.3097.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18, Johannes Weiner wrote:
->
-> On Sat, Jan 17, 2009 at 10:51:10PM +0100, Oleg Nesterov wrote:
-> >
-> > 	if ((ret = (*action)(q->key.flags))) {
-> > 		__wake_up_bit(wq, q->key.flags, q->key.bit_nr);
-> > 		// or just __wake_up(wq, TASK_NORMAL, 1, &q->key);
-> > 		break;
-> > 	}
-> >
-> > IOW, imho __wait_on_bit_lock() is buggy, not __lock_page_killable(),
-> > no?
->
-> I agree with you, already replied with a patch to linux-mm where Chris
-> posted it originally.
->
-> Peter noted that we have a spurious wake up in the case where A holds
-> the page lock, B and C wait, B gets killed and does a wake up, then A
-> unlocks and does a wake up.  Your proposal has this problem too,
-> right?
+Hello David,
 
-Yes sure. But I can't see how it is possible to avoid the false
-wakeup for sure, please see below.
+On Sun, 2009-01-18 at 09:23 +1100, David Woodhouse wrote:
+> On Sat, 2009-01-17 at 23:19 +0100, Sam Ravnborg wrote:
+> > Nope - include/linux/dvb/audio.h failed to include linux/types.h
+> > despite the fact that is uses __u32 etc.
+> 
+> Er, good point. I saw the <stdint.h> and assumed it was using only
+> proper C types... but then it wouldn't have triggered the warning, would
+> it? Too much time in tin cans and not enough sleep...
+> 
 
-> @@ -182,8 +182,20 @@ __wait_on_bit_lock(wait_queue_head_t *wq
->  	do {
->  		prepare_to_wait_exclusive(wq, &q->wait, mode);
->  		if (test_bit(q->key.bit_nr, q->key.flags)) {
-> -			if ((ret = (*action)(q->key.flags)))
-> +			ret = action(q->key.flags);
-> +			if (ret) {
-> +				/*
-> +				 * Contenders are woken exclusively.  If
-> +				 * we do not take the lock when woken up
-> +				 * from an unlock, we have to make sure to
-> +				 * wake the next waiter in line or noone
-> +				 * will and shkle will wait forever.
-> +				 */
-> +				if (!test_bit(q->key.bit_nr, q->key.flags))
-> +					__wake_up_bit(wq, q->key.flags,
+Here is the list of 33  warnings this patchset solves:
 
-Afaics, the spurious wake up is still possible if SIGKILL and
-unlock_page() happen "at the same time".
+  CHECK   include/linux/can (3 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/can/bcm.h:29: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/dvb (8 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/audio.h:133: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/dmx.h:27: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/dmx.h:90: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/frontend.h:29: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/frontend.h:76: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/net.h:27: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/net.h:31: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/video.h:29: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/dvb/video.h:102: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/hdlc (1 files)
+  CHECK   include/linux/isdn (1 files)
+  CHECK   include/linux/netfilter (49 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/netfilter/xt_conntrack.h:40: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/netfilter_arp (2 files)
+  CHECK   include/linux/netfilter_bridge (16 files)
+  CHECK   include/linux/netfilter_ipv4 (46 files)
+  CHECK   include/linux/netfilter_ipv6 (20 files)
+  CHECK   include/linux/nfsd (6 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/export.h:13: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/nfsfh.h:17: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/nfsfh.h:28: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/stats.h:32: leaks CONFIG_NFSD to userspace where it is not valid
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/syscall.h:12: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/nfsd/syscall.h:104: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/raid (2 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/raid/md_p.h:85: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/spi (1 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/spi/spidev.h:83: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/sunrpc (1 files)
+  CHECK   include/linux/tc_act (6 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_gact.h:19: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_mirred.h:16: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_act/tc_pedit.h:19: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/tc_ematch (4 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_cmp.h:8: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_meta.h:18: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_nbyte.h:8: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/tc_ematch/tc_em_text.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/linux/usb (8 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/usb/cdc.h:50: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/linux/usb/gadgetfs.h:21: include of <linux/types.h> is preferred over <asm/types.h>
+  CHECK   include/linux/wimax (1 files)
+  CHECK   include/mtd (6 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/mtd/inftl-user.h:61: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/rdma (1 files)
+  CHECK   include/sound (9 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/sound/hdsp.h:33: found __[us]{8,16,32,64} type without #include <linux/types.h>
+  CHECK   include/video (3 files)
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/sisfb.h:25: include of <linux/types.h> is preferred over <asm/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/sisfb.h:78: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/jaswinder/jaswinder-git/linux-2.6-tip/usr/include/video/uvesafb.h:5: found __[us]{8,16,32,64} type without #include <linux/types.h>
 
-	__wait_on_bit_lock:			unlock_page:
-
-						clear_bit_unlock()
-	test_bit() == T
-
-	__wake_up_bit()				wake_up_page()
-
-Note that sync_page_killable() returns with ->state == TASK_RUNNING,
-__wake_up() will "ignore" us.
-
-But, more importantly, I'm afraid we can also have the false negative,
-this "if (!test_bit())" test lacks the barriers. This can't happen with
-sync_page_killable() because it always calls schedule(). But let's
-suppose we modify it to check signal_pending() first:
-
-	static int sync_page_killable(void *word)
-	{
-		if (fatal_signal_pending(current))
-			return -EINTR;
-		return sync_page(word);
-	}
-
-It is still correct, but unless I missed something now __wait_on_bit_lock()
-has problems again.
-
-But don't get me wrong, I think you are right and it is better to minimize
-the possibility of the false wakeup.
-
-Oleg.
+--
+JSR
 
