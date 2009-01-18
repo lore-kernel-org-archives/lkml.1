@@ -1,117 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbZARTWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZARTXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbZARTWA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZARTVv
+	id S1754310AbZARTXN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZARTW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:21:51 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:14537 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbZARTVu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:21:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=X2MEE+8ddASA1+KUPr8wvclu96SSFAh6ZvM3+KfyWlu85OzKtNTd8yAQO3+AFNiFrC
-         +rR7TiDlS1iUyL4qMgyiPzJYo2yzh34kBJ9bEDmSPoMq4uMYw0cuvTar76yf81a0Ha3C
-         dVaPEcfJitCMFqW7usQo42y+fPJ65+6wyT1CU=
-Message-ID: <49738149.5080200@gmail.com>
-Date: Sun, 18 Jan 2009 20:21:45 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 18 Jan 2009 14:22:57 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:43000 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752995AbZARTW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 14:22:56 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Jan 2009 14:22:55 EST
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: Linux 2.6.28.1
+Date: Sun, 18 Jan 2009 20:16:03 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+References: <20090118185408.GC6478@kroah.com>
+In-Reply-To: <20090118185408.GC6478@kroah.com>
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: .29rc2 lockdep report. fb_mmap vs sys_mmap2
-References: <20090117231925.GA28055@redhat.com> <20090118020038.GA17489@cmpxchg.org>
-In-Reply-To: <20090118020038.GA17489@cmpxchg.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901182016.07267.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-01-18 03:00, Johannes Weiner wrote:
-> On Sat, Jan 17, 2009 at 06:19:25PM -0500, Dave Jones wrote:
->> Two mmaps enter! Fight!
->>
->>
->>  =======================================================
->>  [ INFO: possible circular locking dependency detected ]
->>  2.6.29-0.41.rc2.fc11.i686 #1
->>  -------------------------------------------------------
->>  plymouthd/669 is trying to acquire lock:
->>  (&fb_info->lock){--..}, at: [<c055355c>] fb_mmap+0x87/0x156
->>
->>  but task is already holding lock:
->>  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
->>
->>  which lock already depends on the new lock.
->>
->>
->>  the existing dependency chain (in reverse order) is:
->>
->>  -> #1 (&mm->mmap_sem){----}:
->>        [<c044fef3>] __lock_acquire+0x9af/0xb22
->>        [<c04500c1>] lock_acquire+0x5b/0x81
->>        [<c048e036>] might_fault+0x60/0x80
->>        [<c053dedc>] copy_to_user+0x2c/0xfc
->>        [<c05542cc>] fb_ioctl+0x247/0x338
->>        [<c04b0c9f>] vfs_ioctl+0x22/0x69
->>        [<c04b1214>] do_vfs_ioctl+0x46a/0x4a3
->>        [<c04b128d>] sys_ioctl+0x40/0x5a
->>        [<c0403b76>] syscall_call+0x7/0xb
->>        [<ffffffff>] 0xffffffff
->>
->>  -> #0 (&fb_info->lock){--..}:
->>        [<c044fdc8>] __lock_acquire+0x884/0xb22
->>        [<c04500c1>] lock_acquire+0x5b/0x81
->>        [<c06e1b98>] __mutex_lock_common+0xd5/0x329
->>        [<c06e1e84>] mutex_lock_nested+0x2e/0x36
->>        [<c055355c>] fb_mmap+0x87/0x156
->>        [<c0494620>] mmap_region+0x22b/0x43c
->>        [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
->>        [<c0406a73>] sys_mmap2+0x5a/0x7b
->>        [<c0403b76>] syscall_call+0x7/0xb
->>        [<ffffffff>] 0xffffffff
->>
->>  other info that might help us debug this:
->>
->>  1 lock held by plymouthd/669:
->>  #0:  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
->>
->>  stack backtrace:
->>  Pid: 669, comm: plymouthd Not tainted 2.6.29-0.41.rc2.fc11.i686 #1
->>  Call Trace:
->>  [<c06e09b6>] ? printk+0xf/0x11
->>  [<c044f32d>] print_circular_bug_tail+0x5d/0x68
->>  [<c044fdc8>] __lock_acquire+0x884/0xb22
->>  [<c04500c1>] lock_acquire+0x5b/0x81
->>  [<c055355c>] ? fb_mmap+0x87/0x156
->>  [<c06e1b98>] __mutex_lock_common+0xd5/0x329
->>  [<c055355c>] ? fb_mmap+0x87/0x156
->>  [<c06e1e84>] mutex_lock_nested+0x2e/0x36
->>  [<c055355c>] ? fb_mmap+0x87/0x156
->>  [<c055355c>] fb_mmap+0x87/0x156
->>  [<c0494620>] mmap_region+0x22b/0x43c
->>  [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
->>  [<c0406a73>] sys_mmap2+0x5a/0x7b
->>  [<c0403b76>] syscall_call+0x7/0xb
-> 
-> I reported this one already some time ago [1], Andrea Righi [cc'd]
-> also had a fix [2] but it seemed to not have made it in.  Andrea,
-> perhaps you can resend it?
-> 
-> 	Hannes
-> 
-> [1] http://lkml.org/lkml/2008/10/22/759
-> [2] http://lkml.org/lkml/2008/10/28/377
+On Sunday 18 January 2009 19:54:08 you wrote:
+> We (the -stable team) are announcing the release of the 2.6.28.1
+> kernel.
+>
+> It contains a wide range of bugfixes, and all users of the 2.6.28 kernel
+> series are strongly encouraged to upgrade.
 
-Sure, I can resend it soon, after a test.
+I do not see any fix for the broken libusb: http://lkml.org/lkml/2009/1/2/47
 
--Andrea
+libusb is not only broken on x86_64, but everywhere. My camera does not work 
+with gphoto2 in 2.6.28 (I'm using x86). The patch linked above fixes the 
+problem for me.
+
+-- 
+Ondrej Zary
