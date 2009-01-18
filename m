@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZARTIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZARTJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZARTIm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZARTIe
+	id S1755262AbZARTJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZARTJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:08:34 -0500
-Received: from usul.saidi.cx ([204.11.33.34]:60174 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752501AbZARTId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:08:33 -0500
-Message-ID: <39393.98.210.152.237.1232305880.squirrel@overt.org>
-Date: Sun, 18 Jan 2009 14:11:20 -0500 (EST)
-Subject: [PATCH] ricoh_mmc: Use suspend_late/resume_early
-From: philipl@overt.org
-To: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       "Pierre Ossman" <drzeus@drzeus.cx>
-Cc: rjw@sisk.pl
-User-Agent: SquirrelMail/1.4.13
+	Sun, 18 Jan 2009 14:09:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42670 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbZARTJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 14:09:05 -0500
+Date: Sun, 18 Jan 2009 20:08:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Mike Travis <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86: put trigger in to detect mismatched apic versions.
+Message-ID: <20090118190849.GB858@elte.hu>
+References: <49704DF6.8040205@sgi.com> <20090116092540.GC4305@elte.hu> <4970C984.30202@sgi.com> <20090116223011.GB3899@elte.hu> <497116A8.5080900@sgi.com> <20090117030752.GB127262@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117030752.GB127262@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If ricoh_mmc suspends before sdhci_pci, it will pull the card
-out from under the controller, which could leave the system in
-a very confused state.
 
-Using suspend_late/resume_early ensures that sdhci_pci suspends first
-and resumes second.
+* Jack Steiner <steiner@sgi.com> wrote:
 
-Signed-off-by: Philip Langdale <philipl@overt.org>
----
+> > Btw, I checked with our UV architect and the problem is that we need a 
+> > 16 bit apic id which is what caused the MAX_APICS to be bumped to 32k. 
+> > The lower 8 bits are the normal apic id, and the upper bit relate to 
+> > the node.  This means cpu 0 on node 0 has the same apic id as cpu 0 on 
+> > node 1, etc.  I also asked about whether we could rely on always 
+> > having
+> 
+> Not strictly true. The apicids in the ACPI tables are always globally 
+> unique across the entire system. Because of the size of UV systems, UV 
+> needs 16 bit apicids. This fits in the ACPI apicid id/eid fields.
+> 
+> The actual processor apicid register is unfortunately only 11 bits and 
+> there are some restrictions on the actual values loaded into the apicid 
+> register.
+> 
+> If we can put unique ids into the apicid register, we do. If we can't, 
+> the function that reads the apicid will automatically supply the rest of 
+> the bits.  Most of the kernel is unaware that the processor apicid 
+> register may have only a subset of the bits that are in the ACPI tables.
 
- ricoh_mmc.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+apicid remapping is something we need/want, so we cannot remove that 
+array. But it would be nice to offload such properties to the percpu area 
+instead - is there any reason why that is hard? The local apic is attached 
+to a CPU in any case. Is there some early init reason that complicates 
+this?
 
-diff --git a/drivers/mmc/host/ricoh_mmc.c b/drivers/mmc/host/ricoh_mmc.c
-index be9e7b3..f627905 100644
---- a/drivers/mmc/host/ricoh_mmc.c
-+++ b/drivers/mmc/host/ricoh_mmc.c
-@@ -196,7 +196,7 @@ static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
- 	pci_set_drvdata(pdev, NULL);
- }
-
--static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int ricoh_mmc_suspend_late(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct pci_dev *fw_dev = NULL;
-
-@@ -210,7 +210,7 @@ static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
- 	return 0;
- }
-
--static int ricoh_mmc_resume(struct pci_dev *pdev)
-+static int ricoh_mmc_resume_early(struct pci_dev *pdev)
- {
- 	struct pci_dev *fw_dev = NULL;
-
-@@ -229,8 +229,8 @@ static struct pci_driver ricoh_mmc_driver = {
- 	.id_table =	pci_ids,
- 	.probe = 	ricoh_mmc_probe,
- 	.remove =	__devexit_p(ricoh_mmc_remove),
--	.suspend =	ricoh_mmc_suspend,
--	.resume =	ricoh_mmc_resume,
-+	.suspend_late =	ricoh_mmc_suspend_late,
-+	.resume_early =	ricoh_mmc_resume_early,
- };
-
- /*****************************************************************************\
-
-Based on comments from Rafael, I'm resending this patch using suspend_late and
-resume_early instead.
-
+	Ingo
