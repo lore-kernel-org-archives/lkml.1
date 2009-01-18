@@ -1,181 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933729AbZAROho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933548AbZARO5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933729AbZAROho (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 09:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbZAROhd
+	id S933548AbZARO5T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 09:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760924AbZARO5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 09:37:33 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40664 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761066AbZAROhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 09:37:31 -0500
-Date: Sun, 18 Jan 2009 15:33:54 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] pids: kill now unused signal_struct-> __pgrp/__session and
-	friends
-Message-ID: <20090118143354.GA8159@redhat.com>
+	Sun, 18 Jan 2009 09:57:08 -0500
+Received: from n7b.bullet.sp1.yahoo.com ([69.147.64.166]:28327 "HELO
+	n7b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758384AbZARO5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 09:57:07 -0500
+X-Greylist: delayed 419 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Jan 2009 09:57:07 EST
+X-yahoo-newman-spamcop: yes
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 4725.64398.bm@omp114.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=mVcxZqC58CysKjpSqZpCIPGTT/PMh5bdbpuEWr0Dl2EOdY/qO92Pp+6KO3DNvzensIERRS12GwdETf4OpgGyB/g1fCl2Jlh5x8fhExBOppQi2kz7Gi3F/3IuXM3A5im7GGoOU9Eghl5aKobiTehCpS8PGI7lPHaHnu9ZNhLEUHE=;
+X-YMail-OSG: fz2nZikVM1kHLQTGHxNZG.KN0LIV0oDWSzJV4JXGEsw21GH006Cr0IEYlX9opdmZCdm2Yfvz5EPXqgwDVNGWVJ1rfsXt5BHrWlUBXkzwsN_r1Rnixp4SEOusfTamCtKFYdSG0Oaux0JtXNvXqwsmRHmrMJGs0X0AYRI3D0VDsaDkRq5VYO5ZAli_ROBa3dr.JSYq.287pl3zQ0HnqGpW9.WdEMw8w9Rwh9pz_rLOZRBpN8a1w97sNz0-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Sun, 18 Jan 2009 06:48:42 -0800 (PST)
+From: We La <w.landgraf@yahoo.com>
+Reply-To: w.landgraf@yahoo.com
+Subject: info: errors on compiling staging drivers
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <602322.64231.qm@web112204.mail.gq1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On top of
-	[PATCH] autofs: fix the wrong usage of the deprecated task_pgrp_nr()
-	[PATCH] autofs4: turn ->oz_pgrp into "struct pid *"
-	[PATCH] coda: alloc_upcall: s/task_pgrp_nr/task_pgrp_vnr/
+Compiling staging drivers for 2.6.29-rc2-git1 with Linux SYS on an MI wind u100 i get the following error messages:  (see below)  No other error messages on the whole kernel compilation. I inform about this that the drivers can be corrected
 
-task_pgrp_nr() was wiped from fs/ code recently, task_session_nr() has no
-callers since 2e2ba22ea4fd4bb85f0fa37c521066db6775cbef. __pgrp/__session
-become write-only. Kill them and the related helpers.
+w.landgraf@yahoo.com
+Linux SYS  ftp://ftp5.gwdg.de/pub/linux/install/sys/
 
-The change in drivers/char/tty_io.c is cosmetic, but hopefully makes sense
-anyway.
+==============================
+  OBJCOPY arch/x86/boot/setup.bin
+  OBJCOPY arch/x86/boot/vmlinux.bin
+  HOSTCC  arch/x86/boot/tools/build
+  BUILD   arch/x86/boot/bzImage
+Root device is (3, 1)
+Setup is 11900 bytes (padded to 12288 bytes).
+System is 4966 kB
+CRC 8fafedc9
+Kernel: arch/x86/boot/bzImage is ready  (#1)
+  Building modules, stage 2.
+  MODPOST 2336 modules
+ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+WARNING: modpost: Found 4 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+make[1]: [__modpost] Error 1 (ignored)
+  CC      arch/x86/crypto/crc32c-intel.mod.o
+  LD [M]  arch/x86/crypto/crc32c-intel.ko
+  CC      arch/x86/crypto/salsa20-i586.mod.o
+  LD [M]  arch/x86/crypto/salsa20-i586.ko
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+.....
 
---- CUR/include/linux/sched.h~KILL_S_G_ID	2009-01-18 04:39:12.000000000 +0100
-+++ CUR/include/linux/sched.h	2009-01-18 14:10:08.000000000 +0100
-@@ -531,25 +531,8 @@ struct signal_struct {
- 
- 	struct list_head cpu_timers[3];
- 
--	/* job control IDs */
--
--	/*
--	 * pgrp and session fields are deprecated.
--	 * use the task_session_Xnr and task_pgrp_Xnr routines below
--	 */
--
--	union {
--		pid_t pgrp __deprecated;
--		pid_t __pgrp;
--	};
--
- 	struct pid *tty_old_pgrp;
- 
--	union {
--		pid_t session __deprecated;
--		pid_t __session;
--	};
--
- 	/* boolean value for session group leader */
- 	int leader;
- 
-@@ -1436,16 +1419,6 @@ static inline int rt_task(struct task_st
- 	return rt_prio(p->prio);
- }
- 
--static inline void set_task_session(struct task_struct *tsk, pid_t session)
--{
--	tsk->signal->__session = session;
--}
--
--static inline void set_task_pgrp(struct task_struct *tsk, pid_t pgrp)
--{
--	tsk->signal->__pgrp = pgrp;
--}
--
- static inline struct pid *task_pid(struct task_struct *task)
- {
- 	return task->pids[PIDTYPE_PID].pid;
-@@ -1521,11 +1494,6 @@ static inline pid_t task_tgid_vnr(struct
- }
- 
- 
--static inline pid_t task_pgrp_nr(struct task_struct *tsk)
--{
--	return tsk->signal->__pgrp;
--}
--
- static inline pid_t task_pgrp_nr_ns(struct task_struct *tsk,
- 					struct pid_namespace *ns)
- {
-@@ -1538,11 +1506,6 @@ static inline pid_t task_pgrp_vnr(struct
- }
- 
- 
--static inline pid_t task_session_nr(struct task_struct *tsk)
--{
--	return tsk->signal->__session;
--}
--
- static inline pid_t task_session_nr_ns(struct task_struct *tsk,
- 					struct pid_namespace *ns)
- {
---- CUR/kernel/exit.c~KILL_S_G_ID	2009-01-16 02:51:48.000000000 +0100
-+++ CUR/kernel/exit.c	2009-01-18 14:16:18.000000000 +0100
-@@ -359,16 +359,12 @@ static void reparent_to_kthreadd(void)
- void __set_special_pids(struct pid *pid)
- {
- 	struct task_struct *curr = current->group_leader;
--	pid_t nr = pid_nr(pid);
- 
--	if (task_session(curr) != pid) {
-+	if (task_session(curr) != pid)
- 		change_pid(curr, PIDTYPE_SID, pid);
--		set_task_session(curr, nr);
--	}
--	if (task_pgrp(curr) != pid) {
-+
-+	if (task_pgrp(curr) != pid)
- 		change_pid(curr, PIDTYPE_PGID, pid);
--		set_task_pgrp(curr, nr);
--	}
- }
- 
- static void set_special_pids(struct pid *pid)
---- CUR/kernel/fork.c~KILL_S_G_ID	2009-01-12 23:07:49.000000000 +0100
-+++ CUR/kernel/fork.c	2009-01-18 14:11:56.000000000 +0100
-@@ -1259,8 +1259,6 @@ static struct task_struct *copy_process(
- 			p->signal->leader_pid = pid;
- 			tty_kref_put(p->signal->tty);
- 			p->signal->tty = tty_kref_get(current->signal->tty);
--			set_task_pgrp(p, task_pgrp_nr(current));
--			set_task_session(p, task_session_nr(current));
- 			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
- 			attach_pid(p, PIDTYPE_SID, task_session(current));
- 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
---- CUR/kernel/sys.c~KILL_S_G_ID	2009-01-12 23:07:51.000000000 +0100
-+++ CUR/kernel/sys.c	2009-01-18 14:14:08.000000000 +0100
-@@ -1003,10 +1003,8 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 	if (err)
- 		goto out;
- 
--	if (task_pgrp(p) != pgrp) {
-+	if (task_pgrp(p) != pgrp)
- 		change_pid(p, PIDTYPE_PGID, pgrp);
--		set_task_pgrp(p, pid_nr(pgrp));
--	}
- 
- 	err = 0;
- out:
---- CUR/drivers/char/tty_io.c~KILL_S_G_ID	2009-01-12 23:07:40.000000000 +0100
-+++ CUR/drivers/char/tty_io.c	2009-01-18 14:50:05.000000000 +0100
-@@ -2680,7 +2680,7 @@ void __do_SAK(struct tty_struct *tty)
- 	/* Kill the entire session */
- 	do_each_pid_task(session, PIDTYPE_SID, p) {
- 		printk(KERN_NOTICE "SAK: killed process %d"
--			" (%s): task_session_nr(p)==tty->session\n",
-+			" (%s): task_session(p)==tty->session\n",
- 			task_pid_nr(p), p->comm);
- 		send_sig(SIGKILL, p, 1);
- 	} while_each_pid_task(session, PIDTYPE_SID, p);
-@@ -2690,7 +2690,7 @@ void __do_SAK(struct tty_struct *tty)
- 	do_each_thread(g, p) {
- 		if (p->signal->tty == tty) {
- 			printk(KERN_NOTICE "SAK: killed process %d"
--			    " (%s): task_session_nr(p)==tty->session\n",
-+			    " (%s): task_session(p)==tty->session\n",
- 			    task_pid_nr(p), p->comm);
- 			send_sig(SIGKILL, p, 1);
- 			continue;
+  CC      drivers/staging/staging.o
+  LD      drivers/staging/agnx/built-in.o
+  CC [M]  drivers/staging/agnx/rf.o
+  CC [M]  drivers/staging/agnx/pci.o
+drivers/staging/agnx/pci.c:426: warning: initialization from incompatible pointer type
+  CC [M]  drivers/staging/agnx/xmit.o
+  CC [M]  drivers/staging/agnx/table.o
+  CC [M]  drivers/staging/agnx/sta.o
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h: In function 'memcpy_fromio':
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:151: warning: passing argument 2 of '__memcpy' discards qualifiers from pointer target type
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h: In function 'memcpy_toio':
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:157: warning: passing argument 1 of '__memcpy' discards qualifiers from pointer target type
+  CC [M]  drivers/staging/agnx/phy.o
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h: In function 'memset_io':
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:145: warning: passing argument 1 of '__constant_c_and_count_memset' discards qualifiers from pointer target type
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:145: warning: passing argument 1 of '__constant_c_memset' discards qualifiers from pointer target type
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:145: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+/usr/src/linux-2.6.29-rc2-git1-i486-1sys/arch/x86/include/asm/io_32.h:145: warning: passing argument 1 of '__memset_generic' discards qualifiers from pointer target type
+  LD [M]  drivers/staging/agnx/agnx.o
+  LD      drivers/staging/altpciechdma/built-in.o
+  CC [M]  drivers/staging/altpciechdma/altpciechdma.o
+drivers/staging/altpciechdma/altpciechdma.c: In function 'dma_test':
+drivers/staging/altpciechdma/altpciechdma.c:541: warning: cast from pointer to integer of different size
+drivers/staging/altpciechdma/altpciechdma.c:548: warning: assignment makes integer from pointer without a cast
+drivers/staging/altpciechdma/altpciechdma.c: In function 'probe':
+drivers/staging/altpciechdma/altpciechdma.c:803: warning: cast from pointer to integer of different size
+drivers/staging/altpciechdma/altpciechdma.c:931: warning: label 'err_rev' defined but not used
+drivers/staging/altpciechdma/altpciechdma.c:914: warning: label 'err_cdev' defined but not used
+drivers/staging/altpciechdma/altpciechdma.c: At top level:
+drivers/staging/altpciechdma/altpciechdma.c:416: warning: 'ape_sg_to_chdma_table' defined but not used
+  CC      drivers/staging/android/binder.o
+  CC      drivers/staging/android/ram_console.o
+  CC      drivers/staging/android/lowmemorykiller.o
+  LD      drivers/staging/android/built-in.o
+  CC [M]  drivers/staging/android/logger.o
+  CC [M]  drivers/staging/android/timed_gpio.o
+drivers/staging/android/timed_gpio.c:21:27: error: asm/arch/gpio.h: No such file or directory
+drivers/staging/android/timed_gpio.c: In function 'gpio_timer_func':
+drivers/staging/android/timed_gpio.c:41: error: implicit declaration of function 'gpio_direction_output'
+drivers/staging/android/timed_gpio.c: In function 'gpio_enable_show':
+drivers/staging/android/timed_gpio.c:52: error: 'ktime_t' has no member named 'tv'
+drivers/staging/android/timed_gpio.c:52: error: 'ktime_t' has no member named 'tv'
+make[3]: [drivers/staging/android/timed_gpio.o] Error 1 (ignored)
+  LD      drivers/staging/asus_oled/built-in.o
+  CC [M]  drivers/staging/asus_oled/asus_oled.o
+  LD      drivers/staging/at76_usb/built-in.o
+  CC [M]  drivers/staging/at76_usb/at76_usb.o
+  LD      drivers/staging/benet/built-in.o
+  CC [M]  drivers/staging/benet/be_init.o
+  CC [M]  drivers/staging/benet/be_int.o
+  CC [M]  drivers/staging/benet/be_netif.o
+  CC [M]  drivers/staging/benet/be_ethtool.o
+  CC [M]  drivers/staging/benet/funcobj.o
+  CC [M]  drivers/staging/benet/cq.o
+  CC [M]  drivers/staging/benet/eq.o
+  CC [M]  drivers/staging/benet/mpu.o
+  CC [M]  drivers/staging/benet/eth.o
+  LD [M]  drivers/staging/benet/benet.o
+  LD      drivers/staging/comedi/built-in.o
+  CC [M]  drivers/staging/comedi/comedi_fops.o
+
+
+
+
+
+
+      
 
