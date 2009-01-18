@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934702AbZARSEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934613AbZARSQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934702AbZARSEp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 13:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZARSEg
+	id S934613AbZARSQq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 13:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbZARSQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 13:04:36 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41768 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752395AbZARSEg (ORCPT
+	Sun, 18 Jan 2009 13:16:36 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:53337 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757442AbZARSQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 13:04:36 -0500
-Subject: Re: x86/Voyager
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <73c1f2160901180941o5ffceaeq3455483cd40fa45f@mail.gmail.com>
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
-	 <1232115396-26367-3-git-send-email-brgerst@gmail.com>
-	 <1232115396-26367-4-git-send-email-brgerst@gmail.com>
-	 <1232115396-26367-5-git-send-email-brgerst@gmail.com>
-	 <4972B8AB.8040001@kernel.org>
-	 <73c1f2160901172157j6cd731e5s187e98a069a3ab96@mail.gmail.com>
-	 <4972C53C.5050509@kernel.org>
-	 <73c1f2160901172251t34e824ecue6323ce04fc494e9@mail.gmail.com>
-	 <20090118071427.GA29613@elte.hu>
-	 <1232296885.3247.17.camel@localhost.localdomain>
-	 <73c1f2160901180941o5ffceaeq3455483cd40fa45f@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 18 Jan 2009 12:04:32 -0600
-Message-Id: <1232301872.3247.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 18 Jan 2009 13:16:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r+r09q86yWwyn9XwcMqH31tx+Cy4HzHjj+r4uswv+38v5o58zfP+9gMC5tqw+OilMO
+         iq0YRhHjBN+hNm3zpxY+sh2dx5ze7SiTKUfK7MioJW/+7FpGlPNyfR5Src1z4w5tE2Zi
+         UjUbHFUJt95gtC4WprZ+dog2yXX0Y7PXLCQig=
+MIME-Version: 1.0
+In-Reply-To: <1232296759-2253-4-git-send-email-tj@kernel.org>
+References: <1232296759-2253-1-git-send-email-tj@kernel.org>
+	 <1232296759-2253-4-git-send-email-tj@kernel.org>
+Date: Sun, 18 Jan 2009 13:16:33 -0500
+Message-ID: <73c1f2160901181016t61cd1954s3ced677ab5b3b28a@mail.gmail.com>
+Subject: Re: [PATCH 03/12] x86-64: Convert irqstacks to per-cpu
+From: Brian Gerst <brgerst@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 12:41 -0500, Brian Gerst wrote:
-> On Sun, Jan 18, 2009 at 11:41 AM, James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
-> > On Sun, 2009-01-18 at 08:14 +0100, Ingo Molnar wrote:
-> >> If there's no time/interest in that then we can temporarily mark Voyager
-> >> CONFIG_BROKEN until cleanup/fix patches arrive.
-> >
-> > It's not broken and I've already sent you the cleanup/fix patches ... I
-> > can send them directly to Linus as voyager maintainer if you prefer.
-> 
-> The build breakage was due to the cpumask changes I believe, inherited
-> from -tip.
-> 
-> There is alot of duplicated code in voyager_smp.c that is making it
-> difficult for me to work on the per-cpu changes.
+On Sun, Jan 18, 2009 at 11:39 AM, Tejun Heo <tj@kernel.org> wrote:
+> From: Brian Gerst <brgerst@gmail.com>
+>
+> Move the irqstackptr variable from the PDA to per-cpu.  Make the
+> stacks themselves per-cpu, removing some specific allocation code.
+> Add a seperate flag (is_boot_cpu) to simplify the per-cpu boot
+> adjustments.
+>
+> tj: * sprinkle some underbars around.
+>
+>    * irq_stack_ptr is not used till traps_init(), no reason to
+>      initialize it early.  On SMP, just leaving it NULL till proper
+>      initialization in setup_per_cpu_areas() works.  Dropped
+>      is_boot_cpu and early irq_stack_ptr initialization.
 
-Actually, there's very little duplicated code, but what there is we can
-unify.  The reason it duplicates the API is because it has to provide a
-different implementation for voyager ... it's not a PC x86 architecture.
+And it adds more #ifdefs.  All these conditional initializations on
+CONFIG_SMP are really cluttering up the code.  It also conflicts with
+one of my goals with these patches: have as much state as possible
+already prepared when a cpu boots.  For the boot cpu this means static
+initialization.  For secondary cpus, that means setting up the values
+in setup_per_cpu_areas().  This eliminates any window where the state
+isn't ready yet, as you've already seen with per_cpu_offset.
 
->   Do you see any
-> reason that Voyager can't use the normal x86 setup_per_cpu_areas()
-> code?
+And is_boot_cpu was a worthwhile optimization on its own.  I had plans
+on using it in more places later.
 
-Er, well, yes.  Current setup_per_cpu_areas is setting up the cpu<->apic
-maps.  Voyager has no apics, so it has no use for any of the arrays
-being set up in there.
-
-If you're proposing to add arrays that would actually be useful to
-voyager, then sure we can use it ... it's just at the moment there's no
-need.   What is it you want to add in there?
-
-James
-
-
+--
+Brian Gerst
