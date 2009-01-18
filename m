@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765464AbZARI07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbZARIab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765464AbZARI07 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 03:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761339AbZARI0v
+	id S932128AbZARIab (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 03:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761339AbZARIaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 03:26:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47674 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758044AbZARI0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 03:26:50 -0500
-Date: Sun, 18 Jan 2009 09:08:44 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tvignaud@mandriva.com" <tvignaud@mandriva.com>
-Subject: Re: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
-Message-ID: <20090118080844.GA1911@ucw.cz>
-References: <20090109223520.GC6472@linux-os.sc.intel.com> <4967D223.1090703@zytor.com> <20090109224804.GD6472@linux-os.sc.intel.com> <20090117174224.GA1409@ucw.cz> <497268B7.40301@zytor.com>
+	Sun, 18 Jan 2009 03:30:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54351 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760940AbZARIaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 03:30:13 -0500
+Message-ID: <4972E860.5080206@redhat.com>
+Date: Sun, 18 Jan 2009 10:29:20 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497268B7.40301@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Galbraith <efault@gmx.de>, Kevin Shanahan <kmshanah@ucwb.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] scheduler fixes
+References: <1231964647.14825.59.camel@laptop> <20090116204049.f4d6ef1c.akpm@linux-foundation.org> <1232173776.7073.21.camel@marge.simson.net> <1232186054.6813.48.camel@marge.simson.net> <1232186877.14073.59.camel@laptop> <1232188484.6813.85.camel@marge.simson.net> <1232193617.14073.67.camel@laptop> <1232194752.6273.5.camel@marge.simson.net> <20090117044316.bda7d0bd.akpm@linux-foundation.org> <1232198574.16303.8.camel@marge.simson.net> <20090117160115.GA31601@elte.hu>
+In-Reply-To: <20090117160115.GA31601@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-01-17 15:24:39, H. Peter Anvin wrote:
-> Pavel Machek wrote:
-> > On Fri 2009-01-09 14:48:04, Suresh Siddha wrote:
-> >> On Fri, Jan 09, 2009 at 02:39:31PM -0800, H. Peter Anvin wrote:
-> >>> Suresh Siddha wrote:
-> >>>> Here X is trying to map first 8KB of memory using /dev/mem. Existing
-> >>>> code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
-> >>>> code changes don't allow to map memory with different attributes
-> >>>> at the same time.
-> >>>>
-> >>> Why was 0-4 KB marked as non-RAM?  It is most definitely RAM, and should
-> >>> be WB.
-> >> While in reality it is RAM, we have CONFIG_STRICT_DEVMEM which doesn't allow
-> >> apps to map RAM pages using /dev/mem. And to allow app's to map the
-> >> legacy 0-4KB bios data page, we consider it as non-RAM.
-> > 
-> > Fix config_strict_devmem? Ram is ram, and we should not li for
-> > strict_devmem benefit...
-> 
-> *As far as I understand* this is only considered non-RAM for the purpose
-> of strict_devmem?
+Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+>
+>   
+>> On Sat, 2009-01-17 at 04:43 -0800, Andrew Morton wrote:
+>>     
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=12465 just popped up - another
+>>> scheduler regression.  It has been bisected.
+>>>       
+>> Seems pretty clear.  I'd suggest reverting it.
+>>     
+>
+> We can revert it (and will revert it if no solution is found), but i'd 
+> also like to understand why it happens, because that kind of regression 
+> from this change is unexpected - we might be hiding some bug that could 
+> pop up under less debuggable circumstances, so we need to understand it 
+> while we have a chance.
+>
+> Below is the commit in question. Avi, any ideas what makes KVM special 
+> here? Perhaps its use of "preempt notifiers" is causing a problem somehow?
+>   
 
-I did not look *too* closely, but the patch at the beggining of this
-thread was for pat.c or something like that. I'd expect it to change
-/dev/mem code...
-								Pavel
+preempt notifiers use should cause additional context switch costs of a 
+few thousand cycles and possible an IPI (if a vcpu was migrated).  So 
+I'd suspect scheduling latency here.
+
+Is it possible to trace this (the time between a wake up and actual 
+scheduling of a task)?
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+error compiling committee.c: too many arguments to function
+
