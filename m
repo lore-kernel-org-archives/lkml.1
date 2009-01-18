@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933653AbZARPNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933738AbZARP2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933653AbZARPNT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 10:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbZARPNA
+	id S933738AbZARP2a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 10:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762902AbZARP2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 10:13:00 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58879 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762901AbZARPM6 (ORCPT
+	Sun, 18 Jan 2009 10:28:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56492 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759726AbZARP2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 10:12:58 -0500
-Date: Sun, 18 Jan 2009 15:11:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pids: kill now unused signal_struct-> __pgrp/__session
- and friends
-Message-ID: <20090118151157.09aaff4f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090118143354.GA8159@redhat.com>
-References: <20090118143354.GA8159@redhat.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 18 Jan 2009 10:28:20 -0500
+Subject: Re: [git pull] scheduler fixes
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1232287718.12958.8.camel@marge.simson.net>
+References: <20090111144305.GA7154@elte.hu>
+	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
+	 <1231964647.14825.59.camel@laptop>
+	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
+	 <1232173776.7073.21.camel@marge.simson.net>
+	 <1232186054.6813.48.camel@marge.simson.net>
+	 <1232186877.14073.59.camel@laptop>
+	 <1232188484.6813.85.camel@marge.simson.net>
+	 <1232193617.14073.67.camel@laptop>
+	 <1232287718.12958.8.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 16:28:11 +0100
+Message-Id: <1232292491.5204.3.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Jan 2009 15:33:54 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+On Sun, 2009-01-18 at 15:08 +0100, Mike Galbraith wrote:
+> On Sat, 2009-01-17 at 13:00 +0100, Peter Zijlstra wrote:
+> > On Sat, 2009-01-17 at 11:34 +0100, Mike Galbraith wrote:
+> > > > Right, how about we flip the 'initial' case in place_entity() for !
+> > > > nr_exclusive wakeups.
+> > > 
+> > > Wouldn't that be more drastic than sleep denial?
+> > 
+> > Strictly speaking that DEBIT thing is valid for each wakeup, IIRC we
+> > restricted it to clone() only because that was where we could actually
+> > observe these latency spikes using a fork-bomb.
+> > 
+> > This reduces the latency hits to around 400ms, which is about right for
+> > the given load.
+> 
+> Disregarding the startup landmine for the moment, maybe we should put a
+> buddy slice knob in the user's hands, so they can tune latency, along
+> with a full on/off switch for those who care not one whit about
+> scalability.
 
-> On top of
-> 	[PATCH] autofs: fix the wrong usage of the deprecated task_pgrp_nr()
-> 	[PATCH] autofs4: turn ->oz_pgrp into "struct pid *"
-> 	[PATCH] coda: alloc_upcall: s/task_pgrp_nr/task_pgrp_vnr/
-> 
-> task_pgrp_nr() was wiped from fs/ code recently, task_session_nr() has no
-> callers since 2e2ba22ea4fd4bb85f0fa37c521066db6775cbef. __pgrp/__session
-> become write-only. Kill them and the related helpers.
-> 
-> The change in drivers/char/tty_io.c is cosmetic, but hopefully makes sense
-> anyway.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+I'm not particularly fond of that idea because it only helps for this
+particular workload where any one task isn't actually running for very
+long.
 
-TTY parts Acked-by: Alan Cox <number6@the-village.bc.nu>
+If however your workload consists of cpu hogs, each will run for the
+full wakeup preemption 'slice' you now see these buddy pairs do.
+
+Also, buddies really work for throughput, so I don't particularly fancy
+weakening them below what a normal cpu-hog can already do.
+
