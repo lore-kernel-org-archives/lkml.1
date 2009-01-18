@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbZAREXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbZAREYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbZAREXm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 23:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760856AbZAREV1
+	id S932331AbZAREYQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 23:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761530AbZAREV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 23:21:27 -0500
-Received: from mga14.intel.com ([143.182.124.37]:43620 "EHLO mga14.intel.com"
+	Sat, 17 Jan 2009 23:21:29 -0500
+Received: from mga14.intel.com ([143.182.124.37]:46977 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758748AbZAREVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 23:21:21 -0500
+	id S1758122AbZAREVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 23:21:20 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,282,1231142400"; 
-   d="scan'208";a="101153973"
+   d="scan'208";a="101153977"
 From: Yu Zhao <yu.zhao@intel.com>
 To: jbarnes@virtuousgeek.org, dwmw2@infradead.org
 Cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v2 4/6] VT-d: add device IOTLB invalidation support
-Date: Sun, 18 Jan 2009 12:17:32 +0800
-Message-Id: <1232252254-7614-5-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v2 5/6] VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
+Date: Sun, 18 Jan 2009 12:17:33 +0800
+Message-Id: <1232252254-7614-6-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
 References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
@@ -27,179 +27,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support device IOTLB invalidation to flush the translation cached in the
-Endpoint.
+Make iommu_flush_iotlb_psi() and flush_unmaps() easier to read.
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- drivers/pci/dmar.c          |   63 ++++++++++++++++++++++++++++++++++++++++--
- include/linux/intel-iommu.h |   13 ++++++++-
- 2 files changed, 72 insertions(+), 4 deletions(-)
+ drivers/pci/intel-iommu.c |   46 +++++++++++++++++++++-----------------------
+ 1 files changed, 22 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 0c87ebd..4fea360 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -664,7 +664,8 @@ void free_iommu(struct intel_iommu *iommu)
-  */
- static inline void reclaim_free_desc(struct q_inval *qi)
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 3dfecb2..df92764 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -917,30 +917,27 @@ static int __iommu_flush_iotlb(struct intel_iommu *iommu, u16 did,
+ static int iommu_flush_iotlb_psi(struct intel_iommu *iommu, u16 did,
+ 	u64 addr, unsigned int pages, int non_present_entry_flush)
  {
--	while (qi->desc_status[qi->free_tail] == QI_DONE) {
-+	while (qi->desc_status[qi->free_tail] == QI_DONE ||
-+	       qi->desc_status[qi->free_tail] == QI_ABORT) {
- 		qi->desc_status[qi->free_tail] = QI_FREE;
- 		qi->free_tail = (qi->free_tail + 1) % QI_LENGTH;
- 		qi->free_cnt++;
-@@ -674,10 +675,13 @@ static inline void reclaim_free_desc(struct q_inval *qi)
- static int qi_check_fault(struct intel_iommu *iommu, int index)
- {
- 	u32 fault;
--	int head;
-+	int head, tail;
- 	struct q_inval *qi = iommu->qi;
- 	int wait_index = (index + 1) % QI_LENGTH;
+-	unsigned int mask;
++	int rc;
++	unsigned int mask = ilog2(__roundup_pow_of_two(pages));
  
-+	if (qi->desc_status[wait_index] == QI_ABORT)
-+		return -EAGAIN;
-+
- 	fault = readl(iommu->reg + DMAR_FSTS_REG);
+ 	BUG_ON(addr & (~VTD_PAGE_MASK));
+ 	BUG_ON(pages == 0);
  
+-	/* Fallback to domain selective flush if no PSI support */
+-	if (!cap_pgsel_inv(iommu->cap))
+-		return iommu->flush.flush_iotlb(iommu, did, 0, 0,
+-						DMA_TLB_DSI_FLUSH,
+-						non_present_entry_flush);
+-
  	/*
-@@ -697,6 +701,32 @@ static int qi_check_fault(struct intel_iommu *iommu, int index)
++	 * Fallback to domain selective flush if no PSI support or the size is
++	 * too big.
+ 	 * PSI requires page size to be 2 ^ x, and the base address is naturally
+ 	 * aligned to the size
+ 	 */
+-	mask = ilog2(__roundup_pow_of_two(pages));
+-	/* Fallback to domain selective flush if size is too big */
+-	if (mask > cap_max_amask_val(iommu->cap))
+-		return iommu->flush.flush_iotlb(iommu, did, 0, 0,
+-			DMA_TLB_DSI_FLUSH, non_present_entry_flush);
+-
+-	return iommu->flush.flush_iotlb(iommu, did, addr, mask,
+-					DMA_TLB_PSI_FLUSH,
+-					non_present_entry_flush);
++	if (!cap_pgsel_inv(iommu->cap) || mask > cap_max_amask_val(iommu->cap))
++		rc = iommu->flush.flush_iotlb(iommu, did, 0, 0,
++						DMA_TLB_DSI_FLUSH,
++						non_present_entry_flush);
++	else
++		rc = iommu->flush.flush_iotlb(iommu, did, addr, mask,
++						DMA_TLB_PSI_FLUSH,
++						non_present_entry_flush);
++	return rc;
+ }
+ 
+ static void iommu_disable_protect_mem_regions(struct intel_iommu *iommu)
+@@ -2293,15 +2290,16 @@ static void flush_unmaps(void)
+ 		if (!iommu)
+ 			continue;
+ 
+-		if (deferred_flush[i].next) {
+-			iommu->flush.flush_iotlb(iommu, 0, 0, 0,
+-						 DMA_TLB_GLOBAL_FLUSH, 0);
+-			for (j = 0; j < deferred_flush[i].next; j++) {
+-				__free_iova(&deferred_flush[i].domain[j]->iovad,
+-						deferred_flush[i].iova[j]);
+-			}
+-			deferred_flush[i].next = 0;
++		if (!deferred_flush[i].next)
++			continue;
++
++		iommu->flush.flush_iotlb(iommu, 0, 0, 0,
++					 DMA_TLB_GLOBAL_FLUSH, 0);
++		for (j = 0; j < deferred_flush[i].next; j++) {
++			__free_iova(&deferred_flush[i].domain[j]->iovad,
++					deferred_flush[i].iova[j]);
  		}
++		deferred_flush[i].next = 0;
  	}
  
-+	/*
-+	 * If ITE happens, all pending wait_desc commands are aborted.
-+	 * No new descriptors are fetched until the ITE is cleared.
-+	 */
-+	if (fault & DMA_FSTS_ITE) {
-+		head = readl(iommu->reg + DMAR_IQH_REG);
-+		head = ((head >> DMAR_IQ_OFFSET) - 1 + QI_LENGTH) % QI_LENGTH;
-+		head |= 1;
-+		tail = readl(iommu->reg + DMAR_IQT_REG);
-+		tail = ((tail >> DMAR_IQ_OFFSET) - 1 + QI_LENGTH) % QI_LENGTH;
-+
-+		writel(DMA_FSTS_ITE, iommu->reg + DMAR_FSTS_REG);
-+
-+		do {
-+			if (qi->desc_status[head] == QI_IN_USE)
-+				qi->desc_status[head] = QI_ABORT;
-+			head = (head - 2 + QI_LENGTH) % QI_LENGTH;
-+		} while (head != tail);
-+
-+		if (qi->desc_status[wait_index] == QI_ABORT)
-+			return -EAGAIN;
-+	}
-+
-+	if (fault & DMA_FSTS_ICE)
-+		writel(DMA_FSTS_ICE, iommu->reg + DMAR_FSTS_REG);
-+
- 	return 0;
- }
- 
-@@ -706,7 +736,7 @@ static int qi_check_fault(struct intel_iommu *iommu, int index)
-  */
- int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- {
--	int rc = 0;
-+	int rc;
- 	struct q_inval *qi = iommu->qi;
- 	struct qi_desc *hw, wait_desc;
- 	int wait_index, index;
-@@ -717,6 +747,9 @@ int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 
- 	hw = qi->desc;
- 
-+restart:
-+	rc = 0;
-+
- 	spin_lock_irqsave(&qi->q_lock, flags);
- 	while (qi->free_cnt < 3) {
- 		spin_unlock_irqrestore(&qi->q_lock, flags);
-@@ -771,6 +804,9 @@ int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu)
- 	reclaim_free_desc(qi);
- 	spin_unlock_irqrestore(&qi->q_lock, flags);
- 
-+	if (rc == -EAGAIN)
-+		goto restart;
-+
- 	return rc;
- }
- 
-@@ -837,6 +873,27 @@ int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
- 	return qi_submit_sync(&desc, iommu);
- }
- 
-+int qi_flush_dev_iotlb(struct intel_iommu *iommu, u16 sid, int qdep,
-+			u64 addr, unsigned int mask)
-+{
-+	struct qi_desc desc;
-+
-+	if (mask) {
-+		BUG_ON(addr & ((1 << (VTD_PAGE_SHIFT + mask)) - 1));
-+		addr |= (1 << (VTD_PAGE_SHIFT + mask - 1)) - 1;
-+		desc.high = QI_DEV_IOTLB_ADDR(addr) | QI_DEV_IOTLB_SIZE;
-+	} else
-+		desc.high = QI_DEV_IOTLB_ADDR(addr);
-+
-+	if (qdep >= QI_DEV_IOTLB_MAX_INVS)
-+		qdep = 0;
-+
-+	desc.low = QI_DEV_IOTLB_SID(sid) | QI_DEV_IOTLB_QDEP(qdep) |
-+		   QI_DIOTLB_TYPE;
-+
-+	return qi_submit_sync(&desc, iommu);
-+}
-+
- /*
-  * Enable Queued Invalidation interface. This is a must to support
-  * interrupt-remapping. Also used by DMA-remapping, which replaces
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index 0a220c9..d82bdac 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -196,6 +196,8 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
- #define DMA_FSTS_PPF ((u32)2)
- #define DMA_FSTS_PFO ((u32)1)
- #define DMA_FSTS_IQE (1 << 4)
-+#define DMA_FSTS_ICE (1 << 5)
-+#define DMA_FSTS_ITE (1 << 6)
- #define dma_fsts_fault_record_index(s) (((s) >> 8) & 0xff)
- 
- /* FRCD_REG, 32 bits access */
-@@ -224,7 +226,8 @@ do {									\
- enum {
- 	QI_FREE,
- 	QI_IN_USE,
--	QI_DONE
-+	QI_DONE,
-+	QI_ABORT
- };
- 
- #define QI_CC_TYPE		0x1
-@@ -253,6 +256,12 @@ enum {
- #define QI_CC_DID(did)		(((u64)did) << 16)
- #define QI_CC_GRAN(gran)	(((u64)gran) >> (DMA_CCMD_INVL_GRANU_OFFSET-4))
- 
-+#define QI_DEV_IOTLB_SID(sid)	((u64)((sid) & 0xffff) << 32)
-+#define QI_DEV_IOTLB_QDEP(qdep)	(((qdep) & 0x1f) << 16)
-+#define QI_DEV_IOTLB_ADDR(addr)	((u64)(addr) & VTD_PAGE_MASK)
-+#define QI_DEV_IOTLB_SIZE	1
-+#define QI_DEV_IOTLB_MAX_INVS	32
-+
- struct qi_desc {
- 	u64 low, high;
- };
-@@ -330,6 +339,8 @@ extern int qi_flush_context(struct intel_iommu *iommu, u16 did, u16 sid,
- extern int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
- 			  unsigned int size_order, u64 type,
- 			  int non_present_entry_flush);
-+extern int qi_flush_dev_iotlb(struct intel_iommu *iommu, u16 sid, int qdep,
-+			       u64 addr, unsigned int mask);
- 
- extern int qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
- 
+ 	list_size = 0;
 -- 
 1.5.6.4
 
