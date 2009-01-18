@@ -1,159 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933684AbZAROKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933572AbZAROOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933684AbZAROKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 09:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760966AbZAROKF
+	id S933572AbZAROOP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 09:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761601AbZARON5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 09:10:05 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:35884 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760617AbZAROKD (ORCPT
+	Sun, 18 Jan 2009 09:13:57 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41679 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759310AbZARON4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 09:10:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N6d5L/2qvmUb2lnbGk4Tx126a4xMQGChipKtLyUKC3sWfWvuf7d9sll0FLuBiL5zMg
-         NUiNQhiJTZsCcO6MCsbWoCCgLTlGCYNXJ3njBoO87adtfzB9zwL47N1FBQJoz+KH++lu
-         KjMw3aSyG3OcIiUtWa0JuomML6UtGdgNzGZhU=
-Message-ID: <19f34abd0901180610k430a3e4bpe18af036357ca642@mail.gmail.com>
-Date: Sun, 18 Jan 2009 15:10:01 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: 2.6.27.9: splice_to_pipe() hung (blocked for more than 120 seconds)
-Cc: "Ingo Molnar" <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       "Linux Netdev List" <netdev@vger.kernel.org>
-In-Reply-To: <19f34abd0901180544g617b29c1nc41c760f8803de0e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 18 Jan 2009 09:13:56 -0500
+Date: Sun, 18 Jan 2009 14:14:09 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michael Bramer <michael@debsupport.de>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port
+ RS-232 MIC-3620 from advantech'
+Message-ID: <20090118141409.3c2d0f95@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090118135359.GA3087@deb-support.de>
+References: <20090118135359.GA3087@deb-support.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
-	 <4970F2B6.1060508@cosmosbay.com>
-	 <19f34abd0901180412w39d70ccqd0c10698bc70e6e9@mail.gmail.com>
-	 <19f34abd0901180544g617b29c1nc41c760f8803de0e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 2:44 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> So in short: Is it possible that inode_double_lock() in
-> splice_from_pipe() first locks the pipe mutex, THEN locks the
-> file/socket mutex? In that case, there should be a lock imbalance,
-> because pipe_wait() would unlock the pipe while the file/socket mutex
-> is held.
->
-> That would possibly explain the sporadicity of the lockup; it depends
-> on the actual order of the double lock.
->
-> Why doesn't lockdep report that? Hm. I guess it is because these are
-> both inode mutexes and lockdep can't detect a locking imbalance within
-> the same lock class?
->
-> Anyway, that's just a theory. :-) Will try to confirm by simplifying
-> the test-case.
+> +               .vendor         = PCI_VENDOR_ID_ADVANTECH,
+> +               .device         = PCI_DEVICE_ID_ADVANTECH_PCI3620,
+> +               .subvendor      = PCI_DEVICE_ID_ADVANTECH_PCI3620,
+> +               .subdevice      = PCI_ANY_ID,
 
-Hm, I do believe this _is_ evidence in favour of the theory:
+This looks odd - the subvendor ought to be a vendor id, and there should
+be a device id as well.
 
-top - 09:03:57 up  2:16,  2 users,  load average: 129.27, 49.28, 21.57
-Tasks: 161 total,   1 running,  95 sleeping,   1 stopped,  64 zombie
+> +       {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
+> +               PCI_DEVICE_ID_ADVANTECH_PCI3620, PCI_ANY_ID, 0, 0,
+> +               pbn_b2_8_921600 },
+>         {       PCI_VENDOR_ID_V3, PCI_DEVICE_ID_V3_V960,
+>                 PCI_SUBVENDOR_ID_CONNECT_TECH,
+>                 PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232, 0, 0,
+> -------------------------------------
+> 
+> can you add this in the next linux kernel?
 
-:-)
+Can you firstly send me an lspci -vvxxx of that device. Also see
+Documentation/SubmittingPatches about Signed-off-by lines and we'll sort
+out merging it.
 
-#define _GNU_SOURCE
-
-#include <sys/socket.h>
-#include <sys/types.h>
-
-#include <fcntl.h>
-#include <errno.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-static int sock_fd[2];
-static int pipe_fd[2];
-
-#define N 16384
-
-static void *do_write(void *unused)
-{
-	unsigned int i;
-
-	for (i = 0; i < N; ++i)
-		write(pipe_fd[1], "x", 1);
-
-	return NULL;
-}
-
-static void *do_read(void *unused)
-{
-	unsigned int i;
-	char c;
-
-	for (i = 0; i < N; ++i)
-		read(sock_fd[0], &c, 1);
-
-	return NULL;
-}
-
-static void *do_splice(void *unused)
-{
-	unsigned int i;
-
-	for (i = 0; i < N; ++i)
-		splice(pipe_fd[0], NULL, sock_fd[1], NULL, 1, 0);
-
-	return NULL;
-}
-
-int main(int argc, char *argv[])
-{
-	pthread_t writer;
-	pthread_t reader;
-	pthread_t splicer[2];
-
-	while (1) {
-		if (socketpair(AF_UNIX, SOCK_STREAM, 0, sock_fd) == -1)
-			exit(EXIT_FAILURE);
-
-		if (pipe(pipe_fd) == -1)
-			exit(EXIT_FAILURE);
-
-		pthread_create(&writer, NULL, &do_write, NULL);
-		pthread_create(&reader, NULL, &do_read, NULL);
-		pthread_create(&splicer[0], NULL, &do_splice, NULL);
-		pthread_create(&splicer[1], NULL, &do_splice, NULL);
-
-		pthread_join(writer, NULL);
-		pthread_join(reader, NULL);
-		pthread_join(splicer[0], NULL);
-		pthread_join(splicer[1], NULL);
-
-		printf("failed to deadlock, retrying...\n");
-	}
-
-	return EXIT_SUCCESS;
-}
-
-$ gcc splice.c -lpthread
-$ ./a.out &
-$ ./a.out &
-$ ./a.out &
-(as many as you want; then wait for a bit -- ten seconds works for me)
-$ killall -9 a.out
-(not all will die -- those are now zombies)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Alan
