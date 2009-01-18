@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbZARRSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934369AbZARRTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934157AbZARRSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 12:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760946AbZARRSi
+	id S934369AbZARRTn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 12:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761394AbZARRTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 12:18:38 -0500
-Received: from mta-out.inet.fi ([195.156.147.13]:43097 "EHLO jenni2.inet.fi"
+	Sun, 18 Jan 2009 12:19:33 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60582 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760939AbZARRSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 12:18:37 -0500
-From: Teemu Likonen <tlikonen@iki.fi>
-To: linux-doc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hannes@saeurebad.de
-Subject: [PATCH] Documentation: update CodingStyle tips for Emacs users
-Date: Sun, 18 Jan 2009 19:18:35 +0200
-Message-Id: <1232299115-8130-1-git-send-email-tlikonen@iki.fi>
-X-Mailer: git-send-email 1.6.1.156.gb648d
+	id S1760946AbZARRTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 12:19:32 -0500
+Date: Sun, 18 Jan 2009 18:17:20 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: arve@android.com, gregkh@suse.de, jrm8005@gmail.com, rlove@google.com,
+       swetland@google.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] android: task_get_unused_fd_flags: fix the wrong usage of
+	tsk->signal
+Message-ID: <20090118171720.GA18374@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the previous Emacs tips example the kernel style was made available
-for files in the kernel-tree only. This patch updates the tip to add
-separate cc-mode indent style; it makes the kernel style easily
-available for any filetype mode that is managed by the Emacs cc-mode.
+Compile tested.
 
-We also fix the filename regexp in the example: Elisp function
-buffer-file-name returns full pathname, not a path relative to user's
-home directory. Hence a tilde (~) can't be used to refer to home
-directory (as the previous code did).
+task_struct->signal is not protected by RCU, the code is bogus.
+Change the code to take ->siglock to pin ->signal.
 
-Signed-off-by: Teemu Likonen <tlikonen@iki.fi>
----
- Documentation/CodingStyle |   19 +++++++++++++------
- 1 files changed, 13 insertions(+), 6 deletions(-)
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 1875e50..2cda242 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -483,20 +483,27 @@ values.  To do the latter, you can stick the following in your .emacs file:
-     (* (max steps 1)
-        c-basic-offset)))
+--- CUR/drivers/staging/android/binder.c~ANDROID	2009-01-12 23:07:43.000000000 +0100
++++ CUR/drivers/staging/android/binder.c	2009-01-18 18:06:12.000000000 +0100
+@@ -319,6 +319,7 @@ int task_get_unused_fd_flags(struct task
+ 	int fd, error;
+ 	struct fdtable *fdt;
+ 	unsigned long rlim_cur;
++	unsigned long irqs;
  
-+(add-hook 'c-mode-common-hook
-+          (lambda ()
-+            ;; Add kernel style
-+            (c-add-style
-+             "linux-tabs-only"
-+             '("linux" (c-offsets-alist
-+                        (arglist-cont-nonempty
-+                         c-lineup-gcc-asm-reg
-+                         c-lineup-arglist-tabs-only))))))
-+
- (add-hook 'c-mode-hook
-           (lambda ()
-             (let ((filename (buffer-file-name)))
-               ;; Enable kernel mode for the appropriate files
-               (when (and filename
--                         (string-match "~/src/linux-trees" filename))
-+                         (string-match "src/linux-trees" filename))
-                 (setq indent-tabs-mode t)
--                (c-set-style "linux")
--                (c-set-offset 'arglist-cont-nonempty
--                              '(c-lineup-gcc-asm-reg
--                                c-lineup-arglist-tabs-only))))))
-+                (c-set-style "linux-tabs-only")))))
+ 	if (files == NULL)
+ 		return -ESRCH;
+@@ -335,12 +336,11 @@ repeat:
+ 	 * N.B. For clone tasks sharing a files structure, this test
+ 	 * will limit the total number of files that can be opened.
+ 	 */
+-	rcu_read_lock();
+-	if (tsk->signal)
++	rlim_cur = 0;
++	if (lock_task_sighand(tsk, &irqs)) {
+ 		rlim_cur = tsk->signal->rlim[RLIMIT_NOFILE].rlim_cur;
+-	else
+-		rlim_cur = 0;
+-	rcu_read_unlock();
++		unlock_task_sighand(tsk, &irqs);
++	}
+ 	if (fd >= rlim_cur)
+ 		goto out;
  
- This will make emacs go better with the kernel coding style for C
--files below ~/src/linux-trees.
-+files which pathname matches src/linux-trees.
- 
- But even if you fail in getting emacs to do sane formatting, not
- everything is lost: use "indent".
--- 
-1.6.1.156.gb648d
 
