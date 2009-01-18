@@ -1,132 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbZARCHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbZARChQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760874AbZARCHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 21:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbZARCHE
+	id S1759600AbZARChQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 21:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZARChA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 21:07:04 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:60202 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757540AbZARCHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 21:07:00 -0500
-Message-ID: <49728EBF.40401@gawab.com>
-Date: Sat, 17 Jan 2009 18:06:55 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+	Sat, 17 Jan 2009 21:37:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54611 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbZARChA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 21:37:00 -0500
+Date: Sun, 18 Jan 2009 03:32:11 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH v3] wait: prevent waiter starvation in
+	__wait_on_bit_lock
+Message-ID: <20090118023211.GA14539@redhat.com>
+References: <20090117215110.GA3300@redhat.com> <20090118013802.GA12214@cmpxchg.org>
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>
-Subject: Re: 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com>
-In-Reply-To: <49727BDE.9070509@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118013802.GA12214@cmpxchg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> Justin Madru wrote:
->> Justin P. Mattock wrote:
->>> Justin Madru wrote:
->>>> Ok, more preliminary testing has returned that at least in the case 
->>>> of the iGoogle page crashing, it's related to google talk.
->>>> Because right after it connects to the google talk server the crash 
->>>> happens.
->>>> And why it doesn't crash on firefox 3.2 is because for some reason 
->>>> the talk feature doesn't load on that version of firefox.
->>>> I still get the crashes when going to Preferences->Main or 
->>>> Preferences->Applications.
->>>>
->>>> I tried the suggested moving of .gconf* .gnome* .mozilla*
->>>> The only thing that did was make firefox crash when going to 
->>>> Preference.
->>>> I did not try compiling firefox from source, but I did test with 
->>>> the binaries straight from mozilla.
->>>> I also tried disabling any plugin/extention (I only have flash and 
->>>> AdBlockerPlus), but no change.
->>>>
->>> What I should of said, is to maybe uninstall/disable any of those 
->>> apps or plugins
->>> that are automatically triggered when loading firefox.
->>> (although renaming some of  the  .* files is good, freshens it up);
->>> So when you don't go to google talk you can surf?
->>
->> So far only a connection to talkgadget.google.com or the 2 tabs in 
->> preferences make firefox crash.
->> Other than that I've yet to run into another site that makes it 
->> crash, and can browse just fine.
->> Actually, other than this bug .29-rc2 is running rather nicely ;-)
->>
->> Ok, this time I maded sure I uninstalled/disabled everything I could.
->> Sill.... same results. So, I decided to try something different. Test 
->> with Epiphany.
->> I tried both with the geko and webkit backends.
->> Same results, a crash when going to my iGoogle page that has google 
->> talk applet.
->>
->> But, this time epiphany left an error to the console that gives a 
->> clue to the cause:
->>
->> $ epiphany-webkit                                                ** 
->> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
->> the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
->> from the grid
->> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
->> from the grid
->> console message:  @1: Unsafe JavaScript attempt to access frame with URL
->> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
->>
->> from frame with URL
->> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
->>
->> Domains, protocols and ports must match.
->> console message:  @1: Unsafe JavaScript attempt to access frame
->> with URL http://www.google.com/ig from frame with URL
->> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
->>
->> Domains, protocols and ports must match.
->> console message:  @1: Unsafe JavaScript attempt to access frame
->> with URL http://www.google.com/ig from frame with URL
->> http://talkgadget.google.com/talkgadget/blank. Domains,
->> protocols and ports must match.
->> Segmentation fault
->>
->> So, it's complaining about matching domains, protocols and ports.
->> Henceforth, I would surmise that the bug is related to the network code?
->>
->> Justin Madru
->>
-> Well positive side is you can at least  grab youre news and info.
-> bad side is you can't access igoogle(or whatever it's called).
+On 01/18, Johannes Weiner wrote:
 >
-> Domains, protocols and ports must match.
-> probably the culprit(if you found the correct location
-> that's causing this);
+> On Sat, Jan 17, 2009 at 10:51:10PM +0100, Oleg Nesterov wrote:
+> >
+> > 	if ((ret = (*action)(q->key.flags))) {
+> > 		__wake_up_bit(wq, q->key.flags, q->key.bit_nr);
+> > 		// or just __wake_up(wq, TASK_NORMAL, 1, &q->key);
+> > 		break;
+> > 	}
+> >
+> > IOW, imho __wait_on_bit_lock() is buggy, not __lock_page_killable(),
+> > no?
 >
-> regards;
+> I agree with you, already replied with a patch to linux-mm where Chris
+> posted it originally.
 >
-> Justin P. Mattock
->
-It's only half positive because I use the google rss reader of igoogle.
-Unfortunately, there's the stupid google talk app that won't go away, 
-that causes the crash!
-But I can fortunately use firefox 3.2 because google talk says it 
-doesn't support that browser and doesn't load.
+> Peter noted that we have a spurious wake up in the case where A holds
+> the page lock, B and C wait, B gets killed and does a wake up, then A
+> unlocks and does a wake up.  Your proposal has this problem too,
+> right?
 
-I'll do a git bisect if I can, and report back in a few days.
+Yes sure. But I can't see how it is possible to avoid the false
+wakeup for sure, please see below.
 
-Justin Madru
+> @@ -182,8 +182,20 @@ __wait_on_bit_lock(wait_queue_head_t *wq
+>  	do {
+>  		prepare_to_wait_exclusive(wq, &q->wait, mode);
+>  		if (test_bit(q->key.bit_nr, q->key.flags)) {
+> -			if ((ret = (*action)(q->key.flags)))
+> +			ret = action(q->key.flags);
+> +			if (ret) {
+> +				/*
+> +				 * Contenders are woken exclusively.  If
+> +				 * we do not take the lock when woken up
+> +				 * from an unlock, we have to make sure to
+> +				 * wake the next waiter in line or noone
+> +				 * will and shkle will wait forever.
+> +				 */
+> +				if (!test_bit(q->key.bit_nr, q->key.flags))
+> +					__wake_up_bit(wq, q->key.flags,
+
+Afaics, the spurious wake up is still possible if SIGKILL and
+unlock_page() happen "at the same time".
+
+	__wait_on_bit_lock:			unlock_page:
+
+						clear_bit_unlock()
+	test_bit() == T
+
+	__wake_up_bit()				wake_up_page()
+
+Note that sync_page_killable() returns with ->state == TASK_RUNNING,
+__wake_up() will "ignore" us.
+
+But, more importantly, I'm afraid we can also have the false negative,
+this "if (!test_bit())" test lacks the barriers. This can't happen with
+sync_page_killable() because it always calls schedule(). But let's
+suppose we modify it to check signal_pending() first:
+
+	static int sync_page_killable(void *word)
+	{
+		if (fatal_signal_pending(current))
+			return -EINTR;
+		return sync_page(word);
+	}
+
+It is still correct, but unless I missed something now __wait_on_bit_lock()
+has problems again.
+
+But don't get me wrong, I think you are right and it is better to minimize
+the possibility of the false wakeup.
+
+Oleg.
+
