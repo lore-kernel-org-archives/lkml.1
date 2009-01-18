@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932107AbZARJHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932267AbZARJL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932107AbZARJHX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 04:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758356AbZARJGz
+	id S932267AbZARJL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 04:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760359AbZARJLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 04:06:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59603 "EHLO mx3.mail.elte.hu"
+	Sun, 18 Jan 2009 04:11:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55777 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758147AbZARJGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 04:06:51 -0500
-Date: Sun, 18 Jan 2009 10:06:35 +0100
+	id S1758356AbZARJK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 04:10:58 -0500
+Date: Sun, 18 Jan 2009 10:10:38 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       miaox@cn.fujitsu.com, maxk@qualcomm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] cpuset: fix possible deadlock in
-	async_rebuild_sched_domains
-Message-ID: <20090118090635.GB27144@elte.hu>
-References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org> <4972E311.5010603@cn.fujitsu.com>
+       miaox@cn.fujitsu.com, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 1/3] cgroup: convert open-coded
+	mutex_lock(&cgroup_mutex) calls into cgroup_lock() calls
+Message-ID: <20090118091038.GC27144@elte.hu>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org> <4972E2FD.1010902@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4972E311.5010603@cn.fujitsu.com>
+In-Reply-To: <4972E2FD.1010902@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,49 +39,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> Lockdep reported some possible circular locking info when we tested cpuset on
-> NUMA/fake NUMA box.
+> Convert open-coded mutex_lock(&cgroup_mutex) calls into cgroup_lock()
+> calls and convert mutex_unlock(&cgroup_mutex) calls into cgroup_unlock()
+> calls.
 > 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.29-rc1-00224-ga652504 #111
-> -------------------------------------------------------
-> bash/2968 is trying to acquire lock:
->  (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
-> 
-> but task is already holding lock:
->  (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
-> 
-> which lock already depends on the new lock.
-> ......
-> -------------------------------------------------------
-> 
-> Steps to reproduce:
-> # mkdir /dev/cpuset
-> # mount -t cpuset xxx /dev/cpuset
-> # mkdir /dev/cpuset/0
-> # echo 0 > /dev/cpuset/0/cpus
-> # echo 0 > /dev/cpuset/0/mems
-> # echo 1 > /dev/cpuset/0/memory_migrate
-> # cat /dev/zero > /dev/null &
-> # echo $! > /dev/cpuset/0/tasks
-> 
-> This is because async_rebuild_sched_domains has the following lock sequence:
-> run_workqueue(async_rebuild_sched_domains)
-> 	-> do_rebuild_sched_domains -> cgroup_lock
-> 
-> But, attaching tasks when memory_migrate is set has following:
-> cgroup_lock_live_group(cgroup_tasks_write)
-> 	-> do_migrate_pages -> flush_work
-> 
-> This can be fixed by using a separate workqueue thread.
-> 
-> But queuing a work to an other thread is adding some overhead for cpuset.
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Max Krasnyansky <maxk@qualcomm.com>
+> Cc: Miao Xie <miaox@cn.fujitsu.com>
+> ---
 
-Can you measure any overhead from that? In any case, this is triggered on 
-admin activities (when reconfiguring cpusets), so it's a slowpath and thus 
-using existing infrastructure is preferred in the 99.9% of the cases. 
+(please include diffstat output in patches, so that the general source 
+code impact can be seen at a glance.)
 
-Thanks,
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index c298310..75a352b 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -616,7 +688,7 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
+>  		 * agent */
+>  		synchronize_rcu();
+>  
+> -		mutex_lock(&cgroup_mutex);
+> +		cgroup_lock();
+
+this just changes over a clean mutex call to a wrapped lock/unlock 
+sequence that has higher overhead in the common case.
+
+We should do the exact opposite, we should change this opaque API:
+
+ void cgroup_lock(void)
+ {
+         mutex_lock(&cgroup_mutex);
+ }
+
+To something more explicit (and more maintainable) like:
+
+  cgroup_mutex_lock(&cgroup_mutex);
+  cgroup_mutex_unlock(&cgroup_mutex);
+
+Which is a NOP in the !CGROUPS case and maps to mutex_lock/unlock in the 
+CGROUPS=y case.
 
 	Ingo
