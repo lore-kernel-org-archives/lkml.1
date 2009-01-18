@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZARWRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZARWV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbZARWRu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 17:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZARWRk
+	id S1754016AbZARWV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 17:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZARWVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 17:17:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35776 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbZARWRj (ORCPT
+	Sun, 18 Jan 2009 17:21:18 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1191 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbZARWVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 17:17:39 -0500
-Date: Sun, 18 Jan 2009 17:17:23 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [patch 22/85] [PATCH 02/44] [CVE-2009-0029] Convert all system
-	calls to return a long
-Message-ID: <20090118221723.GA3852@infradead.org>
-References: <20090115215237.906089480@mini.kroah.org> <20090115215938.GW17227@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115215938.GW17227@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 18 Jan 2009 17:21:18 -0500
+Subject: Re: [XFS] Update maintainers
+From: Joe Perches <joe@perches.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Bill O'Donnell" <billodo@sgi.com>, Lachlan McIlroy <lachlan@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090118210619.GA9849@infradead.org>
+References: <200901150459.n0F4xhVS016322@hera.kernel.org>
+	 <1232058936.3109.7.camel@localhost>  <20090118210619.GA9849@infradead.org>
+Content-Type: text/plain
+Date: Sun, 18 Jan 2009 14:21:49 -0800
+Message-Id: <1232317309.4129.18.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Umm, where was this whole stuff discussed?
+On Sun, 2009-01-18 at 16:06 -0500, Christoph Hellwig wrote:
+> In either way listing a company as maintainer is wrong.  Maintainers
+> are invidual persons or teams thereof and not companies.
+
+I believe:
+
+It's better to have individuals listed
+Front-end company/org addresses should be OK
+Names without email addresses should not be OK
+
+Other front-end addresses from MAINTAINERS:
+
+AACRAID SCSI RAID DRIVER
+P:	Adaptec OEM Raid Solutions
+M:	aacraid@adaptec.com
+
+DVB SUBSYSTEM AND DRIVERS
+P:	LinuxTV.org Project
+M:	linux-media@vger.kernel.org
+
+HIGHPOINT ROCKETRAID 3xxx RAID DRIVER
+P:	HighPoint Linux Team
+M:	linux@highpoint-tech.com
+
 
