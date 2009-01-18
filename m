@@ -1,148 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbZARBoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZARB6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759864AbZARBoY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 20:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZARBoN
+	id S1760060AbZARB6n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 20:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZARB6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 20:44:13 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36643
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420AbZARBoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 20:44:12 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: PATCH [0/3]: Simplify the kernel build by removing perl.
-Date: Sat, 17 Jan 2009 19:44:03 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: Valdis.Kletnieks@vt.edu,
-       Embedded Linux mailing list <linux-embedded@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-References: <495FEEAF.5020005@zytor.com> <200901161554.02054.rob@landley.net> <20090117095143.GA20389@shareable.org>
-In-Reply-To: <20090117095143.GA20389@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Jan 2009 20:58:33 -0500
+Received: from cmpxchg.org ([85.214.51.133]:43586 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757354AbZARB6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 20:58:33 -0500
+Date: Sun, 18 Jan 2009 03:00:38 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: .29rc2 lockdep report. fb_mmap vs sys_mmap2
+Message-ID: <20090118020038.GA17489@cmpxchg.org>
+References: <20090117231925.GA28055@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901171944.05014.rob@landley.net>
+In-Reply-To: <20090117231925.GA28055@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 January 2009 03:51:43 Jamie Lokier wrote:
-> Rob Landley wrote:
-> > On Friday 16 January 2009 08:54:42 Valdis.Kletnieks@vt.edu wrote:
-> > > On Fri, 16 Jan 2009 00:11:09 CST, Rob Landley said:
-> > > > P.S.  I still hope autoconf dies off and the world wakes up and moves
-> > > > away from that.  And from makefiles for that matter.  But in the
-> > > > meantime, I can work around it with enough effort.
-> > >
-> > > What do you propose autoconf and makefiles get replaced by?
-> >
-> > I've never built pidgin from source, but I've got the output of the
-> > binutils build in a log file.
-> > How many of these tests are actually necessary on an Linux system:
->
-> None, but then it's not a Linux-only program that you're compiling.
-> (Nor is it Linux-in-2009-only).
+On Sat, Jan 17, 2009 at 06:19:25PM -0500, Dave Jones wrote:
+> Two mmaps enter! Fight!
+> 
+> 
+>  =======================================================
+>  [ INFO: possible circular locking dependency detected ]
+>  2.6.29-0.41.rc2.fc11.i686 #1
+>  -------------------------------------------------------
+>  plymouthd/669 is trying to acquire lock:
+>  (&fb_info->lock){--..}, at: [<c055355c>] fb_mmap+0x87/0x156
+> 
+>  but task is already holding lock:
+>  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
+> 
+>  which lock already depends on the new lock.
+> 
+> 
+>  the existing dependency chain (in reverse order) is:
+> 
+>  -> #1 (&mm->mmap_sem){----}:
+>        [<c044fef3>] __lock_acquire+0x9af/0xb22
+>        [<c04500c1>] lock_acquire+0x5b/0x81
+>        [<c048e036>] might_fault+0x60/0x80
+>        [<c053dedc>] copy_to_user+0x2c/0xfc
+>        [<c05542cc>] fb_ioctl+0x247/0x338
+>        [<c04b0c9f>] vfs_ioctl+0x22/0x69
+>        [<c04b1214>] do_vfs_ioctl+0x46a/0x4a3
+>        [<c04b128d>] sys_ioctl+0x40/0x5a
+>        [<c0403b76>] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+> 
+>  -> #0 (&fb_info->lock){--..}:
+>        [<c044fdc8>] __lock_acquire+0x884/0xb22
+>        [<c04500c1>] lock_acquire+0x5b/0x81
+>        [<c06e1b98>] __mutex_lock_common+0xd5/0x329
+>        [<c06e1e84>] mutex_lock_nested+0x2e/0x36
+>        [<c055355c>] fb_mmap+0x87/0x156
+>        [<c0494620>] mmap_region+0x22b/0x43c
+>        [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
+>        [<c0406a73>] sys_mmap2+0x5a/0x7b
+>        [<c0403b76>] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+> 
+>  other info that might help us debug this:
+> 
+>  1 lock held by plymouthd/669:
+>  #0:  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
+> 
+>  stack backtrace:
+>  Pid: 669, comm: plymouthd Not tainted 2.6.29-0.41.rc2.fc11.i686 #1
+>  Call Trace:
+>  [<c06e09b6>] ? printk+0xf/0x11
+>  [<c044f32d>] print_circular_bug_tail+0x5d/0x68
+>  [<c044fdc8>] __lock_acquire+0x884/0xb22
+>  [<c04500c1>] lock_acquire+0x5b/0x81
+>  [<c055355c>] ? fb_mmap+0x87/0x156
+>  [<c06e1b98>] __mutex_lock_common+0xd5/0x329
+>  [<c055355c>] ? fb_mmap+0x87/0x156
+>  [<c06e1e84>] mutex_lock_nested+0x2e/0x36
+>  [<c055355c>] ? fb_mmap+0x87/0x156
+>  [<c055355c>] fb_mmap+0x87/0x156
+>  [<c0494620>] mmap_region+0x22b/0x43c
+>  [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
+>  [<c0406a73>] sys_mmap2+0x5a/0x7b
+>  [<c0403b76>] syscall_call+0x7/0xb
 
-Yeah, I noticed.  It's not quite as bad as OpenSSL (where Linux support is 
-intentionally an afterthought), but things like "Libtool" are supposed to be a 
-NOP on ELF Linux and yet regularly screw up builds.  (It's supposed to do 
-nothing, and can't manage to do it correctly.  That's sad.)
+I reported this one already some time ago [1], Andrea Righi [cc'd]
+also had a fix [2] but it seemed to not have made it in.  Andrea,
+perhaps you can resend it?
 
-> If you _know_ you're running on Linux from a particular era, you can
-> provide a config.cache file with the correct answers already filled in.
+	Hannes
 
-And yet very few projects actually do.
-
-As for "from a particular era", just for fun I fired up the Red Hat 9 qemu 
-image I keep around for this sort of thing, downloaded glibc 2.7 (the most 
-recent one they bothered to cut a tarball for on ftp.gnu.org and one of the 
-big autoconf offenders), and ran its ./configure.  It died with:
-
-configure: error:
-*** These critical programs are missing or too old: gcc
-*** Check the INSTALL file for required versions.
-
-So you can't build a 2 year old version of glibc under a 6 year old version of 
-Linux (which was the most popular Linux version in the world when it shipped, 
-with about 50% market share among Linux seats).  And yet glibc (one of the 
-FSF's flagship projects) bothers doing extensive autoconf probes.  Why?  
-Autoconf isn't really _helping_ here...
-
-The bottom line is that if your assumption is that you have an open source 
-application targeting an open source operating system, lots of the hoops you 
-used to have to jump through just aren't very interesting anymore.
-
-> I agree that Autoconf sucks (I've written enough sucking Autoconf
-> macros myself, I hate it), but the tough part is providing a suitable
-> replacement when you still want portable source code.
-
-Depends on your definition of "portable".  The unix wars of the 80's are over; 
-they're pretty much all dead.  Even the surviving legacy deployments of 
-Solaris and AIX provide Linux emulation environments.  And of course FreeBSD's 
-done so for years: 
-http://www.onlamp.com/pub/a/bsd/2006/01/12/Big_Scary_Daemons.html
-
-MacOS X and windows are still very much alive, but if you want to target those 
-you can either A) treat them as Posix/SUSv3 (which both _claim_ to support), 
-B) use cross platform libraries like SDL and opengl and program to their APIs, 
-C) bother to do a proper port of the thing ala 
-http://porting.openoffice.org/mac/ or http://www.kju-app.org/ or the way khtml 
-wound up in Safari.
-
-For Windows there's Cygwin, running windows programs on Linux has Wine.  Or 
-just qemu/kvm in either direction.
-
-Basically, pick a standard to write to.  If you want to write to posix and 
-SUSv4, do it.  If you want to add in LSB and the Linux man pages, go for it.  
-But autoconf was designed for portability between Irix and HP-UX, which just 
-doesn't come up much anymore.
-
-> > It just goes on and on and on like this.  Tests like "checking
-> > whether byte ordering is bigendian... no" means "Either I didn't
-> > know endian.h existed, or I don't trust it to be there".  How about
-> > the long stretches checking for the existence of header files
-> > specified by posix?
->
-> You seem to be arguing for "let's make all our programs Linux-specific
-> (and Glibc-specific in many cases)".
-
-Checking for the existence of posix header files is Linux-specific?
-
-I'm saying there are many standards, and you can choose to adhere to standards 
-like LP64 (which MacOSX, Linux, and the BSDs all support) and _say_ you do so 
-and achieve portability that way.
-
-You also have "#if defined __linux__" and "#if defined __APPLE__" and so on, 
-so header files can do a lot of the tests that people wind up doing with 
-autoconf for some reason.
-
-And there will always be platforms you're NOT portable to.  (Game consoles 
-come to mind: your average autoconf recipe isn't going to make your program 
-run on a PS3, XBox 360, or Wii.  Unless you load Linux on those systems first 
-and program for Linux.)
-
-> Given all the problems you've
-> seen with cross-compiling, let alone compiling for different OS
-> platforms, that seems a little odd.
-
-If I can't get Linux running on the hardware (which is seldom an interesting 
-case anymore; it's on everything from cell phones to the S390), and I can't 
-get a Linux emulation environment like Solaris' lxrun, aix5L, or cygwin, then 
-I probably want a rigidly posix environment.  (Heck, even wince has celib and 
-gnuwince, not that I really care.)
-
-The extra "portability" isn't even going to buy you 5% more seats these days.  
-It's really not that interesting.  It's not that the world is homogenous now, 
-it's that between open source and open standards we don't need giant if/else 
-ladders with hundreds of tests to cover the interesting cases.  And trying to 
-achieve portability by relying on standards is a superior approach to trying 
-to achieve portability via an infinite series of special case checks.
-
-> -- Jamie
-
-Rob
+[1] http://lkml.org/lkml/2008/10/22/759
+[2] http://lkml.org/lkml/2008/10/28/377
