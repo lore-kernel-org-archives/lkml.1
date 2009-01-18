@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbZARRmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934738AbZARRqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934831AbZARRmb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 12:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934721AbZARRmK
+	id S934738AbZARRqm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 12:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbZARRqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 12:42:10 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:12268 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934707AbZARRmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 12:42:08 -0500
-Message-ID: <154e089b0901180942o46b80006q5e0d586cb3e1841c@mail.gmail.com>
-Date: Sun, 18 Jan 2009 18:42:06 +0100
-From: "Hannes Eder" <hannes@hanneseder.net>
-To: "Julia Lawall" <julia@diku.dk>,
-       "Jaswinder Singh Rajput" <jaswinder@kernel.org>
-Subject: Re: [PATCH 2/3] drivers/gpu/drm: fix sparse warnings: unexport symbols
-Cc: dri-devel@lists.sourceforge.net, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0901181710000.661@ask.diku.dk>
+	Sun, 18 Jan 2009 12:46:33 -0500
+Received: from web110610.mail.gq1.yahoo.com ([67.195.13.201]:32833 "HELO
+	web110610.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933835AbZARRqc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 12:46:32 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=1bmaiHzdh9PCM4zj2IdQTpt2Z5KO/7Q1vCkygzaM2BMpo/mbWNBnrsxbSIgAQGcRgI/+YWJ6ALJ15pOOQkXZOtVQqy2smgFL7aYPaoFTUSwegtLwhJJ/Q5Vl+OZAdlwyRIjCAp/HwqfuUUtgsrX7botUr4ix9G3Iwh9ZpOEv8fM=;
+X-YMail-OSG: BfFgHYQVM1nQPb1_74RbsGxZs1124zjnx094Tr_BoQMw4Ztie2dC_bq40jssDRVuSesmrpZ_a_vUyXy8JfENuN6k1FERfx2B17dth8ndbJjfROB472_xSxE3IhHDuYAIdPHLR2jShhx83y64pwj5Vc17uCaVQHJps1INHuCBn7oVHZo4rN3BdvqBp2Kv5vxPTuQDSKi1F4pkWBOcwrG0.Ipn7m9vdw--
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+References: <gkt97e$ti0$1@ger.gmane.org> <20090117194045.649f55a0@osprey.hogchain.net> <767752.95325.qm@web110601.mail.gq1.yahoo.com> <20090118095231.2c73c448@osprey.hogchain.net>
+Date: Sun, 18 Jan 2009 09:46:31 -0800 (PST)
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [atl2] warn_slowpath in dev_watchdog
+To: Jay Cliburn <jcliburn@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>,
+       jie.yang@atheros.com, atl1-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20090118152725.4179.40835.stgit@vmbox.hanneseder.net>
-	 <20090118152848.4179.85741.stgit@vmbox.hanneseder.net>
-	 <1232294164.24415.3.camel@localhost.localdomain>
-	 <154e089b0901180804k46e9411lcbc10f591871b14@mail.gmail.com>
-	 <Pine.LNX.4.64.0901181710000.661@ask.diku.dk>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <789828.48438.qm@web110610.mail.gq1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 5:11 PM, Julia Lawall <julia@diku.dk> wrote:
-> I don't know anything about this specific context, but aren't things in
-> general exported so that external modules can use them?  If that is the
-> case, grepping over the kernel sources is not sufficient.
+> From: Jay Cliburn <jcliburn@gmail.com>
+> 
+> I'd like to see the full dmesg that includes the warning, if you can
+> obtain it next time it occurs.  Meanwhile, please see if this patch
+> helps.
 
-Good point, but it indicates that the function does not have a caller
-within kernel tree.
-Ok, there could be other clients.  So this patch might just be a hint
-for the original author or maintainer that there is maybe no need to
-export this function.
+I forgot to mention, looking back I see that once the link disappeared 
+(while the cable was still plugged in) on the router but partially came 
+back (the the link reappears but the router doesn't serve DHCP leases 
+or seemingly route packets) booting new kernels from cold would 
+show the problem while network manager was trying to obtain a 
+DHCP lease.
 
-On Sun, Jan 18, 2009 at 5:18 PM, Jaswinder Singh Rajput
-<jaswinder@kernel.org> wrote:
-> If it is EXPORTED you cannot make it static. EXPORTED means it can be
-> used from a kernel module.
+I will test your patch the next time that this happens (but this may be 
+a while).
 
-Right, that's why I have made it static and removed the EXPORT_SYMBOL,
-all under the assumption that there is _no_ client for this function,
-but there may be some outside the kernel tree.  I can not judge this.
 
-Hannes
+
+      
