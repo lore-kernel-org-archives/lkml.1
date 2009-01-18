@@ -1,220 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZARUWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZARUZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756046AbZARUWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 15:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZARUWI
+	id S1755593AbZARUZA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 15:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZARUYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 15:22:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58901 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754237AbZARUWH convert rfc822-to-8bit (ORCPT
+	Sun, 18 Jan 2009 15:24:50 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:48637 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbZARUYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 15:22:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in hres_timers_resume
-Date: Sun, 18 Jan 2009 21:21:24 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200901181642.00886.arvidjaar@mail.ru> <200901182232.57186.arvidjaar@mail.ru> <20090118195645.GA6634@elte.hu>
-In-Reply-To: <20090118195645.GA6634@elte.hu>
+	Sun, 18 Jan 2009 15:24:49 -0500
+X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Jan 2009 15:24:48 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=mE17fD9zNSI03hRORW/nVrDSw6AHzG3we1rPVI504mVXrK0xv4kegMpB5aMF3qVlwA
+         1sDuJ3QH+2GHCKUq/Y/8CTAvgV0XMFzdscOJcBNfeiqs9xR2F8PGA/fgBL9Hulfo6xbg
+         TjjLQdS6QN75PXltyDfyWEIHl/iHF1Qo9tJg0=
+Message-ID: <49738E4B.1030200@gmail.com>
+Date: Sun, 18 Jan 2009 21:17:15 +0100
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901182121.24863.rjw@sisk.pl>
+To: Johannes Weiner <hannes@cmpxchg.org>, Dave Jones <davej@redhat.com>
+CC: Johannes Weiner <hannes@saeurebad.de>, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fbmem: fix copy_from/to_user() with mutex held
+References: <20090117231925.GA28055@redhat.com> <20090118020038.GA17489@cmpxchg.org>
+In-Reply-To: <20090118020038.GA17489@cmpxchg.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 January 2009, Ingo Molnar wrote:
-> 
-> * Andrey Borzenkov <arvidjaar@mail.ru> wrote:
-> 
-> > On 18 января 2009 20:25:11 Ingo Molnar wrote:
-> > 
-> > > Rafael, can you think of anything in the s2ram code that would have
-> > >
-> > > changed the irqs-off status of hres_timers_resume() in this codepath:
-> > > > > [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
-> > > > > [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
-> > > > > [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
-> > > > > [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
-> > > > > [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
-> > > > > [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
-> > > > > [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
-> > > > > [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
-> > > > > [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
-> > >
-> > > ?
-> > >
-> > 
-> > As far as I can tell, timekeeping_resume is called via class ->resume 
-> > method; and according to comments in sysdev_resume() and 
-> > device_power_up(), they are called with interrupts disabled.
-> > 
-> > Looking at suspend_enter, irqs *are* disabled at this point.
-> > 
-> > So it actually looks like something (may be some driver) unconditionally 
-> > enabled irqs in resume path.
-> > 
-> > I believe the patch should be hold back until this is clarified.
-> 
-> That's a nice theory!
+Avoid to call copy_from/to_user() with fb_info->lock mutex held in fbmem
+fb_ioctl().
 
-That would be a bad bug.
+NOTE: it doesn't push down the fb_info->lock in each driver's fb_ioctl().
 
-> I've queued up the debug check below instead. Probably the resume code 
-> should include a similar check at a higher level and print out the 
-> callback that enables irqs?
-> 
-> 	Ingo
-> 
-> 
-> ---------------->
-> From 2f93dd9df9654b157c9a6a08efaf6f2b08cc3d06 Mon Sep 17 00:00:00 2001
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Sun, 18 Jan 2009 16:39:29 +0100
-> Subject: [PATCH] hrtimers: fix inconsistent lock state on resume in hres_timers_resume
-> 
-> Andrey Borzenkov reported this lockdep assert:
-> 
-> > [17854.688347] =================================
-> > [17854.688347] [ INFO: inconsistent lock state ]
-> > [17854.688347] 2.6.29-rc2-1avb #1
-> > [17854.688347] ---------------------------------
-> > [17854.688347] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> > [17854.688347] pm-suspend/18240 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> > [17854.688347]  (&cpu_base->lock){++..}, at: [<c0136fcc>] retrigger_next_event+0x5c/0xa0
-> > [17854.688347] {in-hardirq-W} state was registered at:
-> > [17854.688347]   [<c01443cd>] __lock_acquire+0x79d/0x1930
-> > [17854.688347]   [<c01455bc>] lock_acquire+0x5c/0x80
-> > [17854.688347]   [<c03092e5>] _spin_lock+0x35/0x70
-> > [17854.688347]   [<c0136e61>] hrtimer_run_queues+0x31/0x140
-> > [17854.688347]   [<c0128d98>] run_local_timers+0x8/0x20
-> > [17854.688347]   [<c0128dd3>] update_process_times+0x23/0x60
-> > [17854.688347]   [<c013e274>] tick_periodic+0x24/0x80
-> > [17854.688347]   [<c013e2e2>] tick_handle_periodic+0x12/0x70
-> > [17854.688347]   [<c0104e24>] timer_interrupt+0x14/0x20
-> > [17854.688347]   [<c01607b9>] handle_IRQ_event+0x29/0x60
-> > [17854.688347]   [<c0161c59>] handle_level_irq+0x69/0xe0
-> > [17854.688347]   [<ffffffff>] 0xffffffff
-> > [17854.688347] irq event stamp: 55771
-> > [17854.688347] hardirqs last  enabled at (55771): [<c0309125>] _spin_unlock_irqrestore+0x35/0x60
-> > [17854.688347] hardirqs last disabled at (55770): [<c0309419>] _spin_lock_irqsave+0x19/0x80
-> > [17854.688347] softirqs last  enabled at (54836): [<c0124f54>] __do_softirq+0xc4/0x110
-> > [17854.688347] softirqs last disabled at (54831): [<c01049ae>] do_softirq+0x8e/0xe0
-> > [17854.688347]
-> > [17854.688347] other info that might help us debug this:
-> > [17854.688347] 3 locks held by pm-suspend/18240:
-> > [17854.688347]  #0:  (&buffer->mutex){--..}, at: [<c01dd4c5>] sysfs_write_file+0x25/0x100
-> > [17854.688347]  #1:  (pm_mutex){--..}, at: [<c015056f>] enter_state+0x4f/0x140
-> > [17854.688347]  #2:  (dpm_list_mtx){--..}, at: [<c027880f>] device_pm_lock+0xf/0x20
-> > [17854.688347]
-> > [17854.688347] stack backtrace:
-> > [17854.688347] Pid: 18240, comm: pm-suspend Not tainted 2.6.29-rc2-1avb #1
-> > [17854.688347] Call Trace:
-> > [17854.688347]  [<c0306248>] ? printk+0x18/0x20
-> > [17854.688347]  [<c0141fac>] print_usage_bug+0x16c/0x1d0
-> > [17854.688347]  [<c0142bcf>] mark_lock+0x8bf/0xc90
-> > [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
-> > [17854.688347]  [<c01441b0>] __lock_acquire+0x580/0x1930
-> > [17854.688347]  [<c030916d>] ? _spin_unlock+0x1d/0x20
-> > [17854.688347]  [<c0106b8f>] ? pit_next_event+0x2f/0x40
-> > [17854.688347]  [<c013dd38>] ? clockevents_program_event+0x98/0x160
-> > [17854.688347]  [<c0142fe8>] ? mark_held_locks+0x48/0x90
-> > [17854.688347]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
-> > [17854.688347]  [<c0143229>] ? trace_hardirqs_on_caller+0x139/0x190
-> > [17854.688347]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
-> > [17854.688347]  [<c01455bc>] lock_acquire+0x5c/0x80
-> > [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
-> > [17854.688347]  [<c03092e5>] _spin_lock+0x35/0x70
-> > [17854.688347]  [<c0136fcc>] ? retrigger_next_event+0x5c/0xa0
-> > [17854.688347]  [<c0136fcc>] retrigger_next_event+0x5c/0xa0
-> > [17854.688347]  [<c013711a>] hres_timers_resume+0xa/0x10
-> > [17854.688347]  [<c013aa8e>] timekeeping_resume+0xee/0x150
-> > [17854.688347]  [<c0273384>] __sysdev_resume+0x14/0x50
-> > [17854.688347]  [<c0273407>] sysdev_resume+0x47/0x80
-> > [17854.688347]  [<c02791ab>] device_power_up+0xb/0x20
-> > [17854.688347]  [<c015043f>] suspend_devices_and_enter+0xcf/0x150
-> > [17854.688347]  [<c0150c2f>] ? freeze_processes+0x3f/0x90
-> > [17854.688347]  [<c0150614>] enter_state+0xf4/0x140
-> > [17854.688347]  [<c01506dd>] state_store+0x7d/0xc0
-> > [17854.688347]  [<c0150660>] ? state_store+0x0/0xc0
-> > [17854.688347]  [<c0202da4>] kobj_attr_store+0x24/0x30
-> > [17854.688347]  [<c01dd53c>] sysfs_write_file+0x9c/0x100
-> > [17854.688347]  [<c019916c>] vfs_write+0x9c/0x160
-> > [17854.688347]  [<c0103494>] ? restore_nocheck_notrace+0x0/0xe
-> > [17854.688347]  [<c01dd4a0>] ? sysfs_write_file+0x0/0x100
-> > [17854.688347]  [<c01992ed>] sys_write+0x3d/0x70
-> > [17854.688347]  [<c0103371>] sysenter_do_call+0x12/0x31
-> 
-> Andrey's analysis:
-> 
-> > timekeeping_resume() is called via class ->resume
-> > method; and according to comments in sysdev_resume() and
-> > device_power_up(), they are called with interrupts disabled.
-> >
-> > Looking at suspend_enter, irqs *are* disabled at this point.
-> >
-> > So it actually looks like something (may be some driver)
-> > unconditionally enabled irqs in resume path.
-> 
-> Add a debug check to test this theory. If it triggers then it
-> triggers because the resume code calls it with irqs enabled,
-> which is a no-no not just for timekeeping_resume(), but also
-> bad for a number of other resume handlers.
-> 
-> Reported-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/hrtimer.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-> index 1455b76..f87e047 100644
-> --- a/kernel/hrtimer.c
-> +++ b/kernel/hrtimer.c
-> @@ -614,7 +614,8 @@ void clock_was_set(void)
->   */
->  void hres_timers_resume(void)
->  {
-> -	/* Retrigger the CPU local events: */
-> +	WARN_ONCE(1, KERN_INFO "hres_timers_resume() called with IRQs enabled!");
-> +
->  	retrigger_next_event(NULL);
->  }
-
-Why WARN_ONCE(1, ), actually?
-
-I would very much prefer adding a WARN_ONCE() or two into the resume part
-suspend_enter().  Like this:
-
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- kernel/power/main.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbcmap.c |   21 +++++--
+ drivers/video/fbmem.c  |  158 ++++++++++++++++++++++++++++--------------------
+ include/linux/fb.h     |    5 +-
+ 3 files changed, 112 insertions(+), 72 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -301,7 +301,12 @@ static int suspend_enter(suspend_state_t
- 	if (!suspend_test(TEST_CORE))
- 		error = suspend_ops->enter(state);
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index 91b78e6..b19f12c 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -250,10 +250,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 	int rc, size = cmap->len * sizeof(u16);
+ 	struct fb_cmap umap;
  
-+	WARN_ONCE(!irqs_disabled(), "PM: Interrupts should be off here!\n");
+-	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+-			        !info->fbops->fb_setcmap))
+-		return -EINVAL;
+-
+ 	memset(&umap, 0, sizeof(struct fb_cmap));
+ 	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
+ 	if (rc)
+@@ -262,11 +258,24 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 	    copy_from_user(umap.green, cmap->green, size) ||
+ 	    copy_from_user(umap.blue, cmap->blue, size) ||
+ 	    (cmap->transp && copy_from_user(umap.transp, cmap->transp, size))) {
+-		fb_dealloc_cmap(&umap);
+-		return -EFAULT;
++		rc = -EFAULT;
++		goto out;
+ 	}
+ 	umap.start = cmap->start;
++	info = get_fb_info(info);
++	if (!info) {
++		rc = -ENODEV;
++		goto out;
++	}
++	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
++				!info->fbops->fb_setcmap)) {
++		rc = -EINVAL;
++		goto out1;
++	}
+ 	rc = fb_set_cmap(&umap, info);
++out1:
++	put_fb_info(info);
++out:
+ 	fb_dealloc_cmap(&umap);
+ 	return rc;
+ }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 756efeb..e51e9ba 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1006,6 +1006,23 @@ fb_blank(struct fb_info *info, int blank)
+  	return ret;
+ }
+ 
++struct fb_info *get_fb_info(struct fb_info *info)
++__acquires(&info->lock)
++{
++	mutex_lock(&info->lock);
++	if (!info->fbops) {
++		mutex_unlock(&info->lock);
++		return NULL;
++	}
++	return info;
++}
 +
- 	device_power_up(PMSG_RESUME);
++void put_fb_info(struct fb_info *info)
++__releases(&info->lock)
++{
++	mutex_unlock(&info->lock);
++}
 +
-+	WARN_ONCE(!irqs_disabled(), "PM: Interrupts should be off here!\n");
+ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			unsigned long arg)
+ {
+@@ -1013,25 +1030,28 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	struct fb_var_screeninfo var;
+ 	struct fb_fix_screeninfo fix;
+ 	struct fb_con2fbmap con2fb;
++	struct fb_cmap cmap_from;
+ 	struct fb_cmap_user cmap;
+ 	struct fb_event event;
+ 	void __user *argp = (void __user *)arg;
+ 	long ret = 0;
+ 
+-	fb = info->fbops;
+-	if (!fb)
+-		return -ENODEV;
+-
+ 	switch (cmd) {
+ 	case FBIOGET_VSCREENINFO:
+-		ret = copy_to_user(argp, &info->var,
+-				    sizeof(var)) ? -EFAULT : 0;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		memcpy(&var, &info->var, sizeof(var));
++		put_fb_info(info);
 +
-  Done:
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
----
-
-Rafael
++		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_VSCREENINFO:
+-		if (copy_from_user(&var, argp, sizeof(var))) {
+-			ret =  -EFAULT;
+-			break;
+-		}
++		if (copy_from_user(&var, argp, sizeof(var)))
++			return -EFAULT;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
+ 		acquire_console_sem();
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_set_var(info, &var);
+@@ -1041,104 +1061,116 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			ret = -EFAULT;
+ 		break;
+ 	case FBIOGET_FSCREENINFO:
+-		ret = copy_to_user(argp, &info->fix,
+-				    sizeof(fix)) ? -EFAULT : 0;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		memcpy(&fix, &info->fix, sizeof(fix));
++		put_fb_info(info);
++
++		ret = copy_to_user(argp, &fix, sizeof(fix)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUTCMAP:
+ 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
+-			ret = -EFAULT;
+-		else
+-			ret = fb_set_user_cmap(&cmap, info);
++			return -EFAULT;
++		ret = fb_set_user_cmap(&cmap, info);
+ 		break;
+ 	case FBIOGETCMAP:
+ 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
+-			ret = -EFAULT;
+-		else
+-			ret = fb_cmap_to_user(&info->cmap, &cmap);
++			return -EFAULT;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		memcpy(&cmap_from, &info->cmap, sizeof(cmap_from));
++		put_fb_info(info);
++		ret = fb_cmap_to_user(&cmap_from, &cmap);
+ 		break;
+ 	case FBIOPAN_DISPLAY:
+-		if (copy_from_user(&var, argp, sizeof(var))) {
+-			ret = -EFAULT;
+-			break;
+-		}
++		if (copy_from_user(&var, argp, sizeof(var)))
++			return -EFAULT;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
+ 		acquire_console_sem();
+ 		ret = fb_pan_display(info, &var);
+ 		release_console_sem();
++		put_fb_info(info);
+ 		if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
+-			ret = -EFAULT;
++			return -EFAULT;
+ 		break;
+ 	case FBIO_CURSOR:
+ 		ret = -EINVAL;
+ 		break;
+ 	case FBIOGET_CON2FBMAP:
+ 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
+-			ret = -EFAULT;
+-		else if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
+-			ret = -EINVAL;
+-		else {
+-			con2fb.framebuffer = -1;
+-			event.info = info;
+-			event.data = &con2fb;
+-			fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP,
+-								&event);
+-			ret = copy_to_user(argp, &con2fb,
+-				    sizeof(con2fb)) ? -EFAULT : 0;
+-		}
++			return -EFAULT;
++		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
++			return -EINVAL;
++		con2fb.framebuffer = -1;
++		event.data = &con2fb;
++
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		event.info = info;
++		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
++		put_fb_info(info);
++
++		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_CON2FBMAP:
+-		if (copy_from_user(&con2fb, argp, sizeof(con2fb))) {
+-			ret = -EFAULT;
+-			break;
+-		}
+-		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES) {
+-			ret = -EINVAL;
+-			break;
+-		}
+-		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX) {
+-			ret = -EINVAL;
+-			break;
+-		}
++		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
++			return -EFAULT;
++		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
++			return -EINVAL;
++		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
++			return -EINVAL;
+ 		if (!registered_fb[con2fb.framebuffer])
+ 			request_module("fb%d", con2fb.framebuffer);
+ 		if (!registered_fb[con2fb.framebuffer]) {
+ 			ret = -EINVAL;
+ 			break;
+ 		}
+-		event.info = info;
+ 		event.data = &con2fb;
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		event.info = info;
+ 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
+ 					      &event);
++		put_fb_info(info);
+ 		break;
+ 	case FBIOBLANK:
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
+ 		acquire_console_sem();
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_blank(info, arg);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+ 		release_console_sem();
+-		break;;
++		put_fb_info(info);
++		break;
+ 	default:
+-		if (fb->fb_ioctl == NULL)
+-			ret = -ENOTTY;
+-		else
++		info = get_fb_info(info);
++		if (!info)
++			return -ENODEV;
++		fb = info->fbops;
++		if (fb->fb_ioctl)
+ 			ret = fb->fb_ioctl(info, cmd, arg);
++		else
++			ret = -ENOTTY;
++		put_fb_info(info);
+ 	}
+ 	return ret;
+ }
+ 
+ static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-__acquires(&info->lock)
+-__releases(&info->lock)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int fbidx = iminor(inode);
+-	struct fb_info *info;
+-	long ret;
++	struct fb_info *info = registered_fb[fbidx];
+ 
+-	info = registered_fb[fbidx];
+-	mutex_lock(&info->lock);
+-	ret = do_fb_ioctl(info, cmd, arg);
+-	mutex_unlock(&info->lock);
+-	return ret;
++	return do_fb_ioctl(info, cmd, arg);
+ }
+ 
+ #ifdef CONFIG_COMPAT
+@@ -1257,8 +1289,6 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
+ 
+ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 			    unsigned long arg)
+-__acquires(&info->lock)
+-__releases(&info->lock)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int fbidx = iminor(inode);
+@@ -1266,7 +1296,6 @@ __releases(&info->lock)
+ 	struct fb_ops *fb = info->fbops;
+ 	long ret = -ENOIOCTLCMD;
+ 
+-	mutex_lock(&info->lock);
+ 	switch(cmd) {
+ 	case FBIOGET_VSCREENINFO:
+ 	case FBIOPUT_VSCREENINFO:
+@@ -1292,7 +1321,6 @@ __releases(&info->lock)
+ 			ret = fb->fb_compat_ioctl(info, cmd, arg);
+ 		break;
+ 	}
+-	mutex_unlock(&info->lock);
+ 	return ret;
+ }
+ #endif
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 818fe21..4f02a63 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -960,6 +960,9 @@ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ extern struct class *fb_class;
+ 
++struct fb_info *get_fb_info(struct fb_info *info);
++void put_fb_info(struct fb_info *info);
++
+ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
+ 					   u8 *src, u32 s_pitch, u32 height)
+ {
+@@ -1068,7 +1071,7 @@ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+ extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
+ extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
+ extern int fb_set_cmap(struct fb_cmap *cmap, struct fb_info *fb_info);
+-extern int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *fb_info);
++extern int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info);
+ extern const struct fb_cmap *fb_default_cmap(int len);
+ extern void fb_invert_cmaps(void);
+ 
