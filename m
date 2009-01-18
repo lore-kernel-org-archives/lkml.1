@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbZARMh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933479AbZARMmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933403AbZARMh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 07:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZARMhS
+	id S933479AbZARMmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 07:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZARMmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 07:37:18 -0500
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:35746 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751560AbZARMhQ (ORCPT
+	Sun, 18 Jan 2009 07:42:23 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:53906 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755330AbZARMmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 07:37:16 -0500
-Date: Sun, 18 Jan 2009 13:37:09 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Bodo Eggert <7eggert@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [why oom_adj does not work] Re: Linux killed Kenny, bastard!
-In-Reply-To: <20090117142245.GA10801@ioremap.net>
-Message-ID: <alpine.LSU.0.999.0901181333160.6179@be1.lrz>
-References: <bTx3z-8bU-23@gated-at.bofh.it> <bTxdg-8sZ-23@gated-at.bofh.it>
- <bTxdg-8sZ-21@gated-at.bofh.it> <bTxmW-hf-1@gated-at.bofh.it>
- <bTRYr-2up-21@gated-at.bofh.it> <E1LNBGL-00021y-C8@be1.7eggert.dyndns.org>
- <20090114192216.GA18123@ioremap.net> <alpine.LSU.0.999.0901152243330.9772@be1.lrz>
- <20090115223557.GC10429@ioremap.net> <alpine.LSU.0.999.0901171504480.7336@be1.lrz>
- <20090117142245.GA10801@ioremap.net>
+	Sun, 18 Jan 2009 07:42:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=vMzVU/11y6CFapB3RijNNwdfR1h6MoLf1LiaruYGQhWehWkRNmZR+Hxf04Vk2gl8Hc
+         sk+OIAfjQS+h1OEssB1I9dwMtL+DxfNm3tlzyab6hcEtw3xxgq8wfjs350MVAqSbUN0x
+         79cyqkfvRc8P9asKsMxwVjE5NjGFagL7fO5BQ=
+Message-ID: <497323AB.4080203@gmail.com>
+Date: Sun, 18 Jan 2009 13:42:19 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+To: wli@holomorphy.com
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] unless signed chg cannot become less than 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Jan 2009, Evgeniy Polyakov wrote:
+region_chg returns long, so let vma_needs_reservation() forward this to
+alloc_huge_page(). and do not store it in an unsigned, since a negative
+will go unnoticed. Store it as long as well. all callers treat it as
+long anyway. 
 
-> On Sat, Jan 17, 2009 at 03:12:49PM +0100, Bodo Eggert (7eggert@gmx.de) wrote:
-> > > > > This does not work if processes are short-living and are spawned by the
-> > > > > parent on demand.
-> > > > 
-> > > > They will have the same name, too. Your Kenny-killer will fail, too.
-> > > 
-> > > It is not always the case, processes start executing different binaries
-> > > and change the names, that's at least what I observed in the particular
-> > > root case of the discussion.
-> > 
-> > In that case, you can use a wrapper script.
-> 
-> That may be a solution, except that not very convenient, since there may
-> be really lots of executables and cooking up a special script for
-> everyone will not scale well.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 618e983..f0eec5e 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -918,7 +918,7 @@ static void return_unused_surplus_pages(struct hstate *h,
+  * an instantiated the change should be committed via vma_commit_reservation.
+  * No action is required on failure.
+  */
+-static int vma_needs_reservation(struct hstate *h,
++static long vma_needs_reservation(struct hstate *h,
+ 			struct vm_area_struct *vma, unsigned long addr)
+ {
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+@@ -933,7 +933,7 @@ static int vma_needs_reservation(struct hstate *h,
+ 		return 1;
+ 
+ 	} else  {
+-		int err;
++		long err;
+ 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
+ 		struct resv_map *reservations = vma_resv_map(vma);
+ 
+@@ -969,7 +969,7 @@ static struct page *alloc_huge_page(struct vm_area_struct *vma,
+ 	struct page *page;
+ 	struct address_space *mapping = vma->vm_file->f_mapping;
+ 	struct inode *inode = mapping->host;
+-	unsigned int chg;
++	long chg;
+ 
+ 	/*
+ 	 * Processes that did not create the mapping will have no reserves and
 
-How many different CGI handlers are you going to have?
-
-And how does kill-kenny scale with the number of users on the system?
-I want my browser not to be killed, while the other user wants his
-gimp not to be killed. As you can see, it does not even scale for
-the most simple multi-user system.
-
-> > > There could be lots of heuristics applied for the different cases, but
-> > > without changing the application, they are somewhat limited to
-> > > long-living processes only. There are really lots of cases when it does
-> > > not stand.
-> > 
-> > If it's short-lived enough, the processes will out-die the OOM-Killer.
-> > You can only win by by suspending or killing the factory.
-> 
-> No, admin will limit/forbid the connection from the DoSing clients,
-> server must always live to handle proper users.
-
-If there is no memory, the admin can't even log in.
--- 
-Programming is an art form that fights back.
