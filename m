@@ -1,205 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933569AbZARNoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbZARNqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933569AbZARNoe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 08:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbZARNoV
+	id S933532AbZARNqi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 08:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbZARNq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 08:44:21 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:47044 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758674AbZARNoU (ORCPT
+	Sun, 18 Jan 2009 08:46:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:32792 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758912AbZARNq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 08:44:20 -0500
+	Sun, 18 Jan 2009 08:46:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ujHtm7WeufpWgZ/gOLIAnQEaqDIHM4Fhf/KErBByIzttZkDhIk9/B0I0UVLYwHZR8n
-         wPxHdlQ28KxSH8IeCOGDj1RknaqFdUxQ+bZe1x2AkDrJvHt5k3AfVgWCTSiCV8M4d72D
-         KdyxzByxh34Kuf8m6g2hotC95y50TCTWQipc8=
-Message-ID: <19f34abd0901180544g617b29c1nc41c760f8803de0e@mail.gmail.com>
-Date: Sun, 18 Jan 2009 14:44:17 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: 2.6.27.9: splice_to_pipe() hung (blocked for more than 120 seconds)
-Cc: "Ingo Molnar" <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       "Linux Netdev List" <netdev@vger.kernel.org>
-In-Reply-To: <19f34abd0901180412w39d70ccqd0c10698bc70e6e9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
-	 <4970F2B6.1060508@cosmosbay.com>
-	 <19f34abd0901180412w39d70ccqd0c10698bc70e6e9@mail.gmail.com>
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dW4fBiaszaDpXZ1gAh8/pKbacys8G4hCywklPu0HDGY0buWw6hXMY6AQxPBadF7J+8
+         dCFDMNS2wV83KBu6sDu5GxPnwGWgR6uGlBwZ2vXfNgiywyM0MxJRDHOsAf3A8i3ASnvR
+         C7iq5JJmSuQeYY7DUx8ntkUpkJRQUn4+tma/c=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       Philipp Zabel <philipp.zabel@gmail.com>
+Subject: [PATCH] power: stop pda_power from requesting shared a IRQ as IRQF_DISABLED
+Date: Sun, 18 Jan 2009 14:46:21 +0100
+Message-Id: <1232286381-6748-1-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 1:12 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Fri, Jan 16, 2009 at 9:48 PM, Eric Dumazet <dada1@cosmosbay.com> wrote:
->>
->> I tried your program on latest git tree and could not reproduce any problem.
->>
->> (changed to 9 threads since I have 8 cpus)
->
-> Hm. My machine has 2 CPUs. I just reproduced it on a more recent
-> kernel, this time from:
->
-> commit a6525042bfdfcab128bd91fad264de10fd24a55e
-> Date:   Tue Jan 13 14:53:16 2009 -0800
->
-> with lockdep enabled, and no bad messages. So it seems that it is not
-> a deadlock at least...
->
->> Problem might be that your threads all fight on the same pipe, with
->> a mutex protecting its inode.
->>
->>
->> So mutex_lock() could possibly starve for more than 120 second ?
->
-> Much longer. Last time this happened, the zombies stayed for many
-> hours (until I rebooted the machine).
->
->> Maybe you can reproduce the problem using standard read()/write() syscalls...
->
-> I can try...
->
-> Tasks:   7 total,   0 running,   6 sleeping,   0 stopped,   1 zombie
-> Cpu(s):  0.4%us,  6.0%sy,  0.0%ni, 92.6%id,  1.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> Mem:   1016180k total,    54596k used,   961584k free,     4084k buffers
-> Swap:   104380k total,        0k used,   104380k free,    20412k cached
->
->  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  3808 500       20   0     0    0    0 Z    0  0.0   0:00.00 a.out <defunct>
->  3809 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->  3810 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->  3813 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->  3815 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->  3817 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->  3821 500       20   0     0    0    0 D    0  0.0   0:00.00 a.out
->
-> root@ubuntu:/home/debian# strace -p 3808
-> attach: ptrace(PTRACE_ATTACH, ...): Operation not permitted
->
-> root@ubuntu:/home/debian# strace -p 3809
-> Process 3809 attached - interrupt to quit
-> <nothing>
-> ^C^C^C^C^C^C^C^C
-> <doesn't quit>
->
-> root@ubuntu:/home/debian# cat /proc/3808/syscall
-> 0 0xbfa1f5b4 0xbfa1f5b4 0xc8bff4 0xbfa1f5b4 0x0 0xbfa1f5c8 0xbfa1f3f8 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3809/syscall
-> 313 0x9 0x0 0x7 0x0 0x3 0x0 0xb80012cc 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3810/syscall
-> 313 0x6 0x0 0x5 0x0 0x17f 0x0 0xb780037c 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3813/syscall
-> 313 0xa 0x0 0x7 0x0 0x3 0x0 0xb67fe2cc 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3815/syscall
-> 313 0x6 0x0 0x5 0x0 0x17f 0x0 0xb5ffd37c 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3817/syscall
-> 313 0x8 0x0 0x7 0x0 0x3 0x0 0xb4ffb2cc 0xb8020424
-> root@ubuntu:/home/debian# cat /proc/3821/syscall
-> 313 0x6 0x0 0x5 0x0 0x17f 0x0 0xb47fa37c 0xb8020424
->
-> Also managed to grab this this time:
->
->  SysRq : Show Locks Held
->
->  Showing all locks held in the system:
->  1 lock held by getty/2130:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by getty/2131:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by getty/2134:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by getty/2138:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by getty/2142:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by getty/2143:
->  #0:  (&tty->atomic_read_lock){--..}, at: [<c1218973>] n_tty_read+0x533/0x780
->  1 lock held by a.out/3809:
->  #0:  (&sb->s_type->i_mutex_key#4){--..}, at: [<c10d5515>]
-> splice_to_pipe+0x25/0x260
->  2 locks held by a.out/3810:
->  #0:  (&sb->s_type->i_mutex_key#11/2){--..}, at: [<c10d548c>]
-> splice_from_pipe+0x5c/0x90
->  #1:  (&sb->s_type->i_mutex_key#4){--..}, at: [<c10be5ac>] pipe_wait+0x6c/0x80
->  1 lock held by a.out/3813:
->  #0:  (&sb->s_type->i_mutex_key#4){--..}, at: [<c10d5515>]
-> splice_to_pipe+0x25/0x260
->  2 locks held by a.out/3815:
->  #0:  (&sb->s_type->i_mutex_key#4/1){--..}, at: [<c10c97a2>]
-> inode_double_lock+0x32/0xb0
->  #1:  (&sb->s_type->i_mutex_key#11/2){--..}, at: [<c10d548c>]
-> splice_from_pipe+0x5c/0x90
->  1 lock held by a.out/3817:
->  #0:  (&sb->s_type->i_mutex_key#4){--..}, at: [<c10d5515>]
-> splice_to_pipe+0x25/0x260
->  1 lock held by a.out/3821:
->  #0:  (&sb->s_type->i_mutex_key#4/1){--..}, at: [<c10c97a2>]
-> inode_double_lock+0x32/0xb0
->  2 locks held by bash/3916:
->  #0:  (sysrq_key_table_lock){....}, at: [<c12297f7>] __handle_sysrq+0x17/0x140
->  #1:  (tasklist_lock){..--}, at: [<c1059354>] debug_show_all_locks+0x34/0x180
->
->  =============================================
->
+IRQF_DISABLED is not guaranteed for shared IRQs. I think power_changed_isr
+doesn't need it anyway, as it only fires a timer.
+This patch enables IRQF_SAMPLE_RANDOM instead.
 
-I have one theory. We have this skeleton:
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/power/pda_power.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
-                         loff_t *ppos, size_t len, unsigned int flags,
-                         splice_actor *actor)
-{
-...
-        inode_double_lock(inode, pipe->inode);
-        ret = __splice_from_pipe(pipe, &sd, actor);
-        inode_double_unlock(inode, pipe->inode);
-...
-}
-
-ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
-                           splice_actor *actor)
-{
-...
-                pipe_wait(pipe);
-...
-}
-
-void pipe_wait(struct pipe_inode_info *pipe)
-{
-        if (pipe->inode)
-                mutex_unlock(&pipe->inode->i_mutex);
-...
-        if (pipe->inode)
-                mutex_lock(&pipe->inode->i_mutex);
-}
-
-So in short: Is it possible that inode_double_lock() in
-splice_from_pipe() first locks the pipe mutex, THEN locks the
-file/socket mutex? In that case, there should be a lock imbalance,
-because pipe_wait() would unlock the pipe while the file/socket mutex
-is held.
-
-That would possibly explain the sporadicity of the lockup; it depends
-on the actual order of the double lock.
-
-Why doesn't lockdep report that? Hm. I guess it is because these are
-both inode mutexes and lockdep can't detect a locking imbalance within
-the same lock class?
-
-Anyway, that's just a theory. :-) Will try to confirm by simplifying
-the test-case.
-
-
-Vegard
-
+diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+index d30bb76..b56a704 100644
+--- a/drivers/power/pda_power.c
++++ b/drivers/power/pda_power.c
+@@ -20,7 +20,7 @@
+ 
+ static inline unsigned int get_irq_flags(struct resource *res)
+ {
+-	unsigned int flags = IRQF_DISABLED | IRQF_SHARED;
++	unsigned int flags = IRQF_SAMPLE_RANDOM | IRQF_SHARED;
+ 
+ 	flags |= res->flags & IRQF_TRIGGER_MASK;
+ 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.6.5
+
