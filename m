@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762440AbZARIHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbZARIHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762440AbZARIHN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 03:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762704AbZARIGl
+	id S932252AbZARIHn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 03:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762981AbZARIGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 03:06:41 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53657 "EHLO song.cn.fujitsu.com"
+	Sun, 18 Jan 2009 03:06:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60268 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1761632AbZARIGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 03:06:39 -0500
-Message-ID: <4972E2FD.1010902@cn.fujitsu.com>
-Date: Sun, 18 Jan 2009 16:06:21 +0800
+	id S1762867AbZARIGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 03:06:40 -0500
+Message-ID: <4972E311.5010603@cn.fujitsu.com>
+Date: Sun, 18 Jan 2009 16:06:41 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: menage@google.com, miaox@cn.fujitsu.com, maxk@qualcomm.com,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] cgroup: convert open-coded mutex_lock(&cgroup_mutex)
- calls into cgroup_lock() calls
+Subject: [PATCH 3/3] cpuset: fix possible deadlock in async_rebuild_sched_domains
 References: <496FEFCA.9050908@cn.fujitsu.com>	<4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org>
 In-Reply-To: <20090116125738.22c21bf2.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8
@@ -27,320 +26,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lockdep reported some possible circular locking info when we tested cpuset on
+NUMA/fake NUMA box.
 
-Convert open-coded mutex_lock(&cgroup_mutex) calls into cgroup_lock()
-calls and convert mutex_unlock(&cgroup_mutex) calls into cgroup_unlock()
-calls.
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.29-rc1-00224-ga652504 #111
+-------------------------------------------------------
+bash/2968 is trying to acquire lock:
+ (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
 
+but task is already holding lock:
+ (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
+
+which lock already depends on the new lock.
+......
+-------------------------------------------------------
+
+Steps to reproduce:
+# mkdir /dev/cpuset
+# mount -t cpuset xxx /dev/cpuset
+# mkdir /dev/cpuset/0
+# echo 0 > /dev/cpuset/0/cpus
+# echo 0 > /dev/cpuset/0/mems
+# echo 1 > /dev/cpuset/0/memory_migrate
+# cat /dev/zero > /dev/null &
+# echo $! > /dev/cpuset/0/tasks
+
+This is because async_rebuild_sched_domains has the following lock sequence:
+run_workqueue(async_rebuild_sched_domains)
+	-> do_rebuild_sched_domains -> cgroup_lock
+
+But, attaching tasks when memory_migrate is set has following:
+cgroup_lock_live_group(cgroup_tasks_write)
+	-> do_migrate_pages -> flush_work
+
+This can be fixed by using a separate workqueue thread.
+
+But queuing a work to an other thread is adding some overhead for cpuset.
+And a new separate workqueue thread is wasteful, this thread is sleeping
+at most time.
+
+This patch add cgroup_queue_defer_work(). And the works will be deferring
+processed with cgroup_mutex released. And this patch just add very very
+little overhead for cgroup_unlock()'s fast path.
+
+Reported-by: Miao Xie <miaox@cn.fujitsu.com>
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Miao Xie <miaox@cn.fujitsu.com>
 ---
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index c298310..75a352b 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -616,7 +688,7 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- 		 * agent */
- 		synchronize_rcu();
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 647c77a..5a8c6b7 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -57,7 +57,6 @@
+ #include <asm/uaccess.h>
+ #include <asm/atomic.h>
+ #include <linux/mutex.h>
+-#include <linux/workqueue.h>
+ #include <linux/cgroup.h>
  
--		mutex_lock(&cgroup_mutex);
-+		cgroup_lock();
- 		/*
- 		 * Release the subsystem state objects.
- 		 */
-@@ -624,7 +696,7 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- 			ss->destroy(ss, cgrp);
- 
- 		cgrp->root->number_of_cgroups--;
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 
- 		/*
- 		 * Drop the active superblock reference that we took when we
-@@ -761,14 +833,14 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	struct cgroupfs_root *root = vfs->mnt_sb->s_fs_info;
- 	struct cgroup_subsys *ss;
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	for_each_subsys(root, ss)
- 		seq_printf(seq, ",%s", ss->name);
- 	if (test_bit(ROOT_NOPREFIX, &root->flags))
- 		seq_puts(seq, ",noprefix");
- 	if (strlen(root->release_agent_path))
- 		seq_printf(seq, ",release_agent=%s", root->release_agent_path);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	return 0;
- }
- 
-@@ -843,7 +915,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
- 	struct cgroup_sb_opts opts;
- 
- 	mutex_lock(&cgrp->dentry->d_inode->i_mutex);
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 
- 	/* See what subsystems are wanted */
- 	ret = parse_cgroupfs_options(data, &opts);
-@@ -867,7 +939,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
-  out_unlock:
- 	if (opts.release_agent)
- 		kfree(opts.release_agent);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
- 	return ret;
- }
-@@ -1015,7 +1087,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 		inode = sb->s_root->d_inode;
- 
- 		mutex_lock(&inode->i_mutex);
--		mutex_lock(&cgroup_mutex);
-+		cgroup_lock();
- 
- 		/*
- 		 * We're accessing css_set_count without locking
-@@ -1026,14 +1098,14 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 		 */
- 		ret = allocate_cg_links(css_set_count, &tmp_cg_links);
- 		if (ret) {
--			mutex_unlock(&cgroup_mutex);
-+			cgroup_unlock();
- 			mutex_unlock(&inode->i_mutex);
- 			goto drop_new_super;
- 		}
- 
- 		ret = rebind_subsystems(root, root->subsys_bits);
- 		if (ret == -EBUSY) {
--			mutex_unlock(&cgroup_mutex);
-+			cgroup_unlock();
- 			mutex_unlock(&inode->i_mutex);
- 			goto free_cg_links;
- 		}
-@@ -1068,7 +1140,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 
- 		cgroup_populate_dir(root_cgrp);
- 		mutex_unlock(&inode->i_mutex);
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 	}
- 
- 	return simple_set_mnt(mnt, sb);
-@@ -1094,7 +1166,7 @@ static void cgroup_kill_sb(struct super_block *sb) {
- 	BUG_ON(!list_empty(&cgrp->children));
- 	BUG_ON(!list_empty(&cgrp->sibling));
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 
- 	/* Rebind all subsystems back to the default hierarchy */
- 	ret = rebind_subsystems(root, 0);
-@@ -1118,7 +1190,7 @@ static void cgroup_kill_sb(struct super_block *sb) {
- 	list_del(&root->root_list);
- 	root_count--;
- 
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 
- 	kfree(root);
- 	kill_litter_super(sb);
-@@ -2392,7 +2464,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
- 	 * fs */
- 	atomic_inc(&sb->s_active);
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 
- 	init_cgroup_housekeeping(cgrp);
- 
-@@ -2427,7 +2499,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
- 	err = cgroup_populate_dir(cgrp);
- 	/* If err < 0, we have a half-filled directory - oh well ;) */
- 
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
- 
- 	return 0;
-@@ -2444,7 +2516,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
- 			ss->destroy(ss, cgrp);
- 	}
- 
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 
- 	/* Release the reference count that we took on the superblock */
- 	deactivate_super(sb);
-@@ -2550,16 +2622,16 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 
- 	/* the vfs holds both inode->i_mutex already */
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	if (atomic_read(&cgrp->count) != 0) {
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		return -EBUSY;
- 	}
- 	if (!list_empty(&cgrp->children)) {
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		return -EBUSY;
- 	}
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 
- 	/*
- 	 * Call pre_destroy handlers of subsys. Notify subsystems
-@@ -2567,13 +2639,13 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 	 */
- 	cgroup_call_pre_destroy(cgrp);
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	parent = cgrp->parent;
- 
- 	if (atomic_read(&cgrp->count)
- 	    || !list_empty(&cgrp->children)
- 	    || !cgroup_clear_css_refs(cgrp)) {
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		return -EBUSY;
- 	}
- 
-@@ -2598,7 +2670,7 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- 	set_bit(CGRP_RELEASABLE, &parent->flags);
- 	check_for_release(parent);
- 
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	return 0;
- }
- 
-@@ -2752,7 +2824,7 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
- 
- 	retval = 0;
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 
- 	for_each_active_root(root) {
- 		struct cgroup_subsys *ss;
-@@ -2774,7 +2846,7 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
- 	}
- 
- out_unlock:
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	put_task_struct(tsk);
- out_free:
- 	kfree(buf);
-@@ -2801,14 +2873,14 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
- 	int i;
- 
- 	seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\tenabled\n");
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
- 		seq_printf(m, "%s\t%lu\t%d\t%d\n",
- 			   ss->name, ss->root->subsys_bits,
- 			   ss->root->number_of_cgroups, !ss->disabled);
- 	}
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	return 0;
- }
- 
-@@ -2984,11 +3056,11 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 
- 	/* First figure out what hierarchy and cgroup we're dealing
- 	 * with, and pin them so we can drop cgroup_mutex */
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
-  again:
- 	root = subsys->root;
- 	if (root == &rootnode) {
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		return 0;
- 	}
- 	task_lock(tsk);
-@@ -2998,14 +3070,14 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 	/* Pin the hierarchy */
- 	if (!atomic_inc_not_zero(&parent->root->sb->s_active)) {
- 		/* We race with the final deactivate_super() */
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		return 0;
- 	}
- 
- 	/* Keep the cgroup alive */
- 	get_css_set(cg);
- 	task_unlock(tsk);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 
- 	/* Now do the VFS work to create a cgroup */
- 	inode = parent->dentry->d_inode;
-@@ -3036,7 +3108,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 	/* The cgroup now exists. Retake cgroup_mutex and check
- 	 * that we're still in the same state that we thought we
- 	 * were. */
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	if ((root != subsys->root) ||
- 	    (parent != task_cgroup(tsk, subsys->subsys_id))) {
- 		/* Aargh, we raced ... */
-@@ -3061,14 +3133,14 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 
- 	/* All seems fine. Finish by moving the task into the new cgroup */
- 	ret = cgroup_attach_task(child, tsk);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 
-  out_release:
- 	mutex_unlock(&inode->i_mutex);
- 
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	put_css_set(cg);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
- 	deactivate_super(parent->root->sb);
- 	return ret;
- }
-@@ -3162,7 +3234,7 @@ void __css_put(struct cgroup_subsys_state *css)
- static void cgroup_release_agent(struct work_struct *work)
+ /*
+@@ -789,7 +788,7 @@ done:
+  * to the cpuset pseudo-filesystem, because it cannot be called
+  * from code that already holds cgroup_mutex.
+  */
+-static void do_rebuild_sched_domains(struct work_struct *unused)
++static void do_rebuild_sched_domains(struct cgroup_deferred_work *unused)
  {
- 	BUG_ON(work != &release_agent_work);
--	mutex_lock(&cgroup_mutex);
-+	cgroup_lock();
- 	spin_lock(&release_list_lock);
- 	while (!list_empty(&release_list)) {
- 		char *argv[3], *envp[3];
-@@ -3196,16 +3268,16 @@ static void cgroup_release_agent(struct work_struct *work)
- 		/* Drop the lock while we invoke the usermode helper,
- 		 * since the exec could involve hitting disk and hence
- 		 * be a slow process */
--		mutex_unlock(&cgroup_mutex);
-+		cgroup_unlock();
- 		call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
--		mutex_lock(&cgroup_mutex);
-+		cgroup_lock();
-  continue_free:
- 		kfree(pathbuf);
- 		kfree(agentbuf);
- 		spin_lock(&release_list_lock);
- 	}
- 	spin_unlock(&release_list_lock);
--	mutex_unlock(&cgroup_mutex);
-+	cgroup_unlock();
+ 	struct sched_domain_attr *attr;
+ 	struct cpumask *doms;
+@@ -808,10 +807,11 @@ static void do_rebuild_sched_domains(struct work_struct *unused)
+ 	put_online_cpus();
  }
  
- static int __init cgroup_disable(char *str)
+-static DECLARE_WORK(rebuild_sched_domains_work, do_rebuild_sched_domains);
++static CGROUP_DEFERRED_WORK(rebuild_sched_domains_work,
++		do_rebuild_sched_domains);
+ 
+ /*
+- * Rebuild scheduler domains, asynchronously via workqueue.
++ * Rebuild scheduler domains, defer it after cgroup_lock released.
+  *
+  * If the flag 'sched_load_balance' of any cpuset with non-empty
+  * 'cpus' changes, or if the 'cpus' allowed changes in any cpuset
+@@ -826,19 +826,18 @@ static DECLARE_WORK(rebuild_sched_domains_work, do_rebuild_sched_domains);
+  *
+  * So in order to avoid an ABBA deadlock, the cpuset code handling
+  * these user changes delegates the actual sched domain rebuilding
+- * to a separate workqueue thread, which ends up processing the
+- * above do_rebuild_sched_domains() function.
++ * to a deferred work queue, and cgroup_unlock() will flush the deferred
++ * work queue and process the above do_rebuild_sched_domains() function.
+  */
+-static void async_rebuild_sched_domains(void)
++static void defer_rebuild_sched_domains(void)
+ {
+-	schedule_work(&rebuild_sched_domains_work);
++	cgroup_queue_deferred_work(&rebuild_sched_domains_work);
+ }
+ 
+ /*
+  * Accomplishes the same scheduler domain rebuild as the above
+- * async_rebuild_sched_domains(), however it directly calls the
+- * rebuild routine synchronously rather than calling it via an
+- * asynchronous work thread.
++ * defer_rebuild_sched_domains(), however it directly calls the
++ * rebuild routine synchronously rather than deferring it.
+  *
+  * This can only be called from code that is not holding
+  * cgroup_mutex (not nested in a cgroup_lock() call.)
+@@ -965,7 +964,7 @@ static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
+ 	heap_free(&heap);
+ 
+ 	if (is_load_balanced)
+-		async_rebuild_sched_domains();
++		defer_rebuild_sched_domains();
+ 	return 0;
+ }
+ 
+@@ -1191,7 +1190,7 @@ static int update_relax_domain_level(struct cpuset *cs, s64 val)
+ 		cs->relax_domain_level = val;
+ 		if (!cpumask_empty(cs->cpus_allowed) &&
+ 		    is_sched_load_balance(cs))
+-			async_rebuild_sched_domains();
++			defer_rebuild_sched_domains();
+ 	}
+ 
+ 	return 0;
+@@ -1234,7 +1233,7 @@ static int update_flag(cpuset_flagbits_t bit, struct cpuset *cs,
+ 	mutex_unlock(&callback_mutex);
+ 
+ 	if (!cpumask_empty(trialcs->cpus_allowed) && balance_flag_changed)
+-		async_rebuild_sched_domains();
++		defer_rebuild_sched_domains();
+ 
+ out:
+ 	free_trial_cpuset(trialcs);
+@@ -1821,7 +1820,7 @@ static struct cgroup_subsys_state *cpuset_create(
+ /*
+  * If the cpuset being removed has its flag 'sched_load_balance'
+  * enabled, then simulate turning sched_load_balance off, which
+- * will call async_rebuild_sched_domains().
++ * will call defer_rebuild_sched_domains().
+  */
+ 
+ static void cpuset_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+
 
 
 
