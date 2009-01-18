@@ -1,112 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbZAREYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbZAREYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932331AbZAREYQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 23:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761530AbZAREV3
+	id S932331AbZAREYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 23:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763666AbZAREWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 23:21:29 -0500
-Received: from mga14.intel.com ([143.182.124.37]:46977 "EHLO mga14.intel.com"
+	Sat, 17 Jan 2009 23:22:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37901 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758122AbZAREVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 23:21:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,282,1231142400"; 
-   d="scan'208";a="101153977"
-From: Yu Zhao <yu.zhao@intel.com>
-To: jbarnes@virtuousgeek.org, dwmw2@infradead.org
-Cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v2 5/6] VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
-Date: Sun, 18 Jan 2009 12:17:33 +0800
-Message-Id: <1232252254-7614-6-git-send-email-yu.zhao@intel.com>
-X-Mailer: git-send-email 1.6.1
-In-Reply-To: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
-References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com>
+	id S1763660AbZAREWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 23:22:22 -0500
+Message-ID: <4972AE71.2030506@kernel.org>
+Date: Sun, 18 Jan 2009 13:22:09 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/17] x86-64: Use absolute displacements for per-cpu
+ accesses.
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232115396-26367-1-git-send-email-brgerst@gmail.com> <1232115396-26367-2-git-send-email-brgerst@gmail.com> <1232115396-26367-3-git-send-email-brgerst@gmail.com> <1232115396-26367-4-git-send-email-brgerst@gmail.com> <1232115396-26367-5-git-send-email-brgerst@gmail.com> <1232115396-26367-6-git-send-email-brgerst@gmail.com> <1232115396-26367-7-git-send-email-brgerst@gmail.com> <1232115396-26367-8-git-send-email-brgerst@gmail.com> <1232115396-26367-9-git-send-email-brgerst@gmail.com> <1232115396-26367-10-git-send-email-brgerst@gmail.com> <1232115396-26367-11-git-send-email-brgerst@gmail.com> <1232115396-26367-12-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1232115396-26367-12-git-send-email-brgerst@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 04:22:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make iommu_flush_iotlb_psi() and flush_unmaps() easier to read.
+Hello, Brian.
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
----
- drivers/pci/intel-iommu.c |   46 +++++++++++++++++++++-----------------------
- 1 files changed, 22 insertions(+), 24 deletions(-)
+Brian Gerst wrote:
+> Accessing memory through %gs should not use rip-relative addressing.
+> Adding a P prefix for the argument tells gcc to not add (%rip) to
+> the memory references.
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 3dfecb2..df92764 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -917,30 +917,27 @@ static int __iommu_flush_iotlb(struct intel_iommu *iommu, u16 did,
- static int iommu_flush_iotlb_psi(struct intel_iommu *iommu, u16 did,
- 	u64 addr, unsigned int pages, int non_present_entry_flush)
- {
--	unsigned int mask;
-+	int rc;
-+	unsigned int mask = ilog2(__roundup_pow_of_two(pages));
- 
- 	BUG_ON(addr & (~VTD_PAGE_MASK));
- 	BUG_ON(pages == 0);
- 
--	/* Fallback to domain selective flush if no PSI support */
--	if (!cap_pgsel_inv(iommu->cap))
--		return iommu->flush.flush_iotlb(iommu, did, 0, 0,
--						DMA_TLB_DSI_FLUSH,
--						non_present_entry_flush);
--
- 	/*
-+	 * Fallback to domain selective flush if no PSI support or the size is
-+	 * too big.
- 	 * PSI requires page size to be 2 ^ x, and the base address is naturally
- 	 * aligned to the size
- 	 */
--	mask = ilog2(__roundup_pow_of_two(pages));
--	/* Fallback to domain selective flush if size is too big */
--	if (mask > cap_max_amask_val(iommu->cap))
--		return iommu->flush.flush_iotlb(iommu, did, 0, 0,
--			DMA_TLB_DSI_FLUSH, non_present_entry_flush);
--
--	return iommu->flush.flush_iotlb(iommu, did, addr, mask,
--					DMA_TLB_PSI_FLUSH,
--					non_present_entry_flush);
-+	if (!cap_pgsel_inv(iommu->cap) || mask > cap_max_amask_val(iommu->cap))
-+		rc = iommu->flush.flush_iotlb(iommu, did, 0, 0,
-+						DMA_TLB_DSI_FLUSH,
-+						non_present_entry_flush);
-+	else
-+		rc = iommu->flush.flush_iotlb(iommu, did, addr, mask,
-+						DMA_TLB_PSI_FLUSH,
-+						non_present_entry_flush);
-+	return rc;
- }
- 
- static void iommu_disable_protect_mem_regions(struct intel_iommu *iommu)
-@@ -2293,15 +2290,16 @@ static void flush_unmaps(void)
- 		if (!iommu)
- 			continue;
- 
--		if (deferred_flush[i].next) {
--			iommu->flush.flush_iotlb(iommu, 0, 0, 0,
--						 DMA_TLB_GLOBAL_FLUSH, 0);
--			for (j = 0; j < deferred_flush[i].next; j++) {
--				__free_iova(&deferred_flush[i].domain[j]->iovad,
--						deferred_flush[i].iova[j]);
--			}
--			deferred_flush[i].next = 0;
-+		if (!deferred_flush[i].next)
-+			continue;
-+
-+		iommu->flush.flush_iotlb(iommu, 0, 0, 0,
-+					 DMA_TLB_GLOBAL_FLUSH, 0);
-+		for (j = 0; j < deferred_flush[i].next; j++) {
-+			__free_iova(&deferred_flush[i].domain[j]->iovad,
-+					deferred_flush[i].iova[j]);
- 		}
-+		deferred_flush[i].next = 0;
- 	}
- 
- 	list_size = 0;
+Nice catch.  I dind't know about the P prefix thing.  It also is used
+in other places too.  Hmmm... I can't find anything about the P
+argument prefix in the gcc info page (4.3).  Any ideas where I can
+find some information about it?  It's a bit weird that it's not a
+constraint prefix but an argument one.
+
+Thanks.
+
 -- 
-1.5.6.4
-
+tejun
