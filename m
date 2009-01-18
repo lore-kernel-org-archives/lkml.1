@@ -1,233 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934465AbZARQnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934390AbZARQoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934465AbZARQnk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 11:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbZARQjq
+	id S934390AbZARQoO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 11:44:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933760AbZARQjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 11:39:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37545 "EHLO hera.kernel.org"
+	Sun, 18 Jan 2009 11:39:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37547 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932298AbZARQjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 11:39:44 -0500
+	id S932988AbZARQjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 11:39:45 -0500
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, linux-kernel@vger.kernel.org, brgerst@gmail.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 02/12] x86-64: Move TLB state from PDA to per-cpu and consolidate with 32-bit.
-Date: Mon, 19 Jan 2009 01:39:09 +0900
-Message-Id: <1232296759-2253-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 12/12] x86-64: Use absolute displacements for per-cpu accesses.
+Date: Mon, 19 Jan 2009 01:39:19 +0900
+Message-Id: <1232296759-2253-13-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1232296759-2253-1-git-send-email-tj@kernel.org>
 References: <1232296759-2253-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 16:39:27 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 16:39:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Brian Gerst <brgerst@gmail.com>
 
+Accessing memory through %gs should not use rip-relative addressing.
+Adding a P prefix for the argument tells gcc to not add (%rip) to
+the memory references.
+
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/include/asm/mmu_context_64.h |   16 +++++++---------
- arch/x86/include/asm/pda.h            |    2 --
- arch/x86/include/asm/tlbflush.h       |    7 ++-----
- arch/x86/kernel/cpu/common.c          |    2 --
- arch/x86/kernel/tlb_32.c              |   12 ++----------
- arch/x86/kernel/tlb_64.c              |   13 ++++++++-----
- arch/x86/xen/mmu.c                    |    6 +-----
- 7 files changed, 20 insertions(+), 38 deletions(-)
+ arch/x86/include/asm/percpu.h |   26 +++++++++++++-------------
+ arch/x86/include/asm/system.h |    2 +-
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/include/asm/mmu_context_64.h b/arch/x86/include/asm/mmu_context_64.h
-index 677d36e..c457250 100644
---- a/arch/x86/include/asm/mmu_context_64.h
-+++ b/arch/x86/include/asm/mmu_context_64.h
-@@ -1,13 +1,11 @@
- #ifndef _ASM_X86_MMU_CONTEXT_64_H
- #define _ASM_X86_MMU_CONTEXT_64_H
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index 03aa4b0..165d527 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -39,10 +39,10 @@
+ #include <linux/stringify.h>
  
--#include <asm/pda.h>
--
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
  #ifdef CONFIG_SMP
--	if (read_pda(mmu_state) == TLBSTATE_OK)
--		write_pda(mmu_state, TLBSTATE_LAZY);
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
+-#define __percpu_seg_str	"%%"__stringify(__percpu_seg)":"
++#define __percpu_arg(x)		"%%"__stringify(__percpu_seg)":%P" #x
+ #define __my_cpu_offset		percpu_read(this_cpu_off)
+ #else
+-#define __percpu_seg_str
++#define __percpu_arg(x)		"%" #x
  #endif
- }
  
-@@ -19,8 +17,8 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 		/* stop flush ipis for the previous mm */
- 		cpu_clear(cpu, prev->cpu_vm_mask);
- #ifdef CONFIG_SMP
--		write_pda(mmu_state, TLBSTATE_OK);
--		write_pda(active_mm, next);
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
- 		cpu_set(cpu, next->cpu_vm_mask);
- 		load_cr3(next->pgd);
-@@ -30,9 +28,9 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 	}
- #ifdef CONFIG_SMP
- 	else {
--		write_pda(mmu_state, TLBSTATE_OK);
--		if (read_pda(active_mm) != next)
--			BUG();
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
-+
- 		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
- 			/* We were in lazy tlb mode and leave_mm disabled
- 			 * tlb flush IPI delivery. We must reload CR3
-diff --git a/arch/x86/include/asm/pda.h b/arch/x86/include/asm/pda.h
-index 69a4075..8ee835e 100644
---- a/arch/x86/include/asm/pda.h
-+++ b/arch/x86/include/asm/pda.h
-@@ -25,9 +25,7 @@ struct x8664_pda {
- 	char *irqstackptr;
- 	short nodenumber;		/* number of current node (32k max) */
- 	short in_bootmem;		/* pda lives in bootmem */
--	short mmu_state;
- 	short isidle;
--	struct mm_struct *active_mm;
- } ____cacheline_aligned_in_smp;
+ /* For arch-specific code, we can use direct single-insn ops (they
+@@ -58,22 +58,22 @@ do {							\
+ 	}						\
+ 	switch (sizeof(var)) {				\
+ 	case 1:						\
+-		asm(op "b %1,"__percpu_seg_str"%0"	\
++		asm(op "b %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	case 2:						\
+-		asm(op "w %1,"__percpu_seg_str"%0"	\
++		asm(op "w %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	case 4:						\
+-		asm(op "l %1,"__percpu_seg_str"%0"	\
++		asm(op "l %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+ 		    : "ri" ((T__)val));			\
+ 		break;					\
+ 	case 8:						\
+-		asm(op "q %1,"__percpu_seg_str"%0"	\
++		asm(op "q %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+ 		    : "r" ((T__)val));			\
+ 		break;					\
+@@ -86,22 +86,22 @@ do {							\
+ 	typeof(var) ret__;				\
+ 	switch (sizeof(var)) {				\
+ 	case 1:						\
+-		asm(op "b "__percpu_seg_str"%1,%0"	\
++		asm(op "b "__percpu_arg(1)",%0"		\
+ 		    : "=r" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
+ 	case 2:						\
+-		asm(op "w "__percpu_seg_str"%1,%0"	\
++		asm(op "w "__percpu_arg(1)",%0"		\
+ 		    : "=r" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
+ 	case 4:						\
+-		asm(op "l "__percpu_seg_str"%1,%0"	\
++		asm(op "l "__percpu_arg(1)",%0"		\
+ 		    : "=r" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
+ 	case 8:						\
+-		asm(op "q "__percpu_seg_str"%1,%0"	\
++		asm(op "q "__percpu_arg(1)",%0"		\
+ 		    : "=r" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
+@@ -122,9 +122,9 @@ do {							\
+ #define x86_test_and_clear_bit_percpu(bit, var)				\
+ ({									\
+ 	int old__;							\
+-	asm volatile("btr %1,"__percpu_seg_str"%c2\n\tsbbl %0,%0"	\
+-		     : "=r" (old__)					\
+-		     : "dIr" (bit), "i" (&per_cpu__##var) : "memory");	\
++	asm volatile("btr %2,"__percpu_arg(1)"\n\tsbbl %0,%0"		\
++		     : "=r" (old__), "+m" (per_cpu__##var)		\
++		     : "dIr" (bit));					\
+ 	old__;								\
+ })
  
- DECLARE_PER_CPU(struct x8664_pda, __pda);
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index 17feaa9..d3539f9 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -148,20 +148,17 @@ void native_flush_tlb_others(const struct cpumask *cpumask,
- #define TLBSTATE_OK	1
- #define TLBSTATE_LAZY	2
- 
--#ifdef CONFIG_X86_32
- struct tlb_state {
- 	struct mm_struct *active_mm;
- 	int state;
--	char __cacheline_padding[L1_CACHE_BYTES-8];
- };
- DECLARE_PER_CPU(struct tlb_state, cpu_tlbstate);
- 
--void reset_lazy_tlbstate(void);
--#else
- static inline void reset_lazy_tlbstate(void)
- {
-+	percpu_write(cpu_tlbstate.state, 0);
-+	percpu_write(cpu_tlbstate.active_mm, &init_mm);
- }
--#endif
- 
- #endif	/* SMP */
- 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index c49498d..3d0cc6f 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -897,8 +897,6 @@ void __cpuinit pda_init(int cpu)
- 	pda->irqcount = -1;
- 	pda->kernelstack = (unsigned long)stack_thread_info() -
- 				 PDA_STACKOFFSET + THREAD_SIZE;
--	pda->active_mm = &init_mm;
--	pda->mmu_state = 0;
- 
- 	if (cpu == 0) {
- 		/* others are initialized in smpboot.c */
-diff --git a/arch/x86/kernel/tlb_32.c b/arch/x86/kernel/tlb_32.c
-index e65449d..abf0808 100644
---- a/arch/x86/kernel/tlb_32.c
-+++ b/arch/x86/kernel/tlb_32.c
-@@ -4,8 +4,8 @@
- 
- #include <asm/tlbflush.h>
- 
--DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate)
--			____cacheline_aligned = { &init_mm, 0, };
-+DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate)
-+			= { &init_mm, 0, };
- 
- /* must come after the send_IPI functions above for inlining */
- #include <mach_ipi.h>
-@@ -231,14 +231,6 @@ void flush_tlb_all(void)
- 	on_each_cpu(do_flush_tlb_all, NULL, 1);
- }
- 
--void reset_lazy_tlbstate(void)
--{
--	int cpu = raw_smp_processor_id();
--
--	per_cpu(cpu_tlbstate, cpu).state = 0;
--	per_cpu(cpu_tlbstate, cpu).active_mm = &init_mm;
--}
--
- static int init_flush_cpumask(void)
- {
- 	alloc_cpumask_var(&flush_cpumask, GFP_KERNEL);
-diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
-index 7f4141d..e64a32c 100644
---- a/arch/x86/kernel/tlb_64.c
-+++ b/arch/x86/kernel/tlb_64.c
-@@ -18,6 +18,9 @@
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_bau.h>
- 
-+DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state, cpu_tlbstate)
-+			= { &init_mm, 0, };
-+
- #include <mach_ipi.h>
- /*
-  *	Smarter SMP flushing macros.
-@@ -62,9 +65,9 @@ static DEFINE_PER_CPU(union smp_flush_state, flush_state);
-  */
- void leave_mm(int cpu)
- {
--	if (read_pda(mmu_state) == TLBSTATE_OK)
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
- 		BUG();
--	cpu_clear(cpu, read_pda(active_mm)->cpu_vm_mask);
-+	cpu_clear(cpu, percpu_read(cpu_tlbstate.active_mm)->cpu_vm_mask);
- 	load_cr3(swapper_pg_dir);
- }
- EXPORT_SYMBOL_GPL(leave_mm);
-@@ -142,8 +145,8 @@ asmlinkage void smp_invalidate_interrupt(struct pt_regs *regs)
- 		 * BUG();
- 		 */
- 
--	if (f->flush_mm == read_pda(active_mm)) {
--		if (read_pda(mmu_state) == TLBSTATE_OK) {
-+	if (f->flush_mm == percpu_read(cpu_tlbstate.active_mm)) {
-+		if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK) {
- 			if (f->flush_va == TLB_FLUSH_ALL)
- 				local_flush_tlb();
- 			else
-@@ -281,7 +284,7 @@ static void do_flush_tlb_all(void *info)
- 	unsigned long cpu = smp_processor_id();
- 
- 	__flush_tlb_all();
--	if (read_pda(mmu_state) == TLBSTATE_LAZY)
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_LAZY)
- 		leave_mm(cpu);
- }
- 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 7bc7852..98cb986 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1063,11 +1063,7 @@ static void drop_other_mm_ref(void *info)
- 	struct mm_struct *mm = info;
- 	struct mm_struct *active_mm;
- 
--#ifdef CONFIG_X86_64
--	active_mm = read_pda(active_mm);
--#else
--	active_mm = __get_cpu_var(cpu_tlbstate).active_mm;
--#endif
-+	active_mm = percpu_read(cpu_tlbstate.active_mm);
- 
- 	if (active_mm == mm)
- 		leave_mm(smp_processor_id());
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index 4399aac..d1dc27d 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -94,7 +94,7 @@ do {									\
+ 	     "call __switch_to\n\t"					  \
+ 	     ".globl thread_return\n"					  \
+ 	     "thread_return:\n\t"					  \
+-	     "movq "__percpu_seg_str"%P[current_task],%%rsi\n\t"	  \
++	     "movq "__percpu_arg([current_task])",%%rsi\n\t"		  \
+ 	     "movq %P[thread_info](%%rsi),%%r8\n\t"			  \
+ 	     LOCK_PREFIX "btr  %[tif_fork],%P[ti_flags](%%r8)\n\t"	  \
+ 	     "movq %%rax,%%rdi\n\t" 					  \
 -- 
 1.6.0.2
 
