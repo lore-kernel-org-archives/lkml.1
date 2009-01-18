@@ -1,58 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbZARAW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbZARAxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbZARAW1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 19:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZARAWR
+	id S932759AbZARAxX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 19:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbZARAxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 19:22:17 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:42784 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754372AbZARAWR (ORCPT
+	Sat, 17 Jan 2009 19:53:12 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:15575 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756387AbZARAxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 19:22:17 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=20KFwNOVAAAA:8 a=iWsxF1SV8jYz-l9tW-YA:9 a=OrfNqEd9YjocZ0_EqT527eCK7XgA:4
-Message-ID: <49727633.3000600@shaw.ca>
-Date: Sat, 17 Jan 2009 18:22:11 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 17 Jan 2009 19:53:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=BV2bvRgYRGcfvaG/b51Fa/98UCWuqMJpLJm/7uZAwC+Bke2ZX3Ab9vdTvU7X7t502S
+         qCiiQ7NasQyqoaG7O7XVJdA55FYFxdbnil0LQWUlhN02TSJoIYANqjuHiYsQWfC0HGR3
+         whYr75KWiK9rjoAIbbfTpxfWI4uhosuikS54k=
+Message-ID: <49727BDE.9070509@gmail.com>
+Date: Sat, 17 Jan 2009 16:46:22 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: David Wagner <daw@cs.berkeley.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Checking module parameters
-References: <200901172226.n0HMQEEJ024690@taverner.cs.berkeley.edu>
-In-Reply-To: <200901172226.n0HMQEEJ024690@taverner.cs.berkeley.edu>
+To: Justin Madru <jdm64@gawab.com>
+CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>
+Subject: Re: 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com>
+In-Reply-To: <4972723B.4000201@gawab.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Wagner wrote:
-> Is there a way to tell what options have been applied to a currently
-> loaded kernel module?
-> 
-> I'm trying to force libata to use 1.5Gbps rather than 3Gbps, so I created
-> a file /etc/modprobe.d/local containing:
->   options libata force=1.5Gbps
-> However my SATA drive gets loaded at 3Gbps.  I'm trying to figure out how
-> to debug this so that I can tell whether the option got correctly applied
-> to the libata module, and if not, how to force the SATA link to 1.5Gbps.
-> Any suggestions or ideas?
-> 
-> (I can't set libata.force=1.5Gbps as a kernel argument because on my
-> Fedora kernel, libata is loaded as a module rather than built into the
-> kernel.  I can't run "modprobe libata force=1.5Gbps" by hand because
-> I've got SATA drives, so the libata module is automatically loaded before
-> I get shell access.)
+Justin Madru wrote:
+> Justin P. Mattock wrote:
+>> Justin Madru wrote:
+>>> Ok, more preliminary testing has returned that at least in the case 
+>>> of the iGoogle page crashing, it's related to google talk.
+>>> Because right after it connects to the google talk server the crash 
+>>> happens.
+>>> And why it doesn't crash on firefox 3.2 is because for some reason 
+>>> the talk feature doesn't load on that version of firefox.
+>>> I still get the crashes when going to Preferences->Main or 
+>>> Preferences->Applications.
+>>>
+>>> I tried the suggested moving of .gconf* .gnome* .mozilla*
+>>> The only thing that did was make firefox crash when going to 
+>>> Preference.
+>>> I did not try compiling firefox from source, but I did test with the 
+>>> binaries straight from mozilla.
+>>> I also tried disabling any plugin/extention (I only have flash and 
+>>> AdBlockerPlus), but no change.
+>>>
+>> What I should of said, is to maybe uninstall/disable any of those 
+>> apps or plugins
+>> that are automatically triggered when loading firefox.
+>> (although renaming some of  the  .* files is good, freshens it up);
+>> So when you don't go to google talk you can surf?
+>
+> So far only a connection to talkgadget.google.com or the 2 tabs in 
+> preferences make firefox crash.
+> Other than that I've yet to run into another site that makes it crash, 
+> and can browse just fine.
+> Actually, other than this bug .29-rc2 is running rather nicely ;-)
+>
+> Ok, this time I maded sure I uninstalled/disabled everything I could.
+> Sill.... same results. So, I decided to try something different. Test 
+> with Epiphany.
+> I tried both with the geko and webkit backends.
+> Same results, a crash when going to my iGoogle page that has google 
+> talk applet.
+>
+> But, this time epiphany left an error to the console that gives a clue 
+> to the cause:
+>
+> $ epiphany-webkit                                                ** 
+> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
+> the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
+> from the grid
+> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
+> from the grid
+> console message:  @1: Unsafe JavaScript attempt to access frame with URL
+> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
+>
+> from frame with URL
+> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
+>
+> Domains, protocols and ports must match.
+> console message:  @1: Unsafe JavaScript attempt to access frame
+> with URL http://www.google.com/ig from frame with URL
+> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
+>
+> Domains, protocols and ports must match.
+> console message:  @1: Unsafe JavaScript attempt to access frame
+> with URL http://www.google.com/ig from frame with URL
+> http://talkgadget.google.com/talkgadget/blank. Domains,
+> protocols and ports must match.
+> Segmentation fault
+>
+> So, it's complaining about matching domains, protocols and ports.
+> Henceforth, I would surmise that the bug is related to the network code?
+>
+> Justin Madru
+>
+Well positive side is you can at least  grab youre news and info.
+bad side is you can't access igoogle(or whatever it's called).
 
-Rebuilding the initrd with that option set should cause the initrd to 
-pass the option into the libata module when the initrd script loads it. 
-Unfortunately the current Fedora mkinitrd is broken such that this 
-doesn't work. I'm rather disappointed by the lack of response to this 
-bug as it seems like it should be easily resolved and causes serious 
-problems with debugging certain issues, as you've found. Anyone know who 
-needs to be hit with a clue-by-four to get this fixed?
+Domains, protocols and ports must match.
+probably the culprit(if you found the correct location
+that's causing this);
 
-https://bugzilla.redhat.com/show_bug.cgi?id=457870
+regards;
+
+Justin P. Mattock
