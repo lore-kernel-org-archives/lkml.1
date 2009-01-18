@@ -1,43 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764236AbZARJAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZARJFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764236AbZARJAF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 04:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZARI7x
+	id S1761667AbZARJFM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 04:05:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZARJEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 03:59:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55825 "EHLO mx2.redhat.com"
+	Sun, 18 Jan 2009 04:04:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40605 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbZARI7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 03:59:52 -0500
-Message-ID: <4972EF6B.90207@redhat.com>
-Date: Sun, 18 Jan 2009 10:59:23 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1750768AbZARJEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 04:04:42 -0500
+Date: Sun, 18 Jan 2009 10:04:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       miaox@cn.fujitsu.com, maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2/3] cgroup: introduce cgroup_queue_deferred_work()
+Message-ID: <20090118090426.GA27144@elte.hu>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org> <4972E30A.6080107@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Galbraith <efault@gmx.de>, Kevin Shanahan <kmshanah@ucwb.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] scheduler fixes
-References: <1232173776.7073.21.camel@marge.simson.net> <1232186054.6813.48.camel@marge.simson.net> <1232186877.14073.59.camel@laptop> <1232188484.6813.85.camel@marge.simson.net> <1232193617.14073.67.camel@laptop> <1232194752.6273.5.camel@marge.simson.net> <20090117044316.bda7d0bd.akpm@linux-foundation.org> <1232198574.16303.8.camel@marge.simson.net> <20090117160115.GA31601@elte.hu> <4972E860.5080206@redhat.com> <20090118083744.GB21940@elte.hu>
-In-Reply-To: <20090118083744.GB21940@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4972E30A.6080107@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Can you reproduce those latencies? We didnt get similar reports from 
-> elsewhere so there seems to be a KVM angle.
->   
 
-A simple test running 10 idle guests over 4 cores doesn't reproduce 
-(2.6.29-rc).  However we likely need a more complicated setup.
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Kevin, any details about your setup?  What are the guests doing?  Are 
-you overcommitting memory (is the host swapping)?
+> Sometimes we need require a lock to prevent something,
+> but this lock cannot nest in cgroup_lock. So this work
+> should be moved out of cgroup_lock's critical region.
+> 
+> Using schedule_work() can move this work out of cgroup_lock's
+> critical region. But it's a overkill for move a work to
+> other process. And if we need flush_work() with cgroup_lock
+> held, schedule_work() can not work for flush_work() will
+> cause deadlock.
+> 
+> Another solution is that deferring the work, and processing
+> it after cgroup_lock released. This patch introduces
+> cgroup_queue_deferred_work() for queue a cgroup_deferred_work.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Max Krasnyansky <maxk@qualcomm.com>
+> Cc: Miao Xie <miaox@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index e267e62..6d3e6dc 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -437,6 +437,19 @@ void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
+>  int cgroup_scan_tasks(struct cgroup_scanner *scan);
+>  int cgroup_attach_task(struct cgroup *, struct task_struct *);
+>  
+> +struct cgroup_deferred_work {
+> +	struct list_head list;
+> +	void (*func)(struct cgroup_deferred_work *);
+> +};
+> +
+> +#define CGROUP_DEFERRED_WORK(name, function)		\
+> +	struct cgroup_deferred_work name = {		\
+> +		.list = LIST_HEAD_INIT((name).list),	\
+> +		.func = (function),			\
+> +	};
+> +
+> +int cgroup_queue_deferred_work(struct cgroup_deferred_work *deferred_work);
+> +
+>  #else /* !CONFIG_CGROUPS */
+>  
+>  static inline int cgroup_init_early(void) { return 0; }
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index c298310..75a352b 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -540,6 +540,7 @@ void cgroup_lock(void)
+>  	mutex_lock(&cgroup_mutex);
+>  }
+>  
+> +static void cgroup_flush_deferred_work_locked(void);
+>  /**
+>   * cgroup_unlock - release lock on cgroup changes
+>   *
+> @@ -547,9 +548,80 @@ void cgroup_lock(void)
+>   */
+>  void cgroup_unlock(void)
+>  {
+> +	cgroup_flush_deferred_work_locked();
+>  	mutex_unlock(&cgroup_mutex);
 
--- 
-error compiling committee.c: too many arguments to function
+So in cgroup_unlock() [which is called all over the places] we first call 
+cgroup_flush_deferred_work_locked(), then drop the cgroup_mutex. Then:
 
+>  }
+>  
+> +/* deferred_work_list is protected by cgroup_mutex */
+> +static LIST_HEAD(deferred_work_list);
+> +
+> +/* flush deferred works with cgroup_lock released */
+> +static void cgroup_flush_deferred_work_locked(void)
+> +{
+> +	static bool running_deferred_work;
+> +
+> +	if (likely(list_empty(&deferred_work_list)))
+> +		return;
+
+we check whether there's any work done, then:
+
+> +
+> +	/*
+> +	 * Ensure it's not recursive and also
+> +	 * ensure deferred works are run orderly.
+> +	 */
+> +	if (running_deferred_work)
+> +		return;
+> +	running_deferred_work = true;
+
+we set a recursion flag, then:
+
+> +
+> +	for ( ; ; ) {
+
+ [ please change this to the standard 'for (;;)' style. ]
+
+> +		struct cgroup_deferred_work *deferred_work;
+> +
+> +		/* dequeue the first work, and mark it dequeued */
+> +		deferred_work = list_first_entry(&deferred_work_list,
+> +				struct cgroup_deferred_work, list);
+> +		list_del_init(&deferred_work->list);
+> +
+> +		mutex_unlock(&cgroup_mutex);
+
+we drop the cgroup_mutex and start processing deferred work, then:
+
+> +
+> +		/*
+> +		 * cgroup_mutex is released. The callback function can use
+> +		 * cgroup_lock()/cgroup_unlock(). This behavior is safe
+> +		 * for running_deferred_work is set to 'true'.
+> +		 */
+> +		deferred_work->func(deferred_work);
+> +
+> +		/*
+> +		 * regain cgroup_mutex to access deferred_work_list
+> +		 * and running_deferred_work.
+> +		 */
+> +		mutex_lock(&cgroup_mutex);
+
+then we drop the mutex and:
+
+> +
+> +		if (list_empty(&deferred_work_list))
+> +			break;
+> +	}
+> +
+> +	running_deferred_work = false;
+
+clear the recursion flag.
+
+So this is already a high-complexity, high-overhead codepath for the 
+deferred work case.
+
+Why isnt this in a workqueue? That way there's no overhead for the normal 
+fastpath _at all_ - the deferred wakeup would be handled as side-effect of 
+the mutex unlock in essence. Nor would you duplicate core kernel 
+infrastructure that way.
+
+Plus:
+
+> +int cgroup_queue_deferred_work(struct cgroup_deferred_work *deferred_work)
+> +{
+> +	int ret = 0;
+> +
+> +	if (list_empty(&deferred_work->list)) {
+> +		list_add_tail(&deferred_work->list, &deferred_work_list);
+> +		ret = 1;
+> +	}
+> +
+> +	return ret;
+
+Why is the addition of work dependent on whether it's queued up already? 
+Callers should know whether it's queued or not - and if they dont then 
+this is hiding a code structure problem elsewhere.
+
+	Ingo
