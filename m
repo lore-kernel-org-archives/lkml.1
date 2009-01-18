@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765001AbZAQXzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZARACx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765001AbZAQXzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 18:55:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZAQXzJ
+	id S932383AbZARACx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 19:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZARACo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 18:55:09 -0500
-Received: from mail-ew0-f12.google.com ([209.85.219.12]:63028 "EHLO
-	mail-ew0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbZAQXzI (ORCPT
+	Sat, 17 Jan 2009 19:02:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41623 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751860AbZARACo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 18:55:08 -0500
-X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Jan 2009 18:55:07 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=g3Bmtz4kGeAl/yG2d6wOISzYh0DG2A3/xlNFvn0K5Dx9KMfcPVwG59AZb+y0d7Iz1X
-         d94WP08mr3ZWv9gg3fhZAZ1Eq7LRcwAQ0rjg+aF5L+jLjGFa1gq92LQjYsbv7mkCaTGr
-         v16TT6EzDKhiC6bmI9zwV9ohWju3g2qJb9Ytw=
+	Sat, 17 Jan 2009 19:02:44 -0500
+Date: Sun, 18 Jan 2009 11:01:44 +1100 (EST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Kyle McMartin <kyle@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "eliminate warn_on_slowpath()" change causes many gcc-3.2.3
+ warnings
+In-Reply-To: <49726C56.6080905@zytor.com>
+Message-ID: <alpine.LFD.2.00.0901181045550.3006@localhost.localdomain>
+References: <200901171519.n0HFJZuf028704@harpo.it.uu.se> <20090117161817.GA10825@elte.hu> <49723912.6020108@zytor.com> <20090117204421.GA1700@bombadil.infradead.org> <alpine.LFD.2.00.0901181032350.3006@localhost.localdomain> <49726C56.6080905@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <200901172226.n0HMQEEJ024690@taverner.cs.berkeley.edu>
-References: <200901172226.n0HMQEEJ024690@taverner.cs.berkeley.edu>
-Date: Sun, 18 Jan 2009 02:47:53 +0300
-Message-ID: <b6fcc0a0901171547o26a2cd1l86dc09fcb28a667@mail.gmail.com>
-Subject: Re: Checking module parameters
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Wagner <daw@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 1:26 AM, David Wagner <daw@cs.berkeley.edu> wrote:
-> Is there a way to tell what options have been applied to a currently
-> loaded kernel module?
 
-/sys/module/[module name]/parameters/ (if i remember correctly)
 
-> I'm trying to force libata to use 1.5Gbps rather than 3Gbps, so I created
-> a file /etc/modprobe.d/local containing:
->  options libata force=1.5Gbps
-> However my SATA drive gets loaded at 3Gbps.  I'm trying to figure out how
-> to debug this so that I can tell whether the option got correctly applied
-> to the libata module, and if not, how to force the SATA link to 1.5Gbps.
-> Any suggestions or ideas?
->
-> (I can't set libata.force=1.5Gbps as a kernel argument because on my
-> Fedora kernel, libata is loaded as a module rather than built into the
-> kernel.  I can't run "modprobe libata force=1.5Gbps" by hand because
-> I've got SATA drives, so the libata module is automatically loaded before
-> I get shell access.)
+On Sat, 17 Jan 2009, H. Peter Anvin wrote:
+> 
+> At least on x86, the two ops should be the same cost?
 
-This may not work if libata module is loaded from initrd.
+Not with the code Kyle had, which forces a memory load.
+
+But yes, with a constant address, it at least comes close. But with a 
+small explicit constant value, the compiler can often do even better. For 
+example, you can generate a 64-bit -1 in many ways, while a 64-bit random 
+address is much more work to generate.
+
+Of course, I don't know how much gcc takes advantage of this. Maybe it 
+always just generates a silly "movq" rather than being smarter about it 
+(eg "orl $-1,reg" can do it in four bytes, I think, because you can use a 
+single-byte constant).
+
+Of course, zero is even easier to generate, so NULL is the best constant 
+of all, but generally small integers are more amenable to optimization 
+than generic addresses. They're also generally easier to test for.
+
+		Linus
