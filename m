@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZARTKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbZARTKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZARTKM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 14:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZARTJ6
+	id S1755743AbZARTKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 14:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZARTK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 14:09:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60055 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752307AbZARTJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 14:09:57 -0500
-Date: Sun, 18 Jan 2009 20:09:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
-Message-ID: <20090118190941.GC858@elte.hu>
-References: <1232287474.3130.19.camel@localhost.localdomain> <20090118172800.GB22624@elte.hu> <20090118185034.GA26908@elte.hu> <20090118190836.GA2294@uranus.ravnborg.org>
+	Sun, 18 Jan 2009 14:10:28 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:47032 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbZARTK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 14:10:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=KnbPwvrM3rqJN523Guaqsch2m/Md981eQnMDrbj+Icgo5d9gUY8pVT9I3xOtSjq5pl
+         MkG2wbIFKJ2+GoVJWCquHoMDEMjDUVq4FMzZSRJBqt4C11dLThpFPQynCh/5Spi7s9vk
+         5XLhUZ3cQgl2ZG/75hv+D5Qlq9Qf1NaM9GV+Q=
+Message-ID: <49737EA1.3080805@gmail.com>
+Date: Sun, 18 Jan 2009 20:10:25 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118190836.GA2294@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+To: Eric Van Hensbergen <ericvh@gmail.com>, rminnich@sandia.gov,
+       lucho@ionkov.net
+CC: v9fs-developer@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] net/9p: fid->fid is used uninitialized
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+I appear to have introduced this myself trying to fix a
+signed/unsigned issue, sorry.
+---
+fid->fid is used uninitialized
 
-> On Sun, Jan 18, 2009 at 07:50:34PM +0100, Ingo Molnar wrote:
-> > 
-> > hm, i just noticed this detail:
-> > 
-> > commit 3521c5eef990515719614e212b26ea49e610d072
-> > Author: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > Date:   Sat Jan 17 19:25:46 2009 +0530
-> > 
-> >     headers_check fix: x86, swab.h
-> >     
-> >     fix the following 'make headers_check' warnings:
-> >     
-> >       usr/include/asm/swab.h:4: include of <linux/types.h> is preferred over <asm/types.h>
-> >       usr/include/asm/swab.h:7: found __[us]{8,16,32,64} type without #include <linux/types.h>
-> >       usr/include/asm/swab.h:10: leaks CONFIG_X86 to userspace where it is not valid
-> >       usr/include/asm/swab.h:40: leaks CONFIG_X86 to userspace where it is not valid
-> >     
-> >     Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > diff --git a/arch/x86/include/asm/swab.h b/arch/x86/include/asm/swab.h
-> > index 306d417..613be68 100644
-> > --- a/arch/x86/include/asm/swab.h
-> > +++ b/arch/x86/include/asm/swab.h
-> > @@ -1,12 +1,15 @@
-> >  #ifndef _ASM_X86_SWAB_H
-> >  #define _ASM_X86_SWAB_H
-> >  
-> > -#include <asm/types.h>
-> > +#include <linux/types.h>
-> > +#ifdef __KERNEL__
-> >  #include <linux/compiler.h>
-> > +#endif /* __KERNEL__ */
-> 
-> compiler.h includes should be nuked by make headers_instll automatically.
-
-So the compiler.h include can be left there, and headers_check will not 
-warn about it?
-
-	Ingo
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/net/9p/client.c b/net/9p/client.c
+index 821f1ec..1eb580c 100644
+--- a/net/9p/client.c
++++ b/net/9p/client.c
+@@ -618,7 +618,7 @@ static struct p9_fid *p9_fid_create(struct p9_client *clnt)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	ret = p9_idpool_get(clnt->fidpool);
+-	if (fid->fid < 0) {
++	if (ret < 0) {
+ 		ret = -ENOSPC;
+ 		goto error;
+ 	}
