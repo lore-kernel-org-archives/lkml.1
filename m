@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZARWgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZARWk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbZARWgz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 17:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZARWga
+	id S1754533AbZARWk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 17:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZARWkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 17:36:30 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56153 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbZARWg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 17:36:29 -0500
-Date: Mon, 19 Jan 2009 07:36:19 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: lirc@bartelmus.de (Christoph Bartelmus)
-Subject: Re: get_task_comm() not exported?
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <AtzdCwOXqgB@lirc>
-References: <AtzdCwOXqgB@lirc>
-Message-Id: <20090120071641.B0A3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sun, 18 Jan 2009 17:40:12 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43543 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752606AbZARWkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 17:40:10 -0500
+Date: Mon, 19 Jan 2009 09:39:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
+Message-Id: <20090119093959.ef7f2495.sfr@canb.auug.org.au>
+In-Reply-To: <1232273454.23100.9.camel@localhost.localdomain>
+References: <1232273454.23100.9.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__19_Jan_2009_09_39_59_+1100_NJCCE1A1TSa7gXrD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+--Signature=_Mon__19_Jan_2009_09_39_59_+1100_NJCCE1A1TSa7gXrD
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hi,
-> 
-> is there any reason why get_task_comm() is not exported in fs/exec.c?
+Hi Jaswinder,
 
-In general, the only function of anybody necessarity explained is exported.
-if you want to export get_task_comm(), you need to explain reasonable reason.
+On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel=
+.org> wrote:
+>
+> diff --git a/include/linux/videodev2.h b/include/linux/videodev2.h
+> index 5571dbe..81fa255 100644
+> --- a/include/linux/videodev2.h
+> +++ b/include/linux/videodev2.h
+> @@ -1480,7 +1480,7 @@ struct v4l2_chip_ident_old {
+> =20
+>  #if 1
+>  /* Experimental, meant for debugging, testing and internal use.
+> -   Only implemented if CONFIG_VIDEO_ADV_DEBUG is defined.
+> +   Only implemented if VIDEO_ADV_DEBUG is defined.
+>     You must be root to use these ioctls. Never use these in applications=
+! */
 
-> 
-> I'd like to use get_task_comm() from a kernel module and get unresolved  
-> symbol errors.
-> 
-> Adding EXPORT_SYMBOL(get_task_comm); to fs/exec.c fixes the problem.
-> 
-> Cheers,
-> Christoph
-> 
-> Please Cc.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Is there some reason we cannot fix the tool that does the checking for
+this case?
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__19_Jan_2009_09_39_59_+1100_NJCCE1A1TSa7gXrD
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklzr78ACgkQjjKRsyhoI8wc/gCfbhIwBaJIk4EY6+AjkF5GuqER
+V68AnAlcQ7MyfbfTkN1P3/VtJhwnRiF9
+=cWVF
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__19_Jan_2009_09_39_59_+1100_NJCCE1A1TSa7gXrD--
