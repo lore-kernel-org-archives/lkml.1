@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZARXtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZARXxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbZARXtF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 18:49:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZARXsv
+	id S1755487AbZARXxl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 18:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZARXxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 18:48:51 -0500
-Received: from wf-out-1314.google.com ([209.85.200.171]:38922 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbZARXsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 18:48:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=j+OuSgVI1oSswSa02p1HOesTmTNuufZ6Ji34KV+iOsChUKMEkTPkwxVVlIqAfise35
-         sPHU6ymYMBoe/dLqyhHnzasp1LMR+qwfBcEe3KoMyaXiY32vE+Faq5UIMtaJP5qQYktk
-         dAuLdh/9tVBUG5dibkGcO7kUW9ABGOj9Pvhs0=
-MIME-Version: 1.0
-In-Reply-To: <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-	 <49738B8C.7020404@bluewatersys.com>
-	 <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
-Date: Mon, 19 Jan 2009 07:48:50 +0800
-Message-ID: <45a44e480901181548q3b22cc7cuad8cc0c7bc377c1f@mail.gmail.com>
-Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Jan 2009 18:53:32 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:45085 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753682AbZARXxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 18:53:31 -0500
+Date: Mon, 19 Jan 2009 10:53:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
+Message-Id: <20090119105324.fd4e9084.sfr@canb.auug.org.au>
+In-Reply-To: <1232273454.23100.9.camel@localhost.localdomain>
+References: <1232273454.23100.9.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__19_Jan_2009_10_53_24_+1100_yQSnggBoyGgOb3Ge"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 7:46 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> On Mon, Jan 19, 2009 at 4:05 AM, Ryan Mallon <ryan@bluewatersys.com> wrote:
->> Jaya Kumar wrote:
->>> Hi friends,
->>>
->>
->>> +
->>> +     /* BATCH GPIO OUTPUT */
->>> +int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int maskwidth);
->>> +
->>> +The following examples help explain how this function is to be used.
->>> + Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
->>> + A: gpio_set_batch(gpio=0, values=0x0, bitmask=0xFF, width=8);
->>> + Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
->>> + A: gpio_set_batch(gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16);
->>> + Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
->>> + A: gpio_set_batch(gpio=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32);
->>> +
->>
->> Can the gpio_set_batch function be used to set non-consecutive gpios?
->> For example:
->>
->>  gpio_set_batch(0, 0x0, 0x88, 8);
->>
->> To clear gpios 3 and 7? It looks like the pxa implementation will
->
-> Hi Ryan,
->
-> For the first part, yes, it can do non-consecutive gpios by using the
-> mask. Pins 3 and 7 are handled using a 5-bit mask. You'd  do
-> gpio_set_batch(3 <- starting pin is gpio 3, 0x0 <- clear, 0x1F <-
-> mask, 5 <- bit width of mask);
+--Signature=_Mon__19_Jan_2009_10_53_24_+1100_yQSnggBoyGgOb3Ge
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Correction: I meant to write 0x11 for the mask above (instead of 0x1F)
-since you only want to clear the starting pin 3 and the ending pin 7
-in the 5 bits. If we used 0x1F here, then we would clear all 5 bits
-rather than just 3 and 7.
+Hi Jaswinder,
 
-Thanks,
-jaya
+On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel=
+.org> wrote:
+>
+> diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
+> index 04b4d73..277de8c 100644
+> --- a/include/linux/pktcdvd.h
+> +++ b/include/linux/pktcdvd.h
+> @@ -33,11 +33,15 @@
+>   * able to sucessfully recover with this option (drive will return good
+>   * status as soon as the cdb is validated).
+>   */
+> +#ifdef __KERNEL__
+>  #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
+>  #define USE_WCACHING		1
+>  #else
+>  #define USE_WCACHING		0
+>  #endif
+> +#else /* __KERNEL__ */
+> +#define USE_WCACHING		0
+> +#endif /* __KERNEL__ */
+
+This also only has one user (drivers/block/pktcdvd.c) so maybe it should
+be moved there.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__19_Jan_2009_10_53_24_+1100_yQSnggBoyGgOb3Ge
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklzwPQACgkQjjKRsyhoI8z4QwCgnemwKrymc39j+1M/1y4JbwiS
+cjwAnRIbEN/p/AYpVk8vvKDYb0eGbhEN
+=uXUB
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__19_Jan_2009_10_53_24_+1100_yQSnggBoyGgOb3Ge--
