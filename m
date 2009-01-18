@@ -1,233 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbZAROI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933684AbZAROKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933529AbZAROI6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 09:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760617AbZAROIs
+	id S933684AbZAROKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 09:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760966AbZAROKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 09:08:48 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49874 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760494AbZAROIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 09:08:47 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/IZAxauwHIgIhm2IJU2hEV9x0DSRtXAeCoZmWyVg
-	hQdR4ljfLJ8DjH
-Subject: Re: [git pull] scheduler fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232193617.14073.67.camel@laptop>
-References: <20090111144305.GA7154@elte.hu>
-	 <20090114121521.197dfc5e.akpm@linux-foundation.org>
-	 <1231964647.14825.59.camel@laptop>
-	 <20090116204049.f4d6ef1c.akpm@linux-foundation.org>
-	 <1232173776.7073.21.camel@marge.simson.net>
-	 <1232186054.6813.48.camel@marge.simson.net>
-	 <1232186877.14073.59.camel@laptop>
-	 <1232188484.6813.85.camel@marge.simson.net>
-	 <1232193617.14073.67.camel@laptop>
-Content-Type: text/plain
-Date: Sun, 18 Jan 2009 15:08:38 +0100
-Message-Id: <1232287718.12958.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sun, 18 Jan 2009 09:10:05 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:35884 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760617AbZAROKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 09:10:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=N6d5L/2qvmUb2lnbGk4Tx126a4xMQGChipKtLyUKC3sWfWvuf7d9sll0FLuBiL5zMg
+         NUiNQhiJTZsCcO6MCsbWoCCgLTlGCYNXJ3njBoO87adtfzB9zwL47N1FBQJoz+KH++lu
+         KjMw3aSyG3OcIiUtWa0JuomML6UtGdgNzGZhU=
+Message-ID: <19f34abd0901180610k430a3e4bpe18af036357ca642@mail.gmail.com>
+Date: Sun, 18 Jan 2009 15:10:01 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: 2.6.27.9: splice_to_pipe() hung (blocked for more than 120 seconds)
+Cc: "Ingo Molnar" <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <19f34abd0901180544g617b29c1nc41c760f8803de0e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.41
+Content-Disposition: inline
+References: <19f34abd0901161055l2edd9274n4b2d8c93e7760488@mail.gmail.com>
+	 <4970F2B6.1060508@cosmosbay.com>
+	 <19f34abd0901180412w39d70ccqd0c10698bc70e6e9@mail.gmail.com>
+	 <19f34abd0901180544g617b29c1nc41c760f8803de0e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-17 at 13:00 +0100, Peter Zijlstra wrote:
-> On Sat, 2009-01-17 at 11:34 +0100, Mike Galbraith wrote:
-> > > Right, how about we flip the 'initial' case in place_entity() for !
-> > > nr_exclusive wakeups.
-> > 
-> > Wouldn't that be more drastic than sleep denial?
-> 
-> Strictly speaking that DEBIT thing is valid for each wakeup, IIRC we
-> restricted it to clone() only because that was where we could actually
-> observe these latency spikes using a fork-bomb.
-> 
-> This reduces the latency hits to around 400ms, which is about right for
-> the given load.
+On Sun, Jan 18, 2009 at 2:44 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> So in short: Is it possible that inode_double_lock() in
+> splice_from_pipe() first locks the pipe mutex, THEN locks the
+> file/socket mutex? In that case, there should be a lock imbalance,
+> because pipe_wait() would unlock the pipe while the file/socket mutex
+> is held.
+>
+> That would possibly explain the sporadicity of the lockup; it depends
+> on the actual order of the double lock.
+>
+> Why doesn't lockdep report that? Hm. I guess it is because these are
+> both inode mutexes and lockdep can't detect a locking imbalance within
+> the same lock class?
+>
+> Anyway, that's just a theory. :-) Will try to confirm by simplifying
+> the test-case.
 
-Disregarding the startup landmine for the moment, maybe we should put a
-buddy slice knob in the user's hands, so they can tune latency, along
-with a full on/off switch for those who care not one whit about
-scalability.
+Hm, I do believe this _is_ evidence in favour of the theory:
 
-ProcessSchedulerTest 100 100000
+top - 09:03:57 up  2:16,  2 users,  load average: 129.27, 49.28, 21.57
+Tasks: 161 total,   1 running,  95 sleeping,   1 stopped,  64 zombie
 
-2.6.29.git
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:691.454ms|duration:-0.324s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:700.731ms|duration:-0.407s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:688.367ms|duration:-0.388s
+:-)
 
-NO_LAST_BUDDY
-min:0.003ms|avg:0.003-0.004ms|mid:0.004ms|max:90.659ms|duration:0.035s
-min:0.003ms|avg:0.003-0.004ms|mid:0.004ms|max:94.995ms|duration:0.022s
-min:0.003ms|avg:0.003-0.004ms|mid:0.004ms|max:75.753ms|duration:0.148s
+#define _GNU_SOURCE
 
-2.6.29.git + buddy_slice.diff
+#include <sys/socket.h>
+#include <sys/types.h>
 
-NO_BUDDIES
-min:0.003ms|avg:0.003-0.024ms|mid:0.012ms|max:14.548ms|duration:0.731s
-min:0.003ms|avg:0.003-0.028ms|mid:0.015ms|max:14.986ms|duration:0.760s
-min:0.003ms|avg:0.003-0.028ms|mid:0.019ms|max:15.257ms|duration:0.782s
+#include <fcntl.h>
+#include <errno.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-BUDDIES
-sched_buddy_slice_ns=100000
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:21.199ms|duration:-0.101s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:21.602ms|duration:-0.030s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:18.421ms|duration:-0.124s
+static int sock_fd[2];
+static int pipe_fd[2];
 
-sched_buddy_slice_ns=1000000
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:55.067ms|duration:-0.224s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:58.090ms|duration:-0.036s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:72.055ms|duration:0.025s
+#define N 16384
 
-sched_buddy_slice_ns=2000000
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:244.128ms|duration:-0.052s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:230.404ms|duration:-0.153s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:229.958ms|duration:0.030s
+static void *do_write(void *unused)
+{
+	unsigned int i;
 
-sched_buddy_slice_ns=4000000 (default)
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:396.093ms|duration:-0.016s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:366.363ms|duration:-0.055s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:360.373ms|duration:-0.129s
+	for (i = 0; i < N; ++i)
+		write(pipe_fd[1], "x", 1);
 
-sched_buddy_slice_ns=15000000
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:670.781ms|duration:-0.086s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:563.612ms|duration:-0.049s
-min:0.003ms|avg:0.003-0.004ms|mid:0.003ms|max:680.968ms|duration:-0.244s
+	return NULL;
+}
 
+static void *do_read(void *unused)
+{
+	unsigned int i;
+	char c;
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4cae9b8..0ea8eb7 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1708,6 +1708,7 @@ static inline void wake_up_idle_cpu(int cpu) { }
- 
- extern unsigned int sysctl_sched_latency;
- extern unsigned int sysctl_sched_min_granularity;
-+extern unsigned int sysctl_sched_buddy_slice;
- extern unsigned int sysctl_sched_wakeup_granularity;
- extern unsigned int sysctl_sched_shares_ratelimit;
- extern unsigned int sysctl_sched_shares_thresh;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 52bbf1c..f37c243 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -406,6 +406,7 @@ struct cfs_rq {
- 
- 	u64 exec_clock;
- 	u64 min_vruntime;
-+	u64 pair_start;
- 
- 	struct rb_root tasks_timeline;
- 	struct rb_node *rb_leftmost;
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5cc1c16..e261cd5 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -43,6 +43,12 @@ unsigned int sysctl_sched_latency = 20000000ULL;
- unsigned int sysctl_sched_min_granularity = 4000000ULL;
- 
- /*
-+ * Buddy timeslice:
-+ * (default: 4 msec * (1 + ilog(ncpus)), units: nanoseconds)
-+ */
-+unsigned int sysctl_sched_buddy_slice = 4000000ULL;
-+
-+/*
-  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
-  */
- static unsigned int sched_nr_latency = 5;
-@@ -808,6 +814,11 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
- static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
- {
- 	struct sched_entity *se = __pick_next_entity(cfs_rq);
-+	struct rq *rq = rq_of(cfs_rq);
-+	u64 buddy_slice = rq->clock - cfs_rq->pair_start;
-+
-+	if (buddy_slice > sysctl_sched_buddy_slice)
-+		goto out;
- 
- 	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, se) < 1)
- 		return cfs_rq->next;
-@@ -815,6 +826,9 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
- 	if (cfs_rq->last && wakeup_preempt_entity(cfs_rq->last, se) < 1)
- 		return cfs_rq->last;
- 
-+out:
-+	cfs_rq->pair_start = rq->clock;
-+
- 	return se;
- }
- 
-@@ -1347,6 +1361,9 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
- 
- static void set_last_buddy(struct sched_entity *se)
- {
-+	if (!sched_feat(BUDDIES))
-+		return;
-+
- 	if (likely(task_of(se)->policy != SCHED_IDLE)) {
- 		for_each_sched_entity(se)
- 			cfs_rq_of(se)->last = se;
-@@ -1355,6 +1372,9 @@ static void set_last_buddy(struct sched_entity *se)
- 
- static void set_next_buddy(struct sched_entity *se)
- {
-+	if (!sched_feat(BUDDIES))
-+		return;
-+
- 	if (likely(task_of(se)->policy != SCHED_IDLE)) {
- 		for_each_sched_entity(se)
- 			cfs_rq_of(se)->next = se;
-@@ -1392,7 +1412,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
- 	 * Also, during early boot the idle thread is in the fair class, for
- 	 * obvious reasons its a bad idea to schedule back to the idle thread.
- 	 */
--	if (sched_feat(LAST_BUDDY) && likely(se->on_rq && curr != rq->idle))
-+	if (likely(se->on_rq && curr != rq->idle))
- 		set_last_buddy(se);
- 	set_next_buddy(pse);
- 
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index da5d93b..3a194fa 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -12,4 +12,4 @@ SCHED_FEAT(LB_BIAS, 1)
- SCHED_FEAT(LB_WAKEUP_UPDATE, 1)
- SCHED_FEAT(ASYM_EFF_LOAD, 1)
- SCHED_FEAT(WAKEUP_OVERLAP, 0)
--SCHED_FEAT(LAST_BUDDY, 1)
-+SCHED_FEAT(BUDDIES, 1)
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 368d163..733ddb6 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -254,6 +254,17 @@ static struct ctl_table kern_table[] = {
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_buddy_slice_ns",
-+		.data		= &sysctl_sched_buddy_slice,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &sched_nr_latency_handler,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &min_sched_granularity_ns,
-+		.extra2		= &max_sched_granularity_ns,
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "sched_latency_ns",
- 		.data		= &sysctl_sched_latency,
- 		.maxlen		= sizeof(unsigned int),
+	for (i = 0; i < N; ++i)
+		read(sock_fd[0], &c, 1);
+
+	return NULL;
+}
+
+static void *do_splice(void *unused)
+{
+	unsigned int i;
+
+	for (i = 0; i < N; ++i)
+		splice(pipe_fd[0], NULL, sock_fd[1], NULL, 1, 0);
+
+	return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+	pthread_t writer;
+	pthread_t reader;
+	pthread_t splicer[2];
+
+	while (1) {
+		if (socketpair(AF_UNIX, SOCK_STREAM, 0, sock_fd) == -1)
+			exit(EXIT_FAILURE);
+
+		if (pipe(pipe_fd) == -1)
+			exit(EXIT_FAILURE);
+
+		pthread_create(&writer, NULL, &do_write, NULL);
+		pthread_create(&reader, NULL, &do_read, NULL);
+		pthread_create(&splicer[0], NULL, &do_splice, NULL);
+		pthread_create(&splicer[1], NULL, &do_splice, NULL);
+
+		pthread_join(writer, NULL);
+		pthread_join(reader, NULL);
+		pthread_join(splicer[0], NULL);
+		pthread_join(splicer[1], NULL);
+
+		printf("failed to deadlock, retrying...\n");
+	}
+
+	return EXIT_SUCCESS;
+}
+
+$ gcc splice.c -lpthread
+$ ./a.out &
+$ ./a.out &
+$ ./a.out &
+(as many as you want; then wait for a bit -- ten seconds works for me)
+$ killall -9 a.out
+(not all will die -- those are now zombies)
 
 
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
