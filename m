@@ -1,101 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZARB6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbZARCHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbZARB6n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Jan 2009 20:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZARB6d
+	id S1760874AbZARCHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Jan 2009 21:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbZARCHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Jan 2009 20:58:33 -0500
-Received: from cmpxchg.org ([85.214.51.133]:43586 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757354AbZARB6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Jan 2009 20:58:33 -0500
-Date: Sun, 18 Jan 2009 03:00:38 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: .29rc2 lockdep report. fb_mmap vs sys_mmap2
-Message-ID: <20090118020038.GA17489@cmpxchg.org>
-References: <20090117231925.GA28055@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117231925.GA28055@redhat.com>
+	Sat, 17 Jan 2009 21:07:04 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:60202 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757540AbZARCHA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Jan 2009 21:07:00 -0500
+Message-ID: <49728EBF.40401@gawab.com>
+Date: Sat, 17 Jan 2009 18:06:55 -0800
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+MIME-Version: 1.0
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>
+Subject: Re: 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com>
+In-Reply-To: <49727BDE.9070509@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17, 2009 at 06:19:25PM -0500, Dave Jones wrote:
-> Two mmaps enter! Fight!
-> 
-> 
->  =======================================================
->  [ INFO: possible circular locking dependency detected ]
->  2.6.29-0.41.rc2.fc11.i686 #1
->  -------------------------------------------------------
->  plymouthd/669 is trying to acquire lock:
->  (&fb_info->lock){--..}, at: [<c055355c>] fb_mmap+0x87/0x156
-> 
->  but task is already holding lock:
->  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
-> 
->  which lock already depends on the new lock.
-> 
-> 
->  the existing dependency chain (in reverse order) is:
-> 
->  -> #1 (&mm->mmap_sem){----}:
->        [<c044fef3>] __lock_acquire+0x9af/0xb22
->        [<c04500c1>] lock_acquire+0x5b/0x81
->        [<c048e036>] might_fault+0x60/0x80
->        [<c053dedc>] copy_to_user+0x2c/0xfc
->        [<c05542cc>] fb_ioctl+0x247/0x338
->        [<c04b0c9f>] vfs_ioctl+0x22/0x69
->        [<c04b1214>] do_vfs_ioctl+0x46a/0x4a3
->        [<c04b128d>] sys_ioctl+0x40/0x5a
->        [<c0403b76>] syscall_call+0x7/0xb
->        [<ffffffff>] 0xffffffff
-> 
->  -> #0 (&fb_info->lock){--..}:
->        [<c044fdc8>] __lock_acquire+0x884/0xb22
->        [<c04500c1>] lock_acquire+0x5b/0x81
->        [<c06e1b98>] __mutex_lock_common+0xd5/0x329
->        [<c06e1e84>] mutex_lock_nested+0x2e/0x36
->        [<c055355c>] fb_mmap+0x87/0x156
->        [<c0494620>] mmap_region+0x22b/0x43c
->        [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
->        [<c0406a73>] sys_mmap2+0x5a/0x7b
->        [<c0403b76>] syscall_call+0x7/0xb
->        [<ffffffff>] 0xffffffff
-> 
->  other info that might help us debug this:
-> 
->  1 lock held by plymouthd/669:
->  #0:  (&mm->mmap_sem){----}, at: [<c0406a5d>] sys_mmap2+0x44/0x7b
-> 
->  stack backtrace:
->  Pid: 669, comm: plymouthd Not tainted 2.6.29-0.41.rc2.fc11.i686 #1
->  Call Trace:
->  [<c06e09b6>] ? printk+0xf/0x11
->  [<c044f32d>] print_circular_bug_tail+0x5d/0x68
->  [<c044fdc8>] __lock_acquire+0x884/0xb22
->  [<c04500c1>] lock_acquire+0x5b/0x81
->  [<c055355c>] ? fb_mmap+0x87/0x156
->  [<c06e1b98>] __mutex_lock_common+0xd5/0x329
->  [<c055355c>] ? fb_mmap+0x87/0x156
->  [<c06e1e84>] mutex_lock_nested+0x2e/0x36
->  [<c055355c>] ? fb_mmap+0x87/0x156
->  [<c055355c>] fb_mmap+0x87/0x156
->  [<c0494620>] mmap_region+0x22b/0x43c
->  [<c0494aa2>] do_mmap_pgoff+0x271/0x2d1
->  [<c0406a73>] sys_mmap2+0x5a/0x7b
->  [<c0403b76>] syscall_call+0x7/0xb
+Justin P. Mattock wrote:
+> Justin Madru wrote:
+>> Justin P. Mattock wrote:
+>>> Justin Madru wrote:
+>>>> Ok, more preliminary testing has returned that at least in the case 
+>>>> of the iGoogle page crashing, it's related to google talk.
+>>>> Because right after it connects to the google talk server the crash 
+>>>> happens.
+>>>> And why it doesn't crash on firefox 3.2 is because for some reason 
+>>>> the talk feature doesn't load on that version of firefox.
+>>>> I still get the crashes when going to Preferences->Main or 
+>>>> Preferences->Applications.
+>>>>
+>>>> I tried the suggested moving of .gconf* .gnome* .mozilla*
+>>>> The only thing that did was make firefox crash when going to 
+>>>> Preference.
+>>>> I did not try compiling firefox from source, but I did test with 
+>>>> the binaries straight from mozilla.
+>>>> I also tried disabling any plugin/extention (I only have flash and 
+>>>> AdBlockerPlus), but no change.
+>>>>
+>>> What I should of said, is to maybe uninstall/disable any of those 
+>>> apps or plugins
+>>> that are automatically triggered when loading firefox.
+>>> (although renaming some of  the  .* files is good, freshens it up);
+>>> So when you don't go to google talk you can surf?
+>>
+>> So far only a connection to talkgadget.google.com or the 2 tabs in 
+>> preferences make firefox crash.
+>> Other than that I've yet to run into another site that makes it 
+>> crash, and can browse just fine.
+>> Actually, other than this bug .29-rc2 is running rather nicely ;-)
+>>
+>> Ok, this time I maded sure I uninstalled/disabled everything I could.
+>> Sill.... same results. So, I decided to try something different. Test 
+>> with Epiphany.
+>> I tried both with the geko and webkit backends.
+>> Same results, a crash when going to my iGoogle page that has google 
+>> talk applet.
+>>
+>> But, this time epiphany left an error to the console that gives a 
+>> clue to the cause:
+>>
+>> $ epiphany-webkit                                                ** 
+>> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
+>> the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
+>> from the grid
+>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
+>> from the grid
+>> console message:  @1: Unsafe JavaScript attempt to access frame with URL
+>> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
+>>
+>> from frame with URL
+>> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
+>>
+>> Domains, protocols and ports must match.
+>> console message:  @1: Unsafe JavaScript attempt to access frame
+>> with URL http://www.google.com/ig from frame with URL
+>> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
+>>
+>> Domains, protocols and ports must match.
+>> console message:  @1: Unsafe JavaScript attempt to access frame
+>> with URL http://www.google.com/ig from frame with URL
+>> http://talkgadget.google.com/talkgadget/blank. Domains,
+>> protocols and ports must match.
+>> Segmentation fault
+>>
+>> So, it's complaining about matching domains, protocols and ports.
+>> Henceforth, I would surmise that the bug is related to the network code?
+>>
+>> Justin Madru
+>>
+> Well positive side is you can at least  grab youre news and info.
+> bad side is you can't access igoogle(or whatever it's called).
+>
+> Domains, protocols and ports must match.
+> probably the culprit(if you found the correct location
+> that's causing this);
+>
+> regards;
+>
+> Justin P. Mattock
+>
+It's only half positive because I use the google rss reader of igoogle.
+Unfortunately, there's the stupid google talk app that won't go away, 
+that causes the crash!
+But I can fortunately use firefox 3.2 because google talk says it 
+doesn't support that browser and doesn't load.
 
-I reported this one already some time ago [1], Andrea Righi [cc'd]
-also had a fix [2] but it seemed to not have made it in.  Andrea,
-perhaps you can resend it?
+I'll do a git bisect if I can, and report back in a few days.
 
-	Hannes
-
-[1] http://lkml.org/lkml/2008/10/22/759
-[2] http://lkml.org/lkml/2008/10/28/377
+Justin Madru
