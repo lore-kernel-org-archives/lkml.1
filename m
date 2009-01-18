@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbZARF7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbZARGX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbZARF7p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 00:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZARF7g
+	id S1761570AbZARGX5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 01:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZARGXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 00:59:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59897 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024AbZARF7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 00:59:35 -0500
-Message-ID: <4972C53C.5050509@kernel.org>
-Date: Sun, 18 Jan 2009 14:59:24 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 18 Jan 2009 01:23:48 -0500
+Received: from rv-out-0506.google.com ([209.85.198.227]:44016 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbZARGXr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 01:23:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jv3qLRBIDVjHcAiV1He58DTl8afQAqali7/tlsfQTDu2CnhryijGRuWxnkkacrHnWC
+         HlgURTuklgS5j9b5/4SudZaVNGdKpgT9RVfjWB19QOnFQ4f9lyG5v47W4odCzTF/B2R2
+         t5hsr2Tlv1vY/p+XK1Y22aKAU1QBmYNjWMnYc=
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/17] x86-64: Move cpu number from PDA to per-cpu and
- 	consolidate with 32-bit.
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>	 <1232115396-26367-1-git-send-email-brgerst@gmail.com>	 <1232115396-26367-2-git-send-email-brgerst@gmail.com>	 <1232115396-26367-3-git-send-email-brgerst@gmail.com>	 <1232115396-26367-4-git-send-email-brgerst@gmail.com>	 <1232115396-26367-5-git-send-email-brgerst@gmail.com>	 <4972B8AB.8040001@kernel.org> <73c1f2160901172157j6cd731e5s187e98a069a3ab96@mail.gmail.com>
-In-Reply-To: <73c1f2160901172157j6cd731e5s187e98a069a3ab96@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <200901170328.15178.rob@landley.net>
+References: <20090115194033.GA10926@hack.private>
+	 <20090116124158.4364e269.akpm@linux-foundation.org>
+	 <200901170328.15178.rob@landley.net>
+Date: Sun, 18 Jan 2009 14:23:46 +0800
+Message-ID: <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com>
+Subject: Re: [uml-devel] [Patch] uml: fix a link error
+From: Daolong Wang <ahlongxp@gmail.com>
+To: Rob Landley <rob@landley.net>
+Cc: user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       jdike@addtoit.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 18 Jan 2009 05:59:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> On Sun, Jan 18, 2009 at 12:05 AM, Tejun Heo <tj@kernel.org> wrote:
->> Hello,
+I can confirm this link error. And this patch works for me.
+
+On Sat, Jan 17, 2009 at 5:28 PM, Rob Landley <rob@landley.net> wrote:
+> On Friday 16 January 2009 14:41:58 Andrew Morton wrote:
+>> > diff --git a/arch/um/sys-i386/sys_call_table.S
+>> > b/arch/um/sys-i386/sys_call_table.S index 00e5f52..04147dc 100644
+>> > --- a/arch/um/sys-i386/sys_call_table.S
+>> > +++ b/arch/um/sys-i386/sys_call_table.S
+>> > @@ -6,6 +6,7 @@
+>> >
+>> >  #define sys_vm86old sys_ni_syscall
+>> >  #define sys_vm86 sys_ni_syscall
+>> > +#define sys_sigprocmask sigprocmask
+>> >
+>> >  #define old_mmap old_mmap_i386
 >>
->>> --- a/arch/x86/kernel/setup_percpu.c
->>> +++ b/arch/x86/kernel/setup_percpu.c
->>> @@ -147,6 +147,9 @@ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
->>>  #endif
->>>  EXPORT_SYMBOL(__per_cpu_offset);
->>>
->>> +DEFINE_PER_CPU(int, cpu_number);
->>> +EXPORT_PER_CPU_SYMBOL(cpu_number);
->> This is inside CONFIG_HAVE_SETUP_PER_CPU_AREA.  I think voyage would
->> be unhappy with this change.
-> 
-> Is there any specific reason Voyager doesn't use the x86
-> setup_per_cpu_areas() function?  I don't see anything on a quick
-> glance that would not work.  The x86 code is pretty much a superset of
-> the default code in init/main.c.
-
-I have no idea at all.  Given that not many people can test it, I
-figured just leaving it alone would be the best course but if it can
-be merged, all the better.
-
-Thanks.
-
--- 
-tejun
+>> For how long has this problem been present?
+>>
+>> Why aren't lots of other people reporting it?
+>
+> I'm not sure User Mode Linux still has a lot of users regularly testing the
+> latest and greatest version.  (QEMU and KVM kinda took the wind out of its
+> sails.)
+>
+> I still find it useful to be able to stick printfs into the code and debug
+> stuff even when the console isn't working, but I haven't been able to build a
+> version of 2.6.28 that works for me at all:
+>
+> cat > mini.conf << EOF
+> CONFIG_BINFMT_ELF=y
+> CONFIG_HOSTFS=y
+> CONFIG_LBD=y
+> CONFIG_BLK_DEV=y
+> CONFIG_BLK_DEV_LOOP=y
+> CONFIG_STDERR_CONSOLE=y
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_EXT2_FS=y
+> CONFIG_EXT3_FS=y
+> CONFIG_STATIC_LINK=y
+> CONFIG_NO_HZ=y
+> CONFIG_UNEVICTABLE_LRU=y
+> EOF
+> make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf
+> make ARCH=um -j 3
+> ./linux rw init=/bin/bash rootfstype=hostfs
+>
+> The result panics (twice) and exits, instead of giving me a shell prompt.
+> Built and run on stock Ubuntu 8.10.  (I posted about it on tuesday, but nobody
+> replied...)
+>
+> Rob
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
