@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZASTVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZASTWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbZASTVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZASTU7
+	id S1758637AbZASTWn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZASTWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:20:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39200 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbZASTU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:20:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Subject: Re: [2.6.29-rc2 regression] e100: netconsole not functional because of missing firmware
-Date: Mon, 19 Jan 2009 20:20:34 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, e1000-devel@lists.soutceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-References: <200901171908.28533.arvidjaar@mail.ru> <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
-In-Reply-To: <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
+	Mon, 19 Jan 2009 14:22:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48307 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbZASTWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 14:22:34 -0500
+Message-ID: <4974D29A.2070607@zytor.com>
+Date: Mon, 19 Jan 2009 11:20:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Nesterov <oleg@redhat.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Ian Kent <raven@themaw.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated	task_pgrp_nr()
+References: <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net> <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com>
+In-Reply-To: <20090119191729.GB24852@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901192020.35116.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Jesse Brandeburg wrote:
-> On Sat, Jan 17, 2009 at 8:08 AM, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
-> > [    2.008509] e100: eth0: e100_request_firmware: Failed to load
-> > firmware "e100/d101m_ucode.bin": -22
-> > [    2.010461] netconsole: failed to open eth0
-> > [    2.010996] netconsole: cleaning up
-> >
-> > This has been working all the time without requiring any external
-> > firmware to be present. Why it suddenly refuses to work now?
+Oleg Nesterov wrote:
 > 
-> to use netconsole you probably need to set config option
-> CONFIG_FIRMWARE_IN_KERNEL=y
+> Actually, I am very much surprized this one-liner patch has so
+> many questions. Isn't it "obiously correct" ?
 > 
-> Hm, I wonder if we couldn't have netconsole=y select
-> CONFIG_FIRMWARE_IN_KERNEL in Kconfig
-> 
-> the arguments as to why the firmware was split out of the drivers have
-> already been made on this list.  Not that I agree with them, but the
-> decision has been made and we're (network devs) going along with it.
 
-Still, if that leads to functional regressions, like this one, we need to do
-something about it IMO.  David?
+Obviously not.
 
-Thanks,
-Rafael
+	-hpa
+
