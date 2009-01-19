@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbZASO4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbZASO51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbZASO4a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbZASOzO
+	id S1760637AbZASO51 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZASO5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:55:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:14624 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760988AbZASOzL (ORCPT
+	Mon, 19 Jan 2009 09:57:07 -0500
+Received: from p02c12o145.mxlogic.net ([208.65.145.78]:53045 "EHLO
+	p02c12o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbZASO5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:55:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=omv0CIau6X3782byXjl8Ho+ihfNzQ/RlgjigHw+PH2Kdv3j9Dv7x4hD+iY/lR7IDg/
-         HhC+secn0TnBHHVa1fjJMbyC6Uy+MhwSsZFMrAY0PF912RkwL47+SxyYRH/0cbgDEQuz
-         04M2qn2/UwfPmhzsrSd3Xg5Lt17e6akVPW8/Q=
+	Mon, 19 Jan 2009 09:57:05 -0500
+Message-ID: <497494BB.3080800@steeleye.com>
+Date: Mon, 19 Jan 2009 09:56:59 -0500
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0901132117270.3549@localhost.localdomain>
-References: <nn3SOLVZ28H.A.bY.CafaJB@chimera>
-	 <nHCfeC0YLrE.A.WKC.qafaJB@chimera>
-	 <alpine.LFD.2.00.0901132117270.3549@localhost.localdomain>
-Date: Mon, 19 Jan 2009 15:55:09 +0100
-X-Google-Sender-Auth: 271fd1bae7c431ba
-Message-ID: <a5d587fb0901190655o76688b2ar667861f75e94436f@mail.gmail.com>
-Subject: Re: [PATCH] x86: vm86: fix preemption bug
-From: Michal Suchanek <hramrach@centrum.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+To: Pavel Machek <pavel@suse.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: nbd: add locking to nbd_ioctl
+References: <20090116115512.GA10771@elf.ucw.cz> <4970A696.9070307@steeleye.com> <20090116153603.GD2022@elf.ucw.cz> <4970B59A.9090807@steeleye.com> <20090119095459.GA11187@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090119095459.GA11187@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jan 2009 14:56:59.0798 (UTC) FILETIME=[2E303360:01C97A46]
+X-Spam: [F=0.2000000000; S=0.200(2008120801)]
+X-MAIL-FROM: <paul.clements@steeleye.com>
+X-SOURCE-IP: [207.43.68.209]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/01/2009, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Impact: fix scheduling while atomic bug
->
->  commit 3d2a71a596bd9c761c8487a2178e95f8a61da083 (x86, traps: converge
->  do_debug handlers) changed the preemption disable logic of do_debug()
->  so vm86_handle_trap() is called with preemption disabled resulting in:
->
+Pavel Machek wrote:
+>> Pavel Machek wrote:
+>>> On Fri 2009-01-16 10:24:06, Paul Clements wrote:
 
-The patch seems to fix the the problem for me.
+>> lo->sock is only modified under tx_lock (except for SET_SOCK, where the 
+>> device is being initialized, in which case it's impossible for any other 
+>> thread to be accessing the device)
+> 
+> Well, unless the user is evil or confused? :-).
 
-However, the patch does not apply automatically neither to 2.6.28 nor
-2.6.29-rc1.
+Even in that case, you're just going to get EBUSY. Nothing bad will 
+happen. SET_SOCK checks for lo->file, so it cannot be called on an 
+active nbd device.
 
-Thanks
 
-Michal
+>> As for other fields, I assume you're talking about blksize, et al. 
+>> Taking tx_lock doesn't prevent you from screwing yourself if you modify 
+>> those while the device is active. You'd need to disallow those ioctls 
+>> when the device is active (check lo->file). Again, this is only going to 
+>> happen if you really misuse the ioctls.
+> 
+> Ok, I'll take a look at the missing checks. I'd really like to make
+> this "stable" -- no amount of misuse should crash the kernel.
+
+Just to summarize, I don't think we need to hold tx_lock around the 
+entirety of nbd_ioctl. We do need one extra tx_lock around xmit_timeout 
+and we do need to check for lo->file and return EBUSY in all of the 
+SET_*SIZE* ioctls.
+
+Thanks,
+Paul
+
