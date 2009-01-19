@@ -1,172 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbZASNdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbZASNeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759996AbZASNdw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 08:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZASNdj
+	id S1760332AbZASNeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 08:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZASNeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 08:33:39 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57385 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751098AbZASNdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 08:33:38 -0500
-X-Sasl-enc: EfMOy8YDPj4LbdgONzunp4PEPTM+dR5hZFNVny3uI1W9 1232372016
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-From: Ian Kent <raven@themaw.net>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20090119124253.GA3268@redhat.com>
-References: <20090118073441.GA699@redhat.com>
-	 <1232331602.3136.19.camel@zeus.themaw.net>
-	 <20090119070801.GA21686@redhat.com>
-	 <1232352677.3136.103.camel@zeus.themaw.net>
-	 <20090119083208.GA25297@redhat.com>
-	 <1232363717.3136.134.camel@zeus.themaw.net>
-	 <20090119124253.GA3268@redhat.com>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 22:33:36 +0900
-Message-Id: <1232372016.3136.155.camel@zeus.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 08:34:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33555 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZASNeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 08:34:09 -0500
+Date: Mon, 19 Jan 2009 14:33:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] ftrace interface for blktrace
+Message-ID: <20090119133358.GE23299@elte.hu>
+References: <20090116181611.GE6562@ghostprotocols.net> <20090117133737.GA8413@nowhere> <20090117202247.GK6562@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117202247.GK6562@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4588]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 13:42 +0100, Oleg Nesterov wrote:
-> On 01/19, Ian Kent wrote:
-> >
-> > On Mon, 2009-01-19 at 09:32 +0100, Oleg Nesterov wrote:
-> > >
-> > > No, I am trying to say that the current code is wrong ;)
-> > >
-> > > > > task_pgrp_vnr() reporst the pid_t in the global namespace, but
-> > > > > find_get_pid() searches "struct pid" in the current namespace.
-> > > > > We can get the wrong pid. I tried to document this in changelog.
-> > > >
-> > > > We don't know whether it's the wrong pid because the environments were
-> > > > this is used haven't been defined. Depending on expected usage of pid
-> > > > namespaces the global pid may or may not be the correct one. This was
-> > > > not determined the last time this came up.
-> > >
-> > > Confused. The current code can't be right.
-> > >
-> > > Lets consider the simplest case, there is no "pgrp=" option during mount.
-> >
-> > No, the pgrp is required at mount time and must be the pid of the
-> > process group leader. But it isn't enforced in the code so that "is" a
-> > bug.
-> 
-> I see, but I didn't mean _this_ is bug. Please see below.
 
-Right, I see the second of the two patches would cover this case since
-the process doing the mount is always automount as it doesn't make sense
-otherwise.
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 
+> I hope that by dropping the requirement to a userspace bit (be it big or 
+> small) we can set a record for such kind of tracing infrastructure now 
+> that tracepoints are being proposed left and right.
 > 
-> > > In that case the current code does:
-> > >
-> > > 	pid_t pgrp = task_pgrp_nr(current);
-> > > 	sbi->oz_pgrp = find_get_pid(pgid);
-> > >
-> > > But this means that sbi->oz_pgrp != task_prgp(current), unless of
-> > > course we are from the global namespace. ->oz_pgrp is a "random"
-> > > pid or NULL.
-> > >
-> > > What I am missed?
-> >
-> > What your missing is that all I'm asking for is a little background
-> > information on what the change is about so that I can understand it.
-> >
-> > I think you are making assumptions that just aren't true about my
-> > understanding of the pid namespace work.
-> >
-> > The current situation is that pgrp corresponds to the session leader of
-> > the automount(8) process and that process is started at boot so I guess
-> > it is within the global namespace.
-> 
-> In that case the patch doesn't make the difference, because if the
-> task runs in the global namespace then
-> 
-> 	task_pgrp_nr(current) == task_pgrp_vnr(current);
+> After all, somebody said that userspace is just a test case for the 
+> kernel, and for things like developer assists...
 
-And this pretty much answers the question I had, this should be fine
-then.
+Exactly.
 
-> 
-> > All we need to do now (since the
-> > issue will be much more complex if we consider multiple instances of
-> > automount(8) started within pid namespaces) is verify that changes we
-> > make to obtain the pgrp will correspond to the pid of automount(8) in
-> > the global namespace.
-> 
-> And now we have a problem afaics, because without this patch ->oz_pgrp
-> does not necessary match the pid of automount.
-> 
-> Let's look at
-> 
-> 	static inline int autofs_oz_mode(struct autofs_sb_info *sbi) {
-> 		return sbi->catatonic || task_pgrp(current) == sbi->oz_pgrp;
-> 	}
-> 
-> Please note that task_pgrp(current) is "struct pid *", not pid_t.
-> It does not belong to any particular namespace, it "represents" all
-> namespaces this task is visible in, up to global.
-> 
-> Let's suppose automount starts in the level 2 namespace.
-> It's pgrp == 10 in the global namespace, and at the same time
-> it is == 20 from automount->nsproxy->pid_ns pov.
-> 
-> We need sbi->oz_pgrp == task_pgrp(automount).
-> 
-> But, by default parse_options() sets pgrp == 10, this is what
-> task_pgrp_nr(current) == task_pgrp_nr_ns(current, init_pid_ns)
-> returns.
-> 
-> Now autofs_fill_super() does sbi->oz_pgrp = find_get_pid(10).
-> This means: find the pid which has the numeric value == 10
-> in our namespace == automount->nsproxy->pid_ns.
-> 
-> But we should use 20, not 10. Otherwise we get the wrong pid or
-> NULL.
-> 
-> In short. Let's suppose automount(8) startes within the
-> pid namespace, and there is no "pgrp=" parameter. Then,
-> 
-> Before the patch
-> 
-> 	sbi->oz_pgrp != task_pgrp(automount)
-> 
-> After the patch
-> 
-> 	sbi->oz_pgrp == task_pgrp(automount)
-> 
-> And please note that these "!="/"==" apply to any namespace. I mean,
-> when we call autofs_oz_mode() it does not matter in which namespace
-> autofs_oz_mode() is executed, we compare "struct pid*", not pid_t.
+Also, for certain tracing modes where we just do the run to gather 
+statistics (but do not plan to capture any trace), it is more efficient to 
+have an in-kernel histogram than to export gobs of data to user-space at 
+great expense, just to throw away most of it there ;-)
 
-I think your saying that the option pgrp= is broken and should be
-deprecated and that we should always set sbi->oz_pgrp the same way as
-you have done in the case where it isn't given as an option and in
-autofs_dev_ioctl_setpipefd(). Basically, just silently overriding it and
-setting the correct value to maintain backward option compatibility.
-
-> 
-> 
-> Ian, please let me know if I am answering the wrong question,
-> I am not sure I understand you.
-
-It's interesting that your description appears to assume the the same
-process may appear in different pid namespaces (am I right?) whereas in
-the descriptions I have been writing I'm thinking of pid namspeces as
-having there own set of proceses and not being able to see processes
-outside the space. But then to be useful I guess both possibilities must
-exist.
-
-Ian
-
-
+	Ingo
