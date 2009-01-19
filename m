@@ -1,113 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbZASVF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbZASVHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759443AbZASVF2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZASVFR
+	id S1758331AbZASVHz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZASVHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:05:17 -0500
-Received: from smtp3.tech.numericable.fr ([82.216.111.39]:58189 "EHLO
-	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbZASVFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:05:16 -0500
-Message-ID: <4974EB02.4060303@numericable.fr>
-Date: Mon, 19 Jan 2009 22:05:06 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: airlied@linux.ie, rjw@sisk.pl, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.29-rc2][Suspend regression][DRM ???? bisected]
-References: <4971DFA5.2000304@numericable.fr>
-In-Reply-To: <4971DFA5.2000304@numericable.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Jan 2009 16:07:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52050 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754118AbZASVHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:07:45 -0500
+Date: Mon, 19 Jan 2009 16:07:25 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Bernhard Schmidt <berni@birkenwald.de>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression 2.6.27.4
+ -> 2.6.27.9
+Message-ID: <20090119160725.34124637@tleilax.poochiereds.net>
+In-Reply-To: <20090119103248.GA28699@schleppi.birkenwald.de>
+References: <20090118221329.GA12742@pest>
+	<20090118210314.30832598@tleilax.poochiereds.net>
+	<20090119103248.GA28699@schleppi.birkenwald.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 19 Jan 2009 11:32:48 +0100
+Bernhard Schmidt <berni@birkenwald.de> wrote:
 
-etienne wrote:
-> hello,
->
-> With 2.6.29-rc2 (and rc1) i cannot resume from suspend to ram (echo 
-> mem > /sys/power/state). Computer correctly suspends, but never wakes 
-> up (screens stays black and everything is unresponsive)
->                   
-> It has been working flawlessly in all prior kernel.
-> I tried a bisection and it "seems" to point to :
-> ====================================
-> a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9 is first bad commit
-> commit a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9            Author: 
-> Dave Airlie <airlied@linux.ie>                     Date:   Sun Dec 7 
-> 12:02:21 2008 +1000                     
->    drm: reorganise start and load.
->                                     Make sure we have the primary node 
-> so the device can add maps.
->                                                                    
-> Signed-off-by: Dave Airlie <airlied@redhat.com>              
-> ========================================
->
-> HOWEVER, I am not quite sure my bisect was correct; I mean, some "bad 
-> bisect" had a different behavior (resume produces  a garbage screen, 
-> computer locked)
-> and after bisect 57a6297e52b32ff402291a7d8fd802f83e746e52 all "bad" 
-> kernel wouldn't start X, init=/bin/bash booted fine but no resume
->
-> I tried  to revert but got errors
-> =============================
-> etienne@etienne-desktop:~/linux-2.6$ git revert  
-> a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-> warning: too many files, skipping inexact rename detection
-> Auto-merged drivers/gpu/drm/drm_stub.c
-> CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_stub.c
-> Automatic revert failed.  After resolving the conflicts,
-> mark the corrected paths with 'git add <paths>' or 'git rm <paths>' 
-> and commit the result.
-> =========================
-> Please find attached bisect log, lspci (from 2.6.28-rc8) , and .config 
-> (2.6.29rc2)
->
-> I have a radeon card
-> 01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 
-> [Radeon X300(PCIE)]
-> Packages :
-> xserver-xorg-video-radeon            
-> 1:6.9.0+git20081003.f9826a56-0ubuntu2.1
-> ii  xserver-xorg                              
-> 1:7.4~5ubuntu3                              the X.Org X 
-> server                                                   ii  
-> xserver-xorg-core                         
-> 2:1.5.2-2ubuntu3                            Xorg X server - core 
-> server                  
-> I'm willing to test patches and ideas of course :)
->
-> Except for this regression, everything works fine for me, I migrated 
-> to ext4 and it "feels" a huge win especially on "rm" and fsck :))
->
-> best regards,
-> Etienne
->
->
->
-hello,
+> On Sun, Jan 18, 2009 at 09:03:14PM -0500, Jeff Layton wrote:
+> 
+> > How reproducible is this? Can you make it happen on every attempt?
+> > Is this kernel being built with CONFIG_CIFS_DFS_UPCALL=y ?
+> 
+> Happens every time. CIFS_DFS_UPCALL is set, yes.
+> 
+> > Could you email me the cifs.ko module from this kernel? I'd like to
+> > disassemble it and have a look at where it crashed. I may not be
+> > able to tell much, but it's worth a look...
+> 
+> Will do unicast when I'm back at my workstation at home.
+> 
+> Thanks,
+> Bernhard
 
-as my bisect directed to drm but as I was unable to revert the commit, I 
-took my 2.6.29rc2 kernel,  removed drivers/gpu/drm and include/drm and 
-replaced them  with 2.6.28 files.
-Rebooted into this new kernel, suspended to ram and ...same bug :(
-so maybe there a bug in drm, but there another one elsewhere...
-I checked /var/log/messages from a working and a non working kernel, and 
-there's absolutely _nothing_ in non-working kernels
-in working kernel i see suspend beginning like this :
-Jan 19 21:50:47 etienne-desktop kernel: PM: Syncing filesystems ... done.
-Jan 19 21:50:47 etienne-desktop kernel: [drm] Num pipes: 1
+Thanks for the kmod. Kernel crashed doing this:
 
+     e00:       8b 43 30                mov    0x30(%ebx),%eax
 
-Are there any patch i could try?
-Is it possible to run a git bisect excluding all drm commits to find the 
-other bug?
+...which checks out with the register dump. %ebx is 0x69000000.
+and the address we failed to look up was 0x69000030.
 
+My guess from a cursory look at the assembly is that %ebx should be
+holding a pointer to cifs_sb. It's referenced quite a few times, but
+doesn't seem to change until just before returning from the function.
+The interesting bit is that there are a lot of other places  (even some
+that look like they've probably already been traversed) in this code
+where %ebx is dereferenced but they didn't trigger the problem...
 
-regards
-Etienne
+That said, there's a lot of jumping around in this assembly code and
+it's not completely clear to me how it got to the point where it crashed.
+We'll probably need to see if this can be independently reproduced. Can
+you email along the details of how you're reproducing this? In
+particular:
+
+1) all mount options being used
+2) details on the server (what OS, what version of samba, etc)
+3) version of mount.cifs being used
+
+-- 
+Jeff Layton <jlayton@redhat.com>
