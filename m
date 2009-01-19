@@ -1,39 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbZASNF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbZASNGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbZASNF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 08:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760809AbZASNEi
+	id S1761215AbZASNGg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 08:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761239AbZASNEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 08:04:38 -0500
-Received: from mail07-sk.centrum.cz ([90.183.38.172]:35442 "EHLO
-	mail07-sk.centrum.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761174AbZASNEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 08:04:36 -0500
-Date: Mon, 19 Jan 2009 11:11:49 +0100
-From: "Benjamian Evans" <benjaminevans1@centrum.sk>
-X-Mailer: Centrum Mail 1.0
+	Mon, 19 Jan 2009 08:04:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34198 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761228AbZASNEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 08:04:45 -0500
+Date: Mon, 19 Jan 2009 08:03:37 -0500
+From: Josef Bacik <jbacik@redhat.com>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-btrfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] Btrfs: use BTRFS_VOL_NAME_MAX for struct
+	btrfs_ioctl_vol_args
+Message-ID: <20090119130337.GA25475@unused.rdu.redhat.com>
+References: <20090119125732.GA7424@hack.private>
 MIME-Version: 1.0
-X-Priority: 3
-Message-ID: <200901191111.18763@centrum.cz>
-Subject: Compliment of the seasion.
-Content-Type: text/plain; charset="windows-1250"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-To: unlisted-recipients:; (no To-header on input)
+In-Reply-To: <20090119125732.GA7424@hack.private>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compliment of the seasion.
-Hello,
-I know you will be surprise to see my mail, firstly how re you and your family, I hope all is well. I take a decision to reach you on good faith, believing that you will have time to deal with the purpose of this mail and input all necessary required assistant I hope to get from you to bring the purpose to a successful end.
+On Mon, Jan 19, 2009 at 08:57:32PM +0800, Américo Wang wrote:
+> 
+> I found userspace tool, btrfsctl, uses BTRFS_VOL_NAME_MAX, and
+> it also looks that this one is more proper.
+> 
+> Kill BTRFS_PATH_NAME_MAX since no one will use it.
+> 
 
-I want to know if you can create time to focus on a very important deal at this time, is very important I know your schedule to avoid delay of the project I want to hand over to you. I will give you information about myself when I get your reply indicating interest to work on a project that is not your usual daily activities.
+Nope, BTRFS_PATH_NAME_MAX is specifically used for the ioctl stuff, makes the
+arguments 4k aligned, this patch is incorrect.  Thanks,
 
-This project will yield good fortunes and peace of mind, which is the only thing I can tell you about the project for now.
-I wish to see your reply as soon as possible with your mobile private number on it.
-kindly REPLY ON Email,benjaminevans1@yahoo.fr
-Thanks and enjoy the day
-
-Benjamin Evans
-
+Josef
