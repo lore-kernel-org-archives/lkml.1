@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZASKQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbZASKTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZASKQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 05:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbZASKQj
+	id S1759460AbZASKTq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 05:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbZASKTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 05:16:39 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:4840 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757386AbZASKQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 05:16:39 -0500
-Date: Mon, 19 Jan 2009 11:15:10 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Jens Axboe <axboe@suse.de>
-Subject: Re: [PATCH 1/1] relay: fix lock imbalance in relay_late_setup_files
-Message-ID: <20090119101509.GG30821@kernel.dk>
-References: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
+	Mon, 19 Jan 2009 05:19:37 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:36616 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755208AbZASKTg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 05:19:36 -0500
+Message-ID: <497453B6.8090403@s5r6.in-berlin.de>
+Date: Mon, 19 Jan 2009 11:19:34 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
+To: Nick Craig-Wood <nick@craig-wood.com>
+CC: David Wagner <daw@cs.berkeley.edu>, linux-kernel@vger.kernel.org
+Subject: Re: Checking module parameters
+References: <bVsVO-15X-19@gated-at.bofh.it> <20090119093814.BC18014CA88@irishsea.home.craig-wood.com>
+In-Reply-To: <20090119093814.BC18014CA88@irishsea.home.craig-wood.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17 2009, Jiri Slaby wrote:
-> One fail path in relay_late_setup_files() omits
-> mutex_unlock(&relay_channels_mutex);
-> Add it.
+Nick Craig-Wood wrote:
+> David Wagner <daw@cs.berkeley.edu> wrote:
+>>  Is there a way to tell what options have been applied to a currently
+>>  loaded kernel module?
+>> 
+>>  I'm trying to force libata to use 1.5Gbps rather than 3Gbps,
+...
+> I had to do this recently (under debian I ended up putting
+> "libata force=1.5Gbps" into /etc/modules)
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> Cc: Jens Axboe <axboe@suse.de>
-> ---
->  kernel/relay.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-
-Looks good, applied!
-
+> You can check it is working by looking for something like this in the log
 > 
-> diff --git a/kernel/relay.c b/kernel/relay.c
-> index 8ca1587..738bc85 100644
-> --- a/kernel/relay.c
-> +++ b/kernel/relay.c
-> @@ -714,8 +714,10 @@ int relay_late_setup_files(struct rchan *chan,
->  
->  	mutex_lock(&relay_channels_mutex);
->  	/* Is chan already set up? */
-> -	if (unlikely(chan->has_base_filename))
-> +	if (unlikely(chan->has_base_filename)) {
-> +		mutex_unlock(&relay_channels_mutex);
->  		return -EEXIST;
-> +	}
->  	chan->has_base_filename = 1;
->  	chan->parent = parent;
->  	curr_cpu = get_cpu();
-> -- 
-> 1.6.1
-> caught by stanse
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> [    2.345058] ata1: FORCE: PHY spd limit set to 1.5Gbps
+> [    2.345058] ata1: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106100 irq 218
 
+There is also /sys/module/*/parameters/* which can be read and in some
+cases even be written.
 -- 
-Jens Axboe
-
+Stefan Richter
+-=====-==--= ---= =--==
+http://arcgraph.de/sr/
