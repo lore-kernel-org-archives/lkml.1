@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZASTNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZASTON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbZASTNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZASTNk
+	id S1754184AbZASTON (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:14:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZASTNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:13:40 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41373 "EHLO
+	Mon, 19 Jan 2009 14:13:42 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41375 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbZASTNj (ORCPT
+	with ESMTP id S1753339AbZASTNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:13:39 -0500
-Date: Sun, 18 Jan 2009 18:40:35 +0100
+	Mon, 19 Jan 2009 14:13:41 -0500
+Date: Mon, 19 Jan 2009 16:02:20 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090118174035.GG1944@ucw.cz>
-References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net
+Subject: Re: introduce delayed-leds.h to reduce code duplication
+Message-ID: <20090119150219.GA6463@ucw.cz>
+References: <20090111224331.GA28010@elf.ucw.cz> <20090112100500.GA31656@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090113144307.GF16333@alice>
+In-Reply-To: <20090112100500.GA31656@khazad-dum.debian.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-01-13 15:43:07, Eric Sesterhenn wrote:
-> * Chris Mason (chris.mason@oracle.com) wrote:
-> > On Tue, 2009-01-13 at 15:21 +0100, Eric Sesterhenn wrote:
-> > > Hi,
-> > > 
-> > > when mounting an intentionally corrupted btrfs filesystem i get the
-> > > following warning and bug message. The image can be found here
-> > > www.cccmz.de/~snakebyte/btrfs.2.img.bck.bz2
+On Mon 2009-01-12 08:05:01, Henrique de Moraes Holschuh wrote:
+> On Sun, 11 Jan 2009, Pavel Machek wrote:
+> > What about something like this? 
 > > 
-> > Thanks for looking at things
+> > [Alternatively, I can add a flag to the leds class, and make delayed
+> > leds a built-in functionality...]
 > > 
-> > Aside from catching checksumming errors, we're not quite ready for
-> > fuzzer style attacks.  The code will be hardened for this but it isn't
-> > yet.
+> > [Attached is driver that uses new infrastructure for hp_accel, but it
+> > does a bit more.]
 > 
-> Does this mean i should stop trying to break it for now or are you interested
-> in further reports?
+> FWIW, I am looking over the thinkpad-acpi side of this.  I like the idea,
+> but I am not completely sure I agree fully with the changes to
+> thinkpad-acpi.
+> 
+> Which isn't a problem, as long as the thinkpad-acpi hunks are NOT merged to
+> any tree before my ACK, please.  I will test and comment on the patch before
+> the weekend.
 
-Does ext2/3 and vfat survive that kind of attacks? Those are 'in
-production' and should survive it...
-									Pavel
+Any news?
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
