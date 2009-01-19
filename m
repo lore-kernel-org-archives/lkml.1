@@ -1,149 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZASHz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbZASH5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZASHz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 02:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZASHzT
+	id S1756866AbZASH5y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 02:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZASH5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 02:55:19 -0500
-Received: from cmpxchg.org ([85.214.51.133]:41112 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754156AbZASHzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 02:55:18 -0500
-Date: Mon, 19 Jan 2009 08:54:41 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fbmem: fix copy_from/to_user() with mutex held
-Message-ID: <20090119075440.GA1500@cmpxchg.org>
-References: <20090117231925.GA28055@redhat.com> <20090118020038.GA17489@cmpxchg.org> <49738E4B.1030200@gmail.com>
-Mime-Version: 1.0
+	Mon, 19 Jan 2009 02:57:42 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:17529 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbZASH5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 02:57:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MolZqjLD90d0WP9cP+Yunp76Dy2JDUHknARux0DNnTKLNXF12Ev7ddeBQaPy+hC47X
+         6Ns3IhTMmdvTk9TiIN6rUIdKpqNBhnV5JQhsdzOspVThIvrWj+D/keAQBtMrKIMlyjXO
+         xYKr+C8SBCN5kjnPPZGdmGFsGAIP3LuDS8ZVk=
+Date: Mon, 19 Jan 2009 07:57:33 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl,
+       denys@visp.net.lb, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH] Re: deadlocks if use htb
+Message-ID: <20090119075733.GA4788@ff.dom.local>
+References: <1231937404.14825.4.camel@laptop> <Pine.LNX.4.64.0901141748300.17915@nacho.alt.net> <20090115065322.GA4190@ff.dom.local> <20090118.214604.221247372.davem@davemloft.net> <20090119065715.GA4197@ff.dom.local> <49742EE5.9090502@bigtelecom.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49738E4B.1030200@gmail.com>
+In-Reply-To: <49742EE5.9090502@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jan 19, 2009 at 10:42:29AM +0300, Badalian Vyacheslav wrote:
+> Tested 2 days (weekend is stress days for this bug, because its have
+> many traffic) at 3 servers. Fly normal. For completed test need up to 7
+> days, but i think (imho) this patch not break any functional and may
+> safely added to stable. 100% help for me patch # 2+3.
 
-On Sun, Jan 18, 2009 at 09:17:15PM +0100, Andrea Righi wrote:
-> Avoid to call copy_from/to_user() with fb_info->lock mutex held in fbmem
-> fb_ioctl().
+Thank you very much, Slavon! (2+3 are of course better tested, but
+I hope this #4 is more appropriate for -stable.)
+
+Jarek P.
+
+> > On Sun, Jan 18, 2009 at 09:46:04PM -0800, David Miller wrote:
+> >   
+> >> From: Jarek Poplawski <jarkao2@gmail.com>
+> >> Date: Thu, 15 Jan 2009 06:53:22 +0000
+> >>
+> >>     
+> >>> (resend testing patch #4 - for 2.6.27 or 2.6.28)
+> >>>       
+> >> Jarek, if you deem that this is in fact what we should
+> >> submit for -stable please give me a submission with
+> >> a suitable commit message and signoffs, and I will queue
+> >> it up for -stable.
+> >>     
+> >
+> > It looks like this should be needed, but I think it's better to wait
+> > 2 or 3 days for "Tested-by" from Denys and/or maybe Vyacheslav yet.
+> > (I hoped they would rather test some hrtimers patch, but it looks like
+> > Peter was busy.)
+> >
+> > Thanks,
+> > Jarek P.
+> > -----------------> (needed only for -stables: 2.6.28 and older)
+> >
+> > pkt_sched: sch_htb: Fix deadlock in hrtimers triggered by HTB
+> >
+> > Most probably there is a (still unproven) race in hrtimers (before
+> > 2.6.29 kernels), which causes a corruption of hrtimers rbtree. This
+> > patch doesn't fix it, but should let HTB avoid triggering the bug.
+> >
+> > Reported-by: Denys Fedoryschenko <denys@visp.net.lb>
+> > Reported-by: Badalian Vyacheslav <slavon@bigtelecom.ru>
+> > Reported-by: Chris Caputo <ccaputo@alt.net>
+> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> > ---
+> >
+> > diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
+> > --- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
+> > +++ b2.6.27.7/net/sched/sch_htb.c	2008-12-15 10:44:32.000000000 +0000
+> > @@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
+> >  		}
+> >  	}
+> >  	sch->qstats.overlimits++;
+> > +	qdisc_watchdog_cancel(&q->watchdog);
+> >  	qdisc_watchdog_schedule(&q->watchdog, next_event);
+> >  fin:
+> >  	return skb;
+> >
+> >   
 > 
-> NOTE: it doesn't push down the fb_info->lock in each driver's fb_ioctl().
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-
-This should probably also include an explanation for WHY doing uaccess
-under fb_info->lock is verboten.  Perhaps even a comment because I
-don't think it is obvious from the code.
-
-> ---
->  drivers/video/fbcmap.c |   21 +++++--
->  drivers/video/fbmem.c  |  158 ++++++++++++++++++++++++++++--------------------
->  include/linux/fb.h     |    5 +-
->  3 files changed, 112 insertions(+), 72 deletions(-)
-> 
-> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-> index 91b78e6..b19f12c 100644
-> --- a/drivers/video/fbcmap.c
-> +++ b/drivers/video/fbcmap.c
-> @@ -250,10 +250,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
->  	int rc, size = cmap->len * sizeof(u16);
->  	struct fb_cmap umap;
->  
-> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-> -			        !info->fbops->fb_setcmap))
-> -		return -EINVAL;
-> -
->  	memset(&umap, 0, sizeof(struct fb_cmap));
->  	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
->  	if (rc)
-> @@ -262,11 +258,24 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
->  	    copy_from_user(umap.green, cmap->green, size) ||
->  	    copy_from_user(umap.blue, cmap->blue, size) ||
->  	    (cmap->transp && copy_from_user(umap.transp, cmap->transp, size))) {
-> -		fb_dealloc_cmap(&umap);
-> -		return -EFAULT;
-> +		rc = -EFAULT;
-> +		goto out;
->  	}
->  	umap.start = cmap->start;
-> +	info = get_fb_info(info);
-> +	if (!info) {
-> +		rc = -ENODEV;
-> +		goto out;
-> +	}
-> +	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-> +				!info->fbops->fb_setcmap)) {
-> +		rc = -EINVAL;
-> +		goto out1;
-> +	}
->  	rc = fb_set_cmap(&umap, info);
-> +out1:
-> +	put_fb_info(info);
-> +out:
->  	fb_dealloc_cmap(&umap);
->  	return rc;
->  }
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 756efeb..e51e9ba 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1006,6 +1006,23 @@ fb_blank(struct fb_info *info, int blank)
->   	return ret;
->  }
->  
-> +struct fb_info *get_fb_info(struct fb_info *info)
-> +__acquires(&info->lock)
-> +{
-> +	mutex_lock(&info->lock);
-> +	if (!info->fbops) {
-> +		mutex_unlock(&info->lock);
-> +		return NULL;
-> +	}
-> +	return info;
-> +}
-> +
-> +void put_fb_info(struct fb_info *info)
-> +__releases(&info->lock)
-> +{
-> +	mutex_unlock(&info->lock);
-> +}
-> +
->  static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  			unsigned long arg)
->  {
-> @@ -1013,25 +1030,28 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  	struct fb_var_screeninfo var;
->  	struct fb_fix_screeninfo fix;
->  	struct fb_con2fbmap con2fb;
-> +	struct fb_cmap cmap_from;
->  	struct fb_cmap_user cmap;
->  	struct fb_event event;
->  	void __user *argp = (void __user *)arg;
->  	long ret = 0;
->  
-> -	fb = info->fbops;
-> -	if (!fb)
-> -		return -ENODEV;
-> -
->  	switch (cmd) {
->  	case FBIOGET_VSCREENINFO:
-> -		ret = copy_to_user(argp, &info->var,
-> -				    sizeof(var)) ? -EFAULT : 0;
-> +		info = get_fb_info(info);
-> +		if (!info)
-> +			return -ENODEV;
-> +		memcpy(&var, &info->var, sizeof(var));
-
-You don't need these memcpy()s:
-
-		var = info->var
-
-does the same much more readable.
-
-Thanks,
-	hannes
