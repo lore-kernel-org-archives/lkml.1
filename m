@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZASVgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbZASVhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbZASVgc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZASVgE
+	id S1759702AbZASVhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZASVhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:36:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39743 "EHLO ogre.sisk.pl"
+	Mon, 19 Jan 2009 16:37:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60676 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755702AbZASVgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:36:02 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1752684AbZASVhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:37:39 -0500
+Date: Mon, 19 Jan 2009 19:37:21 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
-Date: Mon, 19 Jan 2009 22:35:22 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Jeff Garzik <jeff@garzik.org>, Frans Pop <elendil@planet.nl>,
-       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20081104062734.GA4420@havoc.gtf.org> <200901192054.55536.rjw@sisk.pl> <20090119212428.GB6194@nowhere>
-In-Reply-To: <20090119212428.GB6194@nowhere>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
+Message-ID: <20090119213720.GF690@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere> <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com> <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com> <20090119202523.GE690@ghostprotocols.net> <20090119210839.GA6194@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200901192235.23677.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090119210839.GA6194@nowhere>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Frederic Weisbecker wrote:
-> On Mon, Jan 19, 2009 at 08:54:54PM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+Em Mon, Jan 19, 2009 at 10:08:40PM +0100, Frederic Weisbecker escreveu:
+> On Mon, Jan 19, 2009 at 06:25:23PM -0200, Arnaldo Carvalho de Melo wrote:
+> > Em Mon, Jan 19, 2009 at 08:28:03PM +0100, Frédéric Weisbecker escreveu:
+> > > 2009/1/2 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+> > > >
+> > > > warning: I haven't looked at the patch details
+> > > >
+> > > > But I would love to use something like this to provide the exact
+> > > > contents the userspace blktrace utilities want.
+> > > >
+> > > > - Arnaldo
+> > > >
+> > > 
+> > > 
+> > > Hi Arnaldo,
+> >  
+> > > Since you talked about binary record for the blk tracer, I just recall
+> > > this patch.  Are you sure this infrastructure would cover your needs?
 > > 
-> > Introduce boolean function system_entering_hibernation() returning
-> > 'true' during the last phase of hibernation, in which devices are
-> > being put into low power states and the sleep state (for example,
-> > ACPI S4) is finally entered.
+> > Nope, now that I look at it it definetely isn't what I need. See? the
+> > warning was valid after all :-)
 > > 
-> > Some device drivers need such a function to check if the system is
-> > in the final phase of hibernation.  In particular, some SATA drivers
-> > are going to use it for blacklisting systems in which the disks
-> > should not be spun down during the last phase of hibernation (the
-> > BIOS will do that anyway).
-> >
+> > What I want and will experiment now is to almost dump the contents of
+> > the ring buffer as-is to userspace. I want that so that I can use
+> > blkparse to validate the ring buffer + blkFtrace routines produced
+> > buffer.
+> > 
+> > So probably it will be a matter of using trace_iter to signal that, and
+> > when it gets to my print_line routine I just put together the initial
+> > trace format expected by blkparse + the ones I'm collecting at
+> > tracepoint time.
 > 
-> Hi Rafael,
 > 
-> Why not using the power event notifier?
+> So you would like two different trace files? Or print both bin and formatted
+> output together in the same file?
+> I'm not sure I understand :-s
 
-I'm not sure what you mean exactly, care to elaborate?
+output depends on iter_flags, most of what is needed is there, but I
+guess there are too many ways to achieve the same result and some
+keywords that are already used for other purposes, such as
+TRACE_ITER_BIN -> print_bin_fmt that forces all traces to first have
+pid, cpu and timestamp (all using trace_seq_putmem), then whatever the
+tracer wants to put after that (if it registered a tracer_event _and_ it
+has a ->binary() emitter), when I wanted it to just call ->binary(),
+where I would emulate exactly the old blktrace format, then we would be
+able to just ask for binary traces, collect them thru
+/d/tracing/trace_pipe and pipe them into blkparse for
+validation/debugging the ring_buffer + ftrace + blkFtrace code.
 
-Anyway, however, this is a pretty old patch series and I'm not very much
-interested in reworking it once again.  If you think it can be made better,
-please go on. :-)
+I'll try to get a brain dump in the form of working code later
+today/early tomorrow, now I'm being preempted by my wife to do those
+social things like having dinner and going to the movie theater 8)
 
-Thanks,
-Rafael
+Regards,
+
+- Arnaldo
