@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZASRfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZASRgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbZASRfM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 12:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbZASRbG
+	id S1757490AbZASRgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 12:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZASRgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 12:31:06 -0500
-Received: from mx2.suse.de ([195.135.220.15]:50040 "EHLO mx2.suse.de"
+	Mon, 19 Jan 2009 12:36:06 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:20992 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759899AbZASRbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 12:31:04 -0500
-Message-ID: <4974BA45.6070601@suse.de>
-Date: Tue, 20 Jan 2009 01:37:09 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
+	id S1752024AbZASRgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 12:36:05 -0500
+From: Vitaliy Gusev <vgusev@openvz.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] kthread: Don't looking for a task in create_kthread()
+Date: Mon, 19 Jan 2009 20:28:34 +0300
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Christoph Hellwig <hch@lst.de>, Oleg Nesterov <oleg@redhat.com>,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Evgeniy Dushistov <dushistov@mail.ru>
-Subject: [PATCH 20/20] fs/ufs: return f_fsid for statfs(2)
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901192028.34594.vgusev@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes ufs return f_fsid info for statfs(2).
+Let a process fill result, as 'current' is the same
+in all pid namespaces.
 
-Signed-off-by: Coly Li <coly.li@suse.de>
-Cc: Evgeniy Dushistov <dushistov@mail.ru>
+Signed-off-by: Vitaliy Gusev <vgusev@openvz.org>
+
 ---
- fs/ufs/super.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ kernel/kthread.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ufs/super.c b/fs/ufs/super.c
-index e65212d..a98cab7 100644
---- a/fs/ufs/super.c
-+++ b/fs/ufs/super.c
-@@ -1257,6 +1257,7 @@ static int ufs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	struct ufs_super_block_first *usb1;
- 	struct ufs_super_block_second *usb2;
- 	struct ufs_super_block_third *usb3;
-+	u64 id = huge_encode_dev(sb->s_bdev->bd_dev);
-
- 	lock_kernel();
-
-@@ -1279,6 +1280,8 @@ static int ufs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 		? (buf->f_bfree - (((long)buf->f_blocks / 100) * uspi->s_minfree)) : 0;
- 	buf->f_files = uspi->s_ncg * uspi->s_ipg;
- 	buf->f_namelen = UFS_MAXNAMLEN;
-+	buf->f_fsid.val[0] = (u32)id;
-+	buf->f_fsid.val[1] = (u32)(id >> 32);
-
- 	unlock_kernel();
-
-
--- 
-Coly Li
-SuSE Labs
-
-
-
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 4fbc456..fd765f9 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -76,6 +76,7 @@ static int kthread(void *_create)
+ 
+ 	/* OK, tell user we're spawned, wait for stop or wakeup */
+ 	__set_current_state(TASK_UNINTERRUPTIBLE);
++	create->result = current;
+ 	complete(&create->started);
+ 	schedule();
+ 
+@@ -101,9 +102,6 @@ static void create_kthread(struct kthread_create_info *create)
+ 	} else {
+ 		struct sched_param param = { .sched_priority = 0 };
+ 		wait_for_completion(&create->started);
+-		read_lock(&tasklist_lock);
+-		create->result = find_task_by_pid_ns(pid, &init_pid_ns);
+-		read_unlock(&tasklist_lock);
+ 		/*
+ 		 * root may have changed our (kthreadd's) priority or CPU mask.
+ 		 * The kernel thread should not inherit these properties.
