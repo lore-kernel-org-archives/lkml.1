@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbZASGgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZASGpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759189AbZASGgQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 01:36:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbZASGf7
+	id S1758935AbZASGpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 01:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbZASGpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 01:35:59 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59172 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758328AbZASGf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 01:35:58 -0500
-Message-ID: <49741F14.80808@zytor.com>
-Date: Sun, 18 Jan 2009 22:35:00 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ian Kent <raven@themaw.net>
-CC: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated	task_pgrp_nr()
-References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net>
-In-Reply-To: <1232331602.3136.19.camel@zeus.themaw.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 01:45:42 -0500
+Received: from 1wt.eu ([62.212.114.60]:1615 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754170AbZASGpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 01:45:42 -0500
+Date: Mon, 19 Jan 2009 07:45:20 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, jarkao2@gmail.com, zbr@ioremap.net,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090119064520.GD12946@1wt.eu>
+References: <20090119030844.GA31941@gondor.apana.org.au> <20090118.192719.198405397.davem@davemloft.net> <20090119061420.GB12946@1wt.eu> <20090118.221908.47032075.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118.221908.47032075.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent wrote:
-> On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
->> parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
->> namespace. This is wrong, we use this pgid to find "struct pid" in the
->> current's namespace. Change parse_options() to use task_pgrp_vnr().
->>
->> Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
->> checkpatch.pl complains about "line over 80 characters", but it should
->> blame the cuurent code, not the patch.
+On Sun, Jan 18, 2009 at 10:19:08PM -0800, David Miller wrote:
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Mon, 19 Jan 2009 07:14:20 +0100
 > 
-> This changelog entry doesn't really have anything that I can use to work
-> out if this change might introduce regressions.
+> > On Sun, Jan 18, 2009 at 07:27:19PM -0800, David Miller wrote:
+> > > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > > Date: Mon, 19 Jan 2009 14:08:44 +1100
+> > > 
+> > > > One thing to note is that Myricom's driver probably uses page
+> > > > frags which means that you're not actually triggering the copy.
+> > 
+> > So does this mean that the corruption problem should still there for
+> > such a driver ? I'm asking before testing, because at these speeds,
+> > validity tests are not that easy ;-)
 > 
-> It would be helpful to me if you could include:
-> 1) A brief statement about what your trying to achieve and why.
-> 2) The reason why task_pgrp_nr() has changed to task_pgrp_vnr() since
-> you made the change (that is someone working on pid namespaces) to
-> task_pgrp_nr().
-> 3) Why you believe this change won't introduce a regression.
+> It ought not to, but it seems that is the case where you
+> saw the original corruptions, so hmmm...
 > 
+> Actually, I see, the myri10ge driver does put up to
+> 64 bytes of the initial packet into the linear area.
+> If the IPV4 + TCP headers are less than this, you will
+> hit the corruption case even with the myri10ge driver.
+> 
+> So everything checks out.
 
-The other thing is also: isn't it high time to remove autofs 3?  It has
-been unmaintained for at least 10 years now.  I should know ;)
+OK, so I will modify my tools in order to perform a few checks.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Thanks!
+Willy
 
