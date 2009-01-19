@@ -1,276 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbZASG1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbZASGgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759392AbZASG1u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 01:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758417AbZASG1k
+	id S1759189AbZASGgQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 01:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbZASGf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 01:27:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53112 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758317AbZASG1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 01:27:38 -0500
-Date: Mon, 19 Jan 2009 17:27:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 19
-Message-Id: <20090119172732.e772d8ea.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD"
+	Mon, 19 Jan 2009 01:35:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59172 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758328AbZASGf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 01:35:58 -0500
+Message-ID: <49741F14.80808@zytor.com>
+Date: Sun, 18 Jan 2009 22:35:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ian Kent <raven@themaw.net>
+CC: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated	task_pgrp_nr()
+References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net>
+In-Reply-To: <1232331602.3136.19.camel@zeus.themaw.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ian Kent wrote:
+> On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
+>> parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
+>> namespace. This is wrong, we use this pgid to find "struct pid" in the
+>> current's namespace. Change parse_options() to use task_pgrp_vnr().
+>>
+>> Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
+>> checkpatch.pl complains about "line over 80 characters", but it should
+>> blame the cuurent code, not the patch.
+> 
+> This changelog entry doesn't really have anything that I can use to work
+> out if this change might introduce regressions.
+> 
+> It would be helpful to me if you could include:
+> 1) A brief statement about what your trying to achieve and why.
+> 2) The reason why task_pgrp_nr() has changed to task_pgrp_vnr() since
+> you made the change (that is someone working on pid namespaces) to
+> task_pgrp_nr().
+> 3) Why you believe this change won't introduce a regression.
+> 
 
-Hi all,
+The other thing is also: isn't it high time to remove autofs 3?  It has
+been unmaintained for at least 10 years now.  I should know ;)
 
-There will be no build results for today's linux-next as our build server
-has failed.
+	-hpa
 
-Changes since 20090116:
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Undropped trees:
-	sched
-	cris
-	nfs
-
-Dropped trees (temporarily):
-	stackprotector (complex conflicts)
-	hid (build problem)
-	quota (build problem)
-	cpu_alloc (build problem)
-	audit (difficult conflicts)
-
-I merged the mfd tree immediately after Linus' tree instead of applying
-the build fix patch it has.
-
-The cris tree lost it conflicts.
-
-The sched tree lost its build problem.
-
-The stackprotector tree gained 2 conflicts against the tip-core tree and
-was dropped.
-
-The cpus4096 tree gained a conflict against the x86 tree.
-
-The timers tree lost its conflict.
-
-The hid tree gained a build failure and was dropped.
-
-The quota tree gained a build failure and was dropped.
-
-The nfs tree lost its build problem.
-
-The ocfs2 tree lost its conflict.
-
-The kmemleak tree gained a conflict against Linus' tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging mfd/for-next
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-CONFLICT (content): Merge conflict in arch/x86/include/asm/pda.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/system.h
-$ git reset --hard
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-$ git reset --hard HEAD^
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-$ git reset --hard HEAD^
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-CONFLICT (content): Merge conflict in mm/vmalloc.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl0HVQACgkQjjKRsyhoI8yY6QCgndBjibzjaIGF/K7AjAwa8vOs
-V6oAn29NTwbW4OiFYH/9Pp53A5WKdvAC
-=uKy9
------END PGP SIGNATURE-----
-
---Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD--
