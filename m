@@ -1,106 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZASS2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZASSaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZASS2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZASS2Z
+	id S1756302AbZASSaW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZASSaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:28:25 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:25704 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZASS2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:28:24 -0500
-Date: Mon, 19 Jan 2009 19:26:54 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrea Arcangeli <andrea@suse.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-Message-ID: <20090119182654.GT30821@kernel.dk>
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal>
+	Mon, 19 Jan 2009 13:30:05 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:43760 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbZASSaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:30:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=i/i4+6gXdqb3oaxUo4Th6MDT5aqJVYHf2tW4WZC2KQ9ZDHdO37yxmdB0wbxTvm3YbI
+         lIerieYZ9GlBuaWabS6JrSADX978LHdcNfjYxcxhxWp04NdycARMuCMQV2C28554nN+Y
+         IF/0syaYlERyaAl6ByKH8h6H3C4a1ZEOLgJDA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118211234.GA4913@Krystal>
+In-Reply-To: <200901171908.28533.arvidjaar@mail.ru>
+References: <200901171908.28533.arvidjaar@mail.ru>
+Date: Mon, 19 Jan 2009 10:30:01 -0800
+Message-ID: <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
+Subject: Re: [2.6.29-rc2 regression] e100: netconsole not functional because 
+	of missing firmware
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: e1000-devel@lists.soutceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18 2009, Mathieu Desnoyers wrote:
-> I looked at the "ls" behavior (while doing a dd) within my LTTng trace
-> to create a fio job file.  The said behavior is appended below as "Part
-> 1 - ls I/O behavior". Note that the original "ls" test case was done
-> with the anticipatory I/O scheduler, which was active by default on my
-> debian system with custom vanilla 2.6.28 kernel. Also note that I am
-> running this on a raid-1, but have experienced the same problem on a
-> standard partition I created on the same machine.
-> 
-> I created the fio job file appended as "Part 2 - dd+ls fio job file". It
-> consists of one dd-like job and many small jobs reading as many data as
-> ls did. I used the small test script to batch run this ("Part 3 - batch
-> test").
-> 
-> The results for the ls-like jobs are interesting :
-> 
-> I/O scheduler        runt-min (msec)   runt-max (msec)
-> noop                       41             10563
-> anticipatory               63              8185
-> deadline                   52             33387
-> cfq                        43              1420
+On Sat, Jan 17, 2009 at 8:08 AM, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> [    2.008509] e100: eth0: e100_request_firmware: Failed to load
+> firmware "e100/d101m_ucode.bin": -22
+> [    2.010461] netconsole: failed to open eth0
+> [    2.010996] netconsole: cleaning up
+>
+> This has been working all the time without requiring any external
+> firmware to be present. Why it suddenly refuses to work now?
 
-Do you have queuing enabled on your drives? You can check that in
-/sys/block/sdX/device/queue_depth. Try setting those to 1 and retest all
-schedulers, would be good for comparison.
+to use netconsole you probably need to set config option
+CONFIG_FIRMWARE_IN_KERNEL=y
 
-raid personalities or dm complicates matters, since it introduces a
-disconnect between 'ls' and the io scheduler at the bottom...
+Hm, I wonder if we couldn't have netconsole=y select
+CONFIG_FIRMWARE_IN_KERNEL in Kconfig
 
-> > As a quick test, could you try and increase the slice_idle to eg 20ms?
-> > Sometimes I've seen timing being slightly off, which makes us miss the
-> > sync window for the ls (in your case) process. Then you get a mix of
-> > async and sync IO all the time, which very much slows down the sync
-> > process.
-> > 
-> 
-> Just to confirm, the quick test you are taking about would be :
-> 
-> ---
->  block/cfq-iosched.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6-lttng/block/cfq-iosched.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/block/cfq-iosched.c	2009-01-18 15:17:32.000000000 -0500
-> +++ linux-2.6-lttng/block/cfq-iosched.c	2009-01-18 15:46:38.000000000 -0500
-> @@ -26,7 +26,7 @@ static const int cfq_back_penalty = 2;
->  static const int cfq_slice_sync = HZ / 10;
->  static int cfq_slice_async = HZ / 25;
->  static const int cfq_slice_async_rq = 2;
-> -static int cfq_slice_idle = HZ / 125;
-> +static int cfq_slice_idle = 20;
->  
->  /*
->   * offset from end of service tree
-> 
-> 
-> It does not make much difference with the standard cfq test :
-> 
-> I/O scheduler        runt-min (msec)   runt-max (msec)
-> cfq (standard)             43              1420
-> cfq (20ms slice_idle)      31              1573
-
-OK, that's good at least!
-
-> So, I guess 1.5s delay to run ls on a directory when the cache is cold
-> with a cfq I/O scheduler is somewhat acceptable, but I doubt the 8, 10
-> and 33s response times for the anticipatory, noop and deadline I/O
-> schedulers are. I wonder why on earth is the anticipatory I/O scheduler
-> activated by default with my kernel given it results in so poor
-> interactive behavior when doing large I/O ?
-
-I see you already found out why :-)
-
--- 
-Jens Axboe
-
+the arguments as to why the firmware was split out of the drivers have
+already been made on this list.  Not that I agree with them, but the
+decision has been made and we're (network devs) going along with it.
