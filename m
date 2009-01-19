@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759857AbZASWLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbZASWNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759857AbZASWLm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 17:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZASWLc
+	id S1759997AbZASWNY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 17:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZASWNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 17:11:32 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:33337 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbZASWLc (ORCPT
+	Mon, 19 Jan 2009 17:13:14 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48598 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752517AbZASWNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 17:11:32 -0500
-Date: Mon, 19 Jan 2009 16:11:30 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
-       hpa@zytor.com, Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-Message-ID: <20090119221130.GB25598@us.ibm.com>
-References: <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com> <20090119193553.GA18170@us.ibm.com> <20090119200420.GA26977@redhat.com> <20090119204839.GA21009@us.ibm.com> <20090119213146.GA31593@redhat.com>
+	Mon, 19 Jan 2009 17:13:13 -0500
+Date: Mon, 19 Jan 2009 23:15:08 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com,
+       trenn@suse.de, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.29-rc2: thinkpad dock -- cdrom vs. s2ram
+Message-ID: <20090119221508.GA2576@elf.ucw.cz>
+References: <20090119202423.GA7070@ucw.cz> <200901192150.59438.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090119213146.GA31593@redhat.com>
+In-Reply-To: <200901192150.59438.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@redhat.com):
-> On 01/19, Serge E. Hallyn wrote:
-> >
-> > Quoting Oleg Nesterov (oleg@redhat.com):
-> > > 
-> > > This is the next patch. This one does
-> > > 
-> > > 	--- CUR/fs/autofs/inode.c~1_AUTOFS	2009-01-12 23:07:46.000000000 +0100
-> > > 	+++ CUR/fs/autofs/inode.c	2009-01-18 06:18:49.000000000 +0100
-> > > 	@@ -78,7 +78,7 @@ static int parse_options(char *options, 
-> > > 	 
-> > > 		*uid = current_uid();
-> > > 		*gid = current_gid();
-> > > 	-	*pgrp = task_pgrp_nr(current);
-> > > 	+	*pgrp = task_pgrp_vnr(current);
+On Mon 2009-01-19 21:50:58, Rafael J. Wysocki wrote:
+> On Monday 19 January 2009, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Ok, that was the one I had looked at earlier (though now I can't find
-> > it).  But that just seems wrong to me.  We should certainly not be
-> > caching a pid_vnr in the kernel.  That is imo incomparably worse than
-> > storing a pid_nr.
+> > In 2.6.29 (and probably earlier) kernels, booting in docking station
+> > results in undocked s2ram failing.
+> > 
+> > Problem seems to be that hda (cdrom in dock) is not deregistered
+> > during undock, and that hda driver loops spitting error messages at
+> > 'too-fast-to-read' rate when suspend with missing hda is attempted.
 > 
-> We do not cache it. We use this pgrp as an argument for find_pid()
-> right after return from parse_options(). And find_pid() uses
-> current->nsproxy->pid_ns. That is why this is bugfix.
+> What driver do you mean exactly?  Old-IDE I would guess.
+> 
+> Does this also happen with a PATA/libata driver?
 
-So it does.  And so it is.
+I guess I'm confused. I tried:
 
-thanks,
--serge
+--- config.ok	2009-01-19 11:40:42.000000000 +0100
++++ ../b-linux/.config	2009-01-19 22:45:03.000000000 +0100
+@@ -1022,7 +1022,7 @@
+ # CONFIG_SATA_SIL24 is not set
+ CONFIG_ATA_SFF=y
+ CONFIG_SATA_SVW=y
+-CONFIG_ATA_PIIX=y
++# CONFIG_ATA_PIIX is not set
+ # CONFIG_SATA_MV is not set
+ # CONFIG_SATA_NV is not set
+ # CONFIG_PDC_ADMA is not set
+@@ -1058,8 +1058,8 @@
+ # CONFIG_PATA_JMICRON is not set
+ # CONFIG_PATA_TRIFLEX is not set
+ # CONFIG_PATA_MARVELL is not set
+-# CONFIG_PATA_MPIIX is not set
+-# CONFIG_PATA_OLDPIIX is not set
++CONFIG_PATA_MPIIX=y
++CONFIG_PATA_OLDPIIX=y
+ # CONFIG_PATA_NETCELL is not set
+ # CONFIG_PATA_NINJA32 is not set
+ # CONFIG_PATA_NS87410 is not set
+
+...but cdrom is still detected as hda.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
