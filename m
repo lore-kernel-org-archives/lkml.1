@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbZASGP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbZASGQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbZASGP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 01:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbZASGOz
+	id S1759100AbZASGQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 01:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZASGQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 01:14:55 -0500
-Received: from 1wt.eu ([62.212.114.60]:1603 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbZASGOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 01:14:52 -0500
-Date: Mon, 19 Jan 2009 07:11:21 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, jarkao2@gmail.com, zbr@ioremap.net,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
+	Mon, 19 Jan 2009 01:16:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41522
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756964AbZASGQC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 01:16:02 -0500
+Date: Sun, 18 Jan 2009 22:16:03 -0800 (PST)
+Message-Id: <20090118.221603.177818343.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: w@1wt.eu, jarkao2@gmail.com, zbr@ioremap.net, dada1@cosmosbay.com,
+       ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
 Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090119061120.GA12946@1wt.eu>
-References: <20090115234408.GA1693@1wt.eu> <20090115.155434.206643894.davem@davemloft.net> <20090119004206.GA10396@1wt.eu> <20090118.192815.41774176.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090115.153449.204259387.davem@davemloft.net>
+References: <20090115.152608.89323697.davem@davemloft.net>
+	<20090115233205.GA8474@gondor.apana.org.au>
+	<20090115.153449.204259387.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118.192815.41774176.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 07:28:15PM -0800, David Miller wrote:
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Mon, 19 Jan 2009 01:42:06 +0100
-> 
-> > Hi guys,
-> > 
-> > On Thu, Jan 15, 2009 at 03:54:34PM -0800, David Miller wrote:
-> > > From: Willy Tarreau <w@1wt.eu>
-> > > Date: Fri, 16 Jan 2009 00:44:08 +0100
-> > > 
-> > > > And BTW feel free to add my Tested-by if you want in case you merge
-> > > > this fix.
-> > > 
-> > > Done, thanks Willy.
-> > 
-> > Just for the record, I've now re-integrated those changes in a test kernel
-> > that I booted on my 10gig machines. I have updated my user-space code in
-> > haproxy to run a new series of tests. Eventhough there is a memcpy(), the
-> > results are EXCELLENT (on a C2D 2.66 GHz using Myricom's Myri10GE NICs) :
-> > 
-> >   - 4.8 Gbps at 100% CPU using MTU=1500 without LRO
-> >     (3.2 Gbps at 100% CPU without splice)
-> > 
-> >   - 9.2 Gbps at 50% CPU using MTU=1500 with LRO
-> > 
-> >   - 10 Gbps at 20% CPU using MTU=9000 without LRO (7 Gbps at 100% CPU without
-> >     splice)
-> > 
-> >   - 10 Gbps at 15% CPU using MTU=9000 with LRO
-> 
-> Thanks for the numbers.
-> 
-> We can almost certainly do a lot better, so if you have the time and
-> can get some oprofile dumps for these various cases that would be
-> useful to us.
+From: David Miller <davem@davemloft.net>
+Date: Thu, 15 Jan 2009 15:34:49 -0800 (PST)
 
-No problem, of course. It's just a matter of time, but if we can push
-the numbers further, let's try.
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Fri, 16 Jan 2009 10:32:05 +1100
+> 
+> > On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
+> > > +static inline struct page *linear_to_page(struct page *page, unsigned int len,
+> > > +					  unsigned int offset)
+> > > +{
+> > > +	struct page *p = alloc_pages(GFP_KERNEL, 0);
+> > > +
+> > > +	if (!p)
+> > > +		return NULL;
+> > > +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
+> > 
+> > This won't work very well if skb->head is longer than a page.
+> > 
+> > We'll need to divide it up into individual pages.
+> 
+> Oh yes the same bug I pointed out the other day.
+> 
+> But Willy can test this patch as-is, since he is not using
+> jumbo frames in linear SKBs.
 
-Regards,
-Willy
+Actually, Herbert, it turns out this case should be OK.
 
+Look a level or two higher, at __splice_segment(), it even has a
+comment :-)
+
+--------------------
+	do {
+		unsigned int flen = min(*len, plen);
+
+		/* the linear region may spread across several pages  */
+		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
+
+		if (spd_fill_page(spd, page, flen, poff, skb, linear))
+			return 1;
+
+		__segment_seek(&page, &poff, &plen, flen);
+		*len -= flen;
+
+	} while (*len && plen);
+--------------------
+
+That code should work and do what we need.
