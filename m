@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbZASVb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbZASVeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbZASVb0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZASVbR
+	id S1758628AbZASVeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZASVeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:31:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55136 "EHLO mx2.mail.elte.hu"
+	Mon, 19 Jan 2009 16:34:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41179 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753339AbZASVbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:31:16 -0500
-Date: Mon, 19 Jan 2009 22:31:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: WARNING: at drivers/dma/dmaengine.c:352
-	dma_issue_pending_all+0x77/0x15d()
-Message-ID: <20090119213106.GA9648@elte.hu>
+	id S1752684AbZASVeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:34:00 -0500
+Date: Mon, 19 Jan 2009 22:31:46 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
+       hpa@zytor.com, Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090119213146.GA31593@redhat.com>
+References: <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com> <20090119193553.GA18170@us.ibm.com> <20090119200420.GA26977@redhat.com> <20090119204839.GA21009@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090119204839.GA21009@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3897]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/19, Serge E. Hallyn wrote:
+>
+> Quoting Oleg Nesterov (oleg@redhat.com):
+> > 
+> > This is the next patch. This one does
+> > 
+> > 	--- CUR/fs/autofs/inode.c~1_AUTOFS	2009-01-12 23:07:46.000000000 +0100
+> > 	+++ CUR/fs/autofs/inode.c	2009-01-18 06:18:49.000000000 +0100
+> > 	@@ -78,7 +78,7 @@ static int parse_options(char *options, 
+> > 	 
+> > 		*uid = current_uid();
+> > 		*gid = current_gid();
+> > 	-	*pgrp = task_pgrp_nr(current);
+> > 	+	*pgrp = task_pgrp_vnr(current);
+> 
+> Ok, that was the one I had looked at earlier (though now I can't find
+> it).  But that just seems wrong to me.  We should certainly not be
+> caching a pid_vnr in the kernel.  That is imo incomparably worse than
+> storing a pid_nr.
 
-FYI, i'm getting this on a testbox, on v2.6.29-rc2:
+We do not cache it. We use this pgrp as an argument for find_pid()
+right after return from parse_options(). And find_pid() uses
+current->nsproxy->pid_ns. That is why this is bugfix.
 
-[   78.930438] ------------[ cut here ]------------
-[   78.932162] ADDRCONF(NETDEV_UP): eth2: link is not ready
-[   78.940748] WARNING: at drivers/dma/dmaengine.c:352 dma_issue_pending_all+0x77/0x15d()
-[   78.948876] Hardware name: P4DC6
-[   78.952232] client called dma_issue_pending_all without a referencePid: 0, comm: swapper Not tainted 2.6.29-rc2-tip #1
-[   78.963176] Call Trace:
-[   78.965747]  [<c0177cc9>] warn_slowpath+0x90/0xa6
-[   78.970578]  [<c01a7266>] ? __lock_acquire+0x6f2/0x748
-[   78.975835]  [<c01a56a9>] ? mark_held_locks+0x45/0x5c
-[   78.981012]  [<c0d35100>] ? napi_complete+0x7a/0x97
-[   78.986016]  [<c01a587b>] ? trace_hardirqs_on_caller+0x112/0x167
-[   78.992139]  [<c01a58db>] ? trace_hardirqs_on+0xb/0xd
-[   78.997311]  [<c075e8d4>] ? e1000_clean+0x5a6/0x5f2
-[   79.002306]  [<c0d06b34>] dma_issue_pending_all+0x77/0x15d
-[   79.007912]  [<c0d358ea>] net_rx_action+0x2cc/0x2e6
-[   79.012911]  [<c017f69a>] __do_softirq+0xbb/0x1cf
-[   79.017738]  [<c017f5df>] ? __do_softirq+0x0/0x1cf
-[   79.022644]  <IRQ>  [<c01cadc5>] ? handle_fasteoi_irq+0x0/0x124
-[   79.028778]  [<c017f585>] ? irq_exit+0x50/0xaa
-[   79.033340]  [<c012aade>] ? do_IRQ+0x119/0x12f
-[   79.037901]  [<c0127d8c>] ? common_interrupt+0x2c/0x34
-[   79.043163]  [<c01a00d8>] ? tick_broadcast_oneshot_control+0x10c/0x42e
-[   79.049807]  [<c0152398>] ? native_safe_halt+0xa/0xc
-[   79.054896]  [<c012f7c1>] ? default_idle+0xbf/0xd2
-[   79.059806]  [<c0125765>] ? cpu_idle+0x16a/0x1a4
-[   79.064564]  [<c0f4f41f>] ? rest_init+0x53/0x55
-[   79.069210] ---[ end trace 230444e9b1c5e1e1 ]---
-[   79.074319] e1000: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[   79.083245] ADDRCONF(NETDEV_CHANGE): eth2: link becomes ready
+> Can we just jump straight to caching the struct pid?
 
-the driver that just ran was e1000.
+Of course it is ugly to store pid_t and then call find_pid(),
+I don't understand why the code was written this way. But I
+am not going to cleanup this code ;)
 
-Btw., this format string:
+(note also that the 2nd patch I sent for autofs4 does not use
+ pid_t at all).
 
-        WARN_ONCE(dmaengine_ref_count == 0,
-                  "client called %s without a reference", __func__);
+> > passing pid_t's in from userspace uses current namespace, with
+> > or without the patch.
+>
+> Which makes sense on the one hand, but OTOH could be confusing
+> if as I requested we print out init_pid_ns values.  (sigh)
 
-is missing a \n.
+But it is not possible to pass the global pid_t from within
+the subnamespace via "pgrp=" option, automount (or whatever)
+just can't know it when it runs in the subnamespace.
 
-	Ingo
+> Yes... would it be overkill to just print both?
+
+perharps, I don't know...
+
+But this is imho a bit off-topic, we can change the debugging
+output later any way we like.
+
+Oleg.
+
