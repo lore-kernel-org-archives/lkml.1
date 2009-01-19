@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZASKJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbZASKKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbZASKJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 05:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbZASKJW
+	id S1759546AbZASKKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 05:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbZASKKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 05:09:22 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:55170 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756897AbZASKJV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 05:09:21 -0500
-Date: Mon, 19 Jan 2009 11:09:16 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 22/85] [PATCH 02/44] [CVE-2009-0029] Convert all system
-	calls to return a long
-Message-ID: <20090119100916.GA4667@osiris.boeblingen.de.ibm.com>
-References: <20090115215237.906089480@mini.kroah.org> <20090115215938.GW17227@kroah.com> <20090118221723.GA3852@infradead.org> <20090118235053.GB18274@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090118235053.GB18274@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 19 Jan 2009 05:10:36 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46711 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757277AbZASKKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 05:10:36 -0500
+Date: Mon, 19 Jan 2009 21:10:31 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Howells <dhowells@redhat.com>
+Cc: James Morris <jmorris@namei.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] creds: suppress warning in get_cred
+Message-Id: <20090119211031.934b4c19.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 03:50:53PM -0800, Greg KH wrote:
-> On Sun, Jan 18, 2009 at 05:17:23PM -0500, Christoph Hellwig wrote:
-> > Umm, where was this whole stuff discussed?
-> 
-> I really have no idea, I'm assuming linux-arch?
+This is the usual way to force a conversion from a const pointer to a
+non-const one and gets rid of this warning:
 
-It was discussed off-list with Linus, Andrew and all arch maintainers.
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards qualifiers from pointer target type
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/cred.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index 3282ee4..ed38227 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -12,6 +12,7 @@
+ #ifndef _LINUX_CRED_H
+ #define _LINUX_CRED_H
+ 
++#include <linux/types.h>
+ #include <linux/capability.h>
+ #include <linux/key.h>
+ #include <asm/atomic.h>
+@@ -185,7 +186,7 @@ static inline struct cred *get_new_cred(struct cred *cred)
+  */
+ static inline const struct cred *get_cred(const struct cred *cred)
+ {
+-	return get_new_cred((struct cred *) cred);
++	return get_new_cred((struct cred *)(uintptr_t)cred);
+ }
+ 
+ /**
+-- 
+1.6.0.5
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
