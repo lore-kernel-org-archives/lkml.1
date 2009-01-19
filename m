@@ -1,155 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZASSja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZASSks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757814AbZASSja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbZASSir
+	id S1757262AbZASSks (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZASSkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:38:47 -0500
-Received: from mail-bw0-f18.google.com ([209.85.218.18]:65275 "EHLO
-	mail-bw0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756923AbZASSip (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:38:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=iqSNjNr4lU9zqP/yeRuKz0gY4XSTvqtuGHQIhIwmFuiOvXmUy4FmrhM2vRCwYfDMsT
-         FSH8t+rCBkHdBhuY6hrzwDv3Y2kRm00UOdLFfHadjE1jiH8lX4ghyOpX6dbo40BcS6XH
-         OIH/cL5ju3cvWXK97QRbPmQSJKq7AQSN+B+7g=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/2] ide: remove pciirq argument from ide_pci_setup_ports()
-Date: Mon, 19 Jan 2009 19:30:32 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 19 Jan 2009 13:40:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42870 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752391AbZASSkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:40:35 -0500
+Subject: RE: Mainline kernel OLTP performance update
+From: Steven Rostedt <srostedt@redhat.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: "Ma, Chinang" <chinang.ma@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <1232388291.6521.140.camel@think.oraclecorp.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <1231986439.21980.54.camel@localhost.localdomain>
+	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
+	 <1232388291.6521.140.camel@think.oraclecorp.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 19 Jan 2009 13:37:39 -0500
+Message-Id: <1232390259.25783.5.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901191930.33078.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove pciirq argument from ide_pci_setup_ports()
+(added Rusty)
 
-* Set ->irq explicitly in cs5520.c.
+On Mon, 2009-01-19 at 13:04 -0500, Chris Mason wrote:
+> On Thu, 2009-01-15 at 00:11 -0700, Ma, Chinang wrote:
+> > >> > > > >
+> > >> > > > > Linux OLTP Performance summary
+> > >> > > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
+> > >iowait%
+> > >> > > > > 2.6.24.2                1.000   21969   43425   76   24     0
+> > >0
+> > >> > > > > 2.6.27.2                0.973   30402   43523   74   25     0
+> > >1
+> > >> > > > > 2.6.29-rc1              0.965   30331   41970   74   26     0
+> > >0
+> > >> >
+> > >> > > But the interrupt rate went through the roof.
+> > >> >
+> > >> > Yes.  I forget why that was; I'll have to dig through my archives for
+> > >> > that.
+> > >>
+> > >> Oh.  I'd have thought that this alone could account for 3.5%.
+> 
+> A later email indicated the reschedule interrupt count doubled since
+> 2.6.24, and so I poked around a bit at the causes of resched_task.
+> 
+> I think the -rt version of check_preempt_equal_prio has gotten much more
+> expensive since 2.6.24.
+> 
+> I'm sure these changes were made for good reasons, and this workload may
+> not be a good reason to change it back.  But, what does the patch below
+> do to performance on 2.6.29-rcX?
+> 
+> -chris
+> 
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index 954e1a8..bbe3492 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
+> struct task_struct *p, int sync
+>  		resched_task(rq->curr);
+>  		return;
+>  	}
+> +	return;
+>  
+>  #ifdef CONFIG_SMP
+>  	/*
 
-* Remove irq argument from ide_hw_configure().
+That should not cause much of a problem if the scheduling task is not
+pinned to an CPU. But!!!!!
 
-* Remove pciirq argument from ide_pci_setup_ports().
+A recent change makes it expensive:
 
-There should be no functional changes caused by this patch.
+commit 24600ce89a819a8f2fb4fd69fd777218a82ade20
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Tue Nov 25 02:35:13 2008 +1030
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-on top of http://lkml.org/lkml/2009/1/19/163
+    sched: convert check_preempt_equal_prio to cpumask_var_t.
+    
+    Impact: stack reduction for large NR_CPUS
 
- drivers/ide/cs5520.c    |    3 ++-
- drivers/ide/setup-pci.c |   13 +++++--------
- include/linux/ide.h     |    2 +-
- 3 files changed, 8 insertions(+), 10 deletions(-)
 
-Index: b/drivers/ide/cs5520.c
-===================================================================
---- a/drivers/ide/cs5520.c
-+++ b/drivers/ide/cs5520.c
-@@ -133,7 +133,8 @@ static int __devinit cs5520_init_one(str
- 	 *	do all the device setup for us
- 	 */
- 
--	ide_pci_setup_ports(dev, d, 14, &hw[0], &hws[0]);
-+	ide_pci_setup_ports(dev, d, &hw[0], &hws[0]);
-+	hw[0].irq = 14;
- 
- 	return ide_host_add(d, hws, NULL);
- }
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -305,7 +305,6 @@ static int ide_pci_check_iomem(struct pc
-  *	@dev: PCI device holding interface
-  *	@d: IDE port info
-  *	@port: port number
-- *	@irq: PCI IRQ
-  *	@hw: hw_regs_t instance corresponding to this port
-  *
-  *	Perform the initial set up for the hardware interface structure. This
-@@ -316,7 +315,7 @@ static int ide_pci_check_iomem(struct pc
-  */
- 
- static int ide_hw_configure(struct pci_dev *dev, const struct ide_port_info *d,
--			    unsigned int port, int irq, hw_regs_t *hw)
-+			    unsigned int port, hw_regs_t *hw)
+
+which has:
+
+ static void check_preempt_equal_prio(struct rq *rq, struct task_struct
+*p)
  {
- 	unsigned long ctl = 0, base = 0;
+-       cpumask_t mask;
++       cpumask_var_t mask;
  
-@@ -344,7 +343,6 @@ static int ide_hw_configure(struct pci_d
- 	}
+        if (rq->curr->rt.nr_cpus_allowed == 1)
+                return;
  
- 	memset(hw, 0, sizeof(*hw));
--	hw->irq = irq;
- 	hw->dev = &dev->dev;
- 	hw->chipset = d->chipset ? d->chipset : ide_pci;
- 	ide_std_init_ports(hw, base, ctl | 2);
-@@ -448,7 +446,6 @@ out:
-  *	ide_pci_setup_ports	-	configure ports/devices on PCI IDE
-  *	@dev: PCI device
-  *	@d: IDE port info
-- *	@pciirq: IRQ line
-  *	@hw: hw_regs_t instances corresponding to this PCI IDE device
-  *	@hws: hw_regs_t pointers table to update
-  *
-@@ -462,7 +459,7 @@ out:
-  */
- 
- void ide_pci_setup_ports(struct pci_dev *dev, const struct ide_port_info *d,
--			 int pciirq, hw_regs_t *hw, hw_regs_t **hws)
-+			 hw_regs_t *hw, hw_regs_t **hws)
- {
- 	int channels = (d->host_flags & IDE_HFLAG_SINGLE) ? 1 : 2, port;
- 	u8 tmp;
-@@ -481,7 +478,7 @@ void ide_pci_setup_ports(struct pci_dev 
- 			continue;	/* port not enabled */
- 		}
- 
--		if (ide_hw_configure(dev, d, port, pciirq, hw + port))
-+		if (ide_hw_configure(dev, d, port, hw + port))
- 			continue;
- 
- 		*(hws + port) = hw + port;
-@@ -549,7 +546,7 @@ int ide_pci_init_one(struct pci_dev *dev
- 	if (ret < 0)
- 		goto out;
- 
--	ide_pci_setup_ports(dev, d, 0, &hw[0], &hws[0]);
-+	ide_pci_setup_ports(dev, d, &hw[0], &hws[0]);
- 
- 	host = ide_host_alloc(d, hws);
- 	if (host == NULL) {
-@@ -595,7 +592,7 @@ int ide_pci_init_two(struct pci_dev *dev
- 		if (ret < 0)
- 			goto out;
- 
--		ide_pci_setup_ports(pdev[i], d, 0, &hw[i*2], &hws[i*2]);
-+		ide_pci_setup_ports(pdev[i], d, &hw[i*2], &hws[i*2]);
- 	}
- 
- 	host = ide_host_alloc(d, hws);
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1263,7 +1263,7 @@ static inline int ide_pci_is_in_compatib
- 	return 0;
- }
- 
--void ide_pci_setup_ports(struct pci_dev *, const struct ide_port_info *, int,
-+void ide_pci_setup_ports(struct pci_dev *, const struct ide_port_info *,
- 			 hw_regs_t *, hw_regs_t **);
- void ide_setup_pci_noise(struct pci_dev *, const struct ide_port_info *);
- 
+-       if (p->rt.nr_cpus_allowed != 1
+-           && cpupri_find(&rq->rd->cpupri, p, &mask))
++       if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
+                return;
+
+
+
+
+check_preempt_equal_prio is in a scheduling hot path!!!!!
+
+WTF are we allocating there for?
+
+-- Steve
+
+
+
