@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZASVgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZASVgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbZASVgL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZASVfy
+	id S1755132AbZASVgc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZASVgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:35:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53376 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752526AbZASVfx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:35:53 -0500
-Date: Mon, 19 Jan 2009 21:31:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
-Message-ID: <20090119213101.798fe1cd@lxorguk.ukuu.org.uk>
-In-Reply-To: <4974CEC5.9050402@ru.mvista.com>
-References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain>
-	<20090119130322.24745.76137.sendpatchset@localhost.localdomain>
-	<49748B95.9080105@ru.mvista.com>
-	<200901191523.15240.bzolnier@gmail.com>
-	<49748E43.4030009@ru.mvista.com>
-	<20090119173701.13fd24c6@lxorguk.ukuu.org.uk>
-	<4974C030.5020509@ru.mvista.com>
-	<20090119183607.5ee804e1@lxorguk.ukuu.org.uk>
-	<4974CA81.1050506@ru.mvista.com>
-	<20090119184951.35a52184@lxorguk.ukuu.org.uk>
-	<4974CEC5.9050402@ru.mvista.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 Jan 2009 16:36:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39743 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755702AbZASVgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:36:02 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
+Date: Mon, 19 Jan 2009 22:35:22 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Jeff Garzik <jeff@garzik.org>, Frans Pop <elendil@planet.nl>,
+       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081104062734.GA4420@havoc.gtf.org> <200901192054.55536.rjw@sisk.pl> <20090119212428.GB6194@nowhere>
+In-Reply-To: <20090119212428.GB6194@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901192235.23677.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm afraid you are the one who is wrong. The IDE layer is duplicating a
-> > generic level of indirection with its own code - purely because IDE
-> > pre-dates that core functionality. The whole IDE layer indirection can go
-> > away because Linux has caught up with the needs of the IDE layer.
+On Monday 19 January 2009, Frederic Weisbecker wrote:
+> On Mon, Jan 19, 2009 at 08:54:54PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Introduce boolean function system_entering_hibernation() returning
+> > 'true' during the last phase of hibernation, in which devices are
+> > being put into low power states and the sleep state (for example,
+> > ACPI S4) is finally entered.
+> > 
+> > Some device drivers need such a function to check if the system is
+> > in the final phase of hibernation.  In particular, some SATA drivers
+> > are going to use it for blacklisting systems in which the disks
+> > should not be spun down during the last phase of hibernation (the
+> > BIOS will do that anyway).
+> >
 > 
->     What IDE indirection you're talking about anyway?
+> Hi Rafael,
+> 
+> Why not using the power event notifier?
 
-As I said earlier ide_mm_inb etc via the function pointers tf_inb/tf_outb
-etc.
+I'm not sure what you mean exactly, care to elaborate?
 
-Given how small those functions are it might even be worth rolling them
-into two different versions of the functions like ide_tf_read as surely
-it costs more to call them (in size) than to inline the two for those
-functions?
+Anyway, however, this is a pretty old patch series and I'm not very much
+interested in reworking it once again.  If you think it can be made better,
+please go on. :-)
+
+Thanks,
+Rafael
