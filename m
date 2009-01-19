@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbZASTww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZASUBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbZASTww (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZASTwk
+	id S1756195AbZASUBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 15:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZASUAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:52:40 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:60719 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752624AbZASTwj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:52:39 -0500
-Message-ID: <4974DA27.90709@ru.mvista.com>
-Date: Mon, 19 Jan 2009 22:53:11 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+	Mon, 19 Jan 2009 15:00:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39378 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752253AbZASUAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 15:00:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 0/6] Hibernation/poweroff quirks (was: Re: [git patches] libata hibernation fixes)
+Date: Mon, 19 Jan 2009 20:53:49 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Frans Pop <elendil@planet.nl>, tj@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
-References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain> <4974CA81.1050506@ru.mvista.com> <20090119184951.35a52184@lxorguk.ukuu.org.uk> <200901192012.51422.bzolnier@gmail.com>
-In-Reply-To: <200901192012.51422.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <20081104062734.GA4420@havoc.gtf.org> <200901182125.04060.rjw@sisk.pl> <49739371.5030107@garzik.org>
+In-Reply-To: <49739371.5030107@garzik.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200901192053.50831.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Sunday 18 January 2009, Jeff Garzik wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday 18 January 2009, Frans Pop wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> There is a name conflict with a change applied after this patchset had
+> >>> been created.  The appended patch fixes it for me.
+> >> [...]
+> >>> @@ -483,7 +483,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
+> >>>         const struct dmi_system_id *d; 
+> >>>
+> >>>         for (d = list; d->ident; d++)
+> >>> -               if (dmi_match(d))
+> >>> +               if (dmi_matches(d))
+> >>>                         return d;
+> >> I get two warnings when compiling your patch with this correction on top:
+> > 
+> > Hm, there were more patches than one, so I'm not sure.  When I apply all of
+> > them, I don't see these error, but perhaps I should resend the entire series.
+> > Will do tomorrow.
+> 
+> That would be useful...  I was planning to regenerate the series, but 
+> this would save time.
 
->>>    Tried looking at how in*()/out*() are defined on x86?
+The rebased series follows.
 
->>Tried looking at how ide_mm_inb is defined on x86
+Thanks,
+Rafael
 
->>>>It's already making function calls, without the benefit of inlining and
-
->>>    I'm afraid you're wrong here.
-
->>I'm afraid you are the one who is wrong. The IDE layer is duplicating a
->>generic level of indirection with its own code - purely because IDE
->>pre-dates that core functionality. The whole IDE layer indirection can go
->>away because Linux has caught up with the needs of the IDE layer.
-
-> I wish it would be so simple as I would have removed the said indirection
-> long time ago.  Unfortunately:
-
-> - not all archs support ioread() & co.
-
-> - there is still issue with cache aliasing on some CPUs
-
-    Yep, look at MIPS for an example.
-
-> Thanks,
-> Bart
-
-MBR, Sergei
