@@ -1,277 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZASJD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbZASJVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbZASJD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 04:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZASJDl
+	id S1757607AbZASJVQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 04:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZASJU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 04:03:41 -0500
-Received: from xi.wantstofly.org ([80.101.37.227]:38996 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754874AbZASJDi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 04:03:38 -0500
-X-Greylist: delayed 1455 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jan 2009 04:03:38 EST
-Date: Mon, 19 Jan 2009 09:39:21 +0100
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090119083921.GA17124@xi.wantstofly.org>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106185012.GA30322@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090106185012.GA30322@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 19 Jan 2009 04:20:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33323 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753417AbZASJU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 04:20:57 -0500
+Message-ID: <497445B6.7030606@redhat.com>
+Date: Mon, 19 Jan 2009 11:19:50 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
+References: <1232287474.3130.19.camel@localhost.localdomain> <20090118185635.GA30514@elte.hu>
+In-Reply-To: <20090118185635.GA30514@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 07:50:12PM +0100, Willy Tarreau wrote:
+Ingo Molnar wrote:
+> (Avi Cc:-ed)
+>
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+>
+>   
+>>       headers_check fix: linux/kvm.h
+>>     
+>
+>   
+>> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+>> index 5715f19..5d004bc 100644
+>> --- a/include/linux/kvm.h
+>> +++ b/include/linux/kvm.h
+>> @@ -58,12 +58,14 @@ struct kvm_irqchip {
+>>  	__u32 pad;
+>>          union {
+>>  		char dummy[512];  /* reserving space */
+>> +#ifdef __KERNEL__
+>>  #ifdef CONFIG_X86
+>>  		struct kvm_pic_state pic;
+>>  #endif
+>>  #if defined(CONFIG_X86) || defined(CONFIG_IA64)
+>>  		struct kvm_ioapic_state ioapic;
+>>  #endif
+>> +#endif /* __KERNEL__ */
+>>  	} chip;
+>>  };
+>>     
+>
+> Avi, does user-space need the kvm_irqchip definition from this header? If 
+> not then it would be cleaner to mark this whole structure as #ifdef 
+> __KERNEL__.
+>
+>   
 
-> > Thanks a lot for the test application, it will greatly help to resolve
-> > this issue.
-> 
-> I figured it was an absolute necessity. The original code in my proxy is in
-> an experimental state and far too hard to debug for these purposes. It was
-> enough to detect the problem, but I could run a lot more tests with this
-> small test app ! An who know, maybe it will serve as an example for
-> non-blocking splice ;-)
+It does.  This patch will break userspace.
 
-:-)
+Doesn't 'make headers_install' unifder the CONFIG_ stuff?
 
-Just to throw some more (hacky) example code into the pool, below is
-an echo server that I hacked up to test nonblocking splice().  (You'll
-need sf.net/projects/libivykis to use it.)  I also have a splice()
-discard server and a patch to my intercept-connection-via-iptables-and-
-forward-it-to-a-remote-SOCKS5-server-to-deal-with-crappy-VPNs app to
-use splice() somewhere.
+>> @@ -384,18 +386,24 @@ struct kvm_trace_rec {
+>>  #define KVM_CAP_MP_STATE 14
+>>  #define KVM_CAP_COALESCED_MMIO 15
+>>  #define KVM_CAP_SYNC_MMU 16  /* Changes to host mmap are reflected in guest */
+>> +#ifdef __KERNEL__
+>>  #if defined(CONFIG_X86)||defined(CONFIG_IA64)
+>>  #define KVM_CAP_DEVICE_ASSIGNMENT 17
+>>  #endif
+>> +#endif /* __KERNEL__ */
+>>  #define KVM_CAP_IOMMU 18
+>> +#ifdef __KERNEL__
+>>  #if defined(CONFIG_X86)
+>>  #define KVM_CAP_DEVICE_MSI 20
+>>  #endif
+>> +#endif /* __KERNEL__ */
+>>  /* Bug in KVM_SET_USER_MEMORY_REGION fixed: */
+>>  #define KVM_CAP_DESTROY_MEMORY_REGION_WORKS 21
+>> +#ifdef __KERNEL__
+>>  #if defined(CONFIG_X86)
+>>  #define KVM_CAP_USER_NMI 22
+>>  #endif
+>> +#endif /* __KERNEL__ */
+>>     
+>
+> likewise, are these bits really used by user-space KVM bits? If not then 
+> the whole thing could go into an #ifdef __KERNEL__ block.
+>   
 
-My main annoyances with splice(2) are/were:
+They are.  This bits advertise to userspace what features kvm supports, 
+both compile- and run-time.
 
-1. -EAGAIN return on splice from socket/pipe to socket/pipe doesn't
-   directly tell you whether the source ran out of data or the
-   destination can't accept more data, which means you can't e.g. use
-   epoll in edge triggered mode without jumping through some minor
-   number of extra hoops.  (For a pipe you can keep track of how many
-   bytes are in it by hand, but for a socket->pipe splice -EAGAIN return
-   you'll have to assume that the pipe is full if there are >0 bytes in
-   it.)
+-- 
+error compiling committee.c: too many arguments to function
 
-2. Because of (1), and because when splicing from a socket to a pipe
-   it returns after the first bit of data (you mentioned this as well),
-   you don't know at that point whether your pipe is full or not.
-
-3. Always returns -EAGAIN even if there was a FIN or error on the
-   source socket.  (Now fixed.)
-
-
-
-#define _GNU_SOURCE
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <iv.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <signal.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-
-struct connection {
-	struct iv_fd sock;
-	int pfd[2];
-	int pipe_bytes;
-	int saw_fin;
-};
-
-
-static void conn_kill(struct connection *conn)
-{
-	iv_unregister_fd(&conn->sock);
-	close(conn->sock.fd);
-	close(conn->pfd[0]);
-	close(conn->pfd[1]);
-	free(conn);
-}
-
-static void conn_pollin(void *_conn);
-static void conn_pollout(void *_conn);
-static void conn_pollerr(void *_conn);
-
-static void conn_pollin(void *_conn)
-{
-	struct connection *conn = (struct connection *)_conn;
-	int ret;
-
-	while (1) {
-		ret = splice(conn->sock.fd, NULL, conn->pfd[1], NULL,
-			     1048576, SPLICE_F_NONBLOCK);
-		if (ret <= 0)
-			break;
-
-		if (conn->pipe_bytes == 0)
-			iv_fd_set_handler_out(&conn->sock, conn_pollout);
-		conn->pipe_bytes += ret;
-	}
-
-	if (ret == 0) {
-		conn->saw_fin = 1;
-		iv_fd_set_handler_in(&conn->sock, NULL);
-		if (conn->pipe_bytes == 0) {
-			shutdown(conn->sock.fd, SHUT_WR);
-			conn_kill(conn);
-		}
-		return;
-	}
-
-	if (errno == EAGAIN && conn->pipe_bytes > 0) {
-		int bytes_sock = 1;
-
-		ioctl(conn->sock.fd, FIONREAD, &bytes_sock);
-		if (bytes_sock > 0)
-			iv_fd_set_handler_in(&conn->sock, NULL);
-	} else if (errno != EAGAIN) {
-		conn_kill(conn);
-	}
-}
-
-static void conn_pollout(void *_conn)
-{
-	struct connection *conn = (struct connection *)_conn;
-	int ret;
-
-	if (!conn->pipe_bytes) {
-		fprintf(stderr, "conn_pollout: no pipe bytes!\n");
-		abort();
-	}
-
-	do {
-		ret = splice(conn->pfd[0], NULL, conn->sock.fd, NULL,
-			     conn->pipe_bytes, 0);
-		if (ret <= 0)
-			break;
-
-		conn->pipe_bytes -= ret;
-		if (!conn->saw_fin)
-			iv_fd_set_handler_in(&conn->sock, conn_pollin);
-	} while (conn->pipe_bytes);
-
-	if (ret == 0) {
-		fprintf(stderr, "pollout: splice returned zero!\n");
-		abort();
-	}
-
-	if (errno == EAGAIN && conn->pipe_bytes == 0) {
-		iv_fd_set_handler_out(&conn->sock, NULL);
-		if (conn->saw_fin) {
-			shutdown(conn->sock.fd, SHUT_WR);
-			conn_kill(conn);
-		}
-	} else if (errno != EAGAIN) {
-		conn_kill(conn);
-	}
-}
-
-static void conn_pollerr(void *_conn)
-{
-	struct connection *conn = (struct connection *)_conn;
-	socklen_t len;
-	int ret;
-
-	len = sizeof(ret);
-	if (getsockopt(conn->sock.fd, SOL_SOCKET, SO_ERROR, &ret, &len) < 0) {
-		fprintf(stderr, "pollerr: error %d while "
-				"getsockopt(SO_ERROR)\n", errno);
-		abort();
-	}
-
-	if (ret == 0) {
-		fprintf(stderr, "pollerr: no error?!\n");
-		abort();
-	}
-
-	conn_kill(conn);
-}
-
-
-static struct iv_fd listening_socket;
-
-static void got_connection(void *_dummy)
-{
-	struct sockaddr_in addr;
-	struct connection *conn;
-	socklen_t addrlen;
-	int ret;
-
-	addrlen = sizeof(addr);
-	ret = accept(listening_socket.fd, (struct sockaddr *)&addr, &addrlen);
-	if (ret < 0)
-		return;
-
-	conn = malloc(sizeof(*conn));
-	if (conn == NULL) {
-		fprintf(stderr, "memory squeeze\n");
-		abort();
-	}
-
-	if (pipe(conn->pfd) < 0) {
-		fprintf(stderr, "pipe squeeze\n");
-		abort();
-	}
-
-	INIT_IV_FD(&conn->sock);
-	conn->sock.fd = ret;
-	conn->sock.cookie = (void *)conn;
-	conn->sock.handler_in = conn_pollin;
-	conn->sock.handler_err = conn_pollerr;
-	iv_register_fd(&conn->sock);
-
-	conn->pipe_bytes = 0;
-	conn->saw_fin = 0;
-}
-
-static int open_listening_socket(void)
-{
-	struct sockaddr_in addr;
-	int sock;
-
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock < 0) {
-		perror("socket");
-		return 1;
-	}
-
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	addr.sin_port = htons(6969);
-	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		perror("bind");
-		return 1;
-	}
-
-	listen(sock, 5);
-
-	INIT_IV_FD(&listening_socket);
-	listening_socket.fd = sock;
-	listening_socket.cookie = NULL;
-	listening_socket.handler_in = got_connection;
-	iv_register_fd(&listening_socket);
-
-	return 0;
-}
-
-int main()
-{
-	iv_init();
-	open_listening_socket();
-	iv_main();
-
-	return 0;
-}
