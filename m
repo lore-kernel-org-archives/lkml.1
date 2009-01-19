@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZASIg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbZASIlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbZASIg5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 03:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZASIgt
+	id S1757058AbZASIlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 03:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbZASIlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 03:36:49 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:39263 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbZASIgs (ORCPT
+	Mon, 19 Jan 2009 03:41:00 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:44701 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbZASIk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 03:36:48 -0500
-Date: Mon, 19 Jan 2009 14:04:15 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memcg: update document to mention swapoff should be
-	test.
-Message-ID: <20090119083415.GF6039@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090119155748.acc60988.kamezawa.hiroyu@jp.fujitsu.com> <20090119071220.GE6039@balbir.in.ibm.com> <20090119161508.f8b9d342.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 19 Jan 2009 03:40:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F620qdqjCf/ypjAhwE9tQyVVj62M4N9hEc0hMJqGCJoxiQYg8hJRBbpwmtKp68a4iQ
+         5zpTG/6xRLvVLqy3WO9udNjX23bqIpnXgNOlt7xajYDB6DTngdJR4LiiBqggPQpE1Y02
+         BtFoIKFLsvrCmQq+lIpssd+sGO+HpKmVXeGi4=
+Date: Mon, 19 Jan 2009 08:40:52 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       zbr@ioremap.net, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090119084051.GB4788@ff.dom.local>
+References: <20090115.155434.206643894.davem@davemloft.net> <20090119004206.GA10396@1wt.eu> <20090119030844.GA31941@gondor.apana.org.au> <20090118.192719.198405397.davem@davemloft.net> <20090119061420.GB12946@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090119161508.f8b9d342.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090119061420.GB12946@1wt.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-19 16:15:08]:
-
-> On Mon, 19 Jan 2009 12:42:20 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Mon, Jan 19, 2009 at 07:14:20AM +0100, Willy Tarreau wrote:
+> On Sun, Jan 18, 2009 at 07:27:19PM -0800, David Miller wrote:
+> > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > Date: Mon, 19 Jan 2009 14:08:44 +1100
+> > 
+> > > On Mon, Jan 19, 2009 at 01:42:06AM +0100, Willy Tarreau wrote:
+> > > >
+> > > > Just for the record, I've now re-integrated those changes in a test kernel
+> > > > that I booted on my 10gig machines. I have updated my user-space code in
+> > > > haproxy to run a new series of tests. Eventhough there is a memcpy(), the
+> > > > results are EXCELLENT (on a C2D 2.66 GHz using Myricom's Myri10GE NICs) :
+> > > > 
+> > > >   - 4.8 Gbps at 100% CPU using MTU=1500 without LRO
+> > > >     (3.2 Gbps at 100% CPU without splice)
+> > > 
+> > > One thing to note is that Myricom's driver probably uses page
+> > > frags which means that you're not actually triggering the copy.
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-01-19 15:57:48]:
-> > 
-> > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > 
-> > > Considering recently found problem:
-> > >  memcg-fix-refcnt-handling-at-swapoff.patch
-> > > 
-> > > It's better to mention about swapoff behavior in memcg_test document.
-> > > 
-> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > ---
-> > >  Documentation/cgroups/memcg_test.txt |   24 ++++++++++++++++++++++--
-> > >  1 file changed, 22 insertions(+), 2 deletions(-)
-> > > 
-> > > Index: mmotm-2.6.29-Jan16/Documentation/cgroups/memcg_test.txt
-> > > ===================================================================
-> > > --- mmotm-2.6.29-Jan16.orig/Documentation/cgroups/memcg_test.txt
-> > > +++ mmotm-2.6.29-Jan16/Documentation/cgroups/memcg_test.txt
-> > > @@ -1,6 +1,6 @@
-> > >  Memory Resource Controller(Memcg)  Implementation Memo.
-> > > -Last Updated: 2008/12/15
-> > > -Base Kernel Version: based on 2.6.28-rc8-mm.
-> > > +Last Updated: 2009/1/19
-> > > +Base Kernel Version: based on 2.6.29-rc2.
-> > > 
-> > >  Because VM is getting complex (one of reasons is memcg...), memcg's behavior
-> > >  is complex. This is a document for memcg's internal behavior.
-> > > @@ -340,3 +340,23 @@ Under below explanation, we assume CONFI
-> > >  	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
-> > > 
-> > >  	and do task move, mkdir, rmdir etc...under this.
-> > > +
-> > > + 9.7 swapoff.
-> > > +	Besides management of swap is one of complicated parts of memcg,
-> > > +	call path of swap-in at swapoff is not same as usual swap-in path..
-> > > +	It's worth to be tested explicitly.
-> > > +
-> > > +	For example, test like following is good.
-> > > +	(Shell-A)
-> > > +	# mount -t cgroup none /cgroup -t memory
-> > > +	# mkdir /cgroup/test
-> > > +	# echo 40M > /cgroup/test/memory.limit_in_bytes
-> > > +	# echo 0 > /cgroup/test/tasks
-> > 
-> > 0? shouldn't this be pid? Potentially echo $$
-> > 
-> 
-> 0 is handled as $$ in cgroup/tasks file.
->
+> So does this mean that the corruption problem should still there for
+> such a driver ? I'm asking before testing, because at these speeds,
+> validity tests are not that easy ;-)
 
-OK, I remember having the 0 discussion for cgroups. Thanks for
-clarifying. The test looks good, 0 is a bit confusing, since it is a
-valid pid not visible to user space... but that is already done and
-closed. Hence,
+I guess, David meant the performance: there is not much change because
+only a small part could be copied. The most harmed should be jumbo
+frames in linear only skbs. But no corruption is expected.
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
-
--- 
-	Balbir
+Jarek P.
