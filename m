@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZASCcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZASCpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZASCcH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:32:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbZASCbt
+	id S1758054AbZASCpa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbZASCpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:31:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47087 "EHLO hera.kernel.org"
+	Sun, 18 Jan 2009 21:45:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56032 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757011AbZASCbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:31:49 -0500
-Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090119105324.fd4e9084.sfr@canb.auug.org.au>
-References: <1232273454.23100.9.camel@localhost.localdomain>
-	 <20090119105324.fd4e9084.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 08:01:14 +0530
-Message-Id: <1232332274.3129.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+	id S1757085AbZASCpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:45:20 -0500
+Message-ID: <4973E938.4010408@kernel.org>
+Date: Mon, 19 Jan 2009 11:45:12 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET x86:core/percpu] percpu: move PDA fields to percpu
+References: <1232296759-2253-1-git-send-email-tj@kernel.org> <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com>
+In-Reply-To: <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Jan 2009 02:45:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 10:53 +1100, Stephen Rothwell wrote:
-> Hi Jaswinder,
+Hello, Ingo, Brian.
+
+Brian Gerst wrote:
 > 
-> On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> >
-> > diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
-> > index 04b4d73..277de8c 100644
-> > --- a/include/linux/pktcdvd.h
-> > +++ b/include/linux/pktcdvd.h
-> > @@ -33,11 +33,15 @@
-> >   * able to sucessfully recover with this option (drive will return good
-> >   * status as soon as the cdb is validated).
-> >   */
-> > +#ifdef __KERNEL__
-> >  #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
-> >  #define USE_WCACHING		1
-> >  #else
-> >  #define USE_WCACHING		0
-> >  #endif
-> > +#else /* __KERNEL__ */
-> > +#define USE_WCACHING		0
-> > +#endif /* __KERNEL__ */
-> 
-> This also only has one user (drivers/block/pktcdvd.c) so maybe it should
-> be moved there.
-> 
+> Here are the remaining patches rebased on top of these.
 
-Already fixed in v3 as pointed by Ingo.
+Ingo, here's git tree for kill-pda patches.
 
-Thanks,
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
---
-JSR
+I dropped early irq_stack_ptr relocation from 0004.  I'll post updated
+patch as reply to the original patch.  If you think it's still
+necessary, please feel free to discuss it.  I also added a patch to
+kill PERCPU_VADDR_PREALLOC().  Will post the patch as a reply to 0005.
 
+Thanks.
+
+-- 
+tejun
