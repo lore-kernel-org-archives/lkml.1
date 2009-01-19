@@ -1,117 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZASViM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbZASVih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbZASViM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:38:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZASVhn
+	id S1760008AbZASVih (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbZASViZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:37:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39761 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754688AbZASVhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:37:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: etienne <etienne.basset@numericable.fr>
-Subject: Re: [2.6.29-rc2][Suspend regression][DRM ???? bisected]
-Date: Mon, 19 Jan 2009 22:37:19 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
-References: <4971DFA5.2000304@numericable.fr> <4974EB02.4060303@numericable.fr>
-In-Reply-To: <4974EB02.4060303@numericable.fr>
+	Mon, 19 Jan 2009 16:38:25 -0500
+Received: from vs02.svr02.mucip.net ([83.170.6.69]:43405 "EHLO
+	mailout.mucip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbZASViY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:38:24 -0500
+Date: Mon, 19 Jan 2009 22:38:20 +0100
+From: Bernhard Schmidt <berni@birkenwald.de>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression
+	2.6.27.4 -> 2.6.27.9
+Message-ID: <20090119213819.GA6532@pest>
+References: <20090118221329.GA12742@pest> <20090118210314.30832598@tleilax.poochiereds.net> <20090119103248.GA28699@schleppi.birkenwald.de> <20090119160725.34124637@tleilax.poochiereds.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901192237.19847.rjw@sisk.pl>
+In-Reply-To: <20090119160725.34124637@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, etienne wrote:
-> Hello,
-> 
-> etienne wrote:
-> > hello,
-> >
-> > With 2.6.29-rc2 (and rc1) i cannot resume from suspend to ram (echo 
-> > mem > /sys/power/state). Computer correctly suspends, but never wakes 
-> > up (screens stays black and everything is unresponsive)
-> >                   
-> > It has been working flawlessly in all prior kernel.
-> > I tried a bisection and it "seems" to point to :
-> > ====================================
-> > a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9 is first bad commit
-> > commit a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9            Author: 
-> > Dave Airlie <airlied@linux.ie>                     Date:   Sun Dec 7 
-> > 12:02:21 2008 +1000                     
-> >    drm: reorganise start and load.
-> >                                     Make sure we have the primary node 
-> > so the device can add maps.
-> >                                                                    
-> > Signed-off-by: Dave Airlie <airlied@redhat.com>              
-> > ========================================
-> >
-> > HOWEVER, I am not quite sure my bisect was correct; I mean, some "bad 
-> > bisect" had a different behavior (resume produces  a garbage screen, 
-> > computer locked)
-> > and after bisect 57a6297e52b32ff402291a7d8fd802f83e746e52 all "bad" 
-> > kernel wouldn't start X, init=/bin/bash booted fine but no resume
-> >
-> > I tried  to revert but got errors
-> > =============================
-> > etienne@etienne-desktop:~/linux-2.6$ git revert  
-> > a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-> > warning: too many files, skipping inexact rename detection
-> > Auto-merged drivers/gpu/drm/drm_stub.c
-> > CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_stub.c
-> > Automatic revert failed.  After resolving the conflicts,
-> > mark the corrected paths with 'git add <paths>' or 'git rm <paths>' 
-> > and commit the result.
-> > =========================
-> > Please find attached bisect log, lspci (from 2.6.28-rc8) , and .config 
-> > (2.6.29rc2)
-> >
-> > I have a radeon card
-> > 01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 
-> > [Radeon X300(PCIE)]
-> > Packages :
-> > xserver-xorg-video-radeon            
-> > 1:6.9.0+git20081003.f9826a56-0ubuntu2.1
-> > ii  xserver-xorg                              
-> > 1:7.4~5ubuntu3                              the X.Org X 
-> > server                                                   ii  
-> > xserver-xorg-core                         
-> > 2:1.5.2-2ubuntu3                            Xorg X server - core 
-> > server                  
-> > I'm willing to test patches and ideas of course :)
-> >
-> > Except for this regression, everything works fine for me, I migrated 
-> > to ext4 and it "feels" a huge win especially on "rm" and fsck :))
-> >
-> > best regards,
-> > Etienne
-> >
-> >
-> >
-> hello,
-> 
-> as my bisect directed to drm but as I was unable to revert the commit, I 
-> took my 2.6.29rc2 kernel,  removed drivers/gpu/drm and include/drm and 
-> replaced them  with 2.6.28 files.
-> Rebooted into this new kernel, suspended to ram and ...same bug :(
-> so maybe there a bug in drm, but there another one elsewhere...
-> I checked /var/log/messages from a working and a non working kernel, and 
-> there's absolutely _nothing_ in non-working kernels
-> in working kernel i see suspend beginning like this :
-> Jan 19 21:50:47 etienne-desktop kernel: PM: Syncing filesystems ... done.
-> Jan 19 21:50:47 etienne-desktop kernel: [drm] Num pipes: 1
-> 
-> 
-> Are there any patch i could try?
+On Mon, Jan 19, 2009 at 04:07:25PM -0500, Jeff Layton wrote:
 
-Actually, quite a few.
+> That said, there's a lot of jumping around in this assembly code and
+> it's not completely clear to me how it got to the point where it crashed.
+> We'll probably need to see if this can be independently reproduced. Can
+> you email along the details of how you're reproducing this? In
+> particular:
+> 
+> 1) all mount options being used
 
-I'd recommend waiting until all of the known suspend regressions are fixed.
+Not more than the ones shown in my original mail. The exact mount
+command is *checkingfirewall*
 
-Thanks,
-Rafael
+mount -t cifs -o user=berni,ip=2001:a60:f001:1::69 //fileserv/pub /pub
+
+> 2) details on the server (what OS, what version of samba, etc)
+> 3) version of mount.cifs being used
+
+The server is a Debian Lenny based i386 system running a self-compiled
+vanilla 2.6.28 kernel and Debian packaged Samba 3.2.5-3.
+
+The client is Ubuntu Intrepid (8.10) with intrepid-security,
+intrepid-updates and intrepid-proposed enabled. mount.cifs -V does not
+work misteriously (displays the usage instruction), the package version
+is 3.2.3-1ubuntu3.4.
+
+All those programs are not changed. After booting into kernel
+2.6.27-7.14 (intrepid release) or 2.6.27-9.19 (intrepid-security,
+intrepid-updates) the above noted mount command works fine, after
+booting 2.6.27-11.23 (intrepid-proposed) it's broken. I can change
+between those client kernel versions and reproduce it.
+
+The changes between the working and the non-working version should
+be as noted in
+
+https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-10.20
+https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-11.23
+
+And I've just discovered something. Remind you, I'm trying to mount
+2001:a60:f001:1::69. However, after entering the password the system
+tries to reach another address
+
+22:31:24.336790 IP6 2001:a60:f001:1:219:66ff:fe8b:a6e > ff02::1:ff00:69:
+ICMP6, neighbor solicitation, who has 2001:a60:f001:1:55:abe3:0:69,
+length 32
+
+The (wrong) address changes slightly between consecutive tries, I've seen 
+2001:a60:f001:1:4f:abe3:0:69
+2001:a60:f001:1:58:abe3:0:69
+as well.
+
+Also, when I try some other (legal, but unused) address it bails out at
+another code location, e.g.
+
+mount -t cifs -o user=berni,ip=2001:a60:f001:1:cc::69 //fileserv/pub
+/pub
+
+results in an immediate (!)
+
+[  486.470983] BUG: unable to handle kernel paging request at 0000cc0c
+[  486.470992] IP: [<f9c0a3d6>] :cifs:ipv6_connect+0x46/0x1a0
+[  486.471008] *pde = 00000000
+[  486.471012] Oops: 0000 [#13] SMP
+[  486.471016] Modules linked in: nls_cp437 cifs af_packet binfmt_misc rfcomm bridge stp bnep sco l2cap bluetooth kvm_amd kvm ppdev tun ipv6 pci_slot container sbs sbshc video output battery
+iptable_filter ip_tables x_tables ac parport_pc lp parport serio_raw pcspkr psmouse snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi k8temp snd_rawmidi
+snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc i2c_piix4 i2c_core evdev dm_multipath scsi_dh pl2303 usbserial fglrx(P) agpgart wmi button shpchp pci_hotplug ext3 jbd
+mbcache sr_mod cdrom pata_acpi sd_mod crc_t10dif pata_atiixp sg usbhid hid usb_storage libusual ata_generic ahci ohci_hcd ehci_hcd libata usbcore scsi_mod dock r8169 mii dm_mirror dm_log dm_snapshot
+dm_mod thermal processor fan fbcon tileblit font bitblit softcursor fuse
+[  486.471076]
+[  486.471079] Pid: 6607, comm: mount.cifs Tainted: P      D   (2.6.27-11-generic #1)
+[  486.471082] EIP: 0060:[<f9c0a3d6>] EFLAGS: 00010246 CPU: 0
+[  486.471092] EIP is at ipv6_connect+0x46/0x1a0 [cifs]
+[  486.471095] EAX: 0000cc00 EBX: f9c3b094 ECX: 0000001c EDX: c4ecfe44
+[  486.471097] ESI: c4ecfe44 EDI: c4ecfe54 EBP: c4ecfd94 ESP: c4ecfd7c
+[  486.471100]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[  486.471103] Process mount.cifs (pid: 6607, ti=c4ece000 task=ce5abed0 task.ti=c4ece000)
+[  486.471105] Stack: c4ecfd94 f9c1708b 00000000 f9c3b094 c4eaa000 f9c3b094 c4ecfe64 f9c0bf5c
+[  486.471112]        c10b1030 c4eac000 c4ecfdcc c0189c8d c4eab000 000280d0 f9c3b094 000a100c
+[  486.471118]        00000001 caa0e3c0 dbf3e200 0000000c 00000000 00000020 c4ecfe4c c4ecfe0c
+[  486.471124] Call Trace:
+[  486.471127]  [<f9c1708b>] ? cifs_inet_pton+0x7b/0x80 [cifs]
+[  486.471141]  [<f9c0bf5c>] ? cifs_mount+0x46c/0xda0 [cifs]
+[  486.471151]  [<c0189c8d>] ? prep_new_page+0xdd/0x160
+[  486.471161]  [<c024e132>] ? idr_get_empty_slot+0xe2/0x270
+[  486.471167]  [<f9bfddf3>] ? cifs_read_super+0x93/0x1e0 [cifs]
+[  486.471176]  [<c01b38f0>] ? set_anon_super+0x0/0xd0
+[  486.471181]  [<f9bfdfa9>] ? cifs_get_sb+0x69/0xc0 [cifs]
+[  486.471192]  [<c01b468e>] ? vfs_kern_mount+0x5e/0x130
+[  486.471197]  [<c01b47be>] ? do_kern_mount+0x3e/0xe0
+[  486.471201]  [<c01cccff>] ? do_new_mount+0x6f/0x90
+[  486.471206]  [<c01cd242>] ? do_mount+0x1d2/0x1f0
+[  486.471210]  [<c01ca95d>] ? exact_copy_from_user+0x4d/0xa0
+[  486.471214]  [<c01caf6e>] ? copy_mount_options+0x6e/0xd0
+[  486.471218]  [<c01cd2f1>] ? sys_mount+0x91/0xc0
+[  486.471222]  [<c0103f7b>] ? sysenter_do_call+0x12/0x2f
+[  486.471227]  =======================
+[  486.471228] Code: 8b 02 85 c0 0f 84 eb 00 00 00 66 83 7e 02 00 66 c7 06 0a 00 66 c7 45 f2 00 00 75 59 66 c7 46 02 01 bd 8b 07 b9 1c 00 00 00 89 f2 <8b> 58 0c c7 04 24 00 00 00 00 ff 53 10 85 c0 89
+c3 78 67 8b 07
+[  486.471257] EIP: [<f9c0a3d6>] ipv6_connect+0x46/0x1a0 [cifs] SS:ESP 0068:c4ecfd7c
+[  486.471269] ---[ end trace cbe7d886432a8981 ]---#
+
+This looks like an address corruption in the memory, maybe the original
+BUG was there before and did not trigger because the server was reachable.
+
+Bernhard
+
