@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZASCRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZASCRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbZASCRY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZASCRP
+	id S1758049AbZASCRv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZASCRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:17:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59132 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756485AbZASCRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:17:14 -0500
-Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090118190836.GA2294@uranus.ravnborg.org>
-References: <1232287474.3130.19.camel@localhost.localdomain>
-	 <20090118172800.GB22624@elte.hu> <20090118185034.GA26908@elte.hu>
-	 <20090118190836.GA2294@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 07:46:05 +0530
-Message-Id: <1232331365.3129.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Jan 2009 21:17:39 -0500
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:55623 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756696AbZASCRi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:17:38 -0500
+From: hooanon05@yahoo.co.jp
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
+In-Reply-To: <1232215916.7015.78.camel@norville.austin.ibm.com>
+References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl> <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl> <1232210546.7015.8.camel@norville.austin.ibm.com> <10394.1232214142@jrobl> <1232215916.7015.78.camel@norville.austin.ibm.com>
+Date: Mon, 19 Jan 2009 11:17:34 +0900
+Message-ID: <7087.1232331454@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 20:08 +0100, Sam Ravnborg wrote:
-> > 
-> > diff --git a/arch/x86/include/asm/swab.h b/arch/x86/include/asm/swab.h
-> > index 306d417..613be68 100644
-> > --- a/arch/x86/include/asm/swab.h
-> > +++ b/arch/x86/include/asm/swab.h
-> > @@ -1,12 +1,15 @@
-> >  #ifndef _ASM_X86_SWAB_H
-> >  #define _ASM_X86_SWAB_H
-> >  
-> > -#include <asm/types.h>
-> > +#include <linux/types.h>
-> > +#ifdef __KERNEL__
-> >  #include <linux/compiler.h>
-> > +#endif /* __KERNEL__ */
-> 
-> compiler.h includes should be nuked by make headers_instll automatically.
-> 
 
-But the problem is compiler.h provide extra line space in userspace
-header files because of nuking them.
+Dave Kleikamp:
+> For a regular file, the size of the upper inode is not the same as the
+> size of the lower inode.  The lower inode includes the header blocks
+> which are not visible in the upper inode.  So ecryptfs_interpose() will
+> overwrite the correct upper inode size.
 
-So I moved compiler.h in __KERNEL__ as extra cleanup, it is not harmful
-but looks much nicer in userspace header files
+Then it means updating i_size in ecryptfs_link() is unnecessary...
 
---
-JSR
 
+J. R. Okajima
