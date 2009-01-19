@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZASOg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZASOiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbZASOg0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZASOgN
+	id S1753713AbZASOiX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZASOiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:36:13 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:48567 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbZASOgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:36:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=TL2gkxnSyzRbgfzCJrMCrs1HCidVqooNumGJPSV8Xi6rPFCR/SVGYP/UwG8Ov0Sd+/
-         gfhqGQ9F7jIiL92lxLep1LLp2ckDs0JzeMc6LAiC9uNzz+x4BGW5ygm3btngujVpXvvW
-         53FhfZq/7UwjP8Oa3ZkSPrCK+9mcfZqyZD0wc=
-MIME-Version: 1.0
-Reply-To: petkovbb@gmail.com
-In-Reply-To: <20090119141443.27613.89085.sendpatchset@localhost.localdomain>
-References: <20090119141330.27613.34546.sendpatchset@localhost.localdomain>
-	 <20090119141443.27613.89085.sendpatchset@localhost.localdomain>
-Date: Mon, 19 Jan 2009 15:36:10 +0100
-Message-ID: <9ea470500901190636g366767bt2b40917b2d2718f9@mail.gmail.com>
-Subject: Re: [PATCH 08/12] ide: remove no longer needed IDE_HFLAG[_FORCE]_LEGACY_IRQS
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 09:38:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48492 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1749667AbZASOiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 09:38:10 -0500
+Date: Tue, 20 Jan 2009 01:37:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Hannes Eder" <hannes@hanneseder.net>
+Cc: "David Howells" <dhowells@redhat.com>, "James Morris" <jmorris@namei.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] creds: suppress warning in get_cred
+Message-Id: <20090120013759.d2cba912.sfr@canb.auug.org.au>
+In-Reply-To: <154e089b0901190303k46b9a223of08923ee11ed873b@mail.gmail.com>
+References: <20090119211031.934b4c19.sfr@canb.auug.org.au>
+	<154e089b0901190303k46b9a223of08923ee11ed873b@mail.gmail.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__20_Jan_2009_01_37_59_+1100_z6KqffCd4Hjhq.cP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Tue__20_Jan_2009_01_37_59_+1100_z6KqffCd4Hjhq.cP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 19, 2009 at 3:14 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
+Hi Hannes,
 
-[.. ]
+On Mon, 19 Jan 2009 12:03:44 +0100 "Hannes Eder" <hannes@hanneseder.net> wr=
+ote:
+>
+> This is most likly a compiler bug, see
+>=20
+> http://lkml.org/lkml/2008/11/20/441 and followups.
 
-> Index: b/include/linux/ide.h
-> ===================================================================
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
-> @@ -1347,10 +1347,6 @@ enum {
->        IDE_HFLAG_ERROR_STOPS_FIFO      = (1 << 19),
->        /* serialize ports */
->        IDE_HFLAG_SERIALIZE             = (1 << 20),
-> -       /* use legacy IRQs */
-> -       IDE_HFLAG_LEGACY_IRQS           = (1 << 21),
-> -       /* force use of legacy IRQs */
-> -       IDE_HFLAG_FORCE_LEGACY_IRQS     = (1 << 22),
->        /* host is TRM290 */
->        IDE_HFLAG_TRM290                = (1 << 23),
->        /* use 32-bit I/O ops */
+Thanks.  Time for a new cross compiler. :-)
 
-maybe contigious numbering of the enums here?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Regards/Gruss,
-Boris
+--Signature=_Tue__20_Jan_2009_01_37_59_+1100_z6KqffCd4Hjhq.cP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkl0kEcACgkQjjKRsyhoI8zOAACfVudcSMpLio2RfLQ59GJEfRXU
+MjIAoICH8J4WrAKsqBre2jBH/zp1SDNv
+=3xUH
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__20_Jan_2009_01_37_59_+1100_z6KqffCd4Hjhq.cP--
