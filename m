@@ -1,107 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758660AbZASVVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbZASVXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660AbZASVVz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZASVVn
+	id S1759339AbZASVXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZASVXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:21:43 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:50738 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbZASVVm (ORCPT
+	Mon, 19 Jan 2009 16:23:03 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:60299 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbZASVXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:21:42 -0500
-Date: Mon, 19 Jan 2009 16:21:27 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       horms@verge.net.au, akpm@linux-foundation.org, nhorman@tuxdriver.com
-Subject: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
-Message-ID: <20090119212127.GA13157@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Mon, 19 Jan 2009 16:23:01 -0500
+Date: Mon, 19 Jan 2009 16:23:29 -0500
+From: Jody McIntyre <scjody@sun.com>
+Subject: Re: 2.6.29-rc1: BUG: unable to handle kernel paging request at
+	000077fed87bb6bf
+In-reply-to: <20090114215120.b0ad7c4b.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <20090119212329.GS28831@clouds>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <20090113214743.GE28831@clouds>
+ <20090114215120.b0ad7c4b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all-
-	It would be nice to be able to extract the dmesg log from a vmcore file
-without needing to keep the debug symbols for the running kernel handy all the
-time.  We have a facility to do this in /proc/vmcore.  This patch adds the
-log_buf and log_end symbols to the vmcoreinfo area so that tools (like
-makedumpfile) can easily extract the dmesg logs from a vmcore image.
+On Wed, Jan 14, 2009 at 09:51:20PM -0800, Andrew Morton wrote:
+> It needs to be bisected :(
+> 
+> At a guess I'd say that some piece of code somewhere did
+> schedule_delayed_work(work) and then scribbled on *work before the
+> timer got to run.  It could be anywhere at all in your kernel.
 
-Regards
-Neil
+I tried your patch on Friday and couldn't find the bug with it.  I was
+going to try more debugging today but happily, a commit made over the
+weekend has fixed the issue.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Thanks,
+Jody
 
-
- include/linux/kernel.h |    2 ++
- kernel/kexec.c         |    3 +++
- kernel/printk.c        |    8 ++++++++
- 3 files changed, 13 insertions(+)
-
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 343df9e..a7f3e8a 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -242,6 +242,7 @@ extern struct ratelimit_state printk_ratelimit_state;
- extern int printk_ratelimit(void);
- extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 				   unsigned int interval_msec);
-+void log_buf_kexec_setup(void);
- #else
- static inline int vprintk(const char *s, va_list args)
- 	__attribute__ ((format (printf, 1, 0)));
-@@ -253,6 +254,7 @@ static inline int printk_ratelimit(void) { return 0; }
- static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
- 					  unsigned int interval_msec)	\
- 		{ return false; }
-+#define log_buf_kexec_setup() do {} while(0)
- #endif
- 
- extern int printk_needs_cpu(int cpu);
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 8a6d7b0..bee284d 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1409,6 +1409,9 @@ static int __init crash_save_vmcoreinfo_init(void)
- 	VMCOREINFO_OFFSET(list_head, prev);
- 	VMCOREINFO_OFFSET(vm_struct, addr);
- 	VMCOREINFO_LENGTH(zone.free_area, MAX_ORDER);
-+#ifdef CONFIG_PRINTK
-+	log_buf_kexec_setup();
-+#endif
- 	VMCOREINFO_LENGTH(free_area.free_list, MIGRATE_TYPES);
- 	VMCOREINFO_NUMBER(NR_FREE_PAGES);
- 	VMCOREINFO_NUMBER(PG_lru);
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 69188f2..79e9e05 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -32,6 +32,7 @@
- #include <linux/security.h>
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
-+#include <linux/kexec.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -136,6 +137,13 @@ static char *log_buf = __log_buf;
- static int log_buf_len = __LOG_BUF_LEN;
- static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
- 
-+void log_buf_kexec_setup(void)
-+{
-+	VMCOREINFO_SYMBOL(log_buf);
-+	VMCOREINFO_SYMBOL(log_end);
-+}
-+
-+
- static int __init log_buf_len_setup(char *str)
- {
- 	unsigned size = memparse(str, &str);
+> Thomas's debugobjects code could perhaps be used to find the culprit,
+> but alas the workqueue code hasn't been taught to use that framework.
+> 
+> We could do something like this:
+> 
+> --- a/kernel/workqueue.c~a
+> +++ a/kernel/workqueue.c
+> @@ -196,9 +196,14 @@ EXPORT_SYMBOL_GPL(queue_work_on);
+>  
+>  static void delayed_work_timer_fn(unsigned long __data)
+>  {
+> -	struct delayed_work *dwork = (struct delayed_work *)__data;
+> -	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
+> -	struct workqueue_struct *wq = cwq->wq;
+> +	struct delayed_work *dwork;
+> +	struct cpu_workqueue_struct *cwq;
+> +	struct workqueue_struct *wq;
+> +
+> +	dwork = (struct delayed_work *)__data;
+> +	printk("delayed_work_timer_fn: handling %p\n", dwork);
+> +	cwq = get_wq_data(&dwork->work);
+> +	wq = cwq->wq;
+>  
+>  	__queue_work(wq_per_cpu(wq, smp_processor_id()), &dwork->work);
+>  }
+> @@ -214,6 +219,8 @@ static void delayed_work_timer_fn(unsign
+>  int queue_delayed_work(struct workqueue_struct *wq,
+>  			struct delayed_work *dwork, unsigned long delay)
+>  {
+> +	printk("queue_delayed_work: queueing %p\n", dwork);
+> +	dump_stack();
+>  	if (delay == 0)
+>  		return queue_work(wq, &dwork->work);
+>  
+> _
+> 
+> It will print an object address and a call trace in
+> queue_delayed_work() and will print an object address in
+> delayed_work_timer_fn().
+> 
+> Hopefully when it oopses you'll see the bad object address which was
+> obtained by delayed_work_timer_fn().  Then, you can go back through the
+> trace and determine which callsite passed that object address to
+> queue_delayed_work().  Then we will have our culprit.
+> 
+> It'll possibly generate a lot of output, so logged netconsole might be
+> needed.
+> 
