@@ -1,112 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZASS4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbZASS4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbZASS4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZASS41
+	id S1758994AbZASS4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZASS4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:56:27 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:60800 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZASS40 (ORCPT
+	Mon, 19 Jan 2009 13:56:40 -0500
+Received: from outbound-mail-304.bluehost.com ([67.222.53.250]:60676 "HELO
+	outbound-mail-304.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758613AbZASS4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:56:26 -0500
-Subject: RE: Mainline kernel OLTP performance update
-From: Chris Mason <chris.mason@oracle.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: "Ma, Chinang" <chinang.ma@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <1232390259.25783.5.camel@localhost.localdomain>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-	 <20090114163557.11e097f2.akpm@linux-foundation.org>
-	 <20090115012147.GW29283@parisc-linux.org>
-	 <20090114180431.f4a96543.akpm@linux-foundation.org>
-	 <1231986439.21980.54.camel@localhost.localdomain>
-	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
-	 <1232388291.6521.140.camel@think.oraclecorp.com>
-	 <1232390259.25783.5.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 13:55:05 -0500
-Message-Id: <1232391305.6521.146.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 19 Jan 2009 13:56:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=drdQ58ivJKHc9MD6qdknTWT8CFRD4T0rd9anbjdgDMD4AGdfagz8U0mv3Lq1beHwax/j+DQ4HyGulx9vss8p3alLnyUlQ1tsRmxnczCzaOM9E4gWedqB8wt28vEcXd+z;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH] PCI: pciehp_core, fix lock imbalance
+Date: Mon, 19 Jan 2009 10:56:36 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+References: <1232205835-21854-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1232205835-21854-1-git-send-email-jirislaby@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4974CC90.0066:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200901191056.36992.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 13:37 -0500, Steven Rostedt wrote:
-> (added Rusty)
-> 
-> On Mon, 2009-01-19 at 13:04 -0500, Chris Mason wrote:
-> > 
-> > I think the -rt version of check_preempt_equal_prio has gotten much more
-> > expensive since 2.6.24.
-> > 
-> > I'm sure these changes were made for good reasons, and this workload may
-> > not be a good reason to change it back.  But, what does the patch below
-> > do to performance on 2.6.29-rcX?
-> > 
-> > -chris
-> > 
-> > diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> > index 954e1a8..bbe3492 100644
-> > --- a/kernel/sched_rt.c
-> > +++ b/kernel/sched_rt.c
-> > @@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
-> > struct task_struct *p, int sync
-> >  		resched_task(rq->curr);
-> >  		return;
-> >  	}
-> > +	return;
-> >  
-> >  #ifdef CONFIG_SMP
-> >  	/*
-> 
-> That should not cause much of a problem if the scheduling task is not
-> pinned to an CPU. But!!!!!
-> 
-> A recent change makes it expensive:
+On Saturday, January 17, 2009 7:23 am Jiri Slaby wrote:
+> set_lock_status omits mutex_unlock in fail path. Add the omitted
+> unlock.
+>
+> As a result a lockup caused by this can be triggered from userspace
+> by writing 1 to /sys/bus/pci/slots/.../lock often enough.
+>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> ---
+>  drivers/pci/hotplug/pciehp_core.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/pci/hotplug/pciehp_core.c
+> b/drivers/pci/hotplug/pciehp_core.c index 5482d4e..c248554 100644
+> --- a/drivers/pci/hotplug/pciehp_core.c
+> +++ b/drivers/pci/hotplug/pciehp_core.c
+> @@ -126,8 +126,10 @@ static int set_lock_status(struct hotplug_slot
+> *hotplug_slot, u8 status) mutex_lock(&slot->ctrl->crit_sect);
+>
+>  	/* has it been >1 sec since our last toggle? */
+> -	if ((get_seconds() - slot->last_emi_toggle) < 1)
+> +	if ((get_seconds() - slot->last_emi_toggle) < 1) {
+> +		mutex_unlock(&slot->ctrl->crit_sect);
+>  		return -EINVAL;
+> +	}
+>
+>  	/* see what our current state is */
+>  	retval = get_lock_status(hotplug_slot, &value);
 
+Applied to my for-linus branch (with Kenji-san's reviewed-by), thanks.
 
-> +       if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
->                 return;
-
-> check_preempt_equal_prio is in a scheduling hot path!!!!!
-> 
-> WTF are we allocating there for?
-
-I wasn't actually looking at the cost of the checks, even though they do
-look higher (if they are using CONFIG_CPUMASK_OFFSTACK anyway).
-
-The 2.6.24 code would trigger a rescheduling interrupt only when the
-prio of the inbound task was higher than the running task.
-
-This workload has a large number of equal priority rt tasks that are not
-bound to a single CPU, and so I think it should trigger more
-preempts/reschedules with the today's check_preempt_equal_prio().
-
--chris
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
