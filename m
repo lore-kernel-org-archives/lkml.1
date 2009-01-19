@@ -1,51 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZASSCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZASSG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbZASSCJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZASSBy
+	id S1754205AbZASSG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZASSGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:01:54 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:58449 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751208AbZASSBy (ORCPT
+	Mon, 19 Jan 2009 13:06:15 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:31612 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZASSGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:01:54 -0500
-Message-ID: <4974C030.5020509@ru.mvista.com>
-Date: Mon, 19 Jan 2009 21:02:24 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
-References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain>	<20090119130322.24745.76137.sendpatchset@localhost.localdomain>	<49748B95.9080105@ru.mvista.com>	<200901191523.15240.bzolnier@gmail.com>	<49748E43.4030009@ru.mvista.com> <20090119173701.13fd24c6@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090119173701.13fd24c6@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 19 Jan 2009 13:06:14 -0500
+Subject: RE: Mainline kernel OLTP performance update
+From: Chris Mason <chris.mason@oracle.com>
+To: "Ma, Chinang" <chinang.ma@intel.com>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <1231986439.21980.54.camel@localhost.localdomain>
+	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 13:04:51 -0500
+Message-Id: <1232388291.6521.140.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4974C0C9.020A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 2009-01-15 at 00:11 -0700, Ma, Chinang wrote:
+> >> > > > >
+> >> > > > > Linux OLTP Performance summary
+> >> > > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
+> >iowait%
+> >> > > > > 2.6.24.2                1.000   21969   43425   76   24     0
+> >0
+> >> > > > > 2.6.27.2                0.973   30402   43523   74   25     0
+> >1
+> >> > > > > 2.6.29-rc1              0.965   30331   41970   74   26     0
+> >0
+> >> >
+> >> > > But the interrupt rate went through the roof.
+> >> >
+> >> > Yes.  I forget why that was; I'll have to dig through my archives for
+> >> > that.
+> >>
+> >> Oh.  I'd have thought that this alone could account for 3.5%.
 
-Alan Cox wrote:
+A later email indicated the reschedule interrupt count doubled since
+2.6.24, and so I poked around a bit at the causes of resched_task.
 
->>>[ I'm also not happy with the naming but couldn't think of a better one. ]
+I think the -rt version of check_preempt_equal_prio has gotten much more
+expensive since 2.6.24.
 
->>    Legacy perhaps?
+I'm sure these changes were made for good reasons, and this workload may
+not be a good reason to change it back.  But, what does the patch below
+do to performance on 2.6.29-rcX?
 
-> Legacy to most people means either ISA/VLB or the PCI legacy
-> compatibility mode so that would be confusing.
+-chris
 
-    That's what this code is for (minus the MMIO accessors perhaps).
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 954e1a8..bbe3492 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
+struct task_struct *p, int sync
+ 		resched_task(rq->curr);
+ 		return;
+ 	}
++	return;
+ 
+ #ifdef CONFIG_SMP
+ 	/*
 
-> BTW if you moved to ioreadX you could get rid of almost all the readb/inb
-> special casing.
 
-    And burden the driver code with function calls ISO in/out instructions, at 
-least on x86. It's somewhat arguable move.
 
-MBR, Sergei
+
