@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbZASR7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZASSCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbZASR7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 12:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbZASR7Y
+	id S1753844AbZASSCJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:02:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZASSBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 12:59:24 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:56817 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbZASR7Y (ORCPT
+	Mon, 19 Jan 2009 13:01:54 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:58449 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751208AbZASSBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 12:59:24 -0500
-Date: Mon, 19 Jan 2009 09:59:19 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: garyhade@us.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: get_nid_for_pfn() returns int
-Message-ID: <20090119175919.GA7476@us.ibm.com>
-References: <4973AEEC.70504@gmail.com>
+	Mon, 19 Jan 2009 13:01:54 -0500
+Message-ID: <4974C030.5020509@ru.mvista.com>
+Date: Mon, 19 Jan 2009 21:02:24 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4973AEEC.70504@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
+References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain>	<20090119130322.24745.76137.sendpatchset@localhost.localdomain>	<49748B95.9080105@ru.mvista.com>	<200901191523.15240.bzolnier@gmail.com>	<49748E43.4030009@ru.mvista.com> <20090119173701.13fd24c6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090119173701.13fd24c6@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 11:36:28PM +0100, Roel Kluin wrote:
-> get_nid_for_pfn() returns int
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> vi drivers/base/node.c +256
-> static int get_nid_for_pfn(unsigned long pfn)
-> 
-> diff --git a/drivers/base/node.c b/drivers/base/node.c
-> index 43fa90b..f8f578a 100644
-> --- a/drivers/base/node.c
-> +++ b/drivers/base/node.c
-> @@ -303,7 +303,7 @@ int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
->  	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
->  	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
->  	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
-> -		unsigned int nid;
-> +		int nid;
-> 
->  		nid = get_nid_for_pfn(pfn);
->  		if (nid < 0)
+Hello.
 
-My mistake.  Good catch.
+Alan Cox wrote:
 
-Thanks,
-Gary
+>>>[ I'm also not happy with the naming but couldn't think of a better one. ]
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+>>    Legacy perhaps?
+
+> Legacy to most people means either ISA/VLB or the PCI legacy
+> compatibility mode so that would be confusing.
+
+    That's what this code is for (minus the MMIO accessors perhaps).
+
+> BTW if you moved to ioreadX you could get rid of almost all the readb/inb
+> special casing.
+
+    And burden the driver code with function calls ISO in/out instructions, at 
+least on x86. It's somewhat arguable move.
+
+MBR, Sergei
