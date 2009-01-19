@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZASVs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZASVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760243AbZASVs1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZASVsM
+	id S1758292AbZASVsp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbZASVsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:48:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:2911 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754467AbZASVsK (ORCPT
+	Mon, 19 Jan 2009 16:48:17 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:63869 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757218AbZASVsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:48:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=do9aS/ex0DmAv3bjIZ2/3dre79UfdXoiwxA/xJOSLDhzH4cekzKFLQZh+sCxdQVLsh
-         Rr5viv4lQfHB+LhCU7KYDnCP1uQVi7imFTVkvKpp4+bZuXHyEQIUxz+IkEu7o6nOpQzO
-         Jqsuoyiy51uyLnss2ACrbDrrnnciorEcL6nro=
-Date: Mon, 19 Jan 2009 22:48:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, Frans Pop <elendil@planet.nl>,
-       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
-Message-ID: <20090119214804.GC6194@nowhere>
-References: <20081104062734.GA4420@havoc.gtf.org> <200901192054.55536.rjw@sisk.pl> <20090119212428.GB6194@nowhere> <200901192235.23677.rjw@sisk.pl>
+	Mon, 19 Jan 2009 16:48:15 -0500
+Message-ID: <4974F515.4030304@ru.mvista.com>
+Date: Tue, 20 Jan 2009 00:48:05 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901192235.23677.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
+References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain>	<20090119130322.24745.76137.sendpatchset@localhost.localdomain>	<49748B95.9080105@ru.mvista.com>	<200901191523.15240.bzolnier@gmail.com>	<49748E43.4030009@ru.mvista.com>	<20090119173701.13fd24c6@lxorguk.ukuu.org.uk>	<4974C030.5020509@ru.mvista.com>	<20090119183607.5ee804e1@lxorguk.ukuu.org.uk>	<4974CA81.1050506@ru.mvista.com>	<20090119184951.35a52184@lxorguk.ukuu.org.uk>	<4974CEC5.9050402@ru.mvista.com> <20090119213101.798fe1cd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090119213101.798fe1cd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 10:35:22PM +0100, Rafael J. Wysocki wrote:
-> On Monday 19 January 2009, Frederic Weisbecker wrote:
-> > On Mon, Jan 19, 2009 at 08:54:54PM +0100, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Introduce boolean function system_entering_hibernation() returning
-> > > 'true' during the last phase of hibernation, in which devices are
-> > > being put into low power states and the sleep state (for example,
-> > > ACPI S4) is finally entered.
-> > > 
-> > > Some device drivers need such a function to check if the system is
-> > > in the final phase of hibernation.  In particular, some SATA drivers
-> > > are going to use it for blacklisting systems in which the disks
-> > > should not be spun down during the last phase of hibernation (the
-> > > BIOS will do that anyway).
-> > >
-> > 
-> > Hi Rafael,
-> > 
-> > Why not using the power event notifier?
-> 
-> I'm not sure what you mean exactly, care to elaborate?
+Hello.
 
+Alan Cox wrote:
 
-Sorry, I just thought about using the pm_notifier to listen on the suspend/resume
-events to check the current hibernation state.
+>>> I'm afraid you are the one who is wrong. The IDE layer is duplicating a
+>>> generic level of indirection with its own code - purely because IDE
+>>> pre-dates that core functionality. The whole IDE layer indirection can go
+>>> away because Linux has caught up with the needs of the IDE layer.
+>>>       
+>>     What IDE indirection you're talking about anyway?
+>>     
+>
+> As I said earlier ide_mm_inb etc via the function pointers tf_inb/tf_outb
+> etc.
+>   
 
- 
-> Anyway, however, this is a pretty old patch series and I'm not very much
-> interested in reworking it once again.  If you think it can be made better,
-> please go on. :-)
+   Ah... at least they don't have additional address checks that 
+ioread*()/iowrite*() have...
 
+> Given how small those functions are it might even be worth rolling them
+> into two different versions of the functions like ide_tf_read as surely
+> it costs more to call them (in size) than to inline the two for those
+> functions?
+>   
 
-It was just a suggestion, or more likely a question for curiosity, not really
-a criticism since I didn't follow the discussions about these patches and the
-problem they solve :-)
+   Indeed.
 
-Thanks.
+WBR, Sergei
 
-
-> Thanks,
-> Rafael
 
