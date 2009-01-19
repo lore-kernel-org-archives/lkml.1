@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZASMqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZASMqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbZASMqf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 07:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759038AbZASMqX
+	id S1759522AbZASMqv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 07:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759906AbZASMq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 07:46:23 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:45253 "EHLO
+	Mon, 19 Jan 2009 07:46:27 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:45323 "EHLO
 	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759002AbZASMqW (ORCPT
+	with ESMTP id S1759580AbZASMq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 07:46:22 -0500
-Date: Mon, 19 Jan 2009 13:45:28 +0100
+	Mon, 19 Jan 2009 07:46:26 -0500
+Date: Mon, 19 Jan 2009 13:45:33 +0100
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] async: Fix running list handling.
-Message-ID: <20090119134528.54d0a33c@gondolin>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/3] async: Add some documentation.
+Message-ID: <20090119134533.0c86d2d5@gondolin>
 Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
  Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
  Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
@@ -28,34 +28,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-async_schedule() should pass in async_running as the running
-list, and run_one_entry() should put the entry to be run on
-the provided running list instead of always on the generic one.
+Add some kerneldoc to the async interface.
 
-Reported-by: Jonathan Corbet <corbet@lwn.net>
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- kernel/async.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/async.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
 --- linux-2.6.orig/kernel/async.c
 +++ linux-2.6/kernel/async.c
-@@ -133,7 +133,7 @@ static void run_one_entry(void)
+@@ -206,18 +206,43 @@ static async_cookie_t __async_schedule(a
+ 	return newcookie;
+ }
  
- 	/* 2) move it to the running queue */
- 	list_del(&entry->list);
--	list_add_tail(&entry->list, &async_running);
-+	list_add_tail(&entry->list, entry->running);
- 	spin_unlock_irqrestore(&async_lock, flags);
- 
- 	/* 3) run it (and print duration)*/
-@@ -207,7 +207,7 @@ static async_cookie_t __async_schedule(a
- 
++/**
++ * async_schedule - schedule a function for asynchronous execution
++ * @ptr: function to execute asynchronously
++ * @data: data pointer to pass to the function
++ *
++ * Returns an async_cookie_t that may be used for checkpointing later.
++ * Note: This function may be called from atomic or non-atomic contexts.
++ */
  async_cookie_t async_schedule(async_func_ptr *ptr, void *data)
  {
--	return __async_schedule(ptr, data, &async_pending);
-+	return __async_schedule(ptr, data, &async_running);
+ 	return __async_schedule(ptr, data, &async_running);
  }
  EXPORT_SYMBOL_GPL(async_schedule);
  
++/**
++ * async_schedule_special - schedule a function for asynchronous execution with a special running queue
++ * @ptr: function to execute asynchronously
++ * @data: data pointer to pass to the function
++ * @running: list head to add to while running
++ *
++ * Returns an async_cookie_t that may be used for checkpointing later.
++ * @running may be used in the async_synchronize_*_special() functions
++ * to wait on a special running queue rather than on the global running
++ * queue.
++ * Note: This function may be called from atomic or non-atomic contexts.
++ */
+ async_cookie_t async_schedule_special(async_func_ptr *ptr, void *data, struct list_head *running)
+ {
+ 	return __async_schedule(ptr, data, running);
+ }
+ EXPORT_SYMBOL_GPL(async_schedule_special);
+ 
++/**
++ * async_synchronize_full - synchronize all asynchronous function calls
++ *
++ * This function waits until all asynchronous function calls have been done.
++ */
+ void async_synchronize_full(void)
+ {
+ 	do {
+@@ -226,12 +251,27 @@ void async_synchronize_full(void)
+ }
+ EXPORT_SYMBOL_GPL(async_synchronize_full);
+ 
++/**
++ * async_synchronize_full_special - synchronize all asynchronous function calls for a running list
++ * @list: running list to synchronize on
++ *
++ * This function waits until all asynchronous function calls for the running
++ * list @list have been done.
++ */
+ void async_synchronize_full_special(struct list_head *list)
+ {
+ 	async_synchronize_cookie_special(next_cookie, list);
+ }
+ EXPORT_SYMBOL_GPL(async_synchronize_full_special);
+ 
++/**
++ * async_synchronize_cookie_special - synchronize asynchronous function calls on a running list with cookie checkpointing
++ * @cookie: async_cookie_t to use as checkpoint
++ * @running: running list to synchronize on
++ *
++ * This function waits until all asynchronous function calls for the running
++ * list @list submitted prior to @cookie have been done.
++ */
+ void async_synchronize_cookie_special(async_cookie_t cookie, struct list_head *running)
+ {
+ 	ktime_t starttime, delta, endtime;
+@@ -253,6 +293,13 @@ void async_synchronize_cookie_special(as
+ }
+ EXPORT_SYMBOL_GPL(async_synchronize_cookie_special);
+ 
++/**
++ * async_synchronize_cookie - synchronize asynchronous function calls with cookie checkpointing
++ * @cookie: async_cookie_t to use as checkpoint
++ *
++ * This function waits until all asynchronous function calls prior to @cookie
++ * have been done.
++ */
+ void async_synchronize_cookie(async_cookie_t cookie)
+ {
+ 	async_synchronize_cookie_special(cookie, &async_running);
