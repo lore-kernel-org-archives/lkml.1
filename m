@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbZASBPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbZASBSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbZASBPr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 20:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZASBPh
+	id S1756910AbZASBSx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 20:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZASBSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 20:15:37 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49631 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755180AbZASBPg (ORCPT
+	Sun, 18 Jan 2009 20:18:42 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:49983 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754414AbZASBSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 20:15:36 -0500
-Message-ID: <4973D42F.2050705@jp.fujitsu.com>
-Date: Mon, 19 Jan 2009 10:15:27 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       shaohua.li@intel.com
-Subject: Re: ACPI hotplug panic with current git head
-References: <1231604250.3642.33.camel@localhost.localdomain> <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain> <1231807693.27151.21.camel@localhost.localdomain> <1232046108.5966.57.camel@localhost.localdomain> <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain> <1232049269.5966.64.camel@localhost.localdomain> <1232050347.5966.66.camel@localhost.localdomain> <4970242C.4010404@jp.fujitsu.com> <alpine.LFD.2.00.0901161504140.5705@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901161504140.5705@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Jan 2009 20:18:41 -0500
+Date: Mon, 19 Jan 2009 02:20:24 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
+Message-ID: <20090119012024.GA4491@uranus.ravnborg.org>
+References: <1232273454.23100.9.camel@localhost.localdomain> <20090119093959.ef7f2495.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090119093959.ef7f2495.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
->>> It looks like acpi_pci_get_bridge_handle() is returning NULL, so this is
->>> the fix that works for me.
->>>
->> I'm sorry for troubling you, and thank you for your patience.
->>
->> The patch seems to avoid the kernel panic, but I still don't know
->> why acpi_pci_get_bridge_handle() returns NULL here. I assumed
->> it should return non-NULL value here. So I'd like to investigate
->> it more.
->>
+On Mon, Jan 19, 2009 at 09:39:59AM +1100, Stephen Rothwell wrote:
+> Hi Jaswinder,
 > 
+> On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> > diff --git a/include/linux/videodev2.h b/include/linux/videodev2.h
+> > index 5571dbe..81fa255 100644
+> > --- a/include/linux/videodev2.h
+> > +++ b/include/linux/videodev2.h
+> > @@ -1480,7 +1480,7 @@ struct v4l2_chip_ident_old {
+> >  
+> >  #if 1
+> >  /* Experimental, meant for debugging, testing and internal use.
+> > -   Only implemented if CONFIG_VIDEO_ADV_DEBUG is defined.
+> > +   Only implemented if VIDEO_ADV_DEBUG is defined.
+> >     You must be root to use these ioctls. Never use these in applications! */
 > 
-> Kenji,
-> I'd like to push jejb's 1-liner upstream now.
-> It make sense, and it prevents a boot panic regression
-> that I'd rather not have others experience in rc2.
-> 
+> Is there some reason we cannot fix the tool that does the checking for
+> this case?
 
-Yes, I agree. Thank you for doing this.
+It could be done - but for now I have kept it very simple.
+One day I should preprocess the headers or something to cover more
+issues.
 
-Thanks,
-Kenji Kaneshige
-
-
-> I agree that it is important to hotplug for you to figure out
-> why this machine runs down that path in the first place,
-> and I'm sure that James will continue to work with you
-> on that after the 1-liner is in.
-> 
-> thanks
-> Len Brown, Intel Open Source Technology Center
-> 
-> 
->>> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
->>> index f09b101..803d9dd 100644
->>> --- a/drivers/pci/hotplug/acpiphp_glue.c
->>> +++ b/drivers/pci/hotplug/acpiphp_glue.c
->>> @@ -266,6 +266,8 @@ static int detect_ejectable_slots(struct pci_bus *pbus)
->>>  	int found = acpi_pci_detect_ejectable(pbus);
->>>  	if (!found) {
->>>  		acpi_handle bridge_handle = acpi_pci_get_bridge_handle(pbus);
->>> +		if (!bridge_handle)
->>> +			return 0;
->>>  		acpi_walk_namespace(ACPI_TYPE_DEVICE, bridge_handle, (u32)1,
->>>  				    is_pci_dock_device, (void *)&found, NULL);
->>>  	}
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
-
+	Sam
