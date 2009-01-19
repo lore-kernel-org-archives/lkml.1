@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbZASXaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZASXaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbZASXaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 18:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZASXaG
+	id S1760217AbZASXaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 18:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759038AbZASXaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 18:30:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:14241 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbZASXaC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 18:30:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ZiU6aH522Ooei1ovj2SG8ijlQb99fZljxVAI4N9Ja607DoA6TIZKqmCO7kJvbHUfUt
-         ekMGv64IbNMydptJIgNMvE1DdJm1w6aW1+ko86yc+H2STpONX7cM9ijDj+R1LA1BXkvs
-         LrfviOR1U9naeLNv6jrSKt+yiJF/ZRnkQiPDc=
-Date: Tue, 20 Jan 2009 00:29:56 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
+	Mon, 19 Jan 2009 18:30:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48436 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756784AbZASXaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 18:30:13 -0500
+Date: Tue, 20 Jan 2009 00:29:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
-Message-ID: <20090119232956.GD6194@nowhere>
-References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere> <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com> <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com> <20090119202523.GE690@ghostprotocols.net> <20090119210839.GA6194@nowhere> <20090119213720.GF690@ghostprotocols.net>
+Subject: Re: kmemtrace: kbuild failed to make the new header symlink...
+Message-ID: <20090119232948.GA30353@elte.hu>
+References: <20090119164029.GB19302@ghostprotocols.net> <20090119182825.GA11165@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090119213720.GF690@ghostprotocols.net>
+In-Reply-To: <20090119182825.GA11165@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 07:37:21PM -0200, Arnaldo Carvalho de Melo wrote:
-> Em Mon, Jan 19, 2009 at 10:08:40PM +0100, Frederic Weisbecker escreveu:
-> > On Mon, Jan 19, 2009 at 06:25:23PM -0200, Arnaldo Carvalho de Melo wrote:
-> > > Em Mon, Jan 19, 2009 at 08:28:03PM +0100, Fr�d�ric Weisbecker escreveu:
-> > > > 2009/1/2 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
-> > > > >
-> > > > > warning: I haven't looked at the patch details
-> > > > >
-> > > > > But I would love to use something like this to provide the exact
-> > > > > contents the userspace blktrace utilities want.
-> > > > >
-> > > > > - Arnaldo
-> > > > >
-> > > > 
-> > > > 
-> > > > Hi Arnaldo,
-> > >  
-> > > > Since you talked about binary record for the blk tracer, I just recall
-> > > > this patch.  Are you sure this infrastructure would cover your needs?
-> > > 
-> > > Nope, now that I look at it it definetely isn't what I need. See? the
-> > > warning was valid after all :-)
-> > > 
-> > > What I want and will experiment now is to almost dump the contents of
-> > > the ring buffer as-is to userspace. I want that so that I can use
-> > > blkparse to validate the ring buffer + blkFtrace routines produced
-> > > buffer.
-> > > 
-> > > So probably it will be a matter of using trace_iter to signal that, and
-> > > when it gets to my print_line routine I just put together the initial
-> > > trace format expected by blkparse + the ones I'm collecting at
-> > > tracepoint time.
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Mon, Jan 19, 2009 at 02:40:29PM -0200, Arnaldo Carvalho de Melo wrote:
+> > Sam,
 > > 
+> > 	I just did a git pull on linux-2.6-tip, then, on a build
+> > directory (make O=../build/blkftrace/) with a previous build a tree
+> > cloned from Linus I got stuck with the messages below.
 > > 
-> > So you would like two different trace files? Or print both bin and formatted
-> > output together in the same file?
-> > I'm not sure I understand :-s
+> > 	I could only get this to work after a make mrproper, thought I
+> > could mention this so that perhaps this can get detected and time be
+> > saved somehow.
+> > 
+> >   CC      arch/x86/mm/fault.o
+> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:38:27: error: asm/kmemcheck.h: No such file or directory
+> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c: In function ‘do_page_fault’:
+> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:614: error: implicit declaration of function ‘kmemcheck_active’
+> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:615: error: implicit declaration of function ‘kmemcheck_hide’
+> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:644: error: implicit declaration of function ‘kmemcheck_fault’
+> > 
 > 
-> output depends on iter_flags, most of what is needed is there, but I
-> guess there are too many ways to achieve the same result and some
-> keywords that are already used for other purposes, such as
-> TRACE_ITER_BIN -> print_bin_fmt that forces all traces to first have
-> pid, cpu and timestamp (all using trace_seq_putmem), then whatever the
-> tracer wants to put after that (if it registered a tracer_event _and_ it
-> has a ->binary() emitter), when I wanted it to just call ->binary(),
-> where I would emulate exactly the old blktrace format, then we would be
-> able to just ask for binary traces, collect them thru
-> /d/tracing/trace_pipe and pipe them into blkparse for
-> validation/debugging the ring_buffer + ftrace + blkFtrace code.
+> The problem is that kmemcheck.h is located in include/asm-x86/ which is wrong.
 
+indeed - it was still on an older base - i just fixed that.
 
-Oh I see. I think it just needs a new flag in struct trace_event to tell
-if we want the headers or not.
-And then check this flag in trace.c to decide if we print the cpu/time/pid
-or let the tracer do all its job.
-
-I will submit a patch in the next days to bring it.
-
- 
-> I'll try to get a brain dump in the form of working code later
-> today/early tomorrow, now I'm being preempted by my wife to do those
-> social things like having dinner and going to the movie theater 8)
-
-
-Heh, have a good evening! :-)
-
-
-> Regards,
-> 
-> - Arnaldo
-
+	Ingo
