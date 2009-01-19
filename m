@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759100AbZASGQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbZASGSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759100AbZASGQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 01:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZASGQE
+	id S1758940AbZASGSO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 01:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbZASGR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 01:16:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41522
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756964AbZASGQC (ORCPT
+	Mon, 19 Jan 2009 01:17:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60343 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757361AbZASGR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 01:16:02 -0500
-Date: Sun, 18 Jan 2009 22:16:03 -0800 (PST)
-Message-Id: <20090118.221603.177818343.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: w@1wt.eu, jarkao2@gmail.com, zbr@ioremap.net, dada1@cosmosbay.com,
-       ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090115.153449.204259387.davem@davemloft.net>
-References: <20090115.152608.89323697.davem@davemloft.net>
-	<20090115233205.GA8474@gondor.apana.org.au>
-	<20090115.153449.204259387.davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 19 Jan 2009 01:17:56 -0500
+Message-ID: <49741AE9.3050005@zytor.com>
+Date: Sun, 18 Jan 2009 22:17:13 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>
+CC: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, matthew@wil.cx
+Subject: Re: [PATCH] x86: Remove never-called arch_setup_msi_irq()
+References: <2882ab91a8588e9fe2ea45c89d1bc386850a94a3.1232345159.git.michael@ellerman.id.au>
+In-Reply-To: <2882ab91a8588e9fe2ea45c89d1bc386850a94a3.1232345159.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 15 Jan 2009 15:34:49 -0800 (PST)
-
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Fri, 16 Jan 2009 10:32:05 +1100
+Michael Ellerman wrote:
+> Since commit 75c46fa, "x64, x2apic/intr-remap: MSI and MSI-X
+> support for interrupt remapping infrastructure", x86 has had an
+> implementation of arch_setup_msi_irqs().
 > 
-> > On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
-> > > +static inline struct page *linear_to_page(struct page *page, unsigned int len,
-> > > +					  unsigned int offset)
-> > > +{
-> > > +	struct page *p = alloc_pages(GFP_KERNEL, 0);
-> > > +
-> > > +	if (!p)
-> > > +		return NULL;
-> > > +	memcpy(page_address(p) + offset, page_address(page) + offset, len);
-> > 
-> > This won't work very well if skb->head is longer than a page.
-> > 
-> > We'll need to divide it up into individual pages.
+> That implementation does not call arch_setup_msi_irq(), instead it calls
+> setup_irq(). No other x86 code calls arch_setup_msi_irq().
 > 
-> Oh yes the same bug I pointed out the other day.
+> That leaves only arch_setup_msi_irqs() in drivers/pci/msi.c, but that
+> routine is overridden by the x86 version of arch_setup_msi_irqs().
 > 
-> But Willy can test this patch as-is, since he is not using
-> jumbo frames in linear SKBs.
+> So arch_setup_msi_irq() is dead code, remove it.
 
-Actually, Herbert, it turns out this case should be OK.
+Applied to tip:x86/cleanups, thanks!
 
-Look a level or two higher, at __splice_segment(), it even has a
-comment :-)
+	-hpa
 
---------------------
-	do {
-		unsigned int flen = min(*len, plen);
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-		/* the linear region may spread across several pages  */
-		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
-
-		if (spd_fill_page(spd, page, flen, poff, skb, linear))
-			return 1;
-
-		__segment_seek(&page, &poff, &plen, flen);
-		*len -= flen;
-
-	} while (*len && plen);
---------------------
-
-That code should work and do what we need.
