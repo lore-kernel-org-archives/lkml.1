@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZASDHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZASDIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbZASDHR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 22:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZASDHD
+	id S1758603AbZASDIB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 22:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757682AbZASDHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 22:07:03 -0500
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:32005 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757479AbZASDHB (ORCPT
+	Sun, 18 Jan 2009 22:07:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:52485 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757667AbZASDHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 22:07:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAG98c0l5LBUR/2dsb2JhbADPLYVz
-X-IronPort-AV: E=Sophos;i="4.37,285,1231075800"; 
-   d="scan'208";a="286770948"
-Date: Mon, 19 Jan 2009 14:06:57 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Bill O'Donnell" <billodo@sgi.com>, Joe Perches <joe@perches.com>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [XFS] Update maintainers
-Message-ID: <20090119030657.GM8071@disturbed>
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Bill O'Donnell <billodo@sgi.com>, Joe Perches <joe@perches.com>,
-	Lachlan McIlroy <lachlan@sgi.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Christoph Hellwig <hch@infradead.org>
-References: <200901150459.n0F4xhVS016322@hera.kernel.org> <1232058936.3109.7.camel@localhost> <20090116010511.GA33559@sgi.com> <1232297538.5204.20.camel@laptop>
+	Sun, 18 Jan 2009 22:07:48 -0500
+Date: Sun, 18 Jan 2009 20:07:32 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Gao, Yunpeng" <yunpeng.gao@intel.com>
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: your mail
+Message-ID: <20090119030731.GA28670@parisc-linux.org>
+References: <38D9F46DFF92C54980D2F2C1E8EE31301FC5E7FB@pdsmsx503.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232297538.5204.20.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <38D9F46DFF92C54980D2F2C1E8EE31301FC5E7FB@pdsmsx503.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 05:52:18PM +0100, Peter Zijlstra wrote:
-> On Thu, 2009-01-15 at 19:05 -0600, Bill O'Donnell wrote:
-> > No, I'd prefer we keep the maintainer contact address 
-> > as a centralized SGI mail address.  In fact, it would be 
-> > best if we remove my name entirely, and leave contact 
-> > completely centralized to SGI.
-> 
-> Do I read this as nobody wanting to be personally responsible for XFS
-> anymore?
-> 
-> I suppose its a good thing we know where to find Christoph and Dave,
-> just in case.
+On Mon, Jan 19, 2009 at 10:54:02AM +0800, Gao, Yunpeng wrote:
+> I have to use 64bit variable in my 2.6.27 kernel NAND driver as below:
+> ---------------------------------------------------------------------------
+> u64 NAND_capacity;
+> unsigned int block_num, block_size;
+> ...
+> block_num = NAND_capacity / block_size;
+> ---------------------------------------------------------------------------
+> but it failed when compiling and reports 'undefined reference to `__udivdi3'.
 
-FWIW, both Christoph and I are on that xfs-masters email list - it's
-not actually a "sgi" point of contact at all...
+Presumably block_size is a power of two, so you can do:
 
-Cheers,
+	block_num = NAND_capacity >> block_shift;
 
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
