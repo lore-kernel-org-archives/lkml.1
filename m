@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZASSzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZASS4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZASSzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbZASSyx
+	id S1758538AbZASS4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZASS41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:54:53 -0500
-Received: from smtp5.welho.com ([213.243.153.39]:53076 "EHLO smtp5.welho.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756573AbZASSyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:54:52 -0500
-X-Greylist: delayed 1072 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jan 2009 13:54:52 EST
-Date: Mon, 19 Jan 2009 20:36:39 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: Linux 2.6.27.12
-Message-ID: <20090119183639.GD13184@localhost.pp.htv.fi>
-References: <20090118185254.GA6478@kroah.com> <49738736.50500@gentoo.org> <20090118195426.GA17714@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090118195426.GA17714@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 19 Jan 2009 13:56:27 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:60800 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbZASS40 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:56:26 -0500
+Subject: RE: Mainline kernel OLTP performance update
+From: Chris Mason <chris.mason@oracle.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: "Ma, Chinang" <chinang.ma@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <1232390259.25783.5.camel@localhost.localdomain>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
+	 <20090114163557.11e097f2.akpm@linux-foundation.org>
+	 <20090115012147.GW29283@parisc-linux.org>
+	 <20090114180431.f4a96543.akpm@linux-foundation.org>
+	 <1231986439.21980.54.camel@localhost.localdomain>
+	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
+	 <1232388291.6521.140.camel@think.oraclecorp.com>
+	 <1232390259.25783.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 13:55:05 -0500
+Message-Id: <1232391305.6521.146.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4974CC90.0066:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 11:54:26AM -0800, Greg KH wrote:
-> On Sun, Jan 18, 2009 at 07:47:02PM +0000, Daniel Drake wrote:
-> > Greg KH wrote:
-> >> We (the -stable team) are announcing the release of the 2.6.27.11
-> >> kernel.
-> >
-> > Thanks! Are you accepting patches for a 2.6.27.13, or is this the end for 
-> > 2.6.27?
+On Mon, 2009-01-19 at 13:37 -0500, Steven Rostedt wrote:
+> (added Rusty)
 > 
-> 2.6.27-stable will continue for a long time, I've stated that I intend
-> for it to be one of those "long support" kernel releases.  So yes, I
-> will be taking .27 patches for quite a while.
-
-And as already discussed, whenever you stop I'll continue it.
-
-> thanks,
+> On Mon, 2009-01-19 at 13:04 -0500, Chris Mason wrote:
+> > 
+> > I think the -rt version of check_preempt_equal_prio has gotten much more
+> > expensive since 2.6.24.
+> > 
+> > I'm sure these changes were made for good reasons, and this workload may
+> > not be a good reason to change it back.  But, what does the patch below
+> > do to performance on 2.6.29-rcX?
+> > 
+> > -chris
+> > 
+> > diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> > index 954e1a8..bbe3492 100644
+> > --- a/kernel/sched_rt.c
+> > +++ b/kernel/sched_rt.c
+> > @@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
+> > struct task_struct *p, int sync
+> >  		resched_task(rq->curr);
+> >  		return;
+> >  	}
+> > +	return;
+> >  
+> >  #ifdef CONFIG_SMP
+> >  	/*
 > 
-> greg k-h
+> That should not cause much of a problem if the scheduling task is not
+> pinned to an CPU. But!!!!!
+> 
+> A recent change makes it expensive:
 
-cu
-Adrian
 
--- 
+> +       if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
+>                 return;
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> check_preempt_equal_prio is in a scheduling hot path!!!!!
+> 
+> WTF are we allocating there for?
+
+I wasn't actually looking at the cost of the checks, even though they do
+look higher (if they are using CONFIG_CPUMASK_OFFSTACK anyway).
+
+The 2.6.24 code would trigger a rescheduling interrupt only when the
+prio of the inbound task was higher than the running task.
+
+This workload has a large number of equal priority rt tasks that are not
+bound to a single CPU, and so I think it should trigger more
+preempts/reschedules with the today's check_preempt_equal_prio().
+
+-chris
+
 
