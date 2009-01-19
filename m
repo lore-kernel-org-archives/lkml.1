@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbZASTbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZASTfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbZASTbu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZASTbm
+	id S1757822AbZASTfS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZASTfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:31:42 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:2816 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbZASTbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:31:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IiWbZs9YQSybBEydkB6ssMedC4n0V85P0CISWqE5N8iJgMbqKD+68ChcNFpvBgcq9h
-         1eVw0oN1LTHRWIbxWjXvwQFl0nr3voBUxoCgy6O7SDlvhjo067w1wzu5eWEHotgaHYPW
-         qB+4b8/kc1F8f2OiKL/ZN2lAGSe/iufAHsrU8=
-MIME-Version: 1.0
-In-Reply-To: <4974CC8B.1030403@zytor.com>
-References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com>
-	 <4974CC8B.1030403@zytor.com>
-Date: Mon, 19 Jan 2009 11:31:40 -0800
-Message-ID: <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com>
-Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due 
-	to dc1e35c
-From: Avuton Olrich <avuton@gmail.com>
+	Mon, 19 Jan 2009 14:35:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42523 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752210AbZASTfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 14:35:01 -0500
+Date: Mon, 19 Jan 2009 20:32:44 +0100
+From: Oleg Nesterov <oleg@redhat.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Ian Kent <raven@themaw.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090119193244.GA26784@redhat.com>
+References: <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com> <4974D29A.2070607@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4974D29A.2070607@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/19 H. Peter Anvin <hpa@zytor.com>:
+On 01/19, H. Peter Anvin wrote:
+>
+> Oleg Nesterov wrote:
 >>
->> bisected to:
->> commit dc1e35c6e95e8923cf1d3510438b63c600fee1e2
->> Author: Suresh Siddha <suresh.b.siddha@intel.com>
->> Date:   Tue Jul 29 10:29:19 2008 -0700
+>> Actually, I am very much surprized this one-liner patch has so
+>> many questions. Isn't it "obiously correct" ?
 >>
 >
-> Avuton, could you please compile the attached program and send us the
-> output?
+> Obviously not.
 
-Sure whichever flavor you prefer:
-http://avuton.googlepages.com/cpuid-out (3M)
-http://avuton.googlepages.com/cpuid-out.bz2 (40K)
--- 
-avuton
---
-|  (\_/)  This is Bunny. Copy and paste Bunny
-| (='.'=) into your signature to help him gain
-| (")_(") world domination.
+Do you agree the current code is not right?
+
+What do you not like in this change?
+
+Oleg.
+
