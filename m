@@ -1,103 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZASSG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZASSIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZASSG1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZASSGP
+	id S1754825AbZASSIE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZASSHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:06:15 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:31612 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZASSGO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:06:14 -0500
-Subject: RE: Mainline kernel OLTP performance update
-From: Chris Mason <chris.mason@oracle.com>
-To: "Ma, Chinang" <chinang.ma@intel.com>
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>
-In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-	 <20090114163557.11e097f2.akpm@linux-foundation.org>
-	 <20090115012147.GW29283@parisc-linux.org>
-	 <20090114180431.f4a96543.akpm@linux-foundation.org>
-	 <1231986439.21980.54.camel@localhost.localdomain>
-	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 13:04:51 -0500
-Message-Id: <1232388291.6521.140.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4974C0C9.020A:SCFSTAT928724,ss=1,fgs=0
+	Mon, 19 Jan 2009 13:07:53 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35708 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbZASSHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:07:52 -0500
+Date: Mon, 19 Jan 2009 19:05:34 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
+       hpa@zytor.com, Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090119180534.GA22913@redhat.com>
+References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net> <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net> <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090119174836.GA11295@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-15 at 00:11 -0700, Ma, Chinang wrote:
-> >> > > > >
-> >> > > > > Linux OLTP Performance summary
-> >> > > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
-> >iowait%
-> >> > > > > 2.6.24.2                1.000   21969   43425   76   24     0
-> >0
-> >> > > > > 2.6.27.2                0.973   30402   43523   74   25     0
-> >1
-> >> > > > > 2.6.29-rc1              0.965   30331   41970   74   26     0
-> >0
-> >> >
-> >> > > But the interrupt rate went through the roof.
-> >> >
-> >> > Yes.  I forget why that was; I'll have to dig through my archives for
-> >> > that.
-> >>
-> >> Oh.  I'd have thought that this alone could account for 3.5%.
+On 01/19, Serge E. Hallyn wrote:
+>
+> Quoting Oleg Nesterov (oleg@redhat.com):
+> > On 01/19, Ian Kent wrote:
+> > >
+> > > On Mon, 2009-01-19 at 13:42 +0100, Oleg Nesterov wrote:
+> > > >
+> > > > Before the patch
+> > > >
+> > > > 	sbi->oz_pgrp != task_pgrp(automount)
+> > > >
+> > > > After the patch
+> > > >
+> > > > 	sbi->oz_pgrp == task_pgrp(automount)
+> > > >
+> > > > And please note that these "!="/"==" apply to any namespace. I mean,
+> > > > when we call autofs_oz_mode() it does not matter in which namespace
+> > > > autofs_oz_mode() is executed, we compare "struct pid*", not pid_t.
+> > >
+> > > I think your saying that the option pgrp= is broken and should be
+> > > deprecated
+> >
+> > No, no, sorry if I confused you.
+> > 
+> > If the "pgrp=" option was specified, the patch has no effect, and the
+> > code is correct with or without the patch.
+>
+> But so there does still need to be a patch modifying parse_options()
+> to return an error if pgrp= was not specified, right?
 
-A later email indicated the reschedule interrupt count doubled since
-2.6.24, and so I poked around a bit at the causes of resched_task.
+Why? In that case we should use the caller's pgrp. This is what the
+current tries to do, why should the patch change this behaviour?
 
-I think the -rt version of check_preempt_equal_prio has gotten much more
-expensive since 2.6.24.
-
-I'm sure these changes were made for good reasons, and this workload may
-not be a good reason to change it back.  But, what does the patch below
-do to performance on 2.6.29-rcX?
-
--chris
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 954e1a8..bbe3492 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
-struct task_struct *p, int sync
- 		resched_task(rq->curr);
- 		return;
- 	}
-+	return;
- 
- #ifdef CONFIG_SMP
- 	/*
-
-
-
+Oleg.
 
