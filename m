@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZASSlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZASSnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbZASSlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZASSlH
+	id S1756609AbZASSnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZASSnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:41:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:9888 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752666AbZASSlE (ORCPT
+	Mon, 19 Jan 2009 13:43:33 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:41503 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752253AbZASSnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:41:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=XYwBlrdzE4x3dinFNFoY3UNvB/ptCIDFa/58MqwvNd5tVt+HN1X1W3FTp0EDrN1T0q
-         f12qry8RXiD6dcPdev9aMcSaVX2XnRxfRlE1fEDu78uMWaoWT76KE+V2M3MOjwJGbm/j
-         56JegZpsnfREtCOyU7GTey+lOgMBEIY1zeE7I=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/2] frv: remove <asm/ide.h>
-Date: Mon, 19 Jan 2009 19:33:11 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+	Mon, 19 Jan 2009 13:43:32 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [2.6.29-rc2 regression] e100: netconsole not functional because of missing firmware
+Date: Mon, 19 Jan 2009 21:43:00 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
+Cc: e1000-devel@lists.soutceforge.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200901171908.28533.arvidjaar@mail.ru> <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
+In-Reply-To: <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed;
+  boundary="nextPart2377820.Mrk3YsPs4E";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901191933.11757.bzolnier@gmail.com>
+Message-Id: <200901192143.02853.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] frv: remove <asm/ide.h>
+--nextPart2377820.Mrk3YsPs4E
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Remove superfluous <asm/{setup,io,irq}.h> includes.
+On 19 =D1=8F=D0=BD=D0=B2=D0=B0=D1=80=D1=8F 2009 21:30:01 Jesse Brandeburg w=
+rote:
+> On Sat, Jan 17, 2009 at 8:08 AM, Andrey Borzenkov <arvidjaar@mail.ru>=20
+wrote:
+> > [    2.008509] e100: eth0: e100_request_firmware: Failed to load
+> > firmware "e100/d101m_ucode.bin": -22
+> > [    2.010461] netconsole: failed to open eth0
+> > [    2.010996] netconsole: cleaning up
+> >
+> > This has been working all the time without requiring any external
+> > firmware to be present. Why it suddenly refuses to work now?
+>
+> to use netconsole you probably need to set config option
+> CONFIG_FIRMWARE_IN_KERNEL=3Dy
+>
 
-* Remove <asm/ide.h>.
+Yes, I already figured that much :) Unfortunately, there seems to be a=20
+bug that prevents compiling firmware if src !=3D obj. At least it does not=
+=20
+work for me.
 
-Cc: David Howells <dhowells@redhat.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- include/asm-frv/ide.h |   24 ------------------------
- include/linux/ide.h   |    4 ++--
- 2 files changed, 2 insertions(+), 26 deletions(-)
+> Hm, I wonder if we couldn't have netconsole=3Dy select
+> CONFIG_FIRMWARE_IN_KERNEL in Kconfig
+>
 
-Index: b/include/asm-frv/ide.h
-===================================================================
---- a/include/asm-frv/ide.h
-+++ /dev/null
-@@ -1,24 +0,0 @@
--/* ide.h: FRV IDE declarations
-- *
-- * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--
--#ifndef _ASM_IDE_H
--#define _ASM_IDE_H
--
--#ifdef __KERNEL__
--
--#include <asm/setup.h>
--#include <asm/io.h>
--#include <asm/irq.h>
--
--#include <asm-generic/ide_iops.h>
--
--#endif /* __KERNEL__ */
--#endif /* _ASM_IDE_H */
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -193,8 +193,8 @@ static inline void ide_std_init_ports(hw
- 	hw->io_ports.ctl_addr = ctl_addr;
- }
- 
--#if defined(CONFIG_ARM) || defined(CONFIG_FRV) || defined(CONFIG_M68K) || \
--    defined(CONFIG_MIPS) || defined(CONFIG_MN10300) || defined(CONFIG_PARISC) \
-+#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
-+    defined(CONFIG_MN10300) || defined(CONFIG_PARISC) \
-     || defined(CONFIG_PPC) || defined(CONFIG_SPARC) || defined(CONFIG_SPARC64)
- #include <asm/ide.h>
- #else
+That probably is overkill; unfortunately I am afraid there is no way to=20
+make kconfig automatically select correct firmware in case e100 is built=20
+in. =20
+
+Thank you!
+
+--nextPart2377820.Mrk3YsPs4E
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkl0ybYACgkQR6LMutpd94wfvgCbBNZlgCDYBpBLAawXQ2eCSsrR
+DtsAoKslTI/pnkPKRj/djHLbiYEJCojY
+=6fdT
+-----END PGP SIGNATURE-----
+
+--nextPart2377820.Mrk3YsPs4E--
