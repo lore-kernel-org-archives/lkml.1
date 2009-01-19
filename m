@@ -1,170 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZASIeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZASIfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbZASIeJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 03:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZASIdw
+	id S1754975AbZASIfM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 03:35:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZASIe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 03:33:52 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:47506 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752630AbZASIdw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 03:33:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KLjzjbxRFeBHLFeD1uLq/LUT0TV6R/aNwqATn9RyuVVvaDSekzKmLToj/A8yAjFOLESahuFvDJyGl3LqFsu3AUa6Pzxqk7anUGUqbJEDgLkzDBrRctkqL1DeUPDrLfQ6VbYwiaxUfDqpE16U7hKZd+ntllMfhFLyCoRwMxwFPMI=  ;
-X-YMail-OSG: 9zaQJ78VM1n6jR.m8xsI0bMyuRnvXCiLI4zc9vZY1j6qQnC1Llmaaf.T2GPlCGhbWMxuHjJLnoT9U3iSp7VPAFCjBxoeGDxkTKgqZuIlUFZ0Y0WDSUP8uosgn1Z_T_PoPIEEiihayG7lkJhQ3zKbeoUsW1HcneIlzEmfLpsrqeiB2c7iC.cVt5hmTzRJIQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: Mainline kernel OLTP performance update
-Date: Mon, 19 Jan 2009 19:33:27 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901191813.07960.nickpiggin@yahoo.com.au> <1232352303.30141.25.camel@penberg-laptop>
-In-Reply-To: <1232352303.30141.25.camel@penberg-laptop>
+	Mon, 19 Jan 2009 03:34:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53507 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbZASIe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 03:34:56 -0500
+Date: Mon, 19 Jan 2009 09:32:08 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090119083208.GA25297@redhat.com>
+References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net> <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901191933.29322.nickpiggin@yahoo.com.au>
+In-Reply-To: <1232352677.3136.103.camel@zeus.themaw.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009 19:05:03 Pekka Enberg wrote:
-> Hi Nick,
+On 01/19, Ian Kent wrote:
 >
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > SLUB was distinctly slower on the tbench, netperf, and hackbench
-> > tests that I ran. These were faster with SLUB on your machine?
->
-> I was trying to bisect a somewhat recent SLAB vs. SLUB regression in
-> tbench that seems to be triggered by CONFIG_SLUB as suggested by Evgeniy
-> Polyakov performance tests. Unfortunately I bisected it down to a bogus
-> commit so while I saw SLUB beating SLAB, I also saw the reverse in
-> nearby commits which didn't touch anything interesting. So for tbench,
-> SLUB _used to_ dominate SLAB on my machine but the current situation is
-> not as clear with all the tbench regressions in other subsystems.
-
-OK.
-
-
-> SLUB has been a consistent winner for hackbench after Christoph fixed
-> the regression reported by Ingo Molnar two years (?) ago. I don't think
-> I've ran netperf, but for the fio test you mentioned, SLUB is beating
-> SLAB here.
-
-Hmm, netperf, hackbench, and fio are all faster with SLAB than SLUB.
-
-
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > What kind of system is it?
->
-> 2-way Core2. I posted my /proc/cpuinfo in this thread if you're
-> interested.
-
-Thanks. I guess one of three obvious differences, mine is a K10, is
-NUMA, and has significantly more cores. I can try setting it to
-interleave cachelines over nodes or use fewer cores to see if the
-picture changes...
-
-
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > > So I have very mixed feelings about SLQB. It's very
-> > > nice that it works for OLTP but we still don't have much insight (i.e.
-> > > numbers) on why it's better.
->
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > According to estimates in this thread, I think Matthew said SLUB would
-> > be around 6% slower? SLQB is within measurement error of SLAB.
->
-> Yeah but I say that we don't know _why_ it's better. There's the
-> kmalloc()/kfree() CPU ping-pong hypothesis but it could also be due to
-> page allocator interaction or just a plain bug in SLUB. And lets not
-> forget bad interaction with some random subsystem (SCSI, for example).
->
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > Fair point about personally reproducing the OLTP problem yourself. But
-> > the fact is that we will get problem reports that cannot be reproduced.
-> > That does not make them less relevant. I can't reproduce the OLTP
-> > benchmark myself. And I'm fully expecting to get problem reports for
-> > SLQB against insanely sized SGI systems, which I will take very seriously
-> > and try to fix them.
->
-> Again, it's not that I don't take the OLTP regression seriously (I do)
-> but as a "part-time maintainer" I simply don't have the time and
-> resources to attempt to fix it without either (a) being able to
-> reproduce the problem or (b) have someone who can reproduce it who is
-> willing to do oprofile and so on.
->
-> So as much as I would have preferred that you had at least attempted to
-> fix SLUB, I'm more than happy that we have a very active developer
-> working on the problem now. I mean, I don't really care which allocator
-> we decide to go forward with, if all the relevant regressions are dealt
-> with.
-
-OK, good to know.
-
-
-> All I am saying is that I don't like how we're fixing a performance bug
-> with a shiny new allocator without a credible explanation why the
-> current approach is not fixable.
-
-To be honest, my biggest concern with SLUB is the higher order pages
-thing. But Christoph always poo poos me when I raise that concern, and
-it's hard to get concrete numbers showing real fragmentation problems
-when it can take days or months to start biting.
-
-It really stems from queueing versus not queueing I guess. And I think
-SLUB is flawed due to its avoidance of queueing.
-
-
-> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
-> > > The good news is that SLQB can replace SLAB so either way, we're not
-> > > going to end up with four allocators. Whether it can replace SLUB
-> > > remains to be seen.
+> On Mon, 2009-01-19 at 08:08 +0100, Oleg Nesterov wrote:
+> > On 01/19, Ian Kent wrote:
+> > >
+> > > On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
+> > > > parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
+> > > > namespace. This is wrong, we use this pgid to find "struct pid" in the
+> > > > current's namespace. Change parse_options() to use task_pgrp_vnr().
+> > > >
+> > > > Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
+> > > > checkpatch.pl complains about "line over 80 characters", but it should
+> > > > blame the cuurent code, not the patch.
+> > >
+> > > This changelog entry doesn't really have anything that I can use to work
+> > > out if this change might introduce regressions.
+> > >
+> > > It would be helpful to me if you could include:
+> > > 1) A brief statement about what your trying to achieve and why.
 > >
-> > Well I think being able to simply replace SLAB is not ideal. The plan
-> > I'm hoping is to have four allocators for a few releases, and then
-> > go back to having two. That is going to mean some groups might not
-> > have their ideal allocator merged... but I think it is crazy to settle
-> > with more than one main compile-time allocator for the long term.
+> > First of all, I think this patch fixes a bug.
+> >
+> > What we are doing in autofs_fill_super()->parse_options() path
+> > is find_get_pid(task_pgrp_vnr(current)), this is wrong.
 >
-> So now the HPC folk will be screwed over by the OLTP folk?
+> So your saying that your patch is wrong?
+> I'm not following this at all.
 
-No. I'm imagining there will be a discussion of the 3, and at some
-point an executive decision will be made if an agreement can't be
-reached. At this point, I think that is a better and fairer option
-than just asserting one allocator is better than another and making
-it the default.
+No, I am trying to say that the current code is wrong ;)
 
-And... we have no indication that SLQB will be worse for HPC than
-SLUB ;)
+> > task_pgrp_vnr() reporst the pid_t in the global namespace, but
+> > find_get_pid() searches "struct pid" in the current namespace.
+> > We can get the wrong pid. I tried to document this in changelog.
+>
+> We don't know whether it's the wrong pid because the environments were
+> this is used haven't been defined. Depending on expected usage of pid
+> namespaces the global pid may or may not be the correct one. This was
+> not determined the last time this came up.
 
+Confused. The current code can't be right.
 
-> I guess
-> that's okay as the latter have been treated rather badly for the past
-> two years.... ;-)
+Lets consider the simplest case, there is no "pgrp=" option during mount.
+In that case the current code does:
 
-I don't know if that is meant to be sarcastic, but the OLTP performance
-numbers almost never get better from one kernel to the next. Actually
-the trend is downward. Mainly due to bloat or new features being added.
+	pid_t pgrp = task_pgrp_nr(current);
+	sbi->oz_pgrp = find_get_pid(pgid);
 
-I think that at some level, controlled addition of features that may
-add some cycles to these paths is not a bad idea (what good is Moore's
-Law if we can't have shiny new features? :) But on the other hand, this
-OLTP test is incredibly valuable to monitor the general performance-
-health of this area of the kernel.
+But this means that sbi->oz_pgrp != task_prgp(current), unless of
+course we are from the global namespace. ->oz_pgrp is a "random"
+pid or NULL.
+
+What I am missed?
+
+Oleg.
 
