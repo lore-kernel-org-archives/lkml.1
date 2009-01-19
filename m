@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZASCTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZASCUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483AbZASCTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZASCTF
+	id S1757997AbZASCUV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbZASCUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:19:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59206 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756977AbZASCTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:19:02 -0500
-Message-ID: <4973E30D.3030102@kernel.org>
-Date: Mon, 19 Jan 2009 11:18:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] x86-64: Remove the PDA
-References: <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com> <1232326345-3534-1-git-send-email-brgerst@gmail.com> <1232326345-3534-2-git-send-email-brgerst@gmail.com> <1232326345-3534-3-git-send-email-brgerst@gmail.com> <1232326345-3534-4-git-send-email-brgerst@gmail.com>
-In-Reply-To: <1232326345-3534-4-git-send-email-brgerst@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Sun, 18 Jan 2009 21:20:06 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42157 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756680AbZASCUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:20:05 -0500
+X-Sasl-enc: U8siHkTxNu2q+4fauoMqu5gIT2OAP0CXCqV64e3Aqevs 1232331602
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+From: Ian Kent <raven@themaw.net>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20090118073441.GA699@redhat.com>
+References: <20090118073441.GA699@redhat.com>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 11:20:02 +0900
+Message-Id: <1232331602.3136.19.camel@zeus.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Jan 2009 02:18:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Brian.
+On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
+> parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
+> namespace. This is wrong, we use this pgid to find "struct pid" in the
+> current's namespace. Change parse_options() to use task_pgrp_vnr().
+> 
+> Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
+> checkpatch.pl complains about "line over 80 characters", but it should
+> blame the cuurent code, not the patch.
 
-Brian Gerst wrote:
-...
-> @@ -881,13 +881,9 @@ __setup("clearcpuid=", setup_disablecpuid);
->  #ifdef CONFIG_X86_64
->  struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
+This changelog entry doesn't really have anything that I can use to work
+out if this change might introduce regressions.
+
+It would be helpful to me if you could include:
+1) A brief statement about what your trying to achieve and why.
+2) The reason why task_pgrp_nr() has changed to task_pgrp_vnr() since
+you made the change (that is someone working on pid namespaces) to
+task_pgrp_nr().
+3) Why you believe this change won't introduce a regression.
+
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> 
+> --- CUR/fs/autofs/inode.c~1_AUTOFS	2009-01-12 23:07:46.000000000 +0100
+> +++ CUR/fs/autofs/inode.c	2009-01-18 06:18:49.000000000 +0100
+> @@ -78,7 +78,7 @@ static int parse_options(char *options, 
 >  
-> -DEFINE_PER_CPU_PAGE_ALIGNED(char[IRQ_STACK_SIZE], irq_stack);
-> -#ifdef CONFIG_SMP
-> -DEFINE_PER_CPU(char *, irq_stack_ptr);	/* will be set during per cpu init */
-> -#else
-> +DEFINE_PER_CPU_FIRST(union irq_stack_union, irq_stack_union) __aligned(PAGE_SIZE);
->  DEFINE_PER_CPU(char *, irq_stack_ptr) =
-> -	per_cpu_var(irq_stack) + IRQ_STACK_SIZE - 64;
-> -#endif
-> +	per_cpu_var(irq_stack_union.irq_stack) + IRQ_STACK_SIZE - 64;
+>  	*uid = current_uid();
+>  	*gid = current_gid();
+> -	*pgrp = task_pgrp_nr(current);
+> +	*pgrp = task_pgrp_vnr(current);
 >  
->  DEFINE_PER_CPU(unsigned long, kernel_stack) =
->  	(unsigned long)&init_thread_union - KERNEL_STACK_OFFSET + THREAD_SIZE;
->
-> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-> index 98ea26a..8c83de6 100644
-> --- a/arch/x86/kernel/head_64.S
-> +++ b/arch/x86/kernel/head_64.S
-> @@ -216,6 +216,7 @@ ENTRY(secondary_startup_64)
->  	cmpl	$0, per_cpu__cpu_number(%rax)
->  	jne	1f
->  	addq	%rax, early_gdt_descr_base(%rip)
-> +	addq	%rax, per_cpu__irq_stack_ptr(%rax)
->  1:
->  #endif
+>  	*minproto = *maxproto = AUTOFS_PROTO_VERSION;
+>  
+> --- CUR/fs/autofs/root.c~1_AUTOFS	2008-10-10 00:13:53.000000000 +0200
+> +++ CUR/fs/autofs/root.c	2009-01-18 06:15:42.000000000 +0100
+> @@ -215,7 +215,7 @@ static struct dentry *autofs_root_lookup
+>  	oz_mode = autofs_oz_mode(sbi);
+>  	DPRINTK(("autofs_lookup: pid = %u, pgrp = %u, catatonic = %d, "
+>  				"oz_mode = %d\n", task_pid_nr(current),
+> -				task_pgrp_nr(current), sbi->catatonic,
+> +				task_pgrp_vnr(current), sbi->catatonic,
+>  				oz_mode));
+>  
 >  	/*
+> @@ -550,7 +550,8 @@ static int autofs_root_ioctl(struct inod
+>  	struct autofs_sb_info *sbi = autofs_sbi(inode->i_sb);
+>  	void __user *argp = (void __user *)arg;
+>  
+> -	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",cmd,arg,sbi,task_pgrp_nr(current)));
+> +	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",
+> +		cmd, arg, sbi, task_pgrp_vnr(current)));
+>  
+>  	if (_IOC_TYPE(cmd) != _IOC_TYPE(AUTOFS_IOC_FIRST) ||
+>  	     _IOC_NR(cmd) - _IOC_NR(AUTOFS_IOC_FIRST) >= AUTOFS_IOC_COUNT)
+> 
 
-As discussed before, the above chunks do drop one #ifdef CONFIG_SMP
-but it does add a obscure relocation and please note that it's
-different from early_gdt_descr.  early_gdt_descr is needed to bring up
-the cpu so there's no other way to do it but to relocate it in
-assembly.  If you absolutely have to relocate irq_stack_ptr early,
-please do it in C code in head64.c but then again irq_stack_ptr is not
-even necessary till traps_init() which is way after per cpu area
-setup.  So, the above two chunks are not necessary && even if they go
-in, they don't have much to do with this patch.
-
-In general, I think trying to early initialize per cpu pointer to per
-cpu variable just isn't a good idea and should be avoided as much as
-possible.  I think the #ifdef there is fine - it's short and apparent
-and represntative of the two separate percpu implementations we have.
-If you're annoyed by it, I think it would be better to either
-consolidate such #ifdefs (there are a few other places) or define a
-wrapper macro to conditionalize and document the different
-initialization paths, but please don't add obscure assembly
-relocation, especially not without comment explaining it.
-
-Thanks.
-
--- 
-tejun
