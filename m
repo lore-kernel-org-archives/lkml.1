@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759694AbZASKLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZASKQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759694AbZASKLc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 05:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbZASKLX
+	id S1759385AbZASKQs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 05:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbZASKQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 05:11:23 -0500
-Received: from mail.memset.com ([89.200.136.113]:37134 "EHLO mail.memset.com"
+	Mon, 19 Jan 2009 05:16:39 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:4840 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757462AbZASKLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 05:11:22 -0500
-X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jan 2009 05:11:21 EST
-To: David Wagner <daw@cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Checking module parameters
-In-Reply-To: <bVsVO-15X-19@gated-at.bofh.it>
-References: <bVsVO-15X-19@gated-at.bofh.it>
-Date: Mon, 19 Jan 2009 09:38:07 +0000
-User-Agent: slrn/pre0.9.9-102 (Linux)
-Mime-Version: 1.0
+	id S1757386AbZASKQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 05:16:39 -0500
+Date: Mon, 19 Jan 2009 11:15:10 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Jens Axboe <axboe@suse.de>
+Subject: Re: [PATCH 1/1] relay: fix lock imbalance in relay_late_setup_files
+Message-ID: <20090119101509.GG30821@kernel.dk>
+References: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090119093814.BC18014CA88@irishsea.home.craig-wood.com>
-From: nick@craig-wood.com (Nick Craig-Wood)
+Content-Disposition: inline
+In-Reply-To: <1232190276-21200-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Wagner <daw@cs.berkeley.edu> wrote:
->  Is there a way to tell what options have been applied to a currently
->  loaded kernel module?
+On Sat, Jan 17 2009, Jiri Slaby wrote:
+> One fail path in relay_late_setup_files() omits
+> mutex_unlock(&relay_channels_mutex);
+> Add it.
 > 
->  I'm trying to force libata to use 1.5Gbps rather than 3Gbps, so I created
->  a file /etc/modprobe.d/local containing:
->    options libata force=1.5Gbps
->  However my SATA drive gets loaded at 3Gbps.  I'm trying to figure out how
->  to debug this so that I can tell whether the option got correctly applied
->  to the libata module, and if not, how to force the SATA link to 1.5Gbps.
->  Any suggestions or ideas?
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> Cc: Jens Axboe <axboe@suse.de>
+> ---
+>  kernel/relay.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+
+Looks good, applied!
+
 > 
->  (I can't set libata.force=1.5Gbps as a kernel argument because on my
->  Fedora kernel, libata is loaded as a module rather than built into the
->  kernel.  I can't run "modprobe libata force=1.5Gbps" by hand because
->  I've got SATA drives, so the libata module is automatically loaded before
->  I get shell access.)
-
-I had to do this recently (under debian I ended up putting
-"libata force=1.5Gbps" into /etc/modules)
-
-You can check it is working by looking for something like this in the log
-
-[    2.345058] ata1: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata1: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106100 irq 218
-[    2.345058] ata2: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata2: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106180 irq 218
-[    2.345058] ata3: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata3: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106200 irq 218
-[    2.345058] ata4: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata4: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106280 irq 218
-[    2.345058] ata5: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata5: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106300 irq 218
-[    2.345058] ata6: FORCE: PHY spd limit set to 1.5Gbps
-[    2.345058] ata6: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106380 irq 218
+> diff --git a/kernel/relay.c b/kernel/relay.c
+> index 8ca1587..738bc85 100644
+> --- a/kernel/relay.c
+> +++ b/kernel/relay.c
+> @@ -714,8 +714,10 @@ int relay_late_setup_files(struct rchan *chan,
+>  
+>  	mutex_lock(&relay_channels_mutex);
+>  	/* Is chan already set up? */
+> -	if (unlikely(chan->has_base_filename))
+> +	if (unlikely(chan->has_base_filename)) {
+> +		mutex_unlock(&relay_channels_mutex);
+>  		return -EEXIST;
+> +	}
+>  	chan->has_base_filename = 1;
+>  	chan->parent = parent;
+>  	curr_cpu = get_cpu();
+> -- 
+> 1.6.1
+> caught by stanse
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Nick Craig-Wood <nick@craig-wood.com> -- http://www.craig-wood.com/nick
+Jens Axboe
+
