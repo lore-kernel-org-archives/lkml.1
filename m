@@ -1,143 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZASSks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZASSlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757262AbZASSks (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZASSkg
+	id S1757900AbZASSlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZASSlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:40:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42870 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbZASSkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:40:35 -0500
-Subject: RE: Mainline kernel OLTP performance update
-From: Steven Rostedt <srostedt@redhat.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: "Ma, Chinang" <chinang.ma@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <1232388291.6521.140.camel@think.oraclecorp.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>
-	 <20090114163557.11e097f2.akpm@linux-foundation.org>
-	 <20090115012147.GW29283@parisc-linux.org>
-	 <20090114180431.f4a96543.akpm@linux-foundation.org>
-	 <1231986439.21980.54.camel@localhost.localdomain>
-	 <BC02C49EEB98354DBA7F5DD76F2A9E80031752B166@azsmsx501.amr.corp.intel.com>
-	 <1232388291.6521.140.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 19 Jan 2009 13:37:39 -0500
-Message-Id: <1232390259.25783.5.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 19 Jan 2009 13:41:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:9888 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbZASSlE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:41:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=XYwBlrdzE4x3dinFNFoY3UNvB/ptCIDFa/58MqwvNd5tVt+HN1X1W3FTp0EDrN1T0q
+         f12qry8RXiD6dcPdev9aMcSaVX2XnRxfRlE1fEDu78uMWaoWT76KE+V2M3MOjwJGbm/j
+         56JegZpsnfREtCOyU7GTey+lOgMBEIY1zeE7I=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/2] frv: remove <asm/ide.h>
+Date: Mon, 19 Jan 2009 19:33:11 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901191933.11757.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(added Rusty)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] frv: remove <asm/ide.h>
 
-On Mon, 2009-01-19 at 13:04 -0500, Chris Mason wrote:
-> On Thu, 2009-01-15 at 00:11 -0700, Ma, Chinang wrote:
-> > >> > > > >
-> > >> > > > > Linux OLTP Performance summary
-> > >> > > > > Kernel#            Speedup(x)   Intr/s  CtxSw/s us%  sys%   idle%
-> > >iowait%
-> > >> > > > > 2.6.24.2                1.000   21969   43425   76   24     0
-> > >0
-> > >> > > > > 2.6.27.2                0.973   30402   43523   74   25     0
-> > >1
-> > >> > > > > 2.6.29-rc1              0.965   30331   41970   74   26     0
-> > >0
-> > >> >
-> > >> > > But the interrupt rate went through the roof.
-> > >> >
-> > >> > Yes.  I forget why that was; I'll have to dig through my archives for
-> > >> > that.
-> > >>
-> > >> Oh.  I'd have thought that this alone could account for 3.5%.
-> 
-> A later email indicated the reschedule interrupt count doubled since
-> 2.6.24, and so I poked around a bit at the causes of resched_task.
-> 
-> I think the -rt version of check_preempt_equal_prio has gotten much more
-> expensive since 2.6.24.
-> 
-> I'm sure these changes were made for good reasons, and this workload may
-> not be a good reason to change it back.  But, what does the patch below
-> do to performance on 2.6.29-rcX?
-> 
-> -chris
-> 
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 954e1a8..bbe3492 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -842,6 +842,7 @@ static void check_preempt_curr_rt(struct rq *rq,
-> struct task_struct *p, int sync
->  		resched_task(rq->curr);
->  		return;
->  	}
-> +	return;
->  
->  #ifdef CONFIG_SMP
->  	/*
+* Remove superfluous <asm/{setup,io,irq}.h> includes.
 
-That should not cause much of a problem if the scheduling task is not
-pinned to an CPU. But!!!!!
+* Remove <asm/ide.h>.
 
-A recent change makes it expensive:
+Cc: David Howells <dhowells@redhat.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ include/asm-frv/ide.h |   24 ------------------------
+ include/linux/ide.h   |    4 ++--
+ 2 files changed, 2 insertions(+), 26 deletions(-)
 
-commit 24600ce89a819a8f2fb4fd69fd777218a82ade20
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Tue Nov 25 02:35:13 2008 +1030
-
-    sched: convert check_preempt_equal_prio to cpumask_var_t.
-    
-    Impact: stack reduction for large NR_CPUS
-
-
-
-which has:
-
- static void check_preempt_equal_prio(struct rq *rq, struct task_struct
-*p)
- {
--       cpumask_t mask;
-+       cpumask_var_t mask;
+Index: b/include/asm-frv/ide.h
+===================================================================
+--- a/include/asm-frv/ide.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-/* ide.h: FRV IDE declarations
+- *
+- * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
+- * Written by David Howells (dhowells@redhat.com)
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef _ASM_IDE_H
+-#define _ASM_IDE_H
+-
+-#ifdef __KERNEL__
+-
+-#include <asm/setup.h>
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-
+-#include <asm-generic/ide_iops.h>
+-
+-#endif /* __KERNEL__ */
+-#endif /* _ASM_IDE_H */
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -193,8 +193,8 @@ static inline void ide_std_init_ports(hw
+ 	hw->io_ports.ctl_addr = ctl_addr;
+ }
  
-        if (rq->curr->rt.nr_cpus_allowed == 1)
-                return;
- 
--       if (p->rt.nr_cpus_allowed != 1
--           && cpupri_find(&rq->rd->cpupri, p, &mask))
-+       if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
-                return;
-
-
-
-
-check_preempt_equal_prio is in a scheduling hot path!!!!!
-
-WTF are we allocating there for?
-
--- Steve
-
-
-
+-#if defined(CONFIG_ARM) || defined(CONFIG_FRV) || defined(CONFIG_M68K) || \
+-    defined(CONFIG_MIPS) || defined(CONFIG_MN10300) || defined(CONFIG_PARISC) \
++#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
++    defined(CONFIG_MN10300) || defined(CONFIG_PARISC) \
+     || defined(CONFIG_PPC) || defined(CONFIG_SPARC) || defined(CONFIG_SPARC64)
+ #include <asm/ide.h>
+ #else
