@@ -1,132 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZASWUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbZASWZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbZASWUD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 17:20:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZASWTr
+	id S1759534AbZASWZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 17:25:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZASWY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 17:19:47 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:27532 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbZASWTq (ORCPT
+	Mon, 19 Jan 2009 17:24:56 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50648 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZASWYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 17:19:46 -0500
-Message-ID: <4974FC7B.3080404@hp.com>
-Date: Mon, 19 Jan 2009 14:19:39 -0800
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Mon, 19 Jan 2009 17:24:55 -0500
+Message-ID: <4974FDAE.7080909@zytor.com>
+Date: Mon, 19 Jan 2009 14:24:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew@wil.cx, matthew.r.wilcox@intel.com,
-       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
-       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
-       andi.kleen@intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-Subject: Re: Mainline kernel OLTP performance update
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	<200901161746.25205.nickpiggin@yahoo.com.au>	<4970CDB6.6040705@hp.com> <200901191843.33490.nickpiggin@yahoo.com.au>
-In-Reply-To: <200901191843.33490.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Avuton Olrich <avuton@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due
+ to dc1e35c
+References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com> <4974CC8B.1030403@zytor.com> <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com> <4974DD86.2090300@zytor.com> <20090119201115.GD31356@linux-os.sc.intel.com> <3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com> <20090119215736.GE31356@linux-os.sc.intel.com> <4974F9A8.7060107@zytor.com> <20090119221434.GF31356@linux-os.sc.intel.com>
+In-Reply-To: <20090119221434.GF31356@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>System is a 2socket, 4 core AMD.
->>
->>Not exactly a large system :)  Barely NUMA even with just two sockets.
-> 
-> 
-> You're right ;)
-> 
-> But at least it is exercising the NUMA paths in the allocator, and
-> represents a pretty common size of system...
-> 
-> I can run some tests on bigger systems at SUSE, but it is not always
-> easy to set up "real" meaningful workloads on them or configure
-> significant IO for them.
-
-Not sure if I know enough git to pull your trees, or if this cobbler's child will 
-have much in the way of bigger systems, but there is a chance I might - contact 
-me offline with some pointers on how to pull and build the bits and such.
-
->>>Netperf UDP unidirectional send test (10 runs, higher better):
+Suresh Siddha wrote:
+> On Mon, Jan 19, 2009 at 02:07:36PM -0800, H. Peter Anvin wrote:
+>> Suresh Siddha wrote:
+>>> Also, I wonder, if we should complain/scream during boot if we find only
+>>> fewer cpuid levels on modern generation cpu's.
 >>>
->>>Server and client bound to same CPU
->>>SLAB AVG=60.111 STD=1.59382
->>>SLQB AVG=60.167 STD=0.685347
->>>SLUB AVG=58.277 STD=0.788328
->>>
->>>Server and client bound to same socket, different CPUs
->>>SLAB AVG=85.938 STD=0.875794
->>>SLQB AVG=93.662 STD=2.07434
->>>SLUB AVG=81.983 STD=0.864362
->>>
->>>Server and client bound to different sockets
->>>SLAB AVG=78.801 STD=1.44118
->>>SLQB AVG=78.269 STD=1.10457
->>>SLUB AVG=71.334 STD=1.16809
->>>
+>> We should, or if this block is reversible, we should probably just undo 
+>> it (the reason people put this block in places is because of, ahem, 
+>> inferior operating systems having bugs.)
 >>
->> > ...
->>
->>>I haven't done any non-local network tests. Networking is the one of the
->>>subsystems most heavily dependent on slab performance, so if anybody
->>>cares to run their favourite tests, that would be really helpful.
->>
->>I'm guessing, but then are these Mbit/s figures? Would that be the sending
->>throughput or the receiving throughput?
+>> Do you know how this is managed?  Via an MSR?
 > 
-> 
-> Yes, Mbit/s. They were... hmm, sending throughput I think, but each pair
-> of numbers seemed to be identical IIRC?
+> IA32_MISC_ENABLE MSR bit 22
 
-Mega *bits* per second?  And those were 4K sends right?  That seems rather low 
-for loopback - I would have expected nearly two orders of magnitude more.  I 
-wonder if the intra-stack flow control kicked-in?  You might try adding test 
-specific -S and -s options to set much larger socket buffers to try to avoid 
-that.  Or simply use TCP.
+LOL, the official name of this bit is "IA32_MISC_ENABLES.BOOT_NT4"; kind 
+of says it all.  In fact, I remember the problems we had with NT4 and 
+CPUID back from the Transmeta days, and there, too, we ended up with a 
+CPUID hack which Linux unconditionally disables.
 
-netperf -H <foo> ... -- -s 1M -S 1M -m 4K
+I'll write up a patch.
 
->>I love to see netperf used, but why UDP and loopback?
-> 
-> 
-> No really good reason. I guess I was hoping to keep other variables as
-> small as possible. But I guess a real remote test would be a lot more
-> realistic as a networking test. Hmm, but I could probably set up a test
-> over a simple GbE link here.  I'll try that.
+	-hpa
 
-If bandwidth is an issue, that is to say one saturates the link before much of 
-anything "interesting" happens in the host you can use something like aggregate 
-TCP_RR - ./configure with --enable_burst and then something like
 
-netperf -H <remote> -t TCP_RR -- -D -b 32
 
-and it will have as many as 33 discrete transactions in flight at one time on the 
-one connection.  The -D is there to set TCP_NODELAY to preclude TCP chunking the 
-single-byte (default, take your pick of a more reasonable size) transactions into 
-one segment.
-
->>Also, how about the service demands?
-> 
-> 
-> Well, over loopback and using CPU binding, I was hoping it wouldn't
-> change much... 
-
-Hope... but verify :)
-
-> but I see netperf does some measurements for you. I
-> will consider those in future too.
-> 
-> BTW. is it possible to do parallel netperf tests?
-
-Yes, by (ab)using the confidence intervals code.  Poke around in 
-http://www.netperf.org/svn/netperf2/doc/netperf.html in the "Aggregates" section, 
-and I can go into further details offline (or here if folks want to see the 
-discussion).
-
-rick jones
