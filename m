@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZASDyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbZASEK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbZASDyD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 22:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbZASDxw
+	id S1756961AbZASEK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 23:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZASEKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 22:53:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51425 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757725AbZASDxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 22:53:52 -0500
-Date: Mon, 19 Jan 2009 14:53:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
-Message-Id: <20090119145345.ccc52374.sfr@canb.auug.org.au>
-In-Reply-To: <1232332240.3129.8.camel@localhost.localdomain>
-References: <1232273454.23100.9.camel@localhost.localdomain>
-	<20090119095035.bf9d0e7c.sfr@canb.auug.org.au>
-	<1232332240.3129.8.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__19_Jan_2009_14_53_45_+1100_2Jz+g1YaqN++ndVM"
+	Sun, 18 Jan 2009 23:10:11 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:58476 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752022AbZASEKK (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 23:10:10 -0500
+Date: Mon, 19 Jan 2009 15:10:00 +1100
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.29-rc3
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090119041000.7EFCE59391EB@chook.melbourne.sgi.com>
+From: lachlan@sgi.com (Lachlan McIlroy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__19_Jan_2009_14_53_45_+1100_2Jz+g1YaqN++ndVM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following changes since commit f3b8436ad9a8ad36b3c9fa1fe030c7f38e5d3d0b:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
-Hi Jaswinder,
+are available in the git repository at:
 
-On Mon, 19 Jan 2009 08:00:40 +0530 Jaswinder Singh Rajput <jaswinder@kernel=
-.org> wrote:
->
-> On Mon, 2009-01-19 at 09:50 +1100, Stephen Rothwell wrote:
-> > Hi Jaswinder,
-> >=20
-> > On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@ke=
-rnel.org> wrote:
-> > >
-> > > diff --git a/include/linux/raw.h b/include/linux/raw.h
-> > > index 62d543e..3898e30 100644
-> > > --- a/include/linux/raw.h
-> > > +++ b/include/linux/raw.h
-> > > @@ -13,6 +13,10 @@ struct raw_config_request
-> > >  	__u64	block_minor;
-> > >  };
-> > > =20
-> > > +#ifdef __KERNEL__
-> > >  #define MAX_RAW_MINORS CONFIG_MAX_RAW_DEVS
-> > > +#else /* __KERNEL__ */
-> > > +#define MAX_RAW_MINORS 0
-> > > +#endif /* __KERNEL__ */
-> > > =20
-> > >  #endif /* __LINUX_RAW_H */
-> >=20
-> > Since MAX_RAW_MINORS has only one user (drivers/char/raw.c), why not
-> > just remove the define from here and add it it there?
-> >=20
->=20
-> Already fixed in v3 as pointed by Ingo.
+  git://oss.sgi.com/xfs/xfs.git for-linus
 
-Again I was suggesting that the whole #define line could be moved to the
-only C files it is used in.
+Christoph Hellwig (7):
+      xfs: fix dentry aliasing issues in open_by_handle
+      xfs: use mnt_want_write in compat_attrmulti ioctl
+      xfs: add a separate lock class for the per-mount list of dquots
+      xfs: lockdep annotations for xfs_dqlock2
+      xfs: add a lock class for group/project dquots
+      xfs: fix bad_features2 fixups for the root filesystem
+      xfs: sanity check attr fork size
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Eric Sandeen (1):
+      [XFS] Remove the rest of the macro-to-function indirections.
 
---Signature=_Mon__19_Jan_2009_14_53_45_+1100_2Jz+g1YaqN++ndVM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklz+UkACgkQjjKRsyhoI8wfjgCdFiJViLVyUJtOh4IJxY/74roy
-wM0AnjuL/ngeqAD1eb/MUjC9P8PYyRXm
-=BTFV
------END PGP SIGNATURE-----
-
---Signature=_Mon__19_Jan_2009_14_53_45_+1100_2Jz+g1YaqN++ndVM--
+ fs/xfs/Kconfig                 |    1 +
+ fs/xfs/linux-2.6/xfs_ioctl.c   |  305 ++++++++++++++++++----------------------
+ fs/xfs/linux-2.6/xfs_ioctl.h   |   15 ++-
+ fs/xfs/linux-2.6/xfs_ioctl32.c |  184 ++++++++-----------------
+ fs/xfs/linux-2.6/xfs_super.c   |   17 ++-
+ fs/xfs/quota/xfs_dquot.c       |   38 ++++--
+ fs/xfs/quota/xfs_dquot.h       |   10 ++
+ fs/xfs/quota/xfs_qm.c          |    9 ++
+ fs/xfs/xfs_ag.h                |    6 +-
+ fs/xfs/xfs_alloc_btree.c       |    2 +-
+ fs/xfs/xfs_attr.c              |   26 ++--
+ fs/xfs/xfs_bmap.c              |  166 +++++++++++-----------
+ fs/xfs/xfs_bmap.h              |    2 -
+ fs/xfs/xfs_bmap_btree.c        |   10 +-
+ fs/xfs/xfs_bmap_btree.h        |    4 -
+ fs/xfs/xfs_btree.c             |    6 +-
+ fs/xfs/xfs_da_btree.c          |    8 +-
+ fs/xfs/xfs_ialloc.c            |    6 +-
+ fs/xfs/xfs_ialloc.h            |    2 -
+ fs/xfs/xfs_ialloc_btree.h      |    1 -
+ fs/xfs/xfs_inode.c             |   19 ++-
+ fs/xfs/xfs_inode_item.h        |    4 -
+ fs/xfs/xfs_iomap.c             |   10 +-
+ fs/xfs/xfs_itable.c            |    6 +-
+ fs/xfs/xfs_mount.c             |   26 ++--
+ fs/xfs/xfs_mount.h             |    9 +-
+ fs/xfs/xfs_rename.c            |    2 +-
+ fs/xfs/xfs_rtalloc.c           |    2 +-
+ fs/xfs/xfs_rw.h                |    1 -
+ fs/xfs/xfs_sb.h                |    2 +-
+ fs/xfs/xfs_vnodeops.c          |   20 ++--
+ 31 files changed, 436 insertions(+), 483 deletions(-)
