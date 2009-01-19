@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbZASIlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZASInX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbZASIlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 03:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbZASIlA
+	id S1758064AbZASInX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 03:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZASInM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 03:41:00 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:44701 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753548AbZASIk7 (ORCPT
+	Mon, 19 Jan 2009 03:43:12 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:35418 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752630AbZASInL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 03:40:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=F620qdqjCf/ypjAhwE9tQyVVj62M4N9hEc0hMJqGCJoxiQYg8hJRBbpwmtKp68a4iQ
-         5zpTG/6xRLvVLqy3WO9udNjX23bqIpnXgNOlt7xajYDB6DTngdJR4LiiBqggPQpE1Y02
-         BtFoIKFLsvrCmQq+lIpssd+sGO+HpKmVXeGi4=
-Date: Mon, 19 Jan 2009 08:40:52 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       zbr@ioremap.net, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090119084051.GB4788@ff.dom.local>
-References: <20090115.155434.206643894.davem@davemloft.net> <20090119004206.GA10396@1wt.eu> <20090119030844.GA31941@gondor.apana.org.au> <20090118.192719.198405397.davem@davemloft.net> <20090119061420.GB12946@1wt.eu>
+	Mon, 19 Jan 2009 03:43:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=AFuFKY5+bbHXwaGqsxNJgotX6CrJYu2xKvDv5+4pCM4c2poCVMSAsx7Y8kX3JXoVmUEAS1aetwJDGQ3zl4YqBELLhwdjp/jLIh3RsVpk8MrsA7e5q/1j2cXCfeMq2Q++GqOosUKuab0PhB+kAZg7swmBO0pfiJJ/xm0qbnWiXWA=  ;
+X-YMail-OSG: txNbOpIVM1njJkguDlhlTmSmu5OZhnGGBgDF5efu84ueizDjUq3pgaRY5lJym6Xq0Najjz0jnc0hA7.xZOkRKKTWaH_ZGNFOWHZ09N34jCNTnHTc4Eul3PzUbMUkvWYy9KLN5mR.kY.5NY528U3w2mtxHvRUVSwbZElWG4vhP1Ihara1tQs2d3KfgQOxHQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: Mainline kernel OLTP performance update
+Date: Mon, 19 Jan 2009 19:42:47 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <1232352303.30141.25.camel@penberg-laptop> <200901191933.29322.nickpiggin@yahoo.com.au>
+In-Reply-To: <200901191933.29322.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090119061420.GB12946@1wt.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901191942.48548.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 07:14:20AM +0100, Willy Tarreau wrote:
-> On Sun, Jan 18, 2009 at 07:27:19PM -0800, David Miller wrote:
-> > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > Date: Mon, 19 Jan 2009 14:08:44 +1100
-> > 
-> > > On Mon, Jan 19, 2009 at 01:42:06AM +0100, Willy Tarreau wrote:
-> > > >
-> > > > Just for the record, I've now re-integrated those changes in a test kernel
-> > > > that I booted on my 10gig machines. I have updated my user-space code in
-> > > > haproxy to run a new series of tests. Eventhough there is a memcpy(), the
-> > > > results are EXCELLENT (on a C2D 2.66 GHz using Myricom's Myri10GE NICs) :
-> > > > 
-> > > >   - 4.8 Gbps at 100% CPU using MTU=1500 without LRO
-> > > >     (3.2 Gbps at 100% CPU without splice)
-> > > 
-> > > One thing to note is that Myricom's driver probably uses page
-> > > frags which means that you're not actually triggering the copy.
-> 
-> So does this mean that the corruption problem should still there for
-> such a driver ? I'm asking before testing, because at these speeds,
-> validity tests are not that easy ;-)
+On Monday 19 January 2009 19:33:27 Nick Piggin wrote:
+> On Monday 19 January 2009 19:05:03 Pekka Enberg wrote:
 
-I guess, David meant the performance: there is not much change because
-only a small part could be copied. The most harmed should be jumbo
-frames in linear only skbs. But no corruption is expected.
+> > All I am saying is that I don't like how we're fixing a performance bug
+> > with a shiny new allocator without a credible explanation why the
+> > current approach is not fixable.
+>
+> To be honest, my biggest concern with SLUB is the higher order pages
+> thing. But Christoph always poo poos me when I raise that concern, and
+> it's hard to get concrete numbers showing real fragmentation problems
+> when it can take days or months to start biting.
+>
+> It really stems from queueing versus not queueing I guess. And I think
+> SLUB is flawed due to its avoidance of queueing.
 
-Jarek P.
+And FWIW, Christoph was also not able to fix the OLTP problem although
+I think it has been known for nearly two years ago now (I remember we
+talked about it at 2007 KS, although I wasn't following slab development
+very keenly back then).
+
+At this point I feel spending time working on SLUB isn't a good idea if
+a) Christoph himself hadn't fixed this problem; and b) we disagree about
+fundamental design choices (see the "SLQB slab allocator" thread).
+
+Anyway, nobody has disagreed with my proposal to merge SLQB, so in the
+worst case I don't think it will cause too much harm, and in the best
+case it might turn out to make the best tradeoffs and who knows, it
+might actually not be catastrophic for HPC ;)
+
