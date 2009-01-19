@@ -1,70 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZASAmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZASArA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZASAmt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 19:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZASAmf
+	id S1756554AbZASArA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 19:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZASAqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 19:42:35 -0500
-Received: from 1wt.eu ([62.212.114.60]:1579 "EHLO 1wt.eu"
+	Sun, 18 Jan 2009 19:46:50 -0500
+Received: from hydra.ck.polsl.pl ([157.158.1.11]:48673 "EHLO hydra.ck.polsl.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753794AbZASAme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 19:42:34 -0500
-Date: Mon, 19 Jan 2009 01:42:06 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, jarkao2@gmail.com, zbr@ioremap.net,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090119004206.GA10396@1wt.eu>
-References: <20090115.153449.204259387.davem@davemloft.net> <20090115234255.GE1123@1wt.eu> <20090115234408.GA1693@1wt.eu> <20090115.155434.206643894.davem@davemloft.net>
-Mime-Version: 1.0
+	id S1754900AbZASAqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 19:46:50 -0500
+Date: Mon, 19 Jan 2009 01:46:46 +0100
+From: Adam Osuchowski <adwol@zonk.pl>
+To: linux-kernel@vger.kernel.org
+Subject: Strange leases behaviour
+Message-ID: <20090119004646.6b8b4567@zonk.pl>
+Reply-To: Adam Osuchowski <adwol@zonk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115.155434.206643894.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+Kernel 2.6.28 and such a situation:
 
-On Thu, Jan 15, 2009 at 03:54:34PM -0800, David Miller wrote:
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Fri, 16 Jan 2009 00:44:08 +0100
-> 
-> > And BTW feel free to add my Tested-by if you want in case you merge
-> > this fix.
-> 
-> Done, thanks Willy.
+- process A obtains read lease on file via fcntl(fd, F_SETLEASE, F_RDLCK).
+- while process A holds lease, process B tries to open this file for writing,
+  what, of course, leads to block process B on open().
+- while process A holds lease and process B waits on open(), process C
+  tries to open the same file for reading.
 
-Just for the record, I've now re-integrated those changes in a test kernel
-that I booted on my 10gig machines. I have updated my user-space code in
-haproxy to run a new series of tests. Eventhough there is a memcpy(), the
-results are EXCELLENT (on a C2D 2.66 GHz using Myricom's Myri10GE NICs) :
+Then, process C also blocks on open(), even though it calls open() only
+for reading. Even if process B terminates before process A removes lease,
+process C still can't open file for reading. But if process B doesn't try
+to open file for writing, process C can open it for reading without any
+trobule.
 
-  - 4.8 Gbps at 100% CPU using MTU=1500 without LRO
-    (3.2 Gbps at 100% CPU without splice)
+Why there is such a bahaviour? Is it not a bug?
 
-  - 9.2 Gbps at 50% CPU using MTU=1500 with LRO
-
-  - 10 Gbps at 20% CPU using MTU=9000 without LRO (7 Gbps at 100% CPU without
-    splice)
-
-  - 10 Gbps at 15% CPU using MTU=9000 with LRO
-
-These last ones are really impressive. While I had already observed such
-performance on the Myri10GE with Tux, it's the first time I can reach that
-level with so little CPU usage in haproxy !
-
-So I think that the memcpy() workaround might be a non-issue for some time.
-I agree it's not beautiful but it works pretty well for now.
-
-The 3 patches I used on top of 2.6.27.10 were the fix to return 0 intead of
--EAGAIN on end of read, the one to process multiple skbs at once, and Dave's
-last patch based on Jarek's workaround for the corruption issue.
-
-Cheers,
-Willy
-
+Regards.
