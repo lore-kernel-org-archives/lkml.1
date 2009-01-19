@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZASUTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbZASUU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZASUTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 15:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZASUTM
+	id S1758170AbZASUU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 15:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZASUUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 15:19:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45873 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbZASUTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 15:19:11 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090120015251.47ea14ff.sfr@canb.auug.org.au>
-References: <20090120015251.47ea14ff.sfr@canb.auug.org.au> <20090119211031.934b4c19.sfr@canb.auug.org.au> <11956.1232368171@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: dhowells@redhat.com, James Morris <jmorris@namei.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Hannes Eder" <hannes@hanneseder.net>
-Subject: Re: [PATCH] creds: suppress warning in get_cred
-Date: Mon, 19 Jan 2009 20:19:00 +0000
-Message-ID: <13007.1232396340@redhat.com>
+	Mon, 19 Jan 2009 15:20:17 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:56522 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbZASUUP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 15:20:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=KvpCFCZ2yfGaahaSf97l5AuV/utGYWhwNhowaXHI6UIlzWfHmAYUyxt6GPcj8YXNik
+         P29bKpoo8eO4ZhOXVHt6yaRFxk7HYlyyOQbHIGa3zLRgzZ9zlHFw0swtXY59Rjmli5Ee
+         cajRResk/YhAnb+j7FE+rFxDNsWcrE94bXb3E=
+Message-ID: <e4cb19870901191220y622e0120m512596656c72bbf3@mail.gmail.com>
+Date: Mon, 19 Jan 2009 15:20:13 -0500
+From: "Thomas Tuttle" <linux-kernel@ttuttle.net>
+To: linux-kernel@vger.kernel.org
+Subject: System hang (and other problems) with cdc_acm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 956ded40f6bfe657
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Hi.
 
-> We do have uintptr_t inside the kernel (it is typedeffed to unsigned
-> long) but I used it explicitly because its type is defined to be large
-> enough to store any pointer.
+I've got a Lenovo X200 with an Ericsson F3507g Mobile Broadband Module
+(a 3G cellular data card with built-in GPS), which uses the cdc_acm
+driver.  I've experienced a couple of problems with it.  First, it
+tends to hang the system after I've been using it for a while.  This
+occurs whenever it's sending a lot of data to/from the computer,
+whether it's a PPP connection or a GPS data stream.  I'm not sure how
+to debug this; the Caps Lock light isn't flashing, so I'm not sure if
+it's a panic or just a hang.  Second, if I read one of the TTYs using
+"cat", I get a ton of blank lines.  To make any sense of the data
+stream, I have to do cat /dev/ttyACM0 | grep -v "^$".
 
-I believe that within the kernel, unsigned long is guaranteed to be the same
-size as a pointer; so much code will break if this is not true.
+If anyone could help me debug this, I'd be greatly appreciative.
 
-> However, I have also verified that using a newer compiler (4.3.2 in my
-> case) makes the warning go away as Hannes Eder pointed out when
-> mentioning his earlier patch.
-> 
-> So, your choice.
+Thanks,
 
-I don't mind you putting the cast in, but I'd prefer the cast to be via
-unsigned long, and I think it should have a comment to indicate why the extra
-cast is necessary.
-
-David
+Thomas Tuttle
