@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbZASTT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZASTVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbZASTT5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZASTTs
+	id S1758443AbZASTVO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZASTU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:19:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44792 "EHLO mx2.redhat.com"
+	Mon, 19 Jan 2009 14:20:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39200 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZASTTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:19:48 -0500
-Date: Mon, 19 Jan 2009 20:17:29 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
-       hpa@zytor.com, Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-Message-ID: <20090119191729.GB24852@redhat.com>
-References: <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net> <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com>
+	id S1752182AbZASTU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 14:20:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [2.6.29-rc2 regression] e100: netconsole not functional because of missing firmware
+Date: Mon, 19 Jan 2009 20:20:34 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, e1000-devel@lists.soutceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+References: <200901171908.28533.arvidjaar@mail.ru> <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
+In-Reply-To: <4807377b0901191030g27efac79rbd39501eb2eea4cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090119182447.GA15140@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901192020.35116.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19, Serge E. Hallyn wrote:
->
-> Quoting Oleg Nesterov (oleg@redhat.com):
-> > On 01/19, Serge E. Hallyn wrote:
-> > >
-> > > But so there does still need to be a patch modifying parse_options()
-> > > to return an error if pgrp= was not specified, right?
+On Monday 19 January 2009, Jesse Brandeburg wrote:
+> On Sat, Jan 17, 2009 at 8:08 AM, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> > [    2.008509] e100: eth0: e100_request_firmware: Failed to load
+> > firmware "e100/d101m_ucode.bin": -22
+> > [    2.010461] netconsole: failed to open eth0
+> > [    2.010996] netconsole: cleaning up
 > >
-> > Why? In that case we should use the caller's pgrp. This is what the
-> > current tries to do, why should the patch change this behaviour?
->
-> Well, because Ian said that not specifying it is supposed to
-> be an error :)  I didn't quite understand why, so am fishing
-> for more info...
+> > This has been working all the time without requiring any external
+> > firmware to be present. Why it suddenly refuses to work now?
+> 
+> to use netconsole you probably need to set config option
+> CONFIG_FIRMWARE_IN_KERNEL=y
+> 
+> Hm, I wonder if we couldn't have netconsole=y select
+> CONFIG_FIRMWARE_IN_KERNEL in Kconfig
+> 
+> the arguments as to why the firmware was split out of the drivers have
+> already been made on this list.  Not that I agree with them, but the
+> decision has been made and we're (network devs) going along with it.
 
-I think you misunderstood him. Or I am totally confused ;)
+Still, if that leads to functional regressions, like this one, we need to do
+something about it IMO.  David?
 
-In any case. Both autofs and autofs4 use current's pgrp if this
-option was not specified, and these patches doesn't change this
-behaviour.
-
-
-Actually, I am very much surprized this one-liner patch has so
-many questions. Isn't it "obiously correct" ?
-
-Oleg.
-
+Thanks,
+Rafael
