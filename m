@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZASMqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbZASMrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbZASMqv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 07:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759906AbZASMq1
+	id S1759315AbZASMrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 07:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760056AbZASMq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 07:46:27 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:45323 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759580AbZASMq0 (ORCPT
+	Mon, 19 Jan 2009 07:46:29 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:46932 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759996AbZASMq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 07:46:26 -0500
-Date: Mon, 19 Jan 2009 13:45:33 +0100
+	Mon, 19 Jan 2009 07:46:28 -0500
+Date: Mon, 19 Jan 2009 13:45:31 +0100
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] async: Add some documentation.
-Message-ID: <20090119134533.0c86d2d5@gondolin>
+Subject: [PATCH 2/3] async: Handle kthread_run() return codes.
+Message-ID: <20090119134531.04c3725c@gondolin>
 Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
  Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
  Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
@@ -28,99 +28,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some kerneldoc to the async interface.
+If we fail to create the manager thread, fall back to non-fastboot.
+If we fail to create an async thread, try again after waiting for
+a bit.
 
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
 ---
- kernel/async.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ kernel/async.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 --- linux-2.6.orig/kernel/async.c
 +++ linux-2.6/kernel/async.c
-@@ -206,18 +206,43 @@ static async_cookie_t __async_schedule(a
- 	return newcookie;
+@@ -54,6 +54,7 @@ asynchronous and synchronous parts of th
+ #include <linux/sched.h>
+ #include <linux/init.h>
+ #include <linux/kthread.h>
++#include <linux/delay.h>
+ #include <asm/atomic.h>
+ 
+ static async_cookie_t next_cookie = 1;
+@@ -315,7 +316,11 @@ static int async_manager_thread(void *un
+ 		ec = atomic_read(&entry_count);
+ 
+ 		while (tc < ec && tc < MAX_THREADS) {
+-			kthread_run(async_thread, NULL, "async/%i", tc);
++			if (IS_ERR(kthread_run(async_thread, NULL, "async/%i",
++					       tc))) {
++				msleep(100);
++				continue;
++			}
+ 			atomic_inc(&thread_count);
+ 			tc++;
+ 		}
+@@ -330,7 +335,9 @@ static int async_manager_thread(void *un
+ static int __init async_init(void)
+ {
+ 	if (async_enabled)
+-		kthread_run(async_manager_thread, NULL, "async/mgr");
++		if (IS_ERR(kthread_run(async_manager_thread, NULL,
++				       "async/mgr")))
++			async_enabled = 0;
+ 	return 0;
  }
  
-+/**
-+ * async_schedule - schedule a function for asynchronous execution
-+ * @ptr: function to execute asynchronously
-+ * @data: data pointer to pass to the function
-+ *
-+ * Returns an async_cookie_t that may be used for checkpointing later.
-+ * Note: This function may be called from atomic or non-atomic contexts.
-+ */
- async_cookie_t async_schedule(async_func_ptr *ptr, void *data)
- {
- 	return __async_schedule(ptr, data, &async_running);
- }
- EXPORT_SYMBOL_GPL(async_schedule);
- 
-+/**
-+ * async_schedule_special - schedule a function for asynchronous execution with a special running queue
-+ * @ptr: function to execute asynchronously
-+ * @data: data pointer to pass to the function
-+ * @running: list head to add to while running
-+ *
-+ * Returns an async_cookie_t that may be used for checkpointing later.
-+ * @running may be used in the async_synchronize_*_special() functions
-+ * to wait on a special running queue rather than on the global running
-+ * queue.
-+ * Note: This function may be called from atomic or non-atomic contexts.
-+ */
- async_cookie_t async_schedule_special(async_func_ptr *ptr, void *data, struct list_head *running)
- {
- 	return __async_schedule(ptr, data, running);
- }
- EXPORT_SYMBOL_GPL(async_schedule_special);
- 
-+/**
-+ * async_synchronize_full - synchronize all asynchronous function calls
-+ *
-+ * This function waits until all asynchronous function calls have been done.
-+ */
- void async_synchronize_full(void)
- {
- 	do {
-@@ -226,12 +251,27 @@ void async_synchronize_full(void)
- }
- EXPORT_SYMBOL_GPL(async_synchronize_full);
- 
-+/**
-+ * async_synchronize_full_special - synchronize all asynchronous function calls for a running list
-+ * @list: running list to synchronize on
-+ *
-+ * This function waits until all asynchronous function calls for the running
-+ * list @list have been done.
-+ */
- void async_synchronize_full_special(struct list_head *list)
- {
- 	async_synchronize_cookie_special(next_cookie, list);
- }
- EXPORT_SYMBOL_GPL(async_synchronize_full_special);
- 
-+/**
-+ * async_synchronize_cookie_special - synchronize asynchronous function calls on a running list with cookie checkpointing
-+ * @cookie: async_cookie_t to use as checkpoint
-+ * @running: running list to synchronize on
-+ *
-+ * This function waits until all asynchronous function calls for the running
-+ * list @list submitted prior to @cookie have been done.
-+ */
- void async_synchronize_cookie_special(async_cookie_t cookie, struct list_head *running)
- {
- 	ktime_t starttime, delta, endtime;
-@@ -253,6 +293,13 @@ void async_synchronize_cookie_special(as
- }
- EXPORT_SYMBOL_GPL(async_synchronize_cookie_special);
- 
-+/**
-+ * async_synchronize_cookie - synchronize asynchronous function calls with cookie checkpointing
-+ * @cookie: async_cookie_t to use as checkpoint
-+ *
-+ * This function waits until all asynchronous function calls prior to @cookie
-+ * have been done.
-+ */
- void async_synchronize_cookie(async_cookie_t cookie)
- {
- 	async_synchronize_cookie_special(cookie, &async_running);
