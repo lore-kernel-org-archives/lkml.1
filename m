@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbZASSsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZASSvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757574AbZASSsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZASSsF
+	id S1756698AbZASSvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZASSvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:48:05 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:17152 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752869AbZASSsE (ORCPT
+	Mon, 19 Jan 2009 13:51:45 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:32059 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbZASSvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:48:04 -0500
-Message-ID: <4974CAD2.8050500@oracle.com>
-Date: Mon, 19 Jan 2009 10:47:46 -0800
+	Mon, 19 Jan 2009 13:51:45 -0500
+Message-ID: <4974CBB3.4020102@oracle.com>
+Date: Mon, 19 Jan 2009 10:51:31 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 Organization: Oracle Linux Engineering
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for January 19 (DST)
-References: <20090119172732.e772d8ea.sfr@canb.auug.org.au> <4974C288.7030301@oracle.com> <20090119183046.GA28947@ioremap.net>
-In-Reply-To: <20090119183046.GA28947@ioremap.net>
+To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+CC: linux-kernel@vger.kernel.org, Alexey Korolev <akorolev@infradead.org>,
+       linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: build issue #583 for v2.6.29-rc2-13-gf3b8436 : undefined reference
+ to `lpddr_cmdset'
+References: <200901191938.08911.toralf.foerster@gmx.de>
+In-Reply-To: <200901191938.08911.toralf.foerster@gmx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4974CAD6.003A:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090209.4974CBB6.00EE:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Hi Randy.
+Toralf Förster wrote:
+> Hello,
 > 
-> On Mon, Jan 19, 2009 at 10:12:24AM -0800, Randy Dunlap (randy.dunlap@oracle.com) wrote:
->>> There will be no build results for today's linux-next as our build server
->>> has failed.
->>>
->>> Changes since 20090116:
->>
->> DST build fails when CONFIG_BLOCK=n:
-> 
-> DST should depend on block and block device, in the original patch its
-> kconfig entry was in the BLK_DEV menu, so this dependency was satisfied
-> automatically. Should attached patch be pushed into drivers/staging?
+> the build (.config attached) failed, make ends with :
+> ...
+>   CC      arch/x86/lib/usercopy_32.o
+>   AR      arch/x86/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 1 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   KSYM    .tmp_kallsyms0.S
+>   AS      .tmp_kallsyms0.o
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `lpddr_probe':
+> (.text+0x17a1ae): undefined reference to `lpddr_cmdset'
+> make: *** [.tmp_vmlinux1] Error 1
 
-Yes, thanks.
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Repeating an email reply from last week:
+
+This patch has been posted, just needs to be merged (hint):
+---
 
 
-> --- ./drivers/staging/dst/Kconfig~	2009-01-14 02:10:02.000000000 +0300
-> +++ ./drivers/staging/dst/Kconfig	2009-01-19 21:31:19.000000000 +0300
-> @@ -1,6 +1,6 @@
->  config DST
->  	tristate "Distributed storage"
-> -	depends on NET && CRYPTO && SYSFS
-> +	depends on NET && CRYPTO && SYSFS && BLK_DEV
->  	select CONNECTOR
->  	---help---
->  	DST is a network block device storage, which can be used to organize
-> 
-
+Signed-off-by: Alexey Korolev <akorolev@infradead.org>
+---
+diff --git a/drivers/mtd/lpddr/Kconfig b/drivers/mtd/lpddr/Kconfig
+index acd4ea9..5a401d8 100644
+--- a/drivers/mtd/lpddr/Kconfig
++++ b/drivers/mtd/lpddr/Kconfig
+@@ -12,6 +12,7 @@ config MTD_LPDDR
+ 	  DDR memories, intended for battery-operated systems.
+ 
+ config MTD_QINFO_PROBE
++	depends on MTD_LPDDR
+ 	tristate "Detect flash chips by QINFO probe"
+ 	help
+ 	    Device Information for LPDDR chips is offered through the Overlay
 
 -- 
 ~Randy
