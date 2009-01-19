@@ -1,246 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZASOtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZASOtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZASOtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZASOrW
+	id S1758304AbZASOtu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZASOrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:47:22 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:54216 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbZASOrS (ORCPT
+	Mon, 19 Jan 2009 09:47:23 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:3222 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbZASOrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:47:18 -0500
-X-BigFish: VPS3(zzzzzzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KDQ3QK-03-6AL-01
+	Mon, 19 Jan 2009 09:47:19 -0500
+X-BigFish: VPS3(zzzzzzz32i43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KDQ3QD-02-0BA-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com, linux-kernel@vger.kernel.org
 CC: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
        iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 15/16] dma-debug: x86 architecture bindings
-Date: Mon, 19 Jan 2009 15:47:02 +0100
-Message-ID: <1232376423-11067-16-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 07/16] dma-debug: add debugfs interface
+Date: Mon, 19 Jan 2009 15:46:54 +0100
+Message-ID: <1232376423-11067-8-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
 References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 19 Jan 2009 14:47:04.0141 (UTC) FILETIME=[CB2627D0:01C97A44]
+X-OriginalArrivalTime: 19 Jan 2009 14:47:03.0922 (UTC) FILETIME=[CB04BD20:01C97A44]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make use of DMA-API debugging code in x86
+Impact: add debugfs interface for configuring DMA-API debugging
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/Kconfig                   |    1 +
- arch/x86/include/asm/dma-mapping.h |   45 +++++++++++++++++++++++++++++++----
- arch/x86/kernel/pci-dma.c          |    6 ++++
- 3 files changed, 46 insertions(+), 6 deletions(-)
+ lib/dma-debug.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 78 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 73f7fe8..9e7aa97 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -40,6 +40,7 @@ config X86
- 	select HAVE_GENERIC_DMA_COHERENT if X86_32
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	select USER_STACKTRACE_SUPPORT
-+	select HAVE_DMA_API_DEBUG
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 66ed8b1..1e16bd4 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -19,6 +19,7 @@
  
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 5a34780..6a5e070 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -7,6 +7,7 @@
+ #include <linux/dma-debug.h>
+ #include <linux/spinlock.h>
++#include <linux/debugfs.h>
+ #include <linux/types.h>
+ #include <linux/list.h>
+ #include <linux/slab.h>
+@@ -59,12 +60,29 @@ static DEFINE_SPINLOCK(free_entries_lock);
+ /* Global disable flag - will be set in case of an error */
+ static bool global_disable __read_mostly;
+ 
++/* Global error count */
++static u32 error_count;
++
++/* Global error show enable*/
++static u32 show_all_errors __read_mostly;
++/* Number of errors to show */
++static u32 show_num_errors = 1;
++
+ static u32 num_free_entries;
+ static u32 min_free_entries;
+ 
+ /* number of preallocated entries requested by kernel cmdline */
+ static u32 req_entries;
+ 
++/* debugfs dentry's for the stuff above */
++static struct dentry *dma_debug_dent        __read_mostly;
++static struct dentry *global_disable_dent   __read_mostly;
++static struct dentry *error_count_dent      __read_mostly;
++static struct dentry *show_all_errors_dent  __read_mostly;
++static struct dentry *show_num_errors_dent  __read_mostly;
++static struct dentry *num_free_entries_dent __read_mostly;
++static struct dentry *min_free_entries_dent __read_mostly;
++
+ /*
+  * Hash related functions
+  *
+@@ -239,6 +257,58 @@ out_err:
+ 	return -ENOMEM;
+ }
+ 
++static int dma_debug_fs_init(void)
++{
++	dma_debug_dent = debugfs_create_dir("dma-api", NULL);
++	if (!dma_debug_dent) {
++		printk(KERN_ERR "DMA-API: can not create debugfs directory\n");
++		return -ENOMEM;
++	}
++
++	global_disable_dent = debugfs_create_bool("disabled", 0444,
++			dma_debug_dent,
++			(u32 *)&global_disable);
++	if (!global_disable_dent)
++		goto out_err;
++
++	error_count_dent = debugfs_create_u32("error_count", 0444,
++			dma_debug_dent, &error_count);
++	if (!error_count_dent)
++		goto out_err;
++
++	show_all_errors_dent = debugfs_create_u32("all_errors", 0644,
++			dma_debug_dent,
++			&show_all_errors);
++	if (!show_all_errors_dent)
++		goto out_err;
++
++	show_num_errors_dent = debugfs_create_u32("num_errors", 0644,
++			dma_debug_dent,
++			&show_num_errors);
++	if (!show_num_errors_dent)
++		goto out_err;
++
++	num_free_entries_dent = debugfs_create_u32("num_free_entries", 0444,
++			dma_debug_dent,
++			&num_free_entries);
++	if (!num_free_entries_dent)
++		goto out_err;
++
++	min_free_entries_dent = debugfs_create_u32("min_free_entries", 0444,
++			dma_debug_dent,
++			&min_free_entries);
++	if (!min_free_entries_dent)
++		goto out_err;
++
++	return 0;
++
++out_err:
++	debugfs_remove_recursive(dma_debug_dent);
++
++	return -ENOMEM;
++}
++
++
+ /*
+  * Let the architectures decide how many entries should be preallocated.
   */
+@@ -254,6 +324,14 @@ void dma_debug_init(u32 num_entries)
+ 		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
+ 	}
  
- #include <linux/scatterlist.h>
-+#include <linux/dma-debug.h>
- #include <linux/dma-attrs.h>
- #include <asm/io.h>
- #include <asm/swiotlb.h>
-@@ -56,11 +57,16 @@ dma_map_single(struct device *hwdev, void *ptr, size_t size,
- 	       enum dma_data_direction dir)
- {
- 	struct dma_map_ops *ops = get_dma_ops(hwdev);
-+	dma_addr_t addr;
- 
- 	BUG_ON(!valid_dma_direction(dir));
--	return ops->map_page(hwdev, virt_to_page(ptr),
-+	addr = ops->map_page(hwdev, virt_to_page(ptr),
- 			     (unsigned long)ptr & ~PAGE_MASK, size,
- 			     dir, NULL);
-+	debug_dma_map_page(hwdev, virt_to_page(ptr),
-+			   (unsigned long)ptr & ~PAGE_MASK, size,
-+			   dir, addr, true);
-+	return addr;
- }
- 
- static inline void
-@@ -72,6 +78,7 @@ dma_unmap_single(struct device *dev, dma_addr_t addr, size_t size,
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->unmap_page)
- 		ops->unmap_page(dev, addr, size, dir, NULL);
-+	debug_dma_unmap_page(dev, addr, size, dir, true);
- }
- 
- static inline int
-@@ -79,9 +86,13 @@ dma_map_sg(struct device *hwdev, struct scatterlist *sg,
- 	   int nents, enum dma_data_direction dir)
- {
- 	struct dma_map_ops *ops = get_dma_ops(hwdev);
-+	int ents;
- 
- 	BUG_ON(!valid_dma_direction(dir));
--	return ops->map_sg(hwdev, sg, nents, dir, NULL);
-+	ents = ops->map_sg(hwdev, sg, nents, dir, NULL);
-+	debug_dma_map_sg(hwdev, sg, ents, dir);
++	if (dma_debug_fs_init() != 0) {
++		printk(KERN_ERR "DMA-API: error creating debugfs entries "
++				"- disabling\n");
++		global_disable = true;
 +
-+	return ents;
- }
- 
- static inline void
-@@ -91,6 +102,7 @@ dma_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
- 	struct dma_map_ops *ops = get_dma_ops(hwdev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
-+	debug_dma_unmap_sg(hwdev, sg, nents, dir);
- 	if (ops->unmap_sg)
- 		ops->unmap_sg(hwdev, sg, nents, dir, NULL);
- }
-@@ -104,6 +116,7 @@ dma_sync_single_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_for_cpu)
- 		ops->sync_single_for_cpu(hwdev, dma_handle, size, dir);
-+	debug_dma_sync_single_for_cpu(hwdev, dma_handle, size, dir);
- 	flush_write_buffers();
- }
- 
-@@ -116,6 +129,7 @@ dma_sync_single_for_device(struct device *hwdev, dma_addr_t dma_handle,
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_for_device)
- 		ops->sync_single_for_device(hwdev, dma_handle, size, dir);
-+	debug_dma_sync_single_for_device(hwdev, dma_handle, size, dir);
- 	flush_write_buffers();
- }
- 
-@@ -130,6 +144,8 @@ dma_sync_single_range_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
- 	if (ops->sync_single_range_for_cpu)
- 		ops->sync_single_range_for_cpu(hwdev, dma_handle, offset,
- 					       size, dir);
-+	debug_dma_sync_single_range_for_cpu(hwdev, dma_handle,
-+					    offset, size, dir);
- 	flush_write_buffers();
- }
- 
-@@ -144,6 +160,8 @@ dma_sync_single_range_for_device(struct device *hwdev, dma_addr_t dma_handle,
- 	if (ops->sync_single_range_for_device)
- 		ops->sync_single_range_for_device(hwdev, dma_handle,
- 						  offset, size, dir);
-+	debug_dma_sync_single_range_for_device(hwdev, dma_handle,
-+					       offset, size, dir);
- 	flush_write_buffers();
- }
- 
-@@ -156,6 +174,7 @@ dma_sync_sg_for_cpu(struct device *hwdev, struct scatterlist *sg,
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_sg_for_cpu)
- 		ops->sync_sg_for_cpu(hwdev, sg, nelems, dir);
-+	debug_dma_sync_sg_for_cpu(hwdev, sg, nelems, dir);
- 	flush_write_buffers();
- }
- 
-@@ -168,6 +187,7 @@ dma_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_sg_for_device)
- 		ops->sync_sg_for_device(hwdev, sg, nelems, dir);
-+	debug_dma_sync_sg_for_device(hwdev, sg, nelems, dir);
- 
- 	flush_write_buffers();
- }
-@@ -177,15 +197,24 @@ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
- 				      enum dma_data_direction dir)
- {
- 	struct dma_map_ops *ops = get_dma_ops(dev);
-+	dma_addr_t addr;
- 
- 	BUG_ON(!valid_dma_direction(dir));
--	return ops->map_page(dev, page, offset, size, dir, NULL);
-+	addr = ops->map_page(dev, page, offset, size, dir, NULL);
-+	debug_dma_map_page(dev, page, offset, size, dir, addr, false);
++		return;
++	}
 +
-+	return addr;
- }
+ 	if (req_entries)
+ 		num_entries = req_entries;
  
- static inline void dma_unmap_page(struct device *dev, dma_addr_t addr,
- 				  size_t size, enum dma_data_direction dir)
- {
--	dma_unmap_single(dev, addr, size, dir);
-+	struct dma_map_ops *ops = get_dma_ops(dev);
-+
-+	BUG_ON(!valid_dma_direction(dir));
-+	if (ops->unmap_page)
-+		ops->unmap_page(dev, addr, size, dir, NULL);
-+	debug_dma_unmap_page(dev, addr, size, dir, false);
- }
- 
- static inline void
-@@ -250,8 +279,11 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 	if (!ops->alloc_coherent)
- 		return NULL;
- 
--	return ops->alloc_coherent(dev, size, dma_handle,
--				   dma_alloc_coherent_gfp_flags(dev, gfp));
-+	memory = ops->alloc_coherent(dev, size, dma_handle,
-+				     dma_alloc_coherent_gfp_flags(dev, gfp));
-+	debug_dma_alloc_coherent(dev, size, *dma_handle, memory);
-+
-+	return memory;
- }
- 
- static inline void dma_free_coherent(struct device *dev, size_t size,
-@@ -264,6 +296,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- 	if (dma_release_from_coherent(dev, get_order(size), vaddr))
- 		return;
- 
-+	debug_dma_free_coherent(dev, size, vaddr, bus);
- 	if (ops->free_coherent)
- 		ops->free_coherent(dev, size, vaddr, bus);
- }
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index f293a8d..50d28eb 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -1,4 +1,5 @@
- #include <linux/dma-mapping.h>
-+#include <linux/dma-debug.h>
- #include <linux/dmar.h>
- #include <linux/bootmem.h>
- #include <linux/pci.h>
-@@ -44,6 +45,9 @@ struct device x86_dma_fallback_dev = {
- };
- EXPORT_SYMBOL(x86_dma_fallback_dev);
- 
-+/* Number of entries preallocated for DMA-API debugging */
-+#define PREALLOC_DMA_DEBUG_ENTRIES       8192    /* needs 512kb */
-+
- int dma_set_mask(struct device *dev, u64 mask)
- {
- 	if (!dev->dma_mask || !dma_supported(dev, mask))
-@@ -265,6 +269,8 @@ EXPORT_SYMBOL(dma_supported);
- 
- static int __init pci_iommu_init(void)
- {
-+	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
-+
- 	calgary_iommu_init();
- 
- 	intel_iommu_init();
 -- 
 1.5.6.4
 
