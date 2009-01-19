@@ -1,164 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZAST0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZAST2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbZAST0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZAST0W
+	id S1757394AbZAST2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZAST2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:26:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39227 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbZAST0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:26:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
-Date: Mon, 19 Jan 2009 20:25:36 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       dbrownell@users.sourceforge.net
-References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com> <b647ffbd0901190841j785172e5n24d29511a2e61332@mail.gmail.com> <20090119164440.GA20754@elte.hu>
-In-Reply-To: <20090119164440.GA20754@elte.hu>
+	Mon, 19 Jan 2009 14:28:21 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:54431 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbZAST2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 14:28:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cul85H2mNAS7UxvCyR+aSB0plYlhUBSgH6ksvcG0dVQh96BfCFqdmWEKFC6Oc7sEAI
+         nGKNnPn8F8uSGIl/AuwlQzRoXxnowAaNc4xbZXqEO49v4W9kC1DTfXQroYvRRWP11vgT
+         6V0swGi23gLR1blyGW8IbFDr3qomF4JoTMg5A=
+Message-ID: <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com>
+Date: Mon, 19 Jan 2009 20:28:03 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
+Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
+Cc: "Lai Jiangshan" <laijs@cn.fujitsu.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901192025.37711.rjw@sisk.pl>
+References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere>
+	 <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Ingo Molnar wrote:
-> 
-> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> 
-> > 2009/1/19 Ingo Molnar <mingo@elte.hu>:
-> > >
-> > > * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> > >
-> > >> 2009/1/19 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> > >> > 2009/1/13 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> > >> >> 2009/1/13 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> > >> >>> 2009/1/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> > >> >>>> On Monday 12 January 2009, Zdenek Kabelac wrote:
-> > >> >>>
-> > >> >>>> Sure, good idea.  I've been running with this reverted recently.
-> > >> >>>>
-> > >> >>>>> PS: I'll do the above 'echo' trace later (being busy right now).
-> > >> >>>>
-> > >> >>>> That shouldn't be necessary if you can suspend-resume with
-> > >> >>>> 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted and the USB controller
-> > >> >>>> modules unloaded.
-> > >> >>>>
-> > >> >>>> Instead, with 7503bfbae89eba07b46441a5d1594647f6b8ab7d reverted, please write
-> > >> >>>> 'disabled' to the /sys/devices/.../power/wakeup files of all USB controllers
-> > >> >>>> and see if suspend-resume works in this configuration.
-> > >> >>>>
-> > >> >>>
-> > >> >>> Hi
-> > >> >>>
-> > >> >>> So I've check some   find /sys/device | grep usb | grep power/wakeup
-> > >> >>> and there was no difference.
-> > >> >>> I've updated to latest git to be in sync
-> > >> >>> (e0b325d310a6b11f1538413fd557d2eb98f2fae5)
-> > >> >>> I'm still keeping reverted commit: 6fd9086a518d4f14213a32fe6c9ac17fabebbc1e.
-> > >> >>>
-> > >> >>> And I've figured out - the only  'modprobe -r ehci_hcd' is enough to
-> > >> >>> keep my suspend/resume sequence working. (Though I would have say,
-> > >> >>> that now it takes fairly noticable time to get keyboard and synaptics
-> > >> >>> usable - but it might be connected with my move to evdev and hal... :)
-> > >> >>> )
-> > >> >>>
-> > >> >>> So I'm adding cc: to David - maybe he has some suspected patches for
-> > >> >>> ehci_hcd ? (as doing a bisect in such a broken merge window is going
-> > >> >>> to give me probably a lot of unsable kernels nowdays....)
-> > >> >>>
-> > >> >>
-> > >> >> And I've forget to append trace from supend /resume with INFO trace:
-> > >> >> (which might be a part of problem??)
-> > >> >
-> > >> > Hi
-> > >> >
-> > >> >
-> > >> > Just an update for  2.6.29-rc2 (f3b8436ad9a8ad36b3c9fa1fe030c7f38e5d3d0b)
-> > >> >
-> > >> > With this kernel I still have to keep reverted patch commit:
-> > >> > 6fd9086a518d4f14213a32fe6c9ac17fabebbc1e.
-> > >> > (otherwise I see the auto-wake-up immediately after suspend)
-> > >> >
-> > >> > I also keep module ehci_hcd away from my kernel - so the
-> > >> > suspend-resume seems to be working.
-> > >> >
-> > >> > I've checked the ideas from thread: 2.6.29-rc1: [SOLVED] thinkpad
-> > >> > problems during resume
-> > >> > http://lkml.org/lkml/2009/1/17/181  and they seems to produce some
-> > >> > ugly Ooops with my configuration.
-> > >> > so for now I stay with my revert/ehci fix.
-> > >> >
-> > >> > Also I still get the INFO trace:
-> > >> > processor ACPI_CPU:01: legacy suspend
-> > >> > processor ACPI_CPU:00: legacy suspend
-> > >> > button LNXPWRBN:00: legacy suspend
-> > >> > acpi LNXSYSTM:00: legacy suspend
-> > >> > ACPI: Preparing to enter system sleep state S3
-> > >> > Disabling non-boot CPUs ...
-> > >> >
-> > >> > =======================================================
-> > >> > [ INFO: possible circular locking dependency detected ]
-> > >> > 2.6.29-rc2 #14
-> > >> > -------------------------------------------------------
-> > >> > pm-suspend/2873 is trying to acquire lock:
-> > >> >  (&per_cpu(cpu_policy_rwsem, cpu)){----}, at: [<ffffffff8049a27b>]
-> > >> > lock_policy_rwsem_write+0x4b/0x90
-> > >> >
-> > >> > but task is already holding lock:
-> > >> >  (&cpu_hotplug.lock){--..}, at: [<ffffffff80246832>] cpu_hotplug_begin+0x22/0x60
-> > >> >
-> > >> > which lock already depends on the new lock.
-> > >> >
-> > >> >
-> > >> > the existing dependency chain (in reverse order) is:
-> > >> >
-> > >> > -> #1 (&cpu_hotplug.lock){--..}:
-> > >> >       [<ffffffff80270ce6>] __lock_acquire+0x1416/0x1db0
-> > >> >       [<ffffffff80271711>] lock_acquire+0x91/0xc0
-> > >> >       [<ffffffff8053d99c>] mutex_lock_nested+0xec/0x360
-> > >> >       [<ffffffff80246a4a>] get_online_cpus+0x3a/0x50
-> > >> >       [<ffffffff802594b7>] work_on_cpu+0x67/0xb0
-> > >> >       [<ffffffff8021e85e>] get_measured_perf+0x1e/0xb0
-> > >>
-> > >>
-> > >> Ingo,
-> > >>
-> > >>
-> > >> it looks like e39ad415ac15116df213dfa2aa2a4f1b0857af9c should have
-> > >> been reverted together with 7503bfbae89eba07b46441a5d1594647f6b8ab7d.
-> > >>
-> > >> In general, perhaps all "set_cpus_allowed_ptr() -> work_on_cpu()"
-> > >> conversions - if they involve any cpu-hotplug callback paths - may
-> > >> lead to similar reports (and possible lockups).
-> > >
-> > > Guys, could you please try the patch below? It improves work_on_cpu() to
-> > > not be dependent on the kevent workqueue.
-> > 
-> > I guess, the following patch should also be applied (since
-> > get_online_cpus() is a culprit here):
-> > 
-> > [PATCH 1/3] work_on_cpu: dont try to get_online_cpus() in work_on_cpu
-> > 
-> > the patch is available here:
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00375.html
-> 
-> yeah - also attached below.
+2009/1/2 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+> On Wed, Dec 31, 2008 at 2:59 AM, Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>> Hi Lai.
+>>
+>> On Wed, Dec 31, 2008 at 10:56:05AM +0800, Lai Jiangshan wrote:
+>>>
+>>> Impact: save on memory for tracing
+>>>
+>>> Current tracers are typically using a struct(like struct ftrace_entry,
+>>> struct ctx_switch_entry, struct special_entr etc...)to record a binary
+>>> event. These structs can only record a their own kind of events.
+>>> A new kind of tracer need a new struct and a lot of code too handle it.
+>>>
+>>> So we need a generic binary record for events. This infrastructure
+>>> is for this purpose.
+>>>
+>>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>>> ---
+>>>  include/linux/ftrace.h       |    3 +
+>>>  kernel/trace/Kconfig         |    6 ++
+>>>  kernel/trace/Makefile        |    1
+>>>  kernel/trace/trace.c         |   57 ++++++++++++++++++++++++++++
+>>>  kernel/trace/trace.h         |   12 +++++
+>>>  kernel/trace/trace_bprintk.c |   87 +++++++++++++++++++++++++++++++++++++++++++
+>>>  kernel/trace/trace_output.c  |   72 +++++++++++++++++++++++++++++++++++
+>>>  7 files changed, 238 insertions(+)
+>>> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+>>> index 677432b..0ec4752 100644
+>>> --- a/include/linux/ftrace.h
+>>> +++ b/include/linux/ftrace.h
+>>> @@ -181,6 +181,9 @@ extern int ftrace_make_nop(struct module *mod,
+>>>   */
+>>>  extern int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr);
+>>>
+>>> +#ifdef CONFIG_TRACE_BPRINTK
+>>> +extern int trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
+>>> +#endif
+>>>
+>>>  /* May be defined in arch */
+>>>  extern int ftrace_arch_read_dyn_info(char *buf, int size);
+>>> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+>>> index e2a4ff6..887bd89 100644
+>>> --- a/kernel/trace/Kconfig
+>>> +++ b/kernel/trace/Kconfig
+>>> @@ -77,6 +77,12 @@ config FUNCTION_GRAPH_TRACER
+>>>         This is done by setting the current return address on the current
+>>>         task structure into a stack of calls.
+>>>
+>>> +config TRACE_BPRINTK
+>>> +     bool "Binary printk for tracing"
+>>> +     default y
+>>> +     depends on TRACING
+>>> +     select BINARY_PRINTF
+>>> +
+>>>  config IRQSOFF_TRACER
+>>>       bool "Interrupts-off Latency Tracer"
+>>>       default n
+>>> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+>>> index 31cd5fb..8ca3952 100644
+>>> --- a/kernel/trace/Makefile
+>>> +++ b/kernel/trace/Makefile
+>>> @@ -21,6 +21,7 @@ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
+>>>  obj-$(CONFIG_TRACING) += trace.o
+>>>  obj-$(CONFIG_TRACING) += trace_output.o
+>>>  obj-$(CONFIG_TRACING) += trace_stat.o
+>>> +obj-$(CONFIG_TRACE_BPRINTK) += trace_bprintk.o
+>>>  obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
+>>>  obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
+>>>  obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
+>>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>>> index b789c01..6e5c9df 100644
+>>> --- a/kernel/trace/trace.c
+>>> +++ b/kernel/trace/trace.c
+>>> @@ -3027,6 +3027,63 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+>>>  }
+>>>  EXPORT_SYMBOL_GPL(__ftrace_printk);
+>>>
+>>> +/**
+>>> + * trace_vbprintk - write binary msg to tracing buffer
+>>> + *
+>>> + * Caller must insure @fmt are valid when msg is in tracing buffer.
+>>> + */
+>>> +int trace_vbprintk(unsigned long ip, const char *fmt, va_list args)
+>>> +{
+>>> +     static DEFINE_SPINLOCK(trace_buf_lock);
+>>> +     static u32 trace_buf[TRACE_BUF_SIZE];
+>>> +
+>>> +     struct ring_buffer_event *event;
+>>> +     struct trace_array *tr = &global_trace;
+>>> +     struct trace_array_cpu *data;
+>>> +     struct bprintk_entry *entry;
+>>> +     unsigned long flags, irq_flags;
+>>> +     int cpu, len = 0, size, pc;
+>>> +
+>>> +     if (tracing_disabled || !trace_bprintk_enable)
+>>> +             return 0;
+>>> +
+>>> +     pc = preempt_count();
+>>> +     preempt_disable_notrace();
+>>> +     cpu = raw_smp_processor_id();
+>>> +     data = tr->data[cpu];
+>>> +
+>>> +     if (unlikely(atomic_read(&data->disabled)))
+>>> +             goto out;
+>>> +
+>>> +     spin_lock_irqsave(&trace_buf_lock, flags);
+>>> +     len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+>>> +
+>>> +     if (len > TRACE_BUF_SIZE || len < 0)
+>>> +             goto out_unlock;
+>>> +
+>>> +     size = sizeof(*entry) + sizeof(u32) * len;
+>>> +     event = ring_buffer_lock_reserve(tr->buffer, size, &irq_flags);
+>>> +     if (!event)
+>>> +             goto out_unlock;
+>>> +     entry = ring_buffer_event_data(event);
+>>> +     tracing_generic_entry_update(&entry->ent, flags, pc);
+>>> +     entry->ent.type                 = TRACE_BPRINTK;
+>>> +     entry->ip                       = ip;
+>>> +     entry->fmt                      = fmt;
+>>> +
+>>> +     memcpy(entry->buf, trace_buf, sizeof(u32) * len);
+>>> +     ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+>>> +
+>>> +out_unlock:
+>>> +     spin_unlock_irqrestore(&trace_buf_lock, flags);
+>>> +
+>>> +out:
+>>> +     preempt_enable_notrace();
+>>> +
+>>> +     return len;
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(trace_vbprintk);
+>>> +
+>>>  static int trace_panic_handler(struct notifier_block *this,
+>>>                              unsigned long event, void *unused)
+>>>  {
+>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+>>> index a8b624c..6885d13 100644
+>>> --- a/kernel/trace/trace.h
+>>> +++ b/kernel/trace/trace.h
+>>> @@ -18,6 +18,7 @@ enum trace_type {
+>>>       TRACE_WAKE,
+>>>       TRACE_STACK,
+>>>       TRACE_PRINT,
+>>> +     TRACE_BPRINTK,
+>>>       TRACE_SPECIAL,
+>>>       TRACE_MMIO_RW,
+>>>       TRACE_MMIO_MAP,
+>>> @@ -120,6 +121,16 @@ struct print_entry {
+>>>       char                    buf[];
+>>>  };
+>>>
+>>> +struct bprintk_entry {
+>>> +     struct trace_entry ent;
+>>> +     unsigned long ip;
+>>> +     const char *fmt;
+>>> +     u32 buf[];
+>>> +};
+>>> +#ifdef CONFIG_TRACE_BPRINTK
+>>> +extern int trace_bprintk_enable;
+>>> +#endif
+>>> +
+>>>  #define TRACE_OLD_SIZE               88
+>>>
+>>>  struct trace_field_cont {
+>>> @@ -262,6 +273,7 @@ extern void __ftrace_bad_type(void);
+>>>               IF_ASSIGN(var, ent, struct stack_entry, TRACE_STACK);   \
+>>>               IF_ASSIGN(var, ent, struct userstack_entry, TRACE_USER_STACK);\
+>>>               IF_ASSIGN(var, ent, struct print_entry, TRACE_PRINT);   \
+>>> +             IF_ASSIGN(var, ent, struct bprintk_entry, TRACE_BPRINTK);\
+>>>               IF_ASSIGN(var, ent, struct special_entry, 0);           \
+>>>               IF_ASSIGN(var, ent, struct trace_mmiotrace_rw,          \
+>>>                         TRACE_MMIO_RW);                               \
+>>> diff --git a/kernel/trace/trace_bprintk.c b/kernel/trace/trace_bprintk.c
+>>> new file mode 100644
+>>> index 0000000..1f8e532
+>>> --- /dev/null
+>>> +++ b/kernel/trace/trace_bprintk.c
+>>> @@ -0,0 +1,87 @@
+>>> +/*
+>>> + * trace binary printk
+>>> + *
+>>> + * Copyright (C) 2008 Lai Jiangshan <laijs@cn.fujitsu.com>
+>>> + *
+>>> + */
+>>> +#include <linux/kernel.h>
+>>> +#include <linux/ftrace.h>
+>>> +#include <linux/string.h>
+>>> +#include <linux/ctype.h>
+>>> +#include <linux/list.h>
+>>> +#include <linux/mutex.h>
+>>> +#include <linux/slab.h>
+>>> +#include <linux/module.h>
+>>> +#include <linux/seq_file.h>
+>>> +#include <linux/fs.h>
+>>> +#include <linux/marker.h>
+>>> +#include <linux/uaccess.h>
+>>> +
+>>> +#include "trace.h"
+>>> +
+>>> +/* binary printk basic */
+>>> +static DEFINE_MUTEX(btrace_mutex);
+>>
+>> Looks like you only need a mutex to protect a counter.
+>> Wouldn't it be better to have this counter atomic and then drop
+>> out the mutex?
+>>
+>>> +static int btrace_metadata_count;
+>>> +
+>>> +static inline void lock_btrace(void)
+>>> +{
+>>> +     mutex_lock(&btrace_mutex);
+>>> +}
+>>> +
+>>> +static inline void unlock_btrace(void)
+>>> +{
+>>> +     mutex_unlock(&btrace_mutex);
+>>> +}
+>>> +
+>>> +static void get_btrace_metadata(void)
+>>> +{
+>>> +     lock_btrace();
+>>> +     btrace_metadata_count++;
+>>> +     unlock_btrace();
+>>> +}
+>>> +
+>>> +static void put_btrace_metadata(void)
+>>> +{
+>>> +     lock_btrace();
+>>> +     btrace_metadata_count--;
+>>> +     unlock_btrace();
+>>> +}
+>>> +
+>>> +/* events tracer */
+>>> +int trace_bprintk_enable;
+>>> +
+>>> +static void start_bprintk_trace(struct trace_array *tr)
+>>> +{
+>>> +     get_btrace_metadata();
+>>> +     tracing_reset_online_cpus(tr);
+>>> +     trace_bprintk_enable = 1;
+>>> +}
+>>> +
+>>> +static void stop_bprintk_trace(struct trace_array *tr)
+>>> +{
+>>> +     trace_bprintk_enable = 0;
+>>> +     tracing_reset_online_cpus(tr);
+>>> +     put_btrace_metadata();
+>>> +}
+>>> +
+>>> +static int init_bprintk_trace(struct trace_array *tr)
+>>> +{
+>>> +     start_bprintk_trace(tr);
+>>> +     return 0;
+>>> +}
+>>> +
+>>> +static struct tracer bprintk_trace __read_mostly =
+>>> +{
+>>> +     .name        = "events",
+>>> +     .init        = init_bprintk_trace,
+>>> +     .reset       = stop_bprintk_trace,
+>>> +     .start       = start_bprintk_trace,
+>>> +     .stop        = stop_bprintk_trace,
+>>> +};
+>>> +
+>>> +static __init int init_bprintk(void)
+>>> +{
+>>> +     return register_tracer(&bprintk_trace);
+>>> +}
+>>> +
+>>> +device_initcall(init_bprintk);
+>>> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+>>> index df0c25c..ccc9fa7 100644
+>>> --- a/kernel/trace/trace_output.c
+>>> +++ b/kernel/trace/trace_output.c
+>>> @@ -53,6 +53,26 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+>>>       return len;
+>>>  }
+>>>
+>>> +static int
+>>> +trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
+>>> +{
+>>> +     int len = (PAGE_SIZE - 1) - s->len;
+>>> +     int ret;
+>>> +
+>>> +     if (!len)
+>>> +             return 0;
+>>> +
+>>> +     ret = bstr_printf(s->buffer + s->len, len, fmt, binary);
+>>> +
+>>> +     /* If we can't write it all, don't bother writing anything */
+>>> +     if (ret >= len)
+>>> +             return 0;
+>>> +
+>>> +     s->len += ret;
+>>> +
+>>> +     return len;
+>>> +}
+>>> +
+>>>  /**
+>>>   * trace_seq_puts - trace sequence printing of simple string
+>>>   * @s: trace sequence descriptor
+>>> @@ -800,6 +820,57 @@ static struct trace_event trace_print_event = {
+>>>       .binary         = trace_nop_print,
+>>>  };
+>>>
+>>> +/* TRACE_BPRINTK */
+>>> +static int
+>>> +trace_bprintk_print(struct trace_seq *s, struct trace_entry *entry, int flags)
+>>> +{
+>>> +     struct bprintk_entry *field;
+>>> +
+>>> +     trace_assign_type(field, entry);
+>>> +
+>>> +     if (!seq_print_ip_sym(s, field->ip, flags))
+>>> +             goto partial;
+>>> +
+>>> +     if (!trace_seq_puts(s, ": "))
+>>> +             goto partial;
+>>> +
+>>> +     if (!trace_seq_bprintf(s, field->fmt, field->buf))
+>>> +             goto partial;
+>>> +
+>>> +     return 0;
+>>> +
+>>> + partial:
+>>> +     return TRACE_TYPE_PARTIAL_LINE;
+>>> +}
+>>> +
+>>> +static int
+>>> +trace_bprintk_raw(struct trace_seq *s, struct trace_entry *entry, int flags)
+>>> +{
+>>> +     struct bprintk_entry *field;
+>>> +
+>>> +     trace_assign_type(field, entry);
+>>> +
+>>> +     if (!trace_seq_printf(s, ": %lx : ", field->ip))
+>>> +             goto partial;
+>>> +
+>>> +     if (!trace_seq_bprintf(s, field->fmt, field->buf))
+>>> +             goto partial;
+>>> +
+>>> +     return 0;
+>>> +
+>>> + partial:
+>>> +     return TRACE_TYPE_PARTIAL_LINE;
+>>> +}
+>>> +
+>>> +static struct trace_event trace_bprintk_event = {
+>>> +     .type           = TRACE_BPRINTK,
+>>> +     .trace          = trace_bprintk_print,
+>>> +     .latency_trace  = trace_bprintk_print,
+>>> +     .raw            = trace_bprintk_raw,
+>>> +     .hex            = trace_nop_print,
+>>> +     .binary         = trace_nop_print,
+>>> +};
+>>> +
+>>>  static struct trace_event *events[] __initdata = {
+>>>       &trace_fn_event,
+>>>       &trace_ctx_event,
+>>> @@ -808,6 +879,7 @@ static struct trace_event *events[] __initdata = {
+>>>       &trace_stack_event,
+>>>       &trace_user_stack_event,
+>>>       &trace_print_event,
+>>> +     &trace_bprintk_event,
+>>>       NULL
+>>>  };
+>>>
+>>
+>>
+>> Just for curiosity. Why do you need such a binary tracing?
+>> Do you need it because a string output is really too slow for your needs?
+>
+> warning: I haven't looked at the patch details
+>
+> But I would love to use something like this to provide the exact
+> contents the userspace blktrace utilities want.
+>
+> - Arnaldo
+>
 
-In fact I believe all three patches in the series at
-http://lkml.org/lkml/2009/1/16/377
-are necessary.
 
-Thanks,
-Rafael
+Hi Arnaldo,
+
+Since you talked about binary record for the blk tracer, I just recall
+this patch.
+Are you sure this infrastructure would cover your needs?
+
+>From your traced site, trace_vbprintk will carry your random typed
+datas in a binary-contiguous way.
+But actually, its purpose is more about holding binary data transport
+to finally print them in a formatted string
+output, as usual.
+
+You can compare it with ftrace_printk, since the result is the same.
+The difference is in the transport.
+ftrace_printk will carry your data as already formatted whereas
+trace_vbprintk will carry them as binary values and format them
+in the last moment. On most cases, trace_vbprintk would be logically
+more lightweight.
+
+
+But if you have some predefined typed data to export as binary, I
+think that can't really help you.
+You would prefer to define you own type and then export them as binary
+values with your own output helper function.
+
+Hmm?
+
+Steven, Ingo, what are your thoughts about this patch?
