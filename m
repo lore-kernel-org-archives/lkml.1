@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZASCw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbZASCzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbZASCw6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbZASCws
+	id S1758485AbZASCzQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZASCyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:52:48 -0500
-Received: from mga02.intel.com ([134.134.136.20]:37426 "EHLO mga02.intel.com"
+	Sun, 18 Jan 2009 21:54:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36830 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757113AbZASCwr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:52:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,285,1231142400"; 
-   d="scan'208";a="379516129"
-From: "Gao, Yunpeng" <yunpeng.gao@intel.com>
-To: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 19 Jan 2009 10:54:02 +0800
-Subject: 
-Thread-Index: Acl54S8WAR/0PuuAQAyOqrCYBnRpxA==
-Message-ID: <38D9F46DFF92C54980D2F2C1E8EE31301FC5E7FB@pdsmsx503.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1757177AbZASCyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:54:47 -0500
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
+       linux-media@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netfilter@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-nfs@vger.kernel.org, linux-raid@vger.kernel.org,
+       dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
+       greg@kroah.com, linux-usb@vger.kernel.org, dwmw2@infradead.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090119112429.78f5dc33.sfr@canb.auug.org.au>
+References: <1232223441.3966.22.camel@localhost.localdomain>
+	 <20090119112429.78f5dc33.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 08:23:14 +0530
+Message-Id: <1232333594.3129.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, 2009-01-19 at 11:24 +1100, Stephen Rothwell wrote:
+> On Sun, 18 Jan 2009 01:47:21 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> > diff --git a/include/linux/nfsd/stats.h b/include/linux/nfsd/stats.h
+> > index 7678cfb..0b53cfe 100644
+> > --- a/include/linux/nfsd/stats.h
+> > +++ b/include/linux/nfsd/stats.h
+> > @@ -29,9 +29,11 @@ struct nfsd_stats {
+> >  	unsigned int	ra_size;	/* size of ra cache */
+> >  	unsigned int	ra_depth[11];	/* number of times ra entry was found that deep
+> >  					 * in the cache (10percentiles). [10] = not found */
+> > +#ifdef __KERNEL__
+> >  #ifdef CONFIG_NFSD_V4
+> >  	unsigned int	nfs4_opcount[LAST_NFS4_OP + 1];	/* count of individual nfsv4 operations */
+> >  #endif
+> > +#endif /* __KERNEL__ */
+> >  
+> >  };
+> 
+> The only variable in the kernel of type "struct nfsd_stats" is only
+> exported to user mode via procfs, so this whole structure could probably
+> go inside __KERNEL__.  Then looking harder, I wonder if this header
+> should be exported to user mode at all.
+> 
 
-I have to use 64bit variable in my 2.6.27 kernel NAND driver as below:
----------------------------------------------------------------------------
-u64 NAND_capacity;
-unsigned int block_num, block_size;
-...
-block_num = NAND_capacity / block_size;
----------------------------------------------------------------------------
-but it failed when compiling and reports 'undefined reference to `__udivdi3'.
+I was in doubt may be this will be used by some userspace utilities.
 
-Does any idea about this? I need to include some special head file or change something in Kconfig?
+Once I got confirmation that it is not required in userspace, I will
+remove it :-)
 
-BTW, the environment is Fedora Core 9, gcc 4.3.0. 
-
-Thanks a lot.
-
-Rgds,
-Yunpeng Gao
-
+--
+JSR
 
