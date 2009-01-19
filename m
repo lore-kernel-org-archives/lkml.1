@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbZASDOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZASD1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbZASDOE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 22:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbZASDNx
+	id S1758317AbZASD1c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 22:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZASD1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 22:13:53 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:59557 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757584AbZASDNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 22:13:53 -0500
-Date: Sun, 18 Jan 2009 21:20:17 -0600
-From: "Bill O'Donnell" <billodo@sgi.com>
-To: Peter Zijlstra <peterz@infradead.org>, Joe Perches <joe@perches.com>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [XFS] Update maintainers
-Message-ID: <20090119032017.GA2814@sgi.com>
-References: <200901150459.n0F4xhVS016322@hera.kernel.org> <1232058936.3109.7.camel@localhost> <20090116010511.GA33559@sgi.com> <1232297538.5204.20.camel@laptop> <20090119030657.GM8071@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090119030657.GM8071@disturbed>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 18 Jan 2009 22:27:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33554
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750942AbZASD1S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 22:27:18 -0500
+Date: Sun, 18 Jan 2009 19:27:19 -0800 (PST)
+Message-Id: <20090118.192719.198405397.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: w@1wt.eu, jarkao2@gmail.com, zbr@ioremap.net, dada1@cosmosbay.com,
+       ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090119030844.GA31941@gondor.apana.org.au>
+References: <20090115.155434.206643894.davem@davemloft.net>
+	<20090119004206.GA10396@1wt.eu>
+	<20090119030844.GA31941@gondor.apana.org.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 02:06:57PM +1100, Dave Chinner wrote:
-| On Sun, Jan 18, 2009 at 05:52:18PM +0100, Peter Zijlstra wrote:
-| > On Thu, 2009-01-15 at 19:05 -0600, Bill O'Donnell wrote:
-| > > No, I'd prefer we keep the maintainer contact address 
-| > > as a centralized SGI mail address.  In fact, it would be 
-| > > best if we remove my name entirely, and leave contact 
-| > > completely centralized to SGI.
-| > 
-| > Do I read this as nobody wanting to be personally responsible for XFS
-| > anymore?
-| > 
-| > I suppose its a good thing we know where to find Christoph and Dave,
-| > just in case.
-| 
-| FWIW, both Christoph and I are on that xfs-masters email list - it's
-| not actually a "sgi" point of contact at all...
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Mon, 19 Jan 2009 14:08:44 +1100
 
-OK, thanks Dave, we'll fix it up sometime next week.
-Cheers-
-Bill
+> On Mon, Jan 19, 2009 at 01:42:06AM +0100, Willy Tarreau wrote:
+> >
+> > Just for the record, I've now re-integrated those changes in a test kernel
+> > that I booted on my 10gig machines. I have updated my user-space code in
+> > haproxy to run a new series of tests. Eventhough there is a memcpy(), the
+> > results are EXCELLENT (on a C2D 2.66 GHz using Myricom's Myri10GE NICs) :
+> > 
+> >   - 4.8 Gbps at 100% CPU using MTU=1500 without LRO
+> >     (3.2 Gbps at 100% CPU without splice)
+> 
+> One thing to note is that Myricom's driver probably uses page
+> frags which means that you're not actually triggering the copy.
 
+Right.
+
+And this is also the only reason why jumbo MTU worked :-)
