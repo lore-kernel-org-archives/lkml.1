@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZASWHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZASWIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbZASWHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 17:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZASWHr
+	id S1760158AbZASWIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 17:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZASWIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 17:07:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57872 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZASWHq (ORCPT
+	Mon, 19 Jan 2009 17:08:38 -0500
+Received: from hpsmtp-eml18.KPNXCHANGE.COM ([213.75.38.118]:18961 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751843AbZASWIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 17:07:46 -0500
-Message-ID: <4974F9A8.7060107@zytor.com>
-Date: Mon, 19 Jan 2009 14:07:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 19 Jan 2009 17:08:37 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 6/6] SATA PIIX: Blacklist system that spins off disks during ACPI power off
+Date: Mon, 19 Jan 2009 23:08:32 +0100
+User-Agent: KMail/1.9.9
+Cc: Jeff Garzik <jeff@garzik.org>, tj@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20081104062734.GA4420@havoc.gtf.org> <200901192053.50831.rjw@sisk.pl> <200901192059.23448.rjw@sisk.pl>
+In-Reply-To: <200901192059.23448.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Avuton Olrich <avuton@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due
- to dc1e35c
-References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com> <4974CC8B.1030403@zytor.com> <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com> <4974DD86.2090300@zytor.com> <20090119201115.GD31356@linux-os.sc.intel.com> <3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com> <20090119215736.GE31356@linux-os.sc.intel.com>
-In-Reply-To: <20090119215736.GE31356@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901192308.34456.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Jan 2009 22:08:35.0124 (UTC) FILETIME=[79015F40:01C97A82]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> On Mon, Jan 19, 2009 at 01:46:37PM -0800, Avuton Olrich wrote:
->> On Mon, Jan 19, 2009 at 12:11 PM, Suresh Siddha
->> <suresh.b.siddha@intel.com> wrote:
->>> Avuton, Does your bios has an option which says limit the cpuid
->>> vector limit to '2' or something. Can you disable that option and
->>> re-check? It will typically be located under cpu configuration settings.
->> You're the winner of the prize. The culprit in my bios was:
->>
->> Max CPUID Value Limit: Enabled
-> 
-> Though the bios is the culprit and this option will severely limit
-> the cpu capabilities that OS can take advantage of, OS should fallback
-> to a safer mode. I will have a patch for it.
-> 
-> Also, I wonder, if we should complain/scream during boot if we find only
-> fewer cpuid levels on modern generation cpu's.
-> 
+On Monday 19 January 2009, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Some notebooks from HP have the problem that their BIOSes attempt to
+> spin down hard drives before entering ACPI system states S4 and S5.
+> This leads to a yo-yo effect during system power-off shutdown and the
+> last phase of hibernation when the disk is first spun down by the
+> kernel and then almost immediately turned on and off by the BIOS.
+> This, in turn, may result in shortening the disk's life times.
+>
+> To prevent this from happening we can blacklist the affected systems
+> using DMI information.
+>
+> Blacklist HP 2510p that uses the ata_piix driver.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-We should, or if this block is reversible, we should probably just undo 
-it (the reason people put this block in places is because of, ahem, 
-inferior operating systems having bugs.)
+As I have a system that is affected by this and as I have been a happy 
+user of this patch for 4 months or so, it may make sense to add my
 
-Do you know how this is managed?  Via an MSR?
+Tested-by: Frans Pop <elendil@planet.nl>
 
-	-hpa
+Same goes indirectly for the rest of the series, except for patch 5.
