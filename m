@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbZASRiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZASRsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbZASRiA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 12:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZASRhv
+	id S1753869AbZASRsv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 12:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZASRsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 12:37:51 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3417 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752158AbZASRhv (ORCPT
+	Mon, 19 Jan 2009 12:48:42 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38781 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZASRsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 12:37:51 -0500
-Date: Mon, 19 Jan 2009 17:37:48 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] regulator: Pass regulator init data as explict argument when registering
-Message-ID: <20090119173747.GE22473@sirena.org.uk>
-References: <1232372226-23319-1-git-send-email-broonie@opensource.wolfsonmicro.com> <74d0deb30901190924q4bc4d1ffu5211a161af3f5e6e@mail.gmail.com>
+	Mon, 19 Jan 2009 12:48:41 -0500
+Date: Mon, 19 Jan 2009 11:48:38 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
+       hpa@zytor.com, Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090119174836.GA11295@us.ibm.com>
+References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net> <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net> <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <74d0deb30901190924q4bc4d1ffu5211a161af3f5e6e@mail.gmail.com>
-X-Cookie: Variables don't
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090119143046.GA8284@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 06:24:50PM +0100, pHilipp Zabel wrote:
+Quoting Oleg Nesterov (oleg@redhat.com):
+> On 01/19, Ian Kent wrote:
+> >
+> > On Mon, 2009-01-19 at 13:42 +0100, Oleg Nesterov wrote:
+> > >
+> > > Before the patch
+> > >
+> > > 	sbi->oz_pgrp != task_pgrp(automount)
+> > >
+> > > After the patch
+> > >
+> > > 	sbi->oz_pgrp == task_pgrp(automount)
+> > >
+> > > And please note that these "!="/"==" apply to any namespace. I mean,
+> > > when we call autofs_oz_mode() it does not matter in which namespace
+> > > autofs_oz_mode() is executed, we compare "struct pid*", not pid_t.
+> >
+> > I think your saying that the option pgrp= is broken and should be
+> > deprecated
+> 
+> No, no, sorry if I confused you.
+> 
+> If the "pgrp=" option was specified, the patch has no effect, and the
+> code is correct with or without the patch.
 
-> Good, I had a local patch that would pass bq24022_mach_info in
-> regulator_init_data->driver_data instead of platform_data.
-> Now that there is a possibility to pass platform_data, is there still
-> need for the driver_data field in regulator_init_data and for the
-> regulator_get_init_drvdata() function?
+But so there does still need to be a patch modifying parse_options()
+to return an error if pgrp= was not specified, right?
 
-I'd not expect so, no.  The driver doesn't get to see the constraints.
+-serge
