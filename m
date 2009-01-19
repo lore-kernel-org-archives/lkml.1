@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZASOf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZASOg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbZASOf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZASOfK
+	id S1755616AbZASOg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZASOgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:35:10 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:29191 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZASOfI (ORCPT
+	Mon, 19 Jan 2009 09:36:13 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:48567 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbZASOgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:35:08 -0500
+	Mon, 19 Jan 2009 09:36:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=AYmta4uDir8v/79cr00sXnVeG2vHIi031InfV20dyzqG7AdoDJ+eB1acsjrDlgFPjy
-         6PfAU1ks0ezcMgXKejea3GIWt34ZM3ZCPFPnCez5cUewtceau8od7xmcOHYBddkVUXXs
-         cvRpKnI/iIYpCM9KBPpJtSRKk2shTLhoKogzk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
-Date: Mon, 19 Jan 2009 15:35:14 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain> <49748E43.4030009@ru.mvista.com> <49748EC0.1090503@ru.mvista.com>
-In-Reply-To: <49748EC0.1090503@ru.mvista.com>
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=TL2gkxnSyzRbgfzCJrMCrs1HCidVqooNumGJPSV8Xi6rPFCR/SVGYP/UwG8Ov0Sd+/
+         gfhqGQ9F7jIiL92lxLep1LLp2ckDs0JzeMc6LAiC9uNzz+x4BGW5ygm3btngujVpXvvW
+         53FhfZq/7UwjP8Oa3ZkSPrCK+9mcfZqyZD0wc=
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901191535.15142.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Reply-To: petkovbb@gmail.com
+In-Reply-To: <20090119141443.27613.89085.sendpatchset@localhost.localdomain>
+References: <20090119141330.27613.34546.sendpatchset@localhost.localdomain>
+	 <20090119141443.27613.89085.sendpatchset@localhost.localdomain>
+Date: Mon, 19 Jan 2009 15:36:10 +0100
+Message-ID: <9ea470500901190636g366767bt2b40917b2d2718f9@mail.gmail.com>
+Subject: Re: [PATCH 08/12] ide: remove no longer needed IDE_HFLAG[_FORCE]_LEGACY_IRQS
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Sergei Shtylyov wrote:
-> Hello, I wrote:
-> 
-> >>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> >>>    Gah, what in the world is that SFF I/O code?
-> 
-> >>>> Index: b/drivers/ide/ide-io-sff.c
-> >>>> ===================================================================
-> >>>> --- /dev/null
-> >>>> +++ b/drivers/ide/ide-io-sff.c
-> >>>> @@ -0,0 +1,314 @@
-> >>>> +
-> >>>> +#include <linux/kernel.h>
-> >>>> +#include <linux/ide.h>
-> >>>> +
-> >>>> +/*
-> >>>> + *    Conventional PIO operations for ATA devices
-> >>>> + */
-> >>>> +
-> >>>> +static u8 ide_inb(unsigned long port)
-> >>>> +{
-> >>>> +    return (u8) inb(port);
-> >>>> +}
-> >>>> +
-> >>>> +static void ide_outb(u8 val, unsigned long port)
-> >>>> +{
-> >>>> +    outb(val, port);
-> >>>> +}
-> >>>> +
-> >>>> +/*
-> >>>> + *    MMIO operations, typically used for SATA controllers
-> >>>> + */
-> >>>> +
-> >>>> +static u8 ide_mm_inb(unsigned long port)
-> >>>> +{
-> >>>> +    return (u8) readb((void __iomem *) port);
-> >>>> +}
-> >>>> +
-> >>>> +static void ide_mm_outb(u8 value, unsigned long port)
-> >>>> +{
-> >>>> +    writeb(value, (void __iomem *) port);
-> >>>> +}
-> 
-> >>>    Ah, I see. Can we finally stop abusing the SFF name? Or are we 
-> >>> bound to copy every mistake that libata has made? :-/
-> 
-> >> Please suggest a better name. :)
-> 
-> >> [ I'm also not happy with the naming but couldn't think of a better 
-> >> one. ]
-> 
-> >    Legacy perhaps?
-> 
->     As in ide-io-legacy.c. I can also suggest ide-io-std.c, 
-> ide-io-trad[itional].c...
+Hi,
 
-ide-io-std.c sounds good to me.  I'll recast the patch before merging it.
+On Mon, Jan 19, 2009 at 3:14 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+
+[.. ]
+
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -1347,10 +1347,6 @@ enum {
+>        IDE_HFLAG_ERROR_STOPS_FIFO      = (1 << 19),
+>        /* serialize ports */
+>        IDE_HFLAG_SERIALIZE             = (1 << 20),
+> -       /* use legacy IRQs */
+> -       IDE_HFLAG_LEGACY_IRQS           = (1 << 21),
+> -       /* force use of legacy IRQs */
+> -       IDE_HFLAG_FORCE_LEGACY_IRQS     = (1 << 22),
+>        /* host is TRM290 */
+>        IDE_HFLAG_TRM290                = (1 << 23),
+>        /* use 32-bit I/O ops */
+
+maybe contigious numbering of the enums here?
+
+-- 
+Regards/Gruss,
+Boris
