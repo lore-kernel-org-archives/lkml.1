@@ -1,37 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZASCRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZASCTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbZASCRv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZASCRj
+	id S1757483AbZASCTT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756753AbZASCTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:17:39 -0500
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:55623 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756696AbZASCRi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:17:38 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a question 
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-In-Reply-To: <1232215916.7015.78.camel@norville.austin.ibm.com>
-References: <7471.1231827621@jrobl> <1231852628.6954.4.camel@norville.austin.ibm.com> <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl> <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl> <1232210546.7015.8.camel@norville.austin.ibm.com> <10394.1232214142@jrobl> <1232215916.7015.78.camel@norville.austin.ibm.com>
-Date: Mon, 19 Jan 2009 11:17:34 +0900
-Message-ID: <7087.1232331454@jrobl>
+	Sun, 18 Jan 2009 21:19:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59206 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756977AbZASCTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:19:02 -0500
+Message-ID: <4973E30D.3030102@kernel.org>
+Date: Mon, 19 Jan 2009 11:18:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86-64: Remove the PDA
+References: <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com> <1232326345-3534-1-git-send-email-brgerst@gmail.com> <1232326345-3534-2-git-send-email-brgerst@gmail.com> <1232326345-3534-3-git-send-email-brgerst@gmail.com> <1232326345-3534-4-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1232326345-3534-4-git-send-email-brgerst@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Jan 2009 02:18:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Brian.
 
-Dave Kleikamp:
-> For a regular file, the size of the upper inode is not the same as the
-> size of the lower inode.  The lower inode includes the header blocks
-> which are not visible in the upper inode.  So ecryptfs_interpose() will
-> overwrite the correct upper inode size.
+Brian Gerst wrote:
+...
+> @@ -881,13 +881,9 @@ __setup("clearcpuid=", setup_disablecpuid);
+>  #ifdef CONFIG_X86_64
+>  struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
+>  
+> -DEFINE_PER_CPU_PAGE_ALIGNED(char[IRQ_STACK_SIZE], irq_stack);
+> -#ifdef CONFIG_SMP
+> -DEFINE_PER_CPU(char *, irq_stack_ptr);	/* will be set during per cpu init */
+> -#else
+> +DEFINE_PER_CPU_FIRST(union irq_stack_union, irq_stack_union) __aligned(PAGE_SIZE);
+>  DEFINE_PER_CPU(char *, irq_stack_ptr) =
+> -	per_cpu_var(irq_stack) + IRQ_STACK_SIZE - 64;
+> -#endif
+> +	per_cpu_var(irq_stack_union.irq_stack) + IRQ_STACK_SIZE - 64;
+>  
+>  DEFINE_PER_CPU(unsigned long, kernel_stack) =
+>  	(unsigned long)&init_thread_union - KERNEL_STACK_OFFSET + THREAD_SIZE;
+>
+> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+> index 98ea26a..8c83de6 100644
+> --- a/arch/x86/kernel/head_64.S
+> +++ b/arch/x86/kernel/head_64.S
+> @@ -216,6 +216,7 @@ ENTRY(secondary_startup_64)
+>  	cmpl	$0, per_cpu__cpu_number(%rax)
+>  	jne	1f
+>  	addq	%rax, early_gdt_descr_base(%rip)
+> +	addq	%rax, per_cpu__irq_stack_ptr(%rax)
+>  1:
+>  #endif
+>  	/*
 
-Then it means updating i_size in ecryptfs_link() is unnecessary...
+As discussed before, the above chunks do drop one #ifdef CONFIG_SMP
+but it does add a obscure relocation and please note that it's
+different from early_gdt_descr.  early_gdt_descr is needed to bring up
+the cpu so there's no other way to do it but to relocate it in
+assembly.  If you absolutely have to relocate irq_stack_ptr early,
+please do it in C code in head64.c but then again irq_stack_ptr is not
+even necessary till traps_init() which is way after per cpu area
+setup.  So, the above two chunks are not necessary && even if they go
+in, they don't have much to do with this patch.
 
+In general, I think trying to early initialize per cpu pointer to per
+cpu variable just isn't a good idea and should be avoided as much as
+possible.  I think the #ifdef there is fine - it's short and apparent
+and represntative of the two separate percpu implementations we have.
+If you're annoyed by it, I think it would be better to either
+consolidate such #ifdefs (there are a few other places) or define a
+wrapper macro to conditionalize and document the different
+initialization paths, but please don't add obscure assembly
+relocation, especially not without comment explaining it.
 
-J. R. Okajima
+Thanks.
+
+-- 
+tejun
