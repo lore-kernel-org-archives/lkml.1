@@ -1,283 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZASRGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZASRIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZASRGd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 12:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZASRGY
+	id S1755102AbZASRIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 12:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZASRHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 12:06:24 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:19219 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbZASRGX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 12:06:23 -0500
-Message-ID: <4974B2D8.7010003@oracle.com>
-Date: Mon, 19 Jan 2009 09:05:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 19 Jan 2009 12:07:51 -0500
+Received: from cs-studio.ru ([195.178.208.66]:35934 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752501AbZASRHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 12:07:51 -0500
+Date: Mon, 19 Jan 2009 20:07:49 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, dst@ioremap.net,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [4/7] dst: thread pool.
+Message-ID: <20090119170749.GA24775@ioremap.net>
+References: <1231887933-17843-1-git-send-email-zbr@ioremap.net> <1231887933-17843-2-git-send-email-zbr@ioremap.net> <1231887933-17843-3-git-send-email-zbr@ioremap.net> <1231887933-17843-4-git-send-email-zbr@ioremap.net> <1231887933-17843-5-git-send-email-zbr@ioremap.net> <20090114215810.674569fc.akpm@linux-foundation.org> <20090118161041.40608174@infradead.org>
 MIME-Version: 1.0
-To: Steven Whitehouse <swhiteho@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com
-Subject: Re: mmotm 2009-01-14-20-31 uploaded (gfs2)
-References: <200901150432.n0F4WI66023742@imap1.linux-foundation.org>	 <496F8AED.3020604@oracle.com>	 <1232101203.3554.3.camel@localhost.localdomain>	 <20090116084352.9f35b822.akpm@linux-foundation.org>	 <1232125371.9571.587.camel@quoit> <4970BE8F.9090705@oracle.com>	 <20090116093550.ce7229d5.akpm@linux-foundation.org> <1232378200.9571.602.camel@quoit>
-In-Reply-To: <1232378200.9571.602.camel@quoit>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4974B2DB.01D2:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118161041.40608174@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Whitehouse wrote:
-> Hi,
+Hi.
+
+On Sun, Jan 18, 2009 at 04:10:41PM -0800, Arjan van de Ven (arjan@infradead.org) wrote:
+> > 4: Your "dst thread pool"
 > 
-> On Fri, 2009-01-16 at 09:35 -0800, Andrew Morton wrote:
->> On Fri, 16 Jan 2009 09:06:23 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>
->>>>>> which is not ideal, but I don't see any easy way to avoid the #ifdef,
->>>>>>
->>>>> Take a look in fs.h:
->>>>>
->>>>> #define generic_setlease(a, b, c) ({ -EINVAL; })
->>>>>
->>>>> If that wasn't a stupid macro, your code would have compiled and ran
->>>>> just as intended.
->>>>>
->>>> There doesn't seem to be an easy answer though. If I #define it to NULL,
->>>> that upsets other parts of the code that rely on that macro, and if I
->>>> turn it into a inline function which returns -EINVAL, then presumably I
->>>> can't take its address for my file_operations.
->>> No, gcc will allow &inline_func and out-of-line it if it is needed (AFAIK;
->>> I've seen a few cases of that).
->>>
->> yup.  It measn that we'll get a separate private copy of the
->> generic_setlease() code in each compilation unit which takes its
->> address, but I don't think that would kill us.
->>
->> The prevention is of course to put the stub function in a core kernel
->> .c file and export it to modules.
->>
-> Having looked into this in a bit more detail now, it seems that this
-> particular function (generic_setlease) is one of a number appearing in
-> fs.h which are replaced by macros in the case that CONFIG_FILE_LOCKING
-> is not set.
-> 
-> So rather than just do the one function, it seemed to make sense to me
-> to make them all the same. So this uses inline functions as originally
-> proposed. If you'd prefer that we don't inline them and instead have a
-> fs/no-locks.c or something like that with stub functions in it, then I"m
-> happy to revise the patch accordingly.
+> from the context... I wouldn't be surprised if this can just use async
+> function calls as well... it's simple enough on first sight.
 
-Acked-by/Tested-by: Randy Dunlap <randy.dunlap@oracle.com>
+No it can't. Since async function call requires additional allocation
+which if failed fallbacks to the sync execution. This defeats the whole
+purpose of the kernel thread. And this was already pointed to you Arjan,
+but apparently you like to hide this.
 
-> This patch passes my compile tests, modulo a small change that I need to
-> make in GFS2 to suppress a warning (not attached). That seems to be
-> related to yet another set of macros which appear only with
-> CONFIG_FILE_LOCKING not set. Maybe I should update those to be inline
-> functions as well....
+Allocation in this path is very dangerous and even in case of atomic one
+(which is used in the patch) this is a way heavy and unneded additional
+overhead.
 
-You mean these?  Probably should update them as well.
+So neither DST nor pdflush should use such approach.
 
-#else /* !CONFIG_FILE_LOCKING */
-#define locks_mandatory_locked(a) ({ 0; })
-#define locks_mandatory_area(a, b, c, d, e) ({ 0; })
-#define __mandatory_lock(a) ({ 0; })
-#define mandatory_lock(a) ({ 0; })
-#define locks_verify_locked(a) ({ 0; })
-#define locks_verify_truncate(a, b, c) ({ 0; })
-#define break_lease(a, b) ({ 0; })
-#endif /* CONFIG_FILE_LOCKING */
+Arjan, please update your patch to met the feedback I gave in the
+fsdevel mail list and do not allow to sneak the implementation if you do
+not like the author :)
 
-
-
-Thanks.
-
-> Steve.
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 6022f44..392c18a 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1057,34 +1057,147 @@ extern int lease_modify(struct file_lock **, int);
->  extern int lock_may_read(struct inode *, loff_t start, unsigned long count);
->  extern int lock_may_write(struct inode *, loff_t start, unsigned long count);
->  #else /* !CONFIG_FILE_LOCKING */
-> -#define fcntl_getlk(a, b) ({ -EINVAL; })
-> -#define fcntl_setlk(a, b, c, d) ({ -EACCES; })
-> +static inline int fcntl_getlk(struct file *file, struct flock __user *user)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int fcntl_setlk(unsigned int fd, struct file *file,
-> +			      unsigned int cmd, struct flock __user *user)
-> +{
-> +	return -EACCES;
-> +}
-> +
->  #if BITS_PER_LONG == 32
-> -#define fcntl_getlk64(a, b) ({ -EINVAL; })
-> -#define fcntl_setlk64(a, b, c, d) ({ -EACCES; })
-> +static inline int fcntl_getlk64(struct file *file, struct flock64 __user *user)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int fcntl_setlk64(unsigned int fd, struct file *file,
-> +				unsigned int cmd, struct flock64 __user *user)
-> +{
-> +	return -EACCES;
-> +}
->  #endif
-> -#define fcntl_setlease(a, b, c) ({ 0; })
-> -#define fcntl_getlease(a) ({ 0; })
-> -#define locks_init_lock(a) ({ })
-> -#define __locks_copy_lock(a, b) ({ })
-> -#define locks_copy_lock(a, b) ({ })
-> -#define locks_remove_posix(a, b) ({ })
-> -#define locks_remove_flock(a) ({ })
-> -#define posix_test_lock(a, b) ({ 0; })
-> -#define posix_lock_file(a, b, c) ({ -ENOLCK; })
-> -#define posix_lock_file_wait(a, b) ({ -ENOLCK; })
-> -#define posix_unblock_lock(a, b) (-ENOENT)
-> -#define vfs_test_lock(a, b) ({ 0; })
-> -#define vfs_lock_file(a, b, c, d) (-ENOLCK)
-> -#define vfs_cancel_lock(a, b) ({ 0; })
-> -#define flock_lock_file_wait(a, b) ({ -ENOLCK; })
-> -#define __break_lease(a, b) ({ 0; })
-> -#define lease_get_mtime(a, b) ({ })
-> -#define generic_setlease(a, b, c) ({ -EINVAL; })
-> -#define vfs_setlease(a, b, c) ({ -EINVAL; })
-> -#define lease_modify(a, b) ({ -EINVAL; })
-> -#define lock_may_read(a, b, c) ({ 1; })
-> -#define lock_may_write(a, b, c) ({ 1; })
-> +static inline int fcntl_setlease(unsigned int fd, struct file *filp, long arg)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline int fcntl_getlease(struct file *filp)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void locks_init_lock(struct file_lock *fl)
-> +{
-> +	return;
-> +}
-> +
-> +static inline void __locks_copy_lock(struct file_lock *new, struct file_lock *fl)
-> +{
-> +	return;
-> +}
-> +
-> +static inline void locks_copy_lock(struct file_lock *new, struct file_lock *fl)
-> +{
-> +	return;
-> +}
-> +
-> +static inline void locks_remove_posix(struct file *filp, fl_owner_t owner)
-> +{
-> +	return;
-> +}
-> +
-> +static inline void locks_remove_flock(struct file *filp)
-> +{
-> +	return;
-> +}
-> +
-> +static inline void posix_test_lock(struct file *filp, struct file_lock *fl)
-> +{
-> +	return;
-> +}
-> +
-> +static inline int posix_lock_file(struct file *filp, struct file_lock *fl,
-> +				  struct file_lock *conflock)
-> +{
-> +	return -ENOLCK;
-> +}
-> +
-> +static inline int posix_lock_file_wait(struct file *filp, struct file_lock *fl)
-> +{
-> +	return -ENOLCK;
-> +}
-> +
-> +static inline int posix_unblock_lock(struct file *filp,
-> +				     struct file_lock *waiter)
-> +{
-> +	return -ENOENT;
-> +}
-> +
-> +static inline int vfs_test_lock(struct file *filp, struct file_lock *fl)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline int vfs_lock_file(struct file *filp, unsigned int cmd,
-> +				struct file_lock *fl, struct file_lock *conf)
-> +{
-> +	return -ENOLCK;
-> +}
-> +
-> +static inline int vfs_cancel_lock(struct file *filp, struct file_lock *fl)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline int flock_lock_file_wait(struct file *filp,
-> +				       struct file_lock *request)
-> +{
-> +	return -ENOLCK;
-> +}
-> +
-> +static inline int __break_lease(struct inode *inode, unsigned int mode)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void lease_get_mtime(struct inode *inode, struct timespec *time)
-> +{
-> +	return;
-> +}
-> +
-> +static inline int generic_setlease(struct file *filp, long arg,
-> +				    struct file_lock **flp)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int vfs_setlease(struct file *filp, long arg,
-> +			       struct file_lock **lease)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int lease_modify(struct file_lock **before, int arg)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline int lock_may_read(struct inode *inode, loff_t start,
-> +				unsigned long len)
-> +{
-> +	return 1;
-> +}
-> +
-> +static inline int lock_may_write(struct inode *inode, loff_t start,
-> +				 unsigned long len)
-> +{
-> +	return 1;
-> +}
-> +
->  #endif /* !CONFIG_FILE_LOCKING */
->  
->  
-> 
-> 
-
+The only way to work with your async threads in the described cases is
+to have a way to embed the needed event structure into the existing
+objects like inode (which will be nacked by the fsdevel community for
+reasone) or dst transaction (this may work). But existing size is
+actually too big.
 
 -- 
-~Randy
+	Evgeniy Polyakov
