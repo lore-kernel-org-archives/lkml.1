@@ -1,120 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbZASBXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbZASBhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757438AbZASBXv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 20:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZASBXk
+	id S1756979AbZASBhj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 20:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbZASBh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 20:23:40 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34262 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755493AbZASBXi (ORCPT
+	Sun, 18 Jan 2009 20:37:29 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:33080 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755757AbZASBh2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 20:23:38 -0500
-Subject: Re: ACPI hotplug panic with current git head
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, shaohua.li@intel.com
-In-Reply-To: <4973D2EE.3060203@jp.fujitsu.com>
-References: <1231604250.3642.33.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>
-	 <1231807693.27151.21.camel@localhost.localdomain>
-	 <1232046108.5966.57.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>
-	 <1232049269.5966.64.camel@localhost.localdomain>
-	 <1232050347.5966.66.camel@localhost.localdomain>
-	 <4970242C.4010404@jp.fujitsu.com>
-	 <1232115546.3224.5.camel@localhost.localdomain>
-	 <4973D2EE.3060203@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Sun, 18 Jan 2009 19:23:36 -0600
-Message-Id: <1232328216.3247.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Sun, 18 Jan 2009 20:37:28 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=cDRUyzKKs9ma2Ux6jPzq2qaqeWXB5mhMpUZRvI4VHDEXETGx9MVE5WDQvOnFXAcgJ
+	4YUmlPJnv99//Y00bBP/g==
+MIME-Version: 1.0
+In-Reply-To: <20090118091038.GC27144@elte.hu>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com>
+	 <20090116125738.22c21bf2.akpm@linux-foundation.org>
+	 <4972E2FD.1010902@cn.fujitsu.com> <20090118091038.GC27144@elte.hu>
+Date: Sun, 18 Jan 2009 17:37:21 -0800
+Message-ID: <6599ad830901181737m1d04bb85t7bb0b48e925733a6@mail.gmail.com>
+Subject: Re: [PATCH 1/3] cgroup: convert open-coded mutex_lock(&cgroup_mutex) 
+	calls into cgroup_lock() calls
+From: Paul Menage <menage@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, miaox@cn.fujitsu.com,
+       maxk@qualcomm.com, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.65
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 10:10 +0900, Kenji Kaneshige wrote:
-> James Bottomley wrote:
-> > On Fri, 2009-01-16 at 15:07 +0900, Kenji Kaneshige wrote:
-> >>> It looks like acpi_pci_get_bridge_handle() is returning NULL, so this is
-> >>> the fix that works for me.
-> >>>
-> >> I'm sorry for troubling you, and thank you for your patience.
-> >>
-> >> The patch seems to avoid the kernel panic, but I still don't know
-> >> why acpi_pci_get_bridge_handle() returns NULL here. I assumed
-> >> it should return non-NULL value here. So I'd like to investigate
-> >> it more.
-> > 
-> > Sure, Len and I couldn't work out why it was returning NULL on this box
-> > (other than that perhaps it doesn't have an ACPI entry).  The two
-> > offending busses which trigger this are the two internal ones (which
-> > aren't hotplug).  The layout of the box is:
-> > 
-> > sparkweed:~# lspci -t
-> > -+-[0000:0c]---00.0
-> >  +-[0000:0a]---00.0
-> >  +-[0000:08]---00.0
-> >  +-[0000:06]---00.0
-> >  +-[0000:04]---00.0
-> >  +-[0000:02]---00.0
-> >  +-[0000:01]-+-00.0
-> >  |           +-01.0
-> >  |           +-01.1
-> >  |           \-02.0
-> >  \-[0000:00]-+-00.0
-> >              +-01.0
-> >              +-03.0
-> >              +-03.1
-> >              +-03.2
-> >              +-0f.0
-> >              +-0f.1
-> >              \-0f.3
-> > sparkweed:~# lspci   
-> > 00:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 00:01.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY
-> > [Radeon 7000/VE]
-> > 00:03.0 USB Controller: NEC Corporation USB (rev 43)
-> > 00:03.1 USB Controller: NEC Corporation USB (rev 43)
-> > 00:03.2 USB Controller: NEC Corporation USB 2.0 (rev 04)
-> > 00:0f.0 Host bridge: Broadcom CSB6 South Bridge (rev a0)
-> > 00:0f.1 IDE interface: Broadcom CSB6 RAID/IDE Controller (rev a0)
-> > 00:0f.3 ISA bridge: Broadcom GCLE-2 Host Bridge
-> > 01:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 01:01.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5704
-> > Gigabit Ethernet (rev 10)
-> > 01:01.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5704
-> > Gigabit Ethernet (rev 10)
-> > 01:02.0 SCSI storage controller: Adaptec AIC-9410W SAS (Razor ASIC
-> > non-RAID) (rev 08)
-> > 02:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 04:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 06:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 08:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 0a:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 0c:00.0 Host bridge: IBM Calgary PCI-X Host Bridge (rev 02)
-> > 
-> > And when I annotate the problem, the two busses returning NULL are
-> > 0000:00 and 0000:01
-> > 
-> 
-> Thank you very much for the information. It seems there are
-> something special in the data structure of host bridge for
-> 0000:00 and 0000:01.
+On Sun, Jan 18, 2009 at 1:10 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> this just changes over a clean mutex call to a wrapped lock/unlock
+> sequence that has higher overhead in the common case.
+>
+> We should do the exact opposite, we should change this opaque API:
+>
+>  void cgroup_lock(void)
+>  {
+>         mutex_lock(&cgroup_mutex);
+>  }
+>
+> To something more explicit (and more maintainable) like:
 
-Yes, len speculates the non hotplug buses are missing some acpi entries.
+I disagree - cgroup_mutex is a very coarse lock that can be held for
+pretty long periods of time by the cgroups framework, and should never
+be part of any fastpath code. So the overhead of a function call
+should be irrelevant.
 
-> I'm making a debug patch now and will send it to you as soon
-> as possible. I'm sorry to trouble you, but could you try it
-> later.
+The change that you're proposing would send the message that
+cgroup_mutex_lock(&cgroup_mutex) is appropriate to use in a
+performance-sensitive function, when in fact we want to discourage
+such code from taking this lock and instead use more appropriately
+fine-grained locks.
 
-Sure ... I'm travelling this week, but the machine is usually remotely
-accessible.
-
-James
-
-
+Paul
