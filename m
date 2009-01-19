@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZASTRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbZASTSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbZASTRg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 14:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZASTR2
+	id S1758219AbZASTSn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 14:18:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZASTSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 14:17:28 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42895 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbZASTR2 (ORCPT
+	Mon, 19 Jan 2009 14:18:35 -0500
+Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:58260 "EHLO
+	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbZASTSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 14:17:28 -0500
-Date: Mon, 19 Jan 2009 20:17:20 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: MartinG <gronslet@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Suspend/resume works in 2.6.29-0.19.rc0.git9.fc11.i686, but
-	fails in later versions
-Message-ID: <20090119191720.GB6463@ucw.cz>
-References: <bcb3ef430901150110nc4ced93w50c662ac512f8552@mail.gmail.com> <20090116085326.GC4795@atrey.karlin.mff.cuni.cz> <bcb3ef430901161443y5843d951m1cdee28dd588d006@mail.gmail.com>
+	Mon, 19 Jan 2009 14:18:34 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4974D20F.20209@cam.ac.uk>
+Date: Mon, 19 Jan 2009 19:18:39 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bcb3ef430901161443y5843d951m1cdee28dd588d006@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+CC: eric miao <eric.y.miao@gmail.com>, Jean Delvare <khali@linux-fr.org>
+Subject: RFC: Working around dynamic device allocation in i2c.  Interaction
+ with other subystems.
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-01-16 23:43:08, MartinG wrote:
-> On Fri, Jan 16, 2009 at 9:53 AM, Pavel Machek <pavel@suse.cz> wrote:
-> > Can you boot non-working kernel, and try "cd /sys/devices/system/cpu;
-> > echo 0 > cpu1/online; echo 1 > cpu1/online" ?
-> >
-> > If it breaks, try just doing "echo 0 > online" followed by s2ram. That
-> > should work.
-> 
-> Ok, thanks for the reply. This is what I've tried (I have a single
-> core (old) cpu):
-> # uname -r
-> 2.6.29-0.35.rc1.git4.fc11.i686
-> # cd /sys/devices/system/cpu
-> # find .|grep online
-> ./online
-> # cat online
-> 0
-> # echo 0 > online; echo 1 > online
-> -bash: online: Permission denied
-> -bash: online: Permission denied
-> # chmod +rw online
-> # echo 0 > online; echo 1 > online
-> -bash: echo: write error: Input/output error
-> -bash: echo: write error: Input/output error
-> 
-> Yep, I am a bit confused - any hints appreciated!
+Dear All,
 
-Ok, that is not going to work on single core. Can you try if
-suspending works in init=/bin/bash mode?
+Within board configuration files, i2c devices are currently allocated using
+i2c_board_info structures.  The only element of these that retains it's
+memory address once the struct device elements are allocated (upon adapter
+initialization) is the platform data pointer.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Several subsystems (regulator and clock for example) use an association
+method based upon a device specific string associated with a pointer to
+a device structure.  Unfortunately as things currently stand there is no
+means of obtaining a suitable device for i2c devices at the point when
+it is required (in the board config).
+
+So the question is, how to overcome this problem?
+
+Options that I can come up with are:
+
+1) Relax the constraints that the token used for device identification
+   in subsystems using the regulators approach to a void * and use
+   the platform data pointer of an i2c device.  Note this requires
+   every device which may need a regulator to have platform data.
+   Whilst this would work, it is far from ideal.
+
+2) Allow more static allocation of struct i2c_client.  The way of doing
+   this with minimal disruption would be to add a pointer to i2c_board_info
+   to a preallocated i2c_client structure and if this is supplied do not
+   allocate another.  A flag can then be used to indicated whether the
+   structure has been statically allocated or not (thus preventing it
+   being inadvertently freed.
+
+3) Allow static allocation of i2c_client structures as a direct alternative
+   to having any i2c_board_info structures at all.  As the majority if not
+   all of i2c_board_info's elements are simply copied into the i2c_client
+   structure anyway, there is considerable overhead in option 2.  Clearly
+   it would not be simple or necessarily advisable to remove i2c_board_info
+   structures so I would propose providing an alternative set of registration
+   functions which would only be used when people cared about the problem
+   we are addressing here.
+
+What do people think? In particular can anyone come up with any other /
+better way round this issue. (or am I missing something?)
+In particular, are there any similar cases already in kernel that would
+suggest a particular approach to solving this issue?
+
+I have an implementation of option 2 that works fine and is relatively simple.
+
+Thanks,
+
+---
+Jonathan Cameron
