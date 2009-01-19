@@ -1,120 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZASG1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbZASG1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759177AbZASG1W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 01:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbZASG1N
+	id S1759392AbZASG1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 01:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758417AbZASG1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 01:27:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47914 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758258AbZASG1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 01:27:12 -0500
-Message-ID: <49741D37.8070007@jp.fujitsu.com>
-Date: Mon, 19 Jan 2009 15:27:03 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
-References: <200901042346.42723.rjw@sisk.pl> <496EE7ED.10408@jp.fujitsu.com> <496F1078.5040904@jp.fujitsu.com> <200901151742.09227.rjw@sisk.pl>
-In-Reply-To: <200901151742.09227.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 01:27:40 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53112 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758317AbZASG1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 01:27:38 -0500
+Date: Mon, 19 Jan 2009 17:27:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 19
+Message-Id: <20090119172732.e772d8ea.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 15 January 2009, Kenji Kaneshige wrote:
->> Hidetoshi Seto wrote:
->>> Rafael J. Wysocki wrote:
->>>> On Wednesday 14 January 2009, Rafael J. Wysocki wrote:
->>>>> On Wednesday 14 January 2009, Kenji Kaneshige wrote:
->>>> [...]
->>>>>> I'm sorry but I don't understand what the problem is.
->>>>>> Do you mean pci_disable_msix() doesn't work on some platforms?
->>>>> No, I don't.  It was just confusion on my side, sorry.
->>>>>
->>>>> Please have a look at the new version of the patch I sent yesterday
->>>>> (http://marc.info/?l=linux-pci&m=123185510828181&w=4).
->>>> BTW, in your patch the first dummy pci_enable_msix() allocates just one
->>>> vector, which means that the contents of both
->>>> msix_entries[idx_hppme].entry and msix_entries[idx_aer].entry will be the same,
->>>> if my reading of the spec (PCI 3.0 in this case) is correct.
->>> According to PCI 3.0 implementation note "Handling MSI-X Vector Shortage,"
->>> it seems your reading is not correct.
->>>
->>> Assume that the port have 4 entries([0-3]) in MSI-X table, and that entry[2]
->>> for hotplug/PME and entry[3] for AER, and that kernel only allocates 2 vector.
->>> Spec says that the port could be designed for software to configure entries
->>> assigning vectors{A,B} to multiple entries as ABAB, AABB, ABBB etc. 
->>>
->>> So if there is just one vector, it could be AAAA.
-> 
-> Our pci_enable_msix() doesn't do that.  It will always do A---.
-> 
->> BTW, I don't think pci_enable_msix() allows this kind of configuration.
->> With the dummy pci_enable_msix() in my patch, it would be A---, I think.
-> 
-> And that exactly is why I'm not sure it's correct.
-> 
-> Namely, if only the first entry is configured, the device is only able to use
-> one vector, represented by this entry, for any purpose.  Now, for instance, for
-> PCIE_CAPABILITIES_REG, there are two possibilities:
-> (1) the value in the register always points to the _valid_ entry in the MSI-X
->     table and that would be the first one,
-> (2) the value in the register may point to an _invalid_ entry (1 - 3).
-> 
-> You seem to assume that (2) is the case, but I'm not sure (that should follow
-> from the PCI Express spec, but it clearly doesn't, at least I couldn't find
-> any pointer in the spec).  IMO it wouldn't make sense, because the port
-> wouldn't have been able to generate interrupts for this service if only one
-> vector had been configured.
+--Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't understand what "valid" and "invalid" means. And I don't
-imagine how the PCI Express chipset judges "valid" or "invalid".
-If those mean "unmasked", "masked" respectively, we need to unmask
-MSI-X before configuring MSI-X table entries. It doesn't look
-correct behavior, I think.
+Hi all,
 
-After all, I think what we need to do at least for reading
-Interrupt Message Number is that setting "MSI Enable"/"MSI-X Enable"
-fields to 0b/1b. But it might exist some other things for enabling
-MSI-X, quirk handling for example. And if we enable MSI-X by hand in
-in port service driver, it would add the possibility of the race
-condition between port service driver and existing pci_enable_msix().
-That's why I used dummy pci_enable_msix() for reading Interrupt
-Message Number. As you pointed out before, it's a little ugly, but
-I think it's the simplest and most reliable way so far.
+There will be no build results for today's linux-next as our build server
+has failed.
 
-> 
-> Still, even though (2) is the case, but both PCIE_CAPABILITIES_REG and
-> PCI_ERR_ROOT_STATUS just happen to point to the same entry, which very well may
-> be possible, the second pci_enable_msix() in your patch will fail.
-> 
+Changes since 20090116:
 
-Oh, I understood. As you pointed out, my patch doesn't take into
-account the case that HP/PME and AER share the same MSI-X entry.
-This need to be fixed. Thanks!
+Undropped trees:
+	sched
+	cris
+	nfs
 
-> In any case, I think we should
-> (a) get the number of the port's MSI-X table entries _first_, without enabling
->     MSI-X,
-> (b) allocate as many MSI-X vectors as indicated by this number, even though
->     some of them may not be used,
-> (c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
->     which vector has been allocated to which service.
-> 
+Dropped trees (temporarily):
+	stackprotector (complex conflicts)
+	hid (build problem)
+	quota (build problem)
+	cpu_alloc (build problem)
+	audit (difficult conflicts)
 
-This will cause unused vectors. We need to note that there can be
-multiple PCIe ports in the system. So the number of unused vectors
-can become large.
+I merged the mfd tree immediately after Linus' tree instead of applying
+the build fix patch it has.
 
-Thanks,
-Kenji Kaneshige
+The cris tree lost it conflicts.
 
+The sched tree lost its build problem.
+
+The stackprotector tree gained 2 conflicts against the tip-core tree and
+was dropped.
+
+The cpus4096 tree gained a conflict against the x86 tree.
+
+The timers tree lost its conflict.
+
+The hid tree gained a build failure and was dropped.
+
+The quota tree gained a build failure and was dropped.
+
+The nfs tree lost its build problem.
+
+The ocfs2 tree lost its conflict.
+
+The kmemleak tree gained a conflict against Linus' tree.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 132 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging mfd/for-next
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
+req.c
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/pda.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/system.h
+$ git reset --hard
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+$ git reset --hard HEAD^
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+$ git reset --hard HEAD^
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+CONFLICT (content): Merge conflict in mm/vmalloc.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkl0HVQACgkQjjKRsyhoI8yY6QCgndBjibzjaIGF/K7AjAwa8vOs
+V6oAn29NTwbW4OiFYH/9Pp53A5WKdvAC
+=uKy9
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__19_Jan_2009_17_27_32_+1100__GiwQRi2+8Q4hjHD--
