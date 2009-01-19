@@ -1,39 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZASIaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZASIeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbZASIaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 03:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZASIaa
+	id S1757020AbZASIeJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 03:34:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZASIdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 03:30:30 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39142 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbZASIa3 (ORCPT
+	Mon, 19 Jan 2009 03:33:52 -0500
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:47506 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752630AbZASIdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 03:30:29 -0500
-Subject: Re: [Patch] slob: clean up the code
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Matt Mackall <mpm@selenic.com>
-Cc: "=?ISO-8859-1?Q?Am=E9rico?= Wang" <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, cl@linux-foundation.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1232307718.5202.14.camel@calx>
-References: <20090118180038.GB3292@hack.private>
-	 <1232307718.5202.14.camel@calx>
-Date: Mon, 19 Jan 2009 10:30:27 +0200
-Message-Id: <1232353827.30141.27.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 19 Jan 2009 03:33:52 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KLjzjbxRFeBHLFeD1uLq/LUT0TV6R/aNwqATn9RyuVVvaDSekzKmLToj/A8yAjFOLESahuFvDJyGl3LqFsu3AUa6Pzxqk7anUGUqbJEDgLkzDBrRctkqL1DeUPDrLfQ6VbYwiaxUfDqpE16U7hKZd+ntllMfhFLyCoRwMxwFPMI=  ;
+X-YMail-OSG: 9zaQJ78VM1n6jR.m8xsI0bMyuRnvXCiLI4zc9vZY1j6qQnC1Llmaaf.T2GPlCGhbWMxuHjJLnoT9U3iSp7VPAFCjBxoeGDxkTKgqZuIlUFZ0Y0WDSUP8uosgn1Z_T_PoPIEEiihayG7lkJhQ3zKbeoUsW1HcneIlzEmfLpsrqeiB2c7iC.cVt5hmTzRJIQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: Mainline kernel OLTP performance update
+Date: Mon, 19 Jan 2009 19:33:27 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, andi.kleen@intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <200901191813.07960.nickpiggin@yahoo.com.au> <1232352303.30141.25.camel@penberg-laptop>
+In-Reply-To: <1232352303.30141.25.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Disposition: inline
+Message-Id: <200901191933.29322.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 13:41 -0600, Matt Mackall wrote:
-> But this patch is probably fine in it's current form, I don't care
-> enough about the above to respin it.
-> 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+On Monday 19 January 2009 19:05:03 Pekka Enberg wrote:
+> Hi Nick,
+>
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > SLUB was distinctly slower on the tbench, netperf, and hackbench
+> > tests that I ran. These were faster with SLUB on your machine?
+>
+> I was trying to bisect a somewhat recent SLAB vs. SLUB regression in
+> tbench that seems to be triggered by CONFIG_SLUB as suggested by Evgeniy
+> Polyakov performance tests. Unfortunately I bisected it down to a bogus
+> commit so while I saw SLUB beating SLAB, I also saw the reverse in
+> nearby commits which didn't touch anything interesting. So for tbench,
+> SLUB _used to_ dominate SLAB on my machine but the current situation is
+> not as clear with all the tbench regressions in other subsystems.
 
-Applied, thanks!
+OK.
+
+
+> SLUB has been a consistent winner for hackbench after Christoph fixed
+> the regression reported by Ingo Molnar two years (?) ago. I don't think
+> I've ran netperf, but for the fio test you mentioned, SLUB is beating
+> SLAB here.
+
+Hmm, netperf, hackbench, and fio are all faster with SLAB than SLUB.
+
+
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > What kind of system is it?
+>
+> 2-way Core2. I posted my /proc/cpuinfo in this thread if you're
+> interested.
+
+Thanks. I guess one of three obvious differences, mine is a K10, is
+NUMA, and has significantly more cores. I can try setting it to
+interleave cachelines over nodes or use fewer cores to see if the
+picture changes...
+
+
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > > So I have very mixed feelings about SLQB. It's very
+> > > nice that it works for OLTP but we still don't have much insight (i.e.
+> > > numbers) on why it's better.
+>
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > According to estimates in this thread, I think Matthew said SLUB would
+> > be around 6% slower? SLQB is within measurement error of SLAB.
+>
+> Yeah but I say that we don't know _why_ it's better. There's the
+> kmalloc()/kfree() CPU ping-pong hypothesis but it could also be due to
+> page allocator interaction or just a plain bug in SLUB. And lets not
+> forget bad interaction with some random subsystem (SCSI, for example).
+>
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > Fair point about personally reproducing the OLTP problem yourself. But
+> > the fact is that we will get problem reports that cannot be reproduced.
+> > That does not make them less relevant. I can't reproduce the OLTP
+> > benchmark myself. And I'm fully expecting to get problem reports for
+> > SLQB against insanely sized SGI systems, which I will take very seriously
+> > and try to fix them.
+>
+> Again, it's not that I don't take the OLTP regression seriously (I do)
+> but as a "part-time maintainer" I simply don't have the time and
+> resources to attempt to fix it without either (a) being able to
+> reproduce the problem or (b) have someone who can reproduce it who is
+> willing to do oprofile and so on.
+>
+> So as much as I would have preferred that you had at least attempted to
+> fix SLUB, I'm more than happy that we have a very active developer
+> working on the problem now. I mean, I don't really care which allocator
+> we decide to go forward with, if all the relevant regressions are dealt
+> with.
+
+OK, good to know.
+
+
+> All I am saying is that I don't like how we're fixing a performance bug
+> with a shiny new allocator without a credible explanation why the
+> current approach is not fixable.
+
+To be honest, my biggest concern with SLUB is the higher order pages
+thing. But Christoph always poo poos me when I raise that concern, and
+it's hard to get concrete numbers showing real fragmentation problems
+when it can take days or months to start biting.
+
+It really stems from queueing versus not queueing I guess. And I think
+SLUB is flawed due to its avoidance of queueing.
+
+
+> On Mon, 2009-01-19 at 18:13 +1100, Nick Piggin wrote:
+> > > The good news is that SLQB can replace SLAB so either way, we're not
+> > > going to end up with four allocators. Whether it can replace SLUB
+> > > remains to be seen.
+> >
+> > Well I think being able to simply replace SLAB is not ideal. The plan
+> > I'm hoping is to have four allocators for a few releases, and then
+> > go back to having two. That is going to mean some groups might not
+> > have their ideal allocator merged... but I think it is crazy to settle
+> > with more than one main compile-time allocator for the long term.
+>
+> So now the HPC folk will be screwed over by the OLTP folk?
+
+No. I'm imagining there will be a discussion of the 3, and at some
+point an executive decision will be made if an agreement can't be
+reached. At this point, I think that is a better and fairer option
+than just asserting one allocator is better than another and making
+it the default.
+
+And... we have no indication that SLQB will be worse for HPC than
+SLUB ;)
+
+
+> I guess
+> that's okay as the latter have been treated rather badly for the past
+> two years.... ;-)
+
+I don't know if that is meant to be sarcastic, but the OLTP performance
+numbers almost never get better from one kernel to the next. Actually
+the trend is downward. Mainly due to bloat or new features being added.
+
+I think that at some level, controlled addition of features that may
+add some cycles to these paths is not a bad idea (what good is Moore's
+Law if we can't have shiny new features? :) But on the other hand, this
+OLTP test is incredibly valuable to monitor the general performance-
+health of this area of the kernel.
 
