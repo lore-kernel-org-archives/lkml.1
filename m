@@ -1,40 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZASUYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbZASUZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbZASUYn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 15:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZASUYe
+	id S1759165AbZASUZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 15:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZASUZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 15:24:34 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39490 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZASUYd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 15:24:33 -0500
-Date: Mon, 19 Jan 2009 21:24:24 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>, teheo@novell.com,
-       trenn@suse.de
-Subject: 2.6.29-rc2: thinkpad dock -- cdrom vs. s2ram
-Message-ID: <20090119202423.GA7070@ucw.cz>
+	Mon, 19 Jan 2009 15:25:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37701 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752671AbZASUZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 15:25:39 -0500
+Date: Mon, 19 Jan 2009 18:25:23 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
+Message-ID: <20090119202523.GE690@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+	Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere> <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com> <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Em Mon, Jan 19, 2009 at 08:28:03PM +0100, Frédéric Weisbecker escreveu:
+> 2009/1/2 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+> >
+> > warning: I haven't looked at the patch details
+> >
+> > But I would love to use something like this to provide the exact
+> > contents the userspace blktrace utilities want.
+> >
+> > - Arnaldo
+> >
+> 
+> 
+> Hi Arnaldo,
+ 
+> Since you talked about binary record for the blk tracer, I just recall
+> this patch.  Are you sure this infrastructure would cover your needs?
 
-In 2.6.29 (and probably earlier) kernels, booting in docking station
-results in undocked s2ram failing.
+Nope, now that I look at it it definetely isn't what I need. See? the
+warning was valid after all :-)
 
-Problem seems to be that hda (cdrom in dock) is not deregistered
-during undock, and that hda driver loops spitting error messages at
-'too-fast-to-read' rate when suspend with missing hda is attempted.
+What I want and will experiment now is to almost dump the contents of
+the ring buffer as-is to userspace. I want that so that I can use
+blkparse to validate the ring buffer + blkFtrace routines produced
+buffer.
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+So probably it will be a matter of using trace_iter to signal that, and
+when it gets to my print_line routine I just put together the initial
+trace format expected by blkparse + the ones I'm collecting at
+tracepoint time.
+ 
+> >From your traced site, trace_vbprintk will carry your random typed
+> datas in a binary-contiguous way.
+> But actually, its purpose is more about holding binary data transport
+> to finally print them in a formatted string
+> output, as usual.
+> 
+> You can compare it with ftrace_printk, since the result is the same.
+> The difference is in the transport.
+> ftrace_printk will carry your data as already formatted whereas
+> trace_vbprintk will carry them as binary values and format them
+> in the last moment. On most cases, trace_vbprintk would be logically
+> more lightweight.
+
+Understood, but I already do this, and then leave it to the last minute
+to look at the blktrace types:
+
++static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
++{
++       struct trace_seq *s = &iter->seq;
++       struct blk_io_trace *t = (struct blk_io_trace *)iter->ent;
++       const u16 what = t->action & ((1 << BLK_TC_SHIFT) - 1);
++       int ret;
++
++       switch (what) {
++       case __BLK_TA_ISSUE:        ret = blk_log_generic(iter, t, "D"); break;
++       case __BLK_TA_INSERT:       ret = blk_log_generic(iter, t, "I"); break;
++       case __BLK_TA_QUEUE:        ret = blk_log_generic(iter, t, "Q"); break;
++       case __BLK_TA_BOUNCE:       ret = blk_log_generic(iter, t, "B"); break;
++       case __BLK_TA_BACKMERGE:    ret = blk_log_generic(iter, t, "M"); break;
++       case __BLK_TA_FRONTMERGE:   ret = blk_log_generic(iter, t, "F"); break;
++       case __BLK_TA_GETRQ:        ret = blk_log_generic(iter, t, "G"); break;
++       case __BLK_TA_SLEEPRQ:      ret = blk_log_generic(iter, t, "S"); break;
++       case __BLK_TA_REQUEUE:      ret = blk_log_with_err(iter, t, "R"); break;
++       case __BLK_TA_COMPLETE:     ret = blk_log_with_err(iter, t, "C"); break;
++       case __BLK_TA_PLUG:         ret = blk_log_plug(iter, t); break;
++       case __BLK_TA_UNPLUG_IO:    ret = blk_log_unplug(iter, t, "U"); break;
++       case __BLK_TA_UNPLUG_TIMER: ret = blk_log_unplug(iter, t, "UT"); break;
++       case __BLK_TA_REMAP:        ret = blk_log_remap(iter, t); break;
++       case __BLK_TA_SPLIT:        ret = blk_log_split(iter, t, "X"); break;
+
+I did this trying to get as close to the existing blktrace record format
+as possible, to minimize the current patch.
+
+I guess that the right thing to do is to create a new blktrace record
+format, that is:
+
+	struct blk_io_trace {
+		struct trace_entry ent;
+		<what is not in struct trace_entry already>
+	}
+
+And rebuild the userspace blkparse utility.
+
+But I'm still trying to figure out how to best use the ever-improving
+ftrace infrastructure.
+
+For instance, now I think that I need to register one event for each of
+the case __BLK_TA_ lines above, like kernel/trace/trace_branch.c already
+does.
+
+If I do that I can also provide a trace_event->bin that would use
+trace_seq_putmem.
+
+> But if you have some predefined typed data to export as binary, I
+> think that can't really help you.
+> You would prefer to define you own type and then export them as binary
+> values with your own output helper function.
+
+Agreed
+
+> Hmm?
+> 
+> Steven, Ingo, what are your thoughts about this patch?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
