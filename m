@@ -1,109 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbZASOuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZASOuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbZASOuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZASOrX
+	id S1755915AbZASOuo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZASOrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:47:23 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:54331 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812AbZASOrT (ORCPT
+	Mon, 19 Jan 2009 09:47:24 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:3341 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbZASOrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:47:19 -0500
-X-BigFish: VPS3(zzzzzzz32i43j65h)
+	Mon, 19 Jan 2009 09:47:20 -0500
+X-BigFish: VPS-4(zz18c1K655Oc8kzzzzz32i43j65h)
 X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KDQ3QI-03-6AI-01
+X-WSS-ID: 0KDQ3QD-04-LPS-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com, linux-kernel@vger.kernel.org
 CC: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
        iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 12/16] dma-debug: add checks for sync_single_*
-Date: Mon, 19 Jan 2009 15:46:59 +0100
-Message-ID: <1232376423-11067-13-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 02/16] dma-debug: add header file and core data structures
+Date: Mon, 19 Jan 2009 15:46:49 +0100
+Message-ID: <1232376423-11067-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
 References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 19 Jan 2009 14:47:04.0063 (UTC) FILETIME=[CB1A40F0:01C97A44]
+X-OriginalArrivalTime: 19 Jan 2009 14:47:03.0797 (UTC) FILETIME=[CAF1AA50:01C97A44]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add debug callbacks for dma_sync_single_for_* functions
+Impact: add groundwork for DMA-API debugging
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/dma-debug.h |   20 ++++++++++++++++++++
- lib/dma-debug.c           |   21 +++++++++++++++++++++
- 2 files changed, 41 insertions(+), 0 deletions(-)
+ include/linux/dma-debug.h |   25 +++++++++++++++++++++++++
+ lib/Makefile              |    2 ++
+ lib/dma-debug.c           |   40 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 67 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/dma-debug.h
+ create mode 100644 lib/dma-debug.c
 
 diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index 15fa361..fea15f3 100644
---- a/include/linux/dma-debug.h
+new file mode 100644
+index 0000000..ce4ace7
+--- /dev/null
 +++ b/include/linux/dma-debug.h
-@@ -48,6 +48,14 @@ extern void debug_dma_alloc_coherent(struct device *dev, size_t size,
- extern void debug_dma_free_coherent(struct device *dev, size_t size,
- 				    void *virt, dma_addr_t addr);
- 
-+extern void debug_dma_sync_single_for_cpu(struct device *dev,
-+					  dma_addr_t dma_handle, size_t size,
-+					  int direction);
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2008 Advanced Micro Devices, Inc.
++ *
++ * Author: Joerg Roedel <joerg.roedel@amd.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
 +
-+extern void debug_dma_sync_single_for_device(struct device *dev,
-+					     dma_addr_t dma_handle,
-+					     size_t size, int direction);
++#ifndef __DMA_DEBUG_H
++#define __DMA_DEBUG_H
 +
- #else /* CONFIG_DMA_API_DEBUG */
- 
- static inline void dma_debug_init(u32 num_entries)
-@@ -88,6 +96,18 @@ static inline void debug_dma_free_coherent(struct device *dev, size_t size,
- {
- }
- 
-+static inline void debug_dma_sync_single_for_cpu(struct device *dev,
-+						 dma_addr_t dma_handle,
-+						 size_t size, int direction)
-+{
-+}
++struct device;
 +
-+static inline void debug_dma_sync_single_for_device(struct device *dev,
-+						    dma_addr_t dma_handle,
-+						    size_t size, int direction)
-+{
-+}
-+
- #endif /* CONFIG_DMA_API_DEBUG */
++#endif /* __DMA_DEBUG_H */
+diff --git a/lib/Makefile b/lib/Makefile
+index 32b0e64..50b48cf 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -84,6 +84,8 @@ obj-$(CONFIG_HAVE_ARCH_TRACEHOOK) += syscall.o
  
- #endif /* __DMA_DEBUG_H */
+ obj-$(CONFIG_DYNAMIC_PRINTK_DEBUG) += dynamic_printk.o
+ 
++obj-$(CONFIG_DMA_API_DEBUG) += dma-debug.o
++
+ hostprogs-y	:= gen_crc32table
+ clean-files	:= crc32table.h
+ 
 diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 01a79d1..9715f40 100644
---- a/lib/dma-debug.c
+new file mode 100644
+index 0000000..c944b8c
+--- /dev/null
 +++ b/lib/dma-debug.c
-@@ -674,3 +674,24 @@ void debug_dma_free_coherent(struct device *dev, size_t size,
- }
- EXPORT_SYMBOL(debug_dma_free_coherent);
- 
-+void debug_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+				   size_t size, int direction)
-+{
-+	if (unlikely(global_disable))
-+		return;
+@@ -0,0 +1,40 @@
++/*
++ * Copyright (C) 2008 Advanced Micro Devices, Inc.
++ *
++ * Author: Joerg Roedel <joerg.roedel@amd.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
 +
-+	check_sync(dev, dma_handle, size, 0, direction, true);
-+}
-+EXPORT_SYMBOL(debug_dma_sync_single_for_cpu);
++#include <linux/dma-debug.h>
++#include <linux/types.h>
++#include <linux/list.h>
 +
-+void debug_dma_sync_single_for_device(struct device *dev,
-+				      dma_addr_t dma_handle, size_t size,
-+				      int direction)
-+{
-+	if (unlikely(global_disable))
-+		return;
++enum {
++	dma_debug_single,
++	dma_debug_page,
++	dma_debug_sg,
++	dma_debug_coherent,
++};
 +
-+	check_sync(dev, dma_handle, size, 0, direction, false);
-+}
-+EXPORT_SYMBOL(debug_dma_sync_single_for_device);
++struct dma_debug_entry {
++	struct list_head list;
++	struct device    *dev;
++	int              type;
++	phys_addr_t      paddr;
++	u64              dev_addr;
++	u64              size;
++	int              direction;
++};
 +
 -- 
 1.5.6.4
