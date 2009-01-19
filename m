@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZASCVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbZASCbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZASCVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbZASCUw
+	id S1757943AbZASCbf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 21:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbZASCb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:20:52 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:13090 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756761AbZASCUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:20:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZOx1pBZ7Py4fOZpsxOis+WGd1wS3d67gK52YeSn3rTJqao9gChPhYeVmSSHt8qxWVv
-         Zdun5e7Ry+T6Q5KxrrxkOxAofkdrvpPhzK3ETiTSKaX2CDAK4KRH6sCd3kaDRJ/fatwN
-         ACmkdxXuQAHj1WOOX+r3PXgbtqQQLh8zYTlu4=
-Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+	Sun, 18 Jan 2009 21:31:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47070 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756988AbZASCb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 21:31:26 -0500
+Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232331011.3129.4.camel@localhost.localdomain>
-References: <1232287474.3130.19.camel@localhost.localdomain>
-	 <20090118172800.GB22624@elte.hu>  <20090118185034.GA26908@elte.hu>
-	 <1232331011.3129.4.camel@localhost.localdomain>
+In-Reply-To: <20090119095035.bf9d0e7c.sfr@canb.auug.org.au>
+References: <1232273454.23100.9.camel@localhost.localdomain>
+	 <20090119095035.bf9d0e7c.sfr@canb.auug.org.au>
 Content-Type: text/plain
-Date: Sun, 18 Jan 2009 18:20:46 -0800
-Message-Id: <1232331646.5570.5.camel@brick>
+Date: Mon, 19 Jan 2009 08:00:40 +0530
+Message-Id: <1232332240.3129.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 07:40 +0530, Jaswinder Singh Rajput wrote:
-> On Sun, 2009-01-18 at 19:50 +0100, Ingo Molnar wrote:
+On Mon, 2009-01-19 at 09:50 +1100, Stephen Rothwell wrote:
+> Hi Jaswinder,
+> 
+> On Sun, 18 Jan 2009 15:40:54 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> > diff --git a/include/linux/raw.h b/include/linux/raw.h
+> > index 62d543e..3898e30 100644
+> > --- a/include/linux/raw.h
+> > +++ b/include/linux/raw.h
+> > @@ -13,6 +13,10 @@ struct raw_config_request
+> >  	__u64	block_minor;
+> >  };
 > >  
-> > why does such a change introduce new code? It is duplicating existing code 
-> > instead of cleaning it all up.
-> > 
+> > +#ifdef __KERNEL__
+> >  #define MAX_RAW_MINORS CONFIG_MAX_RAW_DEVS
+> > +#else /* __KERNEL__ */
+> > +#define MAX_RAW_MINORS 0
+> > +#endif /* __KERNEL__ */
+> >  
+> >  #endif /* __LINUX_RAW_H */
 > 
-> That's why I was requesting you to check asm/swab.h because I was in
-> doubt whether we need these functions in userspace or not.
-> 
-> If we do not need these functions in userspace then I will clean these
-> up.
+> Since MAX_RAW_MINORS has only one user (drivers/char/raw.c), why not
+> just remove the define from here and add it it there?
 > 
 
-As part of doing the swab.h splitout it was very tempting to just stop
-exporting _all_ of the asm/swab.h files now that there is a linux/swab.h.
-But I ended up leaving things as they were on arches that did expose
-their arch specific versions to userspace.
-
-Just a thought.
-
-Harvey
+Already fixed in v3 as pointed by Ingo.
 
