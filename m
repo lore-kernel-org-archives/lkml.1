@@ -1,173 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbZASSpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZASSqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752251AbZASSpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 13:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZASSp3
+	id S1754417AbZASSqD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 13:46:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbZASSpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 13:45:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38605 "EHLO mx2.redhat.com"
+	Mon, 19 Jan 2009 13:45:50 -0500
+Received: from mga02.intel.com ([134.134.136.20]:57993 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbZASSp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 13:45:27 -0500
-Message-ID: <4974CA20.6050308@sandeen.net>
-Date: Mon, 19 Jan 2009 12:44:48 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jacek Luczak <difrost.kernel@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
-       xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-References: <497468C1.3000001@gmail.com>
-In-Reply-To: <497468C1.3000001@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	id S1752530AbZASSpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 13:45:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,290,1231142400"; 
+   d="scan'208";a="482886796"
+Date: Mon, 19 Jan 2009 10:45:47 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tvignaud@mandriva.com" <tvignaud@mandriva.com>
+Subject: Re: [patch] x86, pat: fix reserve_memtype() for legacy 1MB range
+Message-ID: <20090119184547.GC31356@linux-os.sc.intel.com>
+References: <20090109223520.GC6472@linux-os.sc.intel.com> <4967D223.1090703@zytor.com> <20090109224804.GD6472@linux-os.sc.intel.com> <20090117174224.GA1409@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117174224.GA1409@ucw.cz>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jacek Luczak wrote:
-> Hi All,
+On Sat, Jan 17, 2009 at 09:42:25AM -0800, Pavel Machek wrote:
+> On Fri 2009-01-09 14:48:04, Suresh Siddha wrote:
+> > On Fri, Jan 09, 2009 at 02:39:31PM -0800, H. Peter Anvin wrote:
+> > > Suresh Siddha wrote:
+> > > >
+> > > > Here X is trying to map first 8KB of memory using /dev/mem. Existing
+> > > > code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
+> > > > code changes don't allow to map memory with different attributes
+> > > > at the same time.
+> > > >
+> > >
+> > > Why was 0-4 KB marked as non-RAM?  It is most definitely RAM, and should
+> > > be WB.
+> >
+> > While in reality it is RAM, we have CONFIG_STRICT_DEVMEM which doesn't allow
+> > apps to map RAM pages using /dev/mem. And to allow app's to map the
+> > legacy 0-4KB bios data page, we consider it as non-RAM.
 > 
-> I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
-> didn't found errors. Today I've booted my notebook and XFS bug have occurred.
-> System reboot didn't helped, same error appeared.
-> 
-> Some info:
-> [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
-> [2] kernel logs:
-> http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
-> [3] most interesting part of log below.
+> Fix config_strict_devmem? Ram is ram, and we should not li for
+> strict_devmem benefit...
 
-so this happens every mount?  Reproducible is good.  How large is the
-filesystem (too large to extract elsewhere for analysis...?) (plus I
-suppose it'll be hard to get to it when you can't even boot....)
+This is not just related to CONFIG_STRICT_DEVMEM. This is how we track
+the PAT attribute for this 1MB physical address range even in the case of
+!CONFIG_STRICT_DEVMEM
 
--Eric
+In some portions of the x86 code, we treat legacy first 1MB as special.
+CONFIG_STRICT_DEVMEM is one of them.
 
-> Regards,
-> -Jacek
-> 
-> ----------- BUG START HERE -----------
-> Jan 19 11:18:32 difrost kernel: XFS internal error XFS_WANT_CORRUPTED_GOTO at
-> line 3327 of file fs/xfs/xfs_btree.c.  Caller 0xc01b047c
-> Jan 19 11:18:32 difrost kernel: Pid: 680, comm: mount Not tainted 2.6.29-rc2 #1
-> Jan 19 11:18:32 difrost kernel: Call Trace:
-> Jan 19 11:18:32 difrost kernel:  [<c01afef0>] xfs_btree_delrec+0x657/0xbc2
-> Jan 19 11:18:32 difrost kernel:  [<c01b047c>] xfs_btree_delete+0x21/0x66
-> Jan 19 11:18:32 difrost kernel:  [<c01ac0b0>] xfs_bmbt_init_key_from_rec+0xa/0x16
-> Jan 19 11:18:32 difrost kernel:  [<c01b047c>] xfs_btree_delete+0x21/0x66
-> Jan 19 11:18:32 difrost kernel:  [<c01a8de3>] xfs_bmap_del_extent+0x309/0x974
-> Jan 19 11:18:32 difrost kernel:  [<c01d8d33>] kmem_zone_alloc+0x53/0x90
-> Jan 19 11:18:32 difrost kernel:  [<c01a9b28>] xfs_bunmapi+0x59c/0x95d
-> Jan 19 11:18:32 difrost kernel:  [<c01c1ac1>] xfs_itruncate_finish+0x1c7/0x2f3
-> Jan 19 11:18:32 difrost kernel:  [<c01d742b>] xfs_inactive+0x1d2/0x3ce
-> Jan 19 11:18:32 difrost kernel:  [<c01c23b5>] xfs_imap_to_bp+0x5d/0xcb
-> Jan 19 11:18:32 difrost kernel:  [<c0171bc4>] clear_inode+0x6c/0xb8
-> Jan 19 11:18:32 difrost kernel:  [<c01720f1>] generic_delete_inode+0x72/0xcc
-> Jan 19 11:18:32 difrost kernel:  [<c0171703>] iput+0x48/0x4a
-> Jan 19 11:18:32 difrost kernel:  [<c01cba97>]
-> xlog_recover_process_one_iunlink+0xb0/0xda
-> Jan 19 11:18:32 difrost kernel:  [<c01cbb38>]
-> xlog_recover_process_iunlinks+0x77/0xd8
-> Jan 19 11:18:32 difrost kernel:  [<c01cbbd8>] xlog_recover_finish+0x3f/0x8d
-> Jan 19 11:18:32 difrost kernel:  [<c01cff74>] xfs_mountfs+0x44e/0x54b
-> Jan 19 11:18:32 difrost kernel:  [<c01d8e3a>] kmem_alloc+0x57/0xa8
-> Jan 19 11:18:32 difrost kernel:  [<c01d06e9>] xfs_mru_cache_create+0xe6/0x11c
-> Jan 19 11:18:32 difrost kernel:  [<c01e1616>] xfs_fs_fill_super+0x182/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0165a80>] get_sb_bdev+0xe8/0x130
-> Jan 19 11:18:32 difrost kernel:  [<c01750e6>] alloc_vfsmnt+0x69/0xf5
-> Jan 19 11:18:32 difrost kernel:  [<c01dfe39>] xfs_fs_get_sb+0x12/0x16
-> Jan 19 11:18:32 difrost kernel:  [<c01e1494>] xfs_fs_fill_super+0x0/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0164cca>] vfs_kern_mount+0x39/0x72
-> Jan 19 11:18:32 difrost kernel:  [<c0164d41>] do_kern_mount+0x2f/0xb4
-> Jan 19 11:18:32 difrost kernel:  [<c0175c6a>] do_mount+0x632/0x66d
-> Jan 19 11:18:32 difrost kernel:  [<c0175d14>] sys_mount+0x6f/0xaf
-> Jan 19 11:18:32 difrost kernel:  [<c0102d05>] sysenter_do_call+0x12/0x25
-> Jan 19 11:18:32 difrost kernel: Filesystem "sda5": XFS internal error
-> xfs_trans_cancel at line 1164 of file fs/xfs/xfs_trans.c.  Caller 0xc01d7444
-> Jan 19 11:18:32 difrost kernel:
-> Jan 19 11:18:32 difrost kernel: Pid: 680, comm: mount Not tainted 2.6.29-rc2 #1
-> Jan 19 11:18:32 difrost kernel: Call Trace:
-> Jan 19 11:18:32 difrost kernel:  [<c01d2255>] xfs_trans_cancel+0x49/0xcf
-> Jan 19 11:18:32 difrost kernel:  [<c01d7444>] xfs_inactive+0x1eb/0x3ce
-> Jan 19 11:18:32 difrost kernel:  [<c01d7444>] xfs_inactive+0x1eb/0x3ce
-> Jan 19 11:18:32 difrost kernel:  [<c01c23b5>] xfs_imap_to_bp+0x5d/0xcb
-> Jan 19 11:18:32 difrost kernel:  [<c0171bc4>] clear_inode+0x6c/0xb8
-> Jan 19 11:18:32 difrost kernel:  [<c01720f1>] generic_delete_inode+0x72/0xcc
-> Jan 19 11:18:32 difrost kernel:  [<c0171703>] iput+0x48/0x4a
-> Jan 19 11:18:32 difrost kernel:  [<c01cba97>]
-> xlog_recover_process_one_iunlink+0xb0/0xda
-> Jan 19 11:18:32 difrost kernel:  [<c01cbb38>]
-> xlog_recover_process_iunlinks+0x77/0xd8
-> Jan 19 11:18:32 difrost kernel:  [<c01cbbd8>] xlog_recover_finish+0x3f/0x8d
-> Jan 19 11:18:32 difrost kernel:  [<c01cff74>] xfs_mountfs+0x44e/0x54b
-> Jan 19 11:18:32 difrost kernel:  [<c01d8e3a>] kmem_alloc+0x57/0xa8
-> Jan 19 11:18:32 difrost kernel:  [<c01d06e9>] xfs_mru_cache_create+0xe6/0x11c
-> Jan 19 11:18:32 difrost kernel:  [<c01e1616>] xfs_fs_fill_super+0x182/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0165a80>] get_sb_bdev+0xe8/0x130
-> Jan 19 11:18:32 difrost kernel:  [<c01750e6>] alloc_vfsmnt+0x69/0xf5
-> Jan 19 11:18:32 difrost kernel:  [<c01dfe39>] xfs_fs_get_sb+0x12/0x16
-> Jan 19 11:18:32 difrost kernel:  [<c01e1494>] xfs_fs_fill_super+0x0/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0164cca>] vfs_kern_mount+0x39/0x72
-> Jan 19 11:18:32 difrost kernel:  [<c0164d41>] do_kern_mount+0x2f/0xb4
-> Jan 19 11:18:32 difrost kernel:  [<c0175c6a>] do_mount+0x632/0x66d
-> Jan 19 11:18:32 difrost kernel:  [<c0175d14>] sys_mount+0x6f/0xaf
-> Jan 19 11:18:32 difrost kernel:  [<c0102d05>] sysenter_do_call+0x12/0x25
-> Jan 19 11:18:32 difrost kernel: Filesystem "sda5": Corruption of in-memory data
-> detected.  Shutting down filesystem: sda5
-> Jan 19 11:18:32 difrost kernel: Please umount the filesystem, and rectify the
-> problem(s)
-> Jan 19 11:18:32 difrost kernel: BUG: unable to handle kernel NULL pointer
-> dereference at 0000005c
-> Jan 19 11:18:32 difrost kernel: IP: [<c01cbb51>]
-> xlog_recover_process_iunlinks+0x90/0xd8
-> Jan 19 11:18:32 difrost kernel: *pde = 00000000
-> Jan 19 11:18:32 difrost kernel: Oops: 0000 [#1] SMP
-> Jan 19 11:18:32 difrost kernel: last sysfs file:
-> /sys/devices/platform/i8042/modalias
-> Jan 19 11:18:32 difrost kernel: Modules linked in: psmouse arc4 ecb cryptomgr
-> aead crypto_blkcipher crypto_hash crypto_algapi iwl3945 rfkill mac80211 lib80211
-> cfg80211 sky2 sg
-> Jan 19 11:18:32 difrost kernel:
-> Jan 19 11:18:32 difrost kernel: Pid: 680, comm: mount Not tainted (2.6.29-rc2
-> #1) AMILO Pro Edition V3505
-> Jan 19 11:18:32 difrost kernel: EIP: 0060:[<c01cbb51>] EFLAGS: 00010286 CPU: 0
-> Jan 19 11:18:32 difrost kernel: EIP is at xlog_recover_process_iunlinks+0x90/0xd8
-> Jan 19 11:18:32 difrost kernel: EAX: 00000000 EBX: f6a71e40 ECX: 00000005 EDX:
-> f695fe20
-> Jan 19 11:18:32 difrost kernel: ESI: ffffffff EDI: f6825400 EBP: 00000026 ESP:
-> f695fe14
-> Jan 19 11:18:32 difrost kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Jan 19 11:18:32 difrost kernel: Process mount (pid: 680, ti=f695e000
-> task=f6aa5980 task.ti=f695e000)
-> Jan 19 11:18:32 difrost kernel: Stack:
-> Jan 19 11:18:32 difrost kernel:  00000026 00000002 00000000 00000000 f699c500
-> 00000000 00000003 f6825400
-> Jan 19 11:18:32 difrost kernel:  c01cbbd8 00000003 00000000 00000000 c01cff74
-> 00000013 00000246 00400004
-> Jan 19 11:18:32 difrost kernel:  00000000 00000000 00000001 00000058 00000000
-> c01d8e3a 00000001 00000058
-> Jan 19 11:18:32 difrost kernel: Call Trace:
-> Jan 19 11:18:32 difrost kernel:  [<c01cbbd8>] xlog_recover_finish+0x3f/0x8d
-> Jan 19 11:18:32 difrost kernel:  [<c01cff74>] xfs_mountfs+0x44e/0x54b
-> Jan 19 11:18:32 difrost kernel:  [<c01d8e3a>] kmem_alloc+0x57/0xa8
-> Jan 19 11:18:32 difrost kernel:  [<c01d06e9>] xfs_mru_cache_create+0xe6/0x11c
-> Jan 19 11:18:32 difrost kernel:  [<c01e1616>] xfs_fs_fill_super+0x182/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0165a80>] get_sb_bdev+0xe8/0x130
-> Jan 19 11:18:32 difrost kernel:  [<c01750e6>] alloc_vfsmnt+0x69/0xf5
-> Jan 19 11:18:32 difrost kernel:  [<c01dfe39>] xfs_fs_get_sb+0x12/0x16
-> Jan 19 11:18:32 difrost kernel:  [<c01e1494>] xfs_fs_fill_super+0x0/0x2d8
-> Jan 19 11:18:32 difrost kernel:  [<c0164cca>] vfs_kern_mount+0x39/0x72
-> Jan 19 11:18:32 difrost kernel:  [<c0164d41>] do_kern_mount+0x2f/0xb4
-> Jan 19 11:18:32 difrost kernel:  [<c0175c6a>] do_mount+0x632/0x66d
-> Jan 19 11:18:32 difrost kernel:  [<c0175d14>] sys_mount+0x6f/0xaf
-> Jan 19 11:18:32 difrost kernel:  [<c0102d05>] sysenter_do_call+0x12/0x25
-> Jan 19 11:18:32 difrost kernel: Code: 1d fd 00 00 89 f1 55 89 f8 8b 54 24 04 e8
-> af fe ff ff 31 d2 89 c6 8d 44 24 0c 50 89 f8 8b 4c 24 08 e8 0b 14 ff ff 8b 44 24
-> 10 5a <8b> 40 5c 59 83 fe ff 75 b8 45 83 fd 40 75 aa 8b 5c 24 08 83 7b
-> Jan 19 11:18:32 difrost kernel: EIP: [<c01cbb51>]
-> xlog_recover_process_iunlinks+0x90/0xd8 SS:ESP 0068:f695fe14
-> Jan 19 11:18:32 difrost kernel: ---[ end trace 0d722cd205608c78 ]---
-> 
+For this range, we don't really follow what e820 says about this region. For
+example, for some of the systems, e820 table doesn't even include some portions
+of this 1MB region etc.
 
+I looked at including this 1MB check in page_is_ram(). But this routine
+is called at various generic places (like mem_init() where it really needs
+to know what e820 says etc).
+
+thanks,
+suresh
