@@ -1,92 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbZASVhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZASViM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759702AbZASVhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZASVhk
+	id S1755266AbZASViM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZASVhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:37:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60676 "EHLO mx2.redhat.com"
+	Mon, 19 Jan 2009 16:37:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39761 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684AbZASVhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:37:39 -0500
-Date: Mon, 19 Jan 2009 19:37:21 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] ftrace: infrastructure for supporting binary record
-Message-ID: <20090119213720.GF690@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <495ADF45.2030203@cn.fujitsu.com> <20081231045956.GC28472@nowhere> <39e6f6c70901021424v28c1a7dbgbaaf67ac12ca9526@mail.gmail.com> <c62985530901191128k5a76fe4bh4fae585b8febf6c@mail.gmail.com> <20090119202523.GE690@ghostprotocols.net> <20090119210839.GA6194@nowhere>
+	id S1754688AbZASVhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 16:37:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: etienne <etienne.basset@numericable.fr>
+Subject: Re: [2.6.29-rc2][Suspend regression][DRM ???? bisected]
+Date: Mon, 19 Jan 2009 22:37:19 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
+References: <4971DFA5.2000304@numericable.fr> <4974EB02.4060303@numericable.fr>
+In-Reply-To: <4974EB02.4060303@numericable.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090119210839.GA6194@nowhere>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901192237.19847.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Jan 19, 2009 at 10:08:40PM +0100, Frederic Weisbecker escreveu:
-> On Mon, Jan 19, 2009 at 06:25:23PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Em Mon, Jan 19, 2009 at 08:28:03PM +0100, Frédéric Weisbecker escreveu:
-> > > 2009/1/2 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
-> > > >
-> > > > warning: I haven't looked at the patch details
-> > > >
-> > > > But I would love to use something like this to provide the exact
-> > > > contents the userspace blktrace utilities want.
-> > > >
-> > > > - Arnaldo
-> > > >
-> > > 
-> > > 
-> > > Hi Arnaldo,
-> >  
-> > > Since you talked about binary record for the blk tracer, I just recall
-> > > this patch.  Are you sure this infrastructure would cover your needs?
-> > 
-> > Nope, now that I look at it it definetely isn't what I need. See? the
-> > warning was valid after all :-)
-> > 
-> > What I want and will experiment now is to almost dump the contents of
-> > the ring buffer as-is to userspace. I want that so that I can use
-> > blkparse to validate the ring buffer + blkFtrace routines produced
-> > buffer.
-> > 
-> > So probably it will be a matter of using trace_iter to signal that, and
-> > when it gets to my print_line routine I just put together the initial
-> > trace format expected by blkparse + the ones I'm collecting at
-> > tracepoint time.
+On Monday 19 January 2009, etienne wrote:
+> Hello,
+> 
+> etienne wrote:
+> > hello,
+> >
+> > With 2.6.29-rc2 (and rc1) i cannot resume from suspend to ram (echo 
+> > mem > /sys/power/state). Computer correctly suspends, but never wakes 
+> > up (screens stays black and everything is unresponsive)
+> >                   
+> > It has been working flawlessly in all prior kernel.
+> > I tried a bisection and it "seems" to point to :
+> > ====================================
+> > a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9 is first bad commit
+> > commit a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9            Author: 
+> > Dave Airlie <airlied@linux.ie>                     Date:   Sun Dec 7 
+> > 12:02:21 2008 +1000                     
+> >    drm: reorganise start and load.
+> >                                     Make sure we have the primary node 
+> > so the device can add maps.
+> >                                                                    
+> > Signed-off-by: Dave Airlie <airlied@redhat.com>              
+> > ========================================
+> >
+> > HOWEVER, I am not quite sure my bisect was correct; I mean, some "bad 
+> > bisect" had a different behavior (resume produces  a garbage screen, 
+> > computer locked)
+> > and after bisect 57a6297e52b32ff402291a7d8fd802f83e746e52 all "bad" 
+> > kernel wouldn't start X, init=/bin/bash booted fine but no resume
+> >
+> > I tried  to revert but got errors
+> > =============================
+> > etienne@etienne-desktop:~/linux-2.6$ git revert  
+> > a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
+> > warning: too many files, skipping inexact rename detection
+> > Auto-merged drivers/gpu/drm/drm_stub.c
+> > CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_stub.c
+> > Automatic revert failed.  After resolving the conflicts,
+> > mark the corrected paths with 'git add <paths>' or 'git rm <paths>' 
+> > and commit the result.
+> > =========================
+> > Please find attached bisect log, lspci (from 2.6.28-rc8) , and .config 
+> > (2.6.29rc2)
+> >
+> > I have a radeon card
+> > 01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 
+> > [Radeon X300(PCIE)]
+> > Packages :
+> > xserver-xorg-video-radeon            
+> > 1:6.9.0+git20081003.f9826a56-0ubuntu2.1
+> > ii  xserver-xorg                              
+> > 1:7.4~5ubuntu3                              the X.Org X 
+> > server                                                   ii  
+> > xserver-xorg-core                         
+> > 2:1.5.2-2ubuntu3                            Xorg X server - core 
+> > server                  
+> > I'm willing to test patches and ideas of course :)
+> >
+> > Except for this regression, everything works fine for me, I migrated 
+> > to ext4 and it "feels" a huge win especially on "rm" and fsck :))
+> >
+> > best regards,
+> > Etienne
+> >
+> >
+> >
+> hello,
+> 
+> as my bisect directed to drm but as I was unable to revert the commit, I 
+> took my 2.6.29rc2 kernel,  removed drivers/gpu/drm and include/drm and 
+> replaced them  with 2.6.28 files.
+> Rebooted into this new kernel, suspended to ram and ...same bug :(
+> so maybe there a bug in drm, but there another one elsewhere...
+> I checked /var/log/messages from a working and a non working kernel, and 
+> there's absolutely _nothing_ in non-working kernels
+> in working kernel i see suspend beginning like this :
+> Jan 19 21:50:47 etienne-desktop kernel: PM: Syncing filesystems ... done.
+> Jan 19 21:50:47 etienne-desktop kernel: [drm] Num pipes: 1
 > 
 > 
-> So you would like two different trace files? Or print both bin and formatted
-> output together in the same file?
-> I'm not sure I understand :-s
+> Are there any patch i could try?
 
-output depends on iter_flags, most of what is needed is there, but I
-guess there are too many ways to achieve the same result and some
-keywords that are already used for other purposes, such as
-TRACE_ITER_BIN -> print_bin_fmt that forces all traces to first have
-pid, cpu and timestamp (all using trace_seq_putmem), then whatever the
-tracer wants to put after that (if it registered a tracer_event _and_ it
-has a ->binary() emitter), when I wanted it to just call ->binary(),
-where I would emulate exactly the old blktrace format, then we would be
-able to just ask for binary traces, collect them thru
-/d/tracing/trace_pipe and pipe them into blkparse for
-validation/debugging the ring_buffer + ftrace + blkFtrace code.
+Actually, quite a few.
 
-I'll try to get a brain dump in the form of working code later
-today/early tomorrow, now I'm being preempted by my wife to do those
-social things like having dinner and going to the movie theater 8)
+I'd recommend waiting until all of the known suspend regressions are fixed.
 
-Regards,
-
-- Arnaldo
+Thanks,
+Rafael
