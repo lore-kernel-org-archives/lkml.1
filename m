@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZASOlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZASOrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbZASOlv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:41:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZASOll
+	id S1754083AbZASOrd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZASOrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:41:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:47576 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbZASOlk (ORCPT
+	Mon, 19 Jan 2009 09:47:16 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:38550 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbZASOrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:41:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=RiRTov2PeXCR04N/7VU3nqdEuGMtS2QrlYW9bkawqF1d0J/Bfnyz1yaa6dOu/v6KL2
-         ftFWcRIkbaS8VUpixLNVBTikwiEptEk0+SqvOGQc1AFDBJ+Ujn6DZW0cThibwVeDod2X
-         ep16BNX445VS70LXtr4kdmHazLnD9I5POAI9A=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 08/12] ide: remove no longer needed IDE_HFLAG[_FORCE]_LEGACY_IRQS
-Date: Mon, 19 Jan 2009 15:41:41 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090119141330.27613.34546.sendpatchset@localhost.localdomain> <20090119141443.27613.89085.sendpatchset@localhost.localdomain> <9ea470500901190636g366767bt2b40917b2d2718f9@mail.gmail.com>
-In-Reply-To: <9ea470500901190636g366767bt2b40917b2d2718f9@mail.gmail.com>
+	Mon, 19 Jan 2009 09:47:15 -0500
+X-BigFish: VPS3(zzzzzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KDQ3QC-02-0B7-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, linux-kernel@vger.kernel.org
+CC: fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
+       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 01/16] dma-debug: add Kconfig entry
+Date: Mon, 19 Jan 2009 15:46:48 +0100
+Message-ID: <1232376423-11067-2-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+In-Reply-To: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
+References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 19 Jan 2009 14:47:03.0766 (UTC) FILETIME=[CAECEF60:01C97A44]
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901191541.41305.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Borislav Petkov wrote:
-> Hi,
-> 
-> On Mon, Jan 19, 2009 at 3:14 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> 
-> [.. ]
-> 
-> > Index: b/include/linux/ide.h
-> > ===================================================================
-> > --- a/include/linux/ide.h
-> > +++ b/include/linux/ide.h
-> > @@ -1347,10 +1347,6 @@ enum {
-> >        IDE_HFLAG_ERROR_STOPS_FIFO      = (1 << 19),
-> >        /* serialize ports */
-> >        IDE_HFLAG_SERIALIZE             = (1 << 20),
-> > -       /* use legacy IRQs */
-> > -       IDE_HFLAG_LEGACY_IRQS           = (1 << 21),
-> > -       /* force use of legacy IRQs */
-> > -       IDE_HFLAG_FORCE_LEGACY_IRQS     = (1 << 22),
-> >        /* host is TRM290 */
-> >        IDE_HFLAG_TRM290                = (1 << 23),
-> >        /* use 32-bit I/O ops */
-> 
-> maybe contigious numbering of the enums here?
+Impact: add a Kconfig entry for DMA-API debugging
 
-I plan to re-use these two flags quite soon for other purposes so I thought
-that I may save some time/noise on moving the rest of flags around... :)
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/Kconfig      |    2 ++
+ lib/Kconfig.debug |   11 +++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 550dab2..830c16a 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -106,3 +106,5 @@ config HAVE_CLK
+ 	  The <linux/clk.h> calls support software clock gating and
+ 	  thus are a key power management tool on many systems.
+ 
++config HAVE_DMA_API_DEBUG
++	bool
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 4c9ae60..92120f7 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -906,6 +906,17 @@ config DYNAMIC_PRINTK_DEBUG
+ 	  debugging for all modules. This mode can be turned off via the above
+ 	  disable command.
+ 
++config DMA_API_DEBUG
++	bool "Enable debugging of DMA-API usage"
++	depends on HAVE_DMA_API_DEBUG
++	help
++	  Enable this option to debug the use of the DMA API by device drivers.
++	  With this option you will be able to detect common bugs in device
++	  drivers like double-freeing of DMA mappings or freeing mappings that
++	  were never allocated.
++	  This option causes a performance degredation.  Use only if you want
++	  to debug device drivers. If unsure, say N.
++
+ source "samples/Kconfig"
+ 
+ source "lib/Kconfig.kgdb"
+-- 
+1.5.6.4
+
+
