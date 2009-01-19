@@ -1,119 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbZASOXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZASOYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280AbZASOXe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZASOXY
+	id S1752243AbZASOYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZASOXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:23:24 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:16767 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbZASOXW (ORCPT
+	Mon, 19 Jan 2009 09:23:51 -0500
+Received: from mail-bw0-f18.google.com ([209.85.218.18]:46946 "EHLO
+	mail-bw0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbZASOXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:23:22 -0500
-X-BigFish: VPS-33(zz1432R98dR936eQ1805M936fN19c2kzzzzz32i6bh6di43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0KDQ2MA-02-Y36-01
-Date: Mon, 19 Jan 2009 15:22:59 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Hounschell <markh@compro.net>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
-	Phenom-II processor
-Message-ID: <20090119142259.GA22012@aftab>
-References: <497322CC.7050900@cfl.rr.com>
+	Mon, 19 Jan 2009 09:23:49 -0500
+X-Greylist: delayed 4828 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jan 2009 09:23:48 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=IOu/N0Wvrfcxh7OlhWk8AybEjiZizTqB0h8mAmOuVqtJbO1vs4RRUYZDCNtJpOydIz
+         PDozZ/T0gPUvT35T5t7b+lQ5IkY6aB0m+usxGXDbrV8dvT/AHPvmToHSRytKz/KNBncg
+         S/9eXIjFWEspsG3sVTDeB3wKXphoKG91d5Kts=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
+Date: Mon, 19 Jan 2009 15:23:15 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain> <20090119130322.24745.76137.sendpatchset@localhost.localdomain> <49748B95.9080105@ru.mvista.com>
+In-Reply-To: <49748B95.9080105@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <497322CC.7050900@cfl.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 19 Jan 2009 14:23:02.0284 (UTC) FILETIME=[6FBC3CC0:01C97A41]
+Message-Id: <200901191523.15240.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 19 January 2009, Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+>     Gah, what in the world is that SFF I/O code?
+> 
+> > Index: b/drivers/ide/ide-io-sff.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ b/drivers/ide/ide-io-sff.c
+> > @@ -0,0 +1,314 @@
+> > +
+> > +#include <linux/kernel.h>
+> > +#include <linux/ide.h>
+> > +
+> > +/*
+> > + *	Conventional PIO operations for ATA devices
+> > + */
+> > +
+> > +static u8 ide_inb(unsigned long port)
+> > +{
+> > +	return (u8) inb(port);
+> > +}
+> > +
+> > +static void ide_outb(u8 val, unsigned long port)
+> > +{
+> > +	outb(val, port);
+> > +}
+> > +
+> > +/*
+> > + *	MMIO operations, typically used for SATA controllers
+> > + */
+> > +
+> > +static u8 ide_mm_inb(unsigned long port)
+> > +{
+> > +	return (u8) readb((void __iomem *) port);
+> > +}
+> > +
+> > +static void ide_mm_outb(u8 value, unsigned long port)
+> > +{
+> > +	writeb(value, (void __iomem *) port);
+> > +}
+> 
+>     Ah, I see. Can we finally stop abusing the SFF name? Or are we bound to 
+> copy every mistake that libata has made? :-/
 
-On Sun, Jan 18, 2009 at 07:38:36AM -0500, Mark Hounschell wrote:
-> I upgraded from a Phenom to a Phenom-II processor and I could no longer boot.
-> 
-> I have tried kernels from 2.6.26 through 2.6.28.
-> 
-> I _can_ however boot these kernels when they are configured for HZ = 250. I
-> haven't tried HZ = 300. But certainly if HZ = 1000 the boot hangs at the spot
-> indicated below in the dmesg output.
-> 
-> The machine is up and stable running 2.6.26.8 with a (HZ = 1000) configured kernel.
-> 
-> While running a 2.6.26.8 kernel configured for HZ = 250:
-> 
-> /proc/version:
-> 
-> Linux version 2.6.26.8 (root@harley) (gcc version 4.3.1 20080507 (prerelease)
-> [gcc-4_3-branch revision 135036] (SUSE Linux) ) #2 SMP PREEMPT Sat Jan 17
-> 16:37:58 EST 2009
-> 
-> 
-> scripts/ver_linux:
-> 
-> If some fields are empty or look unusual you may have an old version.
-> Compare to the current minimal requirements in Documentation/Changes.
-> 
-> Linux harley 2.6.26.8 #2 SMP PREEMPT Sat Jan 17 16:37:58 EST 2009 i686 athlon
-> i386 GNU/Linux
-> 
-> Gnu C                  4.3
-> Gnu make               3.81
-> binutils               11.0
-> 2.18.50.20080409
-> 11.1
-> util-linux             2.13.1
-> mount                  2.13.1
-> module-init-tools      3.4
-> e2fsprogs              1.40.8
-> reiserfsprogs          3.6.19
-> PPP                    2.4.4
-> Linux C Library        2.8
-> Dynamic linker (ldd)   2.8
-> Procps                 3.2.7
-> Net-tools              1.60
-> Kbd                    1.12
-> Sh-utils               6.11
-> udev                   120
-> wireless-tools         29
-> Modules Loaded         ip6t_LOG xt_tcpudp xt_pkttype ipt_LOG xt_limit
-> snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device appletalk ax25 ipx p8023
-> ip6t_REJECT nf_conntrack_ipv6 ipt_REJECT xt_state iptable_mangle iptable_nat
-> nf_nat iptable_filter ip6table_mangle nf_conntrack_netbios_ns nf_conntrack_ipv4
-> nf_conntrack ip_tables ip6table_filter ip6_tables x_tables ipv6 fuse loop dm_mod
-> snd_hda_intel snd_pcm snd_timer ati_agp nvidia snd ppdev rtc_cmos ide_cd_mod
-> i2c_piix4 parport_pc rtc_core usb_storage usblp soundcore cdrom agpgart
-> snd_page_alloc parport rtc_lib e1000e ide_disk i2c_core sg ehci_hcd ohci_hcd
-> sd_mod usbcore ssb e1000 sky2 edd ext3 mbcache jbd aic7xxx scsi_transport_spi
-> atiixp ide_core ahci pata_jmicron libata scsi_mod dock
-> 
-> 
-> /proc/cpuinfo:
-> 
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 16
-> model           : 4
-> model name      : AMD Processor model unknown
+Please suggest a better name. :)
 
-judging from the processor name string it looks like your BIOS doesn't
-program the processor name properly which could mean that you need
-to check whether your motherboard supports Phenom II CPUs and if so,
-upgrade your BIOS. This could also explain the mis-calibration issue.
-
-Also, is this a 32-bit kernel you're booting?
-
-[.. ]
-
--- 
-Regards/Gruss,
-Boris.
-
-Advanced Micro Devices, Inc.
-Operating System Research Center
-
+[ I'm also not happy with the naming but couldn't think of a better one. ]
