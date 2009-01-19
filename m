@@ -1,136 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbZASPAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZASPBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbZASPAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 10:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZASO7x
+	id S1756729AbZASPBy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 10:01:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZASPBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:59:53 -0500
-Received: from mx2.compro.net ([216.54.166.4]:18824 "EHLO mx2.compro.net"
+	Mon, 19 Jan 2009 10:01:43 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53183 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbZASO7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:59:52 -0500
-X-IronPort-AV: E=Sophos;i="4.37,289,1231131600"; 
-   d="scan'208";a="3292804"
-Message-ID: <49749208.9060807@compro.net>
-Date: Mon, 19 Jan 2009 09:45:28 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Mark Hounschell <dmarkh@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II
- processor
-References: <497322CC.7050900@cfl.rr.com> <49743E52.7010906@cfl.rr.com> <200901191341.54081.bzolnier@gmail.com>
-In-Reply-To: <200901191341.54081.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751595AbZASPBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 10:01:42 -0500
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs: some inode attrs, and a
+ question
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: hooanon05@yahoo.co.jp
+Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
+In-Reply-To: <7087.1232331454@jrobl>
+References: <7471.1231827621@jrobl>
+	 <1231852628.6954.4.camel@norville.austin.ibm.com>
+	 <496FAFE2.8020102@linux.vnet.ibm.com> <9829.1232091366@jrobl>
+	 <1232125169.15209.19.camel@norville.austin.ibm.com> <7210.1232172192@jrobl>
+	 <1232210546.7015.8.camel@norville.austin.ibm.com> <10394.1232214142@jrobl>
+	 <1232215916.7015.78.camel@norville.austin.ibm.com>  <7087.1232331454@jrobl>
+Content-Type: text/plain
+Date: Mon, 19 Jan 2009 09:01:35 -0600
+Message-Id: <1232377295.5893.1.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Monday 19 January 2009, Mark Hounschell wrote:
->> Mark Hounschell wrote:
->>> I upgraded from a Phenom to a Phenom-II processor and I could no longer boot.
->>>
->>> I have tried kernels from 2.6.26 through 2.6.28.
->>>
->>> I _can_ however boot these kernels when they are configured for HZ = 250. I
->>> haven't tried HZ = 300. But certainly if HZ = 1000 the boot hangs at the spot
->>> indicated below in the dmesg output.
->>>
->>> The machine is up and stable running 2.6.26.8 with a (HZ = 1000) configured kernel.
->>>
->> The machine is up and stable running 2.6.26.8 with a (HZ = 250) configured
->> kernel. Sorry.
->>
->>> While running a 2.6.26.8 kernel configured for HZ = 250:
+On Mon, 2009-01-19 at 11:17 +0900, hooanon05@yahoo.co.jp wrote:
+> Dave Kleikamp:
+> > For a regular file, the size of the upper inode is not the same as the
+> > size of the lower inode.  The lower inode includes the header blocks
+> > which are not visible in the upper inode.  So ecryptfs_interpose() will
+> > overwrite the correct upper inode size.
 > 
-> [...]
-> 
->>> Checking if this processor honours the WP bit even in supervisor mode...Ok.
->>>
->>>
->>>       The 2.6.26.8 kernel hangs up right here.
->>>
->>>
->>> CPA: page pool initialized 1 of 1 pages preallocated
->>> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
->>> hpet clockevent registered
->>> calibrate_delay_direct() failed to get a good estimate for loops_per_jiffy.
->>> Probably due to long platform interrupts. Consider using "lpj=" boot option.
->>> Calibrating delay loop... 3956.73 BogoMIPS (lpj=7913472)
-> 
-> Even if it boots it may not work reliably since lpj/BogoMIPS are too small
-> (they should be the same as for other CPUs) which in turn could result in too
-> short delay loops.
-> 
->>> Security Framework initialized
->>> Capability LSM initialized
->>> Mount-cache hash table entries: 512
->>> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
->>> CPU: L2 Cache: 512K (64 bytes/line)
->>> CPU 0(4) -> Core 0
->>> Checking 'hlt' instruction... OK.
->>> ACPI: Core revision 20080321
->>> ENABLING IO-APIC IRQs
->>> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
->>> CPU0: AMD Processor model unknown stepping 02
->>> Booting processor 1/1 ip 2000
->>> Initializing CPU#1
->>> Calibrating delay using timer specific routine.. 6000.60 BogoMIPS (lpj=12001200)
-> 
-> Here are the proper values.
-> 
->>> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
->>> CPU: L2 Cache: 512K (64 bytes/line)
->>> CPU 1(4) -> Core 2
->>> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
->>> CPU1: AMD Processor model unknown stepping 02
->>> Booting processor 2/2 ip 2000
->>> Initializing CPU#2
->>> Calibrating delay using timer specific routine.. 6000.47 BogoMIPS (lpj=12000950)
-> 
-> also OK
-> 
->>> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
->>> CPU: L2 Cache: 512K (64 bytes/line)
->>> CPU 2(4) -> Core 1
->>> x86 PAT enabled: cpu 2, old 0x7040600070406, new 0x7010600070106
->>> CPU2: AMD Processor model unknown stepping 02
->>> Booting processor 3/3 ip 2000
->>> Initializing CPU#3
->>> Calibrating delay using timer specific routine.. 6000.47 BogoMIPS (lpj=12000955)
-> 
-> ditto
-> 
-> That being said I don't know why delay calibration loop fails on CPU0.
-> 
-> You may try booting with "lpj=12001200" kernel parameter to workaround
-> the issue (it should fix booting with HZ == 1000) and/or try 2.6.29-rc2
-> (the problem may have been already fixed).
-> 
-> Thanks,
-> Bart
->
+> Then it means updating i_size in ecryptfs_link() is unnecessary...
 
-I'll try "lpj=12001200" and 2.6.29-rc2 later when I get home this ev.
+It's restoring i_size to the correct value after ecryptfs_interpose
+updates it with the wrong value.
 
-But I noticed CPU2 is different too. Is CPU1 the correct one?
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
->>> Initializing CPU#0
->>> Calibrating delay loop... 3956.73 BogoMIPS (lpj=7913472)
-
->>> Initializing CPU#1
->>> Calibrating delay using timer specific routine.. 6000.60 BogoMIPS (lpj=12001200)
-
->>> Initializing CPU#2
->>> Calibrating delay using timer specific routine.. 6000.47 BogoMIPS (lpj=12000950)
-
->>> Initializing CPU#3
->>> Calibrating delay using timer specific routine.. 6000.47 BogoMIPS (lpj=12000955)
-
-Mark
