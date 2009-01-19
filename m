@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbZASO51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZASO7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760637AbZASO51 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:57:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZASO5H
+	id S1758230AbZASO7V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZASO7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:57:07 -0500
-Received: from p02c12o145.mxlogic.net ([208.65.145.78]:53045 "EHLO
-	p02c12o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZASO5F (ORCPT
+	Mon, 19 Jan 2009 09:59:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:10606 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751537AbZASO7C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:57:05 -0500
-Message-ID: <497494BB.3080800@steeleye.com>
-Date: Mon, 19 Jan 2009 09:56:59 -0500
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+	Mon, 19 Jan 2009 09:59:02 -0500
+Message-ID: <154e089b0901190659g2a836fa0o6cbedd0396fef11c@mail.gmail.com>
+Date: Mon, 19 Jan 2009 15:59:00 +0100
+From: "Hannes Eder" <hannes@hanneseder.net>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] creds: suppress warning in get_cred
+Cc: "David Howells" <dhowells@redhat.com>, "James Morris" <jmorris@namei.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090120015251.47ea14ff.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: nbd: add locking to nbd_ioctl
-References: <20090116115512.GA10771@elf.ucw.cz> <4970A696.9070307@steeleye.com> <20090116153603.GD2022@elf.ucw.cz> <4970B59A.9090807@steeleye.com> <20090119095459.GA11187@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20090119095459.GA11187@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Jan 2009 14:56:59.0798 (UTC) FILETIME=[2E303360:01C97A46]
-X-Spam: [F=0.2000000000; S=0.200(2008120801)]
-X-MAIL-FROM: <paul.clements@steeleye.com>
-X-SOURCE-IP: [207.43.68.209]
+Content-Disposition: inline
+References: <20090119211031.934b4c19.sfr@canb.auug.org.au>
+	 <11956.1232368171@redhat.com>
+	 <20090120015251.47ea14ff.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->> Pavel Machek wrote:
->>> On Fri 2009-01-16 10:24:06, Paul Clements wrote:
+On Mon, Jan 19, 2009 at 3:52 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi David,
+>
+> On Mon, 19 Jan 2009 12:29:31 +0000 David Howells <dhowells@redhat.com> wrote:
+>>
+>> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>
+>> > +   return get_new_cred((struct cred *)(uintptr_t)cred);
+>>
+>> That should probably be 'unsigned long' within the kernel.  This is also a
+>> compiler bug, but I think we can live with this fix.
+>
+> We do have uintptr_t inside the kernel (it is typedeffed to unsigned
+> long) but I used it explicitly because its type is defined to be large
+> enough to store any pointer.
 
->> lo->sock is only modified under tx_lock (except for SET_SOCK, where the 
->> device is being initialized, in which case it's impossible for any other 
->> thread to be accessing the device)
-> 
-> Well, unless the user is evil or confused? :-).
+When working around this compiler bug would it be better to do it like this:
 
-Even in that case, you're just going to get EBUSY. Nothing bad will 
-happen. SET_SOCK checks for lo->file, so it cannot be called on an 
-active nbd device.
++     return get_new_cred((struct cred *)(void *)cred);
 
+instead of relying on the size of a pointer and using an large enough
+integer data type?
 
->> As for other fields, I assume you're talking about blksize, et al. 
->> Taking tx_lock doesn't prevent you from screwing yourself if you modify 
->> those while the device is active. You'd need to disallow those ioctls 
->> when the device is active (check lo->file). Again, this is only going to 
->> happen if you really misuse the ioctls.
-> 
-> Ok, I'll take a look at the missing checks. I'd really like to make
-> this "stable" -- no amount of misuse should crash the kernel.
+Maybe would should just add a comment, to note that if such a warning
+is issued, that
+this is a compiler bug.
 
-Just to summarize, I don't think we need to hold tx_lock around the 
-entirety of nbd_ioctl. We do need one extra tx_lock around xmit_timeout 
-and we do need to check for lo->file and return EBUSY in all of the 
-SET_*SIZE* ioctls.
+Or disable the warning for this region, but as far as I know gcc _does
+not_ have this feature yet.
 
-Thanks,
-Paul
+> However, I have also verified that using a newer compiler (4.3.2 in my
+> case) makes the warning go away as Hannes Eder pointed out when
+> mentioning his earlier patch.
 
+Hannes
