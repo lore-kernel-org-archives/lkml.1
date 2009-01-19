@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZASIL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbZASIMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZASIL2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 03:11:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZASILT
+	id S1757673AbZASIMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 03:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZASIMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 03:11:19 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35471 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751116AbZASILS (ORCPT
+	Mon, 19 Jan 2009 03:12:07 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:33870 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZASIME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 03:11:18 -0500
-X-Sasl-enc: JRvJAgsGvXOAaTl57sCfWdziA2IG8j3EWE1cpnZKlbe1 1232352677
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-From: Ian Kent <raven@themaw.net>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20090119070801.GA21686@redhat.com>
-References: <20090118073441.GA699@redhat.com>
-	 <1232331602.3136.19.camel@zeus.themaw.net>
-	 <20090119070801.GA21686@redhat.com>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 17:11:17 +0900
-Message-Id: <1232352677.3136.103.camel@zeus.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 19 Jan 2009 03:12:04 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Mon, 19 Jan 2009 13:41:58 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <200901161746.36584.chandru@in.ibm.com> <1232128377.27278.69.camel@nimitz>
+In-Reply-To: <1232128377.27278.69.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901191341.58437.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 08:08 +0100, Oleg Nesterov wrote:
-> On 01/19, Ian Kent wrote:
-> >
-> > On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
-> > > parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
-> > > namespace. This is wrong, we use this pgid to find "struct pid" in the
-> > > current's namespace. Change parse_options() to use task_pgrp_vnr().
-> > >
-> > > Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
-> > > checkpatch.pl complains about "line over 80 characters", but it should
-> > > blame the cuurent code, not the patch.
-> >
-> > This changelog entry doesn't really have anything that I can use to work
-> > out if this change might introduce regressions.
-> >
-> > It would be helpful to me if you could include:
-> > 1) A brief statement about what your trying to achieve and why.
-> 
-> First of all, I think this patch fixes a bug.
-> 
-> What we are doing in autofs_fill_super()->parse_options() path
-> is find_get_pid(task_pgrp_vnr(current)), this is wrong.
+On Friday 16 January 2009 23:22:57 Dave Hansen wrote:
+> Just looking at it, that calculation is OK.  But, there was one in your
+> dmesg that looked a page too long, like page 0x1001 instead of 0x1000.
+> I'd find out how that happened.
 
-So your saying that your patch is wrong?
-I'm not following this at all.
+That is a result of PFN_UP() in reserve_bootmem_node() for which we hit the 
+BUG_ON() eventually.   Prior to calling reserve_bootmem_node() we have...
 
-> 
-> task_pgrp_vnr() reporst the pid_t in the global namespace, but
-> find_get_pid() searches "struct pid" in the current namespace.
-> We can get the wrong pid. I tried to document this in changelog.
+node_ar.end_pfn = node->node_end_pfn = PFN_DOWN(physbase+reserve_size). 
 
-We don't know whether it's the wrong pid because the environments were
-this is used haven't been defined. Depending on expected usage of pid
-namespaces the global pid may or may not be the correct one. This was
-not determined the last time this came up.
+Hence a PFN_UP() will raise the value of 'end'. The kernel has 
+CONFIG_PPC_64K_PAGES enabled in the config. 
 
-> 
-> Another reason is that task_pgrp_nr() is deprecated. We are wasting
-> 2 words in signal_struct without good reason. Please look at
-> 
-> 	http://marc.info/?l=linux-kernel&m=123228947019281
-> 
-> > 2) The reason why task_pgrp_nr() has changed to task_pgrp_vnr() since
-> > you made the change (that is someone working on pid namespaces) to
-> > task_pgrp_nr().
-> 
-> see above.
-> 
-> > 3) Why you believe this change won't introduce a regression.
-> 
-> Ah, sorry. I forgot to mention this patch is only compile tested
-> (like the next one, but at least it has the note in changelog).
-> 
-> But again, I think this is bugfix.
-> 
-> Oleg.
-> 
-
+Chandru
