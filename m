@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZASQ5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZASQ7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZASQ5v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 11:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZASQ5m
+	id S1754608AbZASQ7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 11:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZASQ7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 11:57:42 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:53859 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZASQ5l (ORCPT
+	Mon, 19 Jan 2009 11:59:05 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:62111 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbZASQ7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 11:57:41 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4974B107.6050701@gmail.com>
-Date: Mon, 19 Jan 2009 16:57:43 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 19 Jan 2009 11:59:03 -0500
+X-Greylist: delayed 163082 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Jan 2009 11:59:03 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aRYLLEqR/GNid5dldd/LvnflgEEIjqwka877uH0v50SA6Oy5gCktgmUfAmVFMiz21n
+         Z19HwEwr2WoGGUAmXyBjrCi+rwGSjowJVvfhJfU76eMb5BCCcUIoJcUN76kwfrWU6bpt
+         sRi4v3CtGL3bPwWe4jb1xMShDZwDT2N3BvjM0=
+Date: Mon, 19 Jan 2009 18:59:26 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kmemtrace: kbuild failed to make the new header symlink...
+Message-ID: <20090119165926.GA5287@localhost>
+References: <20090119164029.GB19302@ghostprotocols.net>
 MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Jonathan Cameron <jic23@cam.ac.uk>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Regulator: Add a voltage changed event to notify consumers
-References: <495FD46E.8040208@cam.ac.uk> <1231065078.11643.116.camel@vega.slimlogic.co.uk> <4973793D.60803@cam.ac.uk> <20090119152921.GA23444@rakim.wolfsonmicro.main>
-In-Reply-To: <20090119152921.GA23444@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090119164029.GB19302@ghostprotocols.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Sun, Jan 18, 2009 at 06:47:25PM +0000, Jonathan Cameron wrote:
+On Mon, Jan 19, 2009 at 02:40:29PM -0200, Arnaldo Carvalho de Melo wrote:
+> Sam,
 > 
->> -out:
->> +	mutex_unlock(&rdev->mutex);
->> +	_notifier_call_chain(rdev, REGULATOR_EVENT_VOLTAGE_CHANGE, NULL);
->> +	return 0;
->> +out_unlock:
+> 	I just did a git pull on linux-2.6-tip, then, on a build
+> directory (make O=../build/blkftrace/) with a previous build a tree
+> cloned from Linus I got stuck with the messages below.
 > 
-> It'd be nice if we could modify _notifier_call_chain() to push the 
-> locking out a bit so we don't need to drop the lock before calling the
-> notifier.  On the other hand, for anything that isn't memory mapped or
-> GPIO controlled (most regulators are in this category) the cost of the
-> I/O is going to make this a non-issue.
-Agreed.  On that note, isn't any call to regulator_force_disable
-currently going to deadlock? (lock held in regulator_force_disable,
-then re-called in _notifier_call_chain.)
+> 	I could only get this to work after a make mrproper, thought I
+> could mention this so that perhaps this can get detected and time be
+> saved somehow.
+> 
+>   CC      arch/x86/mm/fault.o
+> /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:38:27: error: asm/kmemcheck.h: No such file or directory
+> /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c: In function ???do_page_fault???:
+> /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:614: error: implicit declaration of function ???kmemcheck_active???
+> /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:615: error: implicit declaration of function ???kmemcheck_hide???
+> /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:644: error: implicit declaration of function ???kmemcheck_fault???
 
-I'll have a look into moving the locks out of _notifier_call_chain.
+Hi,
 
-Jonathan
+This looks like a kmemcheck, not kmemtrace, fault. Heh, but we already
+have 3 things with similar names: kmemcheck, kmemtrace and kmemleak. :)
+
+
+	Cheers,
+	Eduard
 
