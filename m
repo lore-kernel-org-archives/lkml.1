@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbZASCzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbZASDF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbZASCzQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 21:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZASCyt
+	id S1758243AbZASDF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 22:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbZASDFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 21:54:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36830 "EHLO hera.kernel.org"
+	Sun, 18 Jan 2009 22:05:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34953 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757177AbZASCyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 21:54:47 -0500
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
-       linux-media@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netfilter@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-nfs@vger.kernel.org, linux-raid@vger.kernel.org,
-       dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, netdev@vger.kernel.org,
-       greg@kroah.com, linux-usb@vger.kernel.org, dwmw2@infradead.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090119112429.78f5dc33.sfr@canb.auug.org.au>
-References: <1232223441.3966.22.camel@localhost.localdomain>
-	 <20090119112429.78f5dc33.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 19 Jan 2009 08:23:14 +0530
-Message-Id: <1232333594.3129.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+	id S1757330AbZASDFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 22:05:48 -0500
+Message-ID: <4973EE03.2060106@kernel.org>
+Date: Mon, 19 Jan 2009 12:05:39 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86-64: Remove the PDA
+References: <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com>	 <1232326345-3534-1-git-send-email-brgerst@gmail.com>	 <1232326345-3534-2-git-send-email-brgerst@gmail.com>	 <1232326345-3534-3-git-send-email-brgerst@gmail.com>	 <1232326345-3534-4-git-send-email-brgerst@gmail.com>	 <4973E30D.3030102@kernel.org> <73c1f2160901181852q1c063011lf9d4588ce9a19dd1@mail.gmail.com>
+In-Reply-To: <73c1f2160901181852q1c063011lf9d4588ce9a19dd1@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 19 Jan 2009 03:05:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 11:24 +1100, Stephen Rothwell wrote:
-> On Sun, 18 Jan 2009 01:47:21 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> >
-> > diff --git a/include/linux/nfsd/stats.h b/include/linux/nfsd/stats.h
-> > index 7678cfb..0b53cfe 100644
-> > --- a/include/linux/nfsd/stats.h
-> > +++ b/include/linux/nfsd/stats.h
-> > @@ -29,9 +29,11 @@ struct nfsd_stats {
-> >  	unsigned int	ra_size;	/* size of ra cache */
-> >  	unsigned int	ra_depth[11];	/* number of times ra entry was found that deep
-> >  					 * in the cache (10percentiles). [10] = not found */
-> > +#ifdef __KERNEL__
-> >  #ifdef CONFIG_NFSD_V4
-> >  	unsigned int	nfs4_opcount[LAST_NFS4_OP + 1];	/* count of individual nfsv4 operations */
-> >  #endif
-> > +#endif /* __KERNEL__ */
-> >  
-> >  };
+Hello, Brian.
+
+Brian Gerst wrote:
+>> As discussed before, the above chunks do drop one #ifdef CONFIG_SMP
+>> but it does add a obscure relocation and please note that it's
+>> different from early_gdt_descr.  early_gdt_descr is needed to bring up
+>> the cpu so there's no other way to do it but to relocate it in
+>> assembly.  If you absolutely have to relocate irq_stack_ptr early,
+>> please do it in C code in head64.c but then again irq_stack_ptr is not
+>> even necessary till traps_init() which is way after per cpu area
+>> setup.  So, the above two chunks are not necessary && even if they go
+>> in, they don't have much to do with this patch.
 > 
-> The only variable in the kernel of type "struct nfsd_stats" is only
-> exported to user mode via procfs, so this whole structure could probably
-> go inside __KERNEL__.  Then looking harder, I wonder if this header
-> should be exported to user mode at all.
-> 
+> I'll give you that this particular variable doesn't need early
+> adjustment currently.  I'd prefer if you left the ifdef off the first
+> hunk, though.  A comment will suffice to document that the initial
+> value is going to be overwritten later on SMP.
 
-I was in doubt may be this will be used by some userspace utilities.
+Yeah, maybe.  I don't know.  If we ever get to a point where we can
+fully initialize per cpu area for cpu0, things like this can probably
+go away, but for now, I just thought it would be better to make it
+clear that UP and SMP are taking different initialization paths &&
+that was how the code looked like before this patch, so...  But no big
+deal one way or another, right?
 
-Once I got confirmation that it is not required in userspace, I will
-remove it :-)
+Thanks.
 
---
-JSR
-
+-- 
+tejun
