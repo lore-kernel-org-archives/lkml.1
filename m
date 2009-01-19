@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZASFZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZASFaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbZASFZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 00:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZASFZr
+	id S1758272AbZASFaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 00:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZASF3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 00:25:47 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40576 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbZASFZr (ORCPT
+	Mon, 19 Jan 2009 00:29:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60706
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751415AbZASF3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 00:25:47 -0500
-Date: Mon, 19 Jan 2009 06:27:28 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
-Message-ID: <20090119052727.GA6422@uranus.ravnborg.org>
-References: <1232287474.3130.19.camel@localhost.localdomain> <20090118172800.GB22624@elte.hu> <20090118185034.GA26908@elte.hu> <20090118190836.GA2294@uranus.ravnborg.org> <1232331365.3129.7.camel@localhost.localdomain>
+	Mon, 19 Jan 2009 00:29:51 -0500
+Date: Sun, 18 Jan 2009 21:29:52 -0800 (PST)
+Message-Id: <20090118.212952.156342736.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com, wenxiong@us.ibm.com
+Subject: Re: [PATCH 2.6.30] cxgb3 - ease msi-x settings conditions
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090118204836.10826.2994.stgit@speedy5>
+References: <20090118204836.10826.2994.stgit@speedy5>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232331365.3129.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 07:46:05AM +0530, Jaswinder Singh Rajput wrote:
-> On Sun, 2009-01-18 at 20:08 +0100, Sam Ravnborg wrote:
-> > > 
-> > > diff --git a/arch/x86/include/asm/swab.h b/arch/x86/include/asm/swab.h
-> > > index 306d417..613be68 100644
-> > > --- a/arch/x86/include/asm/swab.h
-> > > +++ b/arch/x86/include/asm/swab.h
-> > > @@ -1,12 +1,15 @@
-> > >  #ifndef _ASM_X86_SWAB_H
-> > >  #define _ASM_X86_SWAB_H
-> > >  
-> > > -#include <asm/types.h>
-> > > +#include <linux/types.h>
-> > > +#ifdef __KERNEL__
-> > >  #include <linux/compiler.h>
-> > > +#endif /* __KERNEL__ */
-> > 
-> > compiler.h includes should be nuked by make headers_instll automatically.
-> > 
-> 
-> But the problem is compiler.h provide extra line space in userspace
-> header files because of nuking them.
-> 
-> So I moved compiler.h in __KERNEL__ as extra cleanup, it is not harmful
-> but looks much nicer in userspace header files
+From: Divy Le Ray <divy@chelsio.com>
+Date: Sun, 18 Jan 2009 12:48:36 -0800
 
-We should fix scripts/headers_install.pl to drop the newline too.
-This is much better than adding of ifdef __KERNEL__ around
-the include of compiler.h.
+> The driver currently drops to line interrupt mode
+> if it did not get all the msi-x vectors it requested.
+> 
+> Allow msi-x settings when a minimal amount of vectors
+> is provided.
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
-	Sam
+Looks good, queued up for 2.6.30
