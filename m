@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbZASJxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZASJyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbZASJxq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 04:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbZASJxf
+	id S1758640AbZASJyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 04:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759339AbZASJxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 04:53:35 -0500
-Received: from 1wt.eu ([62.212.114.60]:1622 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852AbZASJxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 04:53:33 -0500
-Date: Mon, 19 Jan 2009 10:53:21 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Data corruption issue with splice() on 2.6.27.10
-Message-ID: <20090119095320.GC14531@1wt.eu>
-References: <20081224152841.GB13113@1wt.eu> <20090106183223.GA11964@ioremap.net> <20090106185012.GA30322@1wt.eu> <20090119083921.GA17124@xi.wantstofly.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090119083921.GA17124@xi.wantstofly.org>
-User-Agent: Mutt/1.5.11
+	Mon, 19 Jan 2009 04:53:54 -0500
+Received: from mxpdbe2.wincor-nixdorf.com ([80.154.98.130]:41729 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754868AbZASJxx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 04:53:53 -0500
+Message-ID: <49744BCD.20804@wincor-nixdorf.com>
+Date: Mon, 19 Jan 2009 10:45:49 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+MIME-Version: 1.0
+To: Prateek Donni <prateek.donni@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: system-config-lvm error
+References: <a80c86b70901181314u28e6ed8brc2edfa38f21f991e@mail.gmail.com>
+In-Reply-To: <a80c86b70901181314u28e6ed8brc2edfa38f21f991e@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF93021703DBC67C4BCBB8DAC"
+X-OriginalArrivalTime: 19 Jan 2009 09:48:46.0099 (UTC) FILETIME=[1F15AE30:01C97A1B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 09:39:21AM +0100, Lennert Buytenhek wrote:
-> On Tue, Jan 06, 2009 at 07:50:12PM +0100, Willy Tarreau wrote:
-> 
-> > > Thanks a lot for the test application, it will greatly help to resolve
-> > > this issue.
-> > 
-> > I figured it was an absolute necessity. The original code in my proxy is in
-> > an experimental state and far too hard to debug for these purposes. It was
-> > enough to detect the problem, but I could run a lot more tests with this
-> > small test app ! An who know, maybe it will serve as an example for
-> > non-blocking splice ;-)
-> 
-> :-)
-> 
-> Just to throw some more (hacky) example code into the pool, below is
-> an echo server that I hacked up to test nonblocking splice().  (You'll
-> need sf.net/projects/libivykis to use it.)  I also have a splice()
-> discard server and a patch to my intercept-connection-via-iptables-and-
-> forward-it-to-a-remote-SOCKS5-server-to-deal-with-crappy-VPNs app to
-> use splice() somewhere.
-> 
-> My main annoyances with splice(2) are/were:
-> 
-> 1. -EAGAIN return on splice from socket/pipe to socket/pipe doesn't
->    directly tell you whether the source ran out of data or the
->    destination can't accept more data, which means you can't e.g. use
->    epoll in edge triggered mode without jumping through some minor
->    number of extra hoops.  (For a pipe you can keep track of how many
->    bytes are in it by hand, but for a socket->pipe splice -EAGAIN return
->    you'll have to assume that the pipe is full if there are >0 bytes in
->    it.)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF93021703DBC67C4BCBB8DAC
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I proceeded the same way : if EAGAIN and data still in the pipe, then
-stop polling.
+Prateek Donni wrote:
+> I recd. this error while trying to resize  root partition thru lvm
+> using the system-config-lvm utility :
 
-> 2. Because of (1), and because when splicing from a socket to a pipe
->    it returns after the first bit of data (you mentioned this as well),
->    you don't know at that point whether your pipe is full or not.
+Using Fedora?
+<https://bugzilla.redhat.com/buglist.cgi?component=3Dsystem-config-lvm>
 
-In fact this is fixed now. tcp_splice_read() returns all available data,
-which somewhat hides problem #1. I'm running with 23 kB in a push/pull
-method all the time, so it remains optimal.
 
-> 3. Always returns -EAGAIN even if there was a FIN or error on the
->    source socket.  (Now fixed.)
+--------------enigF93021703DBC67C4BCBB8DAC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Yes I saw your fix, it was indeed very annoying because the only workaround
-I found was to perform an recv(MSG_PEEK) on the socket after each EAGAIN
-to check whether the connection was closed or not.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-For these reasons, I'd really love to see the few recent fixes backported
-to -stable ASAP. It will boost splice() adoption among products.
+iD8DBQFJdEvN5KAkGQPO/QoRAg+qAJwO2l3Ek+1czQxBTxO2+dJS9RrKPQCeN77v
+nWvcN6ElPiyr32YCnIieg9k=
+=wWW4
+-----END PGP SIGNATURE-----
 
-Regards,
-Willy
-
+--------------enigF93021703DBC67C4BCBB8DAC--
