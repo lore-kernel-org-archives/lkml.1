@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbZASOdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZASOf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbZASOdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZASOdc
+	id S1754297AbZASOf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZASOfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:33:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52714 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbZASOdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:33:31 -0500
-Date: Mon, 19 Jan 2009 15:30:46 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-Message-ID: <20090119143046.GA8284@redhat.com>
-References: <20090118073441.GA699@redhat.com> <1232331602.3136.19.camel@zeus.themaw.net> <20090119070801.GA21686@redhat.com> <1232352677.3136.103.camel@zeus.themaw.net> <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net>
+	Mon, 19 Jan 2009 09:35:10 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:29191 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbZASOfI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 09:35:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=AYmta4uDir8v/79cr00sXnVeG2vHIi031InfV20dyzqG7AdoDJ+eB1acsjrDlgFPjy
+         6PfAU1ks0ezcMgXKejea3GIWt34ZM3ZCPFPnCez5cUewtceau8od7xmcOHYBddkVUXXs
+         cvRpKnI/iIYpCM9KBPpJtSRKk2shTLhoKogzk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/6] ide: move SFF I/O code to ide-io-sff.c
+Date: Mon, 19 Jan 2009 15:35:14 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc1-next-20090116; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090119130309.24745.40877.sendpatchset@localhost.localdomain> <49748E43.4030009@ru.mvista.com> <49748EC0.1090503@ru.mvista.com>
+In-Reply-To: <49748EC0.1090503@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232372016.3136.155.camel@zeus.themaw.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901191535.15142.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/19, Ian Kent wrote:
->
-> On Mon, 2009-01-19 at 13:42 +0100, Oleg Nesterov wrote:
-> >
-> > Before the patch
-> >
-> > 	sbi->oz_pgrp != task_pgrp(automount)
-> >
-> > After the patch
-> >
-> > 	sbi->oz_pgrp == task_pgrp(automount)
-> >
-> > And please note that these "!="/"==" apply to any namespace. I mean,
-> > when we call autofs_oz_mode() it does not matter in which namespace
-> > autofs_oz_mode() is executed, we compare "struct pid*", not pid_t.
->
-> I think your saying that the option pgrp= is broken and should be
-> deprecated
+On Monday 19 January 2009, Sergei Shtylyov wrote:
+> Hello, I wrote:
+> 
+> >>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> >>>    Gah, what in the world is that SFF I/O code?
+> 
+> >>>> Index: b/drivers/ide/ide-io-sff.c
+> >>>> ===================================================================
+> >>>> --- /dev/null
+> >>>> +++ b/drivers/ide/ide-io-sff.c
+> >>>> @@ -0,0 +1,314 @@
+> >>>> +
+> >>>> +#include <linux/kernel.h>
+> >>>> +#include <linux/ide.h>
+> >>>> +
+> >>>> +/*
+> >>>> + *    Conventional PIO operations for ATA devices
+> >>>> + */
+> >>>> +
+> >>>> +static u8 ide_inb(unsigned long port)
+> >>>> +{
+> >>>> +    return (u8) inb(port);
+> >>>> +}
+> >>>> +
+> >>>> +static void ide_outb(u8 val, unsigned long port)
+> >>>> +{
+> >>>> +    outb(val, port);
+> >>>> +}
+> >>>> +
+> >>>> +/*
+> >>>> + *    MMIO operations, typically used for SATA controllers
+> >>>> + */
+> >>>> +
+> >>>> +static u8 ide_mm_inb(unsigned long port)
+> >>>> +{
+> >>>> +    return (u8) readb((void __iomem *) port);
+> >>>> +}
+> >>>> +
+> >>>> +static void ide_mm_outb(u8 value, unsigned long port)
+> >>>> +{
+> >>>> +    writeb(value, (void __iomem *) port);
+> >>>> +}
+> 
+> >>>    Ah, I see. Can we finally stop abusing the SFF name? Or are we 
+> >>> bound to copy every mistake that libata has made? :-/
+> 
+> >> Please suggest a better name. :)
+> 
+> >> [ I'm also not happy with the naming but couldn't think of a better 
+> >> one. ]
+> 
+> >    Legacy perhaps?
+> 
+>     As in ide-io-legacy.c. I can also suggest ide-io-std.c, 
+> ide-io-trad[itional].c...
 
-No, no, sorry if I confused you.
-
-If the "pgrp=" option was specified, the patch has no effect, and the
-code is correct with or without the patch.
-
-> It's interesting that your description appears to assume the the same
-> process may appear in different pid namespaces (am I right?)
-
-Yes. It is visible in its own namespace, in the ->parent namespace,
-->parent->parent, and so on until the global init_pid_ns.
-
-> whereas in
-> the descriptions I have been writing I'm thinking of pid namspeces as
-> having there own set of proceses and not being able to see processes
-> outside the space.
-
-Yes, we can not see the tasks outside the space (but of course we can
-see the tasks from the child namespaces).
-
-IOW. Let's suppose we are in the global namespace, and some task
-forks the child C via clone(CLONE_NEWPID).
-
-Now, in the global namespace it has, say, pid == 100. But when
-C does sys_getpid() it gets 1.
-
-C can not see the tasks from the global namespace, but any task
-from the global ns can see C with pid == 100.
-
-And please note that C has the single "struct pid" wchich represents
-all pid_t's. The same for pgrp/session. task_pgrp() returns the same
-pid (pointer to the struct, not pid_t), no matter in which namespace
-the code runs. But the result of pid_vnr(pid) or find_pid(pid_nr) do
-differ depending on current->nsproxy->pid_ns.
-
-Oleg.
-
+ide-io-std.c sounds good to me.  I'll recast the patch before merging it.
