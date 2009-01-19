@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZASRKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbZASRKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZASRKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 12:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZASRJx
+	id S1756295AbZASRKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 12:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbZASRKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 12:09:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52161 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200AbZASRJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 12:09:52 -0500
-Date: Mon, 19 Jan 2009 15:09:22 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemtrace: kbuild failed to make the new header symlink...
-Message-ID: <20090119170922.GD19302@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-	Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090119164029.GB19302@ghostprotocols.net> <20090119165926.GA5287@localhost>
+	Mon, 19 Jan 2009 12:10:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33035 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbZASRKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 12:10:10 -0500
+Message-ID: <4974B3B7.5060608@zytor.com>
+Date: Mon, 19 Jan 2009 09:09:11 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090119165926.GA5287@localhost>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ian Kent <raven@themaw.net>
+CC: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH] autofs: fix the wrong usage of the	deprecated	task_pgrp_nr()
+References: <20090118073441.GA699@redhat.com>	 <1232331602.3136.19.camel@zeus.themaw.net>  <49741F14.80808@zytor.com> <1232351101.3136.87.camel@zeus.themaw.net>
+In-Reply-To: <1232351101.3136.87.camel@zeus.themaw.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Jan 19, 2009 at 06:59:26PM +0200, Eduard - Gabriel Munteanu escreveu:
-> On Mon, Jan 19, 2009 at 02:40:29PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Sam,
-> > 
-> > 	I just did a git pull on linux-2.6-tip, then, on a build
-> > directory (make O=../build/blkftrace/) with a previous build a tree
-> > cloned from Linus I got stuck with the messages below.
-> > 
-> > 	I could only get this to work after a make mrproper, thought I
-> > could mention this so that perhaps this can get detected and time be
-> > saved somehow.
-> > 
-> >   CC      arch/x86/mm/fault.o
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:38:27: error: asm/kmemcheck.h: No such file or directory
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c: In function ???do_page_fault???:
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:614: error: implicit declaration of function ???kmemcheck_active???
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:615: error: implicit declaration of function ???kmemcheck_hide???
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:644: error: implicit declaration of function ???kmemcheck_fault???
+Ian Kent wrote:
+>>>
+>> The other thing is also: isn't it high time to remove autofs 3?  It has
+>> been unmaintained for at least 10 years now.  I should know ;)
 > 
-> Hi,
+> That's a good idea.
+> Couldn't we rename autofs4 to autofs and add a MODULE_ALIAS("autofs4")
+> or something?
 > 
-> This looks like a kmemcheck, not kmemtrace, fault. Heh, but we already
-> have 3 things with similar names: kmemcheck, kmemtrace and kmemleak. :)
 
-Yeah, sorry for that, but the problem in the end, seems to be in kbuild,
-not in any of those kmemFEATURES :)
+Works for me.  Now, this really isn't an -rc2 kind of thing, but I would
+ACK such a change for the next merge window.
 
-Anyway, when in doubt, use Mr. Proper products and go on with life :-)
+	-hpa
 
-- Arnaldo
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
