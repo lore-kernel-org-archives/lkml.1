@@ -1,72 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZASLaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbZASLdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbZASLaW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 06:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbZASLaI
+	id S1759483AbZASLdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 06:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZASLdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 06:30:08 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:46365 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbZASLaG (ORCPT
+	Mon, 19 Jan 2009 06:33:10 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:42857 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756730AbZASLdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 06:30:06 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-Date: Mon, 19 Jan 2009 17:00:03 +0530
-User-Agent: KMail/1.9.10
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <200812241325.49404.chandru@in.ibm.com> <200901161746.36584.chandru@in.ibm.com> <1232128377.27278.69.camel@nimitz>
-In-Reply-To: <1232128377.27278.69.camel@nimitz>
+	Mon, 19 Jan 2009 06:33:08 -0500
+Date: Mon, 19 Jan 2009 17:03:00 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: Ext4 tree backports for 2.6.27.10 and 2.6.28
+Message-ID: <20090119113300.GC9482@skywalker>
+References: <E1LOG9D-0006h4-7R@closure.thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901191700.03580.chandru@in.ibm.com>
+In-Reply-To: <E1LOG9D-0006h4-7R@closure.thunk.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case either physbase or reserve_size are not page aligned and in addition
-if the following condition is also true
+On Sat, Jan 17, 2009 at 01:43:55PM -0500, Theodore Ts'o wrote:
+> 
+> I've created a couple of ext4 backport branches which have been uploaded
+> to the ext4 git tree:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git 
+>    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
+> 
+> The master branch contains the latest ext4 patch queue, against Linus's
+> tip; currently, this is versus 2.6.29-rc2.  The 'for_linus' tag is
+> located on this branch, and currently contains a number of urgent fixes
+> that I plan to be pushing to Linus after he gets back from
+> linux.conf.au.  They are mostly fixes that prevent OOPS or cpu lockups
+> when ext4 mounts an intentionally corrupted filesystem.
+> 
+> The ext4-stable branch is based off of 2.6.28, and contains all of the
+> patches which were pushed to linus during the 2.6.29-rc1 merge window,
+> plus the fixes listed above in the 'master' branch.  It is designed for
+> people who want the very latest in the ext4 tree versus a stable kernel.
+> 
+> The for-stable branch is currently based off of 2.6.28, and contains a
+> candidate set of patches to be included in the 2.6.28.y stable tree.
+> Ext4 developers --- I would appreciate it if you could review the
+> patches on the ext4-stable tree, and see if I missed any patches which
+> in your opinion should be pushed to the 2.6.28.y tree.  Furthermore, if
+> some folks could test the for-stable branch and let me know whether or
+> not you found it stable, I would appreciate it.  Some of the patches
+> were relatively painful to backport, given the desire to remove
+> "non-critical" patches, so I'm not 100% certain I got the backports
+> completely right.  Please test!
+> 
+> The for-stable-2.6.27 is currently based off of 2.6.27.11, and it
+> contains a candidate set of patches to be incuded in the 2.6.27.y tree.
+> It was even more difficult to backport these patches to 2.6.27.y, and so
+> I would **really** appreciate if some folks could review and test this
+> branch.  In addition, a number of changes (in particular some of
+> Aneesh's resize race condition patches) were painful enough that I
+> decided to abort and not try to do the backport.  It was late, and I was
+> getting tired....  If someone would like to try to backport some of
+> these missing patches, I would appreciate it; Aneesh, you might have
+> better luck since they were originally your patches, and they were
+> complicated enough that I was worried that there might have been
+> prerequisites that I had missed so they would function correctly.
+> 
+> The patch backports can be summarized in this table below.  It contains
+> the original mainline commit ID, the commit ID in the 2.6.28 for-stable
+> branch, and the commit ID in the for-stable-2.6.27 branch.  If you see
+> "-----" in the column for the 2.6.27-stable column, those were patches
+> which I did not backport due to lack of valor/courage at 11pm at night.
+> 
+>       	    		     	     	- Ted
+> 
+> mainline 2.6.28  2.6.27
+>     commit-description
+> -------------------------------------------------------------------------
+> f99b2589 485f02f 11599d0
+>     ext4: Add support for non-native signed/unsigned htree hash algorithms
+> 
+> 2a21e37e 7426272 8443aef
+>     ext4: tone down ext4_da_writepages warnings
+> 
+> 791b7f08 2efd58c c7eef47
+>     ext4: Fix the delalloc writepages to allocate blocks at the right offset.
+> 
+> 565a9617 ce99b0d b2a193d
+>     ext4: avoid ext4_error when mounting a fs with a single bg
+> 
+> ff7ef329 3a04ef3 626e5b9
+>     ext4: Widen type of ext4_sb_info.s_mb_maxs[]
+> 
+> fd98496f f97e641 dc270b3
+>     jbd2: Add barrier not supported test to journal_wait_on_commit_record
+> 
+> 032115fc b9475aa c1944c2
+>     ext4: Don't overwrite allocation_context ac_status
+> 
+> e21675d4 c31a2b2 -----
+>     ext4: Add blocks added during resize to bitmap
 
-node_ar.end_pfn = node->node_end_pfn = PFN_DOWN(physbase+reserve_size).
+Will send the patch as a reply to this mail to linux-ext4 
 
-we may hit the BUG_ON(end > bdata->node_low_pfn) in mark_bootmem_node() in
-mm/bootmem.c Hence pass the pfn that the physbase is part of and align
-reserve_size before calling reserve_bootmem_node().
+> 
+> 920313a7 2a4f6ca -----
+>     ext4: Use EXT4_GROUP_INFO_NEED_INIT_BIT during resize
 
-Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Will send the patch as a reply to this mail to linux-ext4 
 
---- linux-2.6.29-rc2/arch/powerpc/mm/numa.c.orig	2009-01-19 16:14:49.000000000 +0530
-+++ linux-2.6.29-rc2/arch/powerpc/mm/numa.c	2009-01-19 16:36:38.000000000 +0530
-@@ -901,7 +901,8 @@ static void mark_reserved_regions_for_ni
- 		get_node_active_region(start_pfn, &node_ar);
- 		while (start_pfn < end_pfn &&
- 			node_ar.start_pfn < node_ar.end_pfn) {
--			unsigned long reserve_size = size;
-+			unsigned long reserve_size = (size >> PAGE_SHIFT) <<
-+								PAGE_SHIFT;
- 			/*
- 			 * if reserved region extends past active region
- 			 * then trim size to active region
-@@ -917,7 +918,8 @@ static void mark_reserved_regions_for_ni
- 				dbg("reserve_bootmem %lx %lx nid=%d\n",
- 					physbase, reserve_size, node_ar.nid);
- 				reserve_bootmem_node(NODE_DATA(node_ar.nid),
--						physbase, reserve_size,
-+						(start_pfn << PAGE_SHIFT),
-+						reserve_size,
- 						BOOTMEM_DEFAULT);
- 			}
- 			/*
+> 
+> c3a326a6 66364e6 24a5c92
+>     ext4: cleanup mballoc header files
+> 
+> 7a2fcbf7 39a0b8b -----
+>     ext4: don't use blocks freed but not yet committed in buddy cache init
 
+This would need the patch "use rb-tree for free blocks tracking".
+Will send the patch as a reply to this mail to linux-ext4 
+
+>     
+> e8134b27 83a082c c712c85
+>     ext4: Fix race between read_block_bitmap() and mark_diskspace_used()
+> 
+> 39341867 8e53df4 4d3302c
+>     ext4: Fix the race between read_inode_bitmap() and ext4_new_inode()
+> 
+> e97fcd95 20d6100 7e081e8
+>     jbd2: Add BH_JBDPrivateStart
+> 
+> 2ccb5fb9 92f1c0e -----
+>     ext4: Use new buffer_head flag to check uninit group bitmaps initialization
+
+Will send the patch as a reply to this mail to linux-ext4 
+
+> 
+> 648f5879 51eef9f 469a48a
+>     ext4: mark the blocks/inode bitmap beyond end of group as used
+> 
+> 8556e8f3 5a2c7ad 686beef
+>     ext4: Don't allow new groups to be added during block allocation
+> 
+> 29eaf024 39d994e 0c56383
+>     ext4: Init the complete page while building buddy cache
+> 
+> 0087d9fb 808dfdb -----
+>     ext4: Fix s_dirty_blocks_counter if block allocation failed with nodelalloc
+
+2.6.27 doesn't have  ext4: Add percpu dirty block accounting. So we
+won't need this patch.
+
+> 
+> 4ec11028 cf7da20 -----
+>     ext4: Add sanity checks for the superblock before mounting the filesystem
+
+-aneesh
