@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbZASLTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZASLaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbZASLTw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 06:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbZASLTo
+	id S1759290AbZASLaW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 06:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbZASLaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 06:19:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35072 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753283AbZASLTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 06:19:43 -0500
-Date: Mon, 19 Jan 2009 12:19:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET x86:core/percpu] percpu: move PDA fields to percpu
-Message-ID: <20090119111932.GC18996@elte.hu>
-References: <1232296759-2253-1-git-send-email-tj@kernel.org> <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com> <4973E938.4010408@kernel.org>
+	Mon, 19 Jan 2009 06:30:08 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:46365 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751245AbZASLaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 06:30:06 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Mon, 19 Jan 2009 17:00:03 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <200901161746.36584.chandru@in.ibm.com> <1232128377.27278.69.camel@nimitz>
+In-Reply-To: <1232128377.27278.69.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4973E938.4010408@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901191700.03580.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In case either physbase or reserve_size are not page aligned and in addition
+if the following condition is also true
 
-* Tejun Heo <tj@kernel.org> wrote:
+node_ar.end_pfn = node->node_end_pfn = PFN_DOWN(physbase+reserve_size).
 
-> Hello, Ingo, Brian.
-> 
-> Brian Gerst wrote:
-> > 
-> > Here are the remaining patches rebased on top of these.
-> 
-> Ingo, here's git tree for kill-pda patches.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
-> 
-> I dropped early irq_stack_ptr relocation from 0004.  I'll post updated 
-> patch as reply to the original patch.  If you think it's still 
-> necessary, please feel free to discuss it.  I also added a patch to kill 
-> PERCPU_VADDR_PREALLOC().  Will post the patch as a reply to 0005.
+we may hit the BUG_ON(end > bdata->node_low_pfn) in mark_bootmem_node() in
+mm/bootmem.c Hence pass the pfn that the physbase is part of and align
+reserve_size before calling reserve_bootmem_node().
 
-Pulled these commit into tip/core/percpu:
+Signed-off-by: Chandru S <chandru@linux.vnet.ibm.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
- 9624f47: linker script: kill PERCPU_VADDR_PREALLOC()
- 625a266: x86-64: Remove pda.h
- a5f0e6c: x86-64: Move stack_canary into irq_stack
- 0840513: x86-64: Rework __per_cpu_load adjustments
- 53372e8: percpu: Refactor percpu.h
- f6ced7a: x86-64: Remove pda_init()
+--- linux-2.6.29-rc2/arch/powerpc/mm/numa.c.orig	2009-01-19 16:14:49.000000000 +0530
++++ linux-2.6.29-rc2/arch/powerpc/mm/numa.c	2009-01-19 16:36:38.000000000 +0530
+@@ -901,7 +901,8 @@ static void mark_reserved_regions_for_ni
+ 		get_node_active_region(start_pfn, &node_ar);
+ 		while (start_pfn < end_pfn &&
+ 			node_ar.start_pfn < node_ar.end_pfn) {
+-			unsigned long reserve_size = size;
++			unsigned long reserve_size = (size >> PAGE_SHIFT) <<
++								PAGE_SHIFT;
+ 			/*
+ 			 * if reserved region extends past active region
+ 			 * then trim size to active region
+@@ -917,7 +918,8 @@ static void mark_reserved_regions_for_ni
+ 				dbg("reserve_bootmem %lx %lx nid=%d\n",
+ 					physbase, reserve_size, node_ar.nid);
+ 				reserve_bootmem_node(NODE_DATA(node_ar.nid),
+-						physbase, reserve_size,
++						(start_pfn << PAGE_SHIFT),
++						reserve_size,
+ 						BOOTMEM_DEFAULT);
+ 			}
+ 			/*
 
-thanks guys!
-
-	Ingo
