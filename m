@@ -1,59 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZASFqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbZASFrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbZASFqW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 00:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbZASFqF
+	id S1758751AbZASFrn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 00:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZASFrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 00:46:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50674
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755566AbZASFqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 00:46:04 -0500
-Date: Sun, 18 Jan 2009 21:46:04 -0800 (PST)
-Message-Id: <20090118.214604.221247372.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: ccaputo@alt.net, a.p.zijlstra@chello.nl, denys@visp.net.lb,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       slavon@bigtelecom.ru, tglx@linutronix.de
-Subject: Re: deadlocks if use htb
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090115065322.GA4190@ff.dom.local>
-References: <1231937404.14825.4.camel@laptop>
-	<Pine.LNX.4.64.0901141748300.17915@nacho.alt.net>
-	<20090115065322.GA4190@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 19 Jan 2009 00:47:35 -0500
+Received: from mx1.suse.de ([195.135.220.2]:49806 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbZASFre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 00:47:34 -0500
+Date: Mon, 19 Jan 2009 06:47:30 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Message-ID: <20090119054730.GA22584@wotan.suse.de>
+References: <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de> <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901161500080.27283@quilx.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Thu, 15 Jan 2009 06:53:22 +0000
+On Fri, Jan 16, 2009 at 03:07:52PM -0600, Christoph Lameter wrote:
+> On Fri, 16 Jan 2009, Nick Piggin wrote:
+> 
+> > > handled by the same 2M TLB covering a 32k page. If the 4k pages are
+> > > dispersed then you may need 8 2M tlbs (which covers already a quarter of
+> > > the available 2M TLBs on nehalem f.e.) for which the larger alloc just
+> > > needs a single one.
+> >
+> > Yes I know that. But it's pretty theoretical IMO (and I could equally
+> > describe a theoretical situation where increased fragmentation in higher
+> > order slabs will result in worse TLB coverage).
+> 
+> Theoretical only for low sizes of memory. If you have terabytes of memory
+> then this becomes significant in a pretty fast way.
 
-> (resend testing patch #4 - for 2.6.27 or 2.6.28)
+I don't really buy that as a general statement with no other qualifiers.
+If the huge system has a correspondingly increased number of slab
+objects, then the potential win is much smaller as system sizes increases.
+Say if you have a 1GB RAM system, with 128 2MB TLBs, and suppose you have
+a slab that takes 25% of the RAM. Then if you optimally pack the slab for
+TLB access of those objects in a random pattern, then you can get 100%
+TLB hit for a given random access. And 25% in the case of random allocations.
 
-Jarek, if you deem that this is in fact what we should
-submit for -stable please give me a submission with
-a suitable commit message and signoffs, and I will queue
-it up for -stable.
+In a 1TB RAM system, you have ~0.1% chance of TLB hit in the optimally packed
+case and ~0.025% chance of hit in the random case. So in that case it is a
+much smaller (negligable) possible gain from packing.
 
-Thanks.
+And note that we're talking about best possible packing scenario (ie. 2MB
+pages vs 4K pages). The standard SLUB tune would not get anywhere near that.
 
-> diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
-> --- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
-> +++ b2.6.27.7/net/sched/sch_htb.c	2008-12-15 10:44:32.000000000 +0000
-> @@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
->  		}
->  	}
->  	sch->qstats.overlimits++;
-> +	qdisc_watchdog_cancel(&q->watchdog);
->  	qdisc_watchdog_schedule(&q->watchdog, next_event);
->  fin:
->  	return skb;
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The thing IMO you forget with all these doomsday scenarios about SGI's peta
+scale systems is that no matter what you do, you can't avoid the fact that
+computing is about locality. Even if you totally take the TLB out of the
+equation, you still have the small detail of other caches. Code that jumps
+all over that 1024 TB of memory with no locality is going to suck regardless
+of what the kernel ever does, due to physical limitations of hardware.
+
+Anyway, this is trivial for SLQB to tune this on those systems that really
+care, giving SLUB no advantage. So we needn't really get sidetracked with
+this in the context of SLQB.
+
+ 
+> > > It has lists of free objects that are bound to a particular page. That
+> > > simplifies numa handling since all the objects in a "queue" (or page) have
+> > > the same NUMA characteristics.
+> >
+> > The same can be said of SLQB and SLAB as well.
+> 
+> Sorry not at all. SLAB and SLQB queue objects from different pages in the
+> same queue.
+
+The last sentence is what I was replying to. Ie. "simplification of
+numa handling" does not follow from the SLUB implementation of per-page
+freelists.
+
+ 
+> > > was assigned to a processor. Memory wastage may only occur because
+> > > each processor needs to have a separate page from which to allocate. SLAB
+> > > like designs needs to put a large number of objects in queues which may
+> > > keep a number of pages in the allocated pages pool although all objects
+> > > are unused. That does not occur with slub.
+> >
+> > That's wrong. SLUB keeps completely free pages on its partial lists, and
+> > also IIRC can keep free pages pinned in the per-cpu page. I have actually
+> > seen SLQB use less memory than SLUB in some situations for this reason.
+> 
+> As I sad it pins a single page in the per cpu page and uses that in a way
+> that you call a queue and I call a freelist.
+
+And you found you have to increase the size of your pages because you
+need bigger queues. (must we argue semantics? it is a list of free
+objects)
+
+
+> SLUB keeps a few pages on the partial list right now because it tries to
+> avoid trips to the page allocator (which is quite slow). These could be
+> eliminated if the page allocator would work effectively. However that
+> number is a per node limit.
+
+This is the practical vs theoretical I'm talking about.
+
+
+> SLAB and SLUB can have large quantities of objects in their queues that
+> each can keep a single page out of circulation if its the last
+> object in that page. This is per queue thing and you have at least two
+
+And if that were a problem, SLQB can easily be runtime tuned to keep no
+objects in its object lists. But as I said, queueing is good, so why
+would anybody want to get rid of it?
+
+
+> queues per cpu. SLAB has queues per cpu, per pair of cpu, per node and per
+> alien node for each node. That can pin quite a number of pages on large
+> systems. Note that SLAB has one per cpu whereas you have already 2 per
+> cpu? In SMP configurations this may mean that SLQB has more queues than
+> SLAB.
+
+Again, this doesn't really go anywhere while we disagree on the
+fundamental goodliness of queueing. This is just describing the
+implementation.
