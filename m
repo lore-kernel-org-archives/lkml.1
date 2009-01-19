@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZASOFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZASONY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbZASOFl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 09:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZASOFA
+	id S1752831AbZASONY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 09:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZASONJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 09:05:00 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:57386 "EHLO
+	Mon, 19 Jan 2009 09:13:09 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:36546 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbZASOE7 (ORCPT
+	with ESMTP id S1751450AbZASONI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 09:04:59 -0500
+	Mon, 19 Jan 2009 09:13:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=JX/F486OyHbmNFF+nVHfg812lNF6nvVqJVeVvKeQzD3PjVscRO22EvdK429WJP5go1
-         586fE0gWNeiEmxbw7bjfdGvYVUaW9lx/Z65MrM7KuQ4rvqRVmbKhv5DfBVLCyJxRAyDY
-         XE2KJ3puPAq5xXX37sS9d9b8LRRpOOhs3/5Oo=
-MIME-Version: 1.0
-Date: Mon, 19 Jan 2009 15:04:54 +0100
-Message-ID: <519a8b110901190604l4c248ea2n88a117a064c35fac@mail.gmail.com>
-Subject: wrong sym link with out-of-tree build with 2.6.28
-From: xming <xmingske@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:date:message-id:subject;
+        b=pclyW4/0O22Zc5zS9xx2F/23HQg6kW1Bkw0aGPuA63PSoZLcXhiy3bnRyB7Unkcg8E
+         +9ddgTqIOqscP70HvbgOthD/NiqIiwN5qSbyb/rNYEK8nSBtDgz6BgCZJcun5yy2ywSf
+         0D3CAyZF/6FjT8NhQ/qQ/izy2CvXL/BD/HozY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 19 Jan 2009 15:13:30 +0100
+Message-Id: <20090119141330.27613.34546.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/12] ide: IRQ setup fixes/sanitizations
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I am building kernels on x86 and there is a problems with include2/asm
-symbolic link
-when building the with 'make O=./HOST".
+IRQ setup fixes/sanitizations.
 
-- with 2.6.28.x the include/asm-x86 is moved to arch/x86/include/asm
-  so this code is no more valid:
-  ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;
+For IDE PCI controllers we now always use pci_get_legacy_ide_irq() if device
+is in compatibility mode.  This in turn allows us to remove no longer needed:
+- IRQ hackery from both core code and host drivers
+- optional IRQ auto-probing from core code
 
-That line of code should be made ARCH aware? I don't know how to do that, I can
-only change that for x86 only.
+These patches are on top of:
+- pata-2.6 tree
+- "[PATCH 0/6] ide: more core code housekeeping" patchset
+- "[PATCH] mn10300: add pci_get_legacy_ide_irq() to <asm/pci.h>"
 
-BTW: I am not subscribed to lkml, please CC when replying, thanks
-
-xming
+diffstat:
+ drivers/ide/amd74xx.c         |   12 ----
+ drivers/ide/atiixp.c          |    3 -
+ drivers/ide/ide-pci-generic.c |    4 -
+ drivers/ide/ide-probe.c       |  114 +++++++-----------------------------------
+ drivers/ide/ns87415.c         |    4 -
+ drivers/ide/piix.c            |   11 ----
+ drivers/ide/serverworks.c     |    9 ---
+ drivers/ide/setup-pci.c       |   36 ++++++++-----
+ drivers/ide/sis5513.c         |    2 
+ drivers/ide/slc90e66.c        |    1 
+ drivers/ide/trm290.c          |    3 -
+ drivers/ide/via82cxxx.c       |   10 ---
+ include/linux/ide.h           |   19 -------
+ 13 files changed, 49 insertions(+), 179 deletions(-)
