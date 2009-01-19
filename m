@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZASXaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZASXc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbZASXaq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 18:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759038AbZASXaO
+	id S1758039AbZASXc6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 18:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZASXct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 18:30:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48436 "EHLO mx2.mail.elte.hu"
+	Mon, 19 Jan 2009 18:32:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48694 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756784AbZASXaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 18:30:13 -0500
-Date: Tue, 20 Jan 2009 00:29:48 +0100
+	id S1753830AbZASXcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 18:32:48 -0500
+Date: Tue, 20 Jan 2009 00:32:27 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kmemtrace: kbuild failed to make the new header symlink...
-Message-ID: <20090119232948.GA30353@elte.hu>
-References: <20090119164029.GB19302@ghostprotocols.net> <20090119182825.GA11165@uranus.ravnborg.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       lcm@us.ibm.com, x86@kernel.org
+Subject: Re: [PATCH] x86_64: remove kernel_physical_mapping_init() from
+	init section
+Message-ID: <20090119233227.GA310@elte.hu>
+References: <20090119214641.GB7476@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090119182825.GA11165@uranus.ravnborg.org>
+In-Reply-To: <20090119214641.GB7476@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,29 +36,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+* Gary Hade <garyhade@us.ibm.com> wrote:
 
-> On Mon, Jan 19, 2009 at 02:40:29PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Sam,
-> > 
-> > 	I just did a git pull on linux-2.6-tip, then, on a build
-> > directory (make O=../build/blkftrace/) with a previous build a tree
-> > cloned from Linus I got stuck with the messages below.
-> > 
-> > 	I could only get this to work after a make mrproper, thought I
-> > could mention this so that perhaps this can get detected and time be
-> > saved somehow.
-> > 
-> >   CC      arch/x86/mm/fault.o
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:38:27: error: asm/kmemcheck.h: No such file or directory
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c: In function ‘do_page_fault’:
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:614: error: implicit declaration of function ‘kmemcheck_active’
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:615: error: implicit declaration of function ‘kmemcheck_hide’
-> > /home/acme_unencrypted/git/linux-2.6-tip/arch/x86/mm/fault.c:644: error: implicit declaration of function ‘kmemcheck_fault’
-> > 
+> kernel_physical_mapping_init() is called during memory hotplug so it 
+> does not belong in the init section.
 > 
-> The problem is that kmemcheck.h is located in include/asm-x86/ which is wrong.
+> If the kernel is built with CONFIG_DEBUG_SECTION_MISMATCH=y on the make 
+> command line, arch/x86/mm/init_64.c is compiled with the 
+> -fno-inline-functions-called-once gcc option defeating inlining of 
+> kernel_physical_mapping_init() within init_memory_mapping(). When 
+> kernel_physical_mapping_init() is not inlined it is placed in the 
+> .init.text section according to the __init in it's current declaration.  
+> A later call to kernel_physical_mapping_init() during a memory hotplug 
+> operation encounters an int3 trap because the .init.text section memory 
+> has been freed.  This patch eliminates the crash caused by the int3 trap 
+> by moving the non-inlined kernel_physical_mapping_init() from .init.text 
+> to .meminit.text.
+> 
+> Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 
-indeed - it was still on an older base - i just fixed that.
+applied to tip/x86/urgent, thanks Gary!
 
 	Ingo
