@@ -1,107 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZASAPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZASASr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZASAPJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 19:15:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZASAOy
+	id S1756497AbZASASr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 19:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZASASj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 19:14:54 -0500
-Received: from 203-96-159-182.paradise.net.nz ([203.96.159.182]:54324 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754506AbZASAOx (ORCPT
+	Sun, 18 Jan 2009 19:18:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59659 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753830AbZASASi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 19:14:53 -0500
-Message-ID: <4973C616.4010009@bluewatersys.com>
-Date: Mon, 19 Jan 2009 13:15:18 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sun, 18 Jan 2009 19:18:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [2.6.29-rc2] Inconsistent lock state on resume in hres_timers_resume
+Date: Mon, 19 Jan 2009 01:17:49 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <200901181642.00886.arvidjaar@mail.ru> <200901182121.24863.rjw@sisk.pl> <200901182347.26083.arvidjaar@mail.ru>
+In-Reply-To: <200901182347.26083.arvidjaar@mail.ru>
 MIME-Version: 1.0
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-CC: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>	 <49738B8C.7020404@bluewatersys.com> <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
-In-Reply-To: <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200901190117.49748.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaya Kumar wrote:
-> On Mon, Jan 19, 2009 at 4:05 AM, Ryan Mallon <ryan@bluewatersys.com> wrote:
->> Jaya Kumar wrote:
->>> Hi friends,
->>>
->>> +
->>> +     /* BATCH GPIO OUTPUT */
->>> +int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int maskwidth);
->>> +
->>> +The following examples help explain how this function is to be used.
->>> + Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
->>> + A: gpio_set_batch(gpio=0, values=0x0, bitmask=0xFF, width=8);
->>> + Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
->>> + A: gpio_set_batch(gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16);
->>> + Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
->>> + A: gpio_set_batch(gpio=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32);
->>> +
->> Can the gpio_set_batch function be used to set non-consecutive gpios?
->> For example:
->>
->>  gpio_set_batch(0, 0x0, 0x88, 8);
->>
->> To clear gpios 3 and 7? It looks like the pxa implementation will
+On Sunday 18 January 2009, Andrey Borzenkov wrote:
+> On 18 января 2009 23:21:24 Rafael J. Wysocki wrote:
 > 
-> Hi Ryan,
+> > > > As far as I can tell, timekeeping_resume is called via class
+> > > > ->resume method; and according to comments in sysdev_resume() and
+> > > > device_power_up(), they are called with interrupts disabled.
+> > > >
+> > > > Looking at suspend_enter, irqs *are* disabled at this point.
+> > > >
+> > > > So it actually looks like something (may be some driver)
+> > > > unconditionally enabled irqs in resume path.
+> > > >
+> > > > I believe the patch should be hold back until this is clarified.
+> > >
+> > > That's a nice theory!
+> >
+> > That would be a bad bug.
+> >
 > 
-> For the first part, yes, it can do non-consecutive gpios by using the
-> mask. Pins 3 and 7 are handled using a 5-bit mask. You'd  do
-> gpio_set_batch(3 <- starting pin is gpio 3, 0x0 <- clear, 0x1F <-
-> mask, 5 <- bit width of mask);
+> If the below is correct, I wonder, why I am the only one to see it? 
 > 
->> support this, but can it be guaranteed for other architectures? If so,
+> [  134.727381] PM: Syncing filesystems ... done.
+> [  134.767483] orinoco_cs 0.0: firmware: requesting agere_sta_fw.bin
+> [  134.809435] Freezing user space processes ... (elapsed 0.02 seconds) 
+> done.
+> [  134.831823] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) 
+> done.
+> [  134.832520] Suspending console(s) (use no_console_suspend to debug)
+> [  134.844050] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> [  135.335944] sd 0:0:0:0: [sda] Stopping disk
+> [  136.019819] pci 0000:01:00.0: power state changed by ACPI to D3
+> [  136.034461] e100 0000:00:0a.0: PME# enabled
+> [  136.034699] e100 0000:00:0a.0: wake-up capability enabled by ACPI
+> [  136.034868] e100 0000:00:0a.0: PCI INT A disabled
+> [  136.097607] ALI 5451 0000:00:06.0: PCI INT A disabled
+> [  136.110484] ALI 5451 0000:00:06.0: power state changed by ACPI to D3
+> [  136.894487] pata_ali 0000:00:04.0: can't derive routing for PCI INT A
+> [  136.906958] ohci_hcd 0000:00:02.0: PME# enabled
+> [  136.907177] ohci_hcd 0000:00:02.0: wake-up capability enabled by ACPI
+> [  136.907208] ohci_hcd 0000:00:02.0: PCI INT A disabled
+> [  136.923328] ACPI: Preparing to enter system sleep state S3
+> [  136.937129] ------------[ cut here ]------------
+> [  136.937142] WARNING: at /home/bor/src/linux-git/drivers/base/sys.c:400 
+> sysdev_suspend+0x268/0x270()
+> [  136.937151] Hardware name: PORTEGE 4000
+> [  136.937184] timekeeping_suspend+0x0/0x80 enabled IRQs
+> ...
+> [  136.937323] Pid: 4305, comm: pm-suspend Not tainted 2.6.29-rc2-1avb #5
+> [  136.937330] Call Trace:
+> [  136.937358]  [<c011f8b3>] warn_slowpath+0x73/0xd0
+> [  136.937373]  [<c0143028>] ? mark_held_locks+0x48/0x90
+> [  136.937395]  [<c0309245>] ? _spin_unlock_irqrestore+0x35/0x60
+> [  136.937406]  [<c0143269>] ? trace_hardirqs_on_caller+0x139/0x190
+> [  136.937433]  [<c0106c07>] ? init_pit_timer+0x67/0xf0
+> [  136.937442]  [<c01432cb>] ? trace_hardirqs_on+0xb/0x10
+> [  136.937451]  [<c0140e05>] ? lock_release_holdtime+0x35/0x210
+> [  136.937466]  [<c013db50>] ? clockevents_notify+0x30/0x80
+> [  136.937475]  [<c030928d>] ? _spin_unlock+0x1d/0x20
+> [  136.937484]  [<c013db50>] ? clockevents_notify+0x30/0x80
+> [  136.937495]  [<c0273828>] sysdev_suspend+0x268/0x270
+> [  136.937504]  [<c013ab30>] ? timekeeping_suspend+0x0/0x80
+> [  136.937535]  [<c027929f>] device_power_down+0xef/0x110
+> [  136.937564]  [<c0150462>] suspend_devices_and_enter+0xb2/0x150
+> [  136.937575]  [<c0150c6f>] ? freeze_processes+0x3f/0x90
+> [  136.937584]  [<c0150654>] enter_state+0xf4/0x140
+> [  136.937594]  [<c015071d>] state_store+0x7d/0xc0
+> [  136.937602]  [<c01506a0>] ? state_store+0x0/0xc0
+> [  136.937629]  [<c0202de4>] kobj_attr_store+0x24/0x30
+> [  136.937640]  [<c01dd57c>] sysfs_write_file+0x9c/0x100
+> [  136.937673]  [<c01991ac>] vfs_write+0x9c/0x160
+> [  136.937683]  [<c0103494>] ? restore_nocheck_notrace+0x0/0xe
+> [  136.937692]  [<c01dd4e0>] ? sysfs_write_file+0x0/0x100
+> [  136.937701]  [<c019932d>] sys_write+0x3d/0x70
+> [  136.937711]  [<c0103371>] sysenter_do_call+0x12/0x31
+> [  136.937718] ---[ end trace a8e2ee01b2b45f69 ]---
+> [  136.937727] ------------[ cut here ]------------
 > 
-> That's a tough question. My basic answer would be yes because I've
-> provided the generic set_batch handler that just uses single bit sets
-> to achieve it. See __generic_gpio_set_batch() in patch). But if your
-> question is deeper, ie: can it be optimized for other architectures? ;
-> then I think I have to handwave a bit. I believe it can, as most of
-> the CPUs I've seen expose gpio via a set register and clear register
-> with variation between a context register to select which bank/module
-> of gpios is being accessed versus just having a pool of set and clear
-> registers (like pxa). If a CPU didn't have this and just had a blanket
-> gpio register then the implementation would have to first read the
-> previous register value (or cache it) in order to support doing the
-> mask.
-
-The EP93xx has a single register for reading, set and clearing the
-states of gpios, so it would have to be read, masked and written. I'm
-not sure if that would be quicker than doing a for-loop over the 8-bits
-in the register (the EP93xx has 8 register banks of 8 gpios, each with
-their own reigster set). I guess that even if it cannot be optimised for
-a given architecture, then the standard for-loop method can be used. As
-long as it is documented that non-consecutive setting should work so
-that arch implementers can get it correct.
-
->> can we put an example in the documentation. If not, can we make it clear
+> This is with this patch:
 > 
-> Good point. I'll put it in the docs.
+> 
+> diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+> index c98c31e..7245496 100644
+> --- a/drivers/base/sys.c
+> +++ b/drivers/base/sys.c
+> @@ -341,13 +341,17 @@ static void __sysdev_resume(struct sys_device *dev)
+>  	struct sysdev_driver *drv;
+>  
+>  	/* First, call the class-specific one */
+> -	if (cls->resume)
+> +	if (cls->resume) {
+>  		cls->resume(dev);
+> +		WARN(!irqs_disabled(), "%pF enabled IRQs\n", cls->resume);
+> +	}
+>  
+>  	/* Call auxillary drivers next. */
+>  	list_for_each_entry(drv, &cls->drivers, entry) {
+> -		if (drv->resume)
+> +		if (drv->resume) {
+>  			drv->resume(dev);
+> +			WARN(!irqs_disabled(), "%pF enabled IRQs\n", drv->resume);
+> +		}
+>  	}
+>  }
+>  
+> @@ -384,6 +388,7 @@ int sysdev_suspend(pm_message_t state)
+>  			list_for_each_entry(drv, &cls->drivers, entry) {
+>  				if (drv->suspend) {
+>  					ret = drv->suspend(sysdev, state);
+> +					WARN(!irqs_disabled(), "%pF enabled IRQs\n", drv-
+> >suspend);
+>  					if (ret)
+>  						goto aux_driver;
+>  				}
+> @@ -392,6 +397,7 @@ int sysdev_suspend(pm_message_t state)
+>  			/* Now call the generic one */
+>  			if (cls->suspend) {
+>  				ret = cls->suspend(sysdev, state);
+> +				WARN(!irqs_disabled(), "%pF enabled IRQs\n", cls->suspend);
+>  				if (ret)
+>  					goto cls_driver;
+>  			}
+> 
+> 
 
-Cool, thanks.
+Can you apply the appended patch in addition to the above one and see what
+happens?
 
-~Ryan
+Rafael
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
+---
+ kernel/time/timekeeping.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
+Index: linux-2.6/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.orig/kernel/time/timekeeping.c
++++ linux-2.6/kernel/time/timekeeping.c
+@@ -355,13 +355,22 @@ static int timekeeping_suspend(struct sy
+ 
+ 	timekeeping_suspend_time = read_persistent_clock();
+ 
++	WARN_ONCE(!irqs_disabled(),
++			"[1] Interrupts enabled in timekeeping_suspend\n");
++
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 	clocksource_forward_now();
+ 	timekeeping_suspended = 1;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
++	WARN_ONCE(!irqs_disabled(),
++			"[2] Interrupts enabled in timekeeping_suspend\n");
++
+ 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+ 
++	WARN_ONCE(!irqs_disabled(),
++			"[3] Interrupts enabled in timekeeping_suspend\n");
++
+ 	return 0;
+ }
+ 
+
