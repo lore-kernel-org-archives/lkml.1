@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZASBmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZASBwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZASBmN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Jan 2009 20:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZASBl6
+	id S1757303AbZASBwc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Jan 2009 20:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZASBwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Jan 2009 20:41:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45515 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbZASBl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Jan 2009 20:41:57 -0500
-Date: Mon, 19 Jan 2009 02:41:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Menage <menage@google.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, miaox@cn.fujitsu.com,
-       maxk@qualcomm.com, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/3] cgroup: convert open-coded
-	mutex_lock(&cgroup_mutex) calls into cgroup_lock() calls
-Message-ID: <20090119014143.GA10271@elte.hu>
-References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com> <20090116125738.22c21bf2.akpm@linux-foundation.org> <4972E2FD.1010902@cn.fujitsu.com> <20090118091038.GC27144@elte.hu> <6599ad830901181737m1d04bb85t7bb0b48e925733a6@mail.gmail.com>
+	Sun, 18 Jan 2009 20:52:22 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51711 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755821AbZASBwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Jan 2009 20:52:21 -0500
+Message-ID: <4973DCC1.3070009@jp.fujitsu.com>
+Date: Mon, 19 Jan 2009 10:52:01 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830901181737m1d04bb85t7bb0b48e925733a6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] PCI PCIe portdrv: Fix allocation of interrupts
+References: <200901042346.42723.rjw@sisk.pl> <4970385B.7030404@jp.fujitsu.com> <200901161029.58647.rjw@sisk.pl> <200901170120.38238.rjw@sisk.pl>
+In-Reply-To: <200901170120.38238.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> On Friday 16 January 2009, Rafael J. Wysocki wrote:
+>> On Friday 16 January 2009, Hidetoshi Seto wrote:
+>>> Rafael J. Wysocki wrote:
+>>>> On Thursday 15 January 2009, Rafael J. Wysocki wrote:
+>>>>> On Thursday 15 January 2009, Rafael J. Wysocki wrote:
+(snip)
+>>>>>> In any case, I think we should
+>>>>>> (a) get the number of the port's MSI-X table entries _first_, without enabling
+>>>>>>     MSI-X,
+>>> We cannot do this because both of PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS
+>>> will indicate the number for MSI, not for MSI-X without enabling MSI-X.
+>> Yes, we can.  We don't read PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS at
+>> this point yet and the number of entries in the MSI-X table is constant
+>> (read-only), so we can read it even before enabling MSI-X.  Actually, our MSI-X
+>> code does that already anyway.
 
-* Paul Menage <menage@google.com> wrote:
+Now I caught you've mean "get the size of MSI-X table."
 
-> On Sun, Jan 18, 2009 at 1:10 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > this just changes over a clean mutex call to a wrapped lock/unlock
-> > sequence that has higher overhead in the common case.
-> >
-> > We should do the exact opposite, we should change this opaque API:
-> >
-> >  void cgroup_lock(void)
-> >  {
-> >         mutex_lock(&cgroup_mutex);
-> >  }
-> >
-> > To something more explicit (and more maintainable) like:
+>>>>>> (b) allocate as many MSI-X vectors as indicated by this number, even though
+>>>>>>     some of them may not be used,
+>> (b) should be: call pci_enable_msix() with the last argument equal to the
+>> number of entries in the MSI-X table or 32, whichever is smaller.
+
+Good.
+
+>>>>>> (c) use PCIE_CAPABILITIES_REG and PCI_ERR_ROOT_STATUS to check
+>>>>>>     which vector has been allocated to which service.
+>>>>> (d) mask the unused vectors.
+>>>> However, it's probably simpler to do something like in your patch, although
+>>>> I don't like the dummy enabling of MSI-X at all.
+>>> How about this?
+>>>
+>>>   #define PCIE_MSIX_ENTRY_HPPME MAGIC_NUMBER_1
+>>>   #define PCIE_MSIX_ENTRY_AER   MAGIC_NUMBER_2
+>>>
+>>>   struct msix_entry msix_entries[] =
+>>>                         {{0, PCIE_MSIX_ENTRY_HPPME}, {0, PCIE_MSIX_ENTRY_AER}};
+>>>   status = pci_enable_msix(dev, msix_entries, nvec);
+>>>
+>>> And modify pci_enable_msix() to handle these magic numbers.
+
+I found a down side of my idea:
+ it requires modification of arch_setup_msi_irqs etc. too.
+
+>> Quite frankly, I prefer the procedure described above in (a) - (d).  I'll try
+>> to implement it and we'll see how it looks like.
 > 
-> I disagree - cgroup_mutex is a very coarse lock that can be held for 
-> pretty long periods of time by the cgroups framework, and should never 
-> be part of any fastpath code. So the overhead of a function call should 
-> be irrelevant.
-> 
-> The change that you're proposing would send the message that 
-> cgroup_mutex_lock(&cgroup_mutex) is appropriate to use in a 
-> performance-sensitive function, when in fact we want to discourage such 
-> code from taking this lock and instead use more appropriately 
-> fine-grained locks.
+> I've just sent the patch in the other thread.
 
-Uhm, how does that 'discourage' its use in fastpath code?
+OK. I'll review it.
 
-It just hides the real lock and invites bad locking/work constructs like 
-the one proposed in this thread.
+Thanks,
+H.Seto
 
-	Ingo
