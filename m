@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZASVrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZASVs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZASVrJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 16:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZASVqs
+	id S1760243AbZASVs1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 16:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZASVsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 16:46:48 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36505 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759274AbZASVqr (ORCPT
+	Mon, 19 Jan 2009 16:48:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:2911 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754467AbZASVsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 16:46:47 -0500
-Date: Mon, 19 Jan 2009 13:46:41 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Cc: yhlu.kernel@gmail.com, garyhade@us.ibm.com, lcm@us.ibm.com, x86@kernel.org
-Subject: [PATCH] x86_64: remove kernel_physical_mapping_init() from init
-	section
-Message-ID: <20090119214641.GB7476@us.ibm.com>
+	Mon, 19 Jan 2009 16:48:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=do9aS/ex0DmAv3bjIZ2/3dre79UfdXoiwxA/xJOSLDhzH4cekzKFLQZh+sCxdQVLsh
+         Rr5viv4lQfHB+LhCU7KYDnCP1uQVi7imFTVkvKpp4+bZuXHyEQIUxz+IkEu7o6nOpQzO
+         Jqsuoyiy51uyLnss2ACrbDrrnnciorEcL6nro=
+Date: Mon, 19 Jan 2009 22:48:05 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Garzik <jeff@garzik.org>, Frans Pop <elendil@planet.nl>,
+       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
+Message-ID: <20090119214804.GC6194@nowhere>
+References: <20081104062734.GA4420@havoc.gtf.org> <200901192054.55536.rjw@sisk.pl> <20090119212428.GB6194@nowhere> <200901192235.23677.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200901192235.23677.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 19, 2009 at 10:35:22PM +0100, Rafael J. Wysocki wrote:
+> On Monday 19 January 2009, Frederic Weisbecker wrote:
+> > On Mon, Jan 19, 2009 at 08:54:54PM +0100, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Introduce boolean function system_entering_hibernation() returning
+> > > 'true' during the last phase of hibernation, in which devices are
+> > > being put into low power states and the sleep state (for example,
+> > > ACPI S4) is finally entered.
+> > > 
+> > > Some device drivers need such a function to check if the system is
+> > > in the final phase of hibernation.  In particular, some SATA drivers
+> > > are going to use it for blacklisting systems in which the disks
+> > > should not be spun down during the last phase of hibernation (the
+> > > BIOS will do that anyway).
+> > >
+> > 
+> > Hi Rafael,
+> > 
+> > Why not using the power event notifier?
+> 
+> I'm not sure what you mean exactly, care to elaborate?
 
-kernel_physical_mapping_init() is called during memory hotplug
-so it does not belong in the init section.
 
-If the kernel is built with CONFIG_DEBUG_SECTION_MISMATCH=y on
-the make command line, arch/x86/mm/init_64.c is compiled with
-the -fno-inline-functions-called-once gcc option defeating
-inlining of kernel_physical_mapping_init() within init_memory_mapping().
-When kernel_physical_mapping_init() is not inlined it is placed
-in the .init.text section according to the __init in it's current
-declaration.  A later call to kernel_physical_mapping_init() during
-a memory hotplug operation encounters an int3 trap because the
-.init.text section memory has been freed.  This patch eliminates
-the crash caused by the int3 trap by moving the non-inlined
-kernel_physical_mapping_init() from .init.text to .meminit.text.
+Sorry, I just thought about using the pm_notifier to listen on the suspend/resume
+events to check the current hibernation state.
 
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-
----
-
---- linux-2.6.29-rc2/arch/x86/mm/init_64.c.orig	2009-01-16 14:38:34.000000000 -0800
-+++ linux-2.6.29-rc2/arch/x86/mm/init_64.c	2009-01-16 14:39:21.000000000 -0800
-@@ -596,7 +596,7 @@ static void __init init_gbpages(void)
- 		direct_gbpages = 0;
- }
  
--static unsigned long __init kernel_physical_mapping_init(unsigned long start,
-+static unsigned long __meminit kernel_physical_mapping_init(unsigned long start,
- 						unsigned long end,
- 						unsigned long page_size_mask)
- {
+> Anyway, however, this is a pretty old patch series and I'm not very much
+> interested in reworking it once again.  If you think it can be made better,
+> please go on. :-)
+
+
+It was just a suggestion, or more likely a question for curiosity, not really
+a criticism since I didn't follow the discussions about these patches and the
+problem they solve :-)
+
+Thanks.
+
+
+> Thanks,
+> Rafael
+
