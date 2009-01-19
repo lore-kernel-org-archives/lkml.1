@@ -1,519 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZASFNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZASFQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZASFNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 00:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZASFNX
+	id S1757361AbZASFQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 00:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZASFQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 00:13:23 -0500
-Received: from mga09.intel.com ([134.134.136.24]:7868 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbZASFNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 00:13:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,286,1231142400"; 
-   d="scan'208";a="482735678"
-Subject: [patch]: fixing of pmtimer overflow that make Cx states time
-	incorrect
-From: "alex.shi" <alex.shi@intel.com>
-Reply-To: alex.shi@intel.com
-To: linux-kernel@vger.kernel.org
-Cc: "Shi, Alex" <alex.shi@intel.com>, ";yakui.zhao"@intel.com
-Content-Type: multipart/mixed; boundary="=-N9uOTsf54LsOP7sCIhDT"
-Date: Mon, 19 Jan 2009 13:13:44 +0800
-Message-Id: <1232342024.21839.6.camel@alexs-hp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 19 Jan 2009 00:16:46 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:4459 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbZASFQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 00:16:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZLmb2ogKp5Jk0t/RkqS5CJhix9OQNZjWeqZIpd/U+bTaCQH51zSluWrMxAlmQV2NdV
+         1XGetRxtesuVEDLgC/Wj29umntFnFEKhExcg/rtaQz8LKwsqIM0jITQrjHf6I9EjV+h9
+         AphK+t89IgGXB0KAKpE7OpwmE0HN3qL9LC78A=
+MIME-Version: 1.0
+In-Reply-To: <20090119144811.d1da89a4.sfr@canb.auug.org.au>
+References: <1232273454.23100.9.camel@localhost.localdomain>
+	 <20090119105324.fd4e9084.sfr@canb.auug.org.au>
+	 <1232332274.3129.9.camel@localhost.localdomain>
+	 <20090119144811.d1da89a4.sfr@canb.auug.org.au>
+Date: Mon, 19 Jan 2009 10:46:43 +0530
+Message-ID: <3f9a31f40901182116r7381dfaeg64530f02e0c0ae31@mail.gmail.com>
+Subject: Re: [GIT PULL -tip] fix 41 'make headers_check' warnings
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Stephen,
 
---=-N9uOTsf54LsOP7sCIhDT
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On Mon, Jan 19, 2009 at 9:18 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> > >
+>> > > diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
+>> > > index 04b4d73..277de8c 100644
+>> > > --- a/include/linux/pktcdvd.h
+>> > > +++ b/include/linux/pktcdvd.h
+>> > > @@ -33,11 +33,15 @@
+>> > >   * able to sucessfully recover with this option (drive will return good
+>> > >   * status as soon as the cdb is validated).
+>> > >   */
+>> > > +#ifdef __KERNEL__
+>> > >  #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
+>> > >  #define USE_WCACHING             1
+>> > >  #else
+>> > >  #define USE_WCACHING             0
+>> > >  #endif
+>> > > +#else /* __KERNEL__ */
+>> > > +#define USE_WCACHING             0
+>> > > +#endif /* __KERNEL__ */
+>> >
+>> > This also only has one user (drivers/block/pktcdvd.c) so maybe it should
+>> > be moved there.
+>> >
+>>
+>> Already fixed in v3 as pointed by Ingo.
+>
+> I was actually suggesting that you move the whole
+>
+> #if defined(CONFIG_CDROM_PKTCDVD_WCACHE)
+> #define USE_WCACHING            1
+> #else
+> #define USE_WCACHING            0
+> #endif
+>
+> into drivers/block/pktcdvd.c as that is the only place USE_WCACHING is
+> used.
+>
 
-﻿We found  Cx states time abnormal in our some of machines which have 16 LCPUs, the C0 take too many time while system is really idle when kernel enabled tickless and highres.  powertop output is below: 
-     PowerTOP version 1.9       (C) 2007 Intel Corporation
+hmm, this is the out of scope of this patch and should be send in
+different patch.
 
-Cn                Avg residency       P-states (frequencies)
-C0 (cpu running)        (40.5%)         2.53 Ghz     0.0%
-C1                0.0ms ( 0.0%)         2.53 Ghz     0.0%
-C2              128.8ms (59.5%)         2.40 Ghz     0.0%
-                                        1.60 Ghz   100.0%
+I think maintainers can handle this issue.
 
+If they need my help, they can ping me ;-)
 
-Wakeups-from-idle per second :  4.7     interval: 20.0s
-no ACPI power usage estimate available
+Thanks,
 
-Top causes for wakeups:
-  41.4% ( 24.9)       <interrupt> : extra timer interrupt 
-  20.2% ( 12.2)     <kernel core> : usb_hcd_poll_rh_status (rh_timer_func)
-
-
-After tacking detailed for this issue, Yakui and I find it is due to 24 bit PM timer overflows when some of cpu sleep more than 4 seconds. With tickless kernel, the CPU want to sleep as much as possible when system idle. But the Cx sleep time are recorded by pmtimer which length is determined by BIOS. The current Cx time was gotten in the following function from driver/acpi/processor_idle.c:
-
-static inline u32 ticks_elapsed(u32 t1, u32 t2)
-{
-       if (t2 >= t1)
-               return (t2 - t1);
-       else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
-               return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
-       else
-               return ((0xFFFFFFFF - t1) + t2);
-}
-
-If pmtimer is 24 bits and it take 5 seconds from t1 to t2, in above function, just about 1 seconds ticks was recorded. So the Cx time will be reduced about 4 seconds. and this is why we see above powertop output. 
-
-
-To resolve this problem,  Yakui and I use ktime_get() to record the Cx states time instead of PM timer as the following patch. the patch was tested with i386/x86_64 modes on several platforms. 
-and the Cx states time become good. this patch do not fully remove PM timer for Cx idle time recording. Maybe it can be recovered if the PM timer get improved in hardware.
-
-Best Regards
-Alex
-Signed-off-by:  Alex Shi <alex.shi@intel.com>
-﻿Signed-off-by:  Yakui.zhao <yakui.zhao@intel.com>
-
----
-
-Index: linux-2.6/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6/drivers/acpi/processor_idle.c
-@@ -185,25 +185,6 @@ static struct dmi_system_id __cpuinitdat
- 	{},
- };
- 
--static inline u32 ticks_elapsed(u32 t1, u32 t2)
--{
--	if (t2 >= t1)
--		return (t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return ((0xFFFFFFFF - t1) + t2);
--}
--
--static inline u32 ticks_elapsed_in_us(u32 t1, u32 t2)
--{
--	if (t2 >= t1)
--		return PM_TIMER_TICKS_TO_US(t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return PM_TIMER_TICKS_TO_US(((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return PM_TIMER_TICKS_TO_US((0xFFFFFFFF - t1) + t2);
--}
- 
- /*
-  * Callers should disable interrupts before the call and enable
-@@ -397,7 +378,8 @@ static void acpi_processor_idle(void)
- 	struct acpi_processor_cx *cx = NULL;
- 	struct acpi_processor_cx *next_state = NULL;
- 	int sleep_ticks = 0;
--	u32 t1, t2 = 0;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 
- 	/*
- 	 * Interrupts must be disabled during bus mastering calculations and
-@@ -543,15 +525,16 @@ static void acpi_processor_idle(void)
- 		break;
- 
- 	case ACPI_STATE_C2:
--		/* Get start time (ticks) */
--		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get start time  */
-+		kt1 = ktime_get();
- 		/* Tell the scheduler that we are going deep-idle: */
- 		sched_clock_idle_sleep_event();
- 		/* Invoke C2 */
- 		acpi_state_timer_broadcast(pr, cx, 1);
- 		acpi_cstate_enter(cx);
--		/* Get end time (ticks) */
--		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get end time */
-+		kt2 = ktime_get();
-+		idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 		/* TSC halts in C2, so notify users */
-@@ -559,7 +542,7 @@ static void acpi_processor_idle(void)
- 			mark_tsc_unstable("possible TSC halt in C2");
- #endif
- 		/* Compute time (ticks) that we were actually asleep */
--		sleep_ticks = ticks_elapsed(t1, t2);
-+		sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 
- 		/* Tell the scheduler how much we idled: */
- 		sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
-@@ -604,14 +587,15 @@ static void acpi_processor_idle(void)
- 			ACPI_FLUSH_CPU_CACHE();
- 		}
- 
--		/* Get start time (ticks) */
--		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get start time  */
-+		kt1 = ktime_get();
- 		/* Invoke C3 */
- 		/* Tell the scheduler that we are going deep-idle: */
- 		sched_clock_idle_sleep_event();
- 		acpi_cstate_enter(cx);
--		/* Get end time (ticks) */
--		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get end time  */
-+		kt2 = ktime_get();
-+		idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 		if (pr->flags.bm_check && pr->flags.bm_control) {
- 			/* Enable bus master arbitration */
- 			atomic_dec(&c3_cpu_count);
-@@ -624,7 +608,7 @@ static void acpi_processor_idle(void)
- 			mark_tsc_unstable("TSC halts in C3");
- #endif
- 		/* Compute time (ticks) that we were actually asleep */
--		sleep_ticks = ticks_elapsed(t1, t2);
-+		sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 		/* Tell the scheduler how much we idled: */
- 		sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
-@@ -1455,7 +1439,8 @@ static inline void acpi_idle_do_entry(st
- static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 			      struct cpuidle_state *state)
- {
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
-@@ -1476,14 +1461,15 @@ static int acpi_idle_enter_c1(struct cpu
- 	if (pr->flags.bm_check)
- 		acpi_idle_update_bm_rld(pr, cx);
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	local_irq_enable();
- 	cx->usage++;
- 
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- /**
-@@ -1496,7 +1482,8 @@ static int acpi_idle_enter_simple(struct
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	int sleep_ticks = 0;
- 
- 	pr = __get_cpu_var(processors);
-@@ -1533,18 +1520,19 @@ static int acpi_idle_enter_simple(struct
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 	/* TSC could halt in idle, so notify users */
- 	if (tsc_halts_in_c(cx->type))
- 		mark_tsc_unstable("TSC halts in idle");;
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
-@@ -1556,7 +1544,7 @@ static int acpi_idle_enter_simple(struct
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- static int c3_cpu_count;
-@@ -1574,7 +1562,8 @@ static int acpi_idle_enter_bm(struct cpu
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	int sleep_ticks = 0;
- 
- 	pr = __get_cpu_var(processors);
-@@ -1644,9 +1633,10 @@ static int acpi_idle_enter_bm(struct cpu
- 		ACPI_FLUSH_CPU_CACHE();
- 	}
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	/* Re-enable bus master arbitration */
- 	if (pr->flags.bm_check && pr->flags.bm_control) {
-@@ -1661,7 +1651,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	if (tsc_halts_in_c(ACPI_STATE_C3))
- 		mark_tsc_unstable("TSC halts in idle");
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = US_TO_PM_TIMER_TICKS(idle_time);
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
-@@ -1672,7 +1662,7 @@ static int acpi_idle_enter_bm(struct cpu
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- struct cpuidle_driver acpi_idle_driver = {
-
-
-
-
-
-
-
-
-
-
-
-
---=-N9uOTsf54LsOP7sCIhDT
-Content-Disposition: attachment; filename=ctime-ck.patch
-Content-Type: text/x-patch; name=ctime-ck.patch; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-Index: linux-2.6/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6/drivers/acpi/processor_idle.c
-@@ -185,25 +185,6 @@ static struct dmi_system_id __cpuinitdat
- 	{},
- };
- 
--static inline u32 ticks_elapsed(u32 t1, u32 t2)
--{
--	if (t2 >= t1)
--		return (t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return (((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return ((0xFFFFFFFF - t1) + t2);
--}
--
--static inline u32 ticks_elapsed_in_us(u32 t1, u32 t2)
--{
--	if (t2 >= t1)
--		return PM_TIMER_TICKS_TO_US(t2 - t1);
--	else if (!(acpi_gbl_FADT.flags & ACPI_FADT_32BIT_TIMER))
--		return PM_TIMER_TICKS_TO_US(((0x00FFFFFF - t1) + t2) & 0x00FFFFFF);
--	else
--		return PM_TIMER_TICKS_TO_US((0xFFFFFFFF - t1) + t2);
--}
- 
- /*
-  * Callers should disable interrupts before the call and enable
-@@ -397,7 +378,8 @@ static void acpi_processor_idle(void)
- 	struct acpi_processor_cx *cx = NULL;
- 	struct acpi_processor_cx *next_state = NULL;
- 	int sleep_ticks = 0;
--	u32 t1, t2 = 0;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 
- 	/*
- 	 * Interrupts must be disabled during bus mastering calculations and
-@@ -543,15 +525,16 @@ static void acpi_processor_idle(void)
- 		break;
- 
- 	case ACPI_STATE_C2:
--		/* Get start time (ticks) */
--		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get start time  */
-+		kt1 = ktime_get();
- 		/* Tell the scheduler that we are going deep-idle: */
- 		sched_clock_idle_sleep_event();
- 		/* Invoke C2 */
- 		acpi_state_timer_broadcast(pr, cx, 1);
- 		acpi_cstate_enter(cx);
--		/* Get end time (ticks) */
--		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get end time */
-+		kt2 = ktime_get();
-+		idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 		/* TSC halts in C2, so notify users */
-@@ -559,7 +542,7 @@ static void acpi_processor_idle(void)
- 			mark_tsc_unstable("possible TSC halt in C2");
- #endif
- 		/* Compute time (ticks) that we were actually asleep */
--		sleep_ticks = ticks_elapsed(t1, t2);
-+		sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 
- 		/* Tell the scheduler how much we idled: */
- 		sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
-@@ -604,14 +587,15 @@ static void acpi_processor_idle(void)
- 			ACPI_FLUSH_CPU_CACHE();
- 		}
- 
--		/* Get start time (ticks) */
--		t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get start time  */
-+		kt1 = ktime_get();
- 		/* Invoke C3 */
- 		/* Tell the scheduler that we are going deep-idle: */
- 		sched_clock_idle_sleep_event();
- 		acpi_cstate_enter(cx);
--		/* Get end time (ticks) */
--		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+		/* Get end time  */
-+		kt2 = ktime_get();
-+		idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 		if (pr->flags.bm_check && pr->flags.bm_control) {
- 			/* Enable bus master arbitration */
- 			atomic_dec(&c3_cpu_count);
-@@ -624,7 +608,7 @@ static void acpi_processor_idle(void)
- 			mark_tsc_unstable("TSC halts in C3");
- #endif
- 		/* Compute time (ticks) that we were actually asleep */
--		sleep_ticks = ticks_elapsed(t1, t2);
-+		sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 		/* Tell the scheduler how much we idled: */
- 		sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
-@@ -1455,7 +1439,8 @@ static inline void acpi_idle_do_entry(st
- static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 			      struct cpuidle_state *state)
- {
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
-@@ -1476,14 +1461,15 @@ static int acpi_idle_enter_c1(struct cpu
- 	if (pr->flags.bm_check)
- 		acpi_idle_update_bm_rld(pr, cx);
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	local_irq_enable();
- 	cx->usage++;
- 
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- /**
-@@ -1496,7 +1482,8 @@ static int acpi_idle_enter_simple(struct
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	int sleep_ticks = 0;
- 
- 	pr = __get_cpu_var(processors);
-@@ -1533,18 +1520,19 @@ static int acpi_idle_enter_simple(struct
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
- 	/* TSC could halt in idle, so notify users */
- 	if (tsc_halts_in_c(cx->type))
- 		mark_tsc_unstable("TSC halts in idle");;
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = US_TO_PM_TIMER_TICKS( idle_time);
- 
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
-@@ -1556,7 +1544,7 @@ static int acpi_idle_enter_simple(struct
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- static int c3_cpu_count;
-@@ -1574,7 +1562,8 @@ static int acpi_idle_enter_bm(struct cpu
- {
- 	struct acpi_processor *pr;
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
--	u32 t1, t2;
-+	ktime_t  kt1, kt2;
-+	u32 idle_time;
- 	int sleep_ticks = 0;
- 
- 	pr = __get_cpu_var(processors);
-@@ -1644,9 +1633,10 @@ static int acpi_idle_enter_bm(struct cpu
- 		ACPI_FLUSH_CPU_CACHE();
- 	}
- 
--	t1 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt1 = ktime_get();
- 	acpi_idle_do_entry(cx);
--	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
-+	kt2 = ktime_get();
-+	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	/* Re-enable bus master arbitration */
- 	if (pr->flags.bm_check && pr->flags.bm_control) {
-@@ -1661,7 +1651,7 @@ static int acpi_idle_enter_bm(struct cpu
- 	if (tsc_halts_in_c(ACPI_STATE_C3))
- 		mark_tsc_unstable("TSC halts in idle");
- #endif
--	sleep_ticks = ticks_elapsed(t1, t2);
-+	sleep_ticks = US_TO_PM_TIMER_TICKS(idle_time);
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
-@@ -1672,7 +1662,7 @@ static int acpi_idle_enter_bm(struct cpu
- 
- 	acpi_state_timer_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
--	return ticks_elapsed_in_us(t1, t2);
-+	return idle_time;
- }
- 
- struct cpuidle_driver acpi_idle_driver = {
-
---=-N9uOTsf54LsOP7sCIhDT--
-
+JSR
