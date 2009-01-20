@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbZATNff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbZATNlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761928AbZATNff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbZATNf0
+	id S1755280AbZATNlh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZATNl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:35:26 -0500
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:51185 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755280AbZATNfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:35:25 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhICAJhhdUl5LBURgWdsb2JhbACUBQEBFiK2SIVz
-X-IronPort-AV: E=Sophos;i="4.37,295,1231075800"; 
-   d="scan'208";a="288511976"
-Date: Wed, 21 Jan 2009 00:35:21 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jacek Luczak <difrost.kernel@gmail.com>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
-       xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-Message-ID: <20090120133521.GD10158@disturbed>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jacek Luczak <difrost.kernel@gmail.com>,
-	Eric Sandeen <sandeen@sandeen.net>,
-	LKML <linux-kernel@vger.kernel.org>,
-	xfs mailing list <xfs@oss.sgi.com>
-References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org>
-MIME-Version: 1.0
+	Tue, 20 Jan 2009 08:41:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52239 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754520AbZATNl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 08:41:27 -0500
+Date: Tue, 20 Jan 2009 14:41:23 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+Message-ID: <20090120134123.GH19505@wotan.suse.de>
+References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120123418.GG19505@wotan.suse.de> <20090120124500.GE7790@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120114906.GA12526@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090120124500.GE7790@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 06:49:06AM -0500, Christoph Hellwig wrote:
-> On Tue, Jan 20, 2009 at 12:47:16PM +0100, Jacek Luczak wrote:
-> > Christoph Hellwig pisze:
-> > > I'm doing about half of my testing on 32 bit x86, and I couldn't
-> > > reproduce the detailed receipe  in the kernel.org bugzilla yet.
-> > > 
-> > > Just curious:  do you have CONFIG_LBD set?
-> > 
-> > the answer is:
-> > $ grep LBD .config
-> > # CONFIG_LBD is not set
+On Tue, Jan 20, 2009 at 01:45:00PM +0100, Ingo Molnar wrote:
 > 
-> Ok, let me reproduce it without that set..
+> * Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > On Tue, Jan 20, 2009 at 12:26:34PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Nick Piggin <npiggin@suse.de> wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > I'm looking at regressions since 2.6.16, and one is lat_mmap has slowed 
+> > > > down. On further investigation, a large part of this is not due to a 
+> > > > _regression_ as such, but the introduction of CONFIG_PARAVIRT=y.
+> > > > 
+> > > > Now, it is true that lat_mmap is basically a microbenchmark, however it 
+> > > > is exercising the memory mapping and page fault handler paths, so we're 
+> > > > talking about pretty important paths here. So I think it should be of 
+> > > > interest.
+> > > > 
+> > > > I've run the tests on a 2s8c AMD Barcelona system, binding the test to 
+> > > > CPU0, and running 100 times (stddev is a bit hard to bring down, and my 
+> > > > scripts needed 100 runs in order to pick up much smaller changes in the 
+> > > > results -- for CONFIG_PARAVIRT, just a couple of runs should show up the 
+> > > > problem).
+> > > > 
+> > > > Times I believe are in nanoseconds for lmbench, anyway lower is better.
+> > > > 
+> > > > non pv   AVG=464.22 STD=5.56
+> > > > paravirt AVG=502.87 STD=7.36
+> > > > 
+> > > > Nearly 10% performance drop here, which is quite a bit... hopefully 
+> > > > people are testing the speed of their PV implementations against non-PV 
+> > > > bare metal :)
+> > > 
+> > > Ouch, that looks unacceptably expensive. All the major distros turn 
+> > > CONFIG_PARAVIRT on. paravirt_ops was introduced in x86 with the express 
+> > > promise to have no measurable runtime overhead.
+> > > 
+> > > ( And i suspect the real life mmap cost is probably even more expensive,
+> > >   as on a Barcelona all of lmbench fits into the cache hence we dont see
+> > >   any real $cache overhead. )
+> > 
+> > The PV kernel has over 100K larger text size, nearly 40K alone in mm/ and
+> > kernel/. Definitely we don't see the worst of the icache or branch buffer 
+> > overhead on this microbenchmark. (wow, that's a nasty amount of bloat :( )
+> > 
+> >  
+> > > Jeremy, any ideas where this slowdown comes from and how it could be 
+> > > fixed?
+> > 
+> > I had a bit of a poke around the profiles, but nothing stood out. 
+> > However oprofile counted 50% more cycles in the kernel with PV than with 
+> > non-PV. I'll have to take a look at the user/system times, because 50% 
+> > seems ludicrous.... hopefully it's just oprofile noise.
 
-Good call, Christoph. I have a reproduce on ia32, CONFIG_LBD=n,
-1k block size, 16 AGs in 4GB. Filesystem pre-prepared by
-copying a build kernel onto it then 'make mrproper' to put
-holes in it. Then, on boot:
+kbuild costs go up a bit (average of 30 builds)
+elapsed
+non-pv: AVG=53.31s STD=0.99
+pv:     AVG=53.54s STD=0.94
 
-dave@xfs-32:/mnt$ sudo mount /dev/sdb /mnt; cd /mnt
-dave@xfs-32:/mnt$ cp /home/dave/linux-2.6.tar.gz . ; sync
-dave@xfs-32:/mnt$ sudo xfs_bmap -v linux-2.6.tar.gz
-linux-2.6.tar.gz:
- EXT: FILE-OFFSET       BLOCK-RANGE      AG AG-OFFSET         TOTAL
-   0: [0..150271]:      92112..242383     0 (92112..242383)  150272
-   1: [150272..346879]: 256188..452795    0 (256188..452795) 196608
-   2: [346880..445183]: 906390..1004693   1 (382102..480405)  98304
-   3: [445184..494335]: 770022..819173    1 (245734..294885)  49152
-   4: [494336..543487]: 720870..770021    1 (196582..245733)  49152
-   5: [543488..592639]: 671718..720869    1 (147430..196581)  49152
-   6: [592640..641791]: 622566..671717    1 (98278..147429)   49152
-   7: [641792..737023]: 1398498..1493729  2 (349922..445153)  95232
-   8: [737024..781055]: 1353872..1397903  2 (305296..349327)  44032
-   9: [781056..830207]: 1304720..1353871  2 (256144..305295)  49152
-  10: [830208..879359]: 1255566..1304717  2 (206990..256141)  49152
-  11: [879360..925367]: 1209558..1255565  2 (160982..206989)  46008
-dave@xfs-32:/mnt$ > linux-2.6.tar.gz
-Connection to xfs-32 closed.
+user
+non-pv: AVG=318.63s STD=0.19
+pv:     AVG=319.33s STD=0.23
 
-I'll see if this is reproducable, and if it is I'll start
-instrumenting in the morning during the LCA keynote. ;)
+system
+non-pv: AVG=30.56s STD=0.15
+pv:     AVG=31.80s STD=0.15
 
-Cheers,
+kernel side of the kbuild workload slows down by 4.1%. User time also
+increases a bit (probably more cache and branch misses).
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+ 
+> If you have a Core2 test-system could you please try tip/master, which 
+> also has your do_page_fault-de-bloating patch applied?
+
+Will try to get one to do some runs on.
+
+Thanks,
+Nick
