@@ -1,68 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZATN5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbZATODw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbZATN5o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZATN5W
+	id S1758119AbZATODw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZATODn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:57:22 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:50613 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756765AbZATN5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:57:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZOp7d6UB3GzacW5pCaM5ocVEFj112N1A7Q1VgNeSUY1JQI42QqVrPaJnxomyPYXtcI
-         T7o+gZEVzWmAITh06mTXZKWQaRNqdTnfHtxH7nVYdtYOKWRQ06/4+uHHkDSYDfhhQhxM
-         FxaOwPlOthBB9Qcy3N2vWEXCsUeBV57QZ/98Y=
-Message-ID: <4975D88B.7020906@gmail.com>
-Date: Tue, 20 Jan 2009 14:58:35 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Tue, 20 Jan 2009 09:03:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38608 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752085AbZATODm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 09:03:42 -0500
+Date: Tue, 20 Jan 2009 15:03:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+Message-ID: <20090120140324.GA26424@elte.hu>
+References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
-       xfs mailing list <xfs@oss.sgi.com>, Dave Chinner <david@fromorbit.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org> <20090120121335.GA19182@infradead.org> <20090120124515.GA31838@infradead.org>
-In-Reply-To: <20090120124515.GA31838@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120112634.GA20858@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig pisze:
-> On Tue, Jan 20, 2009 at 07:13:35AM -0500, Christoph Hellwig wrote:
->> On Tue, Jan 20, 2009 at 06:49:06AM -0500, Christoph Hellwig wrote:
->>>>> Just curious:  do you have CONFIG_LBD set?
->>>>>
->>>> Hi Christoph,
->>>>
->>>> the answer is:
->>>> $ grep LBD .config
->>>> # CONFIG_LBD is not set
->>> Ok, let me reproduce it without that set..
->> Ok, on 32-bit x86 without CONFIG_LBD I can reliably reproduce the issue
->> with the following script:
-> 
-> Bisected down to:
-> 
-> commit 91cca5df9bc85efdabfa645f51d54259ed09f4bf
-> Author: Christoph Hellwig <hch@infradead.org>
-> Date:   Thu Oct 30 16:58:01 2008 +1100
-> 
->     [XFS] implement generic xfs_btree_delete/delrec
-> 
->     Make the btree delete code generic. Based on a patch from David Chinner
->     with lots of changes to follow the original btree implementations more
->     closely. While this loses some of the generic helper routines for
->     inserting/moving/removing records it also solves some of the one off bugs
->     in the original code and makes it easier to verify.
-> 
 
-Good job! Is there some ,,quick'' fix?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
--Jacek
+> > Times I believe are in nanoseconds for lmbench, anyway lower is 
+> > better.
+> > 
+> > non pv   AVG=464.22 STD=5.56
+> > paravirt AVG=502.87 STD=7.36
+> > 
+> > Nearly 10% performance drop here, which is quite a bit... hopefully 
+> > people are testing the speed of their PV implementations against 
+> > non-PV bare metal :)
+> 
+> Ouch, that looks unacceptably expensive. All the major distros turn 
+> CONFIG_PARAVIRT on. paravirt_ops was introduced in x86 with the express 
+> promise to have no measurable runtime overhead.
+
+Here are some more precise stats done via hw counters on a perfcounters 
+kernel using 'timec', running a modified version of the 'mmap performance 
+stress-test' app i made years ago.
+
+The MM benchmark app can be downloaded from:
+
+   http://redhat.com/~mingo/misc/mmap-perf.c
+
+timec.c can be picked up from:
+
+   http://redhat.com/~mingo/perfcounters/timec.c
+
+mmap-perf conducts 1 million mmap()/munmap()/mremap() calls, and touches 
+the mapped area as well with a certain chance. The patterns are 
+pseudo-random and the random seed is initialized to the same value so 
+repeated runs produce the exact same mmap sequence.
+
+I ran the test with a single thread and bound to a single core:
+
+  # taskset 2 timec -e -5,-4,-3,0,1,2,3 ./mmap-perf 1
+
+[ I ran it as root - so that kernel-space hardware-counter statistics are 
+  included as well. ]
+
+The results are quite surprisingly candid about the true costs of 
+paravirt_ops on the native kernel's overhead (CONFIG_PARAVIRT=y):
+
+-----------------------------------------------
+| Performance counter stats for './mmap-perf' |
+-----------------------------------------------
+|                |
+|  x86-defconfig |   PARAVIRT=y         
+|------------------------------------------------------------------
+|
+|    1311.554526 |  1360.624932  task clock ticks (msecs)    +3.74%
+|                |
+|              1 |            1  CPU migrations
+|             91 |           79  context switches
+|          55945 |        55943  pagefaults
+|    ............................................
+|     3781392474 |   3918777174  CPU cycles                  +3.63%
+|     1957153827 |   2161280486  instructions               +10.43%
+|       50234816 |     51303520  cache references            +2.12%
+|        5428258 |      5583728  cache misses                +2.86%
+|                |
+|    1314.782469 |  1363.694447  time elapsed (msecs)        +3.72%
+|                |
+-----------------------------------
+
+The most surprising element is that in the paravirt_ops case we run 204 
+million more instructions - out of the ~2000 million instructions total. 
+
+That's an increase of over 10%!
+
+That shows the expected $cache risks here as well: i ran this on an 
+Extreme Edition CPU which has a ton of L2 cache [4MB] which mutes L2 
+$cache misses quite a bit.
+
+Note that this workload tests a broader range of MM related codepaths - 
+not just pure pagefault costs.
+
+	Ingo
+
+ps. Measurement methodology:
+
+    The software counters show that the test was indeed done on an idle 
+    system: there are no CPU migrations (the task is affine), nor any 
+    significant context-switches, and the pagefault count is essentially 
+    the same as well. (because this is a fully repeatable workload.)
+
+    The numbers are a representative sample from a run of more than 10 
+    testruns, on an otherwise idle system. Measurement noise is very low:
+
+      3906920196  CPU cycles           (events)
+      3907556124  CPU cycles           (events)
+      3907902335  CPU cycles           (events)
+      3914423870  CPU cycles           (events)
+      3915642464  CPU cycles           (events)
+      3916134988  CPU cycles           (events)
+      3916840093  CPU cycles           (events)
+      3918777174  CPU cycles           (events)
+      3918993251  CPU cycles           (events)
+      3919907192  CPU cycles           (events)
+
+    The max/min spread of 10 runs is 0.3%, so the precision of this 
+    measurement is in the 0.1% range - more than enough to be conclusive.
+
+    The max/min spread of the instruction counts is even better: in the 
+    0.01% range. (that is because exactly the same workload is executed - 
+    only timer IRQs and small disturbances cause noise here.)
