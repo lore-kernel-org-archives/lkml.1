@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZATWla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbZATWol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbZATWla (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZATWlU
+	id S1758048AbZATWol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZATWoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:41:20 -0500
-Received: from ns2.suse.de ([195.135.220.15]:40123 "EHLO mx2.suse.de"
+	Tue, 20 Jan 2009 17:44:30 -0500
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:35934 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbZATWlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:41:19 -0500
-Date: Tue, 20 Jan 2009 14:39:57 -0800
-From: Greg KH <gregkh@suse.de>
-To: Christian Lamparter <chunkeey@web.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Artur Skawina <art.08.09@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Linux wireless <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH -stable] p54usb: fix traffic stalls / packet drop
-Message-ID: <20090120223957.GA6088@suse.de>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.vUD.KKRdJB@chimera> <200901202311.11854.chunkeey@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901202311.11854.chunkeey@web.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755517AbZATWoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:44:30 -0500
+Date: Wed, 21 Jan 2009 07:44:02 +0900
+To: stefanr@s5r6.in-berlin.de
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: swiotlb default size (64 MB) too small?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49762FC8.7000208@s5r6.in-berlin.de>
+References: <49762FC8.7000208@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090121074339N.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 11:11:11PM +0100, Christian Lamparter wrote:
-> All p54usb devices need a explicit termination packet, in oder to finish the pending transfer properly.
-> Else, the firmware could freeze, or simply drop the frame.
+On Tue, 20 Jan 2009 21:10:48 +0100
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> somebody reported frequent "Out of SW-IOMMU space" failures when copying
+> between a FireWire and a USB disk.  swiotlb=512M on the kernel command
+> line fixes it for him. https://bugzilla.redhat.com/show_bug.cgi?id=478567
 > 
-> Signed-off-by: Christian Lamparter <chunkeey@web.de>
-> Cc: stable <stable@kernel.org>
-> ---
-> Attached is the patch is for the stable series only.
-> Bugzilla reference: http://bugzilla.kernel.org/show_bug.cgi?id=12260
-> (wireless-testing needs a different one)
+> Should the default be raised?
 
-What do you mean, this is for 2.6.28-stable or 2.6.27-stable only, and
-not 2.6.29?  Why?
+I don't think so. Reserving large memory like 512MB for swiotlb? It
+means that you waste 512MB if you use decent HBAs (having no dma mask
+limit) or fast storage, or when there is few I/O activity.
 
-thanks,
+The bug reporter said that copying stooped but it should not
+happen. It doesn't happen with SCSI (copying can continue a bit
+slowly). dma mapping errors are transient so SCSI retries.
 
-greg k-h
+I guess that it would be better to remove the misleading error
+message. Sane IOMMUs don't do that.
+
+If the bug report is true, then the FireWire stack or the driver (or
+both) has problems. Make sure that FireWire can work even with dma
+mapping failures. My dma mapping debug patchset might be useful:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git dmafault
+
+You can inject dma mapping failures per device:
+
+vine:/debug/pci/0000:00:1d.1# ls
+interval  probability  space  task-filter  times  verbose
