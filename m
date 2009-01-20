@@ -1,116 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZATV4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760410AbZATV4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbZATV4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 16:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZATVz7
+	id S1760410AbZATV4g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 16:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758094AbZATV4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 16:55:59 -0500
-Received: from mail.gmx.net ([213.165.64.20]:48288 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755233AbZATVz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 16:55:58 -0500
-Cc: dwmw2@infradead.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 20 Jan 2009 22:55:56 +0100
-From: "Wolfram Strepp" <wstrepp@gmx.de>
-Message-ID: <20090120215556.74580@gmx.net>
-MIME-Version: 1.0
-Subject: [PATCH 1/2] Optimization of function rb_erase() in lib/rbtree.c
-To: linux-kernel@vger.kernel.org
-X-Authenticated: #14768304
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18Smfpyhu8SUQBLXYSL5jLJ9WPg6DcxRKmEvoz8UE
- QJf9AimLaGn5PBOBSoFUOsp2t/jPnsCWNGjg== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: CiweBBl8bHIhQMJg2DQ0yDEiJihyapC8
-X-FuHaFi: 0.54
+	Tue, 20 Jan 2009 16:56:05 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:51634 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755753AbZATV4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 16:56:01 -0500
+X-Trace: 130160455/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.170/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.170
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.2 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqYEALbXdUlQLLCq/2dsb2JhbACBbLgWkCyFcw
+X-IronPort-AV: E=Sophos;i="4.37,296,1231113600"; 
+   d="scan'208";a="130160455"
+Subject: Re: [PATCH] dma: fix up broken comparison in
+ dma_alloc_from_coherent
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-sh <linux-sh@vger.kernel.org>, penberg@cs.helsinki.fi,
+       dbaryshkov@gmail.com, penguin-kernel@i-love.sakura.ne.jp
+In-Reply-To: <8b67d60901201348r6a59928dw3fcf8c9c823d5c68@mail.gmail.com>
+References: <8b67d60901201348r6a59928dw3fcf8c9c823d5c68@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 21:55:07 +0000
+Message-Id: <1232488507.6794.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 2009-01-20 at 21:48 +0000, Adrian McMenamin wrote:
+> Currently this code compares a size in bytes with a size in pages.
+> This patch makes both sides of the comparison bytes.
 
-i have reviewed the code of the rb-tree implementation
-in the kernel, and distilled two small patches for file lib/rbtree.c,
-which optimize and cleanup the code of functions rb_erase() and __rb_erase_color().
-In summary, there are 5 if()-conditions which can be eliminated.
-The patches reduce the code size (normal kernel build on x86)
-of this functions by 23 bytes, or 4.5 %.
+Apologies, here it is without the line wrap.
 
-So although this is not a dramatic change, i think its worth it,
-given the many places in the kernel where it is used
-(and given the fact that processors dont like if-conditions).
+Currently this comparison is made between bytes and pages. This patch
+ensures it is bytes on both side of the comparison.
 
-The patches are tested on x86.
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
-------------------------------------------
+--- a/kernel/dma-coherent.c
++++ b/kernel/dma-coherent.c
+@@ -118,7 +118,7 @@ int dma_alloc_from_coherent(struct device *dev, ssize_t size,
+ 	mem = dev->dma_mem;
+ 	if (!mem)
+ 		return 0;
+-	if (unlikely(size > mem->size))
++	if (unlikely(size > mem->size << PAGE_SHIFT))
+  		return 0;
+ 
+ 	pageno = bitmap_find_free_region(mem->bitmap, mem->size, order);
 
-The first patch was already posted some years ago, see:
-http://lkml.org/lkml/2002/11/22/146
-and:
-http://lkml.org/lkml/2002/11/24/122
-
-It was finally merged by the original author of the rb-tree
-implementation, Andrea Arcangeli, in one of his kernel trees.
-Citing from http://lkml.org/lkml/2002/12/25/51:
-
->Only in 2.4.21pre2aa1: 00_rbtree-cleanups-1
->
->	Merged rbtree cleanups/microoptimizations from Érsek László after
->	verifying their math correctness also with the help of Paolo Carlini
->	and of some gentle reminder from Rusty, they are obviously right,
->	thanks.
-
-But obviousely, it never found is way into the mainline kernel,
-so here it is again.
-
-Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-
-====================================================
---- a/lib/rbtree.c
-+++ b/lib/rbtree.c
-@@ -163,17 +163,14 @@ static void __rb_erase_color(struct rb_node *node, struct rb_node *parent,
- 			{
- 				if (!other->rb_right || rb_is_black(other->rb_right))
- 				{
--					struct rb_node *o_left;
--					if ((o_left = other->rb_left))
--						rb_set_black(o_left);
-+					rb_set_black(other->rb_left);
- 					rb_set_red(other);
- 					__rb_rotate_right(other, root);
- 					other = parent->rb_right;
- 				}
- 				rb_set_color(other, rb_color(parent));
- 				rb_set_black(parent);
--				if (other->rb_right)
--					rb_set_black(other->rb_right);
-+				rb_set_black(other->rb_right);
- 				__rb_rotate_left(parent, root);
- 				node = root->rb_node;
- 				break;
-@@ -200,17 +197,14 @@ static void __rb_erase_color(struct rb_node *node, struct rb_node *parent,
- 			{
- 				if (!other->rb_left || rb_is_black(other->rb_left))
- 				{
--					register struct rb_node *o_right;
--					if ((o_right = other->rb_right))
--						rb_set_black(o_right);
-+					rb_set_black(other->rb_right);
- 					rb_set_red(other);
- 					__rb_rotate_left(other, root);
- 					other = parent->rb_left;
- 				}
- 				rb_set_color(other, rb_color(parent));
- 				rb_set_black(parent);
--				if (other->rb_left)
--					rb_set_black(other->rb_left);
-+				rb_set_black(other->rb_left);
- 				__rb_rotate_right(parent, root);
- 				node = root->rb_node;
- 				break;
-
--- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
