@@ -1,51 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbZATWSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbZATWUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761487AbZATWSX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZATWSM
+	id S1762150AbZATWUd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZATWUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:18:12 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58836 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbZATWSM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:18:12 -0500
-Date: Tue, 20 Jan 2009 23:20:19 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, Chris Mason <chris.mason@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090120222019.GB2320@elf.ucw.cz>
-References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org>
-MIME-Version: 1.0
+	Tue, 20 Jan 2009 17:20:24 -0500
+Received: from mga03.intel.com ([143.182.124.21]:12432 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755516AbZATWUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:20:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,297,1231142400"; 
+   d="scan'208";a="102058214"
+Date: Tue, 20 Jan 2009 14:20:21 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       torvalds@linux-foundation.org, yinghai@kernel.org
+Cc: venkatesh.pallipadi@intel.com, akpm@linux-foundation.org,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       jaswinderlinux@gmail.com, just.for.lkml@googlemail.com, npiggin@suse.de
+Subject: [patch] x86: fix page attribute corruption with cpa()
+Message-ID: <20090120222021.GB28352@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120132829.GA27429@infradead.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
-> On Tue, Jan 20, 2009 at 11:59:44PM +1100, Dave Chinner wrote:
-> > > So far the responses from xfs folks have been disappointing, if you are
-> > > interested in bugreports i can send you some.
-> > 
-> > Sure I am.  It would be good if you could start testing XFS along
-> > with all the other filesystems and report anything you find.
-> 
-> I think that was the issue with the debug builds.  If you do this
-> testing always do it without CONFIG_XFS_DEBUG set as with that option
-> we intentionally panic on detected disk corruptions.
+This patch fixes a performance issue reported by Linus on his
+Nehalem system. While Linus reverted the PAT patch (commit
+58dab916dfb57328d50deb0aa9b3fc92efa248ff) which exposed the issue,
+existing cpa() code can potentially still cause wrong(page attribute
+corruption) behavior.
 
-Uhuh, *_DEBUG options are not supposed to make kernel less
-stable/robust. Should that crashing functionality be guarded with
-command line option or something? ext2 has errors=panic mount
-option...
+This patch also fixes the "WARNING: at arch/x86/mm/pageattr.c:560" that
+various people reported.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: fix page attribute corruption with cpa()
+
+In 64bit kernel, kernel identity mapping might have holes depending
+on the available memory and how e820 reports the address range
+covering the RAM, ACPI, PCI reserved regions. If there is a 2MB/1GB hole
+in the address range that is not listed by e820 entries, kernel identity
+mapping will have a corresponding hole in its 1-1 identity mapping.
+
+If cpa() happens on the kernel identity mapping which falls into these holes,
+existing code fails like this:
+
+	__change_page_attr_set_clr()
+		__change_page_attr()
+			returns 0 because of if (!kpte). But doesn't
+			set cpa->numpages and cpa->pfn.
+		cpa_process_alias()
+			uses uninitialized cpa->pfn (random value)
+			which can potentially lead to changing the page
+			attribute of kernel text/data, kernel identity
+			mapping of RAM pages etc. oops!
+
+This bug was easily exposed by another PAT patch which was doing
+cpa() more often on kernel identity mapping holes (physical range between
+max_low_pfn_mapped and 4GB), where in here it was setting the
+cache disable attribute(PCD) for kernel identity mappings aswell.
+
+Fix cpa() to handle the kernel identity mapping holes. Retain
+the WARN() for cpa() calls to other not present address ranges
+(kernel-text/data, ioremap() addresses)
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: stable@kernel.org
+---
+
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index e89d248..84ba748 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -534,6 +534,36 @@ out_unlock:
+ 	return 0;
+ }
+ 
++static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
++			       int primary)
++{
++	/*
++	 * Ignore all non primary paths.
++	 */
++	if (!primary)
++		return 0;
++
++	/*
++	 * Ignore the NULL PTE for kernel identity mapping, as it is expected
++	 * to have holes.
++	 * Also set numpages to '1' indicating that we processed cpa req for
++	 * one virtual address page and its pfn. TBD: numpages can be set based
++	 * on the initial value and the level returned by lookup_address().
++	 */
++	if (within(vaddr, PAGE_OFFSET,
++		   PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))) {
++		cpa->numpages = 1;
++		cpa->pfn = __pa(vaddr) >> PAGE_SHIFT;
++		return 0;
++	} else {
++		WARN(1, KERN_WARNING "CPA: called for zero pte. "
++			"vaddr = %lx cpa->vaddr = %lx\n", vaddr,
++			*cpa->vaddr);
++
++		return -EFAULT;
++	}
++}
++
+ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ {
+ 	unsigned long address;
+@@ -549,17 +579,11 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ repeat:
+ 	kpte = lookup_address(address, &level);
+ 	if (!kpte)
+-		return 0;
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	old_pte = *kpte;
+-	if (!pte_val(old_pte)) {
+-		if (!primary)
+-			return 0;
+-		WARN(1, KERN_WARNING "CPA: called for zero pte. "
+-		       "vaddr = %lx cpa->vaddr = %lx\n", address,
+-		       *cpa->vaddr);
+-		return -EINVAL;
+-	}
++	if (!pte_val(old_pte))
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	if (level == PG_LEVEL_4K) {
+ 		pte_t new_pte;
+@@ -657,12 +681,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ 		vaddr = *cpa->vaddr;
+ 
+ 	if (!(within(vaddr, PAGE_OFFSET,
+-		    PAGE_OFFSET + (max_low_pfn_mapped << PAGE_SHIFT))
+-#ifdef CONFIG_X86_64
+-		|| within(vaddr, PAGE_OFFSET + (1UL<<32),
+-		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))
+-#endif
+-	)) {
++		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT)))) {
+ 
+ 		alias_cpa = *cpa;
+ 		temp_cpa_vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
