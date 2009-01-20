@@ -1,88 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761686AbZATCB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbZATCDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761686AbZATCB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 21:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbZATCBQ
+	id S1759339AbZATCDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 21:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZATCDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 21:01:16 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:41765 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756348AbZATCBP (ORCPT
+	Mon, 19 Jan 2009 21:03:31 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44620 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbZATCD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 21:01:15 -0500
-Message-ID: <49753063.8040007@hathawaymix.org>
-Date: Mon, 19 Jan 2009 19:01:07 -0700
-From: Shane Hathaway <shane@hathawaymix.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
-MIME-Version: 1.0
-To: Daolong Wang <ahlongxp@gmail.com>
-CC: Jeff Dike <jdike@addtoit.com>, Rob Landley <rob@landley.net>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-References: <20090115194033.GA10926@hack.private>	 <20090116124158.4364e269.akpm@linux-foundation.org>	 <200901170328.15178.rob@landley.net>	 <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com>	 <20090119152104.GC6432@c2.user-mode-linux.org> <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
-In-Reply-To: <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 Jan 2009 21:03:29 -0500
+Date: Tue, 20 Jan 2009 11:02:21 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] cgroup:add css_is_populated
+Message-Id: <20090120110221.005e116c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830901191739t45c793afk2ceda8fc430121ce@mail.gmail.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901191739t45c793afk2ceda8fc430121ce@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-XM-SPF: eid=;;;mid=;;;hst=mx03.mta.xmission.com;;;ip=166.70.244.130;;;frm=shane@hathawaymix.org;;;spf=none
-X-XM-DomainKey: sender_domain=hathawaymix.org;;;sender=shane@hathawaymix.org;;;status=no signature
-X-SA-Exim-Connect-IP: 166.70.244.130
-X-SA-Exim-Mail-From: shane@hathawaymix.org
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Daolong Wang <ahlongxp@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0023]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx03.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daolong Wang wrote:
-> On Mon, Jan 19, 2009 at 11:21 PM, Jeff Dike <jdike@addtoit.com> wrote:
->> On Sun, Jan 18, 2009 at 02:23:46PM +0800, Daolong Wang wrote:
->>> I can confirm this link error.
->> In what environment?  I see no problems here.
+On Mon, 19 Jan 2009 17:39:40 -0800
+Paul Menage <menage@google.com> wrote:
 
-I can also confirm this link error.  The problem occurs when compiling
-either 2.6.28.1 or 2.6.27.12; I didn't try anything earlier.  The patch
-suggested at this beginning of this thread did solve the link problem
-and the resulting kernel ran for several hours.  However, I think the
-patch is still probably incorrect.
+> On Thu, Jan 15, 2009 at 2:27 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> >
+> > cgroup creation is done in several stages.
+> > After allocated and linked to cgroup's hierarchy tree, all necessary
+> > control files are created.
+> >
+> > When using CSS_ID, scanning cgroups without cgrouo_lock(), status
+> > of cgroup is important. At removal of cgroup/css, css_tryget() works fine
+> > and we can write a safe code.
+> 
+> What problems are you currently running into during creation? Won't
+> the fact that the css for the cgroup has been created, and its pointer
+> been stored in the cgroup, be sufficient?
+> 
+> Or is the problem that a cgroup that fails creation half-way could
+> result in the memory code alreadying having taken a reference on the
+> memcg, which can't then be cleanly destroyed?
+> 
+Ah, this is related to CSS ID scanning. No real problem to current codes.
 
-I'm going to repost what I said in another message I sent today, this
-time with a wider audience:
+Now, in my patch, CSS ID is attached just after create().
 
-The problem is that the name "sigprocmask" is getting renamed to
-"kernel_sigprocmask" by a compiler directive in arch/um/Makefile, then
-that name gets mangled into "sys_kernel_sigprocmask" by the
-SYSCALL_DEFINE3(sigprocmask, ...) macro in kernel/signal.c.
+Then, "scan by CSS ID" can find a cgroup which is not populated yet.
+I just wanted to skip them for avoiding mess.
 
-So, instead of the patch suggested earlier, I added the following line
-to arch/um/sys-i386/sys_call_table.S:
+For example, css_tryget() can succeed against css which belongs to not-populated
+cgroup. If creation of cgroup fails, it's destroyed and freed without RCU synchronize.
+This may breaks CSS ID scanning's assumption that "we're safe under rcu_read_lock".
+And allows destroy css while css->refcnt > 1.
 
-#define sys_sigprocmask sys_kernel_sigprocmask
+I'm now rewriting codes a bit, what I want is something like this.
+==
+	for_each_subsys(root, ss) {
+		/* if error , goto destroy "/
+		create();
+		if (ss->use_id)
+			attach_id();
+	}
+	create dir and populate files.
+	.....
+destroy:
+	synchronize_rcu();
+	/* start destroy here */
+==
 
-This made it compile and link correctly.  Look at the symbols generated
-by the compile of signal.c to see what I mean:
+css_is_populated() is to show "ok, you can call css_tryget()".
+If css_tryget() itself checks CSS_POPULATED bit, it's maybe clearer.
 
-# nm kernel/signal.o | grep sigprocmask
-0000008f r __kstrtab_kernel_sigprocmask
-00000040 r __ksymtab_kernel_sigprocmask
-00001ea6 T kernel_sigprocmask
-00002d67 T sys_kernel_sigprocmask
-00001faf T sys_rt_sigprocmask
+-Kame
 
-Unfortunately, it's a mystery to me that others haven't run into this
-before.  My host environment is RHEL 4 inside some kind of chroot.
 
-Shane
+
+
+
+> Paul
+> 
+> > "This cgroup is not ready yet"
+> >
+> > This patch adds CSS_POPULATED flag.
+> >
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> >
+> > ---
+> > Index: mmotm-2.6.29-Jan14/include/linux/cgroup.h
+> > ===================================================================
+> > --- mmotm-2.6.29-Jan14.orig/include/linux/cgroup.h
+> > +++ mmotm-2.6.29-Jan14/include/linux/cgroup.h
+> > @@ -69,6 +69,7 @@ struct cgroup_subsys_state {
+> >  enum {
+> >        CSS_ROOT, /* This CSS is the root of the subsystem */
+> >        CSS_REMOVED, /* This CSS is dead */
+> > +       CSS_POPULATED, /* This CSS finished all initialization */
+> >  };
+> >
+> >  /*
+> > @@ -90,6 +91,11 @@ static inline bool css_is_removed(struct
+> >        return test_bit(CSS_REMOVED, &css->flags);
+> >  }
+> >
+> > +static inline bool css_is_populated(struct cgroup_subsys_state *css)
+> > +{
+> > +       return test_bit(CSS_POPULATED, &css->flags);
+> > +}
+> > +
+> >  /*
+> >  * Call css_tryget() to take a reference on a css if your existing
+> >  * (known-valid) reference isn't already ref-counted. Returns false if
+> > Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
+> > ===================================================================
+> > --- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
+> > +++ mmotm-2.6.29-Jan14/kernel/cgroup.c
+> > @@ -2326,8 +2326,10 @@ static int cgroup_populate_dir(struct cg
+> >        }
+> >
+> >        for_each_subsys(cgrp->root, ss) {
+> > +               struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
+> >                if (ss->populate && (err = ss->populate(ss, cgrp)) < 0)
+> >                        return err;
+> > +               set_bit(CSS_POPULATED, &css->flags);
+> >        }
+> >
+> >        return 0;
+> >
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
