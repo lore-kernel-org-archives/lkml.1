@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATKm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbZATKmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZATKm3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:42:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbZATKmN
+	id S1756487AbZATKmo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760716AbZATKmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:42:13 -0500
-Received: from www84.your-server.de ([213.133.104.84]:44130 "EHLO
+	Tue, 20 Jan 2009 05:42:16 -0500
+Received: from www84.your-server.de ([213.133.104.84]:44138 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756254AbZATKmL (ORCPT
+	with ESMTP id S1756627AbZATKmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:42:11 -0500
-X-Greylist: delayed 1713 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 05:42:11 EST
-Subject: Detailed Stack Information Patch [0/3]
+	Tue, 20 Jan 2009 05:42:13 -0500
+Subject: Detailed Stack Information Patch [2/3]
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 20 Jan 2009 11:16:37 +0100
-Message-Id: <1232446597.784.15.camel@matrix>
+Date: Tue, 20 Jan 2009 11:16:42 +0100
+Message-Id: <1232446602.784.17.camel@matrix>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
@@ -25,110 +24,291 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-this is a patch which give you a better overview of the userland
-application stack usage, especially for embedded linux.
-
-Currently you are only able to dump the main process/thread stack usage
-which is showed in proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
-
-The patch is splitted in three parts.
-
-
-Part 1 :
---------
-
-This is an enhancement in the /proc/<pid>/tasks/<tid>/maps and
-smaps which marks the mapping where the thread stack pointer reside with
-"[thread stack]".
-
-Also there is a new entry "stack usage" in proc/pid/status, which will
-you give the current stack usage.
-
-This feature will be enabled the which "enable /proc/<pid> stack
-monitoring" under "General setup-->"
-
-
-Part 2:
--------
-
-This enable a new /proc/stackmon file entry. A cat /proc/stackmon
-will produce a output like:
-
-   bytes   pages maxpages vm_start vm_end   processid threadid  name
-     436       1       1  afdbf000-afdd4000 pid:  409 tid:  409 syslogd
-    1168       1       1  afd12000-afd27000 pid:  411 tid:  411 sh
-     516       1       1  afe6c000-afe81000 pid:  412 tid:  412 getty
-    4580       2       2  af918000-af92d000 pid:  419 tid:  419 cat
-The first value is the current effektive stack usage in bytes.
-
-The second value is the current real stack usage in pages. This means
-how many pages are really occupied by the stack.
-
-The thrird value is the maximum real stack usage in pages. This value
-will be determinate by the difference of the highest used page in the
-mapping and the page of stack start address.
-
-The fourth value is the start- and end- address of the mapping where the
-stack currently reside.
-
-The fifth value process id.
-
-The sixth value is thread id.
-
-And the seventh and last entry is the name of the process.
-
-This feature will be enabled the which "enable /proc/<pid> stack
-monitoring" under "General setup-->".
-
-
-Part 3:
--------
-
-There is also an additional stack monitor which can be enabled by boot
-time or by the /sys filesystem. Which this you are able to detect if a
-application use more stack than a given value. If the application
-exceeds this value, it will receive a SIGTRAP signal. 
-
-If there is a debugger attached at this time, there is the ability to
-examinate the stack usage. Otherwise the application will be terminated.
-In both cases a kernel log entry "pid:%d (%s) tid:%d stack size %lu
-exceeds max stack size." will be written.
-
-There are following entries under /sys/kernel/stackmon to control the
-monitor.
-
-mode:
- Setting this to an value not equal zero will start the stack monitoring
-thread. Default is 0. Setting it to zero will stop the kernel thread.
-
-stacksize:
- This value is the stack size in kb which triggers a SIGTRAP to the
-application, if the stack usage is equal or more. Default is 256 kb.
+diff -u -N -r linux-2.6.28.1.orig/fs/proc/Makefile linux-2.6.28.1/fs/proc/Makefile
+--- linux-2.6.28.1.orig/fs/proc/Makefile	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/fs/proc/Makefile	2009-01-20 09:14:11.000000000 +0100
+@@ -25,3 +25,4 @@
+ proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
+ proc-$(CONFIG_PRINTK)	+= kmsg.o
+ proc-$(CONFIG_PROC_PAGE_MONITOR)	+= page.o
++proc-$(CONFIG_PROC_STACK_MONITOR) += stackmon.o
+diff -u -N -r linux-2.6.28.1.orig/fs/proc/stackmon.c linux-2.6.28.1/fs/proc/stackmon.c
+--- linux-2.6.28.1.orig/fs/proc/stackmon.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.28.1/fs/proc/stackmon.c	2009-01-20 09:13:19.000000000 +0100
+@@ -0,0 +1,254 @@
++/*
++ * detailed stack monitoring
++ *
++ *	Copyright (C) 2009 Stefani Seibold for NSN
++ *	This Source is under GPL Licence
++ *
++ * enabled when CONFIG_PROC_STACK_MONITOR is set
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/proc_fs.h>
++#include <linux/pagemap.h>
++#include <linux/init.h>
++#include <linux/stddef.h>
++#include <linux/mutex.h>
++#include <linux/kthread.h>
++#include <linux/freezer.h>
++#include <linux/seq_file.h>
++
++#define	PROC_STACKMON	"stackmon"
++
++#define	BUF_SIZE	1024
++
++static struct mutex		lock;
++
++static struct proc_dir_entry	*proc_ent;
++
++#ifdef CONFIG_STACK_GROWSUP
++static inline unsigned long get_top(struct vm_area_struct *vma,
++					unsigned long end)
++{
++	unsigned long	i;
++	struct page	*page;
++
++	for (i = vma->vm_end; i-PAGE_SIZE > end; i -= PAGE_SIZE) {
++
++		page = follow_page(vma, i-PAGE_SIZE, 0);
++
++		if ((!IS_ERR(page) == 0) || (page))
++			break;
++	}
++	return (i-end)/PAGE_SIZE;
++}
++#else
++static inline unsigned long get_top(struct vm_area_struct *vma,
++					unsigned long end)
++{
++	unsigned long	i;
++	struct page	*page;
++
++	for (i = vma->vm_start; i+PAGE_SIZE <= end; i += PAGE_SIZE) {
++
++		page = follow_page(vma, i, 0);
++
++		if ((!IS_ERR(page) == 0) || (page))
++			break;
++	}
++	return (end-i)/PAGE_SIZE;
++}
++#endif
++
++#ifdef CONFIG_STACK_GROWSUP
++#define STACK_PAGE(x)	(((x)+PAGE_SIZE-1)/PAGE_SIZE)
++#else
++#define STACK_PAGE(x)	(((x)-PAGE_SIZE-1)/PAGE_SIZE)
++#endif
++
++static inline int dump_usage(struct task_struct *t, char *buf)
++{
++	struct vm_area_struct	*vma;
++	struct mm_struct	*mm;
++
++	*buf = 0;
++
++	mm = get_task_mm(t);
++
++	if (mm) {
++		vma = find_vma(mm, t->stack_start);
++
++		if (vma) {
++			unsigned long	esp;
++			unsigned long	cur_stack;
++			unsigned long	real_stack;
++
++			esp = KSTK_ESP(t);
++
++#ifdef CONFIG_STACK_GROWSUP
++			cur_stack = esp-t->stack_start;
++			real_stack =
++				STACK_PAGE(esp)-STACK_PAGE(t->stack_start)+1;
++#else
++			cur_stack = t->stack_start-esp;
++			real_stack =
++				STACK_PAGE(t->stack_start)-STACK_PAGE(esp)+1;
++#endif
++			snprintf(
++				buf,
++				BUF_SIZE,
++				" %7lu %7lu %7lu  %08lx-%08lx pid:%5d "
++				"tid:%5d %s\n",
++				cur_stack,
++				real_stack,
++				(real_stack+get_top(vma, esp)),
++				vma->vm_start,
++				vma->vm_end,
++				t->tgid,
++				t->pid,
++				t->comm
++			);
++		}
++		mmput(mm);
++	}
++	return 0;
++}
++
++static void *stackmon_find(loff_t pos, char *buf)
++{
++	struct task_struct *g;
++	struct task_struct *t;
++
++	loff_t off = 0;
++
++	read_lock(&tasklist_lock);
++
++	do_each_thread(g, t) {
++		if (pos == off++)
++			goto found;
++	} while_each_thread(g, t);
++
++	read_unlock(&tasklist_lock);
++	return 0;
++found:
++	task_lock(t);
++	dump_usage(t, buf);
++	task_unlock(t);
++	read_unlock(&tasklist_lock);
++	return buf;
++}
++
++static void *stackmon_seq_start(struct seq_file *s, loff_t *pos)
++{
++	if (*pos == 0)
++		return SEQ_START_TOKEN;
++
++	return stackmon_find(*pos, s->private);
++}
++
++
++static void *stackmon_seq_next(struct seq_file *s, void *v, loff_t *pos)
++{
++	++*pos;
++
++	return stackmon_find(*pos, s->private);
++}
++
++static int stackmon_seq_show(struct seq_file *s, void *v)
++{
++	if (v == SEQ_START_TOKEN) {
++		return seq_puts(s,
++			"   bytes   pages maxpages vm_start vm_end   "
++			"processid threadid  name\n");
++	}
++
++	return seq_puts(s, v);
++}
++
++static void stackmon_seq_stop(struct seq_file *s, void *v)
++{
++}
++
++static const struct seq_operations stackmon_seq_ops = {
++	.start	= stackmon_seq_start,
++	.next	= stackmon_seq_next,
++	.stop	= stackmon_seq_stop,
++	.show	= stackmon_seq_show
++};
++
++static int stackmon_open(struct inode *inode, struct file *file)
++{
++	int	ret;
++	char	*buffer;
++	struct seq_file *s;
++
++	ret = -ENOMEM;
++
++	buffer = kmalloc(BUF_SIZE, GFP_KERNEL);
++	if (!buffer)
++		goto out;
++
++	ret = seq_open(file, &stackmon_seq_ops);
++	if (ret)
++		goto out_kfree;
++
++	s = file->private_data;
++	s->private = buffer;
++
++out:
++	return ret;
++
++out_kfree:
++	kfree(buffer);
++	return ret;
++}
++
++static const struct file_operations stackmon_file_ops = {
++	.owner		= THIS_MODULE,
++	.open		= stackmon_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release_private,
++};
++
++static int __init stackmon_init(void)
++{
++	int ret = 0;
++
++	mutex_init(&lock);
++
++	proc_ent = create_proc_entry(PROC_STACKMON, 0440, NULL);
++
++	if (proc_ent == NULL)
++		goto exit;
++
++	proc_ent->owner = THIS_MODULE;
++	proc_ent->data = NULL;
++	proc_ent->proc_fops = &stackmon_file_ops;
++
++	return ret;
++
++exit:
++	return -ENOMEM;
++}
++
++static void __exit stackmon_exit(void)
++{
++	mutex_lock(&lock);
++	remove_proc_entry(PROC_STACKMON, NULL);
++	mutex_unlock(&lock);
++}
++
++module_init(stackmon_init);
++module_exit(stackmon_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
++MODULE_DESCRIPTION("detailed stack monitoring");
++
+diff -u -N -r linux-2.6.28.1.orig/init/Kconfig linux-2.6.28.1/init/Kconfig
+--- linux-2.6.28.1.orig/init/Kconfig	2009-01-20 09:12:43.000000000 +0100
++++ linux-2.6.28.1/init/Kconfig	2009-01-20 09:13:19.000000000 +0100
+@@ -826,6 +826,16 @@
+ 	  Disabling these interfaces will reduce the size of the kernel by
+ 	  approximately 1kb.
  
-ticks:
- Number of ticks between the monitoring invocation. A higher value will
-give a less change to trigger a stack over usage, but will also result
-in a less CPU usage. Default is 1.
-
-All this parameters can also set at boot time with the kernel parameter
-"stackmon=<stacksize>:<mode>:<ticks>".
-
-The monitor can also compiled as a module.
-
-
-This patch is against 2.6.28.1. The patch is cpu independent, so it
-should work on all linux supported architectures, it was tested under
-x86 and powerpc. Also there is not dependency a library: glibc, uclibc
-and all other should work.
-
-I hope you like it and want ask what is necessary for inclusion into the
-main stream kernel or linux-next? If you have ideas how to do things in
-a better way, please let me know.
-
-Have a nice day,
-Stefani
++config PROC_STACK_MONITOR
++ 	default y
++	depends on PROC_STACK
++	bool "Enable /proc/stackmon detailed stack monitoring"
++ 	help
++	  This enables detailed monitoring of process and thread stack
++	  utilization via the /proc/stackmon interface.
++	  Disabling these interfaces will reduce the size of the kernel by
++	  approximately 2kb.
++
+ endmenu		# General setup
+ 
+ config HAVE_GENERIC_DMA_COHERENT
 
 
