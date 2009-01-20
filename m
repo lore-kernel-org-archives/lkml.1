@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbZATNDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbZATNFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbZATNDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZATNDa
+	id S1761261AbZATNFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZATNFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:03:30 -0500
-Received: from thunk.org ([69.25.196.29]:57802 "EHLO thunker.thunk.org"
+	Tue, 20 Jan 2009 08:05:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36516 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189AbZATND2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:03:28 -0500
-Date: Tue, 20 Jan 2009 08:03:22 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
-       Eric Sandeen <sandeen@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #12224] journal activity on inactive partition causes
-	inactive harddrive spinup
-Message-ID: <20090120130322.GB10037@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.jfD.SKRdJB@chimera>
+	id S1754767AbZATNFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 08:05:39 -0500
+Message-ID: <4975CBF8.90101@redhat.com>
+Date: Tue, 20 Jan 2009 15:04:56 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cX2gZ6Cy9nC.A.jfD.SKRdJB@chimera>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>	 <1232410363.4768.21.camel@kulgan.wumi.org.au>	 <20090120113546.GA26571@elte.hu> <1232455343.4895.4.camel@kulgan.wumi.org.au>
+In-Reply-To: <1232455343.4895.4.camel@kulgan.wumi.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 10:45:38PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12224
-> Subject		: journal activity on inactive partition causes inactive harddrive spinup
-> Submitter	: C Sights <csights@fastmail.fm>
-> Date		: 2008-12-14 11:39 (37 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c87591b719737b4e91eb1a9fa8fd55a4ff1886d6
-> Handled-By	: Eric Sandeen <sandeen@redhat.com>
-> 
+Kevin Shanahan wrote:
+> On Tue, 2009-01-20 at 12:35 +0100, Ingo Molnar wrote:
+>   
+>> * Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
+>>
+>>     
+>>> On Mon, 2009-01-19 at 22:45 +0100, Rafael J. Wysocki wrote:
+>>>       
+>>>> This message has been generated automatically as a part of a report
+>>>> of regressions introduced between 2.6.27 and 2.6.28.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+>>>> be listed and let me know (either way).
+>>>>
+>>>>
+>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
+>>>> Subject		: KVM guests stalling on 2.6.28 (bisected)
+>>>> Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
+>>>> Date		: 2009-01-17 03:37 (3 days old)
+>>>>         
+>>> Yes, please keep this on the list.
+>>>       
+>> This only seems to occur under KVM, right? I.e. you tested it with -no-kvm 
+>> and the problem went away, correct?
+>>     
+>
+> Well, the I couldn't make the test conditions identical, but it the
+> problem didn't occur with the test I was able to do:
+>
+>   http://marc.info/?l=linux-kernel&m=123228728416498&w=2
+>
+>   
 
-Yes, this should still be listed.  We have a proposed patch that
-should fix this, but it still needs to be finalized and tested.
+Can you also try with -no-kvm-irqchip?
 
-              	   	     	      - Ted
+You will need to comment out the lines
+
+    /* ISA IRQs map to GSI 1-1 except for IRQ0 which maps
+     * to GSI 2.  GSI maps to ioapic 1-1.  This is not
+     * the cleanest way of doing it but it should work. */
+
+    if (vector == 0)
+        vector = 2;
+
+in qemu/hw/apic.c (should also fix -no-kvm smp).  This will change kvm 
+wakeups to use signals rather than the in-kernel code, which may be buggy.
+
+-- 
+error compiling committee.c: too many arguments to function
+
