@@ -1,102 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbZATCAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761686AbZATCB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762820AbZATCAb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 21:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATCAV
+	id S1761686AbZATCB0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 21:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbZATCBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 21:00:21 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:22798 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754538AbZATCAU (ORCPT
+	Mon, 19 Jan 2009 21:01:16 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:41765 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756348AbZATCBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 21:00:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WDqidhwfF8wTnelf1WNN3vGAhU/DkOej13NFA9QuuOX06KbEmp8Efw76ogOM1mEwpH
-         kt1zRHMI9ZF4BoXNOaQADW78F/9c2pTGX00IYsMZD8MuZO25OK5YD3OR/oxZvxuTFpKK
-         tT2UGfyHqVnWLwPb/za87paMU8J7T/KDlQa+I=
+	Mon, 19 Jan 2009 21:01:15 -0500
+Message-ID: <49753063.8040007@hathawaymix.org>
+Date: Mon, 19 Jan 2009 19:01:07 -0700
+From: Shane Hathaway <shane@hathawaymix.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
 MIME-Version: 1.0
-In-Reply-To: <20090120011945.GA23380@oksana.dev.rtsoft.ru>
-References: <496A89A1.8050302@gmail.com>
-	 <646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>
-	 <20090120011945.GA23380@oksana.dev.rtsoft.ru>
-Date: Tue, 20 Jan 2009 13:00:19 +1100
-Message-ID: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
-Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
-From: Julian Calaby <julian.calaby@gmail.com>
-To: avorontsov@ru.mvista.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Anatolij Gustschin <agust@denx.de>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Matteo Fortini <m.fortini@selcomgroup.com>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Andrew Morton <akpm@linux-foundation.org>
+To: Daolong Wang <ahlongxp@gmail.com>
+CC: Jeff Dike <jdike@addtoit.com>, Rob Landley <rob@landley.net>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Am?rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090115194033.GA10926@hack.private>	 <20090116124158.4364e269.akpm@linux-foundation.org>	 <200901170328.15178.rob@landley.net>	 <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com>	 <20090119152104.GC6432@c2.user-mode-linux.org> <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
+In-Reply-To: <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-XM-SPF: eid=;;;mid=;;;hst=mx03.mta.xmission.com;;;ip=166.70.244.130;;;frm=shane@hathawaymix.org;;;spf=none
+X-XM-DomainKey: sender_domain=hathawaymix.org;;;sender=shane@hathawaymix.org;;;status=no signature
+X-SA-Exim-Connect-IP: 166.70.244.130
+X-SA-Exim-Mail-From: shane@hathawaymix.org
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Daolong Wang <ahlongxp@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0023]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [uml-devel] [Patch] uml: fix a link error
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx03.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> Should be Anatolij. ;-)
+Daolong Wang wrote:
+> On Mon, Jan 19, 2009 at 11:21 PM, Jeff Dike <jdike@addtoit.com> wrote:
+>> On Sun, Jan 18, 2009 at 02:23:46PM +0800, Daolong Wang wrote:
+>>> I can confirm this link error.
+>> In what environment?  I see no problems here.
 
-Who is the first person on the list, I guess he's missed this or isn't
-reading his email.
+I can also confirm this link error.  The problem occurs when compiling
+either 2.6.28.1 or 2.6.27.12; I didn't try anything earlier.  The patch
+suggested at this beginning of this thread did solve the link problem
+and the resulting kernel ran for several hours.  However, I think the
+patch is still probably incorrect.
 
-> But I'm interested in this driver as well.
->
-> FWIW, the patch looks OK, except for the long lines in the commit log.
+I'm going to repost what I said in another message I sent today, this
+time with a wider audience:
 
-I don't expect this to be applied as is. There is a better fix out
-there, but I don't know the hardware so I'm not sure what it is.
+The problem is that the name "sigprocmask" is getting renamed to
+"kernel_sigprocmask" by a compiler directive in arch/um/Makefile, then
+that name gets mangled into "sys_kernel_sigprocmask" by the
+SYSCALL_DEFINE3(sigprocmask, ...) macro in kernel/signal.c.
 
-> Also you'd better mention exact build error in the commit log.
+So, instead of the patch suggested earlier, I added the following line
+to arch/um/sys-i386/sys_call_table.S:
 
-Essentially it's a huge list of missing definitions for functions
-which aren't defined for SPARC. I'll reply with it if you really want
-it, however they look to be PPC specific. If they were generic I would
-have simply included the correct files so that it compiled, rather
-than this nasty hack.
+#define sys_sigprocmask sys_kernel_sigprocmask
 
-It also appears that these functions are not defined in the headers
-that this driver includes.
+This made it compile and link correctly.  Look at the symbols generated
+by the compile of signal.c to see what I mean:
 
-> (Btw, we'd better fix the build for sparc instead of adding another
-> "depends on". Could anybody point to some recent, working sparc cross
-> toolchain? Last time I googled for it I found only some prehistoric
-> versions that I didn't bother to try...)
+# nm kernel/signal.o | grep sigprocmask
+0000008f r __kstrtab_kernel_sigprocmask
+00000040 r __ksymtab_kernel_sigprocmask
+00001ea6 T kernel_sigprocmask
+00002d67 T sys_kernel_sigprocmask
+00001faf T sys_rt_sigprocmask
 
-Before we commit to fixing this properly, is it really worth it? Is
-this hardware ever likely to be used with SPARC?
+Unfortunately, it's a mystery to me that others haven't run into this
+before.  My host environment is RHEL 4 inside some kind of chroot.
 
-Given that there are PCI and OF versions of the driver, it seems to me
-that this is available as a PCI expansion card, and as a graphics chip
-built into some PPC motherboards. The initial commit says: "Lime GDC
-support is known to work on PPC440EPx based lwmon5 and MPC8544E based
-socrates embedded boards, both equipped with Lime GDC." so I'm
-guessing that this graphics chip is designed for embedded boards. I
-can find references to it's use in embedded automotive applications on
-Google but I can't find any reference to the Fujitsu LIME (MB86276)
-and SPARC on Google.
+Shane
 
-Note that the PCI version of this driver compiles fine with both
-allyesconfig and allmodconfig.
-
-If you're sure you want to do this, I'd check out crosstool for a
-SPARC cross-complier.
-
-Two other things:
-1. SPARC32 and SPARC64 can be compiled with the same compiler.
-2. These two platforms have slightly different OpenFirmware interfaces
-- so fixing it for both of these will be a pain.
-
-Thanks,
-
--- 
-
-Julian Calaby
-
-Email: julian.calaby@gmail.com
-.Plan: https://sites.google.com/site/juliancalaby/
