@@ -1,71 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZATFcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZATFo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZATFcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 00:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZATFcm
+	id S1757822AbZATFo6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 00:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZATFos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 00:32:42 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:55727 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbZATFcl (ORCPT
+	Tue, 20 Jan 2009 00:44:48 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35138 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZATFos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 00:32:41 -0500
-Message-ID: <497561E8.9070902@hathawaymix.org>
-Date: Mon, 19 Jan 2009 22:32:24 -0700
-From: Shane Hathaway <shane@hathawaymix.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-References: <49754AB5.3000701@hathawaymix.org> <20090120045959.GA18187@c2.user-mode-linux.org>
-In-Reply-To: <20090120045959.GA18187@c2.user-mode-linux.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Jan 2009 00:44:48 -0500
+Date: Tue, 20 Jan 2009 14:43:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH 1.5/4] cgroup: delay populate css id
+Message-Id: <20090120144337.82ed51d5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090120115832.0881506c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901191739t45c793afk2ceda8fc430121ce@mail.gmail.com>
+	<20090120110221.005e116c.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901191823q556faeeub28d02d39dda7396@mail.gmail.com>
+	<20090120115832.0881506c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-XM-SPF: eid=;;;mid=;;;hst=mx03.mta.xmission.com;;;ip=166.70.244.130;;;frm=shane@hathawaymix.org;;;spf=none
-X-XM-DomainKey: sender_domain=hathawaymix.org;;;sender=shane@hathawaymix.org;;;status=no signature
-X-SA-Exim-Connect-IP: 166.70.244.130
-X-SA-Exim-Mail-From: shane@hathawaymix.org
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeff Dike <jdike@addtoit.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Patch] UML: spurious interrupt freezes guest
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx03.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Mon, Jan 19, 2009 at 08:53:25PM -0700, Shane Hathaway wrote:
->> A new instance of user mode linux that I created over the past couple of
->> days worked pretty well except that it had a habit of freezing after a
->> few minutes.  Every time it froze, the last message on the console was
->> either:
->>
->> spurious interrupt in ubd_handler, err = 4
+On Tue, 20 Jan 2009 11:58:32 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > +               if (ss->use_id)
+> > +                       if (alloc_css_id(ss, parent, cgrp))
+> > +                               goto err_destroy;
+> > +               /* At error, ->destroy() callback has to free assigned ID. */
+> >        }
 > 
-> What version and what's the workload?
+> Should I delay to set css_id->css pointer to valid value until the end of
+> populate() ? (add populage_css_id() call after cgroup_populate_dir()).
+> 
+> I'd like to write add-on patch to the patch [1/4]. (or update it.)
+> css_id->css == NULL case is handled now, anyway.
+> 
 
-I got the spurious interrupt with both Linux 2.6.28.1 and 2.6.27.12 as
-guests.  The host runs 2.6.9-42.0.3.ELsmp.
+How about this ?
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-I am putting OpenVPN and Asterisk inside the guest.  The guest is based
-on Ubuntu 8.10.  The spurious interrupt happened more often when I
-restricted the guest's RAM.  The processes in the guest normally consume
-a total of about 20-24 MB of RAM.  I limited the guest's RAM to 48 MB
-and gave it a 64 MB swap partition.  When I gave the guest only 32 MB,
-the spurious interrupt seemed to happen more often.
+When CSS ID is attached, it's not guaranteed that the cgroup will
+be finally populated out. (some failure in create())
 
-The best way I found to trigger the spurious interrupt was to try to
-"apt-get install" many packages at once.  The download would succeed,
-but the guest would freeze partway through the install.
+But, scan by CSS ID can find CSS which is not fully initialized.
+This patch tries to prevent that by delaying to fill id->css pointer.
 
-Shane
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ kernel/cgroup.c |   22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+Index: mmotm-2.6.29-Jan16/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.29-Jan16.orig/kernel/cgroup.c
++++ mmotm-2.6.29-Jan16/kernel/cgroup.c
+@@ -569,6 +569,7 @@ static struct backing_dev_info cgroup_ba
+ 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
+ };
+ 
++static void populate_css_id(struct cgroup_subsys_state *id);
+ static int alloc_css_id(struct cgroup_subsys *ss,
+ 			struct cgroup *parent, struct cgroup *child);
+ 
+@@ -2329,6 +2330,12 @@ static int cgroup_populate_dir(struct cg
+ 		if (ss->populate && (err = ss->populate(ss, cgrp)) < 0)
+ 			return err;
+ 	}
++	/* This cgroup is ready now */
++	for_each_subsys(cgrp->root, ss) {
++		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
++		if (ss->use_id)
++			populate_css_id(css);
++	}
+ 
+ 	return 0;
+ }
+@@ -3252,8 +3259,9 @@ __setup("cgroup_disable=", cgroup_disabl
+  */
+ struct css_id {
+ 	/*
+-	 * The css to which this ID points. If cgroup is removed, this will
+-	 * be NULL. This pointer is expected to be RCU-safe because destroy()
++	 * The css to which this ID points. This pointer is set to valid value
++	 * after cgroup is populated. If cgroup is removed, this will be NULL.
++	 * This pointer is expected to be RCU-safe because destroy()
+ 	 * is called after synchronize_rcu(). But for safe use, css_is_removed()
+ 	 * css_tryget() should be used for avoiding race.
+ 	 */
+@@ -3401,6 +3409,13 @@ static int __init cgroup_subsys_init_idr
+ 	return 0;
+ }
+ 
++static void populate_css_id(struct cgroup_subsys_state *css)
++{
++	struct css_id *id = rcu_dereference(css->id);
++	if (id)
++		rcu_assign_pointer(id->css, css);
++}
++
+ static int alloc_css_id(struct cgroup_subsys *ss, struct cgroup *parent,
+ 			struct cgroup *child)
+ {
+@@ -3421,8 +3436,7 @@ static int alloc_css_id(struct cgroup_su
+ 	for (i = 0; i < depth; i++)
+ 		child_id->stack[i] = parent_id->stack[i];
+ 	child_id->stack[depth] = child_id->id;
+-
+-	rcu_assign_pointer(child_id->css, child_css);
++	/* child_id->css pointer will be set after this cgroup is available */
+ 	rcu_assign_pointer(child_css->id, child_id);
+ 
+ 	return 0;
+
