@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZATML1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbZATMNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbZATML1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbZATMLQ
+	id S1760851AbZATMNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZATMNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:11:16 -0500
-Received: from cet.com.ru ([195.178.208.66]:52909 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbZATMLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:11:15 -0500
-Date: Tue, 20 Jan 2009 15:11:15 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Ben Mansell <ben@zeus.com>
-Cc: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, jarkao2@gmail.com, dada1@cosmosbay.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090120121115.GA17277@ioremap.net>
-References: <20090115.153449.204259387.davem@davemloft.net> <20090115234255.GE1123@1wt.eu> <20090115234408.GA1693@1wt.eu> <20090115.155434.206643894.davem@davemloft.net> <20090119004206.GA10396@1wt.eu> <4975BD09.3020103@zeus.com>
+	Tue, 20 Jan 2009 07:13:37 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56507 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbZATMNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:13:37 -0500
+Date: Tue, 20 Jan 2009 07:13:35 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
+       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+Message-ID: <20090120121335.GA19182@infradead.org>
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4975BD09.3020103@zeus.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090120114906.GA12526@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 12:01:13PM +0000, Ben Mansell (ben@zeus.com) wrote:
-> I've also tested on the same three patches (against 2.6.27.2 here), and 
-> the patches appear to work just fine. I'm running a similar proxy 
-> benchmark test to Willy, on a machine with 4 gigabit NICs (2xtg3, 
-> 2xforcedeth). splice is working OK now, although I get identical results 
-> when using splice() or read()/write(): 2.4 Gbps at 100% CPU (2% user, 
-> 98% system).
+On Tue, Jan 20, 2009 at 06:49:06AM -0500, Christoph Hellwig wrote:
+> > > Just curious:  do you have CONFIG_LBD set?
+> > > 
+> > Hi Christoph,
+> > 
+> > the answer is:
+> > $ grep LBD .config
+> > # CONFIG_LBD is not set
+> 
+> Ok, let me reproduce it without that set..
 
-With small MTU or when driver does not support fragmented allocation
-(iirc at least forcedeth does not) skb will contain all the data in the
-linear part and thus will be copied in the kernel. read()/write() does
-effectively the same, but in userspace.
-This should only affect splice usage which involves socket->pipe data
-transfer.
+Ok, on 32-bit x86 without CONFIG_LBD I can reliably reproduce the issue
+with the following script:
 
-> I may be hitting a h/w limitation which prevents any higher throughput, 
-> but I'm a little surprised that splice() didn't use less CPU time. 
-> Anyway, the splice code is working which is the important part!
 
-Does splice without patches (but with performance improvement for
-non-blocking splice) has the same performance? It does not copy data,
-but you may hit the data corruption? If performance is the same, this
-maybe indeed HW limitation.
+#!/bin/bash
 
--- 
-	Evgeniy Polyakov
+TESTDIR=/mnt/test
+SCRATCHMNT=/mnt/scratch
+file=$SCRATCHMNT/f
+
+do_pwrite()
+{
+	offset=`expr $1 \* 512`
+	end=`expr $2 \* 512`
+	length=`expr $end - $offset`
+
+	xfs_io -d -f $file -c "pwrite $offset $length" >/dev/null
+}
+
+
+mkfs.xfs \
+	-b size=1024 \
+	-d file,name=$TESTDIR/fsfile,size=40146592b,agcount=16 \
+	-i attr=0 \
+	-l version=1
+
+mount -o loop,rw,noatime,nodiratime $TESTDIR/fsfile $SCRATCHMNT
+
+do_pwrite 30792 31039
+do_pwrite 30320 30791
+do_pwrite 29688 30319
+do_pwrite 29536 29687
+do_pwrite 27216 29535
+do_pwrite 24368 27215
+do_pwrite 21616 24367
+do_pwrite 20608 21615
+do_pwrite 19680 20607
+do_pwrite 19232 19679
+do_pwrite 17840 19231
+do_pwrite 16928 17839
+do_pwrite 15168 16927
+do_pwrite 14048 15167
+do_pwrite 12152 14047
+do_pwrite 11344 12151
+do_pwrite 8792 11343
+do_pwrite 6456 8791
+do_pwrite 5000 6455
+do_pwrite 1728 4999
+do_pwrite 0 1727
+
+sync
+sync
+
+> $SCRATCHMNT/bigfile
+
+#umount $SCRATCH
