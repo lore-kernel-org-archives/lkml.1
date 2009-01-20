@@ -1,122 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbZATWC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762286AbZATWCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761119AbZATWC3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbZATWB4
+	id S1762286AbZATWCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbZATWCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:01:56 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:49529 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbZATWBx (ORCPT
+	Tue, 20 Jan 2009 17:02:35 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:60033 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756090AbZATWBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:01:53 -0500
-Subject: Re: [PATCH 10/11] ext4: Remove unnecessary quota functions
-From: Mingming Cao <cmm@us.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1232129299-22018-11-git-send-email-jack@suse.cz>
-References: <yes> <1232129299-22018-1-git-send-email-jack@suse.cz>
-	 <1232129299-22018-2-git-send-email-jack@suse.cz>
-	 <1232129299-22018-3-git-send-email-jack@suse.cz>
-	 <1232129299-22018-4-git-send-email-jack@suse.cz>
-	 <1232129299-22018-5-git-send-email-jack@suse.cz>
-	 <1232129299-22018-6-git-send-email-jack@suse.cz>
-	 <1232129299-22018-7-git-send-email-jack@suse.cz>
-	 <1232129299-22018-8-git-send-email-jack@suse.cz>
-	 <1232129299-22018-9-git-send-email-jack@suse.cz>
-	 <1232129299-22018-10-git-send-email-jack@suse.cz>
-	 <1232129299-22018-11-git-send-email-jack@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Tue, 20 Jan 2009 13:41:54 -0800
-Message-Id: <1232487714.6464.15.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Jan 2009 17:01:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=IVRbcX5KPlTM2IfDMkmbWR5jve9Nw0TSb12UQgTduEnK3T+hfjhAad57B4r4/DBgRO
+         Ao0vQS3PmyLFgTldU976+pXECIggfRHdL12o+8C9ML2fPrsFVwcnf1h6zLPGFQ0pNmsP
+         bgNB814rqfzGsWyU2brkHipVX0I9uyhPwY8LE=
+MIME-Version: 1.0
+Date: Tue, 20 Jan 2009 16:43:23 -0500
+Message-ID: <5c9cd53b0901201343k11289f2dg24c62609cb42c494@mail.gmail.com>
+Subject: How to check input device
+From: mike zheng <mail4mz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-在 2009-01-16五的 19:08 +0100，Jan Kara写道：
-> ext4_dquot_initialize() and ext4_dquot_drop() is no longer
-> needed because of modified quota locking.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
+It is the first time for me to use the input device. I have a keypad
+driver registers a keypad the device as an input device in the kernel
+2.6. The registration of the driver is OK, I can see the interrupt
+whenever there is key pressed. How can I verify if it works fine?
+Where can I check keycode value of the key pressed?
 
-Reviewed_by: Mingming Cao <cmm@us.ibm.com>
-> ---
->  fs/ext4/super.c |   44 ++------------------------------------------
->  1 files changed, 2 insertions(+), 42 deletions(-)
-> 
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index e5f06a5..f0785fd 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -926,8 +926,6 @@ static int bdev_try_to_free_page(struct super_block *sb, struct page *page, gfp_
->  #define QTYPE2NAME(t) ((t) == USRQUOTA ? "user" : "group")
->  #define QTYPE2MOPT(on, t) ((t) == USRQUOTA?((on)##USRJQUOTA):((on)##GRPJQUOTA))
-> 
-> -static int ext4_dquot_initialize(struct inode *inode, int type);
-> -static int ext4_dquot_drop(struct inode *inode);
->  static int ext4_write_dquot(struct dquot *dquot);
->  static int ext4_acquire_dquot(struct dquot *dquot);
->  static int ext4_release_dquot(struct dquot *dquot);
-> @@ -942,8 +940,8 @@ static ssize_t ext4_quota_write(struct super_block *sb, int type,
->  				const char *data, size_t len, loff_t off);
-> 
->  static struct dquot_operations ext4_quota_operations = {
-> -	.initialize	= ext4_dquot_initialize,
-> -	.drop		= ext4_dquot_drop,
-> +	.initialize	= dquot_initialize,
-> +	.drop		= dquot_drop,
->  	.alloc_space	= dquot_alloc_space,
->  	.alloc_inode	= dquot_alloc_inode,
->  	.free_space	= dquot_free_space,
-> @@ -3378,44 +3376,6 @@ static inline struct inode *dquot_to_inode(struct dquot *dquot)
->  	return sb_dqopt(dquot->dq_sb)->files[dquot->dq_type];
->  }
-> 
-> -static int ext4_dquot_initialize(struct inode *inode, int type)
-> -{
-> -	handle_t *handle;
-> -	int ret, err;
-> -
-> -	/* We may create quota structure so we need to reserve enough blocks */
-> -	handle = ext4_journal_start(inode, 2*EXT4_QUOTA_INIT_BLOCKS(inode->i_sb));
-> -	if (IS_ERR(handle))
-> -		return PTR_ERR(handle);
-> -	ret = dquot_initialize(inode, type);
-> -	err = ext4_journal_stop(handle);
-> -	if (!ret)
-> -		ret = err;
-> -	return ret;
-> -}
-> -
-> -static int ext4_dquot_drop(struct inode *inode)
-> -{
-> -	handle_t *handle;
-> -	int ret, err;
-> -
-> -	/* We may delete quota structure so we need to reserve enough blocks */
-> -	handle = ext4_journal_start(inode, 2*EXT4_QUOTA_DEL_BLOCKS(inode->i_sb));
-> -	if (IS_ERR(handle)) {
-> -		/*
-> -		 * We call dquot_drop() anyway to at least release references
-> -		 * to quota structures so that umount does not hang.
-> -		 */
-> -		dquot_drop(inode);
-> -		return PTR_ERR(handle);
-> -	}
-> -	ret = dquot_drop(inode);
-> -	err = ext4_journal_stop(handle);
-> -	if (!ret)
-> -		ret = err;
-> -	return ret;
-> -}
-> -
->  static int ext4_write_dquot(struct dquot *dquot)
->  {
->  	int ret, err;
+Thanks in advance,
 
+Mike
+
+
+Here is what I have in system:
+
+# cat /proc/bus/input/handlers
+N: Number=0 Name=kbd
+N: Number=1 Name=evdev Minor=64
+# cat /proc/bus/input/devices
+I: Bus=0019 Vendor=0001 Product=0001 Version=0100
+N: Name="keypad"
+P: Phys=keypad/input0
+S: Sysfs=/devices/virtual/input/input0
+U: Uniq=
+H: Handlers=event0
+B: EV=20003
+B: KEY=102374 82c193c 53ff8708 1
+B: LED=285
+
+# ls -l /sys/devices/virtual/input/input0/
+drwxr-xr-x    2 root     root            0 Dec 31 16:01 capabilities
+drwxr-xr-x    2 root     root            0 Dec 31 16:01 event0
+drwxr-xr-x    2 root     root            0 Dec 31 16:01 id
+-r--r--r--    1 root     root         4096 Dec 31 16:01 modalias
+-r--r--r--    1 root     root         4096 Dec 31 16:01 name
+-r--r--r--    1 root     root         4096 Dec 31 16:01 phys
+lrwxrwxrwx    1 root     root            0 Dec 31 16:01 subsystem ->
+../../../../class/input
+-rw-r--r--    1 root     root         4096 Dec 31 16:01 uevent
+-r--r--r--    1 root     root         4096 Dec 31 16:01 uniq
