@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbZATPvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbZATPxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758428AbZATPvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 10:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZATPvg
+	id S1761443AbZATPxo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 10:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbZATPxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 10:51:36 -0500
-Received: from bowden.ucwb.org.au ([203.122.237.119]:49094 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbZATPvf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 10:51:35 -0500
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
+	Tue, 20 Jan 2009 10:53:36 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:47401 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755772AbZATPxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 10:53:35 -0500
+Date: Tue, 20 Jan 2009 09:53:34 -0600
+From: Jack Steiner <steiner@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <20090120142515.GC10224@elte.hu>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
-	 <20090120113546.GA26571@elte.hu>
-	 <1232455343.4895.4.camel@kulgan.wumi.org.au>
-	 <20090120125652.GA1457@elte.hu>
-	 <1232461380.4895.33.camel@kulgan.wumi.org.au>
-	 <20090120142515.GC10224@elte.hu>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Wed, 21 Jan 2009 02:21:26 +1030
-Message-Id: <1232466686.4895.45.camel@kulgan.wumi.org.au>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86: make UV support configurable
+Message-ID: <20090120155334.GB225848@sgi.com>
+References: <20090120033604.GF16304@wotan.suse.de> <20090120142733.GD10224@elte.hu> <20090120155000.GA27200@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120155000.GA27200@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-20 at 15:25 +0100, Ingo Molnar wrote:
-> > I could run top, vmstat and cat /proc/sched_debug in a loop until the
-> > problem occurs and then trim it. Something like:
-> > 
-> > while true; do
-> >   date                                >> $FILE
-> >   echo "-- top: --"                   >> $FILE
-> >   top -H -c -b -d 1 -n 0.5            >> $FILE 2>/dev/null
-> >   echo "-- vmstat: --"                >> $FILE
-> >   vmstat                              >> $FILE 2>/dev/null
-> >   echo "-- sched_debug #$i: --"       >> $FILE
-> >   cat /proc/sched_debug               >> $FILE 2>/dev/null
-> > done
-> > 
-> > That should take a snapshot every half second or so.
+On Tue, Jan 20, 2009 at 04:50:00PM +0100, Ingo Molnar wrote:
 > 
-> Yeah, that would be lovely. You dont even have to trim it much - just give 
-> us a timestamp to look at for the delay incident. You might also want to 
-> start the kvm session while the script is already running - that way we'll 
-> get fresh statistics and see the whole thing.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > > Fixed the EFI omission since the last patch. I have not changed the 
+> > > Kconfig to include (what I think are) false dependencies (which really 
+> > > frustrate me when things get badly tangled up). If people want to test 
+> > > as much stuff as possible even that is not supported by their hardware, 
+> > > we have allyesconfig/allmodconfig. I don't think UV is particularly 
+> > > special in that respect (we allow Intel, AMD, etc CPUs to be configured 
+> > > out)
+> > > 
+> > > If anything, X86_UV should *select* MAXSMP, rather than the other way 
+> > > around. That would be more logical, but even then I don't like adding 
+> > > still a false dep because one might have a small UV system, or want to 
+> > > test with different NR_CPUS.
+> > > 
+> > > Anyway, I think this patch is good as-is. If someone wants to streamline 
+> > > config options with subsequent patches, that's great. If Ingo can be 
+> > > convinced of a better arrangement, fine.
+> > 
+> > Applied to tip/x86/uv, thanks Nick!
+> 
+> hm, build failure with the attached config:
+> 
+> 
+> drivers/built-in.o: In function `gru_cpu_fault_map_id':
+> : undefined reference to `per_cpu____uv_hub_info'
+> drivers/built-in.o: In function `gru_fault':
+> : undefined reference to `per_cpu____uv_hub_info'
+> drivers/built-in.o: In function `gru_try_dropin':
+> grufault.c:(.text+0xbfc6e): undefined reference to 
+> `per_cpu____uv_hub_info'
+> grufault.c:(.text+0xc0042): undefined reference to 
+> `per_cpu____uv_hub_info'
+> [...]
+> 
+> (if possible please send a delta fix on top of your previous patch.)
 
-I've uploaded the debug info here:
-  http://disenchant.net/tmp/bug-12465/
-
-Some interesting sections should be around these times:
-
-  01:36:04 -> 01:36:27
-  01:37:30 -> 01:37:42
-  01:37:52 -> 01:37:56
-  01:39:37 -> 01:39:40
-  01:40:01 -> 01:40:14
-
-The output from ping is there too so you can see how the delays usually
-show up (e.g. in clusters). The large debug file runs from before I
-launched the VMs, right through the ping test. The trimmed file just
-cuts out everything before I started ping.
-
-Regards,
-Kevin.
+The GRU driver makes sense only on UV & IA64 configurations.
 
 
+
+--- jack
