@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbZATQqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZATQvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbZATQqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 11:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZATQqV
+	id S1761278AbZATQvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 11:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbZATQuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 11:46:21 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:41676 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731AbZATQqU (ORCPT
+	Tue, 20 Jan 2009 11:50:50 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:51335 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757925AbZATQut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 11:46:20 -0500
-Date: Tue, 20 Jan 2009 17:46:18 +0100
+	Tue, 20 Jan 2009 11:50:49 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mattia Dongili <malattia@linux.it>
-Subject: Re: [Bug #12494] Sony backlight regression from 2.6.28 to 29-rc
-Message-ID: <20090120164618.GD31127@gamma.logic.tuwien.ac.at>
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.ZGH.j9QdJB@chimera>
+Subject: Re: [2.6.29-rc2] First suspend after reboot resumes immediately.
+Date: Tue, 20 Jan 2009 19:50:22 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
+Cc: linux-usb@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200901192339.03967.arvidjaar@mail.ru> <200901192146.26753.rjw@sisk.pl>
+In-Reply-To: <200901192146.26753.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2QN7KFic7LG.A.ZGH.j9QdJB@chimera>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Type: multipart/signed;
+  boundary="nextPart2149237.TRNfptcxHJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901201950.25347.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mo, 19 Jan 2009, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12494
-> Subject		: Sony backlight regression from 2.6.28 to 29-rc
+--nextPart2149237.TRNfptcxHJ
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes it is.
+On 19 =D1=8F=D0=BD=D0=B2=D0=B0=D1=80=D1=8F 2009 23:46:26 Rafael J. Wysocki =
+wrote:
+> On Monday 19 January 2009, Andrey Borzenkov wrote:
+> > Subsequent suspends seem fine. I suspect it is related to USB
+> > controller; but because I see ACPI related message this is sent to
+> > linux-acpi as well.
+> >
+> > Specifically, I am suspicious of this:
+> >
+> > [  132.763954] ohci_hcd 0000:00:02.0: wake-up capability enabled by
+> > ACPI
+> >
+> > The controller immediately resumes after any attempt to suspend it,
+> > so any autosuspend functionality is currently disabled. But it
+> > /looks/ like ACPI somehow tries to do it anyway.
+> >
+> > I can also reproduce it by unloading and reloading USB drivers
+> > which supports USB guess.
+>
+> This looks like http://bugzilla.kernel.org/show_bug.cgi?id=3D12399 .
+>
 
-Best wishes
+Yes.
 
-Norbert
+--nextPart2149237.TRNfptcxHJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-DITHERINGTON (n)
-Sudden access to panic experienced by one who realises that he is
-being drawn inexorably into a clabby (q.v.) conversion, i.e. one he
-has no hope of enjoying, benefiting from or understanding.
-			--- Douglas Adams, The Meaning of Liff
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkl2ANEACgkQR6LMutpd94z1ewCeLZrI3LJUy01Rj+9RUzDrTI/0
+icwAnAxPrIWqJk8D26vKoTlgAyF7gI+a
+=J4cM
+-----END PGP SIGNATURE-----
+
+--nextPart2149237.TRNfptcxHJ--
