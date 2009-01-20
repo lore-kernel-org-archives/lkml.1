@@ -1,167 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbZATBN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbZATBSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761506AbZATBN2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbZATBNT
+	id S1760673AbZATBSY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZATBSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:13:19 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36503 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754919AbZATBNS (ORCPT
+	Mon, 19 Jan 2009 20:18:08 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:46400 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbZATBSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:13:18 -0500
-Date: Mon, 19 Jan 2009 17:09:53 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
-       bastian@waldi.eu.org
-Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7][v7] Protect cinit from unblocked SIG_DFL signals
-Message-ID: <20090120010953.GC14612@us.ibm.com>
-References: <20090117202638.GA11825@us.ibm.com> <20090117203621.GE11825@us.ibm.com>
+	Mon, 19 Jan 2009 20:18:07 -0500
+Message-ID: <49752649.3000508@hathawaymix.org>
+Date: Mon, 19 Jan 2009 18:18:01 -0700
+From: Shane Hathaway <shane@hathawaymix.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090117203621.GE11825@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: linux-kernel@vger.kernel.org
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-XM-SPF: eid=;;;mid=;;;hst=mx02.mta.xmission.com;;;ip=166.70.244.130;;;frm=shane@hathawaymix.org;;;spf=none
+X-XM-DomainKey: sender_domain=hathawaymix.org;;;sender=shane@hathawaymix.org;;;status=no signature
+X-SA-Exim-Connect-IP: 166.70.244.130
+X-SA-Exim-Mail-From: shane@hathawaymix.org
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: **;linux-kernel@vger.kernel.org
+X-Spam-Relay-Country: 
+X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
+	*      [URIs: lkml.org]
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0010]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: uml: sigprocmask fix
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minor update - set 'from_ancestor_ns' parameter to 0 in send_sigque().
+I just ran into the same issue described here:
 
----
+http://lkml.org/lkml/2009/1/15/194
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 24 Dec 2008 14:03:57 -0800
-Subject: [PATCH 4/7][v7] Protect cinit from unblocked SIG_DFL signals
+Like Americo Wang, my user mode linux compile failed when attempting to
+link ".tmp_vmlinux".  However, his patch is probably wrong.  The problem
+is that the name "sigprocmask" is getting renamed to
+"kernel_sigprocmask" by a compiler directive in arch/um/Makefile, then
+that name gets mangled into "sys_kernel_sigprocmask" by the
+SYSCALL_DEFINE3(sigprocmask, ...) macro in kernel/signal.c.
 
-Drop early any SIG_DFL or SIG_IGN signals to container-init from within
-the same container. But queue SIGSTOP and SIGKILL to the container-init
-if they are from an ancestor container.
+So I added the following line to arch/um/sys-i386/sys_call_table.S:
 
-Blocked, fatal signals (i.e when SIG_DFL is to terminate) from within the
-container can still terminate the container-init. That will be addressed
-in the next patch.
+#define sys_sigprocmask sys_kernel_sigprocmask
 
-Note:	To be bisect-safe, SIGNAL_UNKILLABLE will be set for container-inits
-   	in a follow-on patch. Until then, this patch is just a preparatory
-	step.
+This made it compile and link correctly.  Look at the symbols generated
+by the compile of signal.c to see what I mean:
 
-Changelog[v7]:
-	- (Oleg Nesterov) Bugfix: send_sigqueue() should use from_ancestor_ns=0
-	- siginfo_from_user(), siginfo_from_ancestor_ns() are needed in only
-	  one place.  Remove them and move their logic into send_signal().
-	  Seems to make code more easier to read :-)
+# nm kernel/signal.o | grep sigprocmask
+0000008f r __kstrtab_kernel_sigprocmask
+00000040 r __ksymtab_kernel_sigprocmask
+00001ea6 T kernel_sigprocmask
+00002d67 T sys_kernel_sigprocmask
+00001faf T sys_rt_sigprocmask
 
-Changelog[v6]:
-	- (Roland McGrath) Remove unnecessary helper signal_task_unkillable()
-	  and fold checks into sig_task_ignored().
+Unfortunately, it's a mystery to me that others haven't run into this
+before.
 
-Changelog[v4]:
-	- (Oleg Nesterov) Remove SIGNAL_UNKILLABLE_FROM_NS and rename
-	  'same_ns' to 'from_ancestor_ns'.
-	- SIGNAL_UNKILLABLE is not yet set for container-inits (will be
-	  set in follow-on patch).
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- kernel/signal.c |   28 +++++++++++++++++++---------
- 1 files changed, 19 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/signal.c b/kernel/signal.c
-index bb3b6f5..35556aa 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -53,20 +53,21 @@ static int sig_handler_ignored(void __user *handler, int sig)
- 		(handler == SIG_DFL && sig_kernel_ignore(sig));
- }
- 
--static int sig_task_ignored(struct task_struct *t, int sig)
-+static int sig_task_ignored(struct task_struct *t, int sig,
-+		int from_ancestor_ns)
- {
- 	void __user *handler;
- 
- 	handler = sig_handler(t, sig);
- 
- 	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
--			handler == SIG_DFL)
-+			handler == SIG_DFL && !from_ancestor_ns)
- 		return 1;
- 
- 	return sig_handler_ignored(handler, sig);
- }
- 
--static int sig_ignored(struct task_struct *t, int sig)
-+static int sig_ignored(struct task_struct *t, int sig, int from_ancestor_ns)
- {
- 	/*
- 	 * Blocked signals are never ignored, since the
-@@ -76,7 +77,7 @@ static int sig_ignored(struct task_struct *t, int sig)
- 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
- 		return 0;
- 
--	if (!sig_task_ignored(t, sig))
-+	if (!sig_task_ignored(t, sig, from_ancestor_ns))
- 		return 0;
- 
- 	/*
-@@ -632,7 +633,7 @@ static int check_kill_permission(int sig, struct siginfo *info,
-  * Returns true if the signal should be actually delivered, otherwise
-  * it should be dropped.
-  */
--static int prepare_signal(int sig, struct task_struct *p)
-+static int prepare_signal(int sig, struct task_struct *p, int from_ancestor_ns)
- {
- 	struct signal_struct *signal = p->signal;
- 	struct task_struct *t;
-@@ -716,7 +717,7 @@ static int prepare_signal(int sig, struct task_struct *p)
- 		}
- 	}
- 
--	return !sig_ignored(p, sig);
-+	return !sig_ignored(p, sig, from_ancestor_ns);
- }
- 
- /*
-@@ -830,7 +831,8 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
- 	trace_sched_signal_send(sig, t);
- 
- 	assert_spin_locked(&t->sighand->siglock);
--	if (!prepare_signal(sig, t))
-+
-+	if (!prepare_signal(sig, t, from_ancestor_ns))
- 		return 0;
- 
- 	pending = group ? &t->signal->shared_pending : &t->pending;
-@@ -899,7 +901,15 @@ out_set:
- static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
- 			int group)
- {
--	return __send_signal(sig, info, t, group, 0);
-+	int from_ancestor_ns = 0;
-+
-+#ifdef CONFIG_PID_NS
-+	if (!is_si_special(info) && SI_FROMUSER(info) &&
-+			task_pid_nr_ns(current, task_active_pid_ns(t)) <= 0)
-+		from_ancestor_ns = 1;
-+#endif
-+
-+	return __send_signal(sig, info, t, group, from_ancestor_ns);
- }
- 
- int print_fatal_signals;
-@@ -1331,7 +1341,7 @@ int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
- 		goto ret;
- 
- 	ret = 1; /* the signal is ignored */
--	if (!prepare_signal(sig, t))
-+	if (!prepare_signal(sig, t, 0))
- 		goto out;
- 
- 	ret = 0;
--- 
-1.5.2.5
+Shane
 
