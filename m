@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbZATAXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764104AbZATAY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760083AbZATAXv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764821AbZATARo
+	id S1764104AbZATAY0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764822AbZATARo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 19 Jan 2009 19:17:44 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45176 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:54544 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764775AbZATARf (ORCPT
+	with ESMTP id S1764785AbZATARe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:17:35 -0500
-Message-Id: <20090120001733.836881476@goodmis.org>
+	Mon, 19 Jan 2009 19:17:34 -0500
+Message-Id: <20090120001732.994680098@goodmis.org>
 References: <20090120001542.687427797@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 19 Jan 2009 19:15:49 -0500
+Date: Mon, 19 Jan 2009 19:15:46 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
+       Markus Metzger <markus.t.metzger@intel.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 7/8] ring-buffer: fix alignment problem
-Content-Disposition: inline; filename=0007-ring-buffer-fix-alignment-problem.patch
+Subject: [PATCH 4/8] x86, ftrace, hw-branch-tracer: change trace format
+Content-Disposition: inline; filename=0004-x86-ftrace-hw-branch-tracer-change-trace-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Markus Metzger <markus.t.metzger@intel.com>
 
-Impact: fix to allow some archs to use the ring buffer
+Change the hw-branch-tracer format.
 
-Commits in the ring buffer are checked by pointer arithmetic.
-If the calculation is incorrect, then the commits will never take
-place and the buffer will simply fill up and report an error.
-
-Each page in the ring buffer has a small header:
-
-struct buffer_data_page {
-	u64		time_stamp;
-	local_t		commit;
-	unsigned char	data[];
-};
-
-Unfortuntely, some of the calculations used sizeof(struct buffer_data_page)
-to know the size of the header. But this is incorrect on some archs,
-where sizeof(struct buffer_data_page) does not equal
-offsetof(struct buffer_data_page, data), and on those archs, the commits
-are never processed.
-
-This patch replaces the sizeof with offsetof.
-
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ring_buffer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/trace_hw_branches.c |   13 +++++--------
+ 1 files changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 0b9de5a..8de026d 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -244,7 +244,7 @@ static inline int test_time_stamp(u64 delta)
- 	return 0;
+diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
+index 372b47a..fff3545 100644
+--- a/kernel/trace/trace_hw_branches.c
++++ b/kernel/trace/trace_hw_branches.c
+@@ -146,10 +146,7 @@ static void bts_trace_reset(struct trace_array *tr)
+ 
+ static void bts_trace_print_header(struct seq_file *m)
+ {
+-	seq_puts(m,
+-		 "# CPU#        FROM                   TO         FUNCTION\n");
+-	seq_puts(m,
+-		 "#  |           |                     |             |\n");
++	seq_puts(m, "# CPU#        TO  <-  FROM\n");
  }
  
--#define BUF_PAGE_SIZE (PAGE_SIZE - sizeof(struct buffer_data_page))
-+#define BUF_PAGE_SIZE (PAGE_SIZE - offsetof(struct buffer_data_page, data))
+ static enum print_line_t bts_trace_print_line(struct trace_iterator *iter)
+@@ -157,15 +154,15 @@ static enum print_line_t bts_trace_print_line(struct trace_iterator *iter)
+ 	struct trace_entry *entry = iter->ent;
+ 	struct trace_seq *seq = &iter->seq;
+ 	struct hw_branch_entry *it;
++	unsigned long symflags = TRACE_ITER_SYM_OFFSET;
  
- /*
-  * head_page == tail_page && head == tail then buffer is empty.
+ 	trace_assign_type(it, entry);
+ 
+ 	if (entry->type == TRACE_HW_BRANCHES) {
+ 		if (trace_seq_printf(seq, "%4d  ", entry->cpu) &&
+-		    trace_seq_printf(seq, "0x%016llx -> 0x%016llx ",
+-				     it->from, it->to) &&
+-		    (!it->from ||
+-		     seq_print_ip_sym(seq, it->from, /* sym_flags = */ 0)) &&
++		    seq_print_ip_sym(seq, it->to, symflags) &&
++		    trace_seq_printf(seq, "\t  <-  ") &&
++		    seq_print_ip_sym(seq, it->from, symflags) &&
+ 		    trace_seq_printf(seq, "\n"))
+ 			return TRACE_TYPE_HANDLED;
+ 		return TRACE_TYPE_PARTIAL_LINE;;
 -- 
 1.5.6.5
 
