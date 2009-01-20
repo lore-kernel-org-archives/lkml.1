@@ -1,86 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761049AbZATMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATMmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761049AbZATMjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZATMi7
+	id S1758617AbZATMmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:42:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZATMmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:38:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40621 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbZATMi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:38:57 -0500
-Date: Tue, 20 Jan 2009 13:38:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex:
-	implement adaptive spinning
-Message-ID: <20090120123824.GD7790@elte.hu>
-References: <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain> <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de>
+	Tue, 20 Jan 2009 07:42:40 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:44724 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbZATMmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:42:39 -0500
+Message-ID: <4975C76D.9020208@novell.com>
+Date: Tue, 20 Jan 2009 07:45:33 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120005124.GD16304@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Ma, Chinang" <chinang.ma@intel.com>
+CC: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       Steven Rostedt <srostedt@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
+Subject: Re: Mainline kernel OLTP performance update
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>	 <20090114163557.11e097f2.akpm@linux-foundation.org>	 <20090115012147.GW29283@parisc-linux.org>	 <20090114180431.f4a96543.akpm@linux-foundation.org>	 <1232028766.5966.10.camel@localhost.localdomain>	 <20090115094442.b6394544.akpm@linux-foundation.org>	 <20090115180052.GG29283@parisc-linux.org> <1232043287.21980.65.camel@localhost.localdomain> <496F8421.3070703@novell.com> <CAC4B8726E86A142B27A9E9A2F2F12479D4403CE@rrsmsx505.amr.corp.intel.com> <BC02C49EEB98354DBA7F5DD76F2A9E8003175EB45B@azsmsx501.amr.corp.intel.com> <4970CE79.1080002@novell.com>
+In-Reply-To: <4970CE79.1080002@novell.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig1D8037201D5825D038EA98D2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1D8037201D5825D038EA98D2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Nick Piggin <npiggin@suse.de> wrote:
+Gregory Haskins wrote:
+>
+> Then, email the contents of /sys/kernel/debug/tracing/trace to me
+>
+>
+>  =20
 
-> > > it seems like a nice opt-in thing that can be used where the aliases 
-> > > are verified and the code is particularly performance critical...
-> > 
-> > Yes. I think we could use it in the kernel, although I'm not sure how 
-> > many cases we would ever find where we really care.
-> 
-> Yeah, we don't tend to do a lot of intensive data processing, so it is 
-> normally the cache misses that hurt most as you noted earlier.
-> 
-> Some places it might be appropriate, though. It might be nice if it can 
-> bring code size down too...
+[ Chinang has performed the trace as requested, but replied with a
+reduced CC to avoid spamming people with a large file.  This is
+restoring the original list]
 
-I checked, its size effects were miniscule [0.17%] on the x86 defconfig 
-kernel and it seems to be a clear loss in total cost as there would be an 
-ongoing maintenance cost of this weird new variant of C that language 
-lawyers legislated out of thin air and which departs so significantly from 
-time-tested C coding concepts and practices.
 
-We'd have to work around aliasing warnings of the compiler again and again 
-with no upside and in fact i'd argue that the resulting code is _less_ 
-clean.
+Ma, Chinang wrote:
+> Hi Gregory,
+> Trace in attachment. I trim down the distribution list. As the attachme=
+nt is quite big.
+>
+> Thanks,
+> -Chinang
+>  =20
+Hi Chinang,
 
-The lack of data processing complexity in the kernel is not a surprise: 
-the kernel is really just a conduit/abstractor between hw and apps, and 
-rarely generates genuinely new information. (In fact it can be generally 
-considered a broken system call concept if such data processing _has_ to 
-be conducted somewhere in the kernel.)
+  Thank you very much for taking the time to do this.  I have analyzed
+the trace: I do not see any smoking gun w.r.t. the theory that we are
+over IPI'ing the system.  There were holes in the data due to trace
+limitations that rendered some of the data inconclusive.  However, the
+places where we did not run into trace limitations looked like
+everything was functioning as designed.
 
-( Notable exceptions would be the crypto code and the RAID5 [XOR checksum]
-  and RAID6 [polinomial checksums] code - but those tend to be seriously
-  hand-optimized already, with the most critical bits written in assembly. )
+That being said, I do see that you have a ton of prio 48(ish) threads
+that are over-straining the RT push logic.  The interesting thing here
+is I recently pushed some patches to tip that have potential to help you
+here.  Could you try your test using the sched/rt branch from -tip?=20
+Here is a clone link, for your convenience:
 
-	Ingo
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git sched=
+/rt
+
+For this run, do _not_ use the trace patch/config.  I just want to see
+if you observe performance improvements with OLTP configured for RT prio
+when compared to historic rt-push/pull based kernels (including HEAD on
+linus.git, as tested in the last run)
+
+Thanks!
+-Greg
+
+
+
+--------------enig1D8037201D5825D038EA98D2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkl1x20ACgkQlOSOBdgZUxl9DgCeMOkzM1OfIV5ALA2L9PvO05Gz
+G9AAn3CuAYh1/BNgv/fYwgwNa/O4nOEt
+=I2KJ
+-----END PGP SIGNATURE-----
+
+--------------enig1D8037201D5825D038EA98D2--
