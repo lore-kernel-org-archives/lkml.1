@@ -1,235 +1,500 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZATOMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbZATONE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbZATOMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZATOMR
+	id S1756765AbZATONE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:13:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZATOMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:12:17 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57693 "EHLO smtp.mba.ocn.ne.jp"
+	Tue, 20 Jan 2009 09:12:19 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57747 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZATOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753463AbZATOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Jan 2009 09:12:16 -0500
 From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 To: linux-mips@linux-mips.org
 Cc: ralf@linux-mips.org, linux-mtd@lists.infradead.org, dwmw2@infradead.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] RBTX4939: Add MTD support
-Date: Tue, 20 Jan 2009 23:12:16 +0900
-Message-Id: <1232460738-4714-2-git-send-email-anemo@mba.ocn.ne.jp>
+Subject: [PATCH 3/5] MTD: TXx9 SoC NAND Flash Memory Controller driver (v2)
+Date: Tue, 20 Jan 2009 23:12:17 +0900
+Message-Id: <1232460738-4714-3-git-send-email-anemo@mba.ocn.ne.jp>
 X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add platform support for NOR flash chips on RBTX4939 board.
-This board has complex flash mappings, controlled by its DIPSW setting.
+This patch adds support for the integrated NAND flash controller of the
+TXx9 family.
+
+Once upon a time there were tx4925ndfmc and tx4938ndfmc driver.  They
+were removed due to bitrot in 2005.
+This new driver is completely rewritten based on a driver in CELF patch
+archive.
 
 Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
- arch/mips/include/asm/txx9/rbtx4939.h |    9 ++
- arch/mips/txx9/rbtx4939/setup.c       |  157 +++++++++++++++++++++++++++++++++
- 2 files changed, 166 insertions(+), 0 deletions(-)
+ drivers/mtd/nand/Kconfig     |    6 +
+ drivers/mtd/nand/Makefile    |    1 +
+ drivers/mtd/nand/txx9ndfmc.c |  426 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 433 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mtd/nand/txx9ndfmc.c
 
-diff --git a/arch/mips/include/asm/txx9/rbtx4939.h b/arch/mips/include/asm/txx9/rbtx4939.h
-index 1acf428..e517899 100644
---- a/arch/mips/include/asm/txx9/rbtx4939.h
-+++ b/arch/mips/include/asm/txx9/rbtx4939.h
-@@ -130,4 +130,13 @@
- void rbtx4939_prom_init(void);
- void rbtx4939_irq_setup(void);
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index 8b12e6e..e43c9b0 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -427,4 +427,10 @@ config MTD_NAND_SH_FLCTL
+ 	  Several Renesas SuperH CPU has FLCTL. This option enables support
+ 	  for NAND Flash using FLCTL. This driver support SH7723.
  
-+struct mtd_partition;
-+struct map_info;
-+struct rbtx4939_flash_data {
-+	unsigned int width;
-+	unsigned int nr_parts;
-+	struct mtd_partition *parts;
-+	void (*map_init)(struct map_info *map);
++config MTD_NAND_TXX9NDFMC
++	tristate "NAND Flash support for TXx9 SoC"
++	depends on SOC_TX4938 || SOC_TX4939
++	help
++	  This enables the NAND flash controller on the TXx9 SoCs.
++
+ endif # MTD_NAND
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+index b661586..aec0352 100644
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -36,5 +36,6 @@ obj-$(CONFIG_MTD_NAND_FSL_ELBC)		+= fsl_elbc_nand.o
+ obj-$(CONFIG_MTD_NAND_FSL_UPM)		+= fsl_upm.o
+ obj-$(CONFIG_MTD_NAND_SH_FLCTL)		+= sh_flctl.o
+ obj-$(CONFIG_MTD_NAND_MXC)		+= mxc_nand.o
++obj-$(CONFIG_MTD_NAND_TXX9NDFMC)	+= txx9ndfmc.o
+ 
+ nand-objs := nand_base.o nand_bbt.o
+diff --git a/drivers/mtd/nand/txx9ndfmc.c b/drivers/mtd/nand/txx9ndfmc.c
+new file mode 100644
+index 0000000..4c5c847
+--- /dev/null
++++ b/drivers/mtd/nand/txx9ndfmc.c
+@@ -0,0 +1,426 @@
++/*
++ * TXx9 NAND flash memory controller driver
++ * Based on RBTX49xx patch from CELF patch archive.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * (C) Copyright TOSHIBA CORPORATION 2004-2007
++ * All Rights Reserved.
++ */
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++#include <linux/io.h>
++#include <asm/txx9/ndfmc.h>
++
++/* TXX9 NDFMC Registers */
++#define TXX9_NDFDTR	0x00
++#define TXX9_NDFMCR	0x04
++#define TXX9_NDFSR	0x08
++#define TXX9_NDFISR	0x0c
++#define TXX9_NDFIMR	0x10
++#define TXX9_NDFSPR	0x14
++#define TXX9_NDFRSTR	0x18	/* not TX4939 */
++
++/* NDFMCR : NDFMC Mode Control */
++#define TXX9_NDFMCR_WE	0x80
++#define TXX9_NDFMCR_ECC_ALL	0x60
++#define TXX9_NDFMCR_ECC_RESET	0x60
++#define TXX9_NDFMCR_ECC_READ	0x40
++#define TXX9_NDFMCR_ECC_ON	0x20
++#define TXX9_NDFMCR_ECC_OFF	0x00
++#define TXX9_NDFMCR_CE	0x10
++#define TXX9_NDFMCR_BSPRT	0x04	/* TX4925/TX4926 only */
++#define TXX9_NDFMCR_ALE	0x02
++#define TXX9_NDFMCR_CLE	0x01
++/* TX4939 only */
++#define TXX9_NDFMCR_X16	0x0400
++#define TXX9_NDFMCR_DMAREQ_MASK	0x0300
++#define TXX9_NDFMCR_DMAREQ_NODMA	0x0000
++#define TXX9_NDFMCR_DMAREQ_128	0x0100
++#define TXX9_NDFMCR_DMAREQ_256	0x0200
++#define TXX9_NDFMCR_DMAREQ_512	0x0300
++#define TXX9_NDFMCR_CS_MASK	0x0c
++#define TXX9_NDFMCR_CS(ch)	((ch) << 2)
++
++/* NDFMCR : NDFMC Status */
++#define TXX9_NDFSR_BUSY	0x80
++/* TX4939 only */
++#define TXX9_NDFSR_DMARUN	0x40
++
++/* NDFMCR : NDFMC Reset */
++#define TXX9_NDFRSTR_RST	0x01
++
++struct txx9ndfmc_priv {
++	struct platform_device *dev;
++	struct nand_chip chip;
++	struct mtd_info mtd;
++	int cs;
++	char mtdname[BUS_ID_SIZE + 2];
 +};
 +
- #endif /* __ASM_TXX9_RBTX4939_H */
-diff --git a/arch/mips/txx9/rbtx4939/setup.c b/arch/mips/txx9/rbtx4939/setup.c
-index 74839f2..eee8763 100644
---- a/arch/mips/txx9/rbtx4939/setup.c
-+++ b/arch/mips/txx9/rbtx4939/setup.c
-@@ -16,6 +16,9 @@
- #include <linux/leds.h>
- #include <linux/interrupt.h>
- #include <linux/smc91x.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/map.h>
- #include <asm/reboot.h>
- #include <asm/txx9/generic.h>
- #include <asm/txx9/pci.h>
-@@ -282,6 +285,159 @@ static void rbtx4939_7segled_putc(unsigned int pos, unsigned char val)
- 	__rbtx4939_7segled_putc(pos, val);
- }
- 
-+#if defined(CONFIG_MTD_RBTX4939) || defined(CONFIG_MTD_RBTX4939_MODULE)
-+/* special mapping for boot rom */
-+static unsigned long rbtx4939_flash_fixup_ofs(unsigned long ofs)
-+{
-+	u8 bdipsw = readb(rbtx4939_bdipsw_addr) & 0x0f;
-+	unsigned char shift;
++#define MAX_TXX9NDFMC_DEV	4
++struct txx9ndfmc_drvdata {
++	struct mtd_info *mtds[MAX_TXX9NDFMC_DEV];
++	void __iomem *base;
++	unsigned char hold;	/* in gbusclock */
++	unsigned char spw;	/* in gbusclock */
++	struct nand_hw_control hw_control;
++};
 +
-+	if (bdipsw & 8) {
-+		/* BOOT Mode: USER ROM1 / USER ROM2 */
-+		shift = bdipsw & 3;
-+		/* rotate A[23:22] */
-+		return (ofs & ~0xc00000) | ((((ofs >> 22) + shift) & 3) << 22);
-+	}
-+#ifdef __BIG_ENDIAN
-+	if (bdipsw == 0)
-+		/* BOOT Mode: Monitor ROM */
-+		ofs ^= 0x400000;	/* swap A[22] */
-+#endif
-+	return ofs;
++static struct platform_device *mtd_to_platdev(struct mtd_info *mtd)
++{
++	struct nand_chip *chip = mtd->priv;
++	struct txx9ndfmc_priv *txx9_priv = chip->priv;
++	return txx9_priv->dev;
 +}
 +
-+static map_word rbtx4939_flash_read16(struct map_info *map, unsigned long ofs)
++static void __iomem *ndregaddr(struct platform_device *dev, unsigned int reg)
 +{
-+	map_word r;
++	struct txx9ndfmc_drvdata *drvdata = platform_get_drvdata(dev);
++	struct txx9ndfmc_platform_data *plat = dev->dev.platform_data;
 +
-+	ofs = rbtx4939_flash_fixup_ofs(ofs);
-+	r.x[0] = __raw_readw(map->virt + ofs);
-+	return r;
++	return drvdata->base + (reg << plat->shift);
 +}
 +
-+static void rbtx4939_flash_write16(struct map_info *map, const map_word datum,
-+				   unsigned long ofs)
++static u32 txx9ndfmc_read(struct platform_device *dev, unsigned int reg)
 +{
-+	ofs = rbtx4939_flash_fixup_ofs(ofs);
-+	__raw_writew(datum.x[0], map->virt + ofs);
-+	mb();	/* see inline_map_write() in mtd/map.h */
++	return __raw_readl(ndregaddr(dev, reg));
 +}
 +
-+static void rbtx4939_flash_copy_from(struct map_info *map, void *to,
-+				     unsigned long from, ssize_t len)
++static void txx9ndfmc_write(struct platform_device *dev,
++			    u32 val, unsigned int reg)
 +{
-+	u8 bdipsw = readb(rbtx4939_bdipsw_addr) & 0x0f;
-+	unsigned char shift;
-+	ssize_t curlen;
++	__raw_writel(val, ndregaddr(dev, reg));
++}
 +
-+	from += (unsigned long)map->virt;
-+	if (bdipsw & 8) {
-+		/* BOOT Mode: USER ROM1 / USER ROM2 */
-+		shift = bdipsw & 3;
-+		while (len) {
-+			curlen = min((unsigned long)len,
-+				     0x400000 -	(from & (0x400000 - 1)));
-+			memcpy(to,
-+			       (void *)((from & ~0xc00000) |
-+					((((from >> 22) + shift) & 3) << 22)),
-+			       curlen);
-+			len -= curlen;
-+			from += curlen;
-+			to += curlen;
++static uint8_t txx9ndfmc_read_byte(struct mtd_info *mtd)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++
++	return txx9ndfmc_read(dev, TXX9_NDFDTR);
++}
++
++static void txx9ndfmc_write_buf(struct mtd_info *mtd, const uint8_t *buf,
++				int len)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++	void __iomem *ndfdtr = ndregaddr(dev, TXX9_NDFDTR);
++	u32 mcr = txx9ndfmc_read(dev, TXX9_NDFMCR);
++
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_WE, TXX9_NDFMCR);
++	while (len--)
++		__raw_writel(*buf++, ndfdtr);
++	txx9ndfmc_write(dev, mcr, TXX9_NDFMCR);
++}
++
++static void txx9ndfmc_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++	void __iomem *ndfdtr = ndregaddr(dev, TXX9_NDFDTR);
++
++	while (len--)
++		*buf++ = __raw_readl(ndfdtr);
++}
++
++static int txx9ndfmc_verify_buf(struct mtd_info *mtd, const uint8_t *buf,
++				int len)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++	void __iomem *ndfdtr = ndregaddr(dev, TXX9_NDFDTR);
++
++	while (len--)
++		if (*buf++ != (uint8_t)__raw_readl(ndfdtr))
++			return -EFAULT;
++	return 0;
++}
++
++static void txx9ndfmc_cmd_ctrl(struct mtd_info *mtd, int cmd,
++			       unsigned int ctrl)
++{
++	struct nand_chip *chip = mtd->priv;
++	struct txx9ndfmc_priv *txx9_priv = chip->priv;
++	struct platform_device *dev = txx9_priv->dev;
++	struct txx9ndfmc_platform_data *plat = dev->dev.platform_data;
++
++	if (ctrl & NAND_CTRL_CHANGE) {
++		u32 mcr = txx9ndfmc_read(dev, TXX9_NDFMCR);
++
++		mcr &= ~(TXX9_NDFMCR_CLE | TXX9_NDFMCR_ALE | TXX9_NDFMCR_CE);
++		mcr |= ctrl & NAND_CLE ? TXX9_NDFMCR_CLE : 0;
++		mcr |= ctrl & NAND_ALE ? TXX9_NDFMCR_ALE : 0;
++		/* TXX9_NDFMCR_CE bit is 0:high 1:low */
++		mcr |= ctrl & NAND_NCE ? TXX9_NDFMCR_CE : 0;
++		if (txx9_priv->cs >= 0 && (ctrl & NAND_NCE)) {
++			mcr &= ~TXX9_NDFMCR_CS_MASK;
++			mcr |= TXX9_NDFMCR_CS(txx9_priv->cs);
 +		}
-+		return;
++		txx9ndfmc_write(dev, mcr, TXX9_NDFMCR);
 +	}
-+#ifdef __BIG_ENDIAN
-+	if (bdipsw == 0) {
-+		/* BOOT Mode: Monitor ROM */
-+		while (len) {
-+			curlen = min((unsigned long)len,
-+				     0x400000 - (from & (0x400000 - 1)));
-+			memcpy(to, (void *)(from ^ 0x400000), curlen);
-+			len -= curlen;
-+			from += curlen;
-+			to += curlen;
++	if (cmd != NAND_CMD_NONE)
++		txx9ndfmc_write(dev, cmd & 0xff, TXX9_NDFDTR);
++	if (plat->flags & NDFMC_PLAT_FLAG_DUMMYWRITE) {
++		/* dummy write to update external latch */
++		if ((ctrl & NAND_CTRL_CHANGE) && cmd == NAND_CMD_NONE)
++			txx9ndfmc_write(dev, 0, TXX9_NDFDTR);
++	}
++	mmiowb();
++}
++
++static int txx9ndfmc_dev_ready(struct mtd_info *mtd)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++
++	return !(txx9ndfmc_read(dev, TXX9_NDFSR) & TXX9_NDFSR_BUSY);
++}
++
++static int txx9ndfmc_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
++				   uint8_t *ecc_code)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++	u32 mcr = txx9ndfmc_read(dev, TXX9_NDFMCR);
++
++	mcr &= ~TXX9_NDFMCR_ECC_ALL;
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_OFF, TXX9_NDFMCR);
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_READ, TXX9_NDFMCR);
++	ecc_code[1] = txx9ndfmc_read(dev, TXX9_NDFDTR);
++	ecc_code[0] = txx9ndfmc_read(dev, TXX9_NDFDTR);
++	ecc_code[2] = txx9ndfmc_read(dev, TXX9_NDFDTR);
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_OFF, TXX9_NDFMCR);
++	return 0;
++}
++
++static void txx9ndfmc_enable_hwecc(struct mtd_info *mtd, int mode)
++{
++	struct platform_device *dev = mtd_to_platdev(mtd);
++	u32 mcr = txx9ndfmc_read(dev, TXX9_NDFMCR);
++
++	mcr &= ~TXX9_NDFMCR_ECC_ALL;
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_RESET, TXX9_NDFMCR);
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_OFF, TXX9_NDFMCR);
++	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_ON, TXX9_NDFMCR);
++}
++
++static void txx9ndfmc_initialize(struct platform_device *dev)
++{
++	struct txx9ndfmc_platform_data *plat = dev->dev.platform_data;
++	struct txx9ndfmc_drvdata *drvdata = platform_get_drvdata(dev);
++	int tmout = 100;
++
++	if (plat->flags & NDFMC_PLAT_FLAG_NO_RSTR)
++		; /* no NDFRSTR.  Write to NDFSPR resets the NDFMC. */
++	else {
++		/* reset NDFMC */
++		txx9ndfmc_write(dev,
++				txx9ndfmc_read(dev, TXX9_NDFRSTR) |
++				TXX9_NDFRSTR_RST,
++				TXX9_NDFRSTR);
++		while (txx9ndfmc_read(dev, TXX9_NDFRSTR) & TXX9_NDFRSTR_RST) {
++			if (--tmout == 0) {
++				dev_err(&dev->dev, "reset failed.\n");
++				break;
++			}
++			udelay(1);
 +		}
-+		return;
 +	}
++	/* setup Hold Time, Strobe Pulse Width */
++	txx9ndfmc_write(dev, (drvdata->hold << 4) | drvdata->spw, TXX9_NDFSPR);
++	txx9ndfmc_write(dev,
++			(plat->flags & NDFMC_PLAT_FLAG_USE_BSPRT) ?
++			TXX9_NDFMCR_BSPRT : 0, TXX9_NDFMCR);
++}
++
++#define TXX9NDFMC_NS_TO_CYC(gbusclk, ns) \
++	DIV_ROUND_UP((ns) * DIV_ROUND_UP(gbusclk, 1000), 1000000)
++
++static int __init txx9ndfmc_probe(struct platform_device *dev)
++{
++	struct txx9ndfmc_platform_data *plat = dev->dev.platform_data;
++#ifdef CONFIG_MTD_PARTITIONS
++	static const char *probes[] = { "cmdlinepart", NULL };
 +#endif
-+	memcpy(to, (void *)from, len);
-+}
-+
-+static void rbtx4939_flash_map_init(struct map_info *map)
-+{
-+	map->read = rbtx4939_flash_read16;
-+	map->write = rbtx4939_flash_write16;
-+	map->copy_from = rbtx4939_flash_copy_from;
-+}
-+
-+static void __init rbtx4939_mtd_init(void)
-+{
-+	static struct {
-+		struct platform_device dev;
-+		struct resource res;
-+		struct rbtx4939_flash_data data;
-+	} pdevs[4];
++	int hold, spw;
 +	int i;
-+	static char names[4][8];
-+	static struct mtd_partition parts[4];
-+	struct rbtx4939_flash_data *boot_pdata = &pdevs[0].data;
-+	u8 bdipsw = readb(rbtx4939_bdipsw_addr) & 0x0f;
++	struct txx9ndfmc_drvdata *drvdata;
++	unsigned long gbusclk = plat->gbus_clock;
++	struct resource *res;
 +
-+	if (bdipsw & 8) {
-+		/* BOOT Mode: USER ROM1 / USER ROM2 */
-+		boot_pdata->nr_parts = 4;
-+		for (i = 0; i < boot_pdata->nr_parts; i++) {
-+			sprintf(names[i], "img%d", 4 - i);
-+			parts[i].name = names[i];
-+			parts[i].size = 0x400000;
-+			parts[i].offset = MTDPART_OFS_NXTBLK;
++	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++	drvdata = devm_kzalloc(&dev->dev, sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata)
++		return -ENOMEM;
++	if (!devm_request_mem_region(&dev->dev, res->start,
++				     resource_size(res), dev_name(&dev->dev)))
++		return -EBUSY;
++	drvdata->base = devm_ioremap(&dev->dev, res->start,
++				     resource_size(res));
++	if (!drvdata->base)
++		return -EBUSY;
++
++	hold = plat->hold ?: 20; /* tDH */
++	spw = plat->spw ?: 90; /* max(tREADID, tWP, tRP) */
++
++	hold = TXX9NDFMC_NS_TO_CYC(gbusclk, hold);
++	spw = TXX9NDFMC_NS_TO_CYC(gbusclk, spw);
++	if (plat->flags & NDFMC_PLAT_FLAG_HOLDADD)
++		hold -= 2;	/* actual hold time : (HOLD + 2) BUSCLK */
++	spw -= 1;	/* actual wait time : (SPW + 1) BUSCLK */
++	hold = clamp(hold, 1, 15);
++	drvdata->hold = hold;
++	spw = clamp(spw, 1, 15);
++	drvdata->spw = spw;
++	dev_info(&dev->dev, "CLK:%ldMHz HOLD:%d SPW:%d\n",
++		 (gbusclk + 500000) / 1000000, hold, spw);
++
++	spin_lock_init(&drvdata->hw_control.lock);
++	init_waitqueue_head(&drvdata->hw_control.wq);
++
++	platform_set_drvdata(dev, drvdata);
++	txx9ndfmc_initialize(dev);
++
++	for (i = 0; i < MAX_TXX9NDFMC_DEV; i++) {
++		struct txx9ndfmc_priv *txx9_priv;
++		struct nand_chip *chip;
++		struct mtd_info *mtd;
++#ifdef CONFIG_MTD_PARTITIONS
++		int nr_parts;
++		struct mtd_partition *parts;
++#endif
++
++		if (!(plat->ch_mask & (1 << i)))
++			continue;
++		txx9_priv = kzalloc(sizeof(struct txx9ndfmc_priv),
++				    GFP_KERNEL);
++		if (!txx9_priv) {
++			dev_err(&dev->dev, "Unable to allocate "
++				"TXx9 NDFMC MTD device structure.\n");
++			continue;
 +		}
-+	} else if (bdipsw == 0) {
-+		/* BOOT Mode: Monitor ROM */
-+		boot_pdata->nr_parts = 2;
-+		strcpy(names[0], "big");
-+		strcpy(names[1], "little");
-+		for (i = 0; i < boot_pdata->nr_parts; i++) {
-+			parts[i].name = names[i];
-+			parts[i].size = 0x400000;
-+			parts[i].offset = MTDPART_OFS_NXTBLK;
++		chip = &txx9_priv->chip;
++		mtd = &txx9_priv->mtd;
++		mtd->owner = THIS_MODULE;
++
++		mtd->priv = chip;
++
++		chip->read_byte = txx9ndfmc_read_byte;
++		chip->read_buf = txx9ndfmc_read_buf;
++		chip->write_buf = txx9ndfmc_write_buf;
++		chip->verify_buf = txx9ndfmc_verify_buf;
++		chip->cmd_ctrl = txx9ndfmc_cmd_ctrl;
++		chip->dev_ready = txx9ndfmc_dev_ready;
++		chip->ecc.calculate = txx9ndfmc_calculate_ecc;
++		chip->ecc.correct = nand_correct_data;
++		chip->ecc.hwctl = txx9ndfmc_enable_hwecc;
++		chip->ecc.mode = NAND_ECC_HW;
++		chip->ecc.size = 256;
++		chip->ecc.bytes = 3;
++		chip->chip_delay = 100;
++		chip->controller = &drvdata->hw_control;
++
++		chip->priv = txx9_priv;
++		txx9_priv->dev = dev;
++
++		if (plat->ch_mask != 1) {
++			txx9_priv->cs = i;
++			sprintf(txx9_priv->mtdname, "%s:%u",
++				dev_name(&dev->dev), i);
++		} else {
++			txx9_priv->cs = -1;
++			strcpy(txx9_priv->mtdname, dev_name(&dev->dev));
 +		}
-+	} else {
-+		/* BOOT Mode: ROM Emulator */
-+		boot_pdata->nr_parts = 2;
-+		parts[0].name = "boot";
-+		parts[0].offset = 0xc00000;
-+		parts[0].size = 0x400000;
-+		parts[1].name = "user";
-+		parts[1].offset = 0;
-+		parts[1].size = 0xc00000;
-+	}
-+	boot_pdata->parts = parts;
-+	boot_pdata->map_init = rbtx4939_flash_map_init;
++		if (plat->wide_mask & (1 << i))
++			chip->options |= NAND_BUSWIDTH_16;
 +
-+	for (i = 0; i < ARRAY_SIZE(pdevs); i++) {
-+		struct resource *r = &pdevs[i].res;
-+		struct platform_device *dev = &pdevs[i].dev;
++		if (nand_scan(mtd, 1)) {
++			kfree(txx9_priv);
++			continue;
++		}
++		mtd->name = txx9_priv->mtdname;
 +
-+		r->start = 0x1f000000 - i * 0x1000000;
-+		r->end = r->start + 0x1000000 - 1;
-+		r->flags = IORESOURCE_MEM;
-+		pdevs[i].data.width = 2;
-+		dev->num_resources = 1;
-+		dev->resource = r;
-+		dev->id = i;
-+		dev->name = "rbtx4939-flash";
-+		dev->dev.platform_data = &pdevs[i].data;
-+		platform_device_register(dev);
++#ifdef CONFIG_MTD_PARTITIONS
++		nr_parts = parse_mtd_partitions(mtd, probes, &parts, 0);
++		if (nr_parts > 0) {
++			add_mtd_partitions(mtd, parts, nr_parts);
++			kfree(parts);
++		}
++#endif
++		add_mtd_device(mtd);
++		drvdata->mtds[i] = mtd;
 +	}
++
++	return 0;
++}
++
++static int __exit txx9ndfmc_remove(struct platform_device *dev)
++{
++	struct txx9ndfmc_drvdata *drvdata = platform_get_drvdata(dev);
++	int i;
++
++	platform_set_drvdata(dev, NULL);
++	if (!drvdata)
++		return 0;
++	for (i = 0; i < MAX_TXX9NDFMC_DEV; i++) {
++		struct mtd_info *mtd = drvdata->mtds[i];
++		struct nand_chip *chip;
++		struct txx9ndfmc_priv *txx9_priv;
++
++		if (!mtd)
++			continue;
++		chip = mtd->priv;
++		txx9_priv = chip->priv;
++
++#ifdef CONFIG_MTD_PARTITIONS
++		del_mtd_partitions(mtd);
++#endif
++		del_mtd_device(mtd);
++		kfree(txx9_priv);
++	}
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int txx9ndfmc_resume(struct platform_device *dev)
++{
++	if (platform_get_drvdata(dev))
++		txx9ndfmc_initialize(dev);
++	return 0;
 +}
 +#else
-+static void __init rbtx4939_mtd_init(void)
-+{
-+}
++#define txx9ndfmc_resume NULL
 +#endif
 +
- static void __init rbtx4939_arch_init(void)
- {
- 	rbtx4939_pci_setup();
-@@ -333,6 +489,7 @@ static void __init rbtx4939_device_init(void)
- 	    platform_device_add_data(pdev, &smc_pdata, sizeof(smc_pdata)) ||
- 	    platform_device_add(pdev))
- 		platform_device_put(pdev);
-+	rbtx4939_mtd_init();
- 	/* TC58DVM82A1FT: tDH=10ns, tWP=tRP=tREADID=35ns */
- 	tx4939_ndfmc_init(10, 35,
- 			  (1 << 1) | (1 << 2),
++static struct platform_driver txx9ndfmc_driver = {
++	.remove		= __exit_p(txx9ndfmc_remove),
++	.resume		= txx9ndfmc_resume,
++	.driver		= {
++		.name	= "txx9ndfmc",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init txx9ndfmc_init(void)
++{
++	return platform_driver_probe(&txx9ndfmc_driver, txx9ndfmc_probe);
++}
++
++static void __exit txx9ndfmc_exit(void)
++{
++	platform_driver_unregister(&txx9ndfmc_driver);
++}
++
++module_init(txx9ndfmc_init);
++module_exit(txx9ndfmc_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("TXx9 SoC NAND flash controller driver");
++MODULE_ALIAS("platform:txx9ndfmc");
 -- 
 1.5.6.3
 
