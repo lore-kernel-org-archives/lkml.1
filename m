@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761724AbZATKnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbZATKsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761724AbZATKnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761462AbZATKnS
+	id S1760701AbZATKsy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbZATKso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:43:18 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:37341 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758298AbZATKnQ (ORCPT
+	Tue, 20 Jan 2009 05:48:44 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40964 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbZATKsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:43:16 -0500
-Date: Tue, 20 Jan 2009 11:43:04 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Ed Swierk <eswierk@aristanetworks.com>
-Cc: linux-i2c@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       BARRE Sebastien <sbarre@sdelcc.com>
-Subject: Re: [PATCH] rtc-ds1307: True SMBus compatibility
-Message-ID: <20090120114304.3b956189@hyperion.delvare>
-In-Reply-To: <1232409577.25123.11.camel@localhost.localdomain>
-References: <1231177261.13443.20.camel@localhost.localdomain>
-	<20090107142426.4be04d4d@hyperion.delvare>
-	<9ae48b020901070722l77bebc6boc8fa2fd0bcc8da28@mail.gmail.com>
-	<20090107162709.755982c0@hyperion.delvare>
-	<1232409577.25123.11.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+	Tue, 20 Jan 2009 05:48:43 -0500
+Date: Tue, 20 Jan 2009 19:47:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: [RFC][PATCH 4/4] cgroup-memcg fix frequent EBUSY at rmdir v2
+Message-Id: <20090120194735.cc52c5e0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090114121205.1bb913aa.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090108183529.b4fd99f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901131848gf7f6996iead1276bc50753b8@mail.gmail.com>
+	<20090114120044.2ecf13db.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901131905ie10e4bl5168ab7f337b27e1@mail.gmail.com>
+	<20090114121205.1bb913aa.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,111 +36,267 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ed,
+On Wed, 14 Jan 2009 12:12:05 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-On Mon, 19 Jan 2009 15:59:37 -0800, Ed Swierk wrote:
-> Here is an updated patch for rtc-ds1307 that allows the driver to work
-> with SMBus controllers like nforce2 that do not support i2c block
-> transfers.  The driver now checks the capabilities of the controller and
-> emulates the block transfers with SMBus byte transfers only if
-> necessary.
+> On Tue, 13 Jan 2009 19:05:35 -0800
+> Paul Menage <menage@google.com> wrote:
 > 
-> Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+> > On Tue, Jan 13, 2009 at 7:00 PM, KAMEZAWA Hiroyuki
+> > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > >
+> > > Hmm, add wait_queue to css and wake it up at css_put() ?
+> > >
+> > > like this ?
+> > > ==
+> > > __css_put()
+> > > {
+> > >        if (atomi_dec_return(&css->refcnt) == 1) {
+> > >                if (notify_on_release(cgrp) {
+> > >                        .....
+> > >                }
+> > >                if (someone_waiting_rmdir(css)) {
+> > >                        wake_up_him().
+> > >                }
+> > >        }
+> > > }
+> > 
+> > Yes, something like that. A system-wide wake queue is probably fine though.
+> > 
+> Ok, I'll try that.
+> 
 
-Patch looks reasonable, with just minor objections:
+I'm not testing this. any concerns ?
+==
+In following situation, with memory subsystem,
 
-> Index: linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
-> ===================================================================
-> --- linux-2.6.27.4.orig/drivers/rtc/rtc-ds1307.c
-> +++ linux-2.6.27.4/drivers/rtc/rtc-ds1307.c
-> @@ -94,6 +94,10 @@ struct ds1307 {
->  	struct i2c_client	*client;
->  	struct rtc_device	*rtc;
->  	struct work_struct	work;
-> +	s32 (*read_block_data)(struct i2c_client *client, u8 command,
-> +			       u8 length, u8 *values);
-> +	s32 (*write_block_data)(struct i2c_client *client, u8 command,
-> +				u8 length, const u8 *values);
->  };
->  
->  struct chip_desc {
-> @@ -132,6 +136,61 @@ MODULE_DEVICE_TABLE(i2c, ds1307_id);
->  
->  /*----------------------------------------------------------------------*/
->  
-> +static s32 ds1307_read_block_data_once(struct i2c_client *client, u8 command,
-> +				  u8 length, u8 *values)
-> +{
-> +	s32 i, data;
-> +	for (i = 0; i < length; i++) {
-> +		data = i2c_smbus_read_byte_data(client, command + i);
-> +		if (data < 0)
-> +			return data;
-> +		*(values + i) = data;
-> +	}
-> +	return i;
-> +}
-> +
-> +static s32 ds1307_read_block_data(struct i2c_client *client, u8 command,
-> +				  u8 length, u8 *values)
-> +{
-> +	u8 oldvalues[I2C_SMBUS_BLOCK_MAX];
-> +	s32 ret;
-> +	pr_debug("ds1307_read_block_data (length=%d)\n", length);
+	/groupA use_hierarchy==1
+		/01 some tasks
+		/02 some tasks
+		/03 some tasks
+		/04 empty
 
-Please use dev_dbg(&client->dev, ...).
+When tasks under 01/02/03 hit limit on /groupA, hierarchical reclaim
+routine is triggered and the kernel walks tree under groupA.
+Then, rmdir /groupA/04 fails with -EBUSY frequently because of temporal
+refcnt from internal kernel.
 
-> +	ret = ds1307_read_block_data_once(client, command, length, values);
-> +	if (ret < 0)
-> +		return ret;
-> +	do {
-> +		s32 ret;
+In general. cgroup can be rmdir'd if there are no children groups and
+no tasks. Frequent fails of rmdir() is not useful to users.
+(And the reason for -EBUSY is unknown to users.....in most cases)
 
-Redeclaring a variable that already exists?
+This patch tries to modify above behavior, by
+	- retries if css_refcnt is got by someone.
+	- add "return value" to pre_destroy() and allows subsystem to
+	  say "we're really busy!"
 
-> +		memcpy(oldvalues, values, length);
-> +		ret = ds1307_read_block_data_once(client, command, length, values);
-> +		if (ret < 0)
-> +			return ret;
-> +	} while (memcmp(oldvalues, values, length));
+Changelog: v1 -> v2.
+	- added return value to pre_destroy().
+	- removed modification to cgroup_subsys.
+	- added signal_pending() check.
+	- added waitqueue and avoid busy spin loop.
 
-What guarantee do you have that you'll ever leave this loop?
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> +	return length;
-> +}
-> +
-> +static s32 ds1307_write_block_data(struct i2c_client *client, u8 command,
-> +				   u8 length, const u8 *values)
-> +{
-> +	u8 currvalues[I2C_SMBUS_BLOCK_MAX];
-> +	pr_debug("ds1307_write_block_data (length=%d)\n", length);
+---
+Index: mmotm-2.6.29-Jan16/include/linux/cgroup.h
+===================================================================
+--- mmotm-2.6.29-Jan16.orig/include/linux/cgroup.h
++++ mmotm-2.6.29-Jan16/include/linux/cgroup.h
+@@ -128,6 +128,8 @@ enum {
+ 	CGRP_RELEASABLE,
+ 	/* Control Group requires release notifications to userspace */
+ 	CGRP_NOTIFY_ON_RELEASE,
++	/* Someone calls rmdir() and is wating for this cgroup is released */
++	CGRP_WAIT_ON_RMDIR,
+ };
+ 
+ struct cgroup {
+@@ -350,7 +352,7 @@ int cgroup_is_descendant(const struct cg
+ struct cgroup_subsys {
+ 	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+ 						  struct cgroup *cgrp);
+-	void (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
++	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	int (*can_attach)(struct cgroup_subsys *ss,
+ 			  struct cgroup *cgrp, struct task_struct *tsk);
+Index: mmotm-2.6.29-Jan16/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.29-Jan16.orig/kernel/cgroup.c
++++ mmotm-2.6.29-Jan16/kernel/cgroup.c
+@@ -141,6 +141,11 @@ static int notify_on_release(const struc
+ 	return test_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+ }
+ 
++static int wakeup_on_rmdir(const struct cgroup *cgrp)
++{
++	return test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
++}
++
+ /*
+  * for_each_subsys() allows you to iterate on each subsystem attached to
+  * an active hierarchy
+@@ -572,6 +577,7 @@ static struct backing_dev_info cgroup_ba
+ static void populate_css_id(struct cgroup_subsys_state *id);
+ static int alloc_css_id(struct cgroup_subsys *ss,
+ 			struct cgroup *parent, struct cgroup *child);
++static void cgroup_rmdir_wakeup_waiters(void);
+ 
+ static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
+ {
+@@ -591,13 +597,18 @@ static struct inode *cgroup_new_inode(mo
+  * Call subsys's pre_destroy handler.
+  * This is called before css refcnt check.
+  */
+-static void cgroup_call_pre_destroy(struct cgroup *cgrp)
++static int cgroup_call_pre_destroy(struct cgroup *cgrp)
+ {
+ 	struct cgroup_subsys *ss;
++	int ret = 0;
++
+ 	for_each_subsys(cgrp->root, ss)
+-		if (ss->pre_destroy)
+-			ss->pre_destroy(ss, cgrp);
+-	return;
++		if (ss->pre_destroy) {
++			ret = ss->pre_destroy(ss, cgrp);
++			if (ret)
++				break;
++		}
++	return ret;
+ }
+ 
+ static void free_cgroup_rcu(struct rcu_head *obj)
+@@ -1283,6 +1294,10 @@ int cgroup_attach_task(struct cgroup *cg
+ 	set_bit(CGRP_RELEASABLE, &oldcgrp->flags);
+ 	synchronize_rcu();
+ 	put_css_set(cg);
++
++	/* wake up rmdir() waiter....it should fail.*/
++	if (wakeup_on_rmdir(cgrp))
++		cgroup_rmdir_wakeup_waiters();
+ 	return 0;
+ }
+ 
+@@ -2446,6 +2461,8 @@ static long cgroup_create(struct cgroup 
+ 
+ 	mutex_unlock(&cgroup_mutex);
+ 	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
++	if (wakeup_on_rmdir(parent))
++		cgroup_rmdir_wakeup_waiters();
+ 
+ 	return 0;
+ 
+@@ -2561,14 +2578,23 @@ static int cgroup_clear_css_refs(struct 
+ 	return !failed;
+ }
+ 
++DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
++
++static void cgroup_rmdir_wakeup_waiters(void)
++{
++	wake_up_all(&cgroup_rmdir_waitq);
++}
++
+ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+ {
+ 	struct cgroup *cgrp = dentry->d_fsdata;
+ 	struct dentry *d;
+ 	struct cgroup *parent;
++	DEFINE_WAIT(wait);
++	int ret;
+ 
+ 	/* the vfs holds both inode->i_mutex already */
+-
++again:
+ 	mutex_lock(&cgroup_mutex);
+ 	if (atomic_read(&cgrp->count) != 0) {
+ 		mutex_unlock(&cgroup_mutex);
+@@ -2580,21 +2606,42 @@ static int cgroup_rmdir(struct inode *un
+ 	}
+ 	mutex_unlock(&cgroup_mutex);
+ 
++	if (signal_pending(current))
++		return -EINTR;
+ 	/*
+ 	 * Call pre_destroy handlers of subsys. Notify subsystems
+ 	 * that rmdir() request comes.
+ 	 */
+-	cgroup_call_pre_destroy(cgrp);
+-
++	ret = cgroup_call_pre_destroy(cgrp);
++	if (ret == -EBUSY)
++		return -EBUSY;
+ 	mutex_lock(&cgroup_mutex);
+ 	parent = cgrp->parent;
+-
+-	if (atomic_read(&cgrp->count)
+-	    || !list_empty(&cgrp->children)
+-	    || !cgroup_clear_css_refs(cgrp)) {
++	if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
+ 		mutex_unlock(&cgroup_mutex);
+ 		return -EBUSY;
+ 	}
++	/*
++	 * css_put/get is provided for subsys to grab refcnt to css. In typical
++	 * case, subsystem has no referenece after pre_destroy(). But,
++	 * considering hierarchy management, some *temporal* refcnt can be hold.
++	 * To avoid returning -EBUSY, cgroup_rmdir_waitq is used. If subsys
++	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
++	 * is called when css_put() is called and it seems ready to rmdir().
++	 */
++	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
++	prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
++
++	if (!cgroup_clear_css_refs(cgrp)) {
++		mutex_unlock(&cgroup_mutex);
++		schedule();
++		finish_wait(&cgroup_rmdir_waitq, &wait);
++		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
++		goto again;
++	}
++	/* NO css_tryget() can success after here. */
++	finish_wait(&cgroup_rmdir_waitq, &wait);
++	clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 
+ 	spin_lock(&release_list_lock);
+ 	set_bit(CGRP_REMOVED, &cgrp->flags);
+@@ -3150,10 +3197,13 @@ void __css_put(struct cgroup_subsys_stat
+ {
+ 	struct cgroup *cgrp = css->cgroup;
+ 	rcu_read_lock();
+-	if ((atomic_dec_return(&css->refcnt) == 1) &&
+-	    notify_on_release(cgrp)) {
+-		set_bit(CGRP_RELEASABLE, &cgrp->flags);
+-		check_for_release(cgrp);
++	if (atomic_dec_return(&css->refcnt) == 1) {
++		if (notify_on_release(cgrp)) {
++			set_bit(CGRP_RELEASABLE, &cgrp->flags);
++			check_for_release(cgrp);
++		}
++		if (wakeup_on_rmdir(cgrp))
++			cgroup_rmdir_wakeup_waiters();
+ 	}
+ 	rcu_read_unlock();
+ }
+Index: mmotm-2.6.29-Jan16/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Jan16.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Jan16/mm/memcontrol.c
+@@ -2381,11 +2381,13 @@ free_out:
+ 	return ERR_PTR(error);
+ }
+ 
+-static void mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
++static int mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
+ 					struct cgroup *cont)
+ {
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
++
+ 	mem_cgroup_force_empty(mem, false);
++	return 0;
+ }
+ 
+ static void mem_cgroup_destroy(struct cgroup_subsys *ss,
 
-dev_dbg
-
-> +	do {
-> +		s32 i, ret;
-> +		for (i = 0; i < length; i++) {
-> +			ret = i2c_smbus_write_byte_data(client, command + i,
-> +							*(values + i));
-> +			if (ret < 0)
-> +				return ret;
-> +		}
-> +		ret = ds1307_read_block_data_once(client, command, length,
-> +						  currvalues);
-> +		if (ret < 0)
-> +			return ret;
-> +	} while (memcmp(currvalues, values, length));
-
-Same question as above, what if you get stuck in the loop?
-
-> +	return length;
-> +}
-> +
-> +/*----------------------------------------------------------------------*/
-> +
->  /*
-
-All the rest is fine.
-
--- 
-Jean Delvare
