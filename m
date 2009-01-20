@@ -1,121 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbZATWGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762523AbZATWG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbZATWGJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZATWFs
+	id S1762523AbZATWG3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbZATWF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:05:48 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:50761 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329AbZATWFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:05:45 -0500
-Subject: Re: [PATCH 09/11] ext3: Remove unnecessary quota functions
-From: Mingming Cao <cmm@us.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1232129299-22018-10-git-send-email-jack@suse.cz>
-References: <yes> <1232129299-22018-1-git-send-email-jack@suse.cz>
-	 <1232129299-22018-2-git-send-email-jack@suse.cz>
-	 <1232129299-22018-3-git-send-email-jack@suse.cz>
-	 <1232129299-22018-4-git-send-email-jack@suse.cz>
-	 <1232129299-22018-5-git-send-email-jack@suse.cz>
-	 <1232129299-22018-6-git-send-email-jack@suse.cz>
-	 <1232129299-22018-7-git-send-email-jack@suse.cz>
-	 <1232129299-22018-8-git-send-email-jack@suse.cz>
-	 <1232129299-22018-9-git-send-email-jack@suse.cz>
-	 <1232129299-22018-10-git-send-email-jack@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Tue, 20 Jan 2009 13:41:34 -0800
-Message-Id: <1232487694.6464.13.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Jan 2009 17:05:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38749 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757306AbZATWF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:05:56 -0500
+Date: Tue, 20 Jan 2009 23:05:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex:
+	implement adaptive spinning
+Message-ID: <20090120220516.GA10483@elte.hu>
+References: <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-在 2009-01-16五的 19:08 +0100，Jan Kara写道：
-> ext3_dquot_initialize() and ext3_dquot_drop() is no longer
-> needed because of modified quota locking.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Reviewed_by: Mingming Cao <cmm@us.ibm.com>
-> ---
->  fs/ext3/super.c |   44 ++------------------------------------------
->  1 files changed, 2 insertions(+), 42 deletions(-)
+> On Tue, 20 Jan 2009, Ingo Molnar wrote:
+> > 
+> > (Different-type pointer uses are a common pattern: we have a lot of 
+> > places where we have pointers to structures with different types so 
+> > strict-aliasing optimization opportunities apply quite broadly 
+> > already.)
 > 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index b70d90e..ec410a9 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -707,8 +707,6 @@ static int bdev_try_to_free_page(struct super_block *sb, struct page *page,
->  #define QTYPE2NAME(t) ((t)==USRQUOTA?"user":"group")
->  #define QTYPE2MOPT(on, t) ((t)==USRQUOTA?((on)##USRJQUOTA):((on)##GRPJQUOTA))
+> Yes and no.
 > 
-> -static int ext3_dquot_initialize(struct inode *inode, int type);
-> -static int ext3_dquot_drop(struct inode *inode);
->  static int ext3_write_dquot(struct dquot *dquot);
->  static int ext3_acquire_dquot(struct dquot *dquot);
->  static int ext3_release_dquot(struct dquot *dquot);
-> @@ -723,8 +721,8 @@ static ssize_t ext3_quota_write(struct super_block *sb, int type,
->  				const char *data, size_t len, loff_t off);
+> It's true that the kernel in general uses mostly pointers through 
+> structures that can help the type-based thing.
 > 
->  static struct dquot_operations ext3_quota_operations = {
-> -	.initialize	= ext3_dquot_initialize,
-> -	.drop		= ext3_dquot_drop,
-> +	.initialize	= dquot_initialize,
-> +	.drop		= dquot_drop,
->  	.alloc_space	= dquot_alloc_space,
->  	.alloc_inode	= dquot_alloc_inode,
->  	.free_space	= dquot_free_space,
-> @@ -2713,44 +2711,6 @@ static inline struct inode *dquot_to_inode(struct dquot *dquot)
->  	return sb_dqopt(dquot->dq_sb)->files[dquot->dq_type];
->  }
+> However, the most common and important cases are actually the very same 
+> structures. In particular, things like <linux/list.h>. Same "struct 
+> list", often embedded into another case of the same struct.
 > 
-> -static int ext3_dquot_initialize(struct inode *inode, int type)
-> -{
-> -	handle_t *handle;
-> -	int ret, err;
-> -
-> -	/* We may create quota structure so we need to reserve enough blocks */
-> -	handle = ext3_journal_start(inode, 2*EXT3_QUOTA_INIT_BLOCKS(inode->i_sb));
-> -	if (IS_ERR(handle))
-> -		return PTR_ERR(handle);
-> -	ret = dquot_initialize(inode, type);
-> -	err = ext3_journal_stop(handle);
-> -	if (!ret)
-> -		ret = err;
-> -	return ret;
-> -}
-> -
-> -static int ext3_dquot_drop(struct inode *inode)
-> -{
-> -	handle_t *handle;
-> -	int ret, err;
-> -
-> -	/* We may delete quota structure so we need to reserve enough blocks */
-> -	handle = ext3_journal_start(inode, 2*EXT3_QUOTA_DEL_BLOCKS(inode->i_sb));
-> -	if (IS_ERR(handle)) {
-> -		/*
-> -		 * We call dquot_drop() anyway to at least release references
-> -		 * to quota structures so that umount does not hang.
-> -		 */
-> -		dquot_drop(inode);
-> -		return PTR_ERR(handle);
-> -	}
-> -	ret = dquot_drop(inode);
-> -	err = ext3_journal_stop(handle);
-> -	if (!ret)
-> -		ret = err;
-> -	return ret;
-> -}
-> -
->  static int ext3_write_dquot(struct dquot *dquot)
->  {
->  	int ret, err;
+> And that's where "restrict" can actually help. It might be interesting 
+> to see, for example, if it makes any difference to add a "restrict" 
+> qualifier to the "new" pointer in __list_add(). That might give the 
+> compiler the ability to schedule the stores to next->prev and prev->next 
+> differently, and maybe it could matter?
+> 
+> It probably is not noticeable. The big reason for wanting to do alias 
+> analysis tends to not be thatt kind of code at all, but the cases where 
+> you can do much bigger simplifications, or on in-order machines where 
+> you really want to hoist things like FP loads early and FP stores late, 
+> and alias analysis (and here type-based is more reasonable) shows that 
+> the FP accesses cannot alias with the integer accesses around it.
 
+Hm, GCC uses __restrict__, right?
+
+The patch below makes no difference at all on an x86 defconfig:
+
+  vmlinux:
+     text	   data	    bss	    dec	    hex	filename
+  7253544	1641812	1324296	10219652	 9bf084	vmlinux.before
+  7253544	1641812	1324296	10219652	 9bf084	vmlinux.after
+
+not a single instruction was changed:
+
+ --- vmlinux.before.asm
+ +++ vmlinux.after.asm
+ @@ -1,5 +1,5 @@
+ 
+ -vmlinux.before:     file format elf64-x86-64
+ +vmlinux.after:     file format elf64-x86-64
+
+I'm wondering whether there's any internal tie-up between alias analysis 
+and the __restrict__ keyword - so if we turn off aliasing optimizations 
+the __restrict__ keyword's optimizations are turned off as well.
+
+Nope, with aliasing optimizations turned back on there's still no change 
+on the x86 defconfig:
+
+     text	   data	    bss	    dec	    hex	filename
+  7240893	1641796	1324296	10206985	 9bbf09	vmlinux.before
+  7240893	1641796	1324296	10206985	 9bbf09	vmlinux.after
+
+GCC 4.3.2. Maybe i missed something obvious?
+
+	Ingo
+
+---
+ include/linux/list.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/include/linux/list.h
+===================================================================
+--- linux.orig/include/linux/list.h
++++ linux/include/linux/list.h
+@@ -38,7 +38,7 @@ static inline void INIT_LIST_HEAD(struct
+  * the prev/next entries already!
+  */
+ #ifndef CONFIG_DEBUG_LIST
+-static inline void __list_add(struct list_head *new,
++static inline void __list_add(struct list_head * __restrict__ new,
+ 			      struct list_head *prev,
+ 			      struct list_head *next)
+ {
+@@ -48,7 +48,7 @@ static inline void __list_add(struct lis
+ 	prev->next = new;
+ }
+ #else
+-extern void __list_add(struct list_head *new,
++extern void __list_add(struct list_head * __restrict__ new,
+ 			      struct list_head *prev,
+ 			      struct list_head *next);
+ #endif
