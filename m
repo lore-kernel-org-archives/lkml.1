@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbZATOdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZATOlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760502AbZATOdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZATOc7
+	id S1759659AbZATOlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZATOlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:32:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46142 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825AbZATOc7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 09:32:59 -0500
-Date: Tue, 20 Jan 2009 09:32:57 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Jacek Luczak <difrost.kernel@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
-       LKML <linux-kernel@vger.kernel.org>, xfs mailing list <xfs@oss.sgi.com>,
-       Dave Chinner <david@fromorbit.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-Message-ID: <20090120143257.GA21073@infradead.org>
-References: <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org> <20090120121335.GA19182@infradead.org> <20090120124515.GA31838@infradead.org> <4975D88B.7020906@gmail.com> <20090120140514.GA2976@infradead.org> <4975DE45.7050004@gmail.com>
-MIME-Version: 1.0
+	Tue, 20 Jan 2009 09:41:15 -0500
+Received: from mx1.suse.de ([195.135.220.2]:36549 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755246AbZATOlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 09:41:14 -0500
+Date: Tue, 20 Jan 2009 15:41:09 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+Message-ID: <20090120144109.GK19505@wotan.suse.de>
+References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu> <20090120141454.GI19505@wotan.suse.de> <20090120141735.GA9474@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4975DE45.7050004@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090120141735.GA9474@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 03:23:01PM +0100, Jacek Luczak wrote:
-> I've applied it and now running ,,fixed'' kernel. What I've notice is:
-> $ LC_ALL=C df -h
-> Filesystem            Size  Used Avail Use% Mounted on
-> /dev/sda1              20G  -40E   40E   -  /
-> /dev/sda5              20G  -23E   23E   -  /home
-> /dev/sda6              56G   56G  774M  99% /NORA
-> /dev/sda7              45G   44G  1.2G  98% /MAGAZYN
+On Tue, Jan 20, 2009 at 03:17:35PM +0100, Ingo Molnar wrote:
+> 
+> * Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > BTW. the lmbench test I run directly (it's called lat_mmap.c, and gets 
+> > compiled into a standalone lat_mmap exec by the standard lmbench build).
+> 
+> doesnt that include an indeterminate number of gettimeofday() based 
+> calibration calls? That would make it harder to measure its total costs in 
+> a comparative way.
 
-Yeah, it's more of a hack.  If you drop the patch and just enable
-CONFIG_LBD it should be fine.
-
+Hmm... yes probably for really detailed profile comparisons or
+other external measurements it would need modification.
