@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761783AbZATOOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbZATORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761783AbZATOOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761401AbZATONm
+	id S1762614AbZATORN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760964AbZATOO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:13:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:18264 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761339AbZATONk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 09:13:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:user-agent:date:from:to:subject;
-        b=Cs5ZBztRY+g6nsjryNPBBLpazNJ08c3Wv9WQN6HR5k9napbvkQ8I0GY43YMek6H/pX
-         FVWQHYDEJouKsJKKGqEViCMYf3paMF8FcNBp/0IWKHMz3+6N9y1omCm5+r80mPozKiZ1
-         mgeSq8ZS5/Nam4GywJ2jUgiLWwmtUtfzUV1xQ=
-Message-Id: <4975dc11.0c07560a.7a93.ffff9782@mx.google.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 20 Jan 2009 17:05:10 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: davem@davemloft.net, jchapman@katalix.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, devel@openvz.org, xemul@openvz.org
-Subject: [PATCH 0/5] ppp,pppoe,pppol2tp -- introduce namespace functionality v2
+	Tue, 20 Jan 2009 09:14:58 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53552 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762005AbZATOO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 09:14:56 -0500
+Date: Tue, 20 Jan 2009 15:14:54 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+Message-ID: <20090120141454.GI19505@wotan.suse.de>
+References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120140324.GA26424@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, here is a series of patches in hope to bring
-net-namespace functionality for PPP, PPPoE, PPPoL2TP
-protocols.
+On Tue, Jan 20, 2009 at 03:03:24PM +0100, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > Times I believe are in nanoseconds for lmbench, anyway lower is 
+> > > better.
+> > > 
+> > > non pv   AVG=464.22 STD=5.56
+> > > paravirt AVG=502.87 STD=7.36
+> > > 
+> > > Nearly 10% performance drop here, which is quite a bit... hopefully 
+> > > people are testing the speed of their PV implementations against 
+> > > non-PV bare metal :)
+> > 
+> > Ouch, that looks unacceptably expensive. All the major distros turn 
+> > CONFIG_PARAVIRT on. paravirt_ops was introduced in x86 with the express 
+> > promise to have no measurable runtime overhead.
+> 
+> Here are some more precise stats done via hw counters on a perfcounters 
+> kernel using 'timec', running a modified version of the 'mmap performance 
+> stress-test' app i made years ago.
+> 
+> The MM benchmark app can be downloaded from:
+> 
+>    http://redhat.com/~mingo/misc/mmap-perf.c
 
-I've tested plain PPP virtualization and it worked
-for me. Quite may thanks to James Chapman who
-was testing PPPoL2TP for me, thanks a lot again
-James!
+BTW. the lmbench test I run directly (it's called lat_mmap.c, and gets
+compiled into a standalone lat_mmap exec by the standard lmbench build).
 
-Please review and test if possible. I do really
-appreciate _any_ kind of feedback. Thanks!
-
-I didn't put Ack I got on previous series since it's
-a bit new (though PPPoE didn't changed but anyway)
-
-The patches are on top of net-2.6 commit
-
-commit f4895b8bc83a22a36446c4aee277e1750fcc6a18
-Author: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Date:   Mon Jan 19 13:19:30 2009 +0000
-
-    wimax/i2400m: error paths that need to free an skb should use kfree_skb()
-
-	Cyrill
--- 
+ 
