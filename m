@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZATJ62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZATKAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbZATJ62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 04:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZATJ6S
+	id S1760170AbZATKAy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbZATKAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 04:58:18 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:13575 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbZATJ6R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 04:58:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=tdF/Tz62ahcfeTqVnFphU7KRm8YZowCjKgC6plUuC78QiXufl0+gmNDrXYDau9fYhR
-         45caVfh8fDUB+E7EumBs1+Hdw3fA3NKodWhTiRqrSWlRusZGTlU44S4kAUacsNCGwOTD
-         glMs2x+7m8vVq7s09ncWEKNbSoX/paFbV6o7Y=
+	Tue, 20 Jan 2009 05:00:40 -0500
+Received: from corega.com.ru ([195.178.208.66]:44273 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754907AbZATKAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 05:00:40 -0500
+Date: Tue, 20 Jan 2009 13:00:43 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090120100043.GA9167@ioremap.net>
+References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090120083726.GA13806@ff.dom.local> <20090120093352.GB13806@ff.dom.local>
 MIME-Version: 1.0
-In-Reply-To: <cX2gZ6Cy9nC.A.06C.9JRdJB@chimera>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.06C.9JRdJB@chimera>
-Date: Tue, 20 Jan 2009 10:58:15 +0100
-X-Google-Sender-Auth: 26ef42597d659af0
-Message-ID: <a5d587fb0901200158h860ea00gb8350ecd3927f37d@mail.gmail.com>
-Subject: Re: [Bug #12393] debugging in dosemu causes lots of 'scheduling while 
-	atomic'
-From: Michal Suchanek <hramrach@centrum.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120093352.GB13806@ff.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12393
-> Subject         : debugging in dosemu causes lots of 'scheduling while atomic'
-> Submitter       : Michal Suchanek <hramrach@centrum.cz>
-> Date            : 2009-01-09 07:28 (11 days old)
->
->
->
+Hi Jarek.
 
-See here:
+On Tue, Jan 20, 2009 at 09:33:52AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > Here is a tiny upgrade to save some memory by reusing a page for more
+> > chunks if possible, which I think could be considered, after the
+> > testing of the main patch is finished. (There could be also added an
+> > additional freeing of this cached page before socket destruction,
+> > maybe in tcp_splice_read(), if somebody finds good place.)
+> 
+> OOPS! I did it again... Here is better refcounting.
+> 
+> Jarek P.
+> 
+> --- (take 2)
+> 
+>  include/net/sock.h  |    4 ++++
+>  net/core/skbuff.c   |   32 ++++++++++++++++++++++++++------
+>  net/core/sock.c     |    2 ++
+>  net/ipv4/tcp_ipv4.c |    8 ++++++++
+>  4 files changed, 40 insertions(+), 6 deletions(-)
+> 
+> diff --git a/include/net/sock.h b/include/net/sock.h
+> index 5a3a151..4ded741 100644
+> --- a/include/net/sock.h
+> +++ b/include/net/sock.h
+> @@ -190,6 +190,8 @@ struct sock_common {
+>    *	@sk_user_data: RPC layer private data
+>    *	@sk_sndmsg_page: cached page for sendmsg
+>    *	@sk_sndmsg_off: cached offset for sendmsg
+> +  *	@sk_splice_page: cached page for splice
+> +  *	@sk_splice_off: cached offset for splice
 
-http://marc.info/?l=linux-kernel&m=123188630319434&w=2
+Ugh, increase every socket by 16 bytes... Does TCP one still fit the
+page?
 
-Until the patch is applied the problem will be present. It is probably
-still present in 2.6.29-rc1.
-
-Thanks
-
-Michal
+-- 
+	Evgeniy Polyakov
