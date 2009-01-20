@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbZATBSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZATBSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbZATBSY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZATBSI
+	id S1758784AbZATBSj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760230AbZATBSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:18:08 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:46400 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbZATBSH (ORCPT
+	Mon, 19 Jan 2009 20:18:21 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44353 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759848AbZATBST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:18:07 -0500
-Message-ID: <49752649.3000508@hathawaymix.org>
-Date: Mon, 19 Jan 2009 18:18:01 -0700
-From: Shane Hathaway <shane@hathawaymix.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 Jan 2009 20:18:19 -0500
+X-Sasl-enc: ftBWXYaueUJIVUV0T+bn1vIpkOGyAGx80155IGPh2NPQ 1232414297
+Subject: Re: [PATCH] autofs: fix the wrong usage of
+	the	deprecated	task_pgrp_nr()
+From: Ian Kent <raven@themaw.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
+In-Reply-To: <4974B3B7.5060608@zytor.com>
+References: <20090118073441.GA699@redhat.com>
+	 <1232331602.3136.19.camel@zeus.themaw.net>  <49741F14.80808@zytor.com>
+	 <1232351101.3136.87.camel@zeus.themaw.net>  <4974B3B7.5060608@zytor.com>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 10:18:19 +0900
+Message-Id: <1232414299.3136.2.camel@zeus.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-XM-SPF: eid=;;;mid=;;;hst=mx02.mta.xmission.com;;;ip=166.70.244.130;;;frm=shane@hathawaymix.org;;;spf=none
-X-XM-DomainKey: sender_domain=hathawaymix.org;;;sender=shane@hathawaymix.org;;;status=no signature
-X-SA-Exim-Connect-IP: 166.70.244.130
-X-SA-Exim-Mail-From: shane@hathawaymix.org
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: **;linux-kernel@vger.kernel.org
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: lkml.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0010]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: uml: sigprocmask fix
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just ran into the same issue described here:
+On Mon, 2009-01-19 at 09:09 -0800, H. Peter Anvin wrote:
+> Ian Kent wrote:
+> >>>
+> >> The other thing is also: isn't it high time to remove autofs 3?  It has
+> >> been unmaintained for at least 10 years now.  I should know ;)
+> > 
+> > That's a good idea.
+> > Couldn't we rename autofs4 to autofs and add a MODULE_ALIAS("autofs4")
+> > or something?
+> > 
+> 
+> Works for me.  Now, this really isn't an -rc2 kind of thing, but I would
+> ACK such a change for the next merge window.
 
-http://lkml.org/lkml/2009/1/15/194
+Sounds good to me.
+I'll try for the next merge window.
 
-Like Americo Wang, my user mode linux compile failed when attempting to
-link ".tmp_vmlinux".  However, his patch is probably wrong.  The problem
-is that the name "sigprocmask" is getting renamed to
-"kernel_sigprocmask" by a compiler directive in arch/um/Makefile, then
-that name gets mangled into "sys_kernel_sigprocmask" by the
-SYSCALL_DEFINE3(sigprocmask, ...) macro in kernel/signal.c.
-
-So I added the following line to arch/um/sys-i386/sys_call_table.S:
-
-#define sys_sigprocmask sys_kernel_sigprocmask
-
-This made it compile and link correctly.  Look at the symbols generated
-by the compile of signal.c to see what I mean:
-
-# nm kernel/signal.o | grep sigprocmask
-0000008f r __kstrtab_kernel_sigprocmask
-00000040 r __ksymtab_kernel_sigprocmask
-00001ea6 T kernel_sigprocmask
-00002d67 T sys_kernel_sigprocmask
-00001faf T sys_rt_sigprocmask
-
-Unfortunately, it's a mystery to me that others haven't run into this
-before.
-
-Shane
+Ian
 
