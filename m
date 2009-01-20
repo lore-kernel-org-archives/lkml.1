@@ -1,51 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761476AbZATNHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZATNHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761476AbZATNHd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZATNHY
+	id S1755833AbZATNHu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761533AbZATNHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:07:24 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:51960 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZATNHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:07:23 -0500
+	Tue, 20 Jan 2009 08:07:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39784 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761532AbZATNHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 08:07:36 -0500
+Date: Tue, 20 Jan 2009 14:07:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+Message-ID: <20090120130714.GA11048@elte.hu>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera> <1232410363.4768.21.camel@kulgan.wumi.org.au> <20090120113546.GA26571@elte.hu> <1232455343.4895.4.camel@kulgan.wumi.org.au> <20090120125652.GA1457@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <200901201349.33707.ionut.leonte@gmail.com>
-References: <200901201349.33707.ionut.leonte@gmail.com>
-Date: Tue, 20 Jan 2009 14:07:21 +0100
-Message-ID: <ac3eb2510901200507p4b107af6ud87a634af6679223@mail.gmail.com>
-Subject: Re: 2.6.28 changes in-kernel name for UVC device ?
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Ionut Leonte <ionut.leonte@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120125652.GA1457@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 12:49, Ionut Leonte <ionut.leonte@gmail.com> wrote:
-> I have a Dell laptop with an integrated webcam which works with the 'uvcvideo'
-> module. For kernel versions 2.6.27 and below the following udev rule:
->
->   KERNEL=="video[0-9]*",  NAME="v4l/video%n", SYMLINK+="%k", GROUP="video"
->
-> would create '/dev/video0' as a link to '/dev/v4l/video0'. When switching to
-> 2.6.28 the rule creates '/dev/video1394-0' instead. Obviously most user-space
-> apps were quite surprised by this (as was I).
->
-> Is this change intended or is it the accidental result of some modification ?
 
-These rules are broken, and match also on firewire devices and not
-only video4linux devices.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Such rules are not part of the standard udev setup and need to be
-fixed to work as intended. There is no change or fault at the kernel
-side. You may just disable the firefire drivers if you don't need
-them.
+> 
+> * Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
+> 
+> > > This suggests some sort of KVM-specific problem. Scheduler latencies 
+> > > in the seconds that occur under normal load situations are noticed and 
+> > > reported quickly - and there are no such open regressions currently.
+> > 
+> > It at least suggests a problem with interaction between the scheduler 
+> > and kvm, otherwise reverting that scheduler patch wouldn't have made the 
+> > regression go away.
+> 
+> the scheduler affects almost everything, so almost by definition a 
+> scheduler change can tickle a race or other timing bug in just about any 
+> code - and reverting that change in the scheduler can make the bug go 
+> away. But yes, it could also be a genuine scheduler bug - that is always a 
+> possibility.
+> 
+> Could you please run a cfs-debug-info.sh session on a CONFIG_SCHED_DEBUG=y 
+> and CONFIG_SCHEDSTATS=y kernel, while you are experiencing those 
+> latencies:
+> 
+>   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+> 
+> and post that (relatively large) somewhere, or send it as a reply after 
+> bzip2 -9 compressing it? It will include a lot of information about the 
+> delays your tasks are experiencing.
 
-Btw, swapping default kernel names to devfs names and create symlinks
-for the kernel names is not recommended at all.
+Another test would be to build the scheduler latency tracer into your 
+kernel:
 
-Kay
+    CONFIG_SCHED_TRACER=y
+
+And enable it via:
+
+    echo wakeup > /debug/tracing/current_tracer
+
+and you should be seeing the worst-case scheduling latency traces in 
+/debug/tracing/trace, and the largest observed latency will be in 
+/debug/tracing/tracing_max_latency [in microseconds].
+
+You can reset the max-latency (and thus restart tracing) via:
+
+    echo 0 > /debug/tracing/tracing_max_latency
+
+Latencies up to 100 microseconds are ok. If you see 10 seconds delays 
+there (values of 10,000,000 or more) then it's probably a scheduler bug.
+
+Please reproduce the latency under KVM and send us the trace. The trace 
+file will be a lot more verbose and a lot more verbose if you also enable 
+the function tracer (FUNCTION_TRACER, DYNAMIC_FTRACE and 
+FUNCTION_GRAPH_TRACER).
+
+	Ingo
