@@ -1,172 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZATKa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbZATKbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbZATKa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZATKaS
+	id S1760357AbZATKbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZATKbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:30:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50152 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756117AbZATKaQ (ORCPT
+	Tue, 20 Jan 2009 05:31:06 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:35977 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbZATKbF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:30:16 -0500
-Date: Tue, 20 Jan 2009 11:32:19 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: eric.piel@tremplin-utc.net, trenn@suse.de, linux-kernel@vger.kernel.org
-Subject: checkpatch fun (was Re: hp accelerometer: add freefall detection)
-Message-ID: <20090120103219.GK2576@elf.ucw.cz>
-References: <20090112092839.GA2190@elf.ucw.cz> <496B0E5F.1020902@tremplin-utc.net> <20090116121940.GA30302@elf.ucw.cz> <20090116143404.ccf2d9ee.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Jan 2009 05:31:05 -0500
+Message-Id: <4975B60F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 20 Jan 2009 10:31:27 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Re: [Bug #12416] Recent change to kernel spikes out
+	 ccache/distcc
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera>
+ <2QN7KFic7LG.A.cl.C-QdJB@chimera>
+In-Reply-To: <2QN7KFic7LG.A.cl.C-QdJB@chimera>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090116143404.ccf2d9ee.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-01-16 14:34:04, Andrew Morton wrote:
-> On Fri, 16 Jan 2009 13:19:40 +0100
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > new file mode 100755
-> > index 0000000..7d17764
-> > --- /dev/null
-> > +++ b/Documentation/hwmon/hpfall.c
-> 
-> checkpatch has fun with this file.
+To address the various issues raised on the stripping patches, this
+patch
+- adds a config option to control whether __crc_* symbols should be
+  stripped from modules (and restores filtering out __crc_* in
+  mksysmap)
+- adds a fallback if the advanced module stripping fails during module
+  installation
+- disallows KALLSYMS_STRIP_GENERATED for 32-bit Sparc
 
-Well, I have fun with checkpatch :-(.
+Parts based on a draft patch from Sam Ravnborg.
 
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl
-hwmon/hpfall.c
-ERROR: Does not appear to be a unified-diff format patch
-
-total: 1 errors, 0 warnings, 0 lines checked
-
-hwmon/hpfall.c has style problems, please review.  If any of these
-errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -f
-hwmon/hpfall.c
-Unknown option: f
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -h
-Unknown option: h
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl --help
-Unknown option: help
-pavel@amd:/data/l/linux/Documentation$ 
-
-Ok, will fix.
-
-> > -struct acpi_lis3lv02d adev;
-> > +struct acpi_lis3lv02d adev = {
-> > +	.misc_wait   = __WAIT_QUEUE_HEAD_INITIALIZER(adev.misc_wait),
-> > +};
-> > +
-> >  EXPORT_SYMBOL_GPL(adev);
-> 
-> This seems a rather poor name for a globally-visible identifier.
-
-Hmm, right. lis_acpi_dev should be better. Will fix.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Theodore Ts'o <tytso@mit.edu>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 
 ---
+ Makefile                 |    4 +++-
+ init/Kconfig             |   12 ++++++++++++
+ scripts/Makefile.build   |   20 +++++++++++++++++---
+ scripts/Makefile.modinst |    3 ++-
+ scripts/mksysmap         |    6 ++++--
+ 5 files changed, 38 insertions(+), 7 deletions(-)
 
-I tried checkpatch-ing a file, and not only my attempts to use it
-failed, my attempts to get help failed too.
-
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl hwmon/hpfall.c
-ERROR: Does not appear to be a unified-diff format patch
-....
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -f hwmon/hpfall.c
-Unknown option: f
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -h
-Unknown option: h
-pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl --help
-Unknown option: help
-
-Make -f alias of --file, and print help if user passes unknown option.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
----
-commit 4ef496ab198210648c310b8ae25872b9f99bee27
-tree 1155a0dad369dc33362994bb6ff74868c7408f4c
-parent f155017822e2fea0bc7434545cc63c2c8d363e59
-author Pavel <pavel@suse.cz> Tue, 20 Jan 2009 11:31:52 +0100
-committer Pavel <pavel@suse.cz> Tue, 20 Jan 2009 11:31:52 +0100
-
- scripts/checkpatch.pl |   34 ++++++++++++++++++++--------------
- 1 files changed, 20 insertions(+), 14 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 45eb0ae..c9eeda9 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -28,6 +28,22 @@ my $mailback = 0;
- my $summary_file = 0;
- my $root;
- my %debug;
+--- linux-2.6.29-rc2/Makefile	2009-01-20 10:30:08.000000000 +0100
++++ 2.6.29-rc2-strip-conditional/Makefile	2009-01-07 15:35:07.000000000 +0100
+@@ -620,13 +620,15 @@ mod_strip_cmd = $(OBJCOPY) --strip-debug
+ ifeq ($(CONFIG_KALLSYMS_ALL),$(CONFIG_KALLSYMS_STRIP_GENERATED))
+ mod_strip_cmd += --wildcard $(addprefix --strip-symbols ,$(strip-symbols))
+ endif
++mod_strip_cmd2 = $(OBJCOPY) --strip-debug
+ else
+ mod_strip_cmd = $(OBJCOPY) $(INSTALL_MOD_STRIP)
+ endif # INSTALL_MOD_STRIP=1
+ else
+ mod_strip_cmd = false
+ endif # INSTALL_MOD_STRIP
+-export mod_strip_cmd
++mod_strip_cmd2 ?= false
++export mod_strip_cmd mod_strip_cmd2
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+--- linux-2.6.29-rc2/init/Kconfig	2009-01-20 10:30:37.000000000 +0100
++++ 2.6.29-rc2-strip-conditional/init/Kconfig	2009-01-08 09:34:39.000000000 +0100
+@@ -628,6 +628,8 @@ config KALLSYMS_ALL
+ config KALLSYMS_STRIP_GENERATED
+ 	bool "Strip machine generated symbols from kallsyms"
+ 	depends on KALLSYMS_ALL
++	# This doesn't work with -r in LDFLAGS_vmlinux.
++	depends on !SPARC || SPARC64
+ 	default y
+ 	help
+ 	  Say N if you want kallsyms to retain even machine generated symbols.
+@@ -938,6 +940,16 @@ config MODVERSIONS
+ 	  make them incompatible with the kernel you are running.  If
+ 	  unsure, say N.
+ 
++config KBUILD_STRIP_CRC
++	bool "Strip __crc_* symbols from modules"
++	depends on MODVERSIONS
++	help
++	  Since they are useless to keep post compilation, this allows to
++	  strip these symbols. However, binutils don't offer a simple way
++	  to get rid of them, so the .c->.o compilation step gets broken up
++	  when selecting this option, which is known to have an adverse
++	  effect on compilation caching/distribution systems (ccache/distcc).
 +
-+sub help {
-+	print "usage: $P [options] patchfile\n";
-+	print "version: $V\n";
-+	print "options: -q               => quiet\n";
-+	print "         --no-tree        => run without a kernel tree\n";
-+	print "         --terse          => one line per report\n";
-+	print "         --emacs          => emacs compile window format\n";
-+	print "         --file           => check a source file\n";
-+	print "         --strict         => enable more subjective tests\n";
-+	print "         --root           => path to the kernel tree root\n";
-+	print "         --no-summary     => suppress the per-file summary\n";
-+	print "         --summary-file   => include the filename in summary\n";
-+	exit(1);
-+}
+ config MODULE_SRCVERSION_ALL
+ 	bool "Source checksum for all modules"
+ 	help
+--- linux-2.6.29-rc2/scripts/Makefile.build	2009-01-20 10:30:44.000000000 +0100
++++ 2.6.29-rc2-strip-conditional/scripts/Makefile.build	2009-01-08 10:03:27.000000000 +0100
+@@ -153,7 +153,7 @@ $(obj)/%.i: $(src)/%.c FORCE
+ 
+ cmd_genksyms =                                                              \
+     $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
+-    $(GENKSYMS) -T $@ -A -a $(ARCH)                                         \
++    $(GENKSYMS) -T $@ $(if $(CONFIG_KBUILD_STRIP_CRC), -A) -a $(ARCH)       \
+      $(if $(KBUILD_PRESERVE),-p)                                            \
+      $(if $(1),-r $(firstword $(wildcard $(@:.symtypes=.symref) /dev/null)))
+ 
+@@ -187,11 +187,12 @@ else
+ # o assemble <file>.o from .tmp_<file>.s forcing inclusion of directives
+ #   defining the actual values of __crc_*, followed by objcopy-ing them
+ #   to force these symbols to be local to permit stripping them later.
+-s_file = $(@D)/.tmp_$(@F:.o=.s)
+ v_file = $(@D)/.tmp_$(@F:.o=.v)
+ tmp_o_file = $(@D)/.tmp_$(@F)
+ no_g_c_flags = $(filter-out -g%,$(c_flags))
+ 
++ifneq ($(CONFIG_KBUILD_STRIP_CRC),)
++s_file = $(@D)/.tmp_$(@F:.o=.s)
+ cmd_cc_o_c = $(CC) $(c_flags) -S -o $(s_file) $<
+ 
+ cmd_modversions =							\
+@@ -210,6 +211,19 @@ cmd_modversions =							\
+ 		rm -f $(v_file);					\
+ 		$(CC) $(no_g_c_flags) -c -o $@ $(s_file);		\
+ 	fi;
++else
++cmd_cc_o_c = $(CC) $(c_flags) -c -o $(tmp_o_file) $<
 +
- GetOptions(
- 	'q|quiet+'	=> \$quiet,
- 	'tree!'		=> \$tree,
-@@ -35,7 +51,7 @@ GetOptions(
- 	'patch!'	=> \$chk_patch,
- 	'emacs!'	=> \$emacs,
- 	'terse!'	=> \$terse,
--	'file!'		=> \$file,
-+	'f|file!'	=> \$file,
- 	'subjective!'	=> \$check,
- 	'strict!'	=> \$check,
- 	'root=s'	=> \$root,
-@@ -45,23 +61,13 @@ GetOptions(
- 
- 	'debug=s'	=> \%debug,
- 	'test-only=s'	=> \$tst_only,
--) or exit;
-+) or help;
- 
- my $exit = 0;
- 
++cmd_modversions =							\
++	if $(OBJDUMP) -h $(tmp_o_file) | grep -q __ksymtab; then	\
++		$(cmd_genksyms) > $(v_file);				\
++		$(LD) $(LDFLAGS) -r -o $@ $(tmp_o_file)	-T $(v_file);	\
++	else								\
++		rm -f $(v_file);					\
++		mv $(tmp_o_file) $@;					\
++	fi;
 +
- if ($#ARGV < 0) {
--	print "usage: $P [options] patchfile\n";
--	print "version: $V\n";
--	print "options: -q               => quiet\n";
--	print "         --no-tree        => run without a kernel tree\n";
--	print "         --terse          => one line per report\n";
--	print "         --emacs          => emacs compile window format\n";
--	print "         --file           => check a source file\n";
--	print "         --strict         => enable more subjective tests\n";
--	print "         --root           => path to the kernel tree root\n";
--	print "         --no-summary     => suppress the per-file summary\n";
--	print "         --summary-file   => include the filename in summary\n";
--	exit(1);
-+    	help;
- }
++endif
+ endif
  
- my $dbg_values = 0;
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+@@ -225,7 +239,7 @@ define rule_cc_o_c
+ 	$(cmd_record_mcount)						  \
+ 	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
+ 	                                              $(dot-target).tmp;  \
+-	if [ -r $(@D)/.tmp_$(@F:.o=.v) ]; then				  \
++	if [ -r $(v_file) ]; then					  \
+ 		echo >> $(dot-target).tmp;				  \
+ 		echo '$@: $(GENKSYMS)' >> $(dot-target).tmp;		  \
+ 		echo '$(GENKSYMS):: ;' >> $(dot-target).tmp;		  \
+--- linux-2.6.29-rc2/scripts/Makefile.modinst	2009-01-20 10:30:44.000000000 +0100
++++ 2.6.29-rc2-strip-conditional/scripts/Makefile.modinst	2009-01-07 15:32:23.000000000 +0100
+@@ -18,7 +18,8 @@ __modinst: $(modules)
+ 
+ quiet_cmd_modules_install = INSTALL $@
+       cmd_modules_install = mkdir -p $(2); \
+-			    $(mod_strip_cmd) $@ $(2)/$(notdir $@) || cp $@ $(2)
++			    $(mod_strip_cmd) $@ $(2)/$(notdir $@) || \
++			    $(mod_strip_cmd2) $@ $(2)/$(notdir $@) || cp $@ $(2)
+ 
+ # Modules built outside the kernel source tree go into extra by default
+ INSTALL_MOD_DIR ?= extra
+--- linux-2.6.29-rc2/scripts/mksysmap	2009-01-20 10:30:44.000000000 +0100
++++ 2.6.29-rc2-strip-conditional/scripts/mksysmap	2009-01-20 00:00:00.000000000 +0100
+@@ -37,6 +37,8 @@
+ 
+ # readprofile starts reading symbols when _stext is found, and
+ # continue until it finds a symbol which is not either of 'T', 't',
+-# 'W' or 'w'.
++# 'W' or 'w'. __crc_ are 'A' and placed in the middle
++# so we just ignore them to let readprofile continue to work.
++# (At least sparc64 has __crc_ in the middle).
+ 
+-$NM -n $1 | grep -v '\( [aNUw] \)\|\( \$[adt]\)' > $2
++$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
 
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
