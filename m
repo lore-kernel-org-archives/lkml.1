@@ -1,116 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbZATORu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZATOSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762743AbZATORu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760932AbZATOQh
+	id S1754731AbZATOSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762728AbZATORf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:16:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58261 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762323AbZATOQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 09:16:35 -0500
-Date: Tue, 20 Jan 2009 09:15:51 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       horms@verge.net.au, akpm@linux-foundation.org
-Subject: Re: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
-Message-ID: <20090120141551.GA5125@redhat.com>
-References: <20090119212127.GA13157@hmsreliant.think-freely.org>
+	Tue, 20 Jan 2009 09:17:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:19217 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762714AbZATORd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 09:17:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=R5Bj3pvcQQ4mfl+EtTSG7vm7MDNmuJ5I4nvDC3+2qNc4AiP9GF+mVwf+tB+Vd2Io8o
+         5W96OwGgJwOeHuL6OdYa2DCz4e4DeGcbARPDWp4jUJ31Xx+bU8833PBpRWmKRPtyP+B8
+         Ym+FPfCvu2TyBmMR8TxstGIyDc+U30/7w/8i0=
+Date: Tue, 20 Jan 2009 17:17:28 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: davem@davemloft.net, jchapman@katalix.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, devel@openvz.org, xemul@openvz.org
+Subject: Re: [PATCH 0/5] ppp,pppoe,pppol2tp -- introduce namespace
+	functionality v2
+Message-ID: <20090120141728.GA14560@localhost>
+References: <4975dc11.0c07560a.7a93.ffff9782@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090119212127.GA13157@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4975dc11.0c07560a.7a93.ffff9782@mx.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 04:21:27PM -0500, Neil Horman wrote:
-> Hey all-
-> 	It would be nice to be able to extract the dmesg log from a vmcore file
-> without needing to keep the debug symbols for the running kernel handy all the
-> time.  We have a facility to do this in /proc/vmcore.  This patch adds the
-> log_buf and log_end symbols to the vmcoreinfo area so that tools (like
-> makedumpfile) can easily extract the dmesg logs from a vmcore image.
-> 
+[Cyrill Gorcunov - Tue, Jan 20, 2009 at 05:05:10PM +0300]
+| Hi, here is a series of patches in hope to bring
+| net-namespace functionality for PPP, PPPoE, PPPoL2TP
+| protocols.
+| 
+| I've tested plain PPP virtualization and it worked
+| for me. Quite may thanks to James Chapman who
+| was testing PPPoL2TP for me, thanks a lot again
+| James!
+| 
+| Please review and test if possible. I do really
+| appreciate _any_ kind of feedback. Thanks!
+| 
+| I didn't put Ack I got on previous series since it's
+| a bit new (though PPPoE didn't changed but anyway)
+| 
+| The patches are on top of net-2.6 commit
+| 
+| commit f4895b8bc83a22a36446c4aee277e1750fcc6a18
+| Author: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+| Date:   Mon Jan 19 13:19:30 2009 +0000
+| 
+|     wimax/i2400m: error paths that need to free an skb should use kfree_skb()
+| 
+| 	Cyrill
+| -- 
+| 
 
-It would be nice to get dmesg log if debug symbols are not around. Can't
-we use System.map for getting symbol addresses? vmcoreinfo had started
-small and seems to be growing now. I am thinking down the line will making
-use of System.map for such cases make sense?
-
-> Regards
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  include/linux/kernel.h |    2 ++
->  kernel/kexec.c         |    3 +++
->  kernel/printk.c        |    8 ++++++++
->  3 files changed, 13 insertions(+)
-> 
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 343df9e..a7f3e8a 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -242,6 +242,7 @@ extern struct ratelimit_state printk_ratelimit_state;
->  extern int printk_ratelimit(void);
->  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  				   unsigned int interval_msec);
-> +void log_buf_kexec_setup(void);
->  #else
->  static inline int vprintk(const char *s, va_list args)
->  	__attribute__ ((format (printf, 1, 0)));
-> @@ -253,6 +254,7 @@ static inline int printk_ratelimit(void) { return 0; }
->  static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
->  					  unsigned int interval_msec)	\
->  		{ return false; }
-> +#define log_buf_kexec_setup() do {} while(0)
->  #endif
->  
->  extern int printk_needs_cpu(int cpu);
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index 8a6d7b0..bee284d 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -1409,6 +1409,9 @@ static int __init crash_save_vmcoreinfo_init(void)
->  	VMCOREINFO_OFFSET(list_head, prev);
->  	VMCOREINFO_OFFSET(vm_struct, addr);
->  	VMCOREINFO_LENGTH(zone.free_area, MAX_ORDER);
-> +#ifdef CONFIG_PRINTK
-> +	log_buf_kexec_setup();
-> +#endif
->  	VMCOREINFO_LENGTH(free_area.free_list, MIGRATE_TYPES);
->  	VMCOREINFO_NUMBER(NR_FREE_PAGES);
->  	VMCOREINFO_NUMBER(PG_lru);
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index 69188f2..79e9e05 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -32,6 +32,7 @@
->  #include <linux/security.h>
->  #include <linux/bootmem.h>
->  #include <linux/syscalls.h>
-> +#include <linux/kexec.h>
->  
->  #include <asm/uaccess.h>
->  
-> @@ -136,6 +137,13 @@ static char *log_buf = __log_buf;
->  static int log_buf_len = __LOG_BUF_LEN;
->  static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
->  
-> +void log_buf_kexec_setup(void)
-> +{
-> +	VMCOREINFO_SYMBOL(log_buf);
-> +	VMCOREINFO_SYMBOL(log_end);
-> +}
-> +
-
-Will it be an issue if we make log_buf and log_end non static and directly
-access these in kexec.c?
-
-Thanks
-Vivek
+Ugh, sorry, quilt again screwed my post-date :(
+It seems I defenitely has to switch to git.
+		- Cyrill -
