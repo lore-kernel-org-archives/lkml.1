@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761911AbZATTcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbZATThd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761911AbZATTcA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZATTbv
+	id S1762187AbZATThd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZATThY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:31:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45599 "EHLO mx2.mail.elte.hu"
+	Tue, 20 Jan 2009 14:37:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36953 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbZATTbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:31:50 -0500
-Date: Tue, 20 Jan 2009 20:31:28 +0100
+	id S1753292AbZATThX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 14:37:23 -0500
+Date: Tue, 20 Jan 2009 20:37:03 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "jeremy@xensource.com" <jeremy@xensource.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
+       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-Message-ID: <20090120193128.GA21481@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <1232478318.16317.160.camel@bodhitayantram.eng.vmware.com>
+Message-ID: <20090120193703.GA27930@elte.hu>
+References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232478318.16317.160.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <20090120140324.GA26424@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,69 +37,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Zachary Amsden <zach@vmware.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Tue, 2009-01-20 at 03:26 -0800, Ingo Molnar wrote:
+> -----------------------------------------------
+> | Performance counter stats for './mmap-perf' |
+> -----------------------------------------------
+> |                |
+> |  x86-defconfig |   PARAVIRT=y         
+> |------------------------------------------------------------------
+> |
+> |    1311.554526 |  1360.624932  task clock ticks (msecs)    +3.74%
+> |                |
+> |              1 |            1  CPU migrations
+> |             91 |           79  context switches
+> |          55945 |        55943  pagefaults
+> |    ............................................
+> |     3781392474 |   3918777174  CPU cycles                  +3.63%
+> |     1957153827 |   2161280486  instructions               +10.43%
+> |       50234816 |     51303520  cache references            +2.12%
+> |        5428258 |      5583728  cache misses                +2.86%
+> |                |
+> |    1314.782469 |  1363.694447  time elapsed (msecs)        +3.72%
+> |                |
+> -----------------------------------
 > 
-> > Jeremy, any ideas where this slowdown comes from and how it could be 
-> > fixed?
-> 
-> Well I'm early responding to this thread before reading on, but I looked 
-> at the generated assembly for some common mm paths and it looked awful. 
-> The biggest loser was probably having functions to convert pte_t back 
-> and forth to pteval_t, which makes most potential mask / shift 
-> optimizations impossible - indeed, because the compiler doesn't even 
-> understand pte_val(X) = Y is static over the lifetime of the function, 
-> it often calls these same conversions back and forth several times, and 
-> because this is often done inside hidden macros, it's not even possible 
-> to save a cached value in most places.
-> 
-> The bulk of state required to keep this extra conversion around ties up 
-> a lot of registers and as a result heavily limits potential further 
-> optimizations.
-> 
-> The code did not look more branchy to me, however, and gcc seemed to do 
-> a good job with lining up a nice branch structure in the few paths I 
-> looked at.
+> The most surprising element is that in the paravirt_ops case we run 204 
+> million more instructions - out of the ~2000 million instructions total.
 
-i've extended my mmap test with branch execution hw-perfcounter stats:
+So because this test does exactly 1 million MM syscalls, the average is 
+easy to calculate:
 
- -----------------------------------------------
- | Performance counter stats for './mmap-perf' |
- -----------------------------------------------
- |                |
- |  x86-defconfig |   PARAVIRT=y
- |------------------------------------------------------------------
- |
- |    1311.554526 |  1360.624932  task clock ticks (msecs)    +3.74%
- |                |
- |              1 |            1  CPU migrations
- |             91 |           79  context switches
- |          55945 |        55943  pagefaults
- |    ............................................
- |     3781392474 |   3918777174  CPU cycles                  +3.63%
- |     1957153827 |   2161280486  instructions               +10.43%
- |       50234816 |     51303520  cache references            +2.12%
- |        5428258 |      5583728  cache misses                +2.86%
- |
- |      437983499 |    478967061  branches                    +9.36%
- |       32486067 |     32336874  branch-misses               -0.46%
- |                |
- |    1314.782469 |  1363.694447  time elapsed (msecs)        +3.72%
- |                |
- -----------------------------------
-
-So we execute 9.36% more branches - i.e. very noticeably higher as well. 
-
-The CPU predicts them slightly more effectively though, the -0.46% for 
-branch-misses is well above measurement noise (of ~0.02% for the branch 
-metric) so it's a systematic effect.
-
-Non-functional 'boring' bloat tends to be easier to predict so it's not 
-necessarily a real surprise. That also explains why despite +10.43% more 
-instructions the total cycle count went up by a comparatively smaller 
-+3.63%.
-
-[ that's 64-bit x86 btw. ]
+The native kernel's average MM syscall cost is 1957 instructions - with 
+CONFIG_PARAVIRT=y that increases by +10.43% to 2161 instructions. There's 
+over 200 extra instructions executed per MM syscall that we only do due to 
+CONFIG_PARAVIRT=y.
 
 	Ingo
