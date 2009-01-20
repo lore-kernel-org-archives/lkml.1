@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbZATAUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764570AbZATAVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765346AbZATAUs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762942AbZATAMz
+	id S1764570AbZATAVK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764803AbZATARh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:12:55 -0500
-Received: from bowden.ucwb.org.au ([203.122.237.119]:52303 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764221AbZATAMx (ORCPT
+	Mon, 19 Jan 2009 19:17:37 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61322 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764783AbZATARe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:12:53 -0500
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-Organization: UnitingCare Wesley Bowden
-Date: Tue, 20 Jan 2009 10:42:43 +1030
-Message-Id: <1232410363.4768.21.camel@kulgan.wumi.org.au>
-X-Mailer: Evolution 2.22.3.1 
-X-Sanitizer: Anomy Sanitizer on mail.ucwb.org.au
-MIME-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 19:17:34 -0500
+Message-Id: <20090120001542.687427797@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 19 Jan 2009 19:15:42 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/8] ftrace: updates to tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 22:45 +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
-> Subject		: KVM guests stalling on 2.6.28 (bisected)
-> Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
-> Date		: 2009-01-17 03:37 (3 days old)
+Ingo,
 
-Yes, please keep this on the list.
+The one patch I did here, will need to go to stable as well. I'll write
+up a patch against stable, and as soon as it gets into Linus's tree,
+it should also be pulled into stable as well. Without the patch, some
+archs will not be able to perform any tracing. There is an alignment
+issue that will cause the ring buffer to fail to commit any transactions.
 
-Cheers,
-Kevin.
+-- Steve
 
 
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/devel
+
+
+Lai Jiangshan (1):
+      trace_workqueue: use percpu data for workqueue stat
+
+Markus Metzger (6):
+      x86, ftrace, hw-branch-tracer: support hotplug cpus
+      x86, ftrace, hw-branch-tracer: dump trace on oops
+      x86, ftrace, hw-branch-tracer: reset trace buffer on close
+      x86, ftrace, hw-branch-tracer: change trace format
+      x86, ftrace, hw-branch-tracer: documentation
+      x86, ds, bts: cleanup DS configuration
+
+Steven Rostedt (1):
+      ring-buffer: fix alignment problem
+
+----
+ Documentation/ftrace.txt         |   74 ++++++++++++++++
+ arch/x86/kernel/ds.c             |   31 ++++---
+ arch/x86/kernel/dumpstack.c      |    6 ++
+ include/linux/ftrace.h           |   13 +++
+ kernel/trace/ring_buffer.c       |    2 +-
+ kernel/trace/trace.h             |    1 -
+ kernel/trace/trace_hw_branches.c |  173 +++++++++++++++++++++++++++++++-------
+ kernel/trace/trace_workqueue.c   |   64 +++++++--------
+ 8 files changed, 281 insertions(+), 83 deletions(-)
+-- 
