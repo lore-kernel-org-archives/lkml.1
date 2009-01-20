@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbZATKLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbZATKL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760316AbZATKLg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZATKLZ
+	id S1760727AbZATKL6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZATKLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:11:25 -0500
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:30070 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753175AbZATKLX (ORCPT
+	Tue, 20 Jan 2009 05:11:47 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41337 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755063AbZATKLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:11:23 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhICAGEwdUl5LBURgWdsb2JhbACUBQEBFiK3EoVz
-X-IronPort-AV: E=Sophos;i="4.37,294,1231075800"; 
-   d="scan'208";a="288419954"
-Date: Tue, 20 Jan 2009 21:11:19 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090120101119.GB10158@disturbed>
-Mail-Followup-To: Eric Sesterhenn <snakebyte@gmx.de>,
-	Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-	linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
-References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice>
+	Tue, 20 Jan 2009 05:11:46 -0500
+Date: Tue, 20 Jan 2009 11:13:49 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Trivial patch monkey <trivial@kernel.org>, eric.piel@tremplin-utc.net
+Subject: Re: lis3: fix documentation to fit into 80 columns
+Message-ID: <20090120101348.GI2576@elf.ucw.cz>
+References: <20090114172013.GA25948@elf.ucw.cz> <alpine.LNX.1.10.0901200027050.5377@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120063150.GC5854@alice>
+In-Reply-To: <alpine.LNX.1.10.0901200027050.5377@jikos.suse.cz>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 07:31:50AM +0100, Eric Sesterhenn wrote:
-> * Pavel Machek (pavel@suse.cz) wrote:
-> > Does ext2/3 and vfat survive that kind of attacks? Those are 'in
-> > production' and should survive it...
+On Tue 2009-01-20 00:29:40, Jiri Kosina wrote:
+> On Wed, 14 Jan 2009, Pavel Machek wrote:
 > 
-> I regularly (once or twice a week) test 100 corrupted images of 
-> vfat, udf, msdos, swap, iso9660, ext2, ext3, ext4, minix, bfs, befs,
-> hfs, hfs+, qnx4, affs and cramfs on each of my two test machines.
+> >  Sysfs attributes under /sys/devices/platform/lis3lv02d/:
+> >  position - 3D position that the accelerometer reports. Format: "(x,y,z)"
+> > -calibrate - read: values (x, y, z) that are used as the base for input class device operation.
+> > -            write: forces the base to be recalibrated with the current position.
+> > +calibrate - read: values (x, y, z) that are used as the base for input
+> > +		  class device operation.
+> > +            write: forces the base to be recalibrated with the current
+> > +		  position.
+> 
+> I don't seem to be able to figure out what indentation is being used here. 
+> Why two tabs and two spaces? It doesn't align with anything this way.
 
-Any reason you are not testing XFS in that set?
-
-Cheers,
-
-Dave.
+Added one more space :-), and fixed indentation in another place,
+too. Will push with next updates...
+								Pavel
 -- 
-Dave Chinner
-david@fromorbit.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
