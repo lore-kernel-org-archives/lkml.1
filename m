@@ -1,64 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbZATKVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZATKa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760171AbZATKVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZATKVB
+	id S1759508AbZATKa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZATKaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:21:01 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:11471 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbZATKVA (ORCPT
+	Tue, 20 Jan 2009 05:30:18 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50152 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756117AbZATKaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:21:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=u6guEspJItb3n/4SRiDR648uQU6v4ubrrKJC9wqT8Sr3nLYKWWetJtsMSK1eqj8QIW
-         C/c7Uu+IEUemxXrMVx/1AhEwzxh76g79Z7vb2+4HoXnLmkRk2uX/cD/GCDJ7ey2johnw
-         fr6/dFxlNEOvZpTrMp0wwm2r+4VB+KcO6sWYM=
-Date: Tue, 20 Jan 2009 10:20:53 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090120102053.GA17004@ff.dom.local>
-References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090120083726.GA13806@ff.dom.local> <20090120093352.GB13806@ff.dom.local> <20090120100043.GA9167@ioremap.net>
+	Tue, 20 Jan 2009 05:30:16 -0500
+Date: Tue, 20 Jan 2009 11:32:19 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: eric.piel@tremplin-utc.net, trenn@suse.de, linux-kernel@vger.kernel.org
+Subject: checkpatch fun (was Re: hp accelerometer: add freefall detection)
+Message-ID: <20090120103219.GK2576@elf.ucw.cz>
+References: <20090112092839.GA2190@elf.ucw.cz> <496B0E5F.1020902@tremplin-utc.net> <20090116121940.GA30302@elf.ucw.cz> <20090116143404.ccf2d9ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120100043.GA9167@ioremap.net>
+In-Reply-To: <20090116143404.ccf2d9ee.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 01:00:43PM +0300, Evgeniy Polyakov wrote:
-> Hi Jarek.
-
-Hi Evgeniy.
-...
-> > diff --git a/include/net/sock.h b/include/net/sock.h
-> > index 5a3a151..4ded741 100644
-> > --- a/include/net/sock.h
-> > +++ b/include/net/sock.h
-> > @@ -190,6 +190,8 @@ struct sock_common {
-> >    *	@sk_user_data: RPC layer private data
-> >    *	@sk_sndmsg_page: cached page for sendmsg
-> >    *	@sk_sndmsg_off: cached offset for sendmsg
-> > +  *	@sk_splice_page: cached page for splice
-> > +  *	@sk_splice_off: cached offset for splice
+On Fri 2009-01-16 14:34:04, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 13:19:40 +0100
+> Pavel Machek <pavel@suse.cz> wrote:
 > 
-> Ugh, increase every socket by 16 bytes... Does TCP one still fit the
-> page?
+> > new file mode 100755
+> > index 0000000..7d17764
+> > --- /dev/null
+> > +++ b/Documentation/hwmon/hpfall.c
+> 
+> checkpatch has fun with this file.
 
-Good question! Alas I can't check this soon, but if it's really like
-this, of course this needs some better idea and rework. (BTW, I'd like
-to prevent here as much as possible some strange activities like 1
-byte (payload) packets getting full pages without any accounting.)
+Well, I have fun with checkpatch :-(.
 
-Thanks,
-Jarek P.
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl
+hwmon/hpfall.c
+ERROR: Does not appear to be a unified-diff format patch
+
+total: 1 errors, 0 warnings, 0 lines checked
+
+hwmon/hpfall.c has style problems, please review.  If any of these
+errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -f
+hwmon/hpfall.c
+Unknown option: f
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -h
+Unknown option: h
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl --help
+Unknown option: help
+pavel@amd:/data/l/linux/Documentation$ 
+
+Ok, will fix.
+
+> > -struct acpi_lis3lv02d adev;
+> > +struct acpi_lis3lv02d adev = {
+> > +	.misc_wait   = __WAIT_QUEUE_HEAD_INITIALIZER(adev.misc_wait),
+> > +};
+> > +
+> >  EXPORT_SYMBOL_GPL(adev);
+> 
+> This seems a rather poor name for a globally-visible identifier.
+
+Hmm, right. lis_acpi_dev should be better. Will fix.
+
+---
+
+I tried checkpatch-ing a file, and not only my attempts to use it
+failed, my attempts to get help failed too.
+
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl hwmon/hpfall.c
+ERROR: Does not appear to be a unified-diff format patch
+....
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -f hwmon/hpfall.c
+Unknown option: f
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl -h
+Unknown option: h
+pavel@amd:/data/l/linux/Documentation$ ../scripts/checkpatch.pl --help
+Unknown option: help
+
+Make -f alias of --file, and print help if user passes unknown option.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+---
+commit 4ef496ab198210648c310b8ae25872b9f99bee27
+tree 1155a0dad369dc33362994bb6ff74868c7408f4c
+parent f155017822e2fea0bc7434545cc63c2c8d363e59
+author Pavel <pavel@suse.cz> Tue, 20 Jan 2009 11:31:52 +0100
+committer Pavel <pavel@suse.cz> Tue, 20 Jan 2009 11:31:52 +0100
+
+ scripts/checkpatch.pl |   34 ++++++++++++++++++++--------------
+ 1 files changed, 20 insertions(+), 14 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 45eb0ae..c9eeda9 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -28,6 +28,22 @@ my $mailback = 0;
+ my $summary_file = 0;
+ my $root;
+ my %debug;
++
++sub help {
++	print "usage: $P [options] patchfile\n";
++	print "version: $V\n";
++	print "options: -q               => quiet\n";
++	print "         --no-tree        => run without a kernel tree\n";
++	print "         --terse          => one line per report\n";
++	print "         --emacs          => emacs compile window format\n";
++	print "         --file           => check a source file\n";
++	print "         --strict         => enable more subjective tests\n";
++	print "         --root           => path to the kernel tree root\n";
++	print "         --no-summary     => suppress the per-file summary\n";
++	print "         --summary-file   => include the filename in summary\n";
++	exit(1);
++}
++
+ GetOptions(
+ 	'q|quiet+'	=> \$quiet,
+ 	'tree!'		=> \$tree,
+@@ -35,7 +51,7 @@ GetOptions(
+ 	'patch!'	=> \$chk_patch,
+ 	'emacs!'	=> \$emacs,
+ 	'terse!'	=> \$terse,
+-	'file!'		=> \$file,
++	'f|file!'	=> \$file,
+ 	'subjective!'	=> \$check,
+ 	'strict!'	=> \$check,
+ 	'root=s'	=> \$root,
+@@ -45,23 +61,13 @@ GetOptions(
+ 
+ 	'debug=s'	=> \%debug,
+ 	'test-only=s'	=> \$tst_only,
+-) or exit;
++) or help;
+ 
+ my $exit = 0;
+ 
++
+ if ($#ARGV < 0) {
+-	print "usage: $P [options] patchfile\n";
+-	print "version: $V\n";
+-	print "options: -q               => quiet\n";
+-	print "         --no-tree        => run without a kernel tree\n";
+-	print "         --terse          => one line per report\n";
+-	print "         --emacs          => emacs compile window format\n";
+-	print "         --file           => check a source file\n";
+-	print "         --strict         => enable more subjective tests\n";
+-	print "         --root           => path to the kernel tree root\n";
+-	print "         --no-summary     => suppress the per-file summary\n";
+-	print "         --summary-file   => include the filename in summary\n";
+-	exit(1);
++    	help;
+ }
+ 
+ my $dbg_values = 0;
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
