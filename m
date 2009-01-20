@@ -1,75 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761669AbZATAZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762335AbZATA2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761669AbZATAZv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764091AbZATAZV
+	id S1762335AbZATA2A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZATA1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:25:21 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:7817 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763015AbZATAZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:25:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=U2SiD+VjxK/3EQ5fSSOaiPkqOTcgvitbKWvjORwCpbYEw907npPDi03zXDYVAjIYqj
-         ppV4NlYKAATXXWy47NQfdvu9oGNPaWCWox0BrUVFWdhsHagHesZxYQYpBKgZjbTwAd7M
-         UD5kKgLE3GYwV+lv/PseLM11sd0vrv+gnfUSM=
+	Mon, 19 Jan 2009 19:27:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40835 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754547AbZATA1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 19:27:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@suse.de>
+Subject: [PATCH] USB: Fix suspend-resume of PCI USB controllers
+Date: Tue, 20 Jan 2009 01:26:56 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, "Jeff Chua" <jeff.chua.linux@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <497322CC.7050900@cfl.rr.com>
-References: <497322CC.7050900@cfl.rr.com>
-Date: Mon, 19 Jan 2009 16:25:16 -0800
-X-Google-Sender-Auth: 772dd5895a271fc0
-Message-ID: <1f1b08da0901191625i6ac12312g9ae9ab599958a818@mail.gmail.com>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II 
-	processor
-From: john stultz <johnstul@us.ibm.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Hounschell <markh@compro.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901200126.57839.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 4:38 AM, Mark Hounschell <dmarkh@cfl.rr.com> wrote:
-> I upgraded from a Phenom to a Phenom-II processor and I could no longer boot.
->
-> I have tried kernels from 2.6.26 through 2.6.28.
->
-> I _can_ however boot these kernels when they are configured for HZ = 250. I
-> haven't tried HZ = 300. But certainly if HZ = 1000 the boot hangs at the spot
-> indicated below in the dmesg output.
->
-> The machine is up and stable running 2.6.26.8 with a (HZ = 1000) configured kernel.
->
-> While running a 2.6.26.8 kernel configured for HZ = 250:
-[snip]
->    vmalloc : 0xf4800000 - 0xff7fe000   ( 175 MB)
->    lowmem  : 0xc0000000 - 0xf4000000   ( 832 MB)
->      .init : 0xc0373000 - 0xc03a9000   ( 216 kB)
->      .data : 0xc02b5336 - 0xc036c6d0   ( 732 kB)
->      .text : 0xc0100000 - 0xc02b5336   (1748 kB)
-> Checking if this processor honours the WP bit even in supervisor mode...Ok.
->
->
->      The 2.6.26.8 kernel hangs up right here.
->
->
-> CPA: page pool initialized 1 of 1 pages preallocated
-> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
-> hpet clockevent registered
-> calibrate_delay_direct() failed to get a good estimate for loops_per_jiffy.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This looks suspect. Probably something is off with the timer
-interrupt, that's causing the calibration to be way off.
+Commit a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+(USB: fix up suspend and resume for PCI host controllers) attempted
+to fix the suspend-resume of PCI USB controllers, but unfortunately
+it did that incorrectly and interrupts are left enabled by the USB
+controllers' ->suspend_late() callback as a result.  This leads to
+serious problems during suspend which are very difficult to debug.
 
-Does booting with hpet=disable change anything?
+Fix the issue by removing the ->suspend_late() callback of PCI
+USB controllers and moving the code from there to the ->suspend()
+callback executed with interrupts enabled.  Additionally, make
+the ->resume() callback of PCI USB controllers execute
+pci_enable_wake(dev, PCI_D0, false) to disable wake-up from the
+full power state (PCI_D0).
 
-thanks
--john
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Tested-by: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/usb/core/hcd-pci.c  |  116 ++++++++++----------------------------------
+ drivers/usb/core/hcd.h      |    1 
+ drivers/usb/host/ehci-pci.c |    1 
+ drivers/usb/host/ohci-pci.c |    1 
+ drivers/usb/host/uhci-hcd.c |    1 
+ 5 files changed, 27 insertions(+), 93 deletions(-)
+
+Index: linux-2.6/drivers/usb/core/hcd-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/hcd-pci.c
++++ linux-2.6/drivers/usb/core/hcd-pci.c
+@@ -200,6 +200,7 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 	struct usb_hcd		*hcd = pci_get_drvdata(dev);
+ 	int			retval = 0;
+ 	int			wake, w;
++	int			has_pci_pm;
+ 
+ 	/* Root hub suspend should have stopped all downstream traffic,
+ 	 * and all bus master traffic.  And done so for both the interface
+@@ -229,6 +230,15 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 
+ 	synchronize_irq(dev->irq);
+ 
++	/* Downstream ports from this root hub should already be quiesced, so
++	 * there will be no DMA activity.  Now we can shut down the upstream
++	 * link (except maybe for PME# resume signaling) and enter some PCI
++	 * low power state, if the hardware allows.
++	 */
++	pci_disable_device(dev);
++
++	pci_save_state(dev);
++
+ 	/* Don't fail on error to enable wakeup.  We rely on pci code
+ 	 * to reject requests the hardware can't implement, rather
+ 	 * than coding the same thing.
+@@ -240,35 +250,6 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 		wake = w;
+ 	dev_dbg(&dev->dev, "wakeup: %d\n", wake);
+ 
+-	/* Downstream ports from this root hub should already be quiesced, so
+-	 * there will be no DMA activity.  Now we can shut down the upstream
+-	 * link (except maybe for PME# resume signaling) and enter some PCI
+-	 * low power state, if the hardware allows.
+-	 */
+-	pci_disable_device(dev);
+- done:
+-	return retval;
+-}
+-EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
+-
+-/**
+- * usb_hcd_pci_suspend_late - suspend a PCI-based HCD after IRQs are disabled
+- * @dev: USB Host Controller being suspended
+- * @message: Power Management message describing this state transition
+- *
+- * Store this function in the HCD's struct pci_driver as .suspend_late.
+- */
+-int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t message)
+-{
+-	int			retval = 0;
+-	int			has_pci_pm;
+-
+-	/* We might already be suspended (runtime PM -- not yet written) */
+-	if (dev->current_state != PCI_D0)
+-		goto done;
+-
+-	pci_save_state(dev);
+-
+ 	/* Don't change state if we don't need to */
+ 	if (message.event == PM_EVENT_FREEZE ||
+ 			message.event == PM_EVENT_PRETHAW) {
+@@ -314,7 +295,7 @@ int usb_hcd_pci_suspend_late(struct pci_
+  done:
+ 	return retval;
+ }
+-EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_late);
++EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend);
+ 
+ /**
+  * usb_hcd_pci_resume_early - resume a PCI-based HCD before IRQs are enabled
+@@ -324,65 +305,8 @@ EXPORT_SYMBOL_GPL(usb_hcd_pci_suspend_la
+  */
+ int usb_hcd_pci_resume_early(struct pci_dev *dev)
+ {
+-	int		retval = 0;
+-	pci_power_t	state = dev->current_state;
+-
+-#ifdef CONFIG_PPC_PMAC
+-	/* Reenable ASIC clocks for USB */
+-	if (machine_is(powermac)) {
+-		struct device_node *of_node;
+-
+-		of_node = pci_device_to_OF_node(dev);
+-		if (of_node)
+-			pmac_call_feature(PMAC_FTR_USB_ENABLE,
+-						of_node, 0, 1);
+-	}
+-#endif
+-
+-	/* NOTE:  chip docs cover clean "real suspend" cases (what Linux
+-	 * calls "standby", "suspend to RAM", and so on).  There are also
+-	 * dirty cases when swsusp fakes a suspend in "shutdown" mode.
+-	 */
+-	if (state != PCI_D0) {
+-#ifdef	DEBUG
+-		int	pci_pm;
+-		u16	pmcr;
+-
+-		pci_pm = pci_find_capability(dev, PCI_CAP_ID_PM);
+-		pci_read_config_word(dev, pci_pm + PCI_PM_CTRL, &pmcr);
+-		pmcr &= PCI_PM_CTRL_STATE_MASK;
+-		if (pmcr) {
+-			/* Clean case:  power to USB and to HC registers was
+-			 * maintained; remote wakeup is easy.
+-			 */
+-			dev_dbg(&dev->dev, "resume from PCI D%d\n", pmcr);
+-		} else {
+-			/* Clean:  HC lost Vcc power, D0 uninitialized
+-			 *   + Vaux may have preserved port and transceiver
+-			 *     state ... for remote wakeup from D3cold
+-			 *   + or not; HCD must reinit + re-enumerate
+-			 *
+-			 * Dirty: D0 semi-initialized cases with swsusp
+-			 *   + after BIOS init
+-			 *   + after Linux init (HCD statically linked)
+-			 */
+-			dev_dbg(&dev->dev, "resume from previous PCI D%d\n",
+-					state);
+-		}
+-#endif
+-
+-		retval = pci_set_power_state(dev, PCI_D0);
+-	} else {
+-		/* Same basic cases: clean (powered/not), dirty */
+-		dev_dbg(&dev->dev, "PCI legacy resume\n");
+-	}
+-
+-	if (retval < 0)
+-		dev_err(&dev->dev, "can't resume: %d\n", retval);
+-	else
+-		pci_restore_state(dev);
+-
+-	return retval;
++	pci_restore_state(dev);
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(usb_hcd_pci_resume_early);
+ 
+@@ -397,6 +321,18 @@ int usb_hcd_pci_resume(struct pci_dev *d
+ 	struct usb_hcd		*hcd;
+ 	int			retval;
+ 
++#ifdef CONFIG_PPC_PMAC
++	/* Reenable ASIC clocks for USB */
++	if (machine_is(powermac)) {
++		struct device_node *of_node;
++
++		of_node = pci_device_to_OF_node(dev);
++		if (of_node)
++			pmac_call_feature(PMAC_FTR_USB_ENABLE,
++						of_node, 0, 1);
++	}
++#endif
++
+ 	hcd = pci_get_drvdata(dev);
+ 	if (hcd->state != HC_STATE_SUSPENDED) {
+ 		dev_dbg(hcd->self.controller,
+@@ -404,6 +340,8 @@ int usb_hcd_pci_resume(struct pci_dev *d
+ 		return 0;
+ 	}
+ 
++	pci_enable_wake(dev, PCI_D0, false);
++
+ 	retval = pci_enable_device(dev);
+ 	if (retval < 0) {
+ 		dev_err(&dev->dev, "can't re-enable after resume, %d!\n",
+Index: linux-2.6/drivers/usb/core/hcd.h
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/hcd.h
++++ linux-2.6/drivers/usb/core/hcd.h
+@@ -257,7 +257,6 @@ extern void usb_hcd_pci_remove(struct pc
+ 
+ #ifdef CONFIG_PM
+ extern int usb_hcd_pci_suspend(struct pci_dev *dev, pm_message_t msg);
+-extern int usb_hcd_pci_suspend_late(struct pci_dev *dev, pm_message_t msg);
+ extern int usb_hcd_pci_resume_early(struct pci_dev *dev);
+ extern int usb_hcd_pci_resume(struct pci_dev *dev);
+ #endif /* CONFIG_PM */
+Index: linux-2.6/drivers/usb/host/ehci-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/ehci-pci.c
++++ linux-2.6/drivers/usb/host/ehci-pci.c
+@@ -432,7 +432,6 @@ static struct pci_driver ehci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif
+Index: linux-2.6/drivers/usb/host/ohci-pci.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/ohci-pci.c
++++ linux-2.6/drivers/usb/host/ohci-pci.c
+@@ -487,7 +487,6 @@ static struct pci_driver ohci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif
+Index: linux-2.6/drivers/usb/host/uhci-hcd.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/host/uhci-hcd.c
++++ linux-2.6/drivers/usb/host/uhci-hcd.c
+@@ -942,7 +942,6 @@ static struct pci_driver uhci_pci_driver
+ 
+ #ifdef	CONFIG_PM
+ 	.suspend =	usb_hcd_pci_suspend,
+-	.suspend_late =	usb_hcd_pci_suspend_late,
+ 	.resume_early =	usb_hcd_pci_resume_early,
+ 	.resume =	usb_hcd_pci_resume,
+ #endif	/* PM */
+
