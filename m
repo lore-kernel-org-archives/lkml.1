@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbZATXtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbZATXth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbZATXtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 18:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZATXsw
+	id S1763029AbZATXth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 18:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbZATXtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 18:48:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39357 "EHLO smtps.tip.net.au"
+	Tue, 20 Jan 2009 18:49:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59856 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755835AbZATXsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 18:48:51 -0500
-Date: Wed, 21 Jan 2009 10:48:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Samuel Ortiz <sameo@openedhand.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Balaji Rao <balajirrao@openmoko.org>
-Subject: Re: [GIT] MFD pull request (build failure fix)
-Message-Id: <20090121104836.fd1df471.sfr@canb.auug.org.au>
-In-Reply-To: <20090115112232.GA2794@sortiz.org>
-References: <20090115112232.GA2794@sortiz.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1756655AbZATXtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 18:49:22 -0500
+Subject: Re: why usr/include/linux/if_frad.h is required
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, netdev@vger.kernel.org,
+       davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <m3zlhlycso.fsf@intrepid.localdomain>
+References: <1232463174.3088.15.camel@localhost.localdomain>
+	 <1232463242.3088.16.camel@localhost.localdomain>
+	 <200901201847.03030.arnd@arndb.de>  <m3zlhlycso.fsf@intrepid.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 05:18:55 +0530
+Message-Id: <1232495335.3123.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__21_Jan_2009_10_48_36_+1100_9PfUYWH9_QAfFm.o"
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__21_Jan_2009_10_48_36_+1100_9PfUYWH9_QAfFm.o
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-01-20 at 20:53 +0100, Krzysztof Halasa wrote:
+> Arnd Bergmann <arnd@arndb.de> writes:
+> 
+> > The CONFIG_DLCI check in there is clearly in error, the definition in there
+> > is a user interface. The obvious solution is to drop the #if / #endif pair
+> > without a replacement.
+> 
+> I think so.
+> OTOH I'd be really surprised if anyone on the planet still used this
+> code/driver. IIRC and AFAICS it is (sdla.c coupled with dlci.c) the
+> first driver for the old Sangoma ISA sync serial cards (S502 - S508,
+> i.e. those based on Z80CPU doing HDLC and other things in firmware).
+> 
+> 
 
-Hi Linus,
+usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
+and no body is complaining about it so it means no body is using it.
 
-On Thu, 15 Jan 2009 12:22:32 +0100 Samuel Ortiz <sameo@openedhand.com> wrot=
-e:
->
-> Could you please pull from my MFD tree ? I have a build failure fix for
-> pcf50633 on several architectures.
->=20
-> The following changes since commit 5393f780277165f282a37ed82dd878159ec9da=
-d5:
->   Linus Torvalds (1):
->         Merge branch 'merge' of git://git.kernel.org/.../benh/powerpc
->=20
-> are available in the git repository at:
->=20
->   git://git.o-hand.com/linux-mfd for-linus
->=20
-> Balaji Rao (1):
->       mfd: Remove non exported references from pcf50633
+So should we need to drop #if / #endif pair or the whole file from
+userspace.
 
-I have been applying this to linux-next (after starting from your tree)
-for over a week.  It is necessary to allow x86_64 allmodconfig to build
-(at least).  It would be good if you could find a moment to merge this
-into your tree.
+--
+JSR
 
-Thanks
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__21_Jan_2009_10_48_36_+1100_9PfUYWH9_QAfFm.o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl2YtQACgkQjjKRsyhoI8wKGgCfdjoDdd1asYavN+hpPwxxJKM9
-1F0An1TKWwLBXK+k6mkEBgoWUKDUObYx
-=n3PU
------END PGP SIGNATURE-----
-
---Signature=_Wed__21_Jan_2009_10_48_36_+1100_9PfUYWH9_QAfFm.o--
