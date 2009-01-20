@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbZATAqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbZATAqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbZATAqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZATAqL
+	id S1761650AbZATAqk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:46:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760135AbZATAqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:46:11 -0500
-Received: from outbound-mail-153.bluehost.com ([67.222.39.33]:55492 "HELO
-	outbound-mail-153.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753002AbZATAqK (ORCPT
+	Mon, 19 Jan 2009 19:46:20 -0500
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:14131 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759958AbZATAqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:46:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=JbmkOoxUR5BOnn/Y5tAL71vdEMQGETcvjRLGi/VyXJsDq5HIu0oic0QMRASpi/GUv1hv4mUPtR10N2trLly+gAh/CaAolYoyy3VZ1ue7vtObU5O3PxS3U31WU3WG8qu1;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: [PATCH] document "nc" in addition to "netcat" in netconsole.txt
-Date: Mon, 19 Jan 2009 16:46:07 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
+	Mon, 19 Jan 2009 19:46:19 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMmqdEl5LBUR/2dsb2JhbADOQ4Vz
+X-IronPort-AV: E=Sophos;i="4.37,292,1231075800"; 
+   d="scan'208";a="287789404"
+Date: Tue, 20 Jan 2009 11:46:11 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Jacek Luczak <difrost.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       xfs mailing list <xfs@oss.sgi.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+Message-ID: <20090120004611.GA6445@disturbed>
+Mail-Followup-To: Eric Sandeen <sandeen@sandeen.net>,
+	Jacek Luczak <difrost.kernel@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+	xfs mailing list <xfs@oss.sgi.com>
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901191646.07935.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <4974CA20.6050308@sandeen.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It always annoyed me that the netconsole documentation didn't give me the
-correct command for my distro.  Update it with a command line that actually
-works on my Fedora install.
+On Mon, Jan 19, 2009 at 12:44:48PM -0600, Eric Sandeen wrote:
+> Jacek Luczak wrote:
+> > Hi All,
+> > 
+> > I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
+> > didn't found errors. Today I've booted my notebook and XFS bug have occurred.
+> > System reboot didn't helped, same error appeared.
+> > 
+> > Some info:
+> > [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
+> > [2] kernel logs:
+> > http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
+> > [3] most interesting part of log below.
+> 
+> so this happens every mount?  Reproducible is good.  How large is the
+> filesystem (too large to extract elsewhere for analysis...?) (plus I
+> suppose it'll be hard to get to it when you can't even boot....)
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+XFS folks, I suspect the common link between all the reports of this
+bug is that they are on 32-bit kernels. I can't reproduce this on
+a 64 bit kernel, and I'm trying to get a 32-bit UML built right now
+to test this theory.
 
+Cheers,
+
+Dave.
 -- 
-Jesse Barnes, Intel Open Source Technology Center
-
-diff --git a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
-index 3c2f2b3..8d02207 100644
---- a/Documentation/networking/netconsole.txt
-+++ b/Documentation/networking/netconsole.txt
-@@ -51,7 +51,8 @@ Built-in netconsole starts immediately after the TCP stack is
- initialized and attempts to bring up the supplied dev at the supplied
- address.
- 
--The remote host can run either 'netcat -u -l -p <port>' or syslogd.
-+The remote host can run either 'netcat -u -l -p <port>',
-+'nc -l -u <port>' or syslogd.
- 
- Dynamic reconfiguration:
- ========================
+Dave Chinner
+david@fromorbit.com
