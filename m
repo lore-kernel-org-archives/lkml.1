@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbZATWol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762405AbZATWpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbZATWol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZATWoa
+	id S1762405AbZATWpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:45:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbZATWo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:44:30 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:35934 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755517AbZATWoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:44:30 -0500
-Date: Wed, 21 Jan 2009 07:44:02 +0900
-To: stefanr@s5r6.in-berlin.de
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: swiotlb default size (64 MB) too small?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <49762FC8.7000208@s5r6.in-berlin.de>
-References: <49762FC8.7000208@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090121074339N.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 20 Jan 2009 17:44:59 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:2658 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756251AbZATWo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:44:59 -0500
+Date: Tue, 20 Jan 2009 17:44:22 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Sergey S. Kostyliov" <rathamahata@gmail.com>
+Subject: Re: [Bug #12490] ath5k related kernel panic in 2.6.29-rc1
+Message-ID: <20090120224422.GA25168@hash.localnet>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.AaH.p9QdJB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2QN7KFic7LG.A.AaH.p9QdJB@chimera>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Jan 2009 21:10:48 +0100
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> somebody reported frequent "Out of SW-IOMMU space" failures when copying
-> between a FireWire and a USB disk.  swiotlb=512M on the kernel command
-> line fixes it for him. https://bugzilla.redhat.com/show_bug.cgi?id=478567
+On Mon, Jan 19, 2009 at 10:32:14PM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Should the default be raised?
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 
-I don't think so. Reserving large memory like 512MB for swiotlb? It
-means that you waste 512MB if you use decent HBAs (having no dma mask
-limit) or fast storage, or when there is few I/O activity.
+Yeah I think it should, though it seems to be a rate controller bug and
+not specific to ath5k.
 
-The bug reporter said that copying stooped but it should not
-happen. It doesn't happen with SCSI (copying can continue a bit
-slowly). dma mapping errors are transient so SCSI retries.
+-- 
+Bob Copeland %% www.bobcopeland.com
 
-I guess that it would be better to remove the misleading error
-message. Sane IOMMUs don't do that.
-
-If the bug report is true, then the FireWire stack or the driver (or
-both) has problems. Make sure that FireWire can work even with dma
-mapping failures. My dma mapping debug patchset might be useful:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git dmafault
-
-You can inject dma mapping failures per device:
-
-vine:/debug/pci/0000:00:1d.1# ls
-interval  probability  space  task-filter  times  verbose
