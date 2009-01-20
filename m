@@ -1,534 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbZATB5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbZATCAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762479AbZATB5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZATB5Z
+	id S1762820AbZATCAb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 21:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATCAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:57:25 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:28471 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbZATB5Y (ORCPT
+	Mon, 19 Jan 2009 21:00:21 -0500
+Received: from rv-out-0506.google.com ([209.85.198.226]:22798 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754538AbZATCAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:57:24 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=U9hx3/pxLSMw3ICg1fxVB2qvW1TcndXDA1WwhJVBqVOM950o/m9sfNz/JJrEbegfv
-	28GJMB3OhYP2Y9h6HIXOA==
+	Mon, 19 Jan 2009 21:00:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WDqidhwfF8wTnelf1WNN3vGAhU/DkOej13NFA9QuuOX06KbEmp8Efw76ogOM1mEwpH
+         kt1zRHMI9ZF4BoXNOaQADW78F/9c2pTGX00IYsMZD8MuZO25OK5YD3OR/oxZvxuTFpKK
+         tT2UGfyHqVnWLwPb/za87paMU8J7T/KDlQa+I=
 MIME-Version: 1.0
-In-Reply-To: <20090115192522.0130e550.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090115192522.0130e550.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 19 Jan 2009 17:57:17 -0800
-Message-ID: <6599ad830901191757n71583eccncf5b175afc0756d1@mail.gmail.com>
-Subject: Re: [PATCH 1/4] cgroup: add CSS ID
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <20090120011945.GA23380@oksana.dev.rtsoft.ru>
+References: <496A89A1.8050302@gmail.com>
+	 <646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>
+	 <20090120011945.GA23380@oksana.dev.rtsoft.ru>
+Date: Tue, 20 Jan 2009 13:00:19 +1100
+Message-ID: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
+Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
+From: Julian Calaby <julian.calaby@gmail.com>
+To: avorontsov@ru.mvista.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Anatolij Gustschin <agust@denx.de>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Matteo Fortini <m.fortini@selcomgroup.com>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.65
-X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 2:25 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> Patch for Per-CSS(Cgroup Subsys State) ID and private hierarchy code.
->
-> This patch attaches unique ID to each css and provides following.
->
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> Should be Anatolij. ;-)
 
-Acked-by: Paul Menage <menage@google.com>
+Who is the first person on the list, I guess he's missed this or isn't
+reading his email.
 
-> ---
-> Index: mmotm-2.6.29-Jan14/include/linux/cgroup.h
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/include/linux/cgroup.h
-> +++ mmotm-2.6.29-Jan14/include/linux/cgroup.h
-> @@ -15,6 +15,7 @@
->  #include <linux/cgroupstats.h>
->  #include <linux/prio_heap.h>
->  #include <linux/rwsem.h>
-> +#include <linux/idr.h>
+> But I'm interested in this driver as well.
 >
->  #ifdef CONFIG_CGROUPS
->
-> @@ -22,6 +23,7 @@ struct cgroupfs_root;
->  struct cgroup_subsys;
->  struct inode;
->  struct cgroup;
-> +struct css_id;
->
->  extern int cgroup_init_early(void);
->  extern int cgroup_init(void);
-> @@ -59,6 +61,8 @@ struct cgroup_subsys_state {
->        atomic_t refcnt;
->
->        unsigned long flags;
-> +       /* ID for this css, if possible */
-> +       struct css_id *id;
->  };
->
->  /* bits in struct cgroup_subsys_state flags field */
-> @@ -363,6 +367,11 @@ struct cgroup_subsys {
->        int active;
->        int disabled;
->        int early_init;
-> +       /*
-> +        * True if this subsys uses ID. ID is not available before cgroup_init()
-> +        * (not available in early_init time.)
-> +        */
-> +       bool use_id;
->  #define MAX_CGROUP_TYPE_NAMELEN 32
->        const char *name;
->
-> @@ -384,6 +393,9 @@ struct cgroup_subsys {
->         */
->        struct cgroupfs_root *root;
->        struct list_head sibling;
-> +       /* used when use_id == true */
-> +       struct idr idr;
-> +       spinlock_t id_lock;
->  };
->
->  #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
-> @@ -437,6 +449,44 @@ void cgroup_iter_end(struct cgroup *cgrp
->  int cgroup_scan_tasks(struct cgroup_scanner *scan);
->  int cgroup_attach_task(struct cgroup *, struct task_struct *);
->
-> +/*
-> + * CSS ID is ID for cgroup_subsys_state structs under subsys. This only works
-> + * if cgroup_subsys.use_id == true. It can be used for looking up and scanning.
-> + * CSS ID is assigned at cgroup allocation (create) automatically
-> + * and removed when subsys calls free_css_id() function. This is because
-> + * the lifetime of cgroup_subsys_state is subsys's matter.
-> + *
-> + * Looking up and scanning function should be called under rcu_read_lock().
-> + * Taking cgroup_mutex()/hierarchy_mutex() is not necessary for following calls.
-> + * But the css returned by this routine can be "not populated yet" or "being
-> + * destroyed". The caller should check css and cgroup's status.
-> + */
-> +
-> +/*
-> + * Typically Called at ->destroy(), or somewhere the subsys frees
-> + * cgroup_subsys_state.
-> + */
-> +void free_css_id(struct cgroup_subsys *ss, struct cgroup_subsys_state *css);
-> +
-> +/* Find a cgroup_subsys_state which has given ID */
-> +
-> +struct cgroup_subsys_state *css_lookup(struct cgroup_subsys *ss, int id);
-> +
-> +/*
-> + * Get a cgroup whose id is greater than or equal to id under tree of root.
-> + * Returning a cgroup_subsys_state or NULL.
-> + */
-> +struct cgroup_subsys_state *css_get_next(struct cgroup_subsys *ss, int id,
-> +               struct cgroup_subsys_state *root, int *foundid);
-> +
-> +/* Returns true if root is ancestor of cg */
-> +bool css_is_ancestor(struct cgroup_subsys_state *cg,
-> +                    struct cgroup_subsys_state *root);
-> +
-> +/* Get id and depth of css */
-> +unsigned short css_id(struct cgroup_subsys_state *css);
-> +unsigned short css_depth(struct cgroup_subsys_state *css);
-> +
->  #else /* !CONFIG_CGROUPS */
->
->  static inline int cgroup_init_early(void) { return 0; }
-> Index: mmotm-2.6.29-Jan14/kernel/cgroup.c
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/kernel/cgroup.c
-> +++ mmotm-2.6.29-Jan14/kernel/cgroup.c
-> @@ -185,6 +185,8 @@ struct cg_cgroup_link {
->  static struct css_set init_css_set;
->  static struct cg_cgroup_link init_css_set_link;
->
-> +static int cgroup_subsys_init_idr(struct cgroup_subsys *ss);
-> +
->  /* css_set_lock protects the list of css_set objects, and the
->  * chain of tasks off each css_set.  Nests outside task->alloc_lock
->  * due to cgroup_iter_start() */
-> @@ -567,6 +569,9 @@ static struct backing_dev_info cgroup_ba
->        .capabilities   = BDI_CAP_NO_ACCT_AND_WRITEBACK,
->  };
->
-> +static int alloc_css_id(struct cgroup_subsys *ss,
-> +                       struct cgroup *parent, struct cgroup *child);
-> +
->  static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
->  {
->        struct inode *inode = new_inode(sb);
-> @@ -2335,6 +2340,7 @@ static void init_cgroup_css(struct cgrou
->        css->cgroup = cgrp;
->        atomic_set(&css->refcnt, 1);
->        css->flags = 0;
-> +       css->id = NULL;
->        if (cgrp == dummytop)
->                set_bit(CSS_ROOT, &css->flags);
->        BUG_ON(cgrp->subsys[ss->subsys_id]);
-> @@ -2410,6 +2416,10 @@ static long cgroup_create(struct cgroup
->                        goto err_destroy;
->                }
->                init_cgroup_css(css, ss, cgrp);
-> +               if (ss->use_id)
-> +                       if (alloc_css_id(ss, parent, cgrp))
-> +                               goto err_destroy;
-> +               /* At error, ->destroy() callback has to free assigned ID. */
->        }
->
->        cgroup_lock_hierarchy(root);
-> @@ -2699,6 +2709,8 @@ int __init cgroup_init(void)
->                struct cgroup_subsys *ss = subsys[i];
->                if (!ss->early_init)
->                        cgroup_init_subsys(ss);
-> +               if (ss->use_id)
-> +                       cgroup_subsys_init_idr(ss);
->        }
->
->        /* Add init_css_set to the hash table */
-> @@ -3232,3 +3244,259 @@ static int __init cgroup_disable(char *s
->        return 1;
->  }
->  __setup("cgroup_disable=", cgroup_disable);
-> +
-> +/*
-> + * CSS ID -- ID per subsys's Cgroup Subsys State(CSS).
-> + */
-> +struct css_id {
-> +       /*
-> +        * The css to which this ID points. If cgroup is removed, this will
-> +        * be NULL. This pointer is expected to be RCU-safe because destroy()
-> +        * is called after synchronize_rcu(). But for safe use, css_is_removed()
-> +        * css_tryget() should be used for avoiding race.
-> +        */
-> +       struct cgroup_subsys_state *css;
-> +       /*
-> +        * ID of this css.
-> +        */
-> +       unsigned short id;
-> +       /*
-> +        * Depth in hierarchy which this ID belongs to.
-> +        */
-> +       unsigned short depth;
-> +       /*
-> +        * ID is freed by RCU. (and lookup routine is RCU safe.)
-> +        */
-> +       struct rcu_head rcu_head;
-> +       /*
-> +        * Hierarchy of CSS ID belongs to.
-> +        */
-> +       unsigned short stack[0]; /* Array of Length (depth+1) */
-> +};
-> +#define CSS_ID_MAX     (65535)
-> +
-> +/*
-> + * To get ID other than 0, this should be called when !cgroup_is_removed().
-> + */
-> +unsigned short css_id(struct cgroup_subsys_state *css)
-> +{
-> +       struct css_id *cssid = rcu_dereference(css->id);
-> +
-> +       if (cssid)
-> +               return cssid->id;
-> +       return 0;
-> +}
-> +
-> +unsigned short css_depth(struct cgroup_subsys_state *css)
-> +{
-> +       struct css_id *cssid = rcu_dereference(css->id);
-> +
-> +       if (cssid)
-> +               return cssid->depth;
-> +       return 0;
-> +}
-> +
-> +bool css_is_ancestor(struct cgroup_subsys_state *child,
-> +                   struct cgroup_subsys_state *root)
-> +{
-> +       struct css_id *child_id = rcu_dereference(child->id);
-> +       struct css_id *root_id = rcu_dereference(root->id);
-> +
-> +       if (!child_id || !root_id || (child_id->depth < root_id->depth))
-> +               return false;
-> +       return child_id->stack[root_id->depth] == root_id->id;
-> +}
-> +
-> +static void __free_css_id_cb(struct rcu_head *head)
-> +{
-> +       struct css_id *id;
-> +
-> +       id = container_of(head, struct css_id, rcu_head);
-> +       kfree(id);
-> +}
-> +
-> +void free_css_id(struct cgroup_subsys *ss, struct cgroup_subsys_state *css)
-> +{
-> +       struct css_id *id = css->id;
-> +       /* When this is called before css_id initialization, id can be NULL */
-> +       if (!id)
-> +               return;
-> +
-> +       BUG_ON(!ss->use_id);
-> +
-> +       rcu_assign_pointer(id->css, NULL);
-> +       rcu_assign_pointer(css->id, NULL);
-> +       spin_lock(&ss->id_lock);
-> +       idr_remove(&ss->idr, id->id);
-> +       spin_unlock(&ss->id_lock);
-> +       call_rcu(&id->rcu_head, __free_css_id_cb);
-> +}
-> +
-> +/*
-> + * This is called by init or create(). Then, calls to this function are
-> + * always serialized (By cgroup_mutex() at create()).
-> + */
-> +
-> +static struct css_id *get_new_cssid(struct cgroup_subsys *ss, int depth)
-> +{
-> +       struct css_id *newid;
-> +       int myid, error, size;
-> +
-> +       BUG_ON(!ss->use_id);
-> +
-> +       size = sizeof(*newid) + sizeof(unsigned short) * (depth + 1);
-> +       newid = kzalloc(size, GFP_KERNEL);
-> +       if (!newid)
-> +               return ERR_PTR(-ENOMEM);
-> +       /* get id */
-> +       if (unlikely(!idr_pre_get(&ss->idr, GFP_KERNEL))) {
-> +               error = -ENOMEM;
-> +               goto err_out;
-> +       }
-> +       spin_lock(&ss->id_lock);
-> +       /* Don't use 0. allocates an ID of 1-65535 */
-> +       error = idr_get_new_above(&ss->idr, newid, 1, &myid);
-> +       spin_unlock(&ss->id_lock);
-> +
-> +       /* Returns error when there are no free spaces for new ID.*/
-> +       if (error) {
-> +               error = -ENOSPC;
-> +               goto err_out;
-> +       }
-> +       if (myid > CSS_ID_MAX)
-> +               goto remove_idr;
-> +
-> +       newid->id = myid;
-> +       newid->depth = depth;
-> +       return newid;
-> +remove_idr:
-> +       error = -ENOSPC;
-> +       spin_lock(&ss->id_lock);
-> +       idr_remove(&ss->idr, myid);
-> +       spin_unlock(&ss->id_lock);
-> +err_out:
-> +       kfree(newid);
-> +       return ERR_PTR(error);
-> +
-> +}
-> +
-> +static int __init cgroup_subsys_init_idr(struct cgroup_subsys *ss)
-> +{
-> +       struct css_id *newid;
-> +       struct cgroup_subsys_state *rootcss;
-> +
-> +       spin_lock_init(&ss->id_lock);
-> +       idr_init(&ss->idr);
-> +
-> +       rootcss = init_css_set.subsys[ss->subsys_id];
-> +       newid = get_new_cssid(ss, 0);
-> +       if (IS_ERR(newid))
-> +               return PTR_ERR(newid);
-> +
-> +       newid->stack[0] = newid->id;
-> +       newid->css = rootcss;
-> +       rootcss->id = newid;
-> +       return 0;
-> +}
-> +
-> +static int alloc_css_id(struct cgroup_subsys *ss, struct cgroup *parent,
-> +                       struct cgroup *child)
-> +{
-> +       int subsys_id, i, depth = 0;
-> +       struct cgroup_subsys_state *parent_css, *child_css;
-> +       struct css_id *child_id, *parent_id = NULL;
-> +
-> +       subsys_id = ss->subsys_id;
-> +       parent_css = parent->subsys[subsys_id];
-> +       child_css = child->subsys[subsys_id];
-> +       depth = css_depth(parent_css) + 1;
-> +       parent_id = parent_css->id;
-> +
-> +       child_id = get_new_cssid(ss, depth);
-> +       if (IS_ERR(child_id))
-> +               return PTR_ERR(child_id);
-> +
-> +       for (i = 0; i < depth; i++)
-> +               child_id->stack[i] = parent_id->stack[i];
-> +       child_id->stack[depth] = child_id->id;
-> +
-> +       rcu_assign_pointer(child_id->css, child_css);
-> +       rcu_assign_pointer(child_css->id, child_id);
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * css_lookup - lookup css by id
-> + * @ss: cgroup subsys to be looked into.
-> + * @id: the id
-> + *
-> + * Returns pointer to cgroup_subsys_state if there is valid one with id.
-> + * NULL if not. Should be called under rcu_read_lock()
-> + */
-> +struct cgroup_subsys_state *css_lookup(struct cgroup_subsys *ss, int id)
-> +{
-> +       struct css_id *cssid = NULL;
-> +
-> +       BUG_ON(!ss->use_id);
-> +       cssid = idr_find(&ss->idr, id);
-> +
-> +       if (unlikely(!cssid))
-> +               return NULL;
-> +
-> +       return rcu_dereference(cssid->css);
-> +}
-> +
-> +/**
-> + * css_get_next - lookup next cgroup under specified hierarchy.
-> + * @ss: pointer to subsystem
-> + * @id: current position of iteration.
-> + * @root: pointer to css. search tree under this.
-> + * @foundid: position of found object.
-> + *
-> + * Search next css under the specified hierarchy of rootid. Calling under
-> + * rcu_read_lock() is necessary. Returns NULL if it reaches the end.
-> + */
-> +struct cgroup_subsys_state *
-> +css_get_next(struct cgroup_subsys *ss, int id,
-> +            struct cgroup_subsys_state *root, int *foundid)
-> +{
-> +       struct cgroup_subsys_state *ret = NULL;
-> +       struct css_id *tmp;
-> +       int tmpid;
-> +       int rootid = css_id(root);
-> +       int depth = css_depth(root);
-> +
-> +       if (!rootid)
-> +               return NULL;
-> +
-> +       BUG_ON(!ss->use_id);
-> +       rcu_read_lock();
-> +       /* fill start point for scan */
-> +       tmpid = id;
-> +       while (1) {
-> +               /*
-> +                * scan next entry from bitmap(tree), tmpid is updated after
-> +                * idr_get_next().
-> +                */
-> +               spin_lock(&ss->id_lock);
-> +               tmp = idr_get_next(&ss->idr, &tmpid);
-> +               spin_unlock(&ss->id_lock);
-> +
-> +               if (!tmp)
-> +                       break;
-> +               if (tmp->depth >= depth && tmp->stack[depth] == rootid) {
-> +                       ret = rcu_dereference(tmp->css);
-> +                       if (ret) {
-> +                               *foundid = tmpid;
-> +                               break;
-> +                       }
-> +               }
-> +               /* continue to scan from next id */
-> +               tmpid = tmpid + 1;
-> +       }
-> +
-> +       rcu_read_unlock();
-> +       return ret;
-> +}
-> +
-> Index: mmotm-2.6.29-Jan14/include/linux/idr.h
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/include/linux/idr.h
-> +++ mmotm-2.6.29-Jan14/include/linux/idr.h
-> @@ -106,6 +106,7 @@ int idr_get_new(struct idr *idp, void *p
->  int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
->  int idr_for_each(struct idr *idp,
->                 int (*fn)(int id, void *p, void *data), void *data);
-> +void *idr_get_next(struct idr *idp, int *nextid);
->  void *idr_replace(struct idr *idp, void *ptr, int id);
->  void idr_remove(struct idr *idp, int id);
->  void idr_remove_all(struct idr *idp);
-> Index: mmotm-2.6.29-Jan14/lib/idr.c
-> ===================================================================
-> --- mmotm-2.6.29-Jan14.orig/lib/idr.c
-> +++ mmotm-2.6.29-Jan14/lib/idr.c
-> @@ -579,6 +579,52 @@ int idr_for_each(struct idr *idp,
->  EXPORT_SYMBOL(idr_for_each);
->
->  /**
-> + * idr_get_next - lookup next object of id to given id.
-> + * @idp: idr handle
-> + * @id:  pointer to lookup key
-> + *
-> + * Returns pointer to registered object with id, which is next number to
-> + * given id.
-> + */
-> +
-> +void *idr_get_next(struct idr *idp, int *nextidp)
-> +{
-> +       struct idr_layer *p, *pa[MAX_LEVEL];
-> +       struct idr_layer **paa = &pa[0];
-> +       int id = *nextidp;
-> +       int n, max;
-> +
-> +       /* find first ent */
-> +       n = idp->layers * IDR_BITS;
-> +       max = 1 << n;
-> +       p = rcu_dereference(idp->top);
-> +       if (!p)
-> +               return NULL;
-> +
-> +       while (id < max) {
-> +               while (n > 0 && p) {
-> +                       n -= IDR_BITS;
-> +                       *paa++ = p;
-> +                       p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
-> +               }
-> +
-> +               if (p) {
-> +                       *nextidp = id;
-> +                       return p;
-> +               }
-> +
-> +               id += 1 << n;
-> +               while (n < fls(id)) {
-> +                       n += IDR_BITS;
-> +                       p = *--paa;
-> +               }
-> +       }
-> +       return NULL;
-> +}
-> +
-> +
-> +
-> +/**
->  * idr_replace - replace pointer for given id
->  * @idp: idr handle
->  * @ptr: pointer you want associated with the id
->
->
+> FWIW, the patch looks OK, except for the long lines in the commit log.
+
+I don't expect this to be applied as is. There is a better fix out
+there, but I don't know the hardware so I'm not sure what it is.
+
+> Also you'd better mention exact build error in the commit log.
+
+Essentially it's a huge list of missing definitions for functions
+which aren't defined for SPARC. I'll reply with it if you really want
+it, however they look to be PPC specific. If they were generic I would
+have simply included the correct files so that it compiled, rather
+than this nasty hack.
+
+It also appears that these functions are not defined in the headers
+that this driver includes.
+
+> (Btw, we'd better fix the build for sparc instead of adding another
+> "depends on". Could anybody point to some recent, working sparc cross
+> toolchain? Last time I googled for it I found only some prehistoric
+> versions that I didn't bother to try...)
+
+Before we commit to fixing this properly, is it really worth it? Is
+this hardware ever likely to be used with SPARC?
+
+Given that there are PCI and OF versions of the driver, it seems to me
+that this is available as a PCI expansion card, and as a graphics chip
+built into some PPC motherboards. The initial commit says: "Lime GDC
+support is known to work on PPC440EPx based lwmon5 and MPC8544E based
+socrates embedded boards, both equipped with Lime GDC." so I'm
+guessing that this graphics chip is designed for embedded boards. I
+can find references to it's use in embedded automotive applications on
+Google but I can't find any reference to the Fujitsu LIME (MB86276)
+and SPARC on Google.
+
+Note that the PCI version of this driver compiles fine with both
+allyesconfig and allmodconfig.
+
+If you're sure you want to do this, I'd check out crosstool for a
+SPARC cross-complier.
+
+Two other things:
+1. SPARC32 and SPARC64 can be compiled with the same compiler.
+2. These two platforms have slightly different OpenFirmware interfaces
+- so fixing it for both of these will be a pain.
+
+Thanks,
+
+-- 
+
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+.Plan: https://sites.google.com/site/juliancalaby/
