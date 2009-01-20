@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761403AbZATUZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbZATU3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761403AbZATUZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 15:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZATUZW
+	id S1761475AbZATU3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 15:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZATU32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 15:25:22 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2480 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752538AbZATUZV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 15:25:21 -0500
-Date: Tue, 20 Jan 2009 20:25:11 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, LKML <linux-kernel@vger.kernel.org>,
-       Liam Girdwood <lrg@kernel.org>
-Message-ID: <20090120202511.GA6864@sirena.org.uk>
-References: <4975BE69.5040106@cam.ac.uk> <20090120124338.GA31521@sirena.org.uk> <4975CAF5.9090607@cam.ac.uk> <4975CF70.5080802@gmail.com>
+	Tue, 20 Jan 2009 15:29:28 -0500
+Received: from mout3.freenet.de ([195.4.92.93]:44937 "EHLO mout3.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756090AbZATU31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 15:29:27 -0500
+Message-ID: <34115.192.168.0.40.1232483361.squirrel@server>
+Date: Tue, 20 Jan 2009 21:29:21 +0100 (CET)
+Subject: [PATCH] usb/mcs7830: Don't use buffers from stack for USB transfers
+From: "Christian Eggers" <ceggers@gmx.de>
+To: netdev@vger.kernel.org
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4975CF70.5080802@gmail.com>
-X-Cookie: Don't feed the bats tonight.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: regulator: Add disable_on_boot flag to constraints.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 01:19:44PM +0000, Jonathan Cameron wrote:
+From: Christian Eggers <christian.eggers@kathrein.de>
 
-> index 3794773..fc0a641 100644
-> --- a/include/linux/regulator/machine.h
-> +++ b/include/linux/regulator/machine.h
-> @@ -112,10 +112,10 @@ struct regulation_constraints {
->      suspend_state_t initial_state; /* suspend state to set at init */
->  
->      /* constriant flags */
-> -    unsigned always_on:1;    /* regulator never off when system is on */
-> -    unsigned boot_on:1;    /* bootloader/firmware enabled regulator */
-> -    unsigned apply_uV:1;    /* apply uV constraint iff min == max */
-> +    unsigned always_on:1;        /* regulator never off when system on */
-> +    unsigned boot_on:1;        /* bootloader/firmware enabled reg */
-> +    unsigned disable_on_boot:1;    /* regulator to be disabled at boot */
-> +    unsigned apply_uV:1;        /* apply uV constraint iff min == max */
->  };
+mcs7830_set_reg() and mcs7830_get_reg() are called with buffers
+from stack which must not be used directly for USB transfers.
+This causes corruption of the stack particulary on non x86
+architectures because DMA may be used for these transfers.
 
-This needs kerneldoc adding for the new entry.  Other than that
+Signed-off-by: Christian Eggers <christian.eggers@kathrein.de>
+---
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+This is my first patch submission for Linux. I hope everything is fine.
+
+diff -uprN linux-2.6.28.1.orig/drivers/net/usb/mcs7830.c linux-2.6.28.1/drivers/net/usb/mcs7830.c
+--- linux-2.6.28.1.orig/drivers/net/usb/mcs7830.c       2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/drivers/net/usb/mcs7830.c    2009-01-20 20:53:59.000000000 +0100
+@@ -94,10 +94,18 @@ static int mcs7830_get_reg(struct usbnet
+ {
+        struct usb_device *xdev = dev->udev;
+        int ret;
++       void *buffer;
++
++       buffer = kmalloc(size, GFP_NOIO);
++       if (buffer == NULL)
++               return -ENOMEM;
+
+        ret = usb_control_msg(xdev, usb_rcvctrlpipe(xdev, 0), MCS7830_RD_BREQ,
+-                             MCS7830_RD_BMREQ, 0x0000, index, data,
++                             MCS7830_RD_BMREQ, 0x0000, index, buffer,
+                              size, MCS7830_CTRL_TIMEOUT);
++       memcpy(data, buffer, size);
++       kfree(buffer);
++
+        return ret;
+ }
+
+@@ -105,10 +113,18 @@ static int mcs7830_set_reg(struct usbnet
+ {
+        struct usb_device *xdev = dev->udev;
+        int ret;
++       void *buffer;
++
++       buffer = kmalloc(size, GFP_NOIO);
++       if (buffer == NULL)
++               return -ENOMEM;
++
++       memcpy(buffer, data, size);
+
+        ret = usb_control_msg(xdev, usb_sndctrlpipe(xdev, 0), MCS7830_WR_BREQ,
+-                             MCS7830_WR_BMREQ, 0x0000, index, data,
++                             MCS7830_WR_BMREQ, 0x0000, index, buffer,
+                              size, MCS7830_CTRL_TIMEOUT);
++       kfree(buffer);
+        return ret;
+ }
+
+
