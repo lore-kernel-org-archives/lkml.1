@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbZATThd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbZATTjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762187AbZATThd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZATThY
+	id S1762574AbZATTjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbZATTjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:37:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36953 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbZATThX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:37:23 -0500
-Date: Tue, 20 Jan 2009 20:37:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-Message-ID: <20090120193703.GA27930@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>
+	Tue, 20 Jan 2009 14:39:10 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:37115 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbZATTjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 14:39:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=r02NLWXb6PNQFVWJto8A8qXbTHGs6KGz2eXWaqKTt1dzu33N8cNSpzporpKVcWT1M6
+         FH37Z8W1DIY7XZSyWvWFLHt8bnt1jGs3P22riAiCGePD0moenQ18L65SWCz/QvA2G6um
+         u9Ljds2I1ZUJ9vHny6p7Awnmi0p7Hl5ZOlRRc=
+Message-ID: <567e52cd0901201139s1bd4e585o4a3af400c213d237@mail.gmail.com>
+Date: Tue, 20 Jan 2009 21:39:06 +0200
+From: alex <gsmdib@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: plz help fixing lirc_igorplugusb kernel module
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090120140324.GA26424@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> -----------------------------------------------
-> | Performance counter stats for './mmap-perf' |
-> -----------------------------------------------
-> |                |
-> |  x86-defconfig |   PARAVIRT=y         
-> |------------------------------------------------------------------
-> |
-> |    1311.554526 |  1360.624932  task clock ticks (msecs)    +3.74%
-> |                |
-> |              1 |            1  CPU migrations
-> |             91 |           79  context switches
-> |          55945 |        55943  pagefaults
-> |    ............................................
-> |     3781392474 |   3918777174  CPU cycles                  +3.63%
-> |     1957153827 |   2161280486  instructions               +10.43%
-> |       50234816 |     51303520  cache references            +2.12%
-> |        5428258 |      5583728  cache misses                +2.86%
-> |                |
-> |    1314.782469 |  1363.694447  time elapsed (msecs)        +3.72%
-> |                |
-> -----------------------------------
-> 
-> The most surprising element is that in the paravirt_ops case we run 204 
-> million more instructions - out of the ~2000 million instructions total.
-
-So because this test does exactly 1 million MM syscalls, the average is 
-easy to calculate:
-
-The native kernel's average MM syscall cost is 1957 instructions - with 
-CONFIG_PARAVIRT=y that increases by +10.43% to 2161 instructions. There's 
-over 200 extra instructions executed per MM syscall that we only do due to 
-CONFIG_PARAVIRT=y.
-
-	Ingo
+Hi.
+It turns out that lirc_igorplugusb.c is part of the 2.6.28 kernel
+(http://lkml.org/lkml/2008/9/9/13) and the bad news is that it's
+broken.
+--
+Jan 20 19:05:33 s lirc_igorplugusb: USB remote driver for LIRC v0.1
+Jan 20 19:05:33 s lirc_igorplugusb: Jan M. Hochstein
+<hochstein@algo.informatik.tu-darmstadt.de>
+Jan 20 19:05:33 s lirc_dev: lirc_register_plugin: sample_rate: 100
+Jan 20 19:05:33 s lirc_igorplugusb[3]: Yuri M. Karelin, (c) 2007
+ElMark IR remote control on usb3:3
+Jan 20 19:05:33 s usbcore: registered new interface driver lirc_igorplugusb
+Jan 20 19:10:00 s lircd-0.8.4[25107]: could not open config file
+'/etc/lircd.conf'
+Jan 20 19:10:00 s lircd-0.8.4[25107]: No such file or directory
+Jan 20 19:10:00 s lircd-0.8.4[25108]: lircd(default) ready
+.....
+Jan 20 19:11:42 s lircd-0.8.4[25108]: accepted new client on /dev/lircd
+Jan 20 19:11:42 s lirc_igorplugusb[3]: Device buffer overrun.
+Jan 20 19:11:48 s lirc_igorplugusb[3]: Device buffer overrun.
+Jan 20 19:11:49 s lirc_igorplugusb[3]: Device buffer overrun.
+--
+The problem naturally lies in the last third lines which reflect the
+way kernel module reacts to key presses on remote. The very same
+device works flawlessly under Win + Girder.
+I'd be very thankful if someone could help me fixing the issue (or
+rather if I could help fixing this issue).
