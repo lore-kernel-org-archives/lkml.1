@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZATHsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbZATHzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbZATHsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZATHsO
+	id S1757847AbZATHzQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZATHzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:48:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45851 "EHLO mx2.mail.elte.hu"
+	Tue, 20 Jan 2009 02:55:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50799 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbZATHsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:48:13 -0500
-Date: Tue, 20 Jan 2009 08:47:58 +0100
+	id S1752589AbZATHzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:55:00 -0500
+Date: Tue, 20 Jan 2009 08:54:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexey Fisher <bug-track@fisher-privat.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [Bug #12417] glx performance drop with: "x86: PAT: implement
-	track/untrack of pfnmap regions for x86 - v3"
-Message-ID: <20090120074758.GB26284@elte.hu>
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.Ie.A-QdJB@chimera>
+To: Li Zefan <lizf@cn.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] kernel BUG at arch/x86/kernel/tlb_32.c:130!
+Message-ID: <20090120075440.GA29426@elte.hu>
+References: <49756F44.6040801@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2QN7KFic7LG.A.Ie.A-QdJB@chimera>
+In-Reply-To: <49756F44.6040801@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,34 +31,38 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	[score: 0.0011]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+> I was using mmotm 2009-01-16-16-18, and I ran into this BUG,
+> the line is:
+> 	BUG_ON(cpumask_empty(cpumask));
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+> I suspect it is caused by:
 > 
+> commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Sat Jan 10 21:58:09 2009 -0800
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
-> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
-> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
-> Date		: 2009-01-06 18:46 (14 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
-> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
-> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+>     x86: change flush_tlb_others to take a const struct cpumask
+> 
+>     Impact: reduce stack usage, use new cpumask API.
 
-is it still broken with the current lineup of x86 fixes:
+Jaswinder reported a similar crash.
 
-  git pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+Mike, Rusty, what's going on with this commit? Why does this code:
 
-?
++       if (cpumask_any_but(&mm->cpu_vm_mask, smp_processor_id()) < nr_cpu_ids)
++               flush_tlb_others(&mm->cpu_vm_mask, mm, TLB_FLUSH_ALL);
+
+Assume that mm->cpu_vm_mask wont change? TLB flushes go async and the MM's 
+schedulability is not locked during that. I.e. mm->cpu_vm_mask can change 
+under you while the TLB flush IPIs are flying around - while when the 
+cpumask was passed on-stack this wouldnt happen.
 
 	Ingo
