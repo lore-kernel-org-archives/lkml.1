@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZATNoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbZATNp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761567AbZATNoN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbZATNnz
+	id S1761888AbZATNp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZATNpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:43:55 -0500
-Received: from mailin.zeus.com ([212.44.21.7]:6819 "EHLO mailin.zeus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756151AbZATNny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:43:54 -0500
-Message-ID: <4975D518.1000800@zeus.com>
-Date: Tue, 20 Jan 2009 13:43:52 +0000
-From: Ben Mansell <ben@zeus.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Tue, 20 Jan 2009 08:45:16 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36547 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756151AbZATNpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 08:45:15 -0500
+X-Authenticated: #23875046
+X-Provags-ID: V01U2FsdGVkX1/Uhx1KZ2rUU1ArhoTR6ylKw+xOA4oiKLyjMbKj/D
+	FW2xuGM73cGCAs
+Message-ID: <4975D566.2030105@fisher-privat.net>
+Date: Tue, 20 Jan 2009 14:45:10 +0100
+From: Alexey Fisher <bug-track@fisher-privat.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Willy Tarreau <w@1wt.eu>, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, jarkao2@gmail.com, dada1@cosmosbay.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-References: <20090115.153449.204259387.davem@davemloft.net> <20090115234255.GE1123@1wt.eu> <20090115234408.GA1693@1wt.eu> <20090115.155434.206643894.davem@davemloft.net> <20090119004206.GA10396@1wt.eu> <4975BD09.3020103@zeus.com> <20090120121115.GA17277@ioremap.net>
-In-Reply-To: <20090120121115.GA17277@ioremap.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [Bug #12417] glx performance drop with: "x86: PAT: implement
+ track/untrack of pfnmap regions for x86 - v3"
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.Ie.A-QdJB@chimera> <20090120074758.GB26284@elte.hu>
+In-Reply-To: <20090120074758.GB26284@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Jan 2009 13:43:52.0151 (UTC) FILETIME=[215C2670:01C97B05]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1584-5.5.1027-16412.007
-X-TM-AS-Result: No--9.741300-0.000000-31
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Tue, Jan 20, 2009 at 12:01:13PM +0000, Ben Mansell (ben@zeus.com) wrote:
->> I've also tested on the same three patches (against 2.6.27.2 here), and 
->> the patches appear to work just fine. I'm running a similar proxy 
->> benchmark test to Willy, on a machine with 4 gigabit NICs (2xtg3, 
->> 2xforcedeth). splice is working OK now, although I get identical results 
->> when using splice() or read()/write(): 2.4 Gbps at 100% CPU (2% user, 
->> 98% system).
+Ingo Molnar schrieb:
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> With small MTU or when driver does not support fragmented allocation
-> (iirc at least forcedeth does not) skb will contain all the data in the
-> linear part and thus will be copied in the kernel. read()/write() does
-> effectively the same, but in userspace.
-> This should only affect splice usage which involves socket->pipe data
-> transfer.
-
-I'll try with some larger MTUs and see if that helps - it should also 
-give an improvement if I'm hitting a limit on the number of 
-packets/second that the cards can process, regardless of splice...
-
->> I may be hitting a h/w limitation which prevents any higher throughput, 
->> but I'm a little surprised that splice() didn't use less CPU time. 
->> Anyway, the splice code is working which is the important part!
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.28.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
+>> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
+>> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+>> Date		: 2009-01-06 18:46 (14 days old)
+>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
+>> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
+>> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 > 
-> Does splice without patches (but with performance improvement for
-> non-blocking splice) has the same performance? It does not copy data,
-> but you may hit the data corruption? If performance is the same, this
-> maybe indeed HW limitation.
+> is it still broken with the current lineup of x86 fixes:
+> 
+>   git pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+> 
+> ?
+> 
+> 	Ingo
+> --
 
-With an unpatched kernel, the splice performance was worse (due to the 
-one packet per-splice issues). With the small patch to fix that, I was 
-getting around 2 Gbps performance, although oddly enough, I could only 
-get 2 Gbps with read()/write() then as well...
-
-I'll try and do some tests on a machine that hopefully doesn't have the 
-bottlenecks (and one that uses different NICs)
-
-
-Ben
+This patch solve the bug for my old system.
