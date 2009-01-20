@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762368AbZATQP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762016AbZATQUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762368AbZATQP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 11:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZATQPP
+	id S1762016AbZATQUY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 11:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbZATQUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 11:15:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47838 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbZATQPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 11:15:13 -0500
-Date: Tue, 20 Jan 2009 17:14:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: remove byte locks
-Message-ID: <20090120161451.GB4168@elte.hu>
-References: <alpine.LNX.1.10.0901121247430.5377@jikos.suse.cz> <20090112120743.GC24266@elte.hu> <alpine.LNX.1.10.0901121334510.5377@jikos.suse.cz> <20090112124401.GA31939@elte.hu> <496D1F54.7070104@goop.org> <alpine.LNX.1.10.0901140016520.5377@jikos.suse.cz> <496D292B.20007@goop.org> <alpine.LNX.1.10.0901151147420.5377@jikos.suse.cz> <20090115105808.GA16253@elte.hu> <alpine.LNX.1.10.0901201709470.5377@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0901201709470.5377@jikos.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 20 Jan 2009 11:20:09 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34583 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756342AbZATQUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 11:20:07 -0500
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kevin Shanahan <kmshanah@ucwb.org.au>, Avi Kivity <avi@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, bugme-daemon@bugzilla.kernel.org
+In-Reply-To: <20090120160613.GA32650@elte.hu>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
+	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
+	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
+	 <20090120113546.GA26571@elte.hu>
+	 <1232455343.4895.4.camel@kulgan.wumi.org.au>
+	 <20090120125652.GA1457@elte.hu>
+	 <1232461380.4895.33.camel@kulgan.wumi.org.au>
+	 <20090120142515.GC10224@elte.hu>
+	 <1232466686.4895.45.camel@kulgan.wumi.org.au>
+	 <20090120160613.GA32650@elte.hu>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 17:19:36 +0100
+Message-Id: <1232468376.4886.88.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jiri Kosina <jkosina@suse.cz> wrote:
-
-> On Thu, 15 Jan 2009, Ingo Molnar wrote:
+On Tue, 2009-01-20 at 17:06 +0100, Ingo Molnar wrote:
+> se.wait_max                        :           -92.027877
 > 
-> > > > > Why can't this just be somewhere in documentation? (possibly even with 
-> > > > > the byte locks code as a reference).
-> > > > Because Ingo's compil-o-matic will never fail on a documentation error.
-> > > 
-> > > Hmm, I have always considered the "we don't accept any code that would 
-> > > have zero in-kernel users" rule as a quite reasonable one, at least in 
-> > > order to prevent from bloat and code getting confusing.
-> > > But apparently it's not the intention here.
-> > > 
-> > > > > It is IMHO just totally confusing to have a spinlock implementation that is
-> > > > > not used at all in the tree. It took me quite some time to go through this
-> > > > > until I finally figured out that this code is actually never used.
-> > > > > Currently, on first sight it might seem that byte locks are used whenever
-> > > > > CONFIG_PARAVIRT is set, which is not true.
-> > > > Well, a comment next to the code explaining the rationale probably 
-> > > > wouldn't go astray.
-> > > 
-> > > I still strongly feel that if the only purpose of the code in kernel is 
-> > > "to provide example", then it belongs to documentation.
-> > > 
-> > > > > And apparently even Linus got confused by this, which also tells us
-> > > > > something by itself, see [1].
-> > > > > [1] http://marc.info/?l=linux-kernel&m=123144211719754&w=2
-> > > > It tells us that Linus couldn't give a rat's arse about virtualization, 
-> > > > which is just something we have to cope with ;)
-> > > 
-> > > I am afraid this has nothing to do with virtualization. It's simply 
-> > > confusing when looking at the code.
-> > 
-> > i'd tend to agree, that area of code is quite complex already.
-> 
-> ping, any final word here? Should I consider the silence a implicit nak, 
-> or should I resend the patch?
+> that field is not supposed to be negative. Mike, Peter, any ideas?
 
-ok - i've applied it to tip/x86/cleanups.
+Possibly unrelated, but whilst I was poking at try_to_wake_up yesterday,
+I thought I spotted a site where we fail to update rq clock.
 
-	Ingo
+Since we just moved the task to a new cpu (and thus rq) we need to
+update_rq_clock() again.
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index d7ae5f4..6cd5e52 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2398,6 +2398,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	if (cpu != orig_cpu) {
+ 		set_task_cpu(p, cpu);
+ 		task_rq_unlock(rq, &flags);
++		update_rq_clock(rq);
+ 		/* might preempt at this point */
+ 		rq = task_rq_lock(p, &flags);
+ 		old_state = p->state;
+
+
