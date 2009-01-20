@@ -1,176 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbZATMvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbZATM5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760800AbZATMvU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZATMvJ
+	id S1759914AbZATM5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZATM5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:51:09 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:54286 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754372AbZATMvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:51:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAIhTdUlMQWt2/2dsb2JhbACBbMl4hXM
-Date: Tue, 20 Jan 2009 07:51:04 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: Michel Dagenais <michel.dagenais@polymtl.ca>,
-       Dominique Toupin <dominique.toupin@ericsson.com>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: LTTng userspace tracing : chained signal handlers with new SA_CHAIN
-Message-ID: <20090120125103.GB22421@Krystal>
-References: <20090116164926.GA31282@Krystal> <1232141978.18539.34.camel@localhost> <20090117021942.GB13419@Krystal> <1232380137.6093.33.camel@localhost> <20090119182345.GB30683@Krystal> <497585D2.1090001@polymtl.ca>
-Mime-Version: 1.0
+	Tue, 20 Jan 2009 07:57:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33971 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754624AbZATM5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:57:20 -0500
+Date: Tue, 20 Jan 2009 13:56:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+Message-ID: <20090120125652.GA1457@elte.hu>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera> <1232410363.4768.21.camel@kulgan.wumi.org.au> <20090120113546.GA26571@elte.hu> <1232455343.4895.4.camel@kulgan.wumi.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <497585D2.1090001@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 06:24:51 up 19 days, 11:23,  1 user,  load average: 0.21, 0.38,
-	0.45
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1232455343.4895.4.camel@kulgan.wumi.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0049]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pierre-Marc Fournier (pierre-marc.fournier@polymtl.ca) wrote:
-> Mathieu Desnoyers wrote:
 
-[ some context : we are trying to connect a signal handler in a
-new userspace shared library without the application knowing and without
-recompiling the application. See below for sigaction() new sa_flags
-proposal. Comments are welcome. ]
+* Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
 
-> >>> Yes, it's totally possible to to this in user-space. There is an issue
-> >>> with SIGIO though.
-> >>>
-> >>> The problem is that we are an object linked to the application _without
-> >>> it knowing_ (possibly linked to glibc for instance). We don't want to
-> >>> override the application's SIGIO handler behind their back.
-> >> Ideally applications would "chain" their use of handlers for modularity.
-> >> I am not sure if many applications do, however.
-> >>
-> > 
-> > I'm pretty much convinced they don't. Reusing the existing signals from
-> > a library will be a real pain.
-> > 
+> > This suggests some sort of KVM-specific problem. Scheduler latencies 
+> > in the seconds that occur under normal load situations are noticed and 
+> > reported quickly - and there are no such open regressions currently.
 > 
-> Unfortunately, signal handlers cannot easily be chained the way IRQ
-> handlers were in the good old times.
-> 
-> One possible way to go would be to use SIGIO (or another signal) and use
-> a special value for the si_code field of the siginfo_t structure to
-> indicate that this is a tracing related SIGIO. (See the sigaction(2) man
-> page.) Applications that don't use aysnc io would work out of the box
-> after just being relinked. Applications that do use async IO would
-> accidentally overwrite the handler setup by the tracing library. Their
-> code could therefore be patched to look at the si_code flag and, if the
-> SIGIO was a tracing-related one, redirect the call to the tracing
-> library via a function call.
-> 
-> void sigio_handler_of_aio_app(int sig, siginfo_t *si, void *)
-> {
-> 	if(sig == SIGIO && si->si_code == SI_TRACE)
-> 		libusertrace_signal_received();
-> 	else {
-> 		/* process async io */
-> 	}
-> }
-> 
-> It can be argued that if an application needs to be relinked in order to
-> support userspace tracing, the occasional need for small changes to the
-> way a particular signal is handled might be acceptable.
-> 
+> It at least suggests a problem with interaction between the scheduler 
+> and kvm, otherwise reverting that scheduler patch wouldn't have made the 
+> regression go away.
 
-The problem comes when we want to instrument a library, not the
-executable itself. In this case, we would only have to relink the
-library, not the application. In some cases, with a proprietary
-application, it would be impossible to recompile the application per se.
+the scheduler affects almost everything, so almost by definition a 
+scheduler change can tickle a race or other timing bug in just about any 
+code - and reverting that change in the scheduler can make the bug go 
+away. But yes, it could also be a genuine scheduler bug - that is always a 
+possibility.
 
-So I don't see this as a clean solution. I just looked at SIGWINCH,
-which is used in libraries (at least by ncurses), which looked rather
-promising, but even there, ncurses detects if it is set to the default
-handler and if not, it will refuse to connect to it. :(
+Could you please run a cfs-debug-info.sh session on a CONFIG_SCHED_DEBUG=y 
+and CONFIG_SCHEDSTATS=y kernel, while you are experiencing those 
+latencies:
 
-Maybe we could create a new sigaction sa_flag which would give us the
-ability to add a signal handler prior to the standard signal chain ?
+  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 
-e.g. :
+and post that (relatively large) somewhere, or send it as a reply after 
+bzip2 -9 compressing it? It will include a lot of information about the 
+delays your tasks are experiencing.
 
-SA_CHAIN
-        Adds a signal handler to this signal's signal handler chain.
-        The signal handler is called at the beginning of the chain.
-        If sigaction() is called again with the same sa_sigaction with
-        the SA_CHAIN flag set, it will return the next handler in the
-        chain in "oldact". Standard sigaction() and signal() users
-        should not notice any difference with the standard behavior.
-        Using sa_sigaction (rather than sa_handler) is mandatory.
-        SA_CHAIN implies SA_SIGINFO.
-
-SA_UNCHAIN
-        Removes a signal handler from this signal's signal handler
-        chain.
-
-
-Example use :
-
-#include <signal.h>
-#include <stdio.h>
-
-void sigio_tracing_handler(int signum, siginfo_t *siginfo, void *ucontext)
-{
-  struct sigaction thissig, nextsig;
-
-  thissig.sa_flags = SA_CHAIN;
-  thissig.sa_sigaction = sigio_tracing_handler;
-  if (!sigaction(signum, &thissig, &nextsig)) {
-    if (nextsig.sa_handler != SIG_IGN && nextsig.sa_handler != SIG_DFL)
-      if (nextsig.sa_flags & SA_SIGINFO)
-        nextsig.sa_sigaction(signum, siginfo, ucontext);
-      else
-        nextsig.sa_handler(signum);  /*
-                                      * Next in chain is standard (not
-                                      * SA_CHAIN not SA_SIGINFO) signal
-                                      * handler.
-                                      */
-  }
-}
-
-int main(void)
-{
-  struct sigaction act, oldact;
-  int ret;
- 
-  /* signal handler installation */
-  act.sa_flags = SA_CHAIN;
-  act.sa_sigaction = sigio_tracing_handler;
-  ret = sigaction(SIGIO, &act, &oldact);
-  if (ret) {
-    printf("Problem installing sigio_tracing_handler SIGIO handler\n");
-    exit(1);
-  }
-
-  /* cleanup */
-  act.sa_flags = SA_UNCHAIN;
-  act.sa_sigaction = sigio_tracing_handler;
-  ret = sigaction(SIGIO, &act, &oldact);
-  if (ret) {
-    printf("Problem removing sigio_tracing_handler SIGIO handler\n");
-    exit(1);
-  }
-  return 0;
-}
-
-
-Mathieu
-
-
-> pmf
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
