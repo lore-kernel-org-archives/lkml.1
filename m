@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbZATAeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbZATAfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762932AbZATAeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZATAe2
+	id S1762263AbZATAfa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbZATAfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:34:28 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:6905 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754547AbZATAe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:34:28 -0500
-Message-ID: <49751C12.1030104@ct.jp.nec.com>
-Date: Mon, 19 Jan 2009 16:34:26 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] x86: uaccess: fix style problems
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 19:35:19 -0500
+Received: from ns1.suse.de ([195.135.220.2]:43567 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbZATAfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 19:35:18 -0500
+Date: Tue, 20 Jan 2009 01:35:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #12498] OOPS and panic on 2.6.29-rc1 on xen-x86
+Message-ID: <20090120003516.GC16304@wotan.suse.de>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.fgG.b9QdJB@chimera>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2QN7KFic7LG.A.fgG.b9QdJB@chimera>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Mon, Jan 19, 2009 at 10:32:16PM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12498
+> Subject		: OOPS and panic on 2.6.29-rc1 on xen-x86
+> Submitter	: Bryan Donlan <bdonlan@gmail.com>
+> Date		: 2009-01-12 17:26 (8 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e97a630eb0f5b8b380fd67504de6cedebb489003
+> References	: http://marc.info/?l=linux-kernel&m=123178178029065&w=4
+> Handled-By	: Nick Piggin <npiggin@suse.de>
+> 
 
-Impact: cleanup
-
-fix some coding style problems in arch/x86/include/asm/uaccess.h.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/include/asm/uaccess.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 4340055..aeb3c1b 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -121,7 +121,7 @@ extern int __get_user_bad(void);
- 
- #define __get_user_x(size, ret, x, ptr)		      \
- 	asm volatile("call __get_user_" #size	      \
--		     : "=a" (ret),"=d" (x)	      \
-+		     : "=a" (ret), "=d" (x)	      \
- 		     : "0" (ptr))		      \
- 
- /* Careful: we have to cast the result to the type of the pointer
-@@ -181,7 +181,7 @@ extern int __get_user_bad(void);
- 
- #define __put_user_x(size, x, ptr, __ret_pu)			\
- 	asm volatile("call __put_user_" #size : "=a" (__ret_pu)	\
--		     :"0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
-+		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
- 
- 
- 
-@@ -276,7 +276,7 @@ do {									\
- 		__put_user_asm(x, ptr, retval, "w", "w", "ir", errret);	\
- 		break;							\
- 	case 4:								\
--		__put_user_asm(x, ptr, retval, "l", "k",  "ir", errret);\
-+		__put_user_asm(x, ptr, retval, "l", "k", "ir", errret);	\
- 		break;							\
- 	case 8:								\
- 		__put_user_u64((__typeof__(*ptr))(x), ptr, retval);	\
--- 
-1.6.0.4
-
+This one was fixed by backing out the patch to make vmalloc purge
+spinlock into a mutex.
