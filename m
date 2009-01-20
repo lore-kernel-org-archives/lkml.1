@@ -1,66 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZATV7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbZATWCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZATV7Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 16:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756995AbZATV67
+	id S1758243AbZATWCB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZATWBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 16:58:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:2766 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbZATV65 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 16:58:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GpQAuUbpnhc/xFPk8E8KV95rB1T22X4kmuEnRArquH6wKoPhV0LaPUIIRwJfh3v54P
-         M2w7J5b4E3rS/+6C9uQFqrSiQfJ48JHiml2c2/6YsyTrzH3xXdKnrozeJVOZlJska2CD
-         UrqPIg1VXgJbLVOOqbjzUlSqNgE+ubpMfPD84=
-Date: Wed, 21 Jan 2009 00:58:49 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: James Chapman <jchapman@katalix.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       devel@openvz.org, xemul@openvz.org,
-       Michal Ostrowski <mostrows@earthlink.net>
-Subject: Re: [PATCH 5/5] net: pppoe,pppol2tp - register channels with
-	explicit net
-Message-ID: <20090120215849.GB941@localhost>
-References: <20090120140510.228815074@gmail.com>> <4975dc14.0637560a.7f8e.729c@mx.google.com> <49764890.5010403@katalix.com>
+	Tue, 20 Jan 2009 17:01:51 -0500
+Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:4586 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753173AbZATWBu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:01:50 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PCI PM: Consistently use variable name "error" for pm call return values
+Date: Tue, 20 Jan 2009 23:01:44 +0100
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, yakui.zhao@intel.com, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, linux-acpi@vger.kernel.org
+References: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com> <20090120074534.GE16426@elte.hu> <20090120074534.GE16426@elte.hu> <200901202132.04682.rjw@sisk.pl>
+In-reply-To: <200901202132.04682.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49764890.5010403@katalix.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200901202301.46198.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Jan 2009 22:01:46.0767 (UTC) FILETIME=[B004C9F0:01C97B4A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[James Chapman - Tue, Jan 20, 2009 at 09:56:32PM +0000]
-| Cyrill Gorcunov wrote:
-| > In PPPo[E|L2TP] we could explicitly point which net namespace
-| > we're going to use for channels - make it so.
-| > 
-| > CC: James Chapman <jchapman@katalix.com>
-| > CC: Michal Ostrowski <mostrows@earthlink.net>
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-| 
-| This one's ok by me too for pppol2tp.
-| 
-| Signed-off-by: James Chapman <jchapman@katalix.com>
-| 
+From: Frans Pop <elendil@planet.nl>
 
-...
+PCI PM: Consistently use variable name "error" for pm call return values
+    
+Signed-off-by: Frans Pop <elendil@planet.nl>
+---
+While looking at your patch
 
-| 
-| 
-| -- 
-| James Chapman
-| Katalix Systems Ltd
-| http://www.katalix.com
-| Catalysts for your Embedded Linux software development
-| 
+> Subject: PCI PM: Restore standard config registers of all devices early
+>
+> There is a problem in our handling of suspend-resume of PCI devices
+> that many of them have their standard config registers restored with
+> interrupts enabled and they are put into the full power state with
+> interrupts enabled as well.  This may lead to the following scenario:
+> [...]
 
-Thanks a lot for testing, James! I really appreciate!
+I noticed two functions use a variable "i" to store the return value of PM
+function calls while the rest of the file uses "error". As "i" normally
+indicates a counter of some sort it seems better to keep this consistent.
 
-		- Cyrill -
+I have no objection if you prefer to fold this patch into yours.
+Compile tested.
+
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 9de07b7..6976669 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -352,15 +352,15 @@ static int pci_legacy_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
+ 
+ 	if (drv && drv->suspend) {
+ 		pci_dev->state_saved = false;
+ 
+-		i = drv->suspend(pci_dev, state);
+-		suspend_report_result(drv->suspend, i);
+-		if (i)
+-			return i;
++		error = drv->suspend(pci_dev, state);
++		suspend_report_result(drv->suspend, error);
++		if (error)
++			return error;
+ 
+ 		if (pci_dev->state_saved)
+ 			goto Fixup;
+@@ -378,20 +378,20 @@ static int pci_legacy_suspend(struct device *dev, pm_message_t state)
+  Fixup:
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 
+-	return i;
++	return error;
+ }
+ 
+ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
+ 
+ 	if (drv && drv->suspend_late) {
+-		i = drv->suspend_late(pci_dev, state);
+-		suspend_report_result(drv->suspend_late, i);
++		error = drv->suspend_late(pci_dev, state);
++		suspend_report_result(drv->suspend_late, error);
+ 	}
+-	return i;
++	return error;
+ }
+ 
+ static int pci_legacy_resume_early(struct device *dev)
