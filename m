@@ -1,45 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZATA4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbZATBGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbZATA4k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757728AbZATA4a
+	id S1760291AbZATBGr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZATBGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:56:30 -0500
-Received: from mga01.intel.com ([192.55.52.88]:22225 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755643AbZATA43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:56:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,292,1231142400"; 
-   d="scan'208";a="658428537"
-Subject: Suspned/resume can't work on the 2.6.29-rc1 but it can work well
-	on the 2.6.28
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 20 Jan 2009 09:08:00 +0800
-Message-Id: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Mon, 19 Jan 2009 20:06:37 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:15518 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbZATBGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 20:06:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=UUgQcFmhFU9QsiinaYtA8Tap6yOmV90F4HmReb+RFKDFCThKsQT1pcFbf40WFCSA+k
+         fTIpWmjJFEhl5ZktjhJxRaxN0RcJjURy3zkl2iF+iPcxZ8ApxgnuKA8k5UWxhW+zHSgg
+         YZqNDCOVVAUvjXEavnXKJsqWJ39xQi0XXFKrE=
+Message-ID: <49752396.70209@gmail.com>
+Date: Mon, 19 Jan 2009 17:06:30 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Justin Madru <jdm64@gawab.com>
+CC: Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com>
+In-Reply-To: <49751BA0.1040004@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All
-    I do some tests about suspend/resume on my two boxes. One is HP
-laptop and the other is Asus EEEPC901. The suspend/resume can't work
-well. Even after core is selected as the test mode, it still can't work
-well.(echo core > /sys/power/pm_test)
-    
-    Then I do the same test by using the 2.6.28 kernel. And
-suspend/resume can work well.
-    
-    
-    Of course I will try to use the git-bisect to identify the first bad
-commit ASAP.
- 
-Thanks.
-   Yakui
+Justin Madru wrote:
+> Justin P. Mattock wrote:
+>> Justin Madru wrote:
+>>>
+>>> So far only a connection to talkgadget.google.com or the 2 tabs in 
+>>> preferences make firefox crash.
+>>> Other than that I've yet to run into another site that makes it 
+>>> crash, and can browse just fine.
+>>> Actually, other than this bug .29-rc2 is running rather nicely ;-)
+>>>
+>>> Ok, this time I maded sure I uninstalled/disabled everything I could.
+>>> Sill.... same results. So, I decided to try something different. 
+>>> Test with Epiphany.
+>>> I tried both with the geko and webkit backends.
+>>> Same results, a crash when going to my iGoogle page that has google 
+>>> talk applet.
+>>>
+>>> But, this time epiphany left an error to the console that gives a 
+>>> clue to the cause:
+>>>
+>>> $ epiphany-webkit                                                ** 
+>>> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
+>>> the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
+>>> from the grid
+>>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
+>>> from the grid
+>>> console message:  @1: Unsafe JavaScript attempt to access frame with 
+>>> URL
+>>> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
+>>>
+>>> from frame with URL
+>>> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
+>>>
+>>> Domains, protocols and ports must match.
+>>> console message:  @1: Unsafe JavaScript attempt to access frame
+>>> with URL http://www.google.com/ig from frame with URL
+>>> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
+>>>
+>>> Domains, protocols and ports must match.
+>>> console message:  @1: Unsafe JavaScript attempt to access frame
+>>> with URL http://www.google.com/ig from frame with URL
+>>> http://talkgadget.google.com/talkgadget/blank. Domains,
+>>> protocols and ports must match.
+>>> Segmentation fault
+>>>
+>>> So, it's complaining about matching domains, protocols and ports.
+>>> Henceforth, I would surmise that the bug is related to the network 
+>>> code?
+>>>
+>>> Justin Madru
+>>>
+>> Well positive side is you can at least  grab youre news and info.
+>> bad side is you can't access igoogle(or whatever it's called).
+>>
+>> Domains, protocols and ports must match.
+>> probably the culprit(if you found the correct location
+>> that's causing this);
+>>
+>> regards;
+>>
+>> Justin P. Mattock
+>>
+> Ok, finally bisected the bug, but the commit isn't related to networking!
+> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> on current git and that fixed the bug.
+>
+> By the way, how do I undo my git revert, so I'm back to a pristine tree?
+> I want to drop my changes - the revert.
+> Also how do I find the commit that merged/pulled in this commit?
+>
+> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Date:   Fri Dec 5 17:17:09 2008 -0800
+>
+>    x86: signal: change type of paramter for sys_rt_sigreturn()
+>
+>    Impact: cleanup on 32-bit
+>
+>    Peter pointed this parameter can be changed.
+>
+>    Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> :040000 040000 f5fba48247ff200092c38a54e334f495917229d5 
+> b901159897e5d85e0dc2a0c9d904d9a73c1d58a2 M      arch
+>
+>    arch/x86/include/asm/syscalls.h
+>    arch/x86/kernel/signal.c
+>
+> diff --git a/arch/x86/include/asm/syscalls.h 
+> b/arch/x86/include/asm/syscalls.h
+> index 87803da..3a5252c 100644 (file)
+> --- a/arch/x86/include/asm/syscalls.h
+> +++ b/arch/x86/include/asm/syscalls.h
+> @@ -33,7 +33,7 @@ asmlinkage int sys_sigaction(int, const struct 
+> old_sigaction __user *,
+>                             struct old_sigaction __user *);
+> asmlinkage int sys_sigaltstack(unsigned long);
+> asmlinkage unsigned long sys_sigreturn(unsigned long);
+> -asmlinkage int sys_rt_sigreturn(unsigned long);
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs);
+>
+> /* kernel/ioport.c */
+> asmlinkage long sys_iopl(unsigned long);
+> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+> index b1f4d34..b1cc6da 100644 (file)
+> --- a/arch/x86/kernel/signal.c
+> +++ b/arch/x86/kernel/signal.c
+> @@ -642,11 +642,9 @@ badframe:
+> }
+>
+> #ifdef CONFIG_X86_32
+> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+> {
+> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
+> -
+> -       return do_rt_sigreturn(regs);
+> +       return do_rt_sigreturn(&regs);
+> }
+> #else /* !CONFIG_X86_32 */
+> asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+>
+> Justin Madru
+>
+I normally do a:
+git-reset --hard origin
+git-pull
+(thanks to alexey starikovskiy for that one);
+
+glad to see you have it working.
+
+regards;
+
+Justin P. Mattock
 
