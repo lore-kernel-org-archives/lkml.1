@@ -1,99 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760430AbZATMHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZATMHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760430AbZATMHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZATMHD
+	id S1761278AbZATMHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbZATMHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:07:03 -0500
-Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:51003 "EHLO
-	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754189AbZATMHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:07:01 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4975BE69.5040106@cam.ac.uk>
-Date: Tue, 20 Jan 2009 12:07:05 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@kernel.org>
-Subject: regulator: Add always off to constraints.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Jan 2009 07:07:13 -0500
+Received: from ns.suse.de ([195.135.220.2]:59306 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758330AbZATMHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:07:11 -0500
+Date: Tue, 20 Jan 2009 13:07:09 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] x86: optimise page fault entry
+Message-ID: <20090120120709.GF19505@wotan.suse.de>
+References: <20090120032426.GE16304@wotan.suse.de> <20090120100946.GA7886@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120100946.GA7886@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
+On Tue, Jan 20, 2009 at 11:09:46AM +0100, Ingo Molnar wrote:
+> 
+> * Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > Hi,
+> > 
+> > Sorry for the delay with this. The kernel ended up unbootable for me 
+> > when I last dusted off the patch, so I couldn't test it and then 
+> > promptly got sidetracked with other things.
+> > 
+> > Anyway, this one is tested with a boot, some basic segfault sigbus etc 
+> > tests, and passes various of the mmap and mprotect etc. ltp tests.
+> > 
+> > Ingo, would you merge this into the x86 tree, please? (unless Linus has 
+> > any objections to this version)
+> 
+> -tip testing found a 32-bit boot regression, caused by this patch. The 
+> bootup hangs early, during the WP write-test check:
+> 
+> [    0.004000]       .data : 0xc0691f05 - 0xc09c746c   (3285 kB)
+> [    0.004000]       .text : 0xc0100000 - 0xc0691f05   (5703 kB)
+> [    0.004000] Checking if this processor honours the WP bit even in supervisor mode...
+> 
+> i've excluded x86/mm from tip/master for now, you can find the broken tree 
+> in the tip/tip.x86.mm.broken [v2.6.29-rc2-1069-g583f1b9] branch that i 
+> just pushed out:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tip.x86.mm.broken
 
-There are cases where particular ldo's aren't actually connected
-to anything and currently there is no easy way of disabling them
-if the pmic brings them up by default.  I propose adding an always
-off parameter to the constraints to allow a minimal way of specifying
-this within board configs.  I haven't submitted this as a formal
-patch as it is currently based on top of the patch pushing
-locks out of _notifier_call_chain which I posted yesterday.
+Gah, I knew I should have tested with 32-bit. Sorry, I had actually tested
+it at some point, so I must have dropped this hunk along the way :(
 
-If people are happy I can produce a version not dependent on that.
+ 
+> Also, a patch structure sidenote, the diffstat is rather large:
+> 
+>  arch/x86/mm/fault.c |  436 ++++++++++++++++++++++++++++++---------------------
+>  1 files changed, 255 insertions(+), 181 deletions(-)
+> 
+> this shuffles 300 lines of highly critical x86 code around - which makes 
+> me nervous. A finegrained, bisectable series would be far more debuggable. 
+> Had we such a lineup i could have auto-bisected it for you already - while 
+> now you have to see which bit of the ~500 lines of code flux broke the 
+> 32-bit WP test.
+> 
+> This hang might be easy to find and fix (the WP detect logic is simple), 
+> but other failure modes might be less debuggable and this codepath deals 
+> with a lot of obscure details like CPU errata. So it would be really nice 
+> to have a finegrained splitup of this patch.
+ 
+I guess breaking out the shuffling of parameters (where this bug lies),
+breaking out functions from do_page_fault, and added branch annotations
+could be done.... that would still leave a fair hunk in the breakout
+patch, which I didn't see a really pleasing way to split out.
 
-Problems I can see with this small change are:
+> Three separate testsystems triggered this hang so it should be readily 
+> reproducible.
 
-1) interaction between always on and always off.  Obviously it's
-a bit odd if both are set. Currently I'm giving always on preference.
-
-2) Doesn't really make sense to have regulators that are always
-disabled available under sysfs etc.  Perhaps there is a lower
-level way of doing this that I'm missing?  There is not easy
-way of permanently saving this stuff on the da9030 that I'm
-using and moving it into the bootloader would be a pain.
-
-There's actually no problem with leaving these regs running
-and unmanaged except for the small amount of power being wasted
-and a desire for tidiness ;)
+Yes, thanks,
+Nick
 
 ---
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 245eee1..d11b5cf 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -722,6 +722,16 @@ static int set_machine_constraints(struct regulator_dev *rdev,
- 			rdev->constraints = NULL;
- 			goto out;
- 		}
-+	} else if (constraints->always_off && ops->disable &&
-+		   ((ops->is_enabled && ops->is_enabled(rdev)) ||
-+		    (!ops->is_enabled && constraints->boot_on))) {
-+		ret = ops->disable(rdev);
-+		if (ret < 0) {
-+			printk(KERN_ERR "%s: failed to disable %s\n",
-+			       __func__, name);
-+			rdev->constraints = NULL;
-+			goto out;
-+		}
- 	}
+ arch/x86/mm/fault.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/mm/fault.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/fault.c
++++ linux-2.6/arch/x86/mm/fault.c
+@@ -828,7 +828,7 @@ void __kprobes do_page_fault(struct pt_r
+ 			return;
  
- 	print_constraints(rdev);
-@@ -1002,7 +1012,7 @@ static int _regulator_enable(struct regulator_dev *rdev)
- 	}
+ 		/* Can handle a stale RO->RW TLB */
+-		if (spurious_fault(address, error_code))
++		if (spurious_fault(error_code, address))
+ 			return;
  
- 	/* check voltage and requested load before enabling */
--	if (rdev->desc->ops->enable) {
-+	if (rdev->desc->ops->enable && !rdev->constraints->always_off) {
- 
- 		if (rdev->constraints &&
- 			(rdev->constraints->valid_ops_mask &
-diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
-index 3794773..56bbb89 100644
---- a/include/linux/regulator/machine.h
-+++ b/include/linux/regulator/machine.h
-@@ -113,6 +113,7 @@ struct regulation_constraints {
- 
- 	/* constriant flags */
- 	unsigned always_on:1;	/* regulator never off when system is on */
-+	unsigned always_off:1;	/* regulator never on under any circumstances */
- 	unsigned boot_on:1;	/* bootloader/firmware enabled regulator */
- 	unsigned apply_uV:1;	/* apply uV constraint iff min == max */
- };
+ 		/*
+
