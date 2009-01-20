@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758448AbZATSK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZATSLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758448AbZATSK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 13:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZATSKP
+	id S1760914AbZATSLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 13:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZATSLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 13:10:15 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43315 "EHLO
+	Tue, 20 Jan 2009 13:11:12 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43331 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbZATSKO (ORCPT
+	with ESMTP id S1751215AbZATSLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 13:10:14 -0500
+	Tue, 20 Jan 2009 13:11:11 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 20 Jan 2009 19:09:58 +0100 (CET)
+Date: Tue, 20 Jan 2009 19:10:58 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] ieee1394: ohci1394: increase AT req. retries, fix ack_busy_X
- from Panasonic camcorders and others
+Subject: [PATCH] firewire: ohci: increase AT req. retries, fix ack_busy_X from
+ Panasonic camcorders and others
 To: linux1394-devel@lists.sourceforge.net
 cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.abc8aae12462064c@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.abc8aae12462064c@s5r6.in-berlin.de>
+Message-ID: <tkrat.76359c08bafaea51@s5r6.in-berlin.de>
+References: <tkrat.abc8aae12462064c@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -44,25 +46,29 @@ Presumably the same issue has been reported at
 https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
 https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
 
-Tested-by: Mathias Beilstein
+In a quick test with a JVC camcorder (which didn't malfunction like the
+reported camcorders), this change decreased the number of ack_busy_X
+from 16 in three runs of dvgrab to 4 in three runs of the same capture
+duration.
+
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/ieee1394/ohci1394.h |    2 +-
+ drivers/firewire/fw-ohci.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/drivers/ieee1394/ohci1394.h
+Index: linux/drivers/firewire/fw-ohci.c
 ===================================================================
---- linux.orig/drivers/ieee1394/ohci1394.h
-+++ linux/drivers/ieee1394/ohci1394.h
-@@ -26,7 +26,7 @@
- 
- #define OHCI1394_DRIVER_NAME      "ohci1394"
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -227,7 +227,7 @@ static inline struct fw_ohci *fw_ohci(st
+ #define CONTEXT_DEAD	0x0800
+ #define CONTEXT_ACTIVE	0x0400
  
 -#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
 +#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
  #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
  #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
- #define OHCI1394_MAX_SELF_ID_ERRORS	16
+ 
 
 -- 
 Stefan Richter
