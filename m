@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbZATQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762155AbZATQKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762173AbZATQIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 11:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZATQHw
+	id S1762155AbZATQKG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 11:10:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZATQJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 11:07:52 -0500
-Received: from rtr.ca ([76.10.145.34]:55210 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755166AbZATQHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 11:07:51 -0500
-Message-ID: <4975F6D5.1040807@rtr.ca>
-Date: Tue, 20 Jan 2009 11:07:49 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-pci@vger.kernel.org
-Subject: Re: libata, devm_*, and MSI ?
-References: <4975F5C1.8090107@rtr.ca>
-In-Reply-To: <4975F5C1.8090107@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 20 Jan 2009 11:09:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59850 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755194AbZATQJx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 11:09:53 -0500
+Date: Tue, 20 Jan 2009 08:08:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com
+Subject: Re: SET_PERSONALITY and TASK_SIZE
+Message-Id: <20090120080844.d681a750.akpm@linux-foundation.org>
+In-Reply-To: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
+References: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tejun / Jeff,
+> On Sun, 18 Jan 2009 12:18:31 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> Hi Andrew,
 > 
-> I am working on MSI support for sata_mv, and am trying to puzzle out
-> exactly what the kernel expects for this.  Looking at other drivers,
-> both libata and otherwise, yields a variety of conflicting implementations.
+> while debugging I noticed the following comment in fs/binfmt_elf.c:
 > 
-> For starters, the MSI HOW-TO suggests that drivers must be careful
-> to invoke pci_disable_msi() on module unload, but I don't see that
-> happening anywhere in libata.
-> 
-> Unless, Tejun, the devm_* routines automatically do this.. do they?
-> 
-> Next, there's no mention of a need for invoking pci_intx() in the HOW-TO,
-> yet some device drivers call it, and others do not.
-> 
-> Eg. from ahci.c, we have this:
-> 
->        if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
->                pci_intx(pdev, 1);
-> 
-> Which agrees with the existing code in sata_mv:
-> 
->        if (msi && pci_enable_msi(pdev))
->                pci_intx(pdev, 1);
-> 
-> Which seems to call pci_intx() only when MSI is *not* used.  Fine.
-> But then in sata_vsc.c, we do sort of the opposite:
-> 
->        if (pci_enable_msi(pdev) == 0)
->                pci_intx(pdev, 0);
-> 
-> Either that one is wrong, or pci_intx() is unnecessary in all cases.
-> Again, the MSI HOW-TO doesn't even mention this routine.
-> 
-> Looking through the network drivers, it seems that some of them
-> do the pci_intx(pdev,1) call for the cases where pci_enable_msi() fails,
-> similar to ahci.c and sata_mv.c.
-> 
-> But not all of them do that.
-..
+> 			/*
+> 			 * The early SET_PERSONALITY here is so that the lookup
+> 			 * for the interpreter happens in the namespace of the 
+> 			 * to-be-execed image.	SET_PERSONALITY can select an
+> 			 * alternate root.
+> 			 *
+> 			 * However, SET_PERSONALITY is NOT allowed to switch
+> 			 * this task into the new images's memory mapping
+> 			 * policy - that is, TASK_SIZE must still evaluate to
+> 			 * that which is appropriate to the execing application.
+> 			 * This is because exit_mmap() needs to have TASK_SIZE
+> 			 * evaluate to the size of the old image.
+> 			 *
+> 			 * So if (say) a 64-bit application is execing a 32-bit
+> 			 * application it is the architecture's responsibility
+> 			 * to defer changing the value of TASK_SIZE until the
+> 			 * switch really is going to happen - do this in
+> 			 * flush_thread().	- akpm
+> 			 */
 
-Looking through drivers/pci/*, it appears that the call to pci_intx()
-should be totally redundant.  pci_enable_msi() does pci_intx(pdev,0)
-on success only, and doesn't touch it otherwise.
+Cripes, that must have been a different akpm.
 
-Similarly, pci_disable_msi() does pci_intx(pdev,1).
+> At least s390 isn't doing the deferred TASK_SIZE switch. Also it seems like
+> MIPS, PARISC and IA64 don't do it either. However from a quick a view I
+> couldn't see that exit_mmap depends on TASK_SIZE. So is this still necessary?
+> 
+> And the bug I was looking for is this one: in SET_PERSONALITY we do this:
+> 
+> 	if (current->personality != PER_LINUX32)
+> 		set_personality(PER_LINUX);
+> 
+> However we should use the PER_MASK if we want to check for PER_LINUX32,
+> since there are more bits in the personality flags. In case any of the
+> 'extra' bits is set we may incorrectly set personality to PER_LINUX even
+> when we want PER_LINUX32.
+> 
+> Looks like more architectures should do something like:
+> 
+> 	if (personality(current->personality) != PER_LINUX32)
+> 		...
 
-So, where does libata cause pci_disable_msi() to be invoked?
-Or is that just missing at the moment?
-
-Thanks.
+I'm stuck in planes and hotels for the rest of the week and don't have a
+git tree to dig through, sorry.  I'd prefer to hold off until next week
+before diving into that one.
