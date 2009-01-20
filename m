@@ -1,73 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZATGcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZATGgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbZATGcO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 01:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZATGbz
+	id S1757016AbZATGgt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 01:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZATGgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 01:31:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34513 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753018AbZATGby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 01:31:54 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX18pcell4h4p8fst34AZ4MdfkI5rNaat66CnFhLvz7
-	AJ1Kl35MS417os
-Date: Tue, 20 Jan 2009 07:31:50 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090120063150.GC5854@alice>
-References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz>
+	Tue, 20 Jan 2009 01:36:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33757 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbZATGgj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 01:36:39 -0500
+Message-ID: <497570E5.2090702@zytor.com>
+Date: Mon, 19 Jan 2009 22:36:21 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090118174035.GG1944@ucw.cz>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 07:23:43 up 21 min,  3 users,  load average: 0.05, 0.13, 0.19
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+To: Valdis.Kletnieks@vt.edu
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Avuton Olrich <avuton@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due
+ to dc1e35c
+References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com> <4974CC8B.1030403@zytor.com> <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com> <4974DD86.2090300@zytor.com> <20090119201115.GD31356@linux-os.sc.intel.com> <3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com>            <20090119215736.GE31356@linux-os.sc.intel.com> <85492.1232422525@turing-police.cc.vt.edu>
+In-Reply-To: <85492.1232422525@turing-police.cc.vt.edu>
+Content-Type: multipart/mixed;
+ boundary="------------060508000605040101080200"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a multi-part message in MIME format.
+--------------060508000605040101080200
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-* Pavel Machek (pavel@suse.cz) wrote:
-> On Tue 2009-01-13 15:43:07, Eric Sesterhenn wrote:
-> > * Chris Mason (chris.mason@oracle.com) wrote:
-> > > On Tue, 2009-01-13 at 15:21 +0100, Eric Sesterhenn wrote:
-> > > > Hi,
-> > > > 
-> > > > when mounting an intentionally corrupted btrfs filesystem i get the
-> > > > following warning and bug message. The image can be found here
-> > > > www.cccmz.de/~snakebyte/btrfs.2.img.bck.bz2
-> > > 
-> > > Thanks for looking at things
-> > > 
-> > > Aside from catching checksumming errors, we're not quite ready for
-> > > fuzzer style attacks.  The code will be hardened for this but it isn't
-> > > yet.
-> > 
-> > Does this mean i should stop trying to break it for now or are you interested
-> > in further reports?
+Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 19 Jan 2009 13:57:36 PST, Suresh Siddha said:
 > 
-> Does ext2/3 and vfat survive that kind of attacks? Those are 'in
-> production' and should survive it...
+>> Though the bios is the culprit and this option will severely limit
+>> the cpu capabilities that OS can take advantage of, OS should fallback
+>> to a safer mode. I will have a patch for it.
+>>
+>> Also, I wonder, if we should complain/scream during boot if we find only
+>> fewer cpuid levels on modern generation cpu's.
+> 
+> I think a KERN_INFO "Core2 E9700 expected 6 cpuid levels, got 4"
+> would possibly be a good idea.
+> 
+> Might be a good idea to check what happens under VMWare and similar though, it
+> looks like the type of thing a hypervisor is likely to do something odd to us...
 
-I regularly (once or twice a week) test 100 corrupted images of 
-vfat, udf, msdos, swap, iso9660, ext2, ext3, ext4, minix, bfs, befs,
-hfs, hfs+, qnx4, affs and cramfs on each of my two test machines.
+I think a much better idea is to just clear the MSR bit.  Attached is a
+patch to do exactly that, which I will commit after testing.
 
-They are all pretty stable, one remaining thing on my list i didnt have
-time to look into was an issue with fat (msdos) triggering a bug in
-buffer.c the other is a warning with ext4 in jbd2/checkpoint.c:166
+	-hpa
 
-If there is a filesystem you are interested in thats not on the list
-or that you want me to test a bit more, just let me know
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Greetings, Eric
+
+--------------060508000605040101080200
+Content-Type: text/x-patch;
+ name="cpuid.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpuid.diff"
+
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index 8ea6929..1107015 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -29,6 +29,16 @@
+ 
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
++	u64 misc_enable;
++
++	/* If MSR_IA32_MISC_ENABLE exists, unmask CPUID levels if masked */
++	if (!rdmsrl_safe(MSR_IA32_MISC_ENABLE, &misc_enable)) {
++		if (misc_enable & (1 << 22)) {
++			misc_enable &= ~(1 << 22);
++			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++		}
++	}
++
+ 	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
+ 		(c->x86 == 0x6 && c->x86_model >= 0x0e))
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+
+--------------060508000605040101080200--
