@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZATJJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATJKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZATJJD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 04:09:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZATJIq
+	id S1758617AbZATJKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 04:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZATJKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 04:08:46 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.122]:37560 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbZATJIo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 04:08:44 -0500
-Message-ID: <49759499.4050708@cfl.rr.com>
-Date: Tue, 20 Jan 2009 04:08:41 -0500
-From: Mark Hounschell <dmarkh@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 20 Jan 2009 04:10:01 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45099 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753726AbZATJJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 04:09:59 -0500
+X-Authenticated: #23875046
+X-Provags-ID: V01U2FsdGVkX19PRM4IyJlPJBcDo4IvviJqgt2K1mztWTh7jw0uft
+	ojhMljJFMGr3yI
+Message-ID: <497594E3.4040205@fisher-privat.net>
+Date: Tue, 20 Jan 2009 10:09:55 +0100
+From: Alexey Fisher <bug-track@fisher-privat.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Hounschell <markh@compro.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II
- 	processor
-References: <497322CC.7050900@cfl.rr.com> <1f1b08da0901191625i6ac12312g9ae9ab599958a818@mail.gmail.com>
-In-Reply-To: <1f1b08da0901191625i6ac12312g9ae9ab599958a818@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [Bug #12417] glx performance drop with: "x86: PAT: implement
+ track/untrack of pfnmap regions for x86 - v3"
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.Ie.A-QdJB@chimera> <20090120074758.GB26284@elte.hu>
+In-Reply-To: <20090120074758.GB26284@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
-> On Sun, Jan 18, 2009 at 4:38 AM, Mark Hounschell <dmarkh@cfl.rr.com> wrote:
->> I upgraded from a Phenom to a Phenom-II processor and I could no longer boot.
->>
->> I have tried kernels from 2.6.26 through 2.6.28.
->>
->> I _can_ however boot these kernels when they are configured for HZ = 250. I
->> haven't tried HZ = 300. But certainly if HZ = 1000 the boot hangs at the spot
->> indicated below in the dmesg output.
->>
->> The machine is up and stable running 2.6.26.8 with a (HZ = 1000) configured kernel.
->>
->> While running a 2.6.26.8 kernel configured for HZ = 250:
-> [snip]
->>    vmalloc : 0xf4800000 - 0xff7fe000   ( 175 MB)
->>    lowmem  : 0xc0000000 - 0xf4000000   ( 832 MB)
->>      .init : 0xc0373000 - 0xc03a9000   ( 216 kB)
->>      .data : 0xc02b5336 - 0xc036c6d0   ( 732 kB)
->>      .text : 0xc0100000 - 0xc02b5336   (1748 kB)
->> Checking if this processor honours the WP bit even in supervisor mode...Ok.
->>
->>
->>      The 2.6.26.8 kernel hangs up right here.
->>
->>
->> CPA: page pool initialized 1 of 1 pages preallocated
->> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
->> hpet clockevent registered
->> calibrate_delay_direct() failed to get a good estimate for loops_per_jiffy.
+Ingo Molnar schrieb:
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> This looks suspect. Probably something is off with the timer
-> interrupt, that's causing the calibration to be way off.
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.28.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
+>> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
+>> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+>> Date		: 2009-01-06 18:46 (14 days old)
+>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
+>> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
+>> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 > 
-> Does booting with hpet=disable change anything?
+> is it still broken with the current lineup of x86 fixes:
 > 
-> thanks
-> -john
+>   git pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+> 
+> ?
+> 
+> 	Ingo
 
-John,
+I migrated now to the next ubuntu versio, hope it do no hava mach 
+difference.
+There is no warnings in dmesg about mtrr or pat, no xorg crashes with 
+glxx but same pure performace. With enabled or disabled drm i get ~300fps
 
-I tried this with 2.6.26, 2.6.28, and 2.6.29-rc2. It didn't change anything.
-
-thanks
-Mark
+	Alexey
