@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762593AbZATRsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZATRyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762593AbZATRsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 12:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758398AbZATRsM
+	id S1758609AbZATRyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 12:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZATRx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 12:48:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49804 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757088AbZATRsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 12:48:11 -0500
-Message-ID: <49760E2D.2060109@redhat.com>
-Date: Tue, 20 Jan 2009 19:47:25 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, Kevin Shanahan <kmshanah@ucwb.org.au>,
+	Tue, 20 Jan 2009 12:53:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63262 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZATRx4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 12:53:56 -0500
+Date: Tue, 20 Jan 2009 12:53:53 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Kevin Shanahan <kmshanah@ucwb.org.au>, Avi Kivity <avi@redhat.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
        Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_W?= =?ISO-8859-1?Q?eisbecker?= 
-	<fweisbec@gmail.com>
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
 Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera> <1232410363.4768.21.camel@kulgan.wumi.org.au> <20090120113546.GA26571@elte.hu> <1232455343.4895.4.camel@kulgan.wumi.org.au> <20090120125652.GA1457@elte.hu> <20090120130714.GA11048@elte.hu> <alpine.DEB.1.10.0901200957220.2681@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.1.10.0901200957220.2681@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090120150408.GD21931@elte.hu>
+Message-ID: <alpine.DEB.1.10.0901201251180.2681@gandalf.stny.rr.com>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera> <1232410363.4768.21.camel@kulgan.wumi.org.au> <20090120113546.GA26571@elte.hu> <1232455343.4895.4.camel@kulgan.wumi.org.au> <20090120125652.GA1457@elte.hu> <20090120130714.GA11048@elte.hu>
+ <alpine.DEB.1.10.0901200957220.2681@gandalf.stny.rr.com> <20090120150408.GD21931@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Note, the wakeup latency only tests realtime threads, since other threads
-> can have other issues for wakeup. I could change the wakeup tracer as
-> wakeup_rt, and make a new "wakeup" that tests all threads, but it may
-> be difficult to get something accurate.
->   
 
-Kevin, can you retest with kvm at realtime priority?
+On Tue, 20 Jan 2009, Ingo Molnar wrote:
 
--- 
-error compiling committee.c: too many arguments to function
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > On Tue, 20 Jan 2009, Ingo Molnar wrote:
+> > > Another test would be to build the scheduler latency tracer into your 
+> > > kernel:
+> > > 
+> > >     CONFIG_SCHED_TRACER=y
+> > > 
+> > > And enable it via:
+> > > 
+> > >     echo wakeup > /debug/tracing/current_tracer
+> > > 
+> > > and you should be seeing the worst-case scheduling latency traces in 
+> > > /debug/tracing/trace, and the largest observed latency will be in 
+> > > /debug/tracing/tracing_max_latency [in microseconds].
+> > 
+> > Note, the wakeup latency only tests realtime threads, since other 
+> > threads can have other issues for wakeup. I could change the wakeup 
+> > tracer as wakeup_rt, and make a new "wakeup" that tests all threads, but 
+> > it may be difficult to get something accurate.
+> 
+> hm, that's a significant regression then. The latency tracer used to 
+> measure the highest-prio task in the system - be that RT or non-rt.
+
+Well, it is a regression from what was in -rt yes. But not from what ever 
+was in mainline.
+
+But I needed to change this to detect the problem that we 
+solved with push and pull of rt tasks. The wake up of a non-rt tasks 
+always took longer than an -rt task, and by tracing all tasks, I never got 
+the wake up latency of an rt task.
+
+As I mentioned earlier, I can make a wakeup-rt to do the rt tracing, and 
+make wakeup do all tasks.
+
+-- Steve
 
