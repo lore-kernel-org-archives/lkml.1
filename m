@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbZATJX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbZATJZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759131AbZATJX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 04:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZATJXO
+	id S1759550AbZATJZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 04:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZATJZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 04:23:14 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:46029 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbZATJXL (ORCPT
+	Tue, 20 Jan 2009 04:25:13 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:50350 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbZATJZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 04:23:11 -0500
+	Tue, 20 Jan 2009 04:25:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Npmxya93CA3ezJnGBTjBzCYBM7TfDECeb+Q2H/9uXKn6LpQPdXUVkL2RAiD2S1zsBs
-         JOrUsogq8VkRc4W7YiL5TqlprmvxDC54wWQg60e3RZgO7UJnqSWXhdipLl+Wf8ua2lQU
-         li+1uL7hfl+uW246CCCFaoWIrmgSzMpUrUuPo=
-Message-ID: <49759844.5080405@gmail.com>
-Date: Tue, 20 Jan 2009 10:24:20 +0100
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=PkWhce/2d+ohhjVUIOiELWq1gtaP3RmR7De4i+8A9449rEq9hSAkbePthQgejYJFH2
+         f4OPKx2cwlx6TycXgFT1vUi5Y1/ZQofRcEc/GJi+klPK0VcgqLgYNpUKmoz7fQxChIdi
+         0mlVj11EnSWF+f3YkkbidofJpPOGhH6SOYySs=
+Message-ID: <497598BF.9080704@gmail.com>
+Date: Tue, 20 Jan 2009 10:26:23 +0100
 From: Jacek Luczak <difrost.kernel@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+To: Eric Sandeen <sandeen@sandeen.net>,
+       Jacek Luczak <difrost.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
        xfs mailing list <xfs@oss.sgi.com>
 Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net>
-In-Reply-To: <4974CA20.6050308@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-2
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed>
+In-Reply-To: <20090120004611.GA6445@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen pisze:
-> Jacek Luczak wrote:
->> Hi All,
->>
->> I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
->> didn't found errors. Today I've booted my notebook and XFS bug have occurred.
->> System reboot didn't helped, same error appeared.
->>
->> Some info:
->> [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
->> [2] kernel logs:
->> http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
->> [3] most interesting part of log below.
+Dave Chinner pisze:
+> On Mon, Jan 19, 2009 at 12:44:48PM -0600, Eric Sandeen wrote:
+>> Jacek Luczak wrote:
+>>> Hi All,
+>>>
+>>> I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
+>>> didn't found errors. Today I've booted my notebook and XFS bug have occurred.
+>>> System reboot didn't helped, same error appeared.
+>>>
+>>> Some info:
+>>> [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
+>>> [2] kernel logs:
+>>> http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
+>>> [3] most interesting part of log below.
+>> so this happens every mount?  Reproducible is good.  How large is the
+>> filesystem (too large to extract elsewhere for analysis...?) (plus I
+>> suppose it'll be hard to get to it when you can't even boot....)
 > 
-> so this happens every mount?  Reproducible is good.  How large is the
-> filesystem (too large to extract elsewhere for analysis...?) (plus I
-> suppose it'll be hard to get to it when you can't even boot....)
+> XFS folks, I suspect the common link between all the reports of this
+> bug is that they are on 32-bit kernels. I can't reproduce this on
+> a 64 bit kernel, and I'm trying to get a 32-bit UML built right now
+> to test this theory.
 > 
-> -Eric
-> 
 
-Hi Eric,
-
-funny or sad thing is that this happens while mounting only one of partitions
-(/home) which is:
-$ df -h | grep /home
-/dev/sda5              20G   14G  6,0G  69% /home
-
-This bug is quite strange, as I mentioned, first boot on new kernel went OK,
-next two resulted in such behavior. Now I'm running 2.6.29-rc2-12097-gf3b8436
-and no bug here. Nevertheless I'm not fully happy, as it was seen before, the
-bug might still happen (will boot few times to test it and report back to you).
-
-First yesterday buggy but went unnoticed so I've started fluxbox and firefox
-(errors seen in log), as usual, then found that sth is wrong. Second boot was
-also buggy than I've returned to old kernel where everything was OK ... nearly
-everything, cause firefox suddenly ,,forgot'' all configuration.
-
-I will boot my notebook on all those 2.6.29-* kernel few times and maybe be able
-to reproduce that bug.
+Yep, 32-bits here. I've googled a while looking for some answer and it looks
+like it has happen before in various kernel version (no report regarding 2.6.29
+AFAIR).
 
 -Jacek
+
