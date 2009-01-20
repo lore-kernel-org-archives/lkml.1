@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbZATTxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbZATTyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762699AbZATTxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbZATTxe
+	id S1762868AbZATTyj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbZATTy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:53:34 -0500
-Received: from khc.piap.pl ([195.187.100.11]:54947 "EHLO khc.piap.pl"
+	Tue, 20 Jan 2009 14:54:29 -0500
+Received: from rtr.ca ([76.10.145.34]:46992 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755446AbZATTxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:53:33 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, mike.mclagan@linux.org,
-       Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       netdev@vger.kernel.org, davem@davemloft.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: why usr/include/linux/if_frad.h is required
-References: <1232463174.3088.15.camel@localhost.localdomain>
-	<1232463242.3088.16.camel@localhost.localdomain>
-	<200901201847.03030.arnd@arndb.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 20 Jan 2009 20:53:27 +0100
-In-Reply-To: <200901201847.03030.arnd@arndb.de> (Arnd Bergmann's message of "Tue\, 20 Jan 2009 18\:47\:01 +0100")
-Message-ID: <m3zlhlycso.fsf@intrepid.localdomain>
+	id S1756217AbZATTy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 14:54:28 -0500
+Message-ID: <49762BF1.2050101@rtr.ca>
+Date: Tue, 20 Jan 2009 14:54:25 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Grant Grundler <grundler@google.com>
+Cc: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-pci@vger.kernel.org
+Subject: Re: libata, devm_*, and MSI ?
+References: <4975F5C1.8090107@rtr.ca>	 <da824cf30901200944x545431b2va0233abc14e81f9b@mail.gmail.com>	 <497614F5.6000301@rtr.ca> <da824cf30901201051v66ae13c4i3476097ee31db281@mail.gmail.com>
+In-Reply-To: <da824cf30901201051v66ae13c4i3476097ee31db281@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> writes:
+Grant Grundler wrote:
+> On Tue, Jan 20, 2009 at 10:16 AM, Mark Lord <liml@rtr.ca> wrote:
+> ...
+>>> I don't think that's necessary if free_irq() or disable_irq() are called.
+>>> However, I'm not seeing those get called either.
+> ...
+>> The linux/Documentation/PCI/MSI-HOWTO.txt information is rather explicit
+>> about it, and the pci core code does seem to expect it.
+> 
+> It looks like pci_disable_msi() requires free_irq() to be called first in order
+> to guarantee the vectors are no longer in use. But I didn't see any code to
+> enforce that. Which code was "expecting free_irq()" to be called?
+..
 
-> The CONFIG_DLCI check in there is clearly in error, the definition in there
-> is a user interface. The obvious solution is to drop the #if / #endif pair
-> without a replacement.
+The devres subsystem automatically frees resources on device removal,
+including calling free_irq() as necessary for any interrupt handler
+that was registered with devm_request_irq(), as done in libata.
+See linux/drivers/base/devres.c for the actual call to free_irq().
 
-I think so.
-OTOH I'd be really surprised if anyone on the planet still used this
-code/driver. IIRC and AFAICS it is (sdla.c coupled with dlci.c) the
-first driver for the old Sangoma ISA sync serial cards (S502 - S508,
-i.e. those based on Z80CPU doing HDLC and other things in firmware).
+But it doesn't handle pci_disable_msi() in there.
 
+Thus this code from latest sata_mv:
 
-There was also a second(?) driver for those cards (official from
-Sangoma), but:
++static void mv_pci_remove_one(struct pci_dev *pdev)
++{
++       struct device *dev = &pdev->dev;
++       struct ata_host *host = dev_get_drvdata(dev);
++       struct mv_host_priv *hpriv = host->private_data;
++
++       if (hpriv->hp_flags & MV_HP_FLAG_MSI) {
++               devm_free_irq(host->dev, pdev->irq, host);
++               pci_disable_msi(pdev);
++       }
++       ata_pci_remove_one(pdev);
++}
 
-commit 8db60bcf3021921e2d10d158641792d640e52fe8
-Author: Adrian Bunk <bunk@stusta.de>
-Date:   Tue Apr 11 17:28:33 2006 -0700
+I believe that other MSI users might want something similar,
+or perhaps Tejun could extend devres to include a pair
+of suitable functions, devm_enable_msi() and  devm_disable_msi().
+Then it would be just automatic for drivers, without any fuss.
 
-    [WAN]: Remove broken and unmaintained Sangoma drivers.
-    
-    The in-kernel Sangoma drivers are both not compiling and marked as BROKEN
-    since at least kernel 2.6.0.
-    
-    Sangoma offers out-of-tree drivers, and David Mandelstam told me Sangoma
-    does no longer maintain the in-kernel drivers and prefers to provide them
-    as a separate installation package.
-    
-    This patch therefore removes these drivers.
-
-
-They claim support for "All S-Series Legacy Cards" with out-of-tree
-drivers available from www.sangoma.com.
--- 
-Krzysztof Halasa
+Cheers
