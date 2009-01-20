@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbZATKmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbZATKnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756487AbZATKmo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760716AbZATKmQ
+	id S1760090AbZATKnI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:43:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZATKmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:42:16 -0500
-Received: from www84.your-server.de ([213.133.104.84]:44138 "EHLO
+	Tue, 20 Jan 2009 05:42:18 -0500
+Received: from www84.your-server.de ([213.133.104.84]:44148 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbZATKmN (ORCPT
+	with ESMTP id S1760722AbZATKmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:42:13 -0500
-Subject: Detailed Stack Information Patch [2/3]
+	Tue, 20 Jan 2009 05:42:16 -0500
+Subject: Detailed Stack Information Patch [1/3]
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 20 Jan 2009 11:16:42 +0100
-Message-Id: <1232446602.784.17.camel@matrix>
+Date: Tue, 20 Jan 2009 11:16:40 +0100
+Message-Id: <1232446600.784.16.camel@matrix>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
@@ -24,291 +24,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -u -N -r linux-2.6.28.1.orig/fs/proc/Makefile linux-2.6.28.1/fs/proc/Makefile
---- linux-2.6.28.1.orig/fs/proc/Makefile	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/fs/proc/Makefile	2009-01-20 09:14:11.000000000 +0100
-@@ -25,3 +25,4 @@
- proc-$(CONFIG_PROC_DEVICETREE)	+= proc_devtree.o
- proc-$(CONFIG_PRINTK)	+= kmsg.o
- proc-$(CONFIG_PROC_PAGE_MONITOR)	+= page.o
-+proc-$(CONFIG_PROC_STACK_MONITOR) += stackmon.o
-diff -u -N -r linux-2.6.28.1.orig/fs/proc/stackmon.c linux-2.6.28.1/fs/proc/stackmon.c
---- linux-2.6.28.1.orig/fs/proc/stackmon.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.28.1/fs/proc/stackmon.c	2009-01-20 09:13:19.000000000 +0100
-@@ -0,0 +1,254 @@
-+/*
-+ * detailed stack monitoring
-+ *
-+ *	Copyright (C) 2009 Stefani Seibold for NSN
-+ *	This Source is under GPL Licence
-+ *
-+ * enabled when CONFIG_PROC_STACK_MONITOR is set
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/proc_fs.h>
-+#include <linux/pagemap.h>
-+#include <linux/init.h>
-+#include <linux/stddef.h>
-+#include <linux/mutex.h>
-+#include <linux/kthread.h>
-+#include <linux/freezer.h>
-+#include <linux/seq_file.h>
-+
-+#define	PROC_STACKMON	"stackmon"
-+
-+#define	BUF_SIZE	1024
-+
-+static struct mutex		lock;
-+
-+static struct proc_dir_entry	*proc_ent;
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+static inline unsigned long get_top(struct vm_area_struct *vma,
-+					unsigned long end)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+
-+	for (i = vma->vm_end; i-PAGE_SIZE > end; i -= PAGE_SIZE) {
-+
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
-+
-+		if ((!IS_ERR(page) == 0) || (page))
-+			break;
-+	}
-+	return (i-end)/PAGE_SIZE;
-+}
-+#else
-+static inline unsigned long get_top(struct vm_area_struct *vma,
-+					unsigned long end)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+
-+	for (i = vma->vm_start; i+PAGE_SIZE <= end; i += PAGE_SIZE) {
-+
-+		page = follow_page(vma, i, 0);
-+
-+		if ((!IS_ERR(page) == 0) || (page))
-+			break;
-+	}
-+	return (end-i)/PAGE_SIZE;
-+}
+diff -u -N -r linux-2.6.28.1.orig/fs/exec.c linux-2.6.28.1/fs/exec.c
+--- linux-2.6.28.1.orig/fs/exec.c	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/fs/exec.c	2009-01-20 09:10:35.000000000 +0100
+@@ -1342,6 +1342,9 @@
+ 	current->flags &= ~PF_KTHREAD;
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
++#ifdef CONFIG_PROC_STACK
++		current->stack_start = current->mm->start_stack;
 +#endif
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+#define STACK_PAGE(x)	(((x)+PAGE_SIZE-1)/PAGE_SIZE)
-+#else
-+#define STACK_PAGE(x)	(((x)-PAGE_SIZE-1)/PAGE_SIZE)
-+#endif
-+
-+static inline int dump_usage(struct task_struct *t, char *buf)
-+{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm;
-+
-+	*buf = 0;
-+
-+	mm = get_task_mm(t);
-+
-+	if (mm) {
-+		vma = find_vma(mm, t->stack_start);
-+
-+		if (vma) {
-+			unsigned long	esp;
-+			unsigned long	cur_stack;
-+			unsigned long	real_stack;
-+
-+			esp = KSTK_ESP(t);
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+			cur_stack = esp-t->stack_start;
-+			real_stack =
-+				STACK_PAGE(esp)-STACK_PAGE(t->stack_start)+1;
-+#else
-+			cur_stack = t->stack_start-esp;
-+			real_stack =
-+				STACK_PAGE(t->stack_start)-STACK_PAGE(esp)+1;
-+#endif
-+			snprintf(
-+				buf,
-+				BUF_SIZE,
-+				" %7lu %7lu %7lu  %08lx-%08lx pid:%5d "
-+				"tid:%5d %s\n",
-+				cur_stack,
-+				real_stack,
-+				(real_stack+get_top(vma, esp)),
-+				vma->vm_start,
-+				vma->vm_end,
-+				t->tgid,
-+				t->pid,
-+				t->comm
-+			);
-+		}
-+		mmput(mm);
-+	}
-+	return 0;
-+}
-+
-+static void *stackmon_find(loff_t pos, char *buf)
-+{
-+	struct task_struct *g;
-+	struct task_struct *t;
-+
-+	loff_t off = 0;
-+
-+	read_lock(&tasklist_lock);
-+
-+	do_each_thread(g, t) {
-+		if (pos == off++)
-+			goto found;
-+	} while_each_thread(g, t);
-+
-+	read_unlock(&tasklist_lock);
-+	return 0;
-+found:
-+	task_lock(t);
-+	dump_usage(t, buf);
-+	task_unlock(t);
-+	read_unlock(&tasklist_lock);
-+	return buf;
-+}
-+
-+static void *stackmon_seq_start(struct seq_file *s, loff_t *pos)
-+{
-+	if (*pos == 0)
-+		return SEQ_START_TOKEN;
-+
-+	return stackmon_find(*pos, s->private);
-+}
-+
-+
-+static void *stackmon_seq_next(struct seq_file *s, void *v, loff_t *pos)
-+{
-+	++*pos;
-+
-+	return stackmon_find(*pos, s->private);
-+}
-+
-+static int stackmon_seq_show(struct seq_file *s, void *v)
-+{
-+	if (v == SEQ_START_TOKEN) {
-+		return seq_puts(s,
-+			"   bytes   pages maxpages vm_start vm_end   "
-+			"processid threadid  name\n");
-+	}
-+
-+	return seq_puts(s, v);
-+}
-+
-+static void stackmon_seq_stop(struct seq_file *s, void *v)
-+{
-+}
-+
-+static const struct seq_operations stackmon_seq_ops = {
-+	.start	= stackmon_seq_start,
-+	.next	= stackmon_seq_next,
-+	.stop	= stackmon_seq_stop,
-+	.show	= stackmon_seq_show
-+};
-+
-+static int stackmon_open(struct inode *inode, struct file *file)
-+{
-+	int	ret;
-+	char	*buffer;
-+	struct seq_file *s;
-+
-+	ret = -ENOMEM;
-+
-+	buffer = kmalloc(BUF_SIZE, GFP_KERNEL);
-+	if (!buffer)
-+		goto out;
-+
-+	ret = seq_open(file, &stackmon_seq_ops);
-+	if (ret)
-+		goto out_kfree;
-+
-+	s = file->private_data;
-+	s->private = buffer;
-+
-+out:
-+	return ret;
-+
-+out_kfree:
-+	kfree(buffer);
-+	return ret;
-+}
-+
-+static const struct file_operations stackmon_file_ops = {
-+	.owner		= THIS_MODULE,
-+	.open		= stackmon_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release_private,
-+};
-+
-+static int __init stackmon_init(void)
-+{
-+	int ret = 0;
-+
-+	mutex_init(&lock);
-+
-+	proc_ent = create_proc_entry(PROC_STACKMON, 0440, NULL);
-+
-+	if (proc_ent == NULL)
-+		goto exit;
-+
-+	proc_ent->owner = THIS_MODULE;
-+	proc_ent->data = NULL;
-+	proc_ent->proc_fops = &stackmon_file_ops;
-+
-+	return ret;
-+
-+exit:
-+	return -ENOMEM;
-+}
-+
-+static void __exit stackmon_exit(void)
-+{
-+	mutex_lock(&lock);
-+	remove_proc_entry(PROC_STACKMON, NULL);
-+	mutex_unlock(&lock);
-+}
-+
-+module_init(stackmon_init);
-+module_exit(stackmon_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
-+MODULE_DESCRIPTION("detailed stack monitoring");
-+
-diff -u -N -r linux-2.6.28.1.orig/init/Kconfig linux-2.6.28.1/init/Kconfig
---- linux-2.6.28.1.orig/init/Kconfig	2009-01-20 09:12:43.000000000 +0100
-+++ linux-2.6.28.1/init/Kconfig	2009-01-20 09:13:19.000000000 +0100
-@@ -826,6 +826,16 @@
- 	  Disabling these interfaces will reduce the size of the kernel by
- 	  approximately 1kb.
+ 		/* execve success */
+ 		security_bprm_free(bprm);
+ 		acct_update_integrals(current);
+diff -u -N -r linux-2.6.28.1.orig/fs/proc/array.c linux-2.6.28.1/fs/proc/array.c
+--- linux-2.6.28.1.orig/fs/proc/array.c	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/fs/proc/array.c	2009-01-20 09:10:35.000000000 +0100
+@@ -308,6 +308,25 @@
+ 			p->nivcsw);
+ }
  
-+config PROC_STACK_MONITOR
++#ifdef CONFIG_PROC_STACK
++static inline void task_show_stack_usage(struct seq_file *m,
++						struct task_struct *p)
++{
++	unsigned long		cur_stack;
++	unsigned long		base_page;
++
++	base_page = KSTK_ESP(p) >> PAGE_SHIFT;
++
++#ifdef CONFIG_STACK_GROWSUP
++	cur_stack = base_page-(p->stack_start >> PAGE_SHIFT);
++#else
++	cur_stack = (p->stack_start >> PAGE_SHIFT)-base_page;
++#endif
++	seq_printf(m,	"stack usage:\t%lu kB\n",
++		(cur_stack + 1) << (PAGE_SHIFT-10));
++}
++#endif
++
+ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+ 			struct pid *pid, struct task_struct *task)
+ {
+@@ -327,6 +346,9 @@
+ 	task_show_regs(m, task);
+ #endif
+ 	task_context_switch_counts(m, task);
++#ifdef CONFIG_PROC_STACK
++	task_show_stack_usage(m, task);
++#endif
+ 	return 0;
+ }
+ 
+diff -u -N -r linux-2.6.28.1.orig/fs/proc/task_mmu.c linux-2.6.28.1/fs/proc/task_mmu.c
+--- linux-2.6.28.1.orig/fs/proc/task_mmu.c	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/fs/proc/task_mmu.c	2009-01-20 09:10:35.000000000 +0100
+@@ -240,6 +240,11 @@
+ 				} else if (vma->vm_start <= mm->start_stack &&
+ 					   vma->vm_end >= mm->start_stack) {
+ 					name = "[stack]";
++#ifdef CONFIG_PROC_STACK
++				} else if (vma->vm_start <= mm->start_stack &&
++					   vma->vm_end >= mm->start_stack) {
++					name = "[thread stack]";
++#endif
+ 				}
+ 			} else {
+ 				name = "[vdso]";
+diff -u -N -r linux-2.6.28.1.orig/include/linux/sched.h linux-2.6.28.1/include/linux/sched.h
+--- linux-2.6.28.1.orig/include/linux/sched.h	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/include/linux/sched.h	2009-01-20 09:10:35.000000000 +0100
+@@ -1356,6 +1356,9 @@
+ 	unsigned long default_timer_slack_ns;
+ 
+ 	struct list_head	*scm_work_list;
++#ifdef CONFIG_PROC_STACK
++	unsigned long stack_start;
++#endif
+ };
+ 
+ /*
+diff -u -N -r linux-2.6.28.1.orig/init/Kconfig linux-2.6.28.1/init/Kconfig
+--- linux-2.6.28.1.orig/init/Kconfig	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/init/Kconfig	2009-01-20 09:10:36.000000000 +0100
+@@ -814,6 +814,18 @@
+ 
+ source "arch/Kconfig"
+ 
++config PROC_STACK
 + 	default y
-+	depends on PROC_STACK
-+	bool "Enable /proc/stackmon detailed stack monitoring"
++	depends on PROC_FS && MMU
++	bool "Enable /proc/<pid> stack monitoring" if EMBEDDED
 + 	help
-+	  This enables detailed monitoring of process and thread stack
-+	  utilization via the /proc/stackmon interface.
++	  This enables monitoring of process and thread stack utilization.
++
++	  The /proc/pid/maps, /proc/pid/smaps, /proc/pid/status and the
++	  /proc/pid/task/pid pedants will be extended by the stack information.
 +	  Disabling these interfaces will reduce the size of the kernel by
-+	  approximately 2kb.
++	  approximately 1kb.
 +
  endmenu		# General setup
  
  config HAVE_GENERIC_DMA_COHERENT
+diff -u -N -r linux-2.6.28.1.orig/kernel/fork.c linux-2.6.28.1/kernel/fork.c
+--- linux-2.6.28.1.orig/kernel/fork.c	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/kernel/fork.c	2009-01-20 09:10:36.000000000 +0100
+@@ -1093,6 +1093,11 @@
+ 	p->blocked_on = NULL; /* not blocked yet */
+ #endif
+ 
++#ifdef CONFIG_PROC_STACK
++	p->stack_start = (stack_start == KSTK_ESP(current)) ?
++		current->stack_start : stack_start;
++#endif
++
+ 	/* Perform scheduler related setup. Assign this task to a CPU. */
+ 	sched_fork(p, clone_flags);
+ 
 
 
