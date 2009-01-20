@@ -1,130 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbZATMSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbZATMZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758328AbZATMSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZATMSg
+	id S1758940AbZATMZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZATMZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:18:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53018 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Jan 2009 07:25:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58588 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbZATMSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:18:35 -0500
-Date: Tue, 20 Jan 2009 13:18:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] x86: optimise page fault entry
-Message-ID: <20090120121829.GC7790@elte.hu>
-References: <20090120032426.GE16304@wotan.suse.de> <20090120100946.GA7886@elte.hu> <20090120120709.GF19505@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120120709.GF19505@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753463AbZATMZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:25:38 -0500
+Date: Tue, 20 Jan 2009 07:25:16 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Bernhard Schmidt <berni@birkenwald.de>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression 2.6.27.4
+ -> 2.6.27.9
+Message-ID: <20090120072516.10f24425@tleilax.poochiereds.net>
+In-Reply-To: <20090119213819.GA6532@pest>
+References: <20090118221329.GA12742@pest>
+	<20090118210314.30832598@tleilax.poochiereds.net>
+	<20090119103248.GA28699@schleppi.birkenwald.de>
+	<20090119160725.34124637@tleilax.poochiereds.net>
+	<20090119213819.GA6532@pest>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 Jan 2009 22:38:20 +0100
+Bernhard Schmidt <berni@birkenwald.de> wrote:
 
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> On Tue, Jan 20, 2009 at 11:09:46AM +0100, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Sorry for the delay with this. The kernel ended up unbootable for me 
-> > > when I last dusted off the patch, so I couldn't test it and then 
-> > > promptly got sidetracked with other things.
-> > > 
-> > > Anyway, this one is tested with a boot, some basic segfault sigbus etc 
-> > > tests, and passes various of the mmap and mprotect etc. ltp tests.
-> > > 
-> > > Ingo, would you merge this into the x86 tree, please? (unless Linus has 
-> > > any objections to this version)
-> > 
-> > -tip testing found a 32-bit boot regression, caused by this patch. The 
-> > bootup hangs early, during the WP write-test check:
-> > 
-> > [    0.004000]       .data : 0xc0691f05 - 0xc09c746c   (3285 kB)
-> > [    0.004000]       .text : 0xc0100000 - 0xc0691f05   (5703 kB)
-> > [    0.004000] Checking if this processor honours the WP bit even in supervisor mode...
-> > 
-> > i've excluded x86/mm from tip/master for now, you can find the broken tree 
-> > in the tip/tip.x86.mm.broken [v2.6.29-rc2-1069-g583f1b9] branch that i 
-> > just pushed out:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tip.x86.mm.broken
+> On Mon, Jan 19, 2009 at 04:07:25PM -0500, Jeff Layton wrote:
 > 
-> Gah, I knew I should have tested with 32-bit. Sorry, I had actually tested
-> it at some point, so I must have dropped this hunk along the way :(
-> 
->  
-> > Also, a patch structure sidenote, the diffstat is rather large:
+> > That said, there's a lot of jumping around in this assembly code and
+> > it's not completely clear to me how it got to the point where it crashed.
+> > We'll probably need to see if this can be independently reproduced. Can
+> > you email along the details of how you're reproducing this? In
+> > particular:
 > > 
-> >  arch/x86/mm/fault.c |  436 ++++++++++++++++++++++++++++++---------------------
-> >  1 files changed, 255 insertions(+), 181 deletions(-)
-> > 
-> > this shuffles 300 lines of highly critical x86 code around - which makes 
-> > me nervous. A finegrained, bisectable series would be far more debuggable. 
-> > Had we such a lineup i could have auto-bisected it for you already - while 
-> > now you have to see which bit of the ~500 lines of code flux broke the 
-> > 32-bit WP test.
-> > 
-> > This hang might be easy to find and fix (the WP detect logic is simple), 
-> > but other failure modes might be less debuggable and this codepath deals 
-> > with a lot of obscure details like CPU errata. So it would be really nice 
-> > to have a finegrained splitup of this patch.
->  
-> I guess breaking out the shuffling of parameters (where this bug lies), 
-> breaking out functions from do_page_fault, and added branch annotations 
-> could be done.... that would still leave a fair hunk in the breakout 
-> patch, which I didn't see a really pleasing way to split out.
-
-i think it could be structured in a way so that every step is either 
-small, or yields no change in the vmlinux binary. The former is 
-reviewable, the latter is machine-checkable.
-
-At least that's how i do such changes and i have yet to find a code 
-transformation where such techniques cannot be used to minimize regression 
-risks.
-
-> > Three separate testsystems triggered this hang so it should be readily 
-> > reproducible.
+> > 1) all mount options being used
 > 
-> Yes, thanks,
-> Nick
+> Not more than the ones shown in my original mail. The exact mount
+> command is *checkingfirewall*
 > 
-> ---
->  arch/x86/mm/fault.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> mount -t cifs -o user=berni,ip=2001:a60:f001:1::69 //fileserv/pub /pub
 > 
-> Index: linux-2.6/arch/x86/mm/fault.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/fault.c
-> +++ linux-2.6/arch/x86/mm/fault.c
-> @@ -828,7 +828,7 @@ void __kprobes do_page_fault(struct pt_r
->  			return;
->  
->  		/* Can handle a stale RO->RW TLB */
-> -		if (spurious_fault(address, error_code))
-> +		if (spurious_fault(error_code, address))
->  			return;
+> > 2) details on the server (what OS, what version of samba, etc)
+> > 3) version of mount.cifs being used
+> 
+> The server is a Debian Lenny based i386 system running a self-compiled
+> vanilla 2.6.28 kernel and Debian packaged Samba 3.2.5-3.
+> 
+> The client is Ubuntu Intrepid (8.10) with intrepid-security,
+> intrepid-updates and intrepid-proposed enabled. mount.cifs -V does not
+> work misteriously (displays the usage instruction), the package version
+> is 3.2.3-1ubuntu3.4.
+> 
+> All those programs are not changed. After booting into kernel
+> 2.6.27-7.14 (intrepid release) or 2.6.27-9.19 (intrepid-security,
+> intrepid-updates) the above noted mount command works fine, after
+> booting 2.6.27-11.23 (intrepid-proposed) it's broken. I can change
+> between those client kernel versions and reproduce it.
+> 
+> The changes between the working and the non-working version should
+> be as noted in
+> 
+> https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-10.20
+> https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-11.23
+> 
+> And I've just discovered something. Remind you, I'm trying to mount
+> 2001:a60:f001:1::69. However, after entering the password the system
+> tries to reach another address
+> 
+> 22:31:24.336790 IP6 2001:a60:f001:1:219:66ff:fe8b:a6e > ff02::1:ff00:69:
+> ICMP6, neighbor solicitation, who has 2001:a60:f001:1:55:abe3:0:69,
+> length 32
+> 
+> The (wrong) address changes slightly between consecutive tries, I've seen 
+> 2001:a60:f001:1:4f:abe3:0:69
+> 2001:a60:f001:1:58:abe3:0:69
+> as well.
+> 
+> Also, when I try some other (legal, but unused) address it bails out at
+> another code location, e.g.
+> 
+> mount -t cifs -o user=berni,ip=2001:a60:f001:1:cc::69 //fileserv/pub
+> /pub
+> 
+> results in an immediate (!)
+> 
+> [  486.470983] BUG: unable to handle kernel paging request at 0000cc0c
+> [  486.470992] IP: [<f9c0a3d6>] :cifs:ipv6_connect+0x46/0x1a0
+> [  486.471008] *pde = 00000000
+> [  486.471012] Oops: 0000 [#13] SMP
+> [  486.471016] Modules linked in: nls_cp437 cifs af_packet binfmt_misc rfcomm bridge stp bnep sco l2cap bluetooth kvm_amd kvm ppdev tun ipv6 pci_slot container sbs sbshc video output battery
+> iptable_filter ip_tables x_tables ac parport_pc lp parport serio_raw pcspkr psmouse snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi k8temp snd_rawmidi
+> snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc i2c_piix4 i2c_core evdev dm_multipath scsi_dh pl2303 usbserial fglrx(P) agpgart wmi button shpchp pci_hotplug ext3 jbd
+> mbcache sr_mod cdrom pata_acpi sd_mod crc_t10dif pata_atiixp sg usbhid hid usb_storage libusual ata_generic ahci ohci_hcd ehci_hcd libata usbcore scsi_mod dock r8169 mii dm_mirror dm_log dm_snapshot
+> dm_mod thermal processor fan fbcon tileblit font bitblit softcursor fuse
+> [  486.471076]
+> [  486.471079] Pid: 6607, comm: mount.cifs Tainted: P      D   (2.6.27-11-generic #1)
+> [  486.471082] EIP: 0060:[<f9c0a3d6>] EFLAGS: 00010246 CPU: 0
+> [  486.471092] EIP is at ipv6_connect+0x46/0x1a0 [cifs]
+> [  486.471095] EAX: 0000cc00 EBX: f9c3b094 ECX: 0000001c EDX: c4ecfe44
+> [  486.471097] ESI: c4ecfe44 EDI: c4ecfe54 EBP: c4ecfd94 ESP: c4ecfd7c
+> [  486.471100]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> [  486.471103] Process mount.cifs (pid: 6607, ti=c4ece000 task=ce5abed0 task.ti=c4ece000)
+> [  486.471105] Stack: c4ecfd94 f9c1708b 00000000 f9c3b094 c4eaa000 f9c3b094 c4ecfe64 f9c0bf5c
+> [  486.471112]        c10b1030 c4eac000 c4ecfdcc c0189c8d c4eab000 000280d0 f9c3b094 000a100c
+> [  486.471118]        00000001 caa0e3c0 dbf3e200 0000000c 00000000 00000020 c4ecfe4c c4ecfe0c
+> [  486.471124] Call Trace:
+> [  486.471127]  [<f9c1708b>] ? cifs_inet_pton+0x7b/0x80 [cifs]
+> [  486.471141]  [<f9c0bf5c>] ? cifs_mount+0x46c/0xda0 [cifs]
+> [  486.471151]  [<c0189c8d>] ? prep_new_page+0xdd/0x160
+> [  486.471161]  [<c024e132>] ? idr_get_empty_slot+0xe2/0x270
+> [  486.471167]  [<f9bfddf3>] ? cifs_read_super+0x93/0x1e0 [cifs]
+> [  486.471176]  [<c01b38f0>] ? set_anon_super+0x0/0xd0
+> [  486.471181]  [<f9bfdfa9>] ? cifs_get_sb+0x69/0xc0 [cifs]
+> [  486.471192]  [<c01b468e>] ? vfs_kern_mount+0x5e/0x130
+> [  486.471197]  [<c01b47be>] ? do_kern_mount+0x3e/0xe0
+> [  486.471201]  [<c01cccff>] ? do_new_mount+0x6f/0x90
+> [  486.471206]  [<c01cd242>] ? do_mount+0x1d2/0x1f0
+> [  486.471210]  [<c01ca95d>] ? exact_copy_from_user+0x4d/0xa0
+> [  486.471214]  [<c01caf6e>] ? copy_mount_options+0x6e/0xd0
+> [  486.471218]  [<c01cd2f1>] ? sys_mount+0x91/0xc0
+> [  486.471222]  [<c0103f7b>] ? sysenter_do_call+0x12/0x2f
+> [  486.471227]  =======================
+> [  486.471228] Code: 8b 02 85 c0 0f 84 eb 00 00 00 66 83 7e 02 00 66 c7 06 0a 00 66 c7 45 f2 00 00 75 59 66 c7 46 02 01 bd 8b 07 b9 1c 00 00 00 89 f2 <8b> 58 0c c7 04 24 00 00 00 00 ff 53 10 85 c0 89
+> c3 78 67 8b 07
+> [  486.471257] EIP: [<f9c0a3d6>] ipv6_connect+0x46/0x1a0 [cifs] SS:ESP 0068:c4ecfd7c
+> [  486.471269] ---[ end trace cbe7d886432a8981 ]---#
+> 
+> This looks like an address corruption in the memory, maybe the original
+> BUG was there before and did not trigger because the server was reachable.
+> 
+> Bernhard
+> 
 
-applied, thanks Nick.
+I've still not been able to reproduce this here though I don't have any
+test boxes with kernels this old and I don't have any 32-bit x86 boxes
+handy. Here's something that may be helpful though. Could you turn up
+cifsFYI, reproduce this and then send along the log messages?
 
-Lets try it with the current large patch once more ... but if there's one 
-more regression then i guess we need to do the splitup, to be on the safe 
-side.
+# echo 7 > /proc/fs/cifs/cifsFYI
+# mount -t cifs -o user=berni,ip=2001:a60:f001:1:cc::69 //fileserv/pub /pub
 
-	Ingo
+...then send along all of the cifs debug messages and the oops message.
+I suspect either the parsing of the ip= option is falling down somehow, or
+in6_pton is failing to translate the address.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
