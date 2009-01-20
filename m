@@ -1,276 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZATGbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZATGcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbZATGbI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 01:31:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZATGax
+	id S1757968AbZATGcO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 01:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZATGbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 01:30:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34155 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397AbZATGav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 01:30:51 -0500
-Date: Tue, 20 Jan 2009 17:30:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 20
-Message-Id: <20090120173043.3fb67859.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__20_Jan_2009_17_30_43_+1100_hD+ikHqL+KG0L_Bv"
+	Tue, 20 Jan 2009 01:31:55 -0500
+Received: from mail.gmx.net ([213.165.64.20]:34513 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753018AbZATGby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 01:31:54 -0500
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX18pcell4h4p8fst34AZ4MdfkI5rNaat66CnFhLvz7
+	AJ1Kl35MS417os
+Date: Tue, 20 Jan 2009 07:31:50 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090120063150.GC5854@alice>
+References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090118174035.GG1944@ucw.cz>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
+X-Uptime: 07:23:43 up 21 min,  3 users,  load average: 0.05, 0.13, 0.19
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__20_Jan_2009_17_30_43_+1100_hD+ikHqL+KG0L_Bv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi all,
+* Pavel Machek (pavel@suse.cz) wrote:
+> On Tue 2009-01-13 15:43:07, Eric Sesterhenn wrote:
+> > * Chris Mason (chris.mason@oracle.com) wrote:
+> > > On Tue, 2009-01-13 at 15:21 +0100, Eric Sesterhenn wrote:
+> > > > Hi,
+> > > > 
+> > > > when mounting an intentionally corrupted btrfs filesystem i get the
+> > > > following warning and bug message. The image can be found here
+> > > > www.cccmz.de/~snakebyte/btrfs.2.img.bck.bz2
+> > > 
+> > > Thanks for looking at things
+> > > 
+> > > Aside from catching checksumming errors, we're not quite ready for
+> > > fuzzer style attacks.  The code will be hardened for this but it isn't
+> > > yet.
+> > 
+> > Does this mean i should stop trying to break it for now or are you interested
+> > in further reports?
+> 
+> Does ext2/3 and vfat survive that kind of attacks? Those are 'in
+> production' and should survive it...
 
-Our build server is back.
+I regularly (once or twice a week) test 100 corrupted images of 
+vfat, udf, msdos, swap, iso9660, ext2, ext3, ext4, minix, bfs, befs,
+hfs, hfs+, qnx4, affs and cramfs on each of my two test machines.
 
-Changes since 20090119:
+They are all pretty stable, one remaining thing on my list i didnt have
+time to look into was an issue with fat (msdos) triggering a bug in
+buffer.c the other is a warning with ext4 in jbd2/checkpoint.c:166
 
-Undropped trees:
-	stackprotector
-	hid
+If there is a filesystem you are interested in thats not on the list
+or that you want me to test a bit more, just let me know
 
-Dropped trees (temporarily):
-	quota (build problem)
-	crypto (build problem)
-	cpufreq (build problem)
-	cpu_alloc (build problem)
-	audit (difficult conflicts)
-
-I merged the mfd tree immediately after Linus' tree instead of applying
-the build fix patch it has.
-
-The m68knommu tree gained a conflict against Linus' tree.
-
-The stackprotector tree lost its conflicts.
-
-The hid tree lost its build problem.
-
-The crypto tree gained a build failure and was dropped.
-
-The cpufreq tree gained a conflict against the cpus4096 tree and a build
-failure and was dropped.
-
-The slab tree gained a conflict against the ftrace tree.
-
-The proc tree gained a conflict against the security-testing tree.
-
-The kmemleak tree gained a conflict against the ftrace and slab trees.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging mfd/for-next
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-CONFLICT (delete/modify): arch/m68knommu/include/asm/Kbuild deleted in m68k=
-nommu/for-next and modified in HEAD. Version HEAD of arch/m68knommu/include=
-/asm/Kbuild left in tree.
-$ git rm -f arch/m68knommu/include/asm/Kbuild
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-$ git reset --hard HEAD^
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-$ git reset --hard HEAD^
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-$ git reset --hard HEAD^
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in mm/slob.c
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-CONFLICT (content): Merge conflict in mm/vmalloc.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Tue__20_Jan_2009_17_30_43_+1100_hD+ikHqL+KG0L_Bv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl1b5MACgkQjjKRsyhoI8zn0gCgjdGNdkB3cna5/tVmt54TAnH3
-05AAoI0j45DDvOgiFYwizyL1t/iWPvUa
-=8Hhx
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Jan_2009_17_30_43_+1100_hD+ikHqL+KG0L_Bv--
+Greetings, Eric
