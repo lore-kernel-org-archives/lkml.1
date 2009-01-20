@@ -1,125 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZATCz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZATC7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbZATCz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 21:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZATCzL
+	id S1756240AbZATC7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 21:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZATC7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 21:55:11 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:15042 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZATCzJ (ORCPT
+	Mon, 19 Jan 2009 21:59:41 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38807 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZATC7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 21:55:09 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=C8rkUfyEAAAA:8 a=VwQbUJbxAAAA:8 a=NBmVJhAIs6_HJH1CMlUA:9 a=5HIO3VYyWlgeif89k_AA:7 a=fACyyg9jtbzeuP7BiIdoUaxYnpwA:4 a=Y8cocX-fvF4A:10 a=PR-DjfqNVKsA:10
-Message-ID: <49753D09.8060503@shaw.ca>
-Date: Mon, 19 Jan 2009 20:55:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.ide,gmane.linux.kernel
-To: Diego Calleja <diegocg@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Faulty seagate drives, are going to be blacklisted?
-References: <20090120002923.065f24ca@diego-desktop>
-In-Reply-To: <20090120002923.065f24ca@diego-desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Jan 2009 21:59:40 -0500
+Date: Tue, 20 Jan 2009 11:58:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] cgroup:add css_is_populated
+Message-Id: <20090120115832.0881506c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830901191823q556faeeub28d02d39dda7396@mail.gmail.com>
+References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901191739t45c793afk2ceda8fc430121ce@mail.gmail.com>
+	<20090120110221.005e116c.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830901191823q556faeeub28d02d39dda7396@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diego Calleja wrote:
-> Tech sites are reporting everywhere a massive flaw in seagate drives that
-> can lock up the drive and make it unusable (the bios doesn't detect it, you
-> can't read the data). Haven't read anything about it here on the lists.
-> Seagate has ack'ed the problem:
-> http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207931
-> 
-> So, apparently there're a lot of drives on the market (including mine)
-> that can die any day. Are those drives going to be blacklisted? It's
-> still not clear if the firmware update is safe (some affected but
-> working drives are dying after the firmware update), so some people
-> like me is still waiting (and hoping that the drive doesn't die) for
-> more stable firmware updates...
-> 
-> Here is the list of drives+firmware affected, according to the support site
-> as of now. Some models are still being diagnosed.
+On Mon, 19 Jan 2009 18:23:03 -0800
+Paul Menage <menage@google.com> wrote:
 
-There are a few drives which are currently marked to disable NCQ and 
-warn the user that the firmware that should be upgraded:
+> On Mon, Jan 19, 2009 at 6:02 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Ah, this is related to CSS ID scanning. No real problem to current codes.
+> >
+> > Now, in my patch, CSS ID is attached just after create().
+> >
+> > Then, "scan by CSS ID" can find a cgroup which is not populated yet.
+> > I just wanted to skip them for avoiding mess.
+> >
+> > For example, css_tryget() can succeed against css which belongs to not-populated
+> > cgroup. If creation of cgroup fails, it's destroyed and freed without RCU synchronize.
+> > This may breaks CSS ID scanning's assumption that "we're safe under rcu_read_lock".
+> > And allows destroy css while css->refcnt > 1.
+> 
+> So for the CSS ID case, we could solve this by not populating
+> css_id->css until creation is guaranteed to have succeeded? (We'd
+> still allocated the css_id along with the subsystem, just not complete
+> its initialization). cgroup.c already knows about and hides the
+> details of css_id, so this wouldn't be hard.
+> 
 
-ST31500341AS
-ST31000333AS
-ST3640623AS
-ST3640323AS
-ST3320813AS
-ST3320613AS
+Hmm, moving this call to after populate is not good because
+id > max_id cannot be handled ;)
 
-all for firmware versions SD15 through SD19.
+> +               if (ss->use_id)
+> +                       if (alloc_css_id(ss, parent, cgrp))
+> +                               goto err_destroy;
+> +               /* At error, ->destroy() callback has to free assigned ID. */
+>        }
 
+Should I delay to set css_id->css pointer to valid value until the end of
+populate() ? (add populage_css_id() call after cgroup_populate_dir()).
+
+I'd like to write add-on patch to the patch [1/4]. (or update it.)
+css_id->css == NULL case is handled now, anyway.
+
+
+
+> The question is whether other users of css_tryget() might run into
+> this problem, without using CSS IDs. But currently no-one's using
+> css_tryget() apart from you, so that's a problem we can solve as it
+> arises.
+> 
+yes ;)
+
+> I think we're safe from css_get() being used in this case, since
+> css_get() can only be used on css references obtained from a locked
+> task, or from other pointers that are known to be ref-counted, which
+> would be impossible if css_tryget() can't succeed on a css in the
+> partially-completed state.
 > 
 > 
-> Seagate Barracuda 7200.11 (http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207951)
-> 
-> Models Affected:
->  ST3500320AS
->  ST3640330AS
->  ST3750330AS
->  ST31000340AS
-> Firmware Affected
->  SD15, SD16, SD17, SD18, SD19, AD14
-> Recommended Firmware Update
->  SD1A
-> 
-> Seagate Barracuda 7200.11, page 2 (http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207957)
-> Models Affected:
->  ST31500341AS
->  ST31000333AS
->  ST3640323AS
->  ST3640623AS
->  ST3320613AS
->  ST3320813AS
->  ST3160813AS
-> Firmware Affected
->  Still Unknow
-> Recommended Firmware Update
->  Still Unknow
-> 
-> 
-> Seagate Barracuda ES.2 (http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207963)
-> Models Affected:
->  ST3250310NS
->  ST3500320NS
->  ST3750330NS
->  ST31000340NS
-> Firmware Affected
->  Still Unknow
-> Recommended Firmware Update
->  Still Unknow
-> 
-> DiamondMax 22 (http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207969)
-> Models Affected:
->  STM3500320AS
->  STM3750330AS
->  STM31000340AS
-> Firmware Affected
->  MX15 (or higher)
-> Recommended Firmware Update
->  MX1A
-> 
-> DiamondMax 22 (http://seagate.custkb.com/seagate/crm/selfservice/search.jsp?DocId=207975)
-> Models Affected:
->  STM31000334AS
->  STM3320614AS
->  STM3160813AS
-> Firmware Affected
->  Still Unknow
-> Recommended Firmware Update
->  Still Unknow
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+Thanks, I'll try some other patch. Maybe it's ok to delay updating css_id->css
+pointer.
+
+-Kame
 
