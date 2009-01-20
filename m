@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbZATSY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbZATS1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762287AbZATSY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 13:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZATSYU
+	id S1761738AbZATS1L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 13:27:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZATS04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 13:24:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43884 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbZATSYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 13:24:19 -0500
-Date: Tue, 20 Jan 2009 16:23:57 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHv2] ftrace interface for blktrace
-Message-ID: <20090120182357.GN690@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <20090116181611.GE6562@ghostprotocols.net> <20090117190913.GA17722@elte.hu> <20090117191430.GA30821@kernel.dk> <20090117200804.GJ6562@ghostprotocols.net> <20090120144219.GH690@ghostprotocols.net> <alpine.DEB.1.10.0901201007060.2681@gandalf.stny.rr.com> <20090120175835.GM690@ghostprotocols.net>
+	Tue, 20 Jan 2009 13:26:56 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:59200 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752152AbZATS0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 13:26:55 -0500
+Message-ID: <4976176B.2090907@sgi.com>
+Date: Tue, 20 Jan 2009 10:26:51 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120175835.GM690@ghostprotocols.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ben Hutchings <bhutchings@solarflare.com>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-net-drivers@solarflare.com
+Subject: Re: [PATCH 4/5] cpumask: convert drivers/net/sfc [PATCH supplied]
+References: <20090107195832.265117000@polaris-admin.engr.sgi.com> <20090107195832.871689000@polaris-admin.engr.sgi.com> <1232384910.31644.13.camel@achroite> <200901201209.34854.rusty@rustcorp.com.au>
+In-Reply-To: <200901201209.34854.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, Jan 20, 2009 at 03:58:35PM -0200, Arnaldo Carvalho de Melo escreveu:
-> Em Tue, Jan 20, 2009 at 12:03:17PM -0500, Steven Rostedt escreveu:
-> > > @@ -163,23 +206,33 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
-> > >  
-> > >  	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
-> > 
-> > Do we still use relay?
+Rusty Russell wrote:
+> On Tuesday 20 January 2009 03:38:30 Ben Hutchings wrote:
+>> On Wed, 2009-01-07 at 11:58 -0800, Mike Travis wrote:
+>>> From: Rusty Russell <rusty@rustcorp.com.au>
+>>>
+>>> Impact: reduce stack usage, use new cpumask API.
+>>>
+>>> Remove a cpumask from the stack.  Ben Hutchings indicated that printing
+>>> a warning and returning 1 was acceptable for the corner case where allocation
+>>> fails.
+>>>
+>>> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>>> Signed-off-by: Mike Travis <travis@sgi.com>
+>>> Cc: Ben Hutchings <bhutchings@solarflare.com>
+>>> Cc: linux-net-drivers@solarflare.com
+>> Acked-by: Ben Hutchings <bhutchings@solarflare.com>
+>>
+>> This seems to work.
+>>
+>>> ---
+>>>  drivers/net/sfc/efx.c |   15 +++++++++++----
+>>>  1 file changed, 11 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/net/sfc/efx.c b/drivers/net/sfc/efx.c
+>>> --- a/drivers/net/sfc/efx.c
+>>> +++ b/drivers/net/sfc/efx.c
+>>> @@ -854,20 +854,27 @@ static void efx_fini_io(struct efx_nic *
+>>>   * interrupts across them. */
+>>>  static int efx_wanted_rx_queues(void)
+>>>  {
+>>> -	cpumask_t core_mask;
+>>> +	cpumask_var_t core_mask;
+>>>  	int count;
+>>>  	int cpu;
+>>>  
+>>> -	cpus_clear(core_mask);
+>>> +	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
+>>> +		printk(KERN_WARNING
+>>> +		       "efx.c: allocation failure, irq balancing hobbled\n");
+>> [...]
+>>
+>> This is an exceedingly unlikely error case so the error message is not
+>> that important, but if you don't mind re-spinning this then please make
+>> it "sfc: RSS disabled due to allocation failure\n".
 > 
-> blkFtrace is an addition to the existing method for the moment, as soon
-> as we're all satisfied with functionality + performance, we may then
-> remove that code.
+> OK, I'm away from all my machines, at linux.conf.au.  Mike, can you change
+> this if you haven't already?
+> 
+> Thanks,
+> Rusty.
+> 
 
-I guess that is not a clear answer, so lemme try again:
+Subject: sfc: modify allocation error message
 
-The relay code is only used if the old method of starting a blk trace
-and setting up filters is used, i.e. the IOCTL method.
+Impact: change error message when alloc_cpumask_var fails.
 
-When we use the sysfs interface to do that we do not use the relay code
-at all.
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ drivers/net/sfc/efx.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-But most of the rest is shared.
+--- linux-2.6-for-ingo.orig/drivers/net/sfc/efx.c
++++ linux-2.6-for-ingo/drivers/net/sfc/efx.c
+@@ -858,9 +858,9 @@ static int efx_wanted_rx_queues(void)
+ 	int count;
+ 	int cpu;
+ 
+-	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
++	if (unlikely(!alloc_cpumask_var(&core_mask, GFP_KERNEL))) {
+ 		printk(KERN_WARNING
+-		       "efx.c: allocation failure, irq balancing hobbled\n");
++		       "sfc: RSS disabled due to allocation failure\n");
+ 		return 1;
+ 	}
+ 
 
-Except for things like __trace_note_message and the interface provided
-by the old blktrace code to insert annotations into the stream.
 
-That will be provided by using standard ftrace methods such as
-/t/trace_marker, as demonstrated by:
-
-[root@f10-1 ~]# cat /t/trace_pipe & echo "bye, bye relay" > /t/trace_marker
-[1] 1090
-[root@f10-1 ~]#             bash-957   [000] 14727.302000: 0: bye, bye relay
-
-- Arnaldo
