@@ -1,93 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbZATKl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATKm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbZATKl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZATKlq
+	id S1758617AbZATKm3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbZATKmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:41:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:27489 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760857AbZATKlp (ORCPT
+	Tue, 20 Jan 2009 05:42:13 -0500
+Received: from www84.your-server.de ([213.133.104.84]:44130 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756254AbZATKmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:41:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=N7N+gVDZgUWEBIKmbRgK9XWodoLebuuuR6qMAY9clHnhkwGmO8KhdspWGc6P+i+0T2
-         GpTUcg1w7r4qdZz3CCwInmnuYXZKzb2zl9MUuD4DgsQYIt5th9PiOrBS3196fzJyHmB4
-         bPeFmVtDRcyaul7rzZlLbxBifnxKyf+WNSYzg=
-Message-ID: <4975AAAF.4040804@gmail.com>
-Date: Tue, 20 Jan 2009 11:42:55 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
-       xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <49759844.5080405@gmail.com>
-In-Reply-To: <49759844.5080405@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+	Tue, 20 Jan 2009 05:42:11 -0500
+X-Greylist: delayed 1713 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 05:42:11 EST
+Subject: Detailed Stack Information Patch [0/3]
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 11:16:37 +0100
+Message-Id: <1232446597.784.15.camel@matrix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jacek Luczak pisze:
-> Eric Sandeen pisze:
->> Jacek Luczak wrote:
->>> Hi All,
->>>
->>> I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
->>> didn't found errors. Today I've booted my notebook and XFS bug have occurred.
->>> System reboot didn't helped, same error appeared.
->>>
->>> Some info:
->>> [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
->>> [2] kernel logs:
->>> http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
->>> [3] most interesting part of log below.
->> so this happens every mount?  Reproducible is good.  How large is the
->> filesystem (too large to extract elsewhere for analysis...?) (plus I
->> suppose it'll be hard to get to it when you can't even boot....)
->>
->> -Eric
->>
-> 
-> Hi Eric,
-> 
-> funny or sad thing is that this happens while mounting only one of partitions
-> (/home) which is:
-> $ df -h | grep /home
-> /dev/sda5              20G   14G  6,0G  69% /home
-> 
-> This bug is quite strange, as I mentioned, first boot on new kernel went OK,
-> next two resulted in such behavior. Now I'm running 2.6.29-rc2-12097-gf3b8436
-> and no bug here. Nevertheless I'm not fully happy, as it was seen before, the
-> bug might still happen (will boot few times to test it and report back to you).
-> 
-> First yesterday buggy but went unnoticed so I've started fluxbox and firefox
-> (errors seen in log), as usual, then found that sth is wrong. Second boot was
-> also buggy than I've returned to old kernel where everything was OK ... nearly
-> everything, cause firefox suddenly ,,forgot'' all configuration.
-> 
-> I will boot my notebook on all those 2.6.29-* kernel few times and maybe be able
-> to reproduce that bug.
-> 
+Hi,
 
-I've made some tests. Basically umount + mount (with time measurement):
+this is a patch which give you a better overview of the userland
+application stack usage, especially for embedded linux.
 
-$ for i in $(seq -s ' ' 1 20) ; do echo "[=> umount [$MNT]: $i" ; time umount
-$MNT ; [ $? -eq 0 ] && echo "[=> mount [$MNT]: $i" && time mount $MNT || break ;
-done 2>&1 | tee ~/${MNT##*/}_mount_git.log
+Currently you are only able to dump the main process/thread stack usage
+which is showed in proc/pid/status by the "VmStk" Value. But you get no
+information about the consumed stack memory of the the threads.
 
-where MNT was set to three different partitions (all with XFS). Both on rc2 and
-git version, no bug appeared. If someone is interested (I've seen some delays in
-mounting before), some time results here:
-http://pin.if.uz.zgora.pl/~difrost/linux-next/mount_logs/
+The patch is splitted in three parts.
 
-I will still mess around so maybe it will appear once more than will try do some
-more tests (suggestions are welcome).
 
--Jacek
+Part 1 :
+--------
+
+This is an enhancement in the /proc/<pid>/tasks/<tid>/maps and
+smaps which marks the mapping where the thread stack pointer reside with
+"[thread stack]".
+
+Also there is a new entry "stack usage" in proc/pid/status, which will
+you give the current stack usage.
+
+This feature will be enabled the which "enable /proc/<pid> stack
+monitoring" under "General setup-->"
+
+
+Part 2:
+-------
+
+This enable a new /proc/stackmon file entry. A cat /proc/stackmon
+will produce a output like:
+
+   bytes   pages maxpages vm_start vm_end   processid threadid  name
+     436       1       1  afdbf000-afdd4000 pid:  409 tid:  409 syslogd
+    1168       1       1  afd12000-afd27000 pid:  411 tid:  411 sh
+     516       1       1  afe6c000-afe81000 pid:  412 tid:  412 getty
+    4580       2       2  af918000-af92d000 pid:  419 tid:  419 cat
+The first value is the current effektive stack usage in bytes.
+
+The second value is the current real stack usage in pages. This means
+how many pages are really occupied by the stack.
+
+The thrird value is the maximum real stack usage in pages. This value
+will be determinate by the difference of the highest used page in the
+mapping and the page of stack start address.
+
+The fourth value is the start- and end- address of the mapping where the
+stack currently reside.
+
+The fifth value process id.
+
+The sixth value is thread id.
+
+And the seventh and last entry is the name of the process.
+
+This feature will be enabled the which "enable /proc/<pid> stack
+monitoring" under "General setup-->".
+
+
+Part 3:
+-------
+
+There is also an additional stack monitor which can be enabled by boot
+time or by the /sys filesystem. Which this you are able to detect if a
+application use more stack than a given value. If the application
+exceeds this value, it will receive a SIGTRAP signal. 
+
+If there is a debugger attached at this time, there is the ability to
+examinate the stack usage. Otherwise the application will be terminated.
+In both cases a kernel log entry "pid:%d (%s) tid:%d stack size %lu
+exceeds max stack size." will be written.
+
+There are following entries under /sys/kernel/stackmon to control the
+monitor.
+
+mode:
+ Setting this to an value not equal zero will start the stack monitoring
+thread. Default is 0. Setting it to zero will stop the kernel thread.
+
+stacksize:
+ This value is the stack size in kb which triggers a SIGTRAP to the
+application, if the stack usage is equal or more. Default is 256 kb.
+ 
+ticks:
+ Number of ticks between the monitoring invocation. A higher value will
+give a less change to trigger a stack over usage, but will also result
+in a less CPU usage. Default is 1.
+
+All this parameters can also set at boot time with the kernel parameter
+"stackmon=<stacksize>:<mode>:<ticks>".
+
+The monitor can also compiled as a module.
+
+
+This patch is against 2.6.28.1. The patch is cpu independent, so it
+should work on all linux supported architectures, it was tested under
+x86 and powerpc. Also there is not dependency a library: glibc, uclibc
+and all other should work.
+
+I hope you like it and want ask what is necessary for inclusion into the
+main stream kernel or linux-next? If you have ideas how to do things in
+a better way, please let me know.
+
+Have a nice day,
+Stefani
+
+
