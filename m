@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZATHZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZATHaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbZATHZZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZATHZN
+	id S1757706AbZATHaZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZATHaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:25:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41850 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbZATHZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:25:12 -0500
-Date: Tue, 20 Jan 2009 08:24:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Miao Xie <miaox@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH] cpuset: fix possible deadlock in
-	async_rebuild_sched_domains
-Message-ID: <20090120072451.GB16426@elte.hu>
-References: <497540BE.4070408@cn.fujitsu.com>
+	Tue, 20 Jan 2009 02:30:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:49944 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZATHaH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:30:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NQg2+nO4JdMQYetd+2O9xYKcC1x7vZcEP8jSmxCV47RhSdpv9Siz9HFON8+yPCGKvi
+         djTZhxMGfuIid5NkoD3VWBfQ8fnbeoN3Z9uL7IgjZBzi3nCqF+997PQYxL5i+hgfsfZs
+         3PU2oIIrOymlqXJP/lQl/GAYafqs2dAm7vDMc=
+Message-ID: <8db1092f0901192330n43ba88bbk20f79233aad48c0a@mail.gmail.com>
+Date: Tue, 20 Jan 2009 08:30:05 +0100
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/6] Hibernation: Introduce system_entering_hibernation
+Cc: "Jeff Garzik" <jeff@garzik.org>, "Frans Pop" <elendil@planet.nl>,
+       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200901192054.55536.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <497540BE.4070408@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3245]
+References: <20081104062734.GA4420@havoc.gtf.org> <49739371.5030107@garzik.org>
+	 <200901192053.50831.rjw@sisk.pl> <200901192054.55536.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/1/19 Rafael J. Wysocki <rjw@sisk.pl>:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Introduce boolean function system_entering_hibernation() returning
+> 'true' during the last phase of hibernation, in which devices are
+> being put into low power states and the sleep state (for example,
+> ACPI S4) is finally entered.
+>
+> Some device drivers need such a function to check if the system is
+> in the final phase of hibernation.  In particular, some SATA drivers
+> are going to use it for blacklisting systems in which the disks
+> should not be spun down during the last phase of hibernation (the
+> BIOS will do that anyway).
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-* Miao Xie <miaox@cn.fujitsu.com> wrote:
+Tested-by: Maciej Rutecki <maciej.rutecki@gmail.com>
 
-> Lockdep reported some possible circular locking info when we tested 
-> cpuset on NUMA/fake NUMA box.
+Tested on HP Compaq nx6310
 
-I have applied your original patch to tip/sched/urgent two days ago, 
-thanks!
+Thanks for patches
 
-	Ingo
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
