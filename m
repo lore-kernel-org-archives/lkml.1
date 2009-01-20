@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZATBpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbZATBqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbZATBpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATBpG
+	id S1759793AbZATBqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATBqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:45:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:33189 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755186AbZATBpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:45:04 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Peter Annema <jag@tty.nl>
-Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
-Date: Tue, 20 Jan 2009 01:39:39 +0000 (UTC)
-Message-ID: <loom.20090120T012630-735@post.gmane.org>
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Jan 2009 20:46:09 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:42813 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186AbZATBqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 20:46:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W4MU190Cd2r87BFDWGOBk7jFYBLfIBNfB9jy7QLZyGgDoOO3zkXS0Gd1o9I9ZOykp1
+         q31vQYNiDAzVuJifLONj3tv4jbwQQSk5Wc+SC8AoPzL3HyC7pJe4OTVJCJCSuSjccgKV
+         yn0hi0Rzq3anTyLTEhCxTQii6W9EojJDpkjYM=
+Message-ID: <b6a2187b0901191746u1139d09es22d6c5177635a65@mail.gmail.com>
+Date: Tue, 20 Jan 2009 09:46:05 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Daniel Drake" <dsd@gentoo.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Phil Dibowitz" <phil@ipom.com>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>
+In-Reply-To: <2QN7KFic7LG.A.pF.59QdJB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 70.79.225.63 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.1b3pre) Gecko/20081229 SeaMonkey/2.0a3pre)
+Content-Disposition: inline
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera>
+	 <2QN7KFic7LG.A.pF.59QdJB@chimera>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru <jdm64 <at> gawab.com> writes:
-> Ok, finally bisected the bug, but the commit isn't related to networking!
-> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> on current git and that fixed the bug.
+On Tue, Jan 20, 2009 at 5:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12422
+> Subject         : 2.6.28-git can't resume from str
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+> Date            : 2009-01-10 1:39 (10 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+> References      : http://marc.info/?l=linux-kernel&m=123155157909282&w=4
+>                  http://marc.info/?l=linux-kernel&m=123167815028388&w=4
+> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> Patch           : http://lkml.org/lkml/2009/1/13/144
 
-...
+Rafael,
 
->  #ifdef CONFIG_X86_32
-> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
->  {
-> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
-> -
-> -       return do_rt_sigreturn(regs);
-> +       return do_rt_sigreturn(&regs);
->  }
+Confirmed the patch fixed resume from STR. No problem for the past 10 days.
 
-Is sizeof(struct pt_regs) different from sizeof(unsigned long)? If so, is some
-code somewhere messing with the stack and not expecting a struct pt_regs to have
-been put on it?
-
-
-
+Thanks,
+Jeff.
