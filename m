@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbZATQHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbZATQIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762295AbZATQHD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 11:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759705AbZATQGo
+	id S1762173AbZATQIE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 11:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZATQHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 11:06:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39819 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Jan 2009 11:07:52 -0500
+Received: from rtr.ca ([76.10.145.34]:55210 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759050AbZATQGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 11:06:43 -0500
-Date: Tue, 20 Jan 2009 17:06:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86: make UV support configurable
-Message-ID: <20090120160637.GB32650@elte.hu>
-References: <20090120033604.GF16304@wotan.suse.de> <20090120142733.GD10224@elte.hu> <20090120155000.GA27200@elte.hu> <20090120155334.GB225848@sgi.com>
+	id S1755166AbZATQHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 11:07:51 -0500
+Message-ID: <4975F6D5.1040807@rtr.ca>
+Date: Tue, 20 Jan 2009 11:07:49 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120155334.GB225848@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-pci@vger.kernel.org
+Subject: Re: libata, devm_*, and MSI ?
+References: <4975F5C1.8090107@rtr.ca>
+In-Reply-To: <4975F5C1.8090107@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jack Steiner <steiner@sgi.com> wrote:
-
-> On Tue, Jan 20, 2009 at 04:50:00PM +0100, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > * Nick Piggin <npiggin@suse.de> wrote:
-> > > 
-> > > > Fixed the EFI omission since the last patch. I have not changed the 
-> > > > Kconfig to include (what I think are) false dependencies (which really 
-> > > > frustrate me when things get badly tangled up). If people want to test 
-> > > > as much stuff as possible even that is not supported by their hardware, 
-> > > > we have allyesconfig/allmodconfig. I don't think UV is particularly 
-> > > > special in that respect (we allow Intel, AMD, etc CPUs to be configured 
-> > > > out)
-> > > > 
-> > > > If anything, X86_UV should *select* MAXSMP, rather than the other way 
-> > > > around. That would be more logical, but even then I don't like adding 
-> > > > still a false dep because one might have a small UV system, or want to 
-> > > > test with different NR_CPUS.
-> > > > 
-> > > > Anyway, I think this patch is good as-is. If someone wants to streamline 
-> > > > config options with subsequent patches, that's great. If Ingo can be 
-> > > > convinced of a better arrangement, fine.
-> > > 
-> > > Applied to tip/x86/uv, thanks Nick!
-> > 
-> > hm, build failure with the attached config:
-> > 
-> > 
-> > drivers/built-in.o: In function `gru_cpu_fault_map_id':
-> > : undefined reference to `per_cpu____uv_hub_info'
-> > drivers/built-in.o: In function `gru_fault':
-> > : undefined reference to `per_cpu____uv_hub_info'
-> > drivers/built-in.o: In function `gru_try_dropin':
-> > grufault.c:(.text+0xbfc6e): undefined reference to 
-> > `per_cpu____uv_hub_info'
-> > grufault.c:(.text+0xc0042): undefined reference to 
-> > `per_cpu____uv_hub_info'
-> > [...]
-> > 
-> > (if possible please send a delta fix on top of your previous patch.)
+Mark Lord wrote:
+> Tejun / Jeff,
 > 
-> The GRU driver makes sense only on UV & IA64 configurations.
+> I am working on MSI support for sata_mv, and am trying to puzzle out
+> exactly what the kernel expects for this.  Looking at other drivers,
+> both libata and otherwise, yields a variety of conflicting implementations.
+> 
+> For starters, the MSI HOW-TO suggests that drivers must be careful
+> to invoke pci_disable_msi() on module unload, but I don't see that
+> happening anywhere in libata.
+> 
+> Unless, Tejun, the devm_* routines automatically do this.. do they?
+> 
+> Next, there's no mention of a need for invoking pci_intx() in the HOW-TO,
+> yet some device drivers call it, and others do not.
+> 
+> Eg. from ahci.c, we have this:
+> 
+>        if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
+>                pci_intx(pdev, 1);
+> 
+> Which agrees with the existing code in sata_mv:
+> 
+>        if (msi && pci_enable_msi(pdev))
+>                pci_intx(pdev, 1);
+> 
+> Which seems to call pci_intx() only when MSI is *not* used.  Fine.
+> But then in sata_vsc.c, we do sort of the opposite:
+> 
+>        if (pci_enable_msi(pdev) == 0)
+>                pci_intx(pdev, 0);
+> 
+> Either that one is wrong, or pci_intx() is unnecessary in all cases.
+> Again, the MSI HOW-TO doesn't even mention this routine.
+> 
+> Looking through the network drivers, it seems that some of them
+> do the pci_intx(pdev,1) call for the cases where pci_enable_msi() fails,
+> similar to ahci.c and sata_mv.c.
+> 
+> But not all of them do that.
+..
 
-that's not expressed in the Kconfig rules.
+Looking through drivers/pci/*, it appears that the call to pci_intx()
+should be totally redundant.  pci_enable_msi() does pci_intx(pdev,0)
+on success only, and doesn't touch it otherwise.
 
-	Ingo
+Similarly, pci_disable_msi() does pci_intx(pdev,1).
+
+So, where does libata cause pci_disable_msi() to be invoked?
+Or is that just missing at the moment?
+
+Thanks.
