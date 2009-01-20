@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZATUH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762837AbZATUJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbZATUH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 15:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762758AbZATUHr
+	id S1762837AbZATUJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 15:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZATUJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 15:07:47 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:59073 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756862AbZATUHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 15:07:46 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=aoXPJkT9xbYczkk2sutWgj67dgdyZiSZuI+ZmdigkDSX4AzuB6MIsM0mjDEuIPCkb
-	zgz6/YDyr3d81f0vFiPqg==
-Message-ID: <49762F07.1050404@google.com>
-Date: Tue, 20 Jan 2009 12:07:35 -0800
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v1 3/8] Deferred batching of iput()
-References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <20090117022952.20425.91639.stgit@crlf.corp.google.com> <20090117101809.GB2682@ioremap.net>
-In-Reply-To: <20090117101809.GB2682@ioremap.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Jan 2009 15:09:12 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:39549 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755923AbZATUJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 15:09:11 -0500
+Subject: Re: [RFC] Regulator: Push lock out of _notifier_call_chain + add
+ voltage change event.
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4974C48A.1000103@cam.ac.uk>
+References: <495FD46E.8040208@cam.ac.uk>
+	 <1231065078.11643.116.camel@vega.slimlogic.co.uk>
+	 <4973793D.60803@cam.ac.uk> <20090119152921.GA23444@rakim.wolfsonmicro.main>
+	 <4974B107.6050701@gmail.com> <4974C182.1090902@cam.ac.uk>
+	 <4974C48A.1000103@cam.ac.uk>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 20:09:07 +0000
+Message-Id: <1232482147.16911.295.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.148
-X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Fri, Jan 16, 2009 at 06:29:52PM -0800, Mike Waychison (mikew@google.com) wrote:
->> +static void postpone_iput(struct inode *inode)
->> +{
->> +	struct postponed_inodes *ppi, *new_ppi;
->> +
->> +again:
->> +	ppi = get_cpu_var(postponed_inodes);
->> +	if (!pending_iput_full(ppi)) {
->> +		add_pending_iput(ppi, inode);
->> +		put_cpu_var(postponed_inodes);
->> +		return;
->> +	}
->> +
->> +	/* Need to flush out existing pending inodes */
->> +	put_cpu_var(postponed_inodes);
->> +	/* Allocate more space.. */
->> +	new_ppi = new_postponed_inodes();
->> +	if (!new_ppi) {
->> +		struct postponed_inodes_onstack ppi_onstack;
->> +
->> +		ppi = init_ppi_onstack(&ppi_onstack);
->> +		add_pending_iput(ppi, inode);
->> +		process_postponed_inodes(ppi);
->> +		return;
->> +	}
+On Mon, 2009-01-19 at 18:20 +0000, Jonathan Cameron wrote:
+> From: Jonathan Cameron <jic23@cam.ac.uk>
+> Regulator: Push lock out of _notifier_call_chain and into caller functions
+> (side effect of fixing deadlock in regulator_force_disable)
+> + Add a voltage changed event.
+> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 > 
-> The same here: what just not to call a real_iput() without on-stack
-> allocation and the line?
+> ---
+> Follow up to Mark Brown's suggestion of moving the regulator lock out
+> of the notifier code.  This avoids cases where it was previously necessary
+> to unlock the regulator before notification occured.
+> 
+> Any scenarios where this will cause trouble?
+> 
+> I'll do a documentation patch when we've pinned down how to do this.
+> + can break the patch into one for pushing the lock out and one for
+> adding the event.
+> 
+>  drivers/regulator/core.c             |   15 ++++++++++-----
+>  drivers/regulator/wm8350-regulator.c |    2 ++
+>  drivers/regulator/wm8400-regulator.c |    2 +-
+>  include/linux/regulator/consumer.h   |    2 ++
+>  4 files changed, 15 insertions(+), 6 deletions(-)
 > 
 
-Agreed.  Will fix in the next version.
+Applied and fixed trailing white space.
+
+Thanks
+
+Liam
+
