@@ -1,155 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbZATMZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbZATMai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbZATMZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZATMZk
+	id S1759193AbZATMai (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbZATMa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:25:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58588 "EHLO mx2.redhat.com"
+	Tue, 20 Jan 2009 07:30:28 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:12550 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbZATMZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:25:38 -0500
-Date: Tue, 20 Jan 2009 07:25:16 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Bernhard Schmidt <berni@birkenwald.de>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression 2.6.27.4
- -> 2.6.27.9
-Message-ID: <20090120072516.10f24425@tleilax.poochiereds.net>
-In-Reply-To: <20090119213819.GA6532@pest>
-References: <20090118221329.GA12742@pest>
-	<20090118210314.30832598@tleilax.poochiereds.net>
-	<20090119103248.GA28699@schleppi.birkenwald.de>
-	<20090119160725.34124637@tleilax.poochiereds.net>
-	<20090119213819.GA6532@pest>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754440AbZATMa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 07:30:27 -0500
+Date: Tue, 20 Jan 2009 13:28:56 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
+Message-ID: <20090120122855.GF30821@kernel.dk>
+References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal> <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal> <20090120073709.GC30821@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120073709.GC30821@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009 22:38:20 +0100
-Bernhard Schmidt <berni@birkenwald.de> wrote:
-
-> On Mon, Jan 19, 2009 at 04:07:25PM -0500, Jeff Layton wrote:
-> 
-> > That said, there's a lot of jumping around in this assembly code and
-> > it's not completely clear to me how it got to the point where it crashed.
-> > We'll probably need to see if this can be independently reproduced. Can
-> > you email along the details of how you're reproducing this? In
-> > particular:
+On Tue, Jan 20 2009, Jens Axboe wrote:
+> On Mon, Jan 19 2009, Mathieu Desnoyers wrote:
+> > * Jens Axboe (jens.axboe@oracle.com) wrote:
+> > > On Sun, Jan 18 2009, Mathieu Desnoyers wrote:
+> > > > I looked at the "ls" behavior (while doing a dd) within my LTTng trace
+> > > > to create a fio job file.  The said behavior is appended below as "Part
+> > > > 1 - ls I/O behavior". Note that the original "ls" test case was done
+> > > > with the anticipatory I/O scheduler, which was active by default on my
+> > > > debian system with custom vanilla 2.6.28 kernel. Also note that I am
+> > > > running this on a raid-1, but have experienced the same problem on a
+> > > > standard partition I created on the same machine.
+> > > > 
+> > > > I created the fio job file appended as "Part 2 - dd+ls fio job file". It
+> > > > consists of one dd-like job and many small jobs reading as many data as
+> > > > ls did. I used the small test script to batch run this ("Part 3 - batch
+> > > > test").
+> > > > 
+> > > > The results for the ls-like jobs are interesting :
+> > > > 
+> > > > I/O scheduler        runt-min (msec)   runt-max (msec)
+> > > > noop                       41             10563
+> > > > anticipatory               63              8185
+> > > > deadline                   52             33387
+> > > > cfq                        43              1420
+> > > 
 > > 
-> > 1) all mount options being used
+> > Extra note : I have a HZ=250 on my system. Changing to 100 or 1000 did
+> > not make much difference (also tried with NO_HZ enabled).
+> > 
+> > > Do you have queuing enabled on your drives? You can check that in
+> > > /sys/block/sdX/device/queue_depth. Try setting those to 1 and retest all
+> > > schedulers, would be good for comparison.
+> > > 
+> > 
+> > Here are the tests with a queue_depth of 1 :
+> > 
+> > I/O scheduler        runt-min (msec)   runt-max (msec)
+> > noop                       43             38235
+> > anticipatory               44              8728
+> > deadline                   51             19751
+> > cfq                        48               427
+> > 
+> > 
+> > Overall, I wouldn't say it makes much difference.
 > 
-> Not more than the ones shown in my original mail. The exact mount
-> command is *checkingfirewall*
+> 0,5 seconds vs 1,5 seconds isn't much of a difference?
 > 
-> mount -t cifs -o user=berni,ip=2001:a60:f001:1::69 //fileserv/pub /pub
+> > > raid personalities or dm complicates matters, since it introduces a
+> > > disconnect between 'ls' and the io scheduler at the bottom...
+> > > 
+> > 
+> > Yes, ideally I should re-run those directly on the disk partitions.
 > 
-> > 2) details on the server (what OS, what version of samba, etc)
-> > 3) version of mount.cifs being used
+> At least for comparison.
 > 
-> The server is a Debian Lenny based i386 system running a self-compiled
-> vanilla 2.6.28 kernel and Debian packaged Samba 3.2.5-3.
+> > I am also tempted to create a fio job file which acts like a ssh server
+> > receiving a connexion after it has been pruned from the cache while the
+> > system if doing heavy I/O. "ssh", in this case, seems to be doing much
+> > more I/O than a simple "ls", and I think we might want to see if cfq
+> > behaves correctly in such case. Most of this I/O is coming from page
+> > faults (identified as traps in the trace) probably because the ssh
+> > executable has been thrown out of the cache by
+> > 
+> > echo 3 > /proc/sys/vm/drop_caches
+> > 
+> > The behavior of an incoming ssh connexion after clearing the cache is
+> > appended below (Part 1 - LTTng trace for incoming ssh connexion). The
+> > job file created (Part 2) reads, for each job, a 2MB file with random
+> > reads each between 4k-44k. The results are very interesting for cfq :
+> > 
+> > I/O scheduler        runt-min (msec)   runt-max (msec)
+> > noop                       586           110242
+> > anticipatory               531            26942
+> > deadline                   561           108772
+> > cfq                        523            28216
+> > 
+> > So, basically, ssh being out of the cache can take 28s to answer an
+> > incoming ssh connexion even with the cfq scheduler. This is not exactly
+> > what I would call an acceptable latency.
 > 
-> The client is Ubuntu Intrepid (8.10) with intrepid-security,
-> intrepid-updates and intrepid-proposed enabled. mount.cifs -V does not
-> work misteriously (displays the usage instruction), the package version
-> is 3.2.3-1ubuntu3.4.
+> At some point, you have to stop and consider what is acceptable
+> performance for a given IO pattern. Your ssh test case is purely random
+> IO, and neither CFQ nor AS would do any idling for that. We can make
+> this test case faster for sure, the hard part is making sure that we
+> don't regress on async throughput at the same time.
 > 
-> All those programs are not changed. After booting into kernel
-> 2.6.27-7.14 (intrepid release) or 2.6.27-9.19 (intrepid-security,
-> intrepid-updates) the above noted mount command works fine, after
-> booting 2.6.27-11.23 (intrepid-proposed) it's broken. I can change
-> between those client kernel versions and reproduce it.
+> Also remember that with your raid1, it's not entirely reasonable to
+> blaim all performance issues on the IO scheduler as per my previous
+> mail. It would be a lot more fair to view the disk numbers individually.
 > 
-> The changes between the working and the non-working version should
-> be as noted in
+> Can you retry this job with 'quantum' set to 1 and 'slice_async_rq' set
+> to 1 as well?
 > 
-> https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-10.20
-> https://launchpad.net/ubuntu/intrepid/+source/linux/2.6.27-11.23
-> 
-> And I've just discovered something. Remind you, I'm trying to mount
-> 2001:a60:f001:1::69. However, after entering the password the system
-> tries to reach another address
-> 
-> 22:31:24.336790 IP6 2001:a60:f001:1:219:66ff:fe8b:a6e > ff02::1:ff00:69:
-> ICMP6, neighbor solicitation, who has 2001:a60:f001:1:55:abe3:0:69,
-> length 32
-> 
-> The (wrong) address changes slightly between consecutive tries, I've seen 
-> 2001:a60:f001:1:4f:abe3:0:69
-> 2001:a60:f001:1:58:abe3:0:69
-> as well.
-> 
-> Also, when I try some other (legal, but unused) address it bails out at
-> another code location, e.g.
-> 
-> mount -t cifs -o user=berni,ip=2001:a60:f001:1:cc::69 //fileserv/pub
-> /pub
-> 
-> results in an immediate (!)
-> 
-> [  486.470983] BUG: unable to handle kernel paging request at 0000cc0c
-> [  486.470992] IP: [<f9c0a3d6>] :cifs:ipv6_connect+0x46/0x1a0
-> [  486.471008] *pde = 00000000
-> [  486.471012] Oops: 0000 [#13] SMP
-> [  486.471016] Modules linked in: nls_cp437 cifs af_packet binfmt_misc rfcomm bridge stp bnep sco l2cap bluetooth kvm_amd kvm ppdev tun ipv6 pci_slot container sbs sbshc video output battery
-> iptable_filter ip_tables x_tables ac parport_pc lp parport serio_raw pcspkr psmouse snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi k8temp snd_rawmidi
-> snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc i2c_piix4 i2c_core evdev dm_multipath scsi_dh pl2303 usbserial fglrx(P) agpgart wmi button shpchp pci_hotplug ext3 jbd
-> mbcache sr_mod cdrom pata_acpi sd_mod crc_t10dif pata_atiixp sg usbhid hid usb_storage libusual ata_generic ahci ohci_hcd ehci_hcd libata usbcore scsi_mod dock r8169 mii dm_mirror dm_log dm_snapshot
-> dm_mod thermal processor fan fbcon tileblit font bitblit softcursor fuse
-> [  486.471076]
-> [  486.471079] Pid: 6607, comm: mount.cifs Tainted: P      D   (2.6.27-11-generic #1)
-> [  486.471082] EIP: 0060:[<f9c0a3d6>] EFLAGS: 00010246 CPU: 0
-> [  486.471092] EIP is at ipv6_connect+0x46/0x1a0 [cifs]
-> [  486.471095] EAX: 0000cc00 EBX: f9c3b094 ECX: 0000001c EDX: c4ecfe44
-> [  486.471097] ESI: c4ecfe44 EDI: c4ecfe54 EBP: c4ecfd94 ESP: c4ecfd7c
-> [  486.471100]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> [  486.471103] Process mount.cifs (pid: 6607, ti=c4ece000 task=ce5abed0 task.ti=c4ece000)
-> [  486.471105] Stack: c4ecfd94 f9c1708b 00000000 f9c3b094 c4eaa000 f9c3b094 c4ecfe64 f9c0bf5c
-> [  486.471112]        c10b1030 c4eac000 c4ecfdcc c0189c8d c4eab000 000280d0 f9c3b094 000a100c
-> [  486.471118]        00000001 caa0e3c0 dbf3e200 0000000c 00000000 00000020 c4ecfe4c c4ecfe0c
-> [  486.471124] Call Trace:
-> [  486.471127]  [<f9c1708b>] ? cifs_inet_pton+0x7b/0x80 [cifs]
-> [  486.471141]  [<f9c0bf5c>] ? cifs_mount+0x46c/0xda0 [cifs]
-> [  486.471151]  [<c0189c8d>] ? prep_new_page+0xdd/0x160
-> [  486.471161]  [<c024e132>] ? idr_get_empty_slot+0xe2/0x270
-> [  486.471167]  [<f9bfddf3>] ? cifs_read_super+0x93/0x1e0 [cifs]
-> [  486.471176]  [<c01b38f0>] ? set_anon_super+0x0/0xd0
-> [  486.471181]  [<f9bfdfa9>] ? cifs_get_sb+0x69/0xc0 [cifs]
-> [  486.471192]  [<c01b468e>] ? vfs_kern_mount+0x5e/0x130
-> [  486.471197]  [<c01b47be>] ? do_kern_mount+0x3e/0xe0
-> [  486.471201]  [<c01cccff>] ? do_new_mount+0x6f/0x90
-> [  486.471206]  [<c01cd242>] ? do_mount+0x1d2/0x1f0
-> [  486.471210]  [<c01ca95d>] ? exact_copy_from_user+0x4d/0xa0
-> [  486.471214]  [<c01caf6e>] ? copy_mount_options+0x6e/0xd0
-> [  486.471218]  [<c01cd2f1>] ? sys_mount+0x91/0xc0
-> [  486.471222]  [<c0103f7b>] ? sysenter_do_call+0x12/0x2f
-> [  486.471227]  =======================
-> [  486.471228] Code: 8b 02 85 c0 0f 84 eb 00 00 00 66 83 7e 02 00 66 c7 06 0a 00 66 c7 45 f2 00 00 75 59 66 c7 46 02 01 bd 8b 07 b9 1c 00 00 00 89 f2 <8b> 58 0c c7 04 24 00 00 00 00 ff 53 10 85 c0 89
-> c3 78 67 8b 07
-> [  486.471257] EIP: [<f9c0a3d6>] ipv6_connect+0x46/0x1a0 [cifs] SS:ESP 0068:c4ecfd7c
-> [  486.471269] ---[ end trace cbe7d886432a8981 ]---#
-> 
-> This looks like an address corruption in the memory, maybe the original
-> BUG was there before and did not trigger because the server was reachable.
-> 
-> Bernhard
-> 
+> However, I think we should be doing somewhat better at this test case.
 
-I've still not been able to reproduce this here though I don't have any
-test boxes with kernels this old and I don't have any 32-bit x86 boxes
-handy. Here's something that may be helpful though. Could you turn up
-cifsFYI, reproduce this and then send along the log messages?
+Mathieu, does this improve anything for you?
 
-# echo 7 > /proc/fs/cifs/cifsFYI
-# mount -t cifs -o user=berni,ip=2001:a60:f001:1:cc::69 //fileserv/pub /pub
-
-...then send along all of the cifs debug messages and the oops message.
-I suspect either the parsing of the ip= option is falling down somehow, or
-in6_pton is failing to translate the address.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index e8525fa..a556512 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1765,6 +1765,32 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ }
+ 
+ /*
++ * Pull dispatched requests from 'cfqq' back into the scheduler
++ */
++static void cfq_pull_dispatched_requests(struct cfq_data *cfqd,
++					 struct cfq_queue *cfqq)
++{
++	struct request_queue *q = cfqd->queue;
++	struct request *rq, *tmp;
++
++	list_for_each_entry_safe(rq, tmp, &q->queue_head, queuelist) {
++		if ((rq->cmd_flags & REQ_STARTED) || RQ_CFQQ(rq) != cfqq)
++			continue;
++
++		/*
++		 * Pull off the dispatch list and put it back into the cfqq
++		 */
++		list_del(&rq->queuelist);
++		cfqq->dispatched--;
++		if (cfq_cfqq_sync(cfqq))
++			cfqd->sync_flight--;
++
++		list_add_tail(&rq->queuelist, &cfqq->fifo);
++		cfq_add_rq_rb(rq);
++	}
++}
++
++/*
+  * Check if new_cfqq should preempt the currently active queue. Return 0 for
+  * no or if we aren't sure, a 1 will cause a preempt.
+  */
+@@ -1820,8 +1846,14 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+  */
+ static void cfq_preempt_queue(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
++	struct cfq_queue *old_cfqq = cfqd->active_queue;
++
+ 	cfq_log_cfqq(cfqd, cfqq, "preempt");
+-	cfq_slice_expired(cfqd, 1);
++
++	if (old_cfqq) {
++		__cfq_slice_expired(cfqd, old_cfqq, 1);
++		cfq_pull_dispatched_requests(cfqd, old_cfqq);
++	}
+ 
+ 	/*
+ 	 * Put the new queue at the front of the of the current list,
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+Jens Axboe
+
