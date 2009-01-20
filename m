@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763052AbZATVMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbZATVzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763052AbZATVMz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 16:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757060AbZATVMp
+	id S1756330AbZATVzL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 16:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZATVy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 16:12:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47951 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756785AbZATVMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 16:12:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: STR/STD OK with -rc2 + selected pending patches (was: [git patches] libata hibernation fixes)
-Date: Tue, 20 Jan 2009 22:12:22 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20081104062734.GA4420@havoc.gtf.org> <200901182352.10036.rjw@sisk.pl> <200901202154.52506.elendil@planet.nl>
-In-Reply-To: <200901202154.52506.elendil@planet.nl>
+	Tue, 20 Jan 2009 16:54:59 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:55637 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbZATVy6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 16:54:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=CCtVt6WFKJWFtAL61BVPNv8lwJ0lnlL4RdnN6GLZMKuqETFr1GPvWgbf/fDr9sO07R
+         9PWyt/f+k/7296KV2hv56EIl9Kfbdp1y5ZqVsqFu/mStCOifv6Uw2XipJwsNLITgG14M
+         g4vcuFbsjqDki4pkQDxeMvG+uDzZv8ejtpAQU=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Tue, 20 Jan 2009 21:48:00 +0000
+Message-ID: <8b67d60901201348r6a59928dw3fcf8c9c823d5c68@mail.gmail.com>
+Subject: [PATCH] dma: fix up broken comparison in dma_alloc_from_coherent
+From: Adrian McMenamin <lkmladrian@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-sh <linux-sh@vger.kernel.org>, penberg@cs.helsinki.fi,
+       dbaryshkov@gmail.com, penguin-kernel@i-love.sakura.ne.jp,
+       Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901202212.22622.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 January 2009, Frans Pop wrote:
-> Just a FYI; most CCs dropped.
-> 
-> Rafael J. Wysocki wrote:
-> > On Sunday 18 January 2009, Frans Pop wrote:
-> >> P.S. .29-rc2 is failing both STR and STD on my HP 2510p :-(
-> >>      Will mail details sometime this week.
-> > 
-> > There are some known problems, so please watch the next report of recent
-> > regressions (most probably tomorrow).
-> 
-> I've been testing -rc2 today with the following patches on top:
-> * hp-wmi: fix regressions caused by missing if statement
-> * double disk spin off fix:
->   Hibernation: Introduce system_entering_hibernation
->   DMI: Introduce dmi_first_match to make the interface more flexible
->   SATA: Blacklisting of systems that spin off disks during ACPI power off
->   SATA AHCI: Blacklist system that spins off disks during ACPI power off
->   SATA Sil: Blacklist system that spins off disks during ACPI power off
->   SATA PIIX: Blacklist system that spins off disks during ACPI power off
-> * selected patches based on regression overview:
->   USB: Fix suspend-resume of PCI USB controllers
->   Revert "x86: signal: change type of paramter for sys_rt_sigreturn()"
->   USB: don't enable wakeup by default for PCI host controllers
->   work_on_cpu: dont try to get_online_cpus() in work_on_cpu.
-> 
-> With that both STR and STD work fine and -rc2 looks pretty good in general 
-> for me. Most "restoring config space" now happens early on resume from 
-> STR, as intended.
-> 
-> One issue so far (fan keeps running), which I'll report separately in 
-> bugzilla.
+Currently this code compares a size in bytes with a size in pages.
+This patch makes both sides of the comparison bytes.
 
-OK, thanks for testing!
 
-Rafael
+Previous code (introduced in commit
+58c6d3dfe436eb8cfb451981d8fdc9044eaf42da) brakes Dreamcast, this code
+has been tested and works on the Dreamcast.
+
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
+
+diff --git a/kernel/dma-coherent.c b/kernel/dma-coherent.c
+index 0387074..8114dd7 100644
+--- a/kernel/dma-coherent.c
++++ b/kernel/dma-coherent.c
+@@ -112,13 +112,13 @@ int dma_alloc_from_coherent(struct device *dev,
+ssize_t size,
+ 	struct dma_coherent_mem *mem;
+ 	int order = get_order(size);
+ 	int pageno;
+
+ 	if (!dev)
+ 		return 0;
+ 	mem = dev->dma_mem;
+ 	if (!mem)
+ 		return 0;
+-	if (unlikely(size > mem->size))
++	if (unlikely(size > mem->size << PAGE_SHIFT))
+  		return 0;
+
+ 	pageno = bitmap_find_free_region(mem->bitmap, mem->size, order);
