@@ -1,146 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762255AbZATNRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbZATNTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762255AbZATNRo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZATNPz
+	id S1761631AbZATNTr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZATNTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:15:55 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:22949 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758131AbZATNPy (ORCPT
+	Tue, 20 Jan 2009 08:19:38 -0500
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:50389 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbZATNTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:15:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fjRZgZsjAud4nlHiYHLrFRZCkGyhb2s4ep2nUQFLpzBREOLX4S29YF27AUcjSx4sH3
-         ccSrTmYlym1hyr2yXHaLlz32QKmuR2eFrRhhVOriCJ9QSgUFAyCUTCmqd3SEaJmIg2f+
-         FhYmREyG4XEePXHbvOavXWSYChK2WMOrvPe6E=
-From: Brian Gerst <brgerst@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Brian Gerst <brgerst@gmail.com>
-Subject: [PATCH 6/6] x86: Merge irq_regs.h
-Date: Tue, 20 Jan 2009 08:15:45 -0500
-Message-Id: <1232457345-12366-6-git-send-email-brgerst@gmail.com>
-X-Mailer: git-send-email 1.6.1
-In-Reply-To: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
+	Tue, 20 Jan 2009 08:19:38 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4975CF70.5080802@gmail.com>
+Date: Tue, 20 Jan 2009 13:19:44 +0000
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Jonathan Cameron <jic23@cam.ac.uk>
+CC: Mark Brown <broonie@sirena.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Liam Girdwood <lrg@kernel.org>
+Subject: regulator: Add disable_on_boot flag to constraints.
+References: <4975BE69.5040106@cam.ac.uk> <20090120124338.GA31521@sirena.org.uk> <4975CAF5.9090607@cam.ac.uk>
+In-Reply-To: <4975CAF5.9090607@cam.ac.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make 64-bit use the same optimizations as 32-bit.
+From: Jonathan Cameron <jic23@cam.ac.uk>
 
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
+regulator: Add disable_on_boot flag to constraints.
+
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+
 ---
- arch/x86/include/asm/irq_regs.h    |   36 +++++++++++++++++++++++++++++++-----
- arch/x86/include/asm/irq_regs_32.h |   31 -------------------------------
- arch/x86/include/asm/irq_regs_64.h |    1 -
- arch/x86/kernel/irq_64.c           |    3 +++
- 4 files changed, 34 insertions(+), 37 deletions(-)
- delete mode 100644 arch/x86/include/asm/irq_regs_32.h
- delete mode 100644 arch/x86/include/asm/irq_regs_64.h
+Changes in response to Mark Browns comments.
 
-diff --git a/arch/x86/include/asm/irq_regs.h b/arch/x86/include/asm/irq_regs.h
-index 89c898a..7784322 100644
---- a/arch/x86/include/asm/irq_regs.h
-+++ b/arch/x86/include/asm/irq_regs.h
-@@ -1,5 +1,31 @@
--#ifdef CONFIG_X86_32
--# include "irq_regs_32.h"
--#else
--# include "irq_regs_64.h"
--#endif
-+/*
-+ * Per-cpu current frame pointer - the location of the last exception frame on
-+ * the stack, stored in the per-cpu area.
-+ *
-+ * Jeremy Fitzhardinge <jeremy@goop.org>
-+ */
-+#ifndef _ASM_X86_IRQ_REGS_H
-+#define _ASM_X86_IRQ_REGS_H
-+
-+#include <asm/percpu.h>
-+
-+#define ARCH_HAS_OWN_IRQ_REGS
-+
-+DECLARE_PER_CPU(struct pt_regs *, irq_regs);
-+
-+static inline struct pt_regs *get_irq_regs(void)
-+{
-+	return percpu_read(irq_regs);
-+}
-+
-+static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
-+{
-+	struct pt_regs *old_regs;
-+
-+	old_regs = get_irq_regs();
-+	percpu_write(irq_regs, new_regs);
-+
-+	return old_regs;
-+}
-+
-+#endif /* _ASM_X86_IRQ_REGS_32_H */
-diff --git a/arch/x86/include/asm/irq_regs_32.h b/arch/x86/include/asm/irq_regs_32.h
-deleted file mode 100644
-index d7ed33e..0000000
---- a/arch/x86/include/asm/irq_regs_32.h
-+++ /dev/null
-@@ -1,31 +0,0 @@
--/*
-- * Per-cpu current frame pointer - the location of the last exception frame on
-- * the stack, stored in the per-cpu area.
-- *
-- * Jeremy Fitzhardinge <jeremy@goop.org>
-- */
--#ifndef _ASM_X86_IRQ_REGS_32_H
--#define _ASM_X86_IRQ_REGS_32_H
+Patch changed to disable_on_boot for more flexibility.
+This only really involved removing the check in the enable code
+found in the previous patch.
+
+This is intended to allow the disabling of regulators during
+registration.  Typical use case is regulators that aren't
+actually connected to anything.
+
+This is against a clean 2.6.29-rc2-git1 tree.
+
+ drivers/regulator/core.c          |   19 ++++++++++++++++++-
+ include/linux/regulator/machine.h |    7 ++++---
+ 2 files changed, 22 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index f511a40..7d57338 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -709,7 +709,14 @@ static int set_machine_constraints(struct
+regulator_dev *rdev,
+             goto out;
+         }
+     }
 -
--#include <asm/percpu.h>
--
--#define ARCH_HAS_OWN_IRQ_REGS
--
--DECLARE_PER_CPU(struct pt_regs *, irq_regs);
--
--static inline struct pt_regs *get_irq_regs(void)
--{
--	return percpu_read(irq_regs);
--}
--
--static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
--{
--	struct pt_regs *old_regs;
--
--	old_regs = get_irq_regs();
--	percpu_write(irq_regs, new_regs);
--
--	return old_regs;
--}
--
--#endif /* _ASM_X86_IRQ_REGS_32_H */
-diff --git a/arch/x86/include/asm/irq_regs_64.h b/arch/x86/include/asm/irq_regs_64.h
-deleted file mode 100644
-index 3dd9c0b..0000000
---- a/arch/x86/include/asm/irq_regs_64.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#include <asm-generic/irq_regs.h>
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index 1db0524..0b254de 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -22,6 +22,9 @@
- DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- EXPORT_PER_CPU_SYMBOL(irq_stat);
++    /* Sanity check */
++    if (constraints->always_on && constraints->disable_on_boot) {
++        printk(KERN_ERR "%s: always on and disable at boot both set for
+%s\n",
++               __func__, name);
++        rdev->constraints = NULL;
++        ret = -EINVAL;
++        goto out;
++    }
+     /* if always_on is set then turn the regulator on if it's not
+      * already on. */
+     if (constraints->always_on && ops->enable &&
+@@ -722,6 +729,16 @@ static int set_machine_constraints(struct
+regulator_dev *rdev,
+             rdev->constraints = NULL;
+             goto out;
+         }
++    } else if (constraints->disable_on_boot && ops->disable &&
++           ((ops->is_enabled && ops->is_enabled(rdev)) ||
++            (!ops->is_enabled && constraints->boot_on))) {
++        ret = ops->disable(rdev);
++        if (ret < 0) {
++            printk(KERN_ERR "%s: failed to disable %s\n",
++                   __func__, name);
++            rdev->constraints = NULL;
++            goto out;
++        }
+     }
  
-+DEFINE_PER_CPU(struct pt_regs *, irq_regs);
-+EXPORT_PER_CPU_SYMBOL(irq_regs);
-+
- /*
-  * Probabilistic stack overflow check:
-  *
--- 
-1.6.1
+     print_constraints(rdev);
+diff --git a/include/linux/regulator/machine.h
+b/include/linux/regulator/machine.h
+index 3794773..fc0a641 100644
+--- a/include/linux/regulator/machine.h
++++ b/include/linux/regulator/machine.h
+@@ -112,10 +112,10 @@ struct regulation_constraints {
+     suspend_state_t initial_state; /* suspend state to set at init */
+ 
+     /* constriant flags */
+-    unsigned always_on:1;    /* regulator never off when system is on */
+-    unsigned boot_on:1;    /* bootloader/firmware enabled regulator */
+-    unsigned apply_uV:1;    /* apply uV constraint iff min == max */
++    unsigned always_on:1;        /* regulator never off when system on */
++    unsigned boot_on:1;        /* bootloader/firmware enabled reg */
++    unsigned disable_on_boot:1;    /* regulator to be disabled at boot */
++    unsigned apply_uV:1;        /* apply uV constraint iff min == max */
+ };
+ 
+ /**
+
+
 
