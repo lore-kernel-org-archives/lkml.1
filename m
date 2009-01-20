@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZATHdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbZATHf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbZATHdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZATHdM
+	id S1759295AbZATHf3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbZATHfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:33:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:50249 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754521AbZATHdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:33:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N97TdS7ZSxiXxmSAYl8ElcAD32mrDB/HMOVSQ6JvM3mmSTf/UveGK/vpTg3vgj9y3C
-         R8an+vkvUvgUVYbG933HEV5/FnSGfeXo1ynPFjlHYFhvAxQSWC5IXk4aBilzGnxmt9d7
-         U9WF3P9Txb+75WZJlwk/Ps+WgIoOjjSkaYzuA=
-Message-ID: <8db1092f0901192333p31d7b924o6a00084851376578@mail.gmail.com>
-Date: Tue, 20 Jan 2009 08:33:07 +0100
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/6] SATA PIIX: Blacklist system that spins off disks during ACPI power off
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Frans Pop" <elendil@planet.nl>,
-       tj@kernel.org, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200901192059.23448.rjw@sisk.pl>
+	Tue, 20 Jan 2009 02:35:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36854 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752420AbZATHfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:35:19 -0500
+Date: Tue, 20 Jan 2009 08:33:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: ebiederm@xmission.com, roland@redhat.com, bastian@waldi.eu.org,
+       daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7][v7] proc: Show SIG_DFL signals to init as
+	"ignored" signals
+Message-ID: <20090120073305.GA29130@redhat.com>
+References: <20090117202638.GA11825@us.ibm.com> <20090117203753.GH11825@us.ibm.com> <20090117221909.GB3962@redhat.com> <20090120010453.GA14612@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081104062734.GA4420@havoc.gtf.org> <49739371.5030107@garzik.org>
-	 <200901192053.50831.rjw@sisk.pl> <200901192059.23448.rjw@sisk.pl>
+In-Reply-To: <20090120010453.GA14612@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On 01/19, Sukadev Bhattiprolu wrote:
 >
-> Some notebooks from HP have the problem that their BIOSes attempt to
-> spin down hard drives before entering ACPI system states S4 and S5.
-> This leads to a yo-yo effect during system power-off shutdown and the
-> last phase of hibernation when the disk is first spun down by the
-> kernel and then almost immediately turned on and off by the BIOS.
-> This, in turn, may result in shortening the disk's life times.
+> Oleg Nesterov [oleg@redhat.com] wrote:
+> | On 01/17, Sukadev Bhattiprolu wrote:
+> | >
+> | > Init processes ignore SIG_DFL signals unless they are from an ancestor
+> | > namespace.  Ensure /proc/pid/status correcly reports these signals.
+> |
+> | This is the user-visible change, and I don't really understand why do we
+> | need it.
 >
-> To prevent this from happening we can blacklist the affected systems
-> using DMI information.
+> This discussion came up earlier, with Bastian and Roland and my understanding
+> was that we should fix the SigIgn line in /proc/pid/status - so I had added
+> a TODO for this patchset.
+
+Hmm. I must admit I don't understand what this patch buys us. Admin should
+know that init is special and can't be killed by the SIG_DFL signal.
+
+Now we change the contents if pid/status, and every user-visible change
+should have a good reason, imho.
+
+> | Imho, this patch can confuse the user-space. Why should we report that,
+> | say, SIGCONT is ignored by the global init?
 >
-> Blacklist HP 2510p that uses the ata_piix driver.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> But it is ignored right ?
 
-Tested-by: Maciej Rutecki <maciej.rutecki@gmail.com>
+Following this logic, we can report that, say, SIG_DFL'ed SIGWINCH is always
+ignored by any task, not only by init?
 
-Tested on HP Compaq nx6310
+> Also, if user space looks at the SigIgn line and assumes that SIGKILL or
+> SIGUSR1 will kill init, user space can still be confused when it doesn't
+> really kill - no ?
 
-Thanks for patches
+yes, but this is oddity is very old.
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+But, otoh, SIGCHLD. There is a huge difference between SIG_IGN and SIG_DFL
+in that case, why should we hide it?
+
+More generally, why should we hide from admin what init does with signals?
+
+> So, should I just post separately or drop altogether ?
+
+I guess you already see that personally I dislike this patch ;) At least
+I'd ask you to not mix it with this series.
+
+But perhaps I am wrong, I can't "prove" this change is not good, I'd be
+ready to agree with majority.
+
+Oleg.
+
