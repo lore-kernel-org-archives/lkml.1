@@ -1,294 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbZATBd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761896AbZATBed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762608AbZATBd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbZATBdL
+	id S1761896AbZATBed (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbZATBdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:33:11 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:42102 "EHLO relay.sgi.com"
+	Mon, 19 Jan 2009 20:33:13 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:42105 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752314AbZATBdH (ORCPT
+	id S1752526AbZATBdH (ORCPT
 	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
 	Mon, 19 Jan 2009 20:33:07 -0500
-Message-Id: <20090120013258.645885000@sgi.com>
+Message-Id: <20090120013259.082769000@sgi.com>
 References: <20090120012930.020621000@sgi.com>
 User-Agent: quilt/0.44-16.4
-Date: Tue, 20 Jan 2009 12:29:33 +1100
+Date: Tue, 20 Jan 2009 12:29:35 +1100
 From: Greg Banks <gnb@sgi.com>
 To: Linux Kernel ML <linux-kernel@vger.kernel.org>
 Cc: Linux NFS ML <linux-nfs@vger.kernel.org>,
        Linux NFSv4 ML <nfsv4@linux-nfs.org>,
        SystemTAP ML <systemtap@sources.redhat.com>
-Subject: [patch 3/5] Make the dprintk() macro record information about the callsite
-Content-Disposition: inline; filename=gnb-make-dprintk-record-callsite-info
+Subject: [patch 5/5] Add a module to test the dprintk module.
+Content-Disposition: inline; filename=gnb-add-test-dprintk-module
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the definition of dprintk() to generate an array of records in
-a special new .dprintk section, which describe the module, filename,
-line number, function, and printk format of each dprintk.
-
 Signed-off-by: Greg Banks <gnb@sgi.com>
 ---
 
- include/linux/dprintk.h        |   91 ++++++++++++++++++++++++++++++
- include/linux/lockd/debug.h    |    6 -
- include/linux/nfs_fs.h         |   18 -----
- include/linux/nfsd/debug.h     |   12 +--
- include/linux/sunrpc/debug.h   |   29 +++++++--
- net/sunrpc/cache.c             |    2 
- net/sunrpc/xprtrdma/rpc_rdma.c |    2 
- 7 files changed, 124 insertions(+), 36 deletions(-)
+ init/Kconfig          |    8 ++++
+ kernel/Makefile       |    1 
+ kernel/test-dprintk.c |   67 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+)
 
-Index: bfields/include/linux/dprintk.h
+Index: bfields/kernel/test-dprintk.c
 ===================================================================
 --- /dev/null
-+++ bfields/include/linux/dprintk.h
-@@ -0,0 +1,91 @@
-+/*
-+ * dprintk.h - a generic /proc interface for enabling individual debugging printks.
-+ *
-+ * By Greg Banks <gnb@melbourne.sgi.com>
-+ * Copyright (c) 2008 Silicon Graphics Inc.  All Rights Reserved.
-+ * $Id: dprintk.h,v 1.1 2008/09/04 04:46:06 gnb Exp $
-+ */
-+#ifndef _LINUX_DPRINTK_H_
-+#define _LINUX_DPRINTK_H_ 1
-+
++++ bfields/kernel/test-dprintk.c
+@@ -0,0 +1,67 @@
 +#include <linux/kernel.h>
 +#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/proc_fs.h>
++#include <asm/uaccess.h>
++#include <linux/dprintk.h>
 +
-+/*
-+ * An instance of this structure is created in a special
-+ * ELF section at every dprintk() callsite.  At runtime,
-+ * the special section is treated as an array of these.
-+ */
-+struct _dprintk
++int foo(int x)
 +{
-+	/*
-+	 * These fields are used to drive the /proc user interface
-+	 * for selecting and displaying dprintk() callsites.
-+	 */
-+	const char *function;
-+	const char *filename;
-+	const char *format;
-+	unsigned int lineno;
-+	/*
-+	 * This magic number helps finding the bound of the special
-+	 * ELF section (for various stupid reasons we don't have an
-+	 * accurate idea of the end of the loaded section).
-+	 */
-+#define _DPRINTK_MAGIC		0xc0ffee
-+	unsigned int magic:24;
-+	/*
-+	 * The flags field controls the behaviour at the callsite.
-+	 * The bits here are changed dynamically when the user
-+	 * writes commands to /proc/dprintk.
-+	 */
-+#define _DPRINTK_FLAGS_PRINT	(1<<0)	/* printk() a message using the format */
-+#define _DPRINTK_FLAGS_STACK	(1<<1)	/* print a kernel stack using dump_stack() */
-+#define _DPRINTK_FLAGS_CRASH	(1<<2)	/* cause a kernel crash for debugging */
-+#define _DPRINTK_FLAGS_DEFAULT	0
-+	unsigned int flags:8;
++	dprintk("foo: x=%d\n", x);
++	return x+42;
++}
++
++int bar(int x)
++{
++	dprintk("bar: x=%d\n", x);
++	return x-3;
++}
++
++static ssize_t exp_write(struct file *file, const char __user *ubuf,
++		         size_t len, loff_t *offp)
++{
++	char tmp[8];
++
++	if (*offp != 0 || len == 0)
++		return 0;
++	if (len > sizeof(tmp))
++		len = sizeof(tmp);
++
++	if (copy_from_user(tmp, ubuf, len))
++		return -EFAULT;
++
++	switch (tmp[0]) {
++	case 'f': foo(100); break;
++	case 'b': bar(100); break;
++	}
++
++	*offp += len;
++	return len;
++}
++
++static struct file_operations exp_fops = {
++	.write = exp_write,
 +};
 +
++static int __init exp_init(void)
++{
++	struct proc_dir_entry *pde;
 +
-+/*
-+ * Basic callsite functionality.  The `cond' argument allows
-+ * the caller to add an extra logical condition to the check
-+ * for printk().  The NFS code uses that to implement a
-+ * dfprintk() macro which is dprintk() with an additional
-+ * check of the NFS global debug bitmasks.
-+ */
-+#define __dprintk(cond, fmt, ...)				\
-+do {								\
-+	static struct _dprintk					\
-+		__attribute__((section(".dprintk"))) _dp = {	\
-+		.function = __FUNCTION__,			\
-+		.filename = __FILE__,				\
-+		.format = fmt,					\
-+		.lineno = __LINE__,				\
-+		.magic = _DPRINTK_MAGIC,			\
-+		.flags = _DPRINTK_FLAGS_DEFAULT			\
-+	};							\
-+	if (unlikely(_dp.flags || (cond)))			\
-+		printk(_dp.format, ## __VA_ARGS__);		\
-+	if (unlikely(_dp.flags & _DPRINTK_FLAGS_STACK))		\
-+		dump_stack();					\
-+	BUG_ON(_dp.flags & _DPRINTK_FLAGS_CRASH);		\
-+} while(0)
++	printk("exp_init:\n");
 +
-+/*
-+ * Default definition of dprintk_check.  This macro exists
-+ * only to allow calling code to redefine it to add extra
-+ * logic which enables dprintk() callsites in ways other
-+ * than the individual callsite flags.  For example, NFS
-+ * uses this to implement backwards-compatible global debug
-+ * bitmasks.
-+ */
-+#ifndef dprintk_check
-+#define dprintk_check   0
-+#endif
++	pde = proc_create("foobar", 0200, NULL, &exp_fops);
 +
-+/*
-+ * This is the macro that most calling code should be using.
-+ */
-+#define dprintk(fmt, ...)   __dprintk(dprintk_check, fmt, ## __VA_ARGS__)
++	return 0;
++}
 +
-+#endif /* _LINUX_DPRINTK_H_ */
-Index: bfields/include/linux/lockd/debug.h
++static void __exit exp_cleanup(void)
++{
++	printk("exp_cleanup:\n");
++	remove_proc_entry("foobar", NULL);
++}
++
++MODULE_LICENSE("GPL");
++module_init(exp_init);
++module_exit(exp_cleanup);
++
++/* vim:set ai sw=8 sts=8: */
+Index: bfields/kernel/Makefile
 ===================================================================
---- bfields.orig/include/linux/lockd/debug.h
-+++ bfields/include/linux/lockd/debug.h
-@@ -21,11 +21,9 @@
- # define LOCKD_DEBUG		1
- #endif
+--- bfields.orig/kernel/Makefile
++++ bfields/kernel/Makefile
+@@ -90,6 +90,7 @@ obj-$(CONFIG_TRACING) += trace/
+ obj-$(CONFIG_SMP) += sched_cpupri.o
+ obj-$(CONFIG_SLOW_WORK) += slow-work.o
+ obj-$(CONFIG_DPRINTK) += dprintk.o
++obj-$(CONFIG_DPRINTK_TEST) += test-dprintk.o
  
--#undef ifdebug
- #if defined(RPC_DEBUG) && defined(LOCKD_DEBUG)
--# define ifdebug(flag)		if (unlikely(nlm_debug & NLMDBG_##flag))
--#else
--# define ifdebug(flag)		if (0)
-+# undef debugcheck
-+# define debugcheck(fac)	(nlm_debug & NLMDBG_##fac)
- #endif
- 
- #endif /* __KERNEL__ */
-Index: bfields/include/linux/nfsd/debug.h
+ ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+Index: bfields/init/Kconfig
 ===================================================================
---- bfields.orig/include/linux/nfsd/debug.h
-+++ bfields/include/linux/nfsd/debug.h
-@@ -36,13 +36,9 @@
- #define NFSDDBG_NOCHANGE	0xFFFF
+--- bfields.orig/init/Kconfig
++++ bfields/init/Kconfig
+@@ -849,6 +849,14 @@ config DPRINTK
  
+ 	    See Documentation/dprintk-howto.txt for more details.
  
--#ifdef __KERNEL__
--# undef ifdebug
--# ifdef NFSD_DEBUG
--#  define ifdebug(flag)		if (nfsd_debug & NFSDDBG_##flag)
--# else
--#  define ifdebug(flag)		if (0)
--# endif
--#endif /* __KERNEL__ */
-+#if defined(__KERNEL__) && defined(NFSD_DEBUG)
-+# undef debugcheck
-+# define debugcheck(fac)	(nfsd_debug & NFSDDBG_##fac)
-+#endif
++config DPRINTK_TEST
++	default n
++	depends on DPRINTK
++	tristate "Test module for the dprintk module"
++
++	help
++	    Enable this only if you are developing the dprintk module.
++
+ endmenu		# General setup
  
- #endif /* LINUX_NFSD_DEBUG_H */
-Index: bfields/include/linux/nfs_fs.h
-===================================================================
---- bfields.orig/include/linux/nfs_fs.h
-+++ bfields/include/linux/nfs_fs.h
-@@ -598,22 +598,10 @@ extern void * nfs_root_data(void);
- #define NFSDBG_FSCACHE		0x0800
- #define NFSDBG_ALL		0xFFFF
- 
--#ifdef __KERNEL__
--
--/*
-- * Enable debugging support for nfs client.
-- * Requires RPC_DEBUG.
-- */
--#ifdef RPC_DEBUG
-+#if defined(__KERNEL__) && defined(RPC_DEBUG)
- # define NFS_DEBUG
-+# undef debugcheck
-+# define debugcheck(fac)	(nfs_debug & NFSDBG_##fac)
- #endif
- 
--# undef ifdebug
--# ifdef NFS_DEBUG
--#  define ifdebug(fac)		if (unlikely(nfs_debug & NFSDBG_##fac))
--# else
--#  define ifdebug(fac)		if (0)
--# endif
--#endif /* __KERNEL */
--
- #endif
-Index: bfields/include/linux/sunrpc/debug.h
-===================================================================
---- bfields.orig/include/linux/sunrpc/debug.h
-+++ bfields/include/linux/sunrpc/debug.h
-@@ -30,6 +30,7 @@
- 
- #include <linux/timer.h>
- #include <linux/workqueue.h>
-+#include <linux/dprintk.h>
- 
- /*
-  * Enable RPC debugging/profiling.
-@@ -41,6 +42,20 @@
- 
- /*
-  * Debugging macros etc
-+ *
-+ * The RPC (and NFS etc) code can do the following:
-+ *
-+ * a) at the start of a .c file set up the default
-+ *    debug bit to be used for all dprintk()s, e.g.
-+ *   #define RPCDBG_FACILITY  RPCDBG_MISC
-+ *
-+ * b) call dprintk(), to do a debug print conditional
-+ *    on the default debug bit, e.g.
-+ *   dprintk("nfsd: write complete err=%d\n", err);
-+ *
-+ * c) call dfprintk(), to do a debug print conditional
-+ *    on a specified non-default debug bit, e.g.
-+ *   dfprintk(VFS, "NFS: find_dirent_index() returns %d\n", status);
-  */
- #ifdef RPC_DEBUG
- extern unsigned int		rpc_debug;
-@@ -49,15 +64,15 @@ extern unsigned int		nfsd_debug;
- extern unsigned int		nlm_debug;
- #endif
- 
--#define dprintk(args...)	dfprintk(FACILITY, ## args)
--
--#undef ifdebug
--#ifdef RPC_DEBUG			
--# define ifdebug(fac)		if (unlikely(rpc_debug & RPCDBG_##fac))
--# define dfprintk(fac, args...)	do { ifdebug(fac) printk(args); } while(0)
-+#ifdef RPC_DEBUG
-+# define debugcheck(fac)	(rpc_debug & RPCDBG_##fac)
-+# undef dprintk_check
-+# define dprintk_check		debugcheck(FACILITY)
-+# define dfprintk(fac, args...)	__dprintk(debugcheck(fac), args)
- # define RPC_IFDEBUG(x)		x
- #else
--# define ifdebug(fac)		if (0)
-+# undef dprintk
-+# define dprintk(args...)	do ; while (0)
- # define dfprintk(fac, args...)	do ; while (0)
- # define RPC_IFDEBUG(x)
- #endif
-Index: bfields/net/sunrpc/cache.c
-===================================================================
---- bfields.orig/net/sunrpc/cache.c
-+++ bfields/net/sunrpc/cache.c
-@@ -1236,7 +1236,7 @@ static int c_show(struct seq_file *m, vo
- 	if (p == SEQ_START_TOKEN)
- 		return cd->cache_show(m, cd, NULL);
- 
--	ifdebug(CACHE)
-+	if (unlikely(debugcheck(CACHE)))
- 		seq_printf(m, "# expiry=%ld refcnt=%d flags=%lx\n",
- 			   h->expiry_time, atomic_read(&h->ref.refcount), h->flags);
- 	cache_get(h);
-Index: bfields/net/sunrpc/xprtrdma/rpc_rdma.c
-===================================================================
---- bfields.orig/net/sunrpc/xprtrdma/rpc_rdma.c
-+++ bfields/net/sunrpc/xprtrdma/rpc_rdma.c
-@@ -568,7 +568,7 @@ rpcrdma_count_chunks(struct rpcrdma_rep 
- 	total_len = 0;
- 	while (i--) {
- 		struct rpcrdma_segment *seg = &cur_wchunk->wc_target;
--		ifdebug(FACILITY) {
-+		if (unlikely(debugcheck(FACILITY))) {
- 			u64 off;
- 			xdr_decode_hyper((__be32 *)&seg->rs_offset, &off);
- 			dprintk("RPC:       %s: chunk %d@0x%llx:0x%x\n",
+ config HAVE_GENERIC_DMA_COHERENT
 
 --
 -- 
