@@ -1,131 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbZATB0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762019AbZATB0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbZATB0Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZATBZ6
+	id S1762019AbZATB0g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZATB0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:25:58 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:31667 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbZATBZ5 (ORCPT
+	Mon, 19 Jan 2009 20:26:22 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:26694 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754763AbZATB0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:25:57 -0500
-Message-ID: <49752823.9020403@ct.jp.nec.com>
-Date: Mon, 19 Jan 2009 17:25:55 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 19 Jan 2009 20:26:21 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=dlxXFjxAFaTF1w+wowgWZl5arheWjc59ZXulX0PgnZ28hGDnDxTxNFKPd7UE73Mhk
+	yROQK1viOWGDdQN70DynA==
 MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com>
-In-Reply-To: <49751BA0.1040004@gawab.com>
+In-Reply-To: <4972E30A.6080107@cn.fujitsu.com>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com>
+	 <20090116125738.22c21bf2.akpm@linux-foundation.org>
+	 <4972E30A.6080107@cn.fujitsu.com>
+Date: Mon, 19 Jan 2009 17:26:17 -0800
+Message-ID: <6599ad830901191726x7adbcccev31dea73efc938dff@mail.gmail.com>
+Subject: Re: [PATCH 2/3] cgroup: introduce cgroup_queue_deferred_work()
+From: Paul Menage <menage@google.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, miaox@cn.fujitsu.com,
+       maxk@qualcomm.com, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.36
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru wrote:
-> Justin P. Mattock wrote:
->> Justin Madru wrote:
->>> So far only a connection to talkgadget.google.com or the 2 tabs in 
->>> preferences make firefox crash.
->>> Other than that I've yet to run into another site that makes it 
->>> crash, and can browse just fine.
->>> Actually, other than this bug .29-rc2 is running rather nicely ;-)
->>>
->>> Ok, this time I maded sure I uninstalled/disabled everything I could.
->>> Sill.... same results. So, I decided to try something different. Test 
->>> with Epiphany.
->>> I tried both with the geko and webkit backends.
->>> Same results, a crash when going to my iGoogle page that has google 
->>> talk applet.
->>>
->>> But, this time epiphany left an error to the console that gives a 
->>> clue to the cause:
->>>
->>> $ epiphany-webkit                                                ** 
->>> (epiphany-webkit:9016): WARNING **: Cannot extract frame (0,0) from 
->>> the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (36,0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (72,0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (108, 0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (144, 0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (180, 0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (216, 0) 
->>> from the grid
->>> ** (epiphany-webkit:9016): WARNING **: Cannot extract frame (252, 0) 
->>> from the grid
->>> console message:  @1: Unsafe JavaScript attempt to access frame with URL
->>> http://1.gmodules.com/ig/ifr?view=home&url=http://www.google.com/ig/modules/youtube_igoogle/v2/youtube.xml&nocache=0&up_title=YouTube&up_username=&up_prefs_version=0&up_search_channels=0&up_search_channel_name0=&up_search_channel_url0=&up_search_channel_name1=&up_search_channel_url1=&up_search_channel_name2=&up_search_channel_url2=&up_current_channel_id=0&up_rawQuery=&up_channel_url_to_preload=http://gdata.youtube.com/feeds/api/standardfeeds/US/recently_featured%3Falt%3Djson&lang=en&country=us&.lang=en&.country=us&synd=ig&mid=1&ifpctok=-8098139156870189641&parent=http://www.google.com&extern_js=/extern_js/f/CgJlbhICdXMrMBU4ACw/BrDZK7EjJT4.js 
->>>
->>> from frame with URL
->>> http://www.google.com/ig/ifpc_relay#%22remote_iframe_1%22&0&1&0&%22%2522remote_iframe_1%2522%26%2522resize_iframe%2522%26%2522%2522%26%2522%2522%26%2522remote_iframe_1%2522%26369%26%25221%2522%22&true. 
->>>
->>> Domains, protocols and ports must match.
->>> console message:  @1: Unsafe JavaScript attempt to access frame
->>> with URL http://www.google.com/ig from frame with URL
->>> http://talkgadget.google.com/talkgadget/mole?id=gth-hover-card&hl=en#id=gth-hover-card. 
->>>
->>> Domains, protocols and ports must match.
->>> console message:  @1: Unsafe JavaScript attempt to access frame
->>> with URL http://www.google.com/ig from frame with URL
->>> http://talkgadget.google.com/talkgadget/blank. Domains,
->>> protocols and ports must match.
->>> Segmentation fault
->>>
->>> So, it's complaining about matching domains, protocols and ports.
->>> Henceforth, I would surmise that the bug is related to the network code?
->>>
->>> Justin Madru
->>>
->> Well positive side is you can at least  grab youre news and info.
->> bad side is you can't access igoogle(or whatever it's called).
->>
->> Domains, protocols and ports must match.
->> probably the culprit(if you found the correct location
->> that's causing this);
->>
->> regards;
->>
->> Justin P. Mattock
->>
-> Ok, finally bisected the bug, but the commit isn't related to networking!
-> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> on current git and that fixed the bug.
-> 
-> By the way, how do I undo my git revert, so I'm back to a pristine tree?
-> I want to drop my changes - the revert.
-> Also how do I find the commit that merged/pulled in this commit?
-> 
-> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Date:   Fri Dec 5 17:17:09 2008 -0800
-> 
->     x86: signal: change type of paramter for sys_rt_sigreturn()
-> 
->     Impact: cleanup on 32-bit
-> 
->     Peter pointed this parameter can be changed.
-> 
->     Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On Sun, Jan 18, 2009 at 12:06 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> Sometimes we need require a lock to prevent something,
+> but this lock cannot nest in cgroup_lock. So this work
+> should be moved out of cgroup_lock's critical region.
+>
+> Using schedule_work() can move this work out of cgroup_lock's
+> critical region. But it's a overkill for move a work to
+> other process. And if we need flush_work() with cgroup_lock
+> held, schedule_work() can not work for flush_work() will
+> cause deadlock.
+>
+> Another solution is that deferring the work, and processing
+> it after cgroup_lock released. This patch introduces
+> cgroup_queue_deferred_work() for queue a cgroup_deferred_work.
 
-Hi,
-thanks for reporting.
+I agree with Ingo - this seems rather complex. I think it would be
+cleaner to address specific lock-dependency cases individually - in
+some cases we can punt to a work queue; in other cases we can sanitize
+the locking, etc.
 
-I'm not sure why this commit affects.
-Can you check vmlinux? size, objdump, etc.
-On my environment, the generated code looks same.
+Paul
 
-Thanks,
-Hiroshi
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Max Krasnyansky <maxk@qualcomm.com>
+> Cc: Miao Xie <miaox@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index e267e62..6d3e6dc 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -437,6 +437,19 @@ void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
+>  int cgroup_scan_tasks(struct cgroup_scanner *scan);
+>  int cgroup_attach_task(struct cgroup *, struct task_struct *);
+>
+> +struct cgroup_deferred_work {
+> +       struct list_head list;
+> +       void (*func)(struct cgroup_deferred_work *);
+> +};
+> +
+> +#define CGROUP_DEFERRED_WORK(name, function)           \
+> +       struct cgroup_deferred_work name = {            \
+> +               .list = LIST_HEAD_INIT((name).list),    \
+> +               .func = (function),                     \
+> +       };
+> +
+> +int cgroup_queue_deferred_work(struct cgroup_deferred_work *deferred_work);
+> +
+>  #else /* !CONFIG_CGROUPS */
+>
+>  static inline int cgroup_init_early(void) { return 0; }
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index c298310..75a352b 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -540,6 +540,7 @@ void cgroup_lock(void)
+>        mutex_lock(&cgroup_mutex);
+>  }
+>
+> +static void cgroup_flush_deferred_work_locked(void);
+>  /**
+>  * cgroup_unlock - release lock on cgroup changes
+>  *
+> @@ -547,9 +548,80 @@ void cgroup_lock(void)
+>  */
+>  void cgroup_unlock(void)
+>  {
+> +       cgroup_flush_deferred_work_locked();
+>        mutex_unlock(&cgroup_mutex);
+>  }
+>
+> +/* deferred_work_list is protected by cgroup_mutex */
+> +static LIST_HEAD(deferred_work_list);
+> +
+> +/* flush deferred works with cgroup_lock released */
+> +static void cgroup_flush_deferred_work_locked(void)
+> +{
+> +       static bool running_deferred_work;
+> +
+> +       if (likely(list_empty(&deferred_work_list)))
+> +               return;
+> +
+> +       /*
+> +        * Ensure it's not recursive and also
+> +        * ensure deferred works are run orderly.
+> +        */
+> +       if (running_deferred_work)
+> +               return;
+> +       running_deferred_work = true;
+> +
+> +       for ( ; ; ) {
+> +               struct cgroup_deferred_work *deferred_work;
+> +
+> +               /* dequeue the first work, and mark it dequeued */
+> +               deferred_work = list_first_entry(&deferred_work_list,
+> +                               struct cgroup_deferred_work, list);
+> +               list_del_init(&deferred_work->list);
+> +
+> +               mutex_unlock(&cgroup_mutex);
+> +
+> +               /*
+> +                * cgroup_mutex is released. The callback function can use
+> +                * cgroup_lock()/cgroup_unlock(). This behavior is safe
+> +                * for running_deferred_work is set to 'true'.
+> +                */
+> +               deferred_work->func(deferred_work);
+> +
+> +               /*
+> +                * regain cgroup_mutex to access deferred_work_list
+> +                * and running_deferred_work.
+> +                */
+> +               mutex_lock(&cgroup_mutex);
+> +
+> +               if (list_empty(&deferred_work_list))
+> +                       break;
+> +       }
+> +
+> +       running_deferred_work = false;
+> +}
+> +
+> +/**
+> + * cgroup_queue_deferred_work - queue a deferred work
+> + * @deferred_work: work to queue.
+> + *
+> + * Returns 0 if @deferred_work was already on the queue, non-zero otherwise.
+> + *
+> + * Must be called when cgroup_lock held.
+> + * The deferred work will be run after cgroup_lock released.
+> + */
+> +int cgroup_queue_deferred_work(struct cgroup_deferred_work *deferred_work)
+> +{
+> +       int ret = 0;
+> +
+> +       if (list_empty(&deferred_work->list)) {
+> +               list_add_tail(&deferred_work->list, &deferred_work_list);
+> +               ret = 1;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+>  /*
+>  * A couple of forward declarations required, due to cyclic reference loop:
+>  * cgroup_mkdir -> cgroup_create -> cgroup_populate_dir ->
+>
+>
+>
+>
+>
