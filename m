@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZATWfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbZATWh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbZATWfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZATWfg
+	id S1760008AbZATWh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbZATWhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:35:36 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:23308 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbZATWff (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:35:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DsRFAnMHRnewuzQevFPnW/HGGxzurXWOA4JWvVN81q7oRPuJ6JGbW8tjaZD2jGegcj
-         qKlnqM1QYEmFvfUvG2LUb9QzdgoB5EFWcj9wIADzDoJENvZskFxF4pePfeOEmSSngy/h
-         BawzKMwXv50z8fV/Y3EgFodoOYGDmm33vxOxk=
-Message-ID: <81b0412b0901201435mabecad3i66957a6463140b82@mail.gmail.com>
-Date: Tue, 20 Jan 2009 23:35:32 +0100
-From: "Alex Riesen" <raa.lkml@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Bug #12468] Crash in acpi_cpufreq_init
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Alex Riesen" <fork0@users.sf.net>
-In-Reply-To: <20090120142312.GB10224@elte.hu>
+	Tue, 20 Jan 2009 17:37:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48312 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751739AbZATWhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:37:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Lamparter <chunkeey@web.de>
+Subject: Re: [PATCH -stable] p54usb: fix traffic stalls / packet drop
+Date: Tue, 20 Jan 2009 23:36:29 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Greg KH gr <gregkh@suse.de>, Artur Skawina <art.08.09@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>,
+       "Linux wireless" <linux-wireless@vger.kernel.org>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.vUD.KKRdJB@chimera> <200901202311.11854.chunkeey@web.de>
+In-Reply-To: <200901202311.11854.chunkeey@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera>
-	 <2QN7KFic7LG.A.sgH.t9QdJB@chimera>
-	 <81b0412b0901191633y130c4cf0w5531af81c3749ee2@mail.gmail.com>
-	 <20090120142312.GB10224@elte.hu>
+Message-Id: <200901202336.30083.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/20 Ingo Molnar <mingo@elte.hu>:
->
-> * Alex Riesen <raa.lkml@gmail.com> wrote:
->
->> 2009/1/19 Rafael J. Wysocki <rjw@sisk.pl>:
->> > This message has been generated automatically as a part of a report
->> > of recent regressions.
->> >
->> > The following bug entry is on the current list of known regressions
->> > from 2.6.28.  Please verify if it still should be listed and let me know
->> > (either way).
->> >
->>
->> The regression is still present.
->
-> should be fixed by the pending x86 fixes:
->
->   git pull git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
->
-> does it work fine if you pull that tree?
+On Tuesday 20 January 2009, Christian Lamparter wrote:
+> All p54usb devices need a explicit termination packet, in oder to finish the pending transfer properly.
+> Else, the firmware could freeze, or simply drop the frame.
+> 
+> Signed-off-by: Christian Lamparter <chunkeey@web.de>
+> Cc: stable <stable@kernel.org>
+> ---
+> Attached is the patch is for the stable series only.
+> Bugzilla reference: http://bugzilla.kernel.org/show_bug.cgi?id=12260
+> (wireless-testing needs a different one)
+> 
+> Rafael, I hope we can close this bug. Greg?
 
-Yep. No crashing anymore. The commits starting from 31ad908 (work_on_cpu...)
-seem to do the fixing.
+Sure, we can.
+
+Thanks,
+Rafael
