@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762705AbZATUHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZATUH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762705AbZATUHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 15:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbZATUH2
+	id S1757685AbZATUH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 15:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762758AbZATUHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 15:07:28 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:59055 "EHLO
+	Tue, 20 Jan 2009 15:07:47 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:59073 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755904AbZATUH1 (ORCPT
+	with ESMTP id S1756862AbZATUHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 15:07:27 -0500
+	Tue, 20 Jan 2009 15:07:46 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
 	references:in-reply-to:content-type:
 	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=X0dRo22TXnc4ONNEVXk/k+jzsoP1XDTaII9O29lJZwZoKZhyaXzYnhFbMV7hYZqFt
-	aAZ0c2oXAExQzr+YcOyGQ==
-Message-ID: <49762EF1.3000001@google.com>
-Date: Tue, 20 Jan 2009 12:07:13 -0800
+	b=aoXPJkT9xbYczkk2sutWgj67dgdyZiSZuI+ZmdigkDSX4AzuB6MIsM0mjDEuIPCkb
+	zgz6/YDyr3d81f0vFiPqg==
+Message-ID: <49762F07.1050404@google.com>
+Date: Tue, 20 Jan 2009 12:07:35 -0800
 From: Mike Waychison <mikew@google.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
 To: Evgeniy Polyakov <zbr@ioremap.net>
 CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v1 1/8] Deferred batching of dput()
-References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <20090117022942.20425.15217.stgit@crlf.corp.google.com> <20090117101501.GA2682@ioremap.net>
-In-Reply-To: <20090117101501.GA2682@ioremap.net>
+Subject: Re: [PATCH v1 3/8] Deferred batching of iput()
+References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <20090117022952.20425.91639.stgit@crlf.corp.google.com> <20090117101809.GB2682@ioremap.net>
+In-Reply-To: <20090117101809.GB2682@ioremap.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.145
+X-GMailtapped-By: 172.28.16.148
 X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Evgeniy Polyakov wrote:
-> Hi Mike.
-> 
-> On Fri, Jan 16, 2009 at 06:29:42PM -0800, Mike Waychison (mikew@google.com) wrote:
->> +static void postpone_dput(struct dentry *dentry)
+> On Fri, Jan 16, 2009 at 06:29:52PM -0800, Mike Waychison (mikew@google.com) wrote:
+>> +static void postpone_iput(struct inode *inode)
 >> +{
->> +	struct postponed_dentries *ppd, *new_ppd;
+>> +	struct postponed_inodes *ppi, *new_ppi;
 >> +
 >> +again:
->> +	ppd = get_cpu_var(postponed_dentries);
->> +	if (!pending_dput_full(ppd)) {
->> +		add_pending_dput(ppd, dentry);
->> +		put_cpu_var(postponed_dentries);
+>> +	ppi = get_cpu_var(postponed_inodes);
+>> +	if (!pending_iput_full(ppi)) {
+>> +		add_pending_iput(ppi, inode);
+>> +		put_cpu_var(postponed_inodes);
 >> +		return;
 >> +	}
 >> +
->> +	/* need to flush out existing pending dentries. */
->> +	put_cpu_var(postponed_dentries);
+>> +	/* Need to flush out existing pending inodes */
+>> +	put_cpu_var(postponed_inodes);
 >> +	/* Allocate more space.. */
->> +	new_ppd = new_postponed_dentries();
->> +	if (!new_ppd) {
->> +		/* Take the slow path, memory is low */
->> +		struct postponed_dentries_onstack ppd_onstack;
->> +		struct postponed_dentries *ppd;
+>> +	new_ppi = new_postponed_inodes();
+>> +	if (!new_ppi) {
+>> +		struct postponed_inodes_onstack ppi_onstack;
 >> +
->> +		ppd = init_ppd_onstack(&ppd_onstack);
->> +		add_pending_dput(ppd, dentry);
->> +		process_postponed_dentries(ppd);
+>> +		ppi = init_ppi_onstack(&ppi_onstack);
+>> +		add_pending_iput(ppi, inode);
+>> +		process_postponed_inodes(ppi);
 >> +		return;
 >> +	}
 > 
-> Why don't you want just to put the dentry in the lowmem condition?
+> The same here: what just not to call a real_iput() without on-stack
+> allocation and the line?
 > 
 
-You're right.  This path could just use the original dput path.  I'll 
-fix it up in the next version.
+Agreed.  Will fix in the next version.
