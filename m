@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbZATN0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbZATN2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761401AbZATN0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZATN0Q
+	id S1761609AbZATN2r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZATN2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:26:16 -0500
-Received: from office.neopsis.com ([78.46.209.98]:39244 "EHLO
-	office.neopsis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754721AbZATN0P (ORCPT
+	Tue, 20 Jan 2009 08:28:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53803 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754721AbZATN2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:26:15 -0500
-X-Greylist: delayed 1813 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 08:26:15 EST
-Message-ID: <4975C95F.7000302@dbservice.com>
-Date: Tue, 20 Jan 2009 13:53:51 +0100
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090117 Shredder/3.0b2pre
+	Tue, 20 Jan 2009 08:28:34 -0500
+Date: Tue, 20 Jan 2009 08:28:29 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Sesterhenn <snakebyte@gmx.de>, Pavel Machek <pavel@suse.cz>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090120132829.GA27429@infradead.org>
+References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Zhao Yakui <yakui.zhao@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Suspned/resume can't work on the 2.6.29-rc1 but it can work	well
- on the 2.6.28
-References: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com> <20090120074534.GE16426@elte.hu>
-In-Reply-To: <20090120074534.GE16426@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120125944.GC10158@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20/2009 08:45 AM, Ingo Molnar wrote:
-> * Zhao Yakui<yakui.zhao@intel.com>  wrote:
->
->> Hi, All
->>      I do some tests about suspend/resume on my two boxes. One is HP
->> laptop and the other is Asus EEEPC901. The suspend/resume can't work
->> well. Even after core is selected as the test mode, it still can't work
->> well.(echo core>  /sys/power/pm_test)
->>
->>      Then I do the same test by using the 2.6.28 kernel. And
->> suspend/resume can work well.
->>
->>      Of course I will try to use the git-bisect to identify the first bad
->> commit ASAP.
->
-> make sure you try this patch from Rafael first (it's not on lkml it
-> appears - Rafael, mind resending the patch to this thread?):
->
-> Subject: [PATCH] PCI PM: Restore standard config registers of all devices early
->          (was: Re: EeePC resume failure - timers)
->
+On Tue, Jan 20, 2009 at 11:59:44PM +1100, Dave Chinner wrote:
+> > So far the responses from xfs folks have been disappointing, if you are
+> > interested in bugreports i can send you some.
+> 
+> Sure I am.  It would be good if you could start testing XFS along
+> with all the other filesystems and report anything you find.
 
-Would that also fix http://bugzilla.kernel.org/show_bug.cgi?id=12492?
-
-I should add that pm_tests freezer, devices and platform work, but
-processors fails (I didn't test core since I suppose that when 
-processors fails, core will fail as well).
-
-tom
+I think that was the issue with the debug builds.  If you do this
+testing always do it without CONFIG_XFS_DEBUG set as with that option
+we intentionally panic on detected disk corruptions.
 
