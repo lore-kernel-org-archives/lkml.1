@@ -1,176 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbZATOVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbZATOWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760815AbZATOVq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZATOVh
+	id S932072AbZATOWP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZATOVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:21:37 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:40867 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbZATOVg (ORCPT
+	Tue, 20 Jan 2009 09:21:55 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:46659 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760345AbZATOVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 09:21:36 -0500
-Date: Tue, 20 Jan 2009 15:21:08 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH] driver core: check bus->match without holding device
- lock
-Message-ID: <20090120152108.032405b2@gondolin>
-In-Reply-To: <1232458448-4412-1-git-send-email-tom.leiming@gmail.com>
-References: <1232458448-4412-1-git-send-email-tom.leiming@gmail.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Jan 2009 09:21:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=M2/FsdoCtM4pCgAt6wPf7yfNEM907i6eU4SMz81VVYYf2kNrn06plCYCkoRqEjMIDy
+         I946FJpFZiJR48w5fvP1DdHFqcO3c8QuxiHvN3kNo731DFiA3zLUQH3lOLyXQ7K0+F2L
+         0c+Dh4/yxDlcOrQQCuLnHPSzkF5QJwbhSNy0A=
+Message-ID: <4975DE45.7050004@gmail.com>
+Date: Tue, 20 Jan 2009 15:23:01 +0100
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
+       xfs mailing list <xfs@oss.sgi.com>, Dave Chinner <david@fromorbit.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org> <20090120121335.GA19182@infradead.org> <20090120124515.GA31838@infradead.org> <4975D88B.7020906@gmail.com> <20090120140514.GA2976@infradead.org>
+In-Reply-To: <20090120140514.GA2976@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Jan 2009 21:34:08 +0800,
-tom.leiming@gmail.com wrote:
-
-> From: Ming Lei <tom.leiming@gmail.com>
+Christoph Hellwig pisze:
+> On Tue, Jan 20, 2009 at 02:58:35PM +0100, Jacek Luczak wrote:
+>> Good job! Is there some ,,quick'' fix?
 > 
-> This patch moves bus->match out from driver_probe_device and
-> does not hold device lock to check the match between a device
-> and a driver.
+> The patch below makes it go away for me, alternatively just enable
+> CONFIG_LBD.
 > 
-> The idea has been verified by the commit 6cd495860901,
-> which leads to a faster boot. But the commit 6cd495860901 has
-> the following drawbacks: 1),only does the quick check in
-> the path of __driver_attach->driver_probe_device, not in other
-> paths; 2),for a matched device and driver, check the same match
-> twice. It is a waste of cpu ,especially for some drivers with long
-> device id table (eg. usb-storage driver).
-
-I agree with the goal of that patch, as it essentially cleanly
-seperates the quick check (->match) from the deeper probing (->probe).
-
 > 
-> This patch adds a helper of driver_match_device to check the match
-> in all paths, and testes the match only once.
-> 
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  drivers/base/bus.c     |    8 +++++++-
->  drivers/base/dd.c      |   19 +++++++------------
->  include/linux/device.h |    6 ++++++
->  3 files changed, 20 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-> index 83f32b8..c570d16 100644
-> --- a/drivers/base/bus.c
-> +++ b/drivers/base/bus.c
-> @@ -199,6 +199,12 @@ static ssize_t driver_bind(struct device_driver *drv,
-> 
->  	dev = bus_find_device_by_name(bus, NULL, buf);
->  	if (dev && dev->driver == NULL) {
-> +
-> +		if (!driver_match_device(drv, dev)) {
-> +			err = 0;
-> +			goto not_match;
-> +		}
-> +
-
-This looks too complicated, I'd just change the if to
-	if (dev && dev->driver == NULL && driver_match_device(drv,dev))
-
->  		if (dev->parent)	/* Needed for USB */
->  			down(&dev->parent->sem);
->  		down(&dev->sem);
-> @@ -206,7 +212,7 @@ static ssize_t driver_bind(struct device_driver *drv,
->  		up(&dev->sem);
->  		if (dev->parent)
->  			up(&dev->parent->sem);
-> -
-> +not_match:
->  		if (err > 0) {
->  			/* success */
->  			err = count;
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 315bed8..61f32db 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -172,14 +172,8 @@ int driver_probe_done(void)
->   * @drv: driver to bind a device to
->   * @dev: device to try to bind to the driver
->   *
-> - * First, we call the bus's match function, if one present, which should
-> - * compare the device IDs the driver supports with the device IDs of the
-> - * device. Note we don't do this ourselves because we don't know the
-> - * format of the ID structures, nor what is to be considered a match and
-> - * what is not.
-> - *
-> - * This function returns 1 if a match is found, -ENODEV if the device is
-> - * not registered, and 0 otherwise.
-> + * This function returns -ENODEV if the device is not registered,
-> + * and 0 otherwise.
-
-This is incorrect, really_probe() still returns 1 if the device could
-be bound.
-
->   *
->   * This function must be called with @dev->sem held.  When called for a
->   * USB interface, @dev->parent->sem must be held as well.
-> @@ -190,21 +184,22 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
-> 
->  	if (!device_is_registered(dev))
->  		return -ENODEV;
-> -	if (drv->bus->match && !drv->bus->match(dev, drv))
-> -		goto done;
-> 
->  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
->  		 drv->bus->name, __func__, dev_name(dev), drv->name);
-> 
->  	ret = really_probe(dev, drv);
-> 
-> -done:
->  	return ret;
->  }
-> 
->  static int __device_attach(struct device_driver *drv, void *data)
->  {
->  	struct device *dev = data;
-> +
-> +	if (!driver_match_device(drv, dev))
-> +		return 0;
-> +
->  	return driver_probe_device(drv, dev);
->  }
-> 
-> @@ -257,7 +252,7 @@ static int __driver_attach(struct device *dev, void *data)
->  	 * is an error.
->  	 */
-> 
-> -	if (drv->bus->match && !drv->bus->match(dev, drv))
-> +	if (!driver_match_device(drv, dev))
->  		return 0;
-> 
->  	if (dev->parent)	/* Needed for USB */
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 45e5b19..3c61315 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -466,6 +466,12 @@ static inline int device_is_registered(struct device *dev)
->  	return dev->kobj.state_in_sysfs;
->  }
-> 
-> +static inline int driver_match_device(struct device_driver *drv,
-> +				      struct device *dev)
-> +{
-> +	return drv->bus->match && drv->bus->match(dev, drv);
-> +}
-> +
-
-This should go into drivers/base/base.h instead, as no code outside the
-driver core should use it.
-
->  void driver_init(void);
-> 
+> Index: linux-2.6/fs/xfs/xfs_types.h
+> ===================================================================
+> --- linux-2.6.orig/fs/xfs/xfs_types.h	2009-01-20 14:55:55.806068213 +0100
+> +++ linux-2.6/fs/xfs/xfs_types.h	2009-01-20 14:56:01.437945154 +0100
+> @@ -96,7 +96,7 @@ typedef	__uint64_t	xfs_dfilblks_t;	/* nu
 >  /*
+>   * Memory based types are conditional.
+>   */
+> -#if XFS_BIG_BLKNOS
+> +#if 1 //XFS_BIG_BLKNOS
+>  typedef	__uint64_t	xfs_fsblock_t;	/* blockno in filesystem (agno|agbno) */
+>  typedef __uint64_t	xfs_rfsblock_t;	/* blockno in filesystem (raw) */
+>  typedef __uint64_t	xfs_rtblock_t;	/* extent (block) in realtime area */
+> 
+
+I've applied it and now running ,,fixed'' kernel. What I've notice is:
+$ LC_ALL=C df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda1              20G  -40E   40E   -  /
+/dev/sda5              20G  -23E   23E   -  /home
+/dev/sda6              56G   56G  774M  99% /NORA
+/dev/sda7              45G   44G  1.2G  98% /MAGAZYN
+
+-Jacek
