@@ -1,118 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZATGSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZATGU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbZATGSU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 01:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZATGSK
+	id S1755446AbZATGU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 01:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZATGUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 01:18:10 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41043 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397AbZATGSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 01:18:09 -0500
-Date: Mon, 19 Jan 2009 22:10:55 -0800
-From: Greg KH <gregkh@suse.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: staging driver (epl)
-Message-ID: <20090120061055.GA4309@suse.de>
-References: <20090119210315.GA3805@x200.localdomain> <20090119235910.GA7171@suse.de> <20090120060435.GA3421@x200.localdomain>
+	Tue, 20 Jan 2009 01:20:16 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:40911 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbZATGUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 01:20:14 -0500
+Message-ID: <49756D07.7080804@gawab.com>
+Date: Mon, 19 Jan 2009 22:19:51 -0800
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120060435.GA3421@x200.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+CC: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com>
+In-Reply-To: <49752823.9020403@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 09:04:35AM +0300, Alexey Dobriyan wrote:
-> On Mon, Jan 19, 2009 at 03:59:10PM -0800, Greg KH wrote:
-> > On Tue, Jan 20, 2009 at 12:03:15AM +0300, Alexey Dobriyan wrote:
-> > > Greg, can I ssh to your box to do
-> > > 
-> > > 	git rm -rf drivers/staging/epl
-> > > 	sed -i -e '/epl/d' drivers/staging/Kconfig
-> > > 	sed -i -e '/CONFIG_EPL/d' drivers/staging/Makefile
-> > > 	git commit -a -m 'staging: remove epl driver'
-> > > 
-> > > ?
-> > 
-> > That might be tough for you to do, as it's in every 2.6.29-rc1 release
-> > out there.  That's a lot of ssh and sed commands needed for you to do :)
-> > 
-> > > This driver doesn't meet even _the_ basic requirements.
-> > 
-> > It meets the drivers/staging/ requirements of:
-> > 	- it builds
-> > 	- it is self-contained
-> > 	- someone is using it
-> > 
-> > Well, some of the stuff in drivers/staging/ don't even meet the first
-> > requirement, making this one of the better drivers :)
-> > 
-> > > It's _full_ of hungarian notation (iRet).
-> > > 
-> > > It's full of typedefs.
-> > > 
-> > > It's full of HAL (tEplApiInstance etc).
-> > > 
-> > > Filenames (!) are in CamelCase.
-> > > 
-> > > It creates sockets from kernel for something.
-> > > 
-> > > It tries to interact with devfs.
-> > > 
-> > > It may come as surprise but you also committed real Win32 code:
-> > > 
-> > > 	drivers/staging/epl/EplTimeruWin32.c
-> > > 	drivers/staging/epl/ShbIpc-Win32.c
-> > > 
-> > > Amazing, isn't it?
-> > 
-> > No, not at all, I commited the tarball I was given, after shoehorning it
-> > into the kernel build system.
-> > 
-> > > Do you accept _any_ code?
-> > 
-> > Yes.
-> > 
-> > > Exactly zero entry barrier?
-> > 
-> > Pretty much.  Know of any other drivers that should go into here that
-> > are floating around in the wild?
-> > 
-> > Is this a problem?
-> 
-> Well, yes.
-> 
-> Suppose someone cleanups issues mentioned and make it at least look like
-> usual Linux driver.
-> 
-> And then it likely will turn out that driver is so misdesigned that
-> it will be faster to just rewrite it.
+Hiroshi Shimamoto wrote:
+> Justin Madru wrote:
+>> Ok, finally bisected the bug, but the commit isn't related to networking!
+>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>> on current git and that fixed the bug.
+>>
+>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
+>> I want to drop my changes - the revert.
+>> Also how do I find the commit that merged/pulled in this commit?
+>>
+>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> Date: Fri Dec 5 17:17:09 2008 -0800
+>>
+>> x86: signal: change type of paramter for sys_rt_sigreturn()
+>>
+>> Impact: cleanup on 32-bit
+>>
+>> Peter pointed this parameter can be changed.
+>>
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> Hi,
+> thanks for reporting.
+>
+> I'm not sure why this commit affects.
+> Can you check vmlinux? size, objdump, etc.
+> On my environment, the generated code looks same.
+>
+> Thanks,
+> Hiroshi
+>
+I tried to do an objdump but it gave an error. How am I suppose to do an 
+objdump?
 
-That's fine, I have no objection to a total rewrite, that's happening
-already to some drivers that are already in drivers/staging/.  When
-those drivers then go into the main kernel tree, I'll instantly drop the
-drivers/staging/ driver.
+$ objdump -x /boot/vmlinuz-2.6.29-rc2-git
+objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
+$ readelf -a /boot/vmlinuz-2.6.29-rc2-git
+readelf: Error: Unable to seek to 0xc031f2eb for section headers
+readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+$ ls -la /boot/vmlinuz-2.6.29-rc2-git
+-rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
 
-> Now why waste time doing cleanups when the risk that cleanups will only help
-> to see it's misdesigned is so high? I can't think of a Linux person mentally
-> dragging himself through issues mentioned to see the end result, it's very hard
-> to read such code after reading much Linux code.
+Anyways, I've uploaded the extracted data.tar.gz file from the kernel 
+deb file created when I
+build a kernel (I use ubuntu and make-kpkg). The archive includes the 
+kernel, config, system.map
+and modules that I used. The files can be found at 
+http://jdserver.homelinux.org/bugreports/002/
+There are 2 files: data-norevert.tar.bz2 is a build without the revert, 
+data-revert.tar.bz2 has the revert.
 
-I agree, but there are companies already using this code today.  So why
-not include it as it is useful to a very big group of users.  If we get
-it cleaned up and working better, that even helps out more.
+I think peter annema might have have a reason why it's crashing firefox.
+If sizeof(struct pt_regs) != sizeof(unsigned long) the the stack could 
+become
+unbalanced if other code is not expecting a struct pt_regs.
 
-> > Is the drivers/staging/ area just not properly documented for people to
-> > understand what is going on there and how it differs from the rest of
-> > the kernel?  Should I write up something a bit more "formal"?
-> 
-> No, too early to write policies.
+Peter Annema wrote:
+> > #ifdef CONFIG_X86_32
+> > -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+> > +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+> > {
+> > - struct pt_regs *regs = (struct pt_regs *)&__unused;
+> > -
+> > - return do_rt_sigreturn(regs);
+> > + return do_rt_sigreturn(&regs);
+> > }
+>
+> Is sizeof(struct pt_regs) different from sizeof(unsigned long)? If so, 
+> is some
+> code somewhere messing with the stack and not expecting a struct 
+> pt_regs to have
+> been put on it?
 
-Heh, how about explainations :)
-
-thanks,
-
-greg k-h
+Justin Madru
