@@ -1,150 +1,322 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZATWXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbZATWYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZATWXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 17:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZATWXM
+	id S1762207AbZATWYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 17:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZATWYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 17:23:12 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:23043 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbZATWXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 17:23:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=L010jba5K2w2TqPmZ9hg6aABhW/6tPdYe7p3KSsXM21v/4spVrtC/AdTMPmNCut5Mx
-         8tXOOl8l5C3n1b9AGahagCHCaLqJphSHsyOS7tHZ8sAlquqQbP76p5J+mOmrpPR/VlPp
-         pfpPd7qaVCt4mQHUxHU8vkD8/mU2sQEdNu2Lw=
+	Tue, 20 Jan 2009 17:24:31 -0500
+Received: from www.tglx.de ([62.245.132.106]:54060 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754497AbZATWYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 17:24:30 -0500
+Date: Tue, 20 Jan 2009 22:48:33 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Brandon Philips <brandon@ifup.org>
+Cc: hjk@linutronix.de, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: uio: add the uio_aec driver
+Message-ID: <20090120214832.GE3027@local>
+References: <20090120204729.GA26477@jenkins.ifup.org>
 MIME-Version: 1.0
-In-Reply-To: <720e76b80901201222m72ae2e98l972c81ef5886a12e@mail.gmail.com>
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal>
-	 <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal>
-	 <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal>
-	 <20090120073709.GC30821@kernel.dk>
-	 <720e76b80901201222m72ae2e98l972c81ef5886a12e@mail.gmail.com>
-Date: Tue, 20 Jan 2009 17:23:08 -0500
-Message-ID: <720e76b80901201423p6b82aa77kdfbf3eddb8592bd5@mail.gmail.com>
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-From: Ben Gamari <bgamari@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrea Arcangeli <andrea@suse.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120204729.GA26477@jenkins.ifup.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel build finally finished. Unfortunately, it crashes quickly
-after booting with moderate disk IO, bringing down the entire machine.
-For this reason, I haven't been able to complete a fio benchmark.
-Jens, what do you think about this backtrace?
+On Tue, Jan 20, 2009 at 12:47:29PM -0800, Brandon Philips wrote:
+> UIO driver for the Adrienne Electronics Corporation PCI time code
+> device.
+> 
+> This device differs from other UIO devices since it uses I/O ports instead of
+> memory mapped I/O. In order to make it possible for UIO to work with this
+> device a utility, uioport, can be used to read and write the ports.
 
-- Ben
+We just added a feature to UIO that allows you to pass information about
+such I/O ports to userspace. In struct uio_info, there's now also a port[]
+array for that purpose. In your case, you will probably want to set the
+the porttype member of struct uio_port to UIO_PORT_X86.
 
+The portio feature is available since .29-rc1, please use it.
 
-BUG: unable to handle kernel paging request at 0000000008
-IP: [<ffffffff811c4b2d>] cfq_remove_request+0xb0/0x1da
-PGD b2902067 PUD b292e067 PMD 0
-Oops: 0002 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0t
-CPU 0
-Modules linked in: aes_x86_64 aes_generic i915 drm i2c_algo_bit rfcomm bridge s]
-Pid: 3903, comm: evolution Not tainted 2.6.29-rc2ben #16
-RIP: 0010:[<ffffffff811c4b2d>]  [<ffffffff811c4b2d>] cfq_remove_request+0xb0/0xa
-RSP: 0018:ffff8800bb853758  EFLAGS: 00010006
-RAX: 0000000000200200 RBX: ffff8800b28f3420 RCX: 0000000009deabeb
-RDX: 0000000000100100 RSI: ffff8800b010afd0 RDI: ffff8800b010afd0
-RBP: ffff8800bb853788 R08: ffff88011fc08250 R09: 000000000cf8b20b
-R10: 0000000009e15923 R11: ffff8800b28f3420 R12: ffff8800b010afd0
-R13: ffff8800b010afd0 R14: ffff88011d4e8000 R15: ffff88011fc08220
-FS:  00007f4b1ef407e0(0000) GS:ffffffff817e7000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000100108 CR3: 00000000b284b000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process evolution (pid: 3903, threadinfo ffff8800bb852000, task ffff8800da0c2de)
-Stack:
- ffffffff811ccc19 ffff88011fc08220 ffff8800b010afd0 ffff88011d572000
- ffff88011d4e8000 ffff88011d572000 ffff8800bb8537b8 ffffffff811c4ca8
- ffff88011fc08220 ffff88011d572000 ffff8800b010afd0 ffff88011fc08250
-Call Trace:
- [<ffffffff811ccc19>] ? rb_insert_color+0xbd/0xe6
- [<ffffffff811c4ca8>] cfq_dispatch_insert+0x51/0x72
- [<ffffffff811c4d0d>] cfq_add_rq_rb+0x44/0xcf
- [<ffffffff811c5519>] cfq_insert_request+0x34d/0x3d1
- [<ffffffff811b6d81>] elv_insert+0x1a9/0x250
- [<ffffffff811b6ec3>] __elv_add_request+0x9b/0xa4
- [<ffffffff811b9769>] __make_request+0x3c4/0x446
- [<ffffffff811b7f53>] generic_make_request+0x2bf/0x309
- [<ffffffff811b8068>] submit_bio+0xcb/0xd4
- [<ffffffff810f170b>] submit_bh+0x115/0x138
- [<ffffffff810f31f7>] ll_rw_block+0xa5/0xf4
- [<ffffffff810f3886>] __block_prepare_write+0x277/0x306
- [<ffffffff8112c759>] ? ext3_get_block+0x0/0x101
- [<ffffffff810f3a7e>] block_write_begin+0x8b/0xdd
- [<ffffffff8112bd66>] ext3_write_begin+0xee/0x1c0
- [<ffffffff8112c759>] ? ext3_get_block+0x0/0x101
- [<ffffffff8109f3be>] generic_file_buffered_write+0x12e/0x2e4
- [<ffffffff8109f973>] __generic_file_aio_write_nolock+0x263/0x297
- [<ffffffff810e4470>] ? touch_atime+0xdf/0x101
- [<ffffffff8109feaa>] ? generic_file_aio_read+0x503/0x59c
- [<ffffffff810a01ed>] generic_file_aio_write+0x6c/0xc8
- [<ffffffff81128c72>] ext3_file_write+0x23/0xa5
- [<ffffffff810d2d77>] do_sync_write+0xec/0x132
- [<ffffffff8105da1c>] ? autoremove_wake_function+0x0/0x3d
- [<ffffffff8119c880>] ? selinux_file_permission+0x40/0xcb
- [<ffffffff8119c902>] ? selinux_file_permission+0xc2/0xcb
- [<ffffffff81194cc4>] ? security_file_permission+0x16/0x18
- [<ffffffff810d3693>] vfs_write+0xb0/0x10a
- [<ffffffff810d37bb>] sys_write+0x4c/0x74
- [<ffffffff810114aa>] system_call_fastpath+0x16/0x1b
-Code: 48 85 c0 74 0c 4c 39 e0 48 8d b0 60 ff ff ff 75 02 31 f6 48 8b 7d d0 48 8
-RIP  [<ffffffff811c4b2d>] cfq_remove_request+0xb0/0x1da
- RSP <ffff8800bb853758>
-CR2: 0000000000100108
----[ end trace 6c5ef63f7957c4cf ]---
+Otherwise, your driver looks quite good, I'd say.
+I've added a few remarks, though.
 
+Thanks,
+Hans
 
+> 
+> uioport is designed to be a setuid program and checks the permissions of
+> the /dev/uio* node and if the user has write permissions it will use
+> iopl and out*/in* to access the device.
 
+What happens with PCI on PowerPC ?
 
-On Tue, Jan 20, 2009 at 3:22 PM, Ben Gamari <bgamari@gmail.com> wrote:
-> On Tue, Jan 20, 2009 at 2:37 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> On Mon, Jan 19 2009, Mathieu Desnoyers wrote:
->>> * Jens Axboe (jens.axboe@oracle.com) wrote:
->>> Yes, ideally I should re-run those directly on the disk partitions.
->>
->> At least for comparison.
->>
->
-> I just completed my own set of benchmarks using the fio job file
-> Mathieu provided. This was on a 2.5 inch 7200 RPM SATA partition
-> formatted as ext3. As you can see, I tested all of the available
-> schedulers with both queuing enabled and disabled. I'll test the Jens'
-> patch soon. Would a blktrace of the fio run help? Let me know if
-> there's any other benchmarking or profiling that could be done.
-> Thanks,
->
-> - Ben
->
->
->                        mint            maxt
-> ==========================================================
-> queue_depth=31:
-> anticipatory            35 msec         11036 msec
-> cfq                     37 msec         3350 msec
-> deadline                36 msec         18144 msec
-> noop                    39 msec         41512 msec
->
-> ==========================================================
-> queue_depth=1:
-> anticipatory            45 msec         9561 msec
-> cfq                     28 msec         3974 msec
-> deadline                47 msec         16802 msec
-> noop                    35 msec         38173 msec
->
+> 
+> [1] git clone git://ifup.org/philips/uioport.git
+> 
+> Signed-off-by: Brandon Philips <brandon@ifup.org>
+> 
+> ---
+>  drivers/uio/Kconfig        |   18 ++++
+>  drivers/uio/Makefile       |    1 
+>  drivers/uio/uio_aec.c      |  177 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/uio_driver.h |    1 
+>  4 files changed, 197 insertions(+)
+> 
+> Index: linux-2.6/drivers/uio/Makefile
+> ===================================================================
+> --- linux-2.6.orig/drivers/uio/Makefile
+> +++ linux-2.6/drivers/uio/Makefile
+> @@ -3,4 +3,5 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+>  obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+>  obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+>  obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+> +obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
+>  obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+> Index: linux-2.6/include/linux/uio_driver.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/uio_driver.h
+> +++ linux-2.6/include/linux/uio_driver.h
+> @@ -91,5 +91,6 @@ extern void uio_event_notify(struct uio_
+>  #define UIO_MEM_PHYS	1
+>  #define UIO_MEM_LOGICAL	2
+>  #define UIO_MEM_VIRTUAL 3
+> +#define UIO_MEM_PORT	4
+
+As I explained above, this is not needed anymore. The reason we don't want
+this: It breaks generic userspace tools that rely on the fact that any
+memory found underneath the maps/ directory in sysfs can be mapped.
+
+In case of ports we don't have anything to be mapped, we simply want to
+pass information to userspace. That justifies having a different sysfs
+directory for it.
+
+>  
+>  #endif /* _LINUX_UIO_DRIVER_H_ */
+> Index: linux-2.6/drivers/uio/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/uio/Kconfig
+> +++ linux-2.6/drivers/uio/Kconfig
+> @@ -58,6 +58,24 @@ config UIO_SMX
+>  
+>  	  If you compile this as a module, it will be called uio_smx.
+>  
+> +config UIO_AEC
+> +	tristate "AEC video timestamp device"
+> +	depends on PCI
+> +	default n
+> +	help
+> +
+> +	  UIO driver for the Adrienne Electronics Corporation PCI time
+> +	  code device.
+> +
+> +	  This device differs from other UIO devices since it uses I/O
+> +	  ports instead of memory mapped I/O. In order to make it
+> +	  possible for UIO to work with this device a utility, uioport,
+> +	  can be used to read and write the ports:
+> +
+> +	    git clone git://ifup.org/philips/uioport.git
+> +
+> +	  If you compile this as a module, it will be called uio_aec.
+> +
+>  config UIO_SERCOS3
+>  	tristate "Automata Sercos III PCI card driver"
+>  	default n
+> Index: linux-2.6/drivers/uio/uio_aec.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/drivers/uio/uio_aec.c
+> @@ -0,0 +1,177 @@
+> +/*
+> + * uio_aec.c -- simple driver for Adrienne Electronics Corp time code PCI device
+> + *
+> + * Copyright (C) 2008 Brandon Philips <brandon@ifup.org>
+> + *
+> + *   This program is free software; you can redistribute it and/or modify it
+> + *   under the terms of the GNU General Public License version 2 as published
+> + *   by the Free Software Foundation.
+> + *
+> + *   This program is distributed in the hope that it will be useful,
+> + *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *   GNU General Public License for more details.
+> + *
+> + *   You should have received a copy of the GNU General Public License along
+> + *   with this program; if not, write to the Free Software Foundation, Inc., 59
+> + *   Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/init.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/cdev.h>
+> +#include <linux/fs.h>
+> +#include <linux/io.h>
+> +#include <asm/system.h>
+
+please put this <asm/...> include under the <linux/...> includes, separated by
+one blank line. Makes it easier to find. BTW, do you actually need this one?
+
+> +#include <linux/uaccess.h>
+> +#include <linux/uio_driver.h>
+> +
+> +#define PCI_VENDOR_ID_AEC 0xaecb
+> +#define PCI_DEVICE_ID_AEC_VITCLTC 0x6250
+> +
+> +#define INT_ENABLE_ADDR		0xFC
+> +#define INT_ENABLE		0x10
+> +#define INT_DISABLE		0x0
+> +
+> +#define INT_MASK_ADDR		0x2E
+> +#define INT_MASK_ALL		0x3F
+> +
+> +#define INTA_DRVR_ADDR		0xFE
+> +#define INTA_ENABLED_FLAG	0x08
+> +#define INTA_FLAG		0x01
+> +
+> +#define MAILBOX			0x0F
+> +
+> +static struct pci_device_id ids[] = {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_AEC, PCI_DEVICE_ID_AEC_VITCLTC), },
+> +	{ 0, }
+> +};
+> +MODULE_DEVICE_TABLE(pci, ids);
+> +
+> +static irqreturn_t aectc_irq(int irq, struct uio_info *dev_info)
+> +{
+> +	void __iomem *int_flag = dev_info->mem[0].internal_addr
+> +					+ INTA_DRVR_ADDR;
+> +	unsigned char status = ioread8(int_flag);
+> +
+> +
+> +	if ((status & INTA_ENABLED_FLAG) && (status & INTA_FLAG)) {
+> +		/* application writes 0x00 to 0x2F to get next interrupt */
+> +		status = ioread8(dev_info->mem[0].internal_addr + MAILBOX);
+> +		return IRQ_HANDLED;
+> +	}
+> +
+> +	return IRQ_NONE;
+> +}
+> +
+> +static void print_board_data(struct uio_info *i)
+> +{
+> +	printk(KERN_INFO "PCI-TC board vendor: %x%x number: %x%x"
+> +		" revision: %c%c\n",
+> +		ioread8(i->mem[0].internal_addr + 0x01),
+> +		ioread8(i->mem[0].internal_addr + 0x00),
+> +		ioread8(i->mem[0].internal_addr + 0x03),
+> +		ioread8(i->mem[0].internal_addr + 0x02),
+> +		ioread8(i->mem[0].internal_addr + 0x06),
+> +		ioread8(i->mem[0].internal_addr + 0x07));
+> +}
+> +
+> +static int __devinit probe(struct pci_dev *dev, const struct pci_device_id *id)
+> +{
+> +	struct uio_info *info;
+> +	int ret;
+> +
+> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	if (pci_enable_device(dev))
+> +		goto out_free;
+> +
+> +	if (pci_request_regions(dev, "aectc"))
+> +		goto out_disable;
+> +
+> +	info->name = "aectc";
+> +	info->mem[0].addr = pci_resource_start(dev, 0);
+> +	if (!info->mem[0].addr)
+> +		goto out_release;
+> +	info->mem[0].internal_addr = pci_iomap(dev, 0, 0);
+> +	if (!info->mem[0].internal_addr)
+> +		goto out_release;
+> +	info->mem[0].size = pci_resource_len(dev, 0);
+> +	info->mem[0].memtype = UIO_MEM_PORT;
+
+port[] instead of mem[].
+
+> +
+> +	info->version = "0.0.1";
+> +	info->irq = dev->irq;
+> +	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
+> +	info->handler = aectc_irq;
+> +
+> +	print_board_data(info);
+> +	ret = uio_register_device(&dev->dev, info);
+> +	if (ret)
+> +		goto out_unmap;
+> +
+> +	iowrite32(INT_ENABLE, info->mem[0].internal_addr + INT_ENABLE_ADDR);
+> +	iowrite8(INT_MASK_ALL, info->mem[0].internal_addr + INT_MASK_ADDR);
+> +	if (ioread8(info->mem[0].internal_addr + INTA_DRVR_ADDR)
+> +			& INTA_ENABLED_FLAG)
+> +		printk(KERN_INFO "aectc: interrupts successfully enabled\n");
+
+I'd find it better if you printed a message in case of failure...
+And please use dev_err() etc. instead of printk().
+
+BTW, if this test fails, are you sure you can continue and let probe()
+succeed?
+
+> +
+> +	pci_set_drvdata(dev, info);
+> +
+> +	return 0;
+> +
+> +out_unmap:
+> +	pci_iounmap(dev, info->mem[0].internal_addr);
+> +out_release:
+> +	pci_release_regions(dev);
+> +out_disable:
+> +	pci_disable_device(dev);
+> +out_free:
+> +	kfree(info);
+> +	return -ENODEV;
+> +}
+> +
+> +static void remove(struct pci_dev *dev)
+> +{
+> +	struct uio_info *info = pci_get_drvdata(dev);
+> +
+> +	/* disable interrupts */
+> +	iowrite8(INT_DISABLE, info->mem[0].internal_addr + INT_MASK_ADDR);
+> +	iowrite32(INT_DISABLE, info->mem[0].internal_addr + INT_ENABLE_ADDR);
+> +	/* read mailbox to ensure board drops irq */
+> +	ioread8(info->mem[0].internal_addr + MAILBOX);
+> +
+> +	uio_unregister_device(info);
+> +	pci_release_regions(dev);
+> +	pci_disable_device(dev);
+> +	pci_set_drvdata(dev, NULL);
+> +	iounmap(info->mem[0].internal_addr);
+> +
+> +	kfree(info);
+> +}
+> +
+> +static struct pci_driver pci_driver = {
+> +	.name = "aectc",
+> +	.id_table = ids,
+> +	.probe = probe,
+> +	.remove = remove,
+> +};
+> +
+> +static int __init aectc_init(void)
+> +{
+> +	return pci_register_driver(&pci_driver);
+> +}
+> +
+> +static void __exit aectc_exit(void)
+> +{
+> +	pci_unregister_driver(&pci_driver);
+> +}
+> +
+> +MODULE_LICENSE("GPL");
+> +
+> +module_init(aectc_init);
+> +module_exit(aectc_exit);
