@@ -1,108 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZATG3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZATGa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbZATG3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 01:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZATG3Y
+	id S1757543AbZATGa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 01:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZATGaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 01:29:24 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:48598 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbZATG3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 01:29:23 -0500
-Message-ID: <49756F3E.6050304@gawab.com>
-Date: Mon, 19 Jan 2009 22:29:18 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+	Tue, 20 Jan 2009 01:30:10 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63232 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbZATGaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 01:30:08 -0500
+Message-ID: <49756F44.6040801@cn.fujitsu.com>
+Date: Tue, 20 Jan 2009 14:29:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera>
-In-Reply-To: <2QN7KFic7LG.A.C4F.Q9QdJB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [BUG] kernel BUG at arch/x86/kernel/tlb_32.c:130!
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12505
-> Subject		: 2.6.29-rc1 Firefox crashing on page load
-> Submitter	: Justin Madru <jdm64@gawab.com>
-> Date		: 2009-01-16 20:56 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123213941914274&w=4
-> Handled-By	: Justin P. Mattock <justinmattock@gmail.com>
->
->
->
->   
-Yes, still a regression sofar, but I've bisected it and checked it with 
-a revert of the bad commit.
-The revert does fix the bug, but we've yet to figure out why, or come up 
-with a patch.
+I was using mmotm 2009-01-16-16-18, and I ran into this BUG,
+the line is:
+	BUG_ON(cpumask_empty(cpumask));
 
-commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
-Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date:   Fri Dec 5 17:17:09 2008 -0800
+I suspect it is caused by:
 
-   x86: signal: change type of paramter for sys_rt_sigreturn()
+commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Sat Jan 10 21:58:09 2009 -0800
 
-   Impact: cleanup on 32-bit
+    x86: change flush_tlb_others to take a const struct cpumask
 
-   Peter pointed this parameter can be changed.
+    Impact: reduce stack usage, use new cpumask API.
 
-   Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-   Signed-off-by: Ingo Molnar <mingo@elte.hu>
+?
 
-:040000 040000 f5fba48247ff200092c38a54e334f495917229d5 
-b901159897e5d85e0dc2a0c9d904d9a73c1d58a2 M      arch
+------------[ cut here ]------------
+kernel BUG at arch/x86/kernel/tlb_32.c:130!
+invalid opcode: 0000 [#1] PREEMPT SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/irq
+Modules linked in: bridge stp llc autofs4 dm_mirror dm_region_hash dm_log dm_mod parport_pc r8169 parport mii sg button sata_sis pata_sis ata_generic libata sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
 
-   arch/x86/include/asm/syscalls.h
-   arch/x86/kernel/signal.c
+Pid: 16050, comm: test6.sh Not tainted (2.6.29-rc2-mm1 #3) Aspire SA85
+EIP: 0060:[<c04147ec>] EFLAGS: 00210202 CPU: 1
+EIP is at native_flush_tlb_others+0x20/0xf1
+EAX: 00000001 EBX: e6f03390 ECX: 00000004 EDX: e6fe0a30
+ESI: e6f03200 EDI: ffffffff EBP: e6e8bd9c ESP: e6e8bd90
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process test6.sh (pid: 16050, ti=e6e8b000 task=e6fe0a30 task.ti=e6e8b000)
+Stack:
+ e6f03390 e6f03200 00598000 e6e8bdac c0414b15 c1c456e0 3bec5025 e6e8be08
+ c04884d7 00000001 00000000 f61fdbb0 e6e8be20 00000000 00000001 006c0000
+ f65e3004 e6f03200 f6233660 c1c456e0 00000000 fffffffa c1aff268 f65e3004
+Call Trace:
+ [<c0414b15>] ? flush_tlb_mm+0x67/0x8a
+ [<c04884d7>] ? unmap_vmas+0x419/0x582
+ [<c048bb3e>] ? exit_mmap+0x9e/0x127
+ [<c042cc77>] ? mmput+0x3a/0x8b
+ [<c04a36bd>] ? flush_old_exec+0x4c1/0x756
+ [<c049f768>] ? vfs_read+0xf4/0x136
+ [<c04a2bf4>] ? kernel_read+0x39/0x4b
+ [<c04ca6ce>] ? load_elf_binary+0x33f/0x11bb
+ [<c04a28d4>] ? search_binary_handler+0xc5/0x263
+ [<c04a28dc>] ? search_binary_handler+0xcd/0x263
+ [<c04ca38f>] ? load_elf_binary+0x0/0x11bb
+ [<c04a3b6b>] ? do_execve+0x17a/0x20e
+ [<c04019a3>] ? sys_execve+0x2e/0x56
+ [<c0403485>] ? sysenter_do_call+0x12/0x35
+Code: 07 89 d8 e8 8c ff ff ff 5b 5d c3 55 89 e5 57 56 53 0f 1f 44 00 00 89 d6 8b 15 00 6b 77 c0 89 c3 89 cf e8 60 be 0f 00 85 c0 74 04 <0f> 0b eb fe 85 f6 75 04 0f 0b eb fe b8 10 0c 73 c0 e8 3c dc 20 
+EIP: [<c04147ec>] native_flush_tlb_others+0x20/0xf1 SS:ESP 0068:e6e8bd90
+---[ end trace 6c8e163a63cc95c4 ]---
+note: test6.sh[16050] exited with preempt_count 2
+------------[ cut here ]------------
+kernel BUG at arch/x86/kernel/tlb_32.c:130!
+invalid opcode: 0000 [#2] PREEMPT SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:0e.0/irq
+Modules linked in: bridge stp llc autofs4 dm_mirror dm_region_hash dm_log dm_mod parport_pc r8169 parport mii sg button sata_sis pata_sis ata_generic libata sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd [last unloaded: scsi_wait_scan]
 
-diff --git a/arch/x86/include/asm/syscalls.h 
-b/arch/x86/include/asm/syscalls.h
-index 87803da..3a5252c 100644 (file)
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -33,7 +33,7 @@ asmlinkage int sys_sigaction(int, const struct 
-old_sigaction __user *,
-                            struct old_sigaction __user *);
-asmlinkage int sys_sigaltstack(unsigned long);
-asmlinkage unsigned long sys_sigreturn(unsigned long);
--asmlinkage int sys_rt_sigreturn(unsigned long);
-+asmlinkage int sys_rt_sigreturn(struct pt_regs);
-
-/* kernel/ioport.c */
-asmlinkage long sys_iopl(unsigned long);
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index b1f4d34..b1cc6da 100644 (file)
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -642,11 +642,9 @@ badframe:
-}
-
-#ifdef CONFIG_X86_32
--asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-+asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
-{
--       struct pt_regs *regs = (struct pt_regs *)&__unused;
--
--       return do_rt_sigreturn(regs);
-+       return do_rt_sigreturn(&regs);
-}
-#else /* !CONFIG_X86_32 */
-asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
-
-Justin Madru
+Pid: 8238, comm: test5.sh Tainted: G      D    (2.6.29-rc2-mm1 #3) Aspire SA85
+EIP: 0060:[<c04147ec>] EFLAGS: 00210202 CPU: 0
+EIP is at native_flush_tlb_others+0x20/0xf1
+EAX: 00000001 EBX: e6f03110 ECX: 00000004 EDX: 00000000
+ESI: e6f02f80 EDI: ffffffff EBP: f6032d9c ESP: f6032d90
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process test5.sh (pid: 8238, ti=f6032000 task=e6fe5180 task.ti=f6032000)
+Stack:
+ e6f03110 e6f02f80 00598000 f6032dac c0414b15 c1c3c6e0 3bec5025 f6032e08
+ c04884d7 f6032dd0 00000000 f6225318 f6032e20 00000000 00000001 006c0000
+ f6520004 e6f02f80 f612b660 c1c3c6e0 00000000 fffffffa c1afbcc8 f6520004
+Call Trace:
+ [<c0414b15>] ? flush_tlb_mm+0x67/0x8a
+ [<c04884d7>] ? unmap_vmas+0x419/0x582
+ [<c048bb3e>] ? exit_mmap+0x9e/0x127
+ [<c042cc77>] ? mmput+0x3a/0x8b
+ [<c04a36bd>] ? flush_old_exec+0x4c1/0x756
+ [<c049f768>] ? vfs_read+0xf4/0x136
+ [<c04a2bf4>] ? kernel_read+0x39/0x4b
+ [<c04ca6ce>] ? load_elf_binary+0x33f/0x11bb
+ [<c04a2851>] ? search_binary_handler+0x42/0x263
+ [<c04a28d4>] ? search_binary_handler+0xc5/0x263
+ [<c04a28dc>] ? search_binary_handler+0xcd/0x263
+ [<c04ca38f>] ? load_elf_binary+0x0/0x11bb
+ [<c04a3b6b>] ? do_execve+0x17a/0x20e
+ [<c04019a3>] ? sys_execve+0x2e/0x56
+ [<c0403485>] ? sysenter_do_call+0x12/0x35
+Code: 07 89 d8 e8 8c ff ff ff 5b 5d c3 55 89 e5 57 56 53 0f 1f 44 00 00 89 d6 8b 15 00 6b 77 c0 89 c3 89 cf e8 60 be 0f 00 85 c0 74 04 <0f> 0b eb fe 85 f6 75 04 0f 0b eb fe b8 10 0c 73 c0 e8 3c dc 20 
+EIP: [<c04147ec>] native_flush_tlb_others+0x20/0xf1 SS:ESP 0068:f6032d90
+---[ end trace 6c8e163a63cc95c5 ]---
+note: test5.sh[8238] exited with preempt_count 2
