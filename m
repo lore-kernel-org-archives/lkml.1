@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbZATBqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762925AbZATBqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759793AbZATBqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATBqJ
+	id S1762925AbZATBqh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760455AbZATBqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:46:09 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:42813 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755186AbZATBqI (ORCPT
+	Mon, 19 Jan 2009 20:46:17 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:24130 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760102AbZATBqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:46:08 -0500
+	Mon, 19 Jan 2009 20:46:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=W4MU190Cd2r87BFDWGOBk7jFYBLfIBNfB9jy7QLZyGgDoOO3zkXS0Gd1o9I9ZOykp1
-         q31vQYNiDAzVuJifLONj3tv4jbwQQSk5Wc+SC8AoPzL3HyC7pJe4OTVJCJCSuSjccgKV
-         yn0hi0Rzq3anTyLTEhCxTQii6W9EojJDpkjYM=
-Message-ID: <b6a2187b0901191746u1139d09es22d6c5177635a65@mail.gmail.com>
-Date: Tue, 20 Jan 2009 09:46:05 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12422] 2.6.28-git can't resume from str
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Daniel Drake" <dsd@gentoo.org>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Phil Dibowitz" <phil@ipom.com>,
-       "Harvey Harrison" <harvey.harrison@gmail.com>
-In-Reply-To: <2QN7KFic7LG.A.pF.59QdJB@chimera>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=W4K85oxbJrbzOUZyOKtbExx0Lv5w20mQdyshXbhzclkdSSblrra/UbLUgntqAQenRS
+         V2OY8QDS2p45F3OPo2XBjWVweY2E3qEE/q8eT2jpwXTKfqridj4joLwJe5/akQb7yWYu
+         bUxjgLxEakGLzYTFyev03LwX/ZMtnfFQJxx0M=
 MIME-Version: 1.0
+In-Reply-To: <20090119152104.GC6432@c2.user-mode-linux.org>
+References: <20090115194033.GA10926@hack.private>
+	 <20090116124158.4364e269.akpm@linux-foundation.org>
+	 <200901170328.15178.rob@landley.net>
+	 <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com>
+	 <20090119152104.GC6432@c2.user-mode-linux.org>
+Date: Tue, 20 Jan 2009 09:46:15 +0800
+Message-ID: <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
+Subject: Re: [uml-devel] [Patch] uml: fix a link error
+From: Daolong Wang <ahlongxp@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Rob Landley <rob@landley.net>, user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Am?rico Wang" <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera>
-	 <2QN7KFic7LG.A.pF.59QdJB@chimera>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 5:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12422
-> Subject         : 2.6.28-git can't resume from str
-> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> Date            : 2009-01-10 1:39 (10 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
-> References      : http://marc.info/?l=linux-kernel&m=123155157909282&w=4
->                  http://marc.info/?l=linux-kernel&m=123167815028388&w=4
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Patch           : http://lkml.org/lkml/2009/1/13/144
-
-Rafael,
-
-Confirmed the patch fixed resume from STR. No problem for the past 10 days.
-
-Thanks,
-Jeff.
+On Mon, Jan 19, 2009 at 11:21 PM, Jeff Dike <jdike@addtoit.com> wrote:
+> On Sun, Jan 18, 2009 at 02:23:46PM +0800, Daolong Wang wrote:
+>> I can confirm this link error.
+>
+> In what environment?  I see no problems here.
+>
+Ubuntu 8.04. Gcc is 4.2.4. Sorry I don't have the access to the machine now.
+>> And this patch works for me.
+>
+> Maybe it fixes the link failure.  But I really doubt that sigprocmask works.
+>
+not sure. compile test only!
+>                                Jeff
+>
+> --
+> Work email - jdike at linux dot intel dot com
+>
