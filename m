@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbZATTFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760945AbZATTWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbZATTFR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZATTFE
+	id S1760945AbZATTWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZATTW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:05:04 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:46946 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753149AbZATTFC (ORCPT
+	Tue, 20 Jan 2009 14:22:28 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:52454 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754735AbZATTW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:05:02 -0500
-Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-From: Zachary Amsden <zach@vmware.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "jeremy@xensource.com" <jeremy@xensource.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>
-In-Reply-To: <20090120112634.GA20858@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de>
-	 <20090120112634.GA20858@elte.hu>
-Content-Type: text/plain
-Date: Tue, 20 Jan 2009 11:05:18 -0800
-Message-Id: <1232478318.16317.160.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 20 Jan 2009 14:22:27 -0500
+Message-ID: <4976246D.1040008@gawab.com>
+Date: Tue, 20 Jan 2009 11:22:21 -0800
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
+MIME-Version: 1.0
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+CC: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com> <497617D6.8020707@ct.jp.nec.com>
+In-Reply-To: <497617D6.8020707@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-20 at 03:26 -0800, Ingo Molnar wrote:
+Hiroshi Shimamoto wrote:
+> Justin Madru wrote:
+>   
+>> Hiroshi Shimamoto wrote:
+>>     
+>>> Justin Madru wrote:
+>>>       
+>>>> Ok, finally bisected the bug, but the commit isn't related to networking!
+>>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>>> on current git and that fixed the bug.
+>>>>
+>>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
+>>>> I want to drop my changes - the revert.
+>>>> Also how do I find the commit that merged/pulled in this commit?
+>>>>
+>>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>> Date: Fri Dec 5 17:17:09 2008 -0800
+>>>>
+>>>> x86: signal: change type of paramter for sys_rt_sigreturn()
+>>>>
+>>>> Impact: cleanup on 32-bit
+>>>>
+>>>> Peter pointed this parameter can be changed.
+>>>>
+>>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>         
+>>> Hi,
+>>> thanks for reporting.
+>>>
+>>> I'm not sure why this commit affects.
+>>> Can you check vmlinux? size, objdump, etc.
+>>> On my environment, the generated code looks same.
+>>>
+>>> Thanks,
+>>> Hiroshi
+>>>
+>>>       
+>> I tried to do an objdump but it gave an error. How am I suppose to do an 
+>> objdump?
+>>
+>> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
+>> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
+>> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
+>> readelf: Error: Unable to seek to 0xc031f2eb for section headers
+>> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+>> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
+>> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
+>>     
+>
+> not vmlinuz, vmlinux.
+> vmlinuz is a compressed kernel, it is not ELF file.
+> Usually vmlinux is generated in top of source directory.
+> I can see disassembled image with objdump -d vmlinux.
+>
+> Thanks,
+> Hiroshi
+>
+>   
+Sorry, didn't know. I tried objdump -d vmlinux, but the resulting file 
+is ~50MB!
+Is there a smaller section you're interested in, because that would be 
+hard to send.
+Or am I doing it wrong again?
 
-> Jeremy, any ideas where this slowdown comes from and how it could be 
-> fixed?
-
-Well I'm early responding to this thread before reading on, but I looked
-at the generated assembly for some common mm paths and it looked awful.
-The biggest loser was probably having functions to convert pte_t back
-and forth to pteval_t, which makes most potential mask / shift
-optimizations impossible - indeed, because the compiler doesn't even
-understand pte_val(X) = Y is static over the lifetime of the function,
-it often calls these same conversions back and forth several times, and
-because this is often done inside hidden macros, it's not even possible
-to save a cached value in most places.
-
-The bulk of state required to keep this extra conversion around ties up
-a lot of registers and as a result heavily limits potential further
-optimizations.
-
-The code did not look more branchy to me, however, and gcc seemed to do
-a good job with lining up a nice branch structure in the few paths I
-looked at.
-
-Zach
-
+Justin Madru
