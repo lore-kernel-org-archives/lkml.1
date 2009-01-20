@@ -1,177 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbZATIhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbZATIiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbZATIhs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 03:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbZATIhg
+	id S1759997AbZATIiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 03:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757909AbZATIh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 03:37:36 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:40795 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZATIhf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 03:37:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Dd+CV/GP5+IQWmSOSRZfo8aUIoSK3lf/KypC3SsjlZdff5tZ1QeJWnaGq6IN6u7UY0
-         HUrbwLDq25kc1f2SzbQHDRESipJfULz3cIDOIpqAd/29oMG+B6imyrAvOvIG769+EI4D
-         RUAVeClZFO8rPoXqg7+QvsduZ+QFZAjI0ZxSI=
-Date: Tue, 20 Jan 2009 08:37:26 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, w@1wt.eu, zbr@ioremap.net,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090120083726.GA13806@ff.dom.local>
-References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net>
+	Tue, 20 Jan 2009 03:37:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39184 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754534AbZATIh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 03:37:58 -0500
+Date: Tue, 20 Jan 2009 09:37:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Justin Madru <jdm64@gawab.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
+Message-ID: <20090120083700.GA5277@elte.hu>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com> <20090120074312.GD16426@elte.hu> <20090120081650.GA29725@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115.152608.89323697.davem@davemloft.net>
+In-Reply-To: <20090120081650.GA29725@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
-...
-> net: Fix data corruption when splicing from sockets.
-> 
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> 
-> The trick in socket splicing where we try to convert the skb->data
-> into a page based reference using virt_to_page() does not work so
-> well.
-...
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> index 65eac77..56272ac 100644
-...
 
-Here is a tiny upgrade to save some memory by reusing a page for more
-chunks if possible, which I think could be considered, after the
-testing of the main patch is finished. (There could be also added an
-additional freeing of this cached page before socket destruction,
-maybe in tcp_splice_read(), if somebody finds good place.)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Thanks,
-Jarek P.
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > (added Cc:s)
+> 
+> > Justin, does it work if you apply the patch below instead of the revert?
+> 
+> hm, that patch wont build because the protect_asmlinkage macro is rather 
+> limited - it cannot deal with structure parameters.
+> 
+> We might be better off with a revert here, and a comment added that points 
+> out the problem.
 
+Below is the revert+document commit that i have queued up.
+
+Justin, could you try the tip/master tree (which has this fix included):
+
+  http://people.redhat.com/mingo/tip.git/README
+
+does Firefox still work fine?
+
+	Ingo
+
+------------->
+>From 779c9b9f8cb87cdfbd299ee7beb62e50ce139a92 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 20 Jan 2009 09:31:49 +0100
+Subject: [PATCH] Revert "x86: signal: change type of paramter for sys_rt_sigreturn()"
+
+This reverts commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191.
+
+Justin Madru bisected this commit, it was causing weird Firefox
+crashes.
+
+The reason is that GCC mis-optimizes (re-uses) the on-stack parameters of
+the calling frame, which corrupts the syscall return pt_regs state and
+thus corrupts user-space register state.
+
+So we go back to the slightly less clean but more optimization-safe
+method of getting to pt_regs. Also add a comment to explain this.
+
+Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=12505
+
+Reported-and-bisected-by: Justin Madru <jdm64@gawab.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/include/asm/syscalls.h |    2 +-
+ arch/x86/kernel/signal.c        |   11 +++++++++--
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
- include/net/sock.h  |    4 ++++
- net/core/skbuff.c   |   32 ++++++++++++++++++++++++++------
- net/core/sock.c     |    2 ++
- net/ipv4/tcp_ipv4.c |    8 ++++++++
- 4 files changed, 40 insertions(+), 6 deletions(-)
-
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 5a3a151..4ded741 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -190,6 +190,8 @@ struct sock_common {
-   *	@sk_user_data: RPC layer private data
-   *	@sk_sndmsg_page: cached page for sendmsg
-   *	@sk_sndmsg_off: cached offset for sendmsg
-+  *	@sk_splice_page: cached page for splice
-+  *	@sk_splice_off: cached offset for splice
-   *	@sk_send_head: front of stuff to transmit
-   *	@sk_security: used by security modules
-   *	@sk_mark: generic packet mark
-@@ -279,6 +281,8 @@ struct sock {
- 	struct page		*sk_sndmsg_page;
- 	struct sk_buff		*sk_send_head;
- 	__u32			sk_sndmsg_off;
-+	struct page		*sk_splice_page;
-+	__u32			sk_splice_off;
- 	int			sk_write_pending;
- #ifdef CONFIG_SECURITY
- 	void			*sk_security;
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 56272ac..74adc79 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -1334,13 +1334,33 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 9c6797c..c0b0bda 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -40,7 +40,7 @@ asmlinkage int sys_sigaction(int, const struct old_sigaction __user *,
+ 			     struct old_sigaction __user *);
+ asmlinkage int sys_sigaltstack(unsigned long);
+ asmlinkage unsigned long sys_sigreturn(unsigned long);
+-asmlinkage int sys_rt_sigreturn(struct pt_regs);
++asmlinkage int sys_rt_sigreturn(unsigned long);
+ 
+ /* kernel/ioport.c */
+ asmlinkage long sys_iopl(unsigned long);
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 89bb766..df0587f 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -632,9 +632,16 @@ badframe:
  }
  
- static inline struct page *linear_to_page(struct page *page, unsigned int len,
--					  unsigned int offset)
-+					  unsigned int *offset,
-+					  struct sk_buff *skb)
+ #ifdef CONFIG_X86_32
+-asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
++/*
++ * Note: do not pass in pt_regs directly as with tail-call optimization
++ * GCC will incorrectly stomp on the caller's frame and corrupt user-space
++ * register state:
++ */
++asmlinkage int sys_rt_sigreturn(unsigned long __unused)
  {
--	struct page *p = alloc_pages(GFP_KERNEL, 0);
-+	struct sock *sk = skb->sk;
-+	struct page *p = sk->sk_splice_page;
-+	unsigned int off;
- 
--	if (!p)
--		return NULL;
--	memcpy(page_address(p) + offset, page_address(page) + offset, len);
-+	if (!p) {
-+new_page:
-+		p = sk->sk_splice_page = alloc_pages(sk->sk_allocation, 0);
-+		if (!p)
-+			return NULL;
+-	return do_rt_sigreturn(&regs);
++	struct pt_regs *regs = (struct pt_regs *)&__unused;
 +
-+		off = sk->sk_splice_off = 0;
-+		/* hold this page until it's full or unneeded */
-+		get_page(p);
-+	} else {
-+		off = sk->sk_splice_off;
-+		if (off + len > PAGE_SIZE) {
-+			put_page(p);
-+			goto new_page;
-+		}
-+	}
-+
-+	memcpy(page_address(p) + off, page_address(page) + *offset, len);
-+	sk->sk_splice_off += len;
-+	*offset = off;
- 
- 	return p;
++	return do_rt_sigreturn(regs);
  }
-@@ -1356,7 +1376,7 @@ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
- 		return 1;
- 
- 	if (linear) {
--		page = linear_to_page(page, len, offset);
-+		page = linear_to_page(page, len, &offset, skb);
- 		if (!page)
- 			return 1;
- 	} else
-diff --git a/net/core/sock.c b/net/core/sock.c
-index f3a0d08..6b258a9 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1732,6 +1732,8 @@ void sock_init_data(struct socket *sock, struct sock *sk)
- 
- 	sk->sk_sndmsg_page	=	NULL;
- 	sk->sk_sndmsg_off	=	0;
-+	sk->sk_splice_page	=	NULL;
-+	sk->sk_splice_off	=	0;
- 
- 	sk->sk_peercred.pid 	=	0;
- 	sk->sk_peercred.uid	=	-1;
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 19d7b42..cf3d367 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1848,6 +1848,14 @@ void tcp_v4_destroy_sock(struct sock *sk)
- 		sk->sk_sndmsg_page = NULL;
- 	}
- 
-+	/*
-+	 * If splice cached page exists, toss it.
-+	 */
-+	if (sk->sk_splice_page) {
-+		__free_page(sk->sk_splice_page);
-+		sk->sk_splice_page = NULL;
-+	}
-+
- 	percpu_counter_dec(&tcp_sockets_allocated);
- }
- 
+ #else /* !CONFIG_X86_32 */
+ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
