@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZATHDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZATHLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756844AbZATHDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZATHD2
+	id S1756905AbZATHLZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZATHLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:03:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51050 "EHLO mx1.suse.de"
+	Tue, 20 Jan 2009 02:11:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52587 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbZATHD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:03:27 -0500
-Message-ID: <497578AC.9060806@suse.de>
-Date: Tue, 20 Jan 2009 15:09:32 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
+	id S1752442AbZATHLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:11:15 -0500
+Date: Tue, 20 Jan 2009 08:08:54 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+Message-ID: <20090120070854.GA28725@redhat.com>
+References: <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com> <1232415319.3136.18.camel@zeus.themaw.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: reiserfs-devel@vger.kernel.org
-Subject: [PATCH 15/20] fs/reiserfs: return f_fsid for statfs(2), v2
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232415319.3136.18.camel@zeus.themaw.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes reiserfs3 return f_fsid info for statfs(2). By Andreas' suggestion, this patch
-populates a persistent f_fsid between boots/mounts with help of on-disk uuid record.
+On 01/20, Ian Kent wrote:
+>
+> I see you've already backed out part of your original change, which may
+> have been a little premature,
 
-Signed-off-by: Coly Li <coly.li@suse.de>
-Cc: reiserfs-devel@vger.kernel.org
----
- fs/reiserfs/super.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+I think this is fine. When/if we remove task_pgrp_nr() from fs/, we
+can do the trivial patch which just removes this helper from sched.h.
 
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index f3c820b..cb8e7ee 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -27,6 +27,7 @@
- #include <linux/mnt_namespace.h>
- #include <linux/mount.h>
- #include <linux/namei.h>
-+#include <linux/crc32.h>
+And thanks for discussion. Somehow I forgot that the untested changes
+is a pain for maintainers, and it was the bad idea to make the next
+patch which depend on these changes.
 
- struct file_system_type reiserfs_fs_type;
-
-@@ -1892,6 +1893,10 @@ static int reiserfs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	buf->f_bsize = dentry->d_sb->s_blocksize;
- 	/* changed to accommodate gcc folks. */
- 	buf->f_type = REISERFS_SUPER_MAGIC;
-+	buf->f_fsid.val[0] = (u32)crc32_le(0, rs->s_uuid, sizeof(rs->s_uuid)/2);
-+	buf->f_fsid.val[1] = (u32)crc32_le(0, rs->s_uuid + sizeof(rs->s_uuid)/2,
-+				sizeof(rs->s_uuid)/2);
-+
- 	return 0;
- }
-
--- 
-Coly Li
-SuSE Labs
-
-
+Oleg.
 
