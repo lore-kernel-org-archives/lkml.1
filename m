@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZATKAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbZATKKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbZATKAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:00:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbZATKAk
+	id S1759131AbZATKKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZATKKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:00:40 -0500
-Received: from corega.com.ru ([195.178.208.66]:44273 "EHLO tservice.net.ru"
+	Tue, 20 Jan 2009 05:10:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55050 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907AbZATKAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:00:40 -0500
-Date: Tue, 20 Jan 2009 13:00:43 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090120100043.GA9167@ioremap.net>
-References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090120083726.GA13806@ff.dom.local> <20090120093352.GB13806@ff.dom.local>
+	id S1753463AbZATKKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 05:10:04 -0500
+Date: Tue, 20 Jan 2009 11:09:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] x86: optimise page fault entry
+Message-ID: <20090120100946.GA7886@elte.hu>
+References: <20090120032426.GE16304@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120093352.GB13806@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090120032426.GE16304@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jarek.
 
-On Tue, Jan 20, 2009 at 09:33:52AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
-> > Here is a tiny upgrade to save some memory by reusing a page for more
-> > chunks if possible, which I think could be considered, after the
-> > testing of the main patch is finished. (There could be also added an
-> > additional freeing of this cached page before socket destruction,
-> > maybe in tcp_splice_read(), if somebody finds good place.)
-> 
-> OOPS! I did it again... Here is better refcounting.
-> 
-> Jarek P.
-> 
-> --- (take 2)
-> 
->  include/net/sock.h  |    4 ++++
->  net/core/skbuff.c   |   32 ++++++++++++++++++++++++++------
->  net/core/sock.c     |    2 ++
->  net/ipv4/tcp_ipv4.c |    8 ++++++++
->  4 files changed, 40 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 5a3a151..4ded741 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-> @@ -190,6 +190,8 @@ struct sock_common {
->    *	@sk_user_data: RPC layer private data
->    *	@sk_sndmsg_page: cached page for sendmsg
->    *	@sk_sndmsg_off: cached offset for sendmsg
-> +  *	@sk_splice_page: cached page for splice
-> +  *	@sk_splice_off: cached offset for splice
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Ugh, increase every socket by 16 bytes... Does TCP one still fit the
-page?
+> Hi,
+> 
+> Sorry for the delay with this. The kernel ended up unbootable for me 
+> when I last dusted off the patch, so I couldn't test it and then 
+> promptly got sidetracked with other things.
+> 
+> Anyway, this one is tested with a boot, some basic segfault sigbus etc 
+> tests, and passes various of the mmap and mprotect etc. ltp tests.
+> 
+> Ingo, would you merge this into the x86 tree, please? (unless Linus has 
+> any objections to this version)
 
--- 
-	Evgeniy Polyakov
+-tip testing found a 32-bit boot regression, caused by this patch. The 
+bootup hangs early, during the WP write-test check:
+
+[    0.004000]       .data : 0xc0691f05 - 0xc09c746c   (3285 kB)
+[    0.004000]       .text : 0xc0100000 - 0xc0691f05   (5703 kB)
+[    0.004000] Checking if this processor honours the WP bit even in supervisor mode...
+
+i've excluded x86/mm from tip/master for now, you can find the broken tree 
+in the tip/tip.x86.mm.broken [v2.6.29-rc2-1069-g583f1b9] branch that i 
+just pushed out:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tip.x86.mm.broken
+
+Also, a patch structure sidenote, the diffstat is rather large:
+
+ arch/x86/mm/fault.c |  436 ++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 255 insertions(+), 181 deletions(-)
+
+this shuffles 300 lines of highly critical x86 code around - which makes 
+me nervous. A finegrained, bisectable series would be far more debuggable. 
+Had we such a lineup i could have auto-bisected it for you already - while 
+now you have to see which bit of the ~500 lines of code flux broke the 
+32-bit WP test.
+
+This hang might be easy to find and fix (the WP detect logic is simple), 
+but other failure modes might be less debuggable and this codepath deals 
+with a lot of obscure details like CPU errata. So it would be really nice 
+to have a finegrained splitup of this patch.
+
+Three separate testsystems triggered this hang so it should be readily 
+reproducible.
+
+Thanks,
+
+	Ingo
