@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbZATPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbZATPRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761689AbZATPOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 10:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbZATPOJ
+	id S1761674AbZATPRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 10:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbZATPRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 10:14:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52975 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Jan 2009 10:17:11 -0500
+Received: from iksaif.net ([88.191.73.63]:59545 "EHLO iksaif.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755955AbZATPOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 10:14:06 -0500
-Date: Tue, 20 Jan 2009 16:13:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-Message-ID: <20090120151347.GA4309@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>
+	id S1756673AbZATPRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 10:17:10 -0500
+X-Greylist: delayed 512 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 10:17:10 EST
+From: Corentin Chary <corentincj@iksaif.net>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [PATCH v2 1/3] eeepc-laptop: Add support for extended hotkeys
+Date: Tue, 20 Jan 2009 16:08:31 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.28-gentoo; KDE/4.1.96; x86_64; ; )
+Cc: lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel@vger.kernel.org, ecc@cmu.edu,
+       linux acpi <linux-acpi@vger.kernel.org>
+References: <a26244bd6e7cae264155edca7f3c22f8f319b239.1227194932.git.mjg@redhat.com> <71cd59b00812290312u282851eepb1ecc2666d6013ab@mail.gmail.com> <9b2b86520901180204q29802ec6kd6dceaa165e61555@mail.gmail.com>
+In-Reply-To: <9b2b86520901180204q29802ec6kd6dceaa165e61555@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090120140324.GA26424@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901201608.31634.corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 18 January 2009 11:04:01 Alan Jenkins wrote:
+> On 12/29/08, Corentin Chary <corentin.chary@gmail.com> wrote:
+> > On Sun, Dec 28, 2008 at 4:20 PM, Matthew Garrett <mjg59@srcf.ucam.org>
+> >
+> > wrote:
+> >> Hi Len,
+> >>
+> >> Can these be merged for .29?
+> >
+> > Acked-by: Corentin Chary <corentincj@iksaif.net>
+>
+> They're not present in 2.6.29-rc2.  Have they just missed the boat?
+>
+> Thanks
+> Alan
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+They are now in git://git.iksaif.net/acpi4asus.git acpi4asus and I'll re-send 
+them soon to Len because this serie is a litle outdated now that the drivers
+have been moved into drivers/platform/x86/ .
 
-> That shows the expected $cache risks here as well: i ran this on an 
-> Extreme Edition CPU which has a ton of L2 cache [4MB] which mutes L2 
-> $cache misses quite a bit.
-
-[ there's no such thing as "L2 $cache misses" - what i wanted to say is 
-  that while the instruction cache size is rather small and static, a
-  large L2 cache helps in keeping the costs of instruction-cache misses
-  low - hence my measurement skews in favor of paravirt. ]
-
-	Ingo
+-- 
+--
+Corentin Chary
+http://xf.iksaif.net
