@@ -1,115 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATMmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZATMnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZATMmw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 07:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZATMmk
+	id S1756498AbZATMnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 07:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZATMmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 07:42:40 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:44724 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752190AbZATMmj (ORCPT
+	Tue, 20 Jan 2009 07:42:45 -0500
+Received: from bowden.ucwb.org.au ([203.122.237.119]:59524 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755199AbZATMmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 07:42:39 -0500
-Message-ID: <4975C76D.9020208@novell.com>
-Date: Tue, 20 Jan 2009 07:45:33 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Tue, 20 Jan 2009 07:42:43 -0500
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090120113546.GA26571@elte.hu>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
+	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
+	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
+	 <20090120113546.GA26571@elte.hu>
+Organization: UnitingCare Wesley Bowden
+Date: Tue, 20 Jan 2009 23:12:23 +1030
+Message-Id: <1232455343.4895.4.camel@kulgan.wumi.org.au>
+X-Mailer: Evolution 2.22.3.1 
+X-Sanitizer: Anomy Sanitizer on mail.ucwb.org.au
 MIME-Version: 1.0
-To: "Ma, Chinang" <chinang.ma@intel.com>
-CC: "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       Steven Rostedt <srostedt@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com>	 <20090114163557.11e097f2.akpm@linux-foundation.org>	 <20090115012147.GW29283@parisc-linux.org>	 <20090114180431.f4a96543.akpm@linux-foundation.org>	 <1232028766.5966.10.camel@localhost.localdomain>	 <20090115094442.b6394544.akpm@linux-foundation.org>	 <20090115180052.GG29283@parisc-linux.org> <1232043287.21980.65.camel@localhost.localdomain> <496F8421.3070703@novell.com> <CAC4B8726E86A142B27A9E9A2F2F12479D4403CE@rrsmsx505.amr.corp.intel.com> <BC02C49EEB98354DBA7F5DD76F2A9E8003175EB45B@azsmsx501.amr.corp.intel.com> <4970CE79.1080002@novell.com>
-In-Reply-To: <4970CE79.1080002@novell.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1D8037201D5825D038EA98D2"
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1D8037201D5825D038EA98D2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-01-20 at 12:35 +0100, Ingo Molnar wrote:
+> * Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
+> 
+> > On Mon, 2009-01-19 at 22:45 +0100, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of regressions introduced between 2.6.27 and 2.6.28.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > > be listed and let me know (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
+> > > Subject		: KVM guests stalling on 2.6.28 (bisected)
+> > > Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
+> > > Date		: 2009-01-17 03:37 (3 days old)
+> > 
+> > Yes, please keep this on the list.
+> 
+> This only seems to occur under KVM, right? I.e. you tested it with -no-kvm 
+> and the problem went away, correct?
 
-Gregory Haskins wrote:
->
-> Then, email the contents of /sys/kernel/debug/tracing/trace to me
->
->
->  =20
+Well, the I couldn't make the test conditions identical, but it the
+problem didn't occur with the test I was able to do:
 
-[ Chinang has performed the trace as requested, but replied with a
-reduced CC to avoid spamming people with a large file.  This is
-restoring the original list]
+  http://marc.info/?l=linux-kernel&m=123228728416498&w=2
 
+> This suggests some sort of KVM-specific problem. Scheduler latencies in 
+> the seconds that occur under normal load situations are noticed and 
+> reported quickly - and there are no such open regressions currently.
 
-Ma, Chinang wrote:
-> Hi Gregory,
-> Trace in attachment. I trim down the distribution list. As the attachme=
-nt is quite big.
->
-> Thanks,
-> -Chinang
->  =20
-Hi Chinang,
+It at least suggests a problem with interaction between the scheduler
+and kvm, otherwise reverting that scheduler patch wouldn't have made the
+regression go away.
 
-  Thank you very much for taking the time to do this.  I have analyzed
-the trace: I do not see any smoking gun w.r.t. the theory that we are
-over IPI'ing the system.  There were holes in the data due to trace
-limitations that rendered some of the data inconclusive.  However, the
-places where we did not run into trace limitations looked like
-everything was functioning as designed.
-
-That being said, I do see that you have a ton of prio 48(ish) threads
-that are over-straining the RT push logic.  The interesting thing here
-is I recently pushed some patches to tip that have potential to help you
-here.  Could you try your test using the sched/rt branch from -tip?=20
-Here is a clone link, for your convenience:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git sched=
-/rt
-
-For this run, do _not_ use the trace patch/config.  I just want to see
-if you observe performance improvements with OLTP configured for RT prio
-when compared to historic rt-push/pull based kernels (including HEAD on
-linus.git, as tested in the last run)
-
-Thanks!
--Greg
+Regards,
+Kevin.
 
 
-
---------------enig1D8037201D5825D038EA98D2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkl1x20ACgkQlOSOBdgZUxl9DgCeMOkzM1OfIV5ALA2L9PvO05Gz
-G9AAn3CuAYh1/BNgv/fYwgwNa/O4nOEt
-=I2KJ
------END PGP SIGNATURE-----
-
---------------enig1D8037201D5825D038EA98D2--
