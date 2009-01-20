@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbZATKwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760323AbZATLCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbZATKwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbZATKwG
+	id S1760323AbZATLCN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 06:02:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZATLBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:52:06 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:20575 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756349AbZATKwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:52:05 -0500
-From: Vitaliy Gusev <vgusev@openvz.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] kthread: Don't looking for a task in create_kthread() #2
-Date: Tue, 20 Jan 2009 13:45:41 +0300
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Christoph Hellwig <hch@lst.de>, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>
+	Tue, 20 Jan 2009 06:01:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:6169 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757215AbZATLBw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 06:01:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZfxLvTtZ2vQuXQ5HoBf9F3hWnQlr0e4m1l+/VOKzFDVNl/U8CfGPYpmbUCsQDT6Nx3
+         sVvSNlXgLRIrXH6whweSuhXkbqoKaOJNje4a6WO8lZZ8mGetMNC8pCAJ7Sa02dFX+xf2
+         C4zjtzpUK/iEiAOzHEqwMKBCj8Ef0XKrcFSp0=
+Date: Tue, 20 Jan 2009 11:01:44 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090120110144.GB17004@ff.dom.local>
+References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net> <20090120083726.GA13806@ff.dom.local> <20090120093352.GB13806@ff.dom.local> <20090120100043.GA9167@ioremap.net> <20090120102053.GA17004@ff.dom.local> <20090120103122.GC9167@ioremap.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901201345.42054.vgusev@openvz.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090120103122.GC9167@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the unnecessary find_task_by_pid_ns(). kthread() can just
-use "current" to get the same result.
+On Tue, Jan 20, 2009 at 01:31:22PM +0300, Evgeniy Polyakov wrote:
+> On Tue, Jan 20, 2009 at 10:20:53AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > Good question! Alas I can't check this soon, but if it's really like
+> > this, of course this needs some better idea and rework. (BTW, I'd like
+> > to prevent here as much as possible some strange activities like 1
+> > byte (payload) packets getting full pages without any accounting.)
+> 
+> I believe approach to meet all our goals is to have own network memory
+> allocator, so that each skb could have its payload in the fragments, we
+> would not suffer from the heavy fragmentation and power-of-two overhead
+> for the larger MTUs, have a reserve for the OOM condition and generally
+> do not depend on the main system behaviour.
 
-Signed-off-by: Vitaliy Gusev <vgusev@openvz.org>
+100% right! But I guess we need this current fix for -stable, and I'm
+a bit worried about safety.
 
----
- kernel/kthread.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+> 
+> I will resurrect to some point my network allocator to check how things
+> go in the modern environment, if no one will beat this idea first :)
 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 4fbc456..fd765f9 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -76,6 +76,7 @@ static int kthread(void *_create)
- 
- 	/* OK, tell user we're spawned, wait for stop or wakeup */
- 	__set_current_state(TASK_UNINTERRUPTIBLE);
-+	create->result = current;
- 	complete(&create->started);
- 	schedule();
- 
-@@ -101,9 +102,6 @@ static void create_kthread(struct kthread_create_info *create)
- 	} else {
- 		struct sched_param param = { .sched_priority = 0 };
- 		wait_for_completion(&create->started);
--		read_lock(&tasklist_lock);
--		create->result = find_task_by_pid_ns(pid, &init_pid_ns);
--		read_unlock(&tasklist_lock);
- 		/*
- 		 * root may have changed our (kthreadd's) priority or CPU mask.
- 		 * The kernel thread should not inherit these properties.
+I can't see too much beating of ideas around this problem now... I Wish
+you luck!
+
+> 
+> 1. Network (tree) allocator
+> http://www.ioremap.net/projects/nta
+> 
+
+Great, I'll try to learn a bit btw.,
+Jarek P.
