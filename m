@@ -1,127 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZATOrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbZATOym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760862AbZATOrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 09:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZATOqv
+	id S1760082AbZATOym (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 09:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZATOy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 09:46:51 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:37505 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731AbZATOqu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 09:46:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uO0Y8dcpUxh3JQVd8/M6FAp+fMbSl9WCzeFfazx3cFPvwYb0dpWheduwFfszvhMEoX
-         ZkJ/E9zvzzTsDnA7BHxdpTuhj6Dvy9QLZua0aLiFsGR1Y5hvfYci7QBn4Kvxel2uFgxO
-         84VQLe72cKbdaMb7/uPasfG4eAPud3QKhbm+U=
-Message-ID: <c62985530901200646n548d14a8x51134bc1636d4a76@mail.gmail.com>
-Date: Tue, 20 Jan 2009 15:46:38 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Kevin Shanahan" <kmshanah@ucwb.org.au>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Avi Kivity" <avi@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <1232461380.4895.33.camel@kulgan.wumi.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 Jan 2009 09:54:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52351 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755540AbZATOy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 09:54:29 -0500
+Subject: Re: why usr/include/linux/if_frad.h is required
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: mike.mclagan@linux.org
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       netdev@vger.kernel.org, davem@davemloft.net,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1232463174.3088.15.camel@localhost.localdomain>
+References: <1232463174.3088.15.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 20:24:02 +0530
+Message-Id: <1232463242.3088.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
-	 <20090120113546.GA26571@elte.hu>
-	 <1232455343.4895.4.camel@kulgan.wumi.org.au>
-	 <20090120125652.GA1457@elte.hu>
-	 <1232461380.4895.33.camel@kulgan.wumi.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/20 Kevin Shanahan <kmshanah@ucwb.org.au>:
-> On Tue, 2009-01-20 at 13:56 +0100, Ingo Molnar wrote:
->> * Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
->> > > This suggests some sort of KVM-specific problem. Scheduler latencies
->> > > in the seconds that occur under normal load situations are noticed and
->> > > reported quickly - and there are no such open regressions currently.
->> >
->> > It at least suggests a problem with interaction between the scheduler
->> > and kvm, otherwise reverting that scheduler patch wouldn't have made the
->> > regression go away.
->>
->> the scheduler affects almost everything, so almost by definition a
->> scheduler change can tickle a race or other timing bug in just about any
->> code - and reverting that change in the scheduler can make the bug go
->> away. But yes, it could also be a genuine scheduler bug - that is always a
->> possibility.
->
-> Okay, I understand.
->
->> Could you please run a cfs-debug-info.sh session on a CONFIG_SCHED_DEBUG=y
->> and CONFIG_SCHEDSTATS=y kernel, while you are experiencing those
->> latencies:
->>
->>   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
->>
->> and post that (relatively large) somewhere, or send it as a reply after
->> bzip2 -9 compressing it? It will include a lot of information about the
->> delays your tasks are experiencing.
->
-> Running it while the problem is occuring will be tricky, as it only
-> lasts for a few seconds at a time. Is it going to be useful at all to
-> just see those statistics if the system is running normally?
->
-> I might need to modify the script a little. Am I right that everything
-> above "gathering statistics..." is pretty much static information?
->
-> I could run top, vmstat and cat /proc/sched_debug in a loop until the
-> problem occurs and then trim it. Something like:
->
-> while true; do
->  date                                >> $FILE
->  echo "-- top: --"                   >> $FILE
->  top -H -c -b -d 1 -n 0.5            >> $FILE 2>/dev/null
->  echo "-- vmstat: --"                >> $FILE
->  vmstat                              >> $FILE 2>/dev/null
->  echo "-- sched_debug #$i: --"       >> $FILE
->  cat /proc/sched_debug               >> $FILE 2>/dev/null
-> done
->
-> That should take a snapshot every half second or so.
->
-> Regards,
-> Kevin.
->
-> P.S. Please keep kmshanah@flexo.wumi.org.au out of the CC list (it won't
->     route properly anyway). I don't know how it got added - the only
->     place it would have appeared was in the "revert" commit message
->     when I was testing 2.6.28 with the commit I bisected down to
->     removed.
->
+CC: LKML
 
+On Tue, 2009-01-20 at 20:23 +0530, Jaswinder Singh Rajput wrote:
+> For if_frad.h I am getting two warnings with 'make headers_check':
+>   usr/include/linux/if_frad.h:29: leaks CONFIG_DLCI to userspace where it is not valid
+>   usr/include/linux/if_frad.h:129: leaks CONFIG_DLCI to userspace where it is not valid
+> 
+> Almost all if_frad.h is covered with #if defined(CONFIG_DLCI) || defined(CONFIG_DLCI_MODULE) 
+> 
+> If I remove this portion so only this what we get in userspace:
+> 
+> #ifndef _FRAD_H_
+> #define _FRAD_H_
+> 
+> #include <linux/if.h>
+> 
+> #endif
+> 
+> So I am surprising what is the point of this ? 
+> 
+> Can I change its name to is_fraud ;-)
+> 
+> --
+> JSR
 
-One other thing you can do is enabling CONFIG_FUNCTION_GRAPH_TRACER,
-as Ingo suggested, and
-trace the schedule() function.
-This way you will see the time spent in (almost) each functions called
-from schedule() and perhaps find
-where is the contention (if it comes from the scheduler).
-
-How to use it?
-
-echo schedule > /debugfs/tracing/set_graph_function
-echo function_graph > /debugfs/tracing/current_tracer
-cat /debugfs/tracing/trace
-
-Or even through a pipe:
-cat /debugfs/tracing/trace_pipe > ~/func_graph.log
-
-To end the tracing: echo nop > /debugfs/tracing/current_tracer
-Or just make a pause: echo 0 > /debugfs/tracing/tracing_enabled
