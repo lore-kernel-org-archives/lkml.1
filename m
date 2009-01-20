@@ -1,81 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbZATVzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZATV4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757981AbZATVzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 16:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756957AbZATVzX
+	id S1758855AbZATV4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 16:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZATVz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 16:55:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47396 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756875AbZATVzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 16:55:18 -0500
-Date: Wed, 21 Jan 2009 08:23:36 +1100 (EST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Woodhouse <dwmw2@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement
- adaptive spinning
-In-Reply-To: <20090120210515.GC19710@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain>
-References: <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain> <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de>
- <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 20 Jan 2009 16:55:59 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48288 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755233AbZATVz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 16:55:58 -0500
+Cc: dwmw2@infradead.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Tue, 20 Jan 2009 22:55:56 +0100
+From: "Wolfram Strepp" <wstrepp@gmx.de>
+Message-ID: <20090120215556.74580@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH 1/2] Optimization of function rb_erase() in lib/rbtree.c
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #14768304
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX18Smfpyhu8SUQBLXYSL5jLJ9WPg6DcxRKmEvoz8UE
+ QJf9AimLaGn5PBOBSoFUOsp2t/jPnsCWNGjg== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: CiweBBl8bHIhQMJg2DQ0yDEiJihyapC8
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+i have reviewed the code of the rb-tree implementation
+in the kernel, and distilled two small patches for file lib/rbtree.c,
+which optimize and cleanup the code of functions rb_erase() and __rb_erase_color().
+In summary, there are 5 if()-conditions which can be eliminated.
+The patches reduce the code size (normal kernel build on x86)
+of this functions by 23 bytes, or 4.5 %.
 
-On Tue, 20 Jan 2009, Ingo Molnar wrote:
-> 
-> (Different-type pointer uses are a common pattern: we have a lot of places 
-> where we have pointers to structures with different types so 
-> strict-aliasing optimization opportunities apply quite broadly already.)
+So although this is not a dramatic change, i think its worth it,
+given the many places in the kernel where it is used
+(and given the fact that processors dont like if-conditions).
 
-Yes and no.
+The patches are tested on x86.
 
-It's true that the kernel in general uses mostly pointers through 
-structures that can help the type-based thing.
+------------------------------------------
 
-However, the most common and important cases are actually the very same 
-structures. In particular, things like <linux/list.h>. Same "struct list", 
-often embedded into another case of the same struct.
+The first patch was already posted some years ago, see:
+http://lkml.org/lkml/2002/11/22/146
+and:
+http://lkml.org/lkml/2002/11/24/122
 
-And that's where "restrict" can actually help. It might be interesting to 
-see, for example, if it makes any difference to add a "restrict" qualifier 
-to the "new" pointer in __list_add(). That might give the compiler the 
-ability to schedule the stores to next->prev and prev->next differently, 
-and maybe it could matter? 
+It was finally merged by the original author of the rb-tree
+implementation, Andrea Arcangeli, in one of his kernel trees.
+Citing from http://lkml.org/lkml/2002/12/25/51:
 
-It probably is not noticeable. The big reason for wanting to do alias 
-analysis tends to not be thatt kind of code at all, but the cases where 
-you can do much bigger simplifications, or on in-order machines where you 
-really want to hoist things like FP loads early and FP stores late, and 
-alias analysis (and here type-based is more reasonable) shows that the FP 
-accesses cannot alias with the integer accesses around it.
+>Only in 2.4.21pre2aa1: 00_rbtree-cleanups-1
+>
+>	Merged rbtree cleanups/microoptimizations from Érsek László after
+>	verifying their math correctness also with the help of Paolo Carlini
+>	and of some gentle reminder from Rusty, they are obviously right,
+>	thanks.
 
-In x86, I doubt _any_ amount of alias analysis makes a hug difference (as 
-long as the compiler at least doesn't think that local variable spills can 
-alias with anything else). Not enough registers, and generally pretty 
-aggressively OoO (with alias analysis in hardware) makes for a much less 
-sensitive platform.
+But obviousely, it never found is way into the mainline kernel,
+so here it is again.
 
-			Linus
+Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
+
+====================================================
+--- a/lib/rbtree.c
++++ b/lib/rbtree.c
+@@ -163,17 +163,14 @@ static void __rb_erase_color(struct rb_node *node, struct rb_node *parent,
+ 			{
+ 				if (!other->rb_right || rb_is_black(other->rb_right))
+ 				{
+-					struct rb_node *o_left;
+-					if ((o_left = other->rb_left))
+-						rb_set_black(o_left);
++					rb_set_black(other->rb_left);
+ 					rb_set_red(other);
+ 					__rb_rotate_right(other, root);
+ 					other = parent->rb_right;
+ 				}
+ 				rb_set_color(other, rb_color(parent));
+ 				rb_set_black(parent);
+-				if (other->rb_right)
+-					rb_set_black(other->rb_right);
++				rb_set_black(other->rb_right);
+ 				__rb_rotate_left(parent, root);
+ 				node = root->rb_node;
+ 				break;
+@@ -200,17 +197,14 @@ static void __rb_erase_color(struct rb_node *node, struct rb_node *parent,
+ 			{
+ 				if (!other->rb_left || rb_is_black(other->rb_left))
+ 				{
+-					register struct rb_node *o_right;
+-					if ((o_right = other->rb_right))
+-						rb_set_black(o_right);
++					rb_set_black(other->rb_right);
+ 					rb_set_red(other);
+ 					__rb_rotate_left(other, root);
+ 					other = parent->rb_left;
+ 				}
+ 				rb_set_color(other, rb_color(parent));
+ 				rb_set_black(parent);
+-				if (other->rb_left)
+-					rb_set_black(other->rb_left);
++				rb_set_black(other->rb_left);
+ 				__rb_rotate_right(parent, root);
+ 				node = root->rb_node;
+ 				break;
+
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
