@@ -1,83 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbZATU3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbZATUcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761475AbZATU3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 15:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZATU32
+	id S1761126AbZATUcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 15:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZATUcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 15:29:28 -0500
-Received: from mout3.freenet.de ([195.4.92.93]:44937 "EHLO mout3.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756090AbZATU31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 15:29:27 -0500
-Message-ID: <34115.192.168.0.40.1232483361.squirrel@server>
-Date: Tue, 20 Jan 2009 21:29:21 +0100 (CET)
-Subject: [PATCH] usb/mcs7830: Don't use buffers from stack for USB transfers
-From: "Christian Eggers" <ceggers@gmx.de>
-To: netdev@vger.kernel.org
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 20 Jan 2009 15:32:22 -0500
+Received: from cmpxchg.org ([85.214.51.133]:48771 "EHLO cmpxchg.org"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752767AbZATUcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 15:32:22 -0500
+Date: Tue, 20 Jan 2009 21:31:31 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH v3] wait: prevent waiter starvation in __wait_on_bit_lock
+Message-ID: <20090120203131.GA20985@cmpxchg.org>
+References: <20090117215110.GA3300@redhat.com> <20090118013802.GA12214@cmpxchg.org> <20090118023211.GA14539@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118023211.GA14539@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Eggers <christian.eggers@kathrein.de>
+On Sun, Jan 18, 2009 at 03:32:11AM +0100, Oleg Nesterov wrote:
+> On 01/18, Johannes Weiner wrote:
+> >
+> > On Sat, Jan 17, 2009 at 10:51:10PM +0100, Oleg Nesterov wrote:
+> > >
+> > > 	if ((ret = (*action)(q->key.flags))) {
+> > > 		__wake_up_bit(wq, q->key.flags, q->key.bit_nr);
+> > > 		// or just __wake_up(wq, TASK_NORMAL, 1, &q->key);
+> > > 		break;
+> > > 	}
+> > >
+> > > IOW, imho __wait_on_bit_lock() is buggy, not __lock_page_killable(),
+> > > no?
+> >
+> > I agree with you, already replied with a patch to linux-mm where Chris
+> > posted it originally.
+> >
+> > Peter noted that we have a spurious wake up in the case where A holds
+> > the page lock, B and C wait, B gets killed and does a wake up, then A
+> > unlocks and does a wake up.  Your proposal has this problem too,
+> > right?
+> 
+> Yes sure. But I can't see how it is possible to avoid the false
+> wakeup for sure, please see below.
+> 
+> > @@ -182,8 +182,20 @@ __wait_on_bit_lock(wait_queue_head_t *wq
+> >  	do {
+> >  		prepare_to_wait_exclusive(wq, &q->wait, mode);
+> >  		if (test_bit(q->key.bit_nr, q->key.flags)) {
+> > -			if ((ret = (*action)(q->key.flags)))
+> > +			ret = action(q->key.flags);
+> > +			if (ret) {
+> > +				/*
+> > +				 * Contenders are woken exclusively.  If
+> > +				 * we do not take the lock when woken up
+> > +				 * from an unlock, we have to make sure to
+> > +				 * wake the next waiter in line or noone
+> > +				 * will and shkle will wait forever.
+> > +				 */
+> > +				if (!test_bit(q->key.bit_nr, q->key.flags))
+> > +					__wake_up_bit(wq, q->key.flags,
+> 
+> Afaics, the spurious wake up is still possible if SIGKILL and
+> unlock_page() happen "at the same time".
+> 
+> 	__wait_on_bit_lock:			unlock_page:
+> 
+> 						clear_bit_unlock()
+> 	test_bit() == T
+> 
+> 	__wake_up_bit()				wake_up_page()
+> 
+> Note that sync_page_killable() returns with ->state == TASK_RUNNING,
+> __wake_up() will "ignore" us.
 
-mcs7830_set_reg() and mcs7830_get_reg() are called with buffers
-from stack which must not be used directly for USB transfers.
-This causes corruption of the stack particulary on non x86
-architectures because DMA may be used for these transfers.
+Yeah, we are not completely out of the woods.  But it's getting
+better.  The code is still pretty clear, the major bug is fixed and we
+even managed to get the race window for false wake ups pretty small.
+Isn't that great? :)
 
-Signed-off-by: Christian Eggers <christian.eggers@kathrein.de>
----
+> But, more importantly, I'm afraid we can also have the false negative,
+> this "if (!test_bit())" test lacks the barriers. This can't happen with
+> sync_page_killable() because it always calls schedule(). But let's
+> suppose we modify it to check signal_pending() first:
+> 
+> 	static int sync_page_killable(void *word)
+> 	{
+> 		if (fatal_signal_pending(current))
+> 			return -EINTR;
+> 		return sync_page(word);
+> 	}
+> 
+> It is still correct, but unless I missed something now __wait_on_bit_lock()
+> has problems again.
 
-This is my first patch submission for Linux. I hope everything is fine.
+Hm, this would require the lock bit to be set without someone else
+doing the wakeup.  How could this happen?
 
-diff -uprN linux-2.6.28.1.orig/drivers/net/usb/mcs7830.c linux-2.6.28.1/drivers/net/usb/mcs7830.c
---- linux-2.6.28.1.orig/drivers/net/usb/mcs7830.c       2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/drivers/net/usb/mcs7830.c    2009-01-20 20:53:59.000000000 +0100
-@@ -94,10 +94,18 @@ static int mcs7830_get_reg(struct usbnet
- {
-        struct usb_device *xdev = dev->udev;
-        int ret;
-+       void *buffer;
-+
-+       buffer = kmalloc(size, GFP_NOIO);
-+       if (buffer == NULL)
-+               return -ENOMEM;
+I could think of wake_up_page() happening BEFORE clear_bit_unlock()
+and we have to be on the front of the waitqueue.  Then we are already
+running, the wake up is a nop, the !test_bit() is false and noone
+wakes up the next real contender.
 
-        ret = usb_control_msg(xdev, usb_rcvctrlpipe(xdev, 0), MCS7830_RD_BREQ,
--                             MCS7830_RD_BMREQ, 0x0000, index, data,
-+                             MCS7830_RD_BMREQ, 0x0000, index, buffer,
-                              size, MCS7830_CTRL_TIMEOUT);
-+       memcpy(data, buffer, size);
-+       kfree(buffer);
-+
-        return ret;
- }
+But the wake up side uses a smp barrier after clearing the bit, so if
+the bit is not cleared we can expect a wake up, no?
 
-@@ -105,10 +113,18 @@ static int mcs7830_set_reg(struct usbnet
- {
-        struct usb_device *xdev = dev->udev;
-        int ret;
-+       void *buffer;
-+
-+       buffer = kmalloc(size, GFP_NOIO);
-+       if (buffer == NULL)
-+               return -ENOMEM;
-+
-+       memcpy(buffer, data, size);
+Or do we still need a read-side barrier before the test bit?  Damned
+coherency...
 
-        ret = usb_control_msg(xdev, usb_sndctrlpipe(xdev, 0), MCS7830_WR_BREQ,
--                             MCS7830_WR_BMREQ, 0x0000, index, data,
-+                             MCS7830_WR_BMREQ, 0x0000, index, buffer,
-                              size, MCS7830_CTRL_TIMEOUT);
-+       kfree(buffer);
-        return ret;
- }
+> But don't get me wrong, I think you are right and it is better to minimize
+> the possibility of the false wakeup.
+> 
+> Oleg.
 
-
+Thanks,
+	Hannes
