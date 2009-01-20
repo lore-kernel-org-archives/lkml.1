@@ -1,82 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZATIf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbZATIhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbZATIf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 03:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZATIfr
+	id S1759062AbZATIhs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 03:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbZATIhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 03:35:47 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:48261 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754407AbZATIfq (ORCPT
+	Tue, 20 Jan 2009 03:37:36 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:40795 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbZATIhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 03:35:46 -0500
+	Tue, 20 Jan 2009 03:37:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qPxSkw5PldGfJQ/j1oqjkqvvaRLzz64ZGlL+eM5pzXaGCKgqNjdJnLjUDKRWEMqMGo
-         YjFrDFQWur4EmFjikfq+HjC45TjGgXEN9zrC/YyGtJmpfaWF7lLrsr2k2h94ZnICpvmu
-         KwbfavZRpjD4m4e1fLoq6F2hNKt4ZRLkx0Z80=
-Message-ID: <bcb3ef430901200035y33cea7e6hcf78ac1df01c99d2@mail.gmail.com>
-Date: Tue, 20 Jan 2009 09:35:44 +0100
-From: MartinG <gronslet@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: Suspend/resume works in 2.6.29-0.19.rc0.git9.fc11.i686, but fails in later versions
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090119191720.GB6463@ucw.cz>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Dd+CV/GP5+IQWmSOSRZfo8aUIoSK3lf/KypC3SsjlZdff5tZ1QeJWnaGq6IN6u7UY0
+         HUrbwLDq25kc1f2SzbQHDRESipJfULz3cIDOIpqAd/29oMG+B6imyrAvOvIG769+EI4D
+         RUAVeClZFO8rPoXqg7+QvsduZ+QFZAjI0ZxSI=
+Date: Tue, 20 Jan 2009 08:37:26 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, w@1wt.eu, zbr@ioremap.net,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090120083726.GA13806@ff.dom.local>
+References: <20090114.012919.117682429.davem@davemloft.net> <20090115230331.GB1123@1wt.eu> <20090115231934.GA8328@gondor.apana.org.au> <20090115.152608.89323697.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <bcb3ef430901150110nc4ced93w50c662ac512f8552@mail.gmail.com>
-	 <20090116085326.GC4795@atrey.karlin.mff.cuni.cz>
-	 <bcb3ef430901161443y5843d951m1cdee28dd588d006@mail.gmail.com>
-	 <20090119191720.GB6463@ucw.cz>
+In-Reply-To: <20090115.152608.89323697.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 8:17 PM, Pavel Machek <pavel@suse.cz> wrote:
-> Ok, that is not going to work on single core. Can you try if
-> suspending works in init=/bin/bash mode?
+On Thu, Jan 15, 2009 at 03:26:08PM -0800, David Miller wrote:
+...
+> net: Fix data corruption when splicing from sockets.
+> 
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> 
+> The trick in socket splicing where we try to convert the skb->data
+> into a page based reference using virt_to_page() does not work so
+> well.
+...
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index 65eac77..56272ac 100644
+...
 
-Hi, I forgot to mention that I'm running on a crypted disk. So
-"init=/bin/bash" fails. But I booted kernel-2.6.29-0.41.rc2.fc11.i686
-using "1" as a kernel parameter, and put the laptop to suspend by
-# echo -n mem > /sys/power/state
+Here is a tiny upgrade to save some memory by reusing a page for more
+chunks if possible, which I think could be considered, after the
+testing of the main patch is finished. (There could be also added an
+additional freeing of this cached page before socket destruction,
+maybe in tcp_splice_read(), if somebody finds good place.)
 
-But still, I was not able to resume it - black screen, keyboard dead.
+Thanks,
+Jarek P.
 
-Could it be related to my disk encryption? I though "everybody"
-encrypted their laptop these days?
-I set it up during installation (full disk encryption, I get prompted
-for passphrase as the first thing during boot).
+---
 
-This is my layout:
-# df -h
-Filesystem            Size  Used Avail Use% Mounted on
-/dev/mapper/VolGroup00-LogVol00
-                       12G  7,5G  4,5G  63% /
-/dev/mapper/VolGroup00-LogVol02
-                       14G   12G  1,6G  88% /home
-/dev/sda1             190M   51M  130M  29% /boot
-tmpfs                 614M   76K  614M   1% /dev/shm
+ include/net/sock.h  |    4 ++++
+ net/core/skbuff.c   |   32 ++++++++++++++++++++++++++------
+ net/core/sock.c     |    2 ++
+ net/ipv4/tcp_ipv4.c |    8 ++++++++
+ 4 files changed, 40 insertions(+), 6 deletions(-)
 
-# mount
-/dev/mapper/VolGroup00-LogVol00 on / type ext3 (rw)
-proc on /proc type proc (rw)
-sysfs on /sys type sysfs (rw)
-devpts on /dev/pts type devpts (rw,gid=5,mode=620)
-/dev/mapper/VolGroup00-LogVol02 on /home type ext3 (rw)
-/dev/sda1 on /boot type ext3 (rw)
-tmpfs on /dev/shm type tmpfs (rw)
-none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
-sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-fusectl on /sys/fs/fuse/connections type fusectl (rw)
-nfsd on /proc/fs/nfsd type nfsd (rw)
-
-I'd be happy to test further - please let me know what info I can provide.
-Thanks.
-
--MartinG
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 5a3a151..4ded741 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -190,6 +190,8 @@ struct sock_common {
+   *	@sk_user_data: RPC layer private data
+   *	@sk_sndmsg_page: cached page for sendmsg
+   *	@sk_sndmsg_off: cached offset for sendmsg
++  *	@sk_splice_page: cached page for splice
++  *	@sk_splice_off: cached offset for splice
+   *	@sk_send_head: front of stuff to transmit
+   *	@sk_security: used by security modules
+   *	@sk_mark: generic packet mark
+@@ -279,6 +281,8 @@ struct sock {
+ 	struct page		*sk_sndmsg_page;
+ 	struct sk_buff		*sk_send_head;
+ 	__u32			sk_sndmsg_off;
++	struct page		*sk_splice_page;
++	__u32			sk_splice_off;
+ 	int			sk_write_pending;
+ #ifdef CONFIG_SECURITY
+ 	void			*sk_security;
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 56272ac..74adc79 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -1334,13 +1334,33 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+ }
+ 
+ static inline struct page *linear_to_page(struct page *page, unsigned int len,
+-					  unsigned int offset)
++					  unsigned int *offset,
++					  struct sk_buff *skb)
+ {
+-	struct page *p = alloc_pages(GFP_KERNEL, 0);
++	struct sock *sk = skb->sk;
++	struct page *p = sk->sk_splice_page;
++	unsigned int off;
+ 
+-	if (!p)
+-		return NULL;
+-	memcpy(page_address(p) + offset, page_address(page) + offset, len);
++	if (!p) {
++new_page:
++		p = sk->sk_splice_page = alloc_pages(sk->sk_allocation, 0);
++		if (!p)
++			return NULL;
++
++		off = sk->sk_splice_off = 0;
++		/* hold this page until it's full or unneeded */
++		get_page(p);
++	} else {
++		off = sk->sk_splice_off;
++		if (off + len > PAGE_SIZE) {
++			put_page(p);
++			goto new_page;
++		}
++	}
++
++	memcpy(page_address(p) + off, page_address(page) + *offset, len);
++	sk->sk_splice_off += len;
++	*offset = off;
+ 
+ 	return p;
+ }
+@@ -1356,7 +1376,7 @@ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+ 		return 1;
+ 
+ 	if (linear) {
+-		page = linear_to_page(page, len, offset);
++		page = linear_to_page(page, len, &offset, skb);
+ 		if (!page)
+ 			return 1;
+ 	} else
+diff --git a/net/core/sock.c b/net/core/sock.c
+index f3a0d08..6b258a9 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1732,6 +1732,8 @@ void sock_init_data(struct socket *sock, struct sock *sk)
+ 
+ 	sk->sk_sndmsg_page	=	NULL;
+ 	sk->sk_sndmsg_off	=	0;
++	sk->sk_splice_page	=	NULL;
++	sk->sk_splice_off	=	0;
+ 
+ 	sk->sk_peercred.pid 	=	0;
+ 	sk->sk_peercred.uid	=	-1;
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index 19d7b42..cf3d367 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1848,6 +1848,14 @@ void tcp_v4_destroy_sock(struct sock *sk)
+ 		sk->sk_sndmsg_page = NULL;
+ 	}
+ 
++	/*
++	 * If splice cached page exists, toss it.
++	 */
++	if (sk->sk_splice_page) {
++		__free_page(sk->sk_splice_page);
++		sk->sk_splice_page = NULL;
++	}
++
+ 	percpu_counter_dec(&tcp_sockets_allocated);
+ }
+ 
