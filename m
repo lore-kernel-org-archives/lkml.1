@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbZATKnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbZATKna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbZATKnI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:43:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZATKmS
+	id S1760790AbZATKna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761076AbZATKmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:42:18 -0500
-Received: from www84.your-server.de ([213.133.104.84]:44148 "EHLO
+	Tue, 20 Jan 2009 05:42:21 -0500
+Received: from www84.your-server.de ([213.133.104.84]:44155 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760722AbZATKmQ (ORCPT
+	with ESMTP id S1760673AbZATKmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:42:16 -0500
-Subject: Detailed Stack Information Patch [1/3]
+	Tue, 20 Jan 2009 05:42:19 -0500
+Subject: Detailed Stack Information Patch [3/3]
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Tue, 20 Jan 2009 11:16:40 +0100
-Message-Id: <1232446600.784.16.camel@matrix>
+Date: Tue, 20 Jan 2009 11:16:45 +0100
+Message-Id: <1232446605.784.19.camel@matrix>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
@@ -24,122 +24,358 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -u -N -r linux-2.6.28.1.orig/fs/exec.c linux-2.6.28.1/fs/exec.c
---- linux-2.6.28.1.orig/fs/exec.c	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/fs/exec.c	2009-01-20 09:10:35.000000000 +0100
-@@ -1342,6 +1342,9 @@
- 	current->flags &= ~PF_KTHREAD;
- 	retval = search_binary_handler(bprm,regs);
- 	if (retval >= 0) {
-+#ifdef CONFIG_PROC_STACK
-+		current->stack_start = current->mm->start_stack;
-+#endif
- 		/* execve success */
- 		security_bprm_free(bprm);
- 		acct_update_integrals(current);
-diff -u -N -r linux-2.6.28.1.orig/fs/proc/array.c linux-2.6.28.1/fs/proc/array.c
---- linux-2.6.28.1.orig/fs/proc/array.c	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/fs/proc/array.c	2009-01-20 09:10:35.000000000 +0100
-@@ -308,6 +308,25 @@
- 			p->nivcsw);
- }
- 
-+#ifdef CONFIG_PROC_STACK
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *p)
-+{
-+	unsigned long		cur_stack;
-+	unsigned long		base_page;
-+
-+	base_page = KSTK_ESP(p) >> PAGE_SHIFT;
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+	cur_stack = base_page-(p->stack_start >> PAGE_SHIFT);
-+#else
-+	cur_stack = (p->stack_start >> PAGE_SHIFT)-base_page;
-+#endif
-+	seq_printf(m,	"stack usage:\t%lu kB\n",
-+		(cur_stack + 1) << (PAGE_SHIFT-10));
-+}
-+#endif
-+
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -327,6 +346,9 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+#ifdef CONFIG_PROC_STACK
-+	task_show_stack_usage(m, task);
-+#endif
- 	return 0;
- }
- 
-diff -u -N -r linux-2.6.28.1.orig/fs/proc/task_mmu.c linux-2.6.28.1/fs/proc/task_mmu.c
---- linux-2.6.28.1.orig/fs/proc/task_mmu.c	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/fs/proc/task_mmu.c	2009-01-20 09:10:35.000000000 +0100
-@@ -240,6 +240,11 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+#ifdef CONFIG_PROC_STACK
-+				} else if (vma->vm_start <= mm->start_stack &&
-+					   vma->vm_end >= mm->start_stack) {
-+					name = "[thread stack]";
-+#endif
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.28.1.orig/include/linux/sched.h linux-2.6.28.1/include/linux/sched.h
---- linux-2.6.28.1.orig/include/linux/sched.h	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/include/linux/sched.h	2009-01-20 09:10:35.000000000 +0100
-@@ -1356,6 +1356,9 @@
- 	unsigned long default_timer_slack_ns;
- 
- 	struct list_head	*scm_work_list;
-+#ifdef CONFIG_PROC_STACK
-+	unsigned long stack_start;
-+#endif
- };
- 
- /*
 diff -u -N -r linux-2.6.28.1.orig/init/Kconfig linux-2.6.28.1/init/Kconfig
---- linux-2.6.28.1.orig/init/Kconfig	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/init/Kconfig	2009-01-20 09:10:36.000000000 +0100
-@@ -814,6 +814,18 @@
+--- linux-2.6.28.1.orig/init/Kconfig	2009-01-20 09:15:49.000000000 +0100
++++ linux-2.6.28.1/init/Kconfig	2009-01-20 09:16:12.000000000 +0100
+@@ -836,6 +836,18 @@
+ 	  Disabling these interfaces will reduce the size of the kernel by
+ 	  approximately 2kb.
  
- source "arch/Kconfig"
- 
-+config PROC_STACK
-+ 	default y
-+	depends on PROC_FS && MMU
-+	bool "Enable /proc/<pid> stack monitoring" if EMBEDDED
++config PROC_STACK_DEBUG
++ 	default n
++	depends on PROC_STACK
++	tristate "Enable stack monitoring debug" if EMBEDDED
 + 	help
-+	  This enables monitoring of process and thread stack utilization.
-+
-+	  The /proc/pid/maps, /proc/pid/smaps, /proc/pid/status and the
-+	  /proc/pid/task/pid pedants will be extended by the stack information.
++	  This enables a stack monitoring debug interface. Each process or
++	  thread which exceeds the stack limit will receive a SIGTRAP.
++	  Attaching a debugger to the process will give you the ability to
++	  examinate the stack usage.
 +	  Disabling these interfaces will reduce the size of the kernel by
-+	  approximately 1kb.
++	  approximately 2kb.
 +
  endmenu		# General setup
  
  config HAVE_GENERIC_DMA_COHERENT
-diff -u -N -r linux-2.6.28.1.orig/kernel/fork.c linux-2.6.28.1/kernel/fork.c
---- linux-2.6.28.1.orig/kernel/fork.c	2009-01-18 19:45:37.000000000 +0100
-+++ linux-2.6.28.1/kernel/fork.c	2009-01-20 09:10:36.000000000 +0100
-@@ -1093,6 +1093,11 @@
- 	p->blocked_on = NULL; /* not blocked yet */
- #endif
- 
-+#ifdef CONFIG_PROC_STACK
-+	p->stack_start = (stack_start == KSTK_ESP(current)) ?
-+		current->stack_start : stack_start;
+diff -u -N -r linux-2.6.28.1.orig/mm/Makefile linux-2.6.28.1/mm/Makefile
+--- linux-2.6.28.1.orig/mm/Makefile	2009-01-18 19:45:37.000000000 +0100
++++ linux-2.6.28.1/mm/Makefile	2009-01-20 09:17:08.000000000 +0100
+@@ -34,3 +34,4 @@
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_PROC_STACK_DEBUG) += stackdbg.o
+diff -u -N -r linux-2.6.28.1.orig/mm/stackdbg.c linux-2.6.28.1/mm/stackdbg.c
+--- linux-2.6.28.1.orig/mm/stackdbg.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.28.1/mm/stackdbg.c	2009-01-20 09:16:12.000000000 +0100
+@@ -0,0 +1,319 @@
++/*
++ * stack monitoring debugger
++ *
++ *	Copyright (C) 2009 Stefani Seibold for NSN
++ *     This Source is under GPL Licence
++ *
++ * enabled when CONFIG_PROC_STACK_DEBUG is set
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/pagemap.h>
++#include <linux/init.h>
++#include <linux/stddef.h>
++#include <linux/kthread.h>
++#include <linux/freezer.h>
++
++#define XSTR(x)         #x
++#define STR(x)          XSTR(x)
++
++#define	DEF_STACKSIZE	256
++#define	DEF_MODE	0
++#define	DEF_TICKS	1
++
++static struct task_struct	*thread;
++
++static unsigned long	mode = DEF_MODE;
++static unsigned long	stacksize = DEF_STACKSIZE;
++static unsigned long	ticks = DEF_TICKS;
++
++#ifdef MODULE
++module_param(stacksize, ulong, 0);
++MODULE_PARM_DESC(stacksize, "maximum stack size in kb to trigger"
++			"[default=" STR(DEF_STACKSIZE) "]");
++
++module_param(mode, ulong, 0);
++MODULE_PARM_DESC(mode, "monitor mode: 0=disabled, 1=enabled"
++			"[default=" STR(DEF_MODE) "]");
++
++module_param(ticks, ulong, 0);
++MODULE_PARM_DESC(ticks, "monitoring interval in ticks"
++			"[default=" STR(DEF_TICKS) "]");
++#else
++static int __init stackmon_setup(char *opt)
++{
++	u_long	v;
++	char	*p;
++
++	if (!opt || !*opt)
++		return 1;
++
++	v = simple_strtoul(opt, &p, 10);
++	if (opt == p)
++		return 1;
++	stacksize = v;
++
++	if (*p != ':')
++		return 1;
++	opt = p;
++
++	v = simple_strtoul(opt, &p, 10);
++	if (opt == p)
++		return 1;
++	mode = v;
++
++	if (*p != ':')
++		return 1;
++	opt = p;
++
++	v = simple_strtoul(opt, &p, 10);
++	if (opt == p)
++		return 1;
++	ticks = v;
++
++	return 1;
++}
++
++__setup("stackmon=", stackmon_setup);
 +#endif
 +
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
++static inline void check_stack(struct task_struct *t)
++{
++	struct vm_area_struct	*vma;
++	struct mm_struct	*mm;
++	unsigned long		cur_stack;
++	unsigned long		esp;
++
++	mm = get_task_mm(t);
++
++	if (mm == NULL)
++		return;
++
++	vma = find_vma(mm, t->stack_start);
++
++	if (vma) {
++		esp = KSTK_ESP(t);
++
++#ifdef CONFIG_STACK_GROWSUP
++		cur_stack = esp-t->stack_start;
++#else
++		cur_stack = t->stack_start-esp;
++#endif
++
++		if (
++			(cur_stack >= stacksize*1024) &&
++			(!task_is_stopped_or_traced(t->group_leader))
++		) {
++			printk(
++			"pid:%d (%s) tid:%d stack size %lu "
++			"exceeds max stack size.\n"
++			"esp:%08lx eip:%08lx vm_start:%08lx vm_end:%08lx\n",
++			t->tgid,
++			t->comm,
++			t->pid,
++			cur_stack,
++			esp,
++			KSTK_EIP(t),
++			vma->vm_start,
++			vma->vm_end
++			);
++			force_sig(SIGTRAP, t->group_leader);
++		}
++	}
++	mmput(mm);
++}
++
++static int stackmon_thread(void *data)
++{
++	struct task_struct	*g;
++	struct task_struct	*t;
++
++	set_freezable();
++	for (;;) {
++		if (try_to_freeze())
++			continue;
++
++		schedule_timeout(ticks);
++
++		if (kthread_should_stop())
++			break;
++
++		if (mode == 0)
++			continue;
++
++		read_lock(&tasklist_lock);
++
++		do_each_thread(g, t) {
++			task_lock(t);
++			check_stack(t);
++			task_unlock(t);
++		} while_each_thread(g, t);
++
++		read_unlock(&tasklist_lock);
++
++	}
++	thread = NULL;
++
++	return 0;
++}
++
++static void stackmon_enable(void)
++{
++	mode = 1;
++
++	thread = kthread_run(stackmon_thread, NULL, "stackmon");
++
++	if (IS_ERR(thread)) {
++		thread = 0;
++
++		return;
++	}
++	printk(KERN_INFO "stack watch driver enabled with max stack %lu kb.\n",
++		stacksize);
++}
++
++
++static void stackmon_disable(void)
++{
++	mode = 0;
++
++	if (thread) {
++		kthread_stop(thread);
++
++		printk(KERN_INFO "stack watch driver disabled.\n");
++	}
++}
++
++static ssize_t mode_store(struct kobject *kobj, struct kobj_attribute *attr,
++				const char *buf, size_t count)
++{
++	unsigned long	new_mode;
++
++	new_mode = simple_strtoul(buf, NULL, 0);
++
++	if (!new_mode) {
++		if (mode)
++			stackmon_disable();
++	} else {
++		if (mode == 0)
++			stackmon_enable();
++	}
++
++	return count;
++}
++
++
++
++static ssize_t mode_show(struct kobject *kobj, struct kobj_attribute *attr,
++				char *buf)
++{
++	return sprintf(buf, "%lu\n", mode);
++}
++
++static ssize_t stacksize_store(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					const char *buf, size_t count)
++{
++	unsigned long	new_stacksize;
++
++	new_stacksize = simple_strtoul(buf, NULL, 0);
++
++	if (new_stacksize > 0)
++		stacksize = new_stacksize;
++
++	return count;
++}
++
++static ssize_t stacksize_show(struct kobject *kobj,
++				struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", stacksize);
++}
++
++static ssize_t ticks_store(struct kobject *kobj, struct kobj_attribute *attr,
++				const char *buf, size_t count)
++{
++	unsigned long	new_ticks;
++
++	new_ticks = simple_strtoul(buf, NULL, 0);
++
++	if (new_ticks > 0)
++		ticks = new_ticks;
++
++	return count;
++}
++
++static ssize_t ticks_show(struct kobject *kobj, struct kobj_attribute *attr,
++				char *buf)
++{
++	return sprintf(buf, "%lu\n", ticks);
++}
++
++static struct kobj_attribute mode_attr =
++	__ATTR(mode, 0644, mode_show, mode_store);
++static struct kobj_attribute stacksize_attr =
++	__ATTR(stacksize, 0644, stacksize_show, stacksize_store);
++static struct kobj_attribute ticks_attr =
++	__ATTR(ticks, 0644, ticks_show, ticks_store);
++
++static struct attribute *stackmon_attrs[] = {
++	&mode_attr.attr,
++	&stacksize_attr.attr,
++	&ticks_attr.attr,
++	NULL
++};
++
++static struct attribute_group stackmon_attr_group = {
++	.attrs = stackmon_attrs,
++};
++
++static struct kobject *stackmon_kobj;
++
++static int __init stackmon_init(void)
++{
++	int ret = 0;
++
++	stackmon_kobj = kobject_create_and_add("stackmon", kernel_kobj);
++
++	if (!stackmon_kobj)
++		goto exit;
++
++	ret = sysfs_create_group(stackmon_kobj, &stackmon_attr_group);
++
++	if (ret)
++		goto exit_kobject;
++
++	if (mode)
++		stackmon_enable();
++	else
++		stackmon_disable();
++
++	return ret;
++
++exit_kobject:
++	kobject_put(stackmon_kobj);
++exit:
++	return -ENOMEM;
++}
++
++static void __exit stackmon_exit(void)
++{
++	kobject_uevent(stackmon_kobj, KOBJ_REMOVE);
++	kobject_del(stackmon_kobj);
++	kobject_put(stackmon_kobj);
++}
++
++module_init(stackmon_init);
++module_exit(stackmon_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
++MODULE_DESCRIPTION("stack monitoring debugger");
++
 
 
