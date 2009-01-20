@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZATGor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZATG6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbZATGor (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 01:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZATGoi
+	id S1755392AbZATG6N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 01:58:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZATG5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 01:44:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64508 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810AbZATGoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 01:44:37 -0500
-Message-ID: <497572AA.8020101@cn.fujitsu.com>
-Date: Tue, 20 Jan 2009 14:43:54 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 20 Jan 2009 01:57:55 -0500
+Received: from ns2.suse.de ([195.135.220.15]:41557 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750810AbZATG5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 01:57:54 -0500
+Message-ID: <49757750.6010008@suse.de>
+Date: Tue, 20 Jan 2009 15:03:44 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroups: fix lock inconsistency in cgroup_clone()
+To: Andreas Dilger <adilger@sun.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       "Sergey S. Kostyliov" <rathamahata@php4.ru>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       Bob Copeland <me@bobcopeland.com>, Anders Larsen <al@alarsen.net>,
+       reiserfs-devel@vger.kernel.org,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Evgeniy Dushistov <dushistov@mail.ru>, Jan Kara <jack@suse.cz>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 0/20] return f_fsid for statfs(2)
+References: <4974B8C4.3070703@suse.de> <1232393334.5893.42.camel@norville.austin.ibm.com> <20090119233651.GK3286@webber.adilger.int> <1232419149.19468.3.camel@norville.austin.ibm.com> <20090120041349.GL3286@webber.adilger.int> <49755376.3000100@suse.de> <20090120044447.GM3286@webber.adilger.int>
+In-Reply-To: <20090120044447.GM3286@webber.adilger.int>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I fixed a bug in cgroup_clone() in Linus' tree (commit 7b574b7), without
-noticing there was a cleanup patch in -mm tree that should be rebased
-(now commit 104cbd5), thus resulted in lock inconsistency.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
 
-for 2.6.29
+Andreas Dilger Wrote:
+> On Jan 20, 2009  12:30 +0800, Coly Li wrote:
+>> Ext[234] is sophisticated to have on-disk uuid record. Most file systems
+>> in the patches (except jfs and reiser3) do not have a persistent uuid,
+>> a reasonable/feasible solution without media format modification is fsid
+>> in boot/mount life cycle. That's why huge_encode_dev(sb->s_bdev->bd_dev)
+>> is used here.  For jfs and reiserfs3, is there any use case for
+>> persistent fsid cross boots ?
+> 
+> I would say yes, this is worthwhile to do, or the fsid can change between
+> boots unnecessarily.
+> 
+If no partitioning happens between boots/mounts, fsid from huge_encode_dev() should be identical.
+For non-uuid file systems, IMHO huge_encode_dev() method is acceptable.
+But YES, for jfs and reiserfs3 there is chance to provide persistent fsid cross boots, here are
+examples,
+- in fs/jfs/super.c:jfs_statfs(), generate f_fsid by:
+	buf->f_fsid.val[0] = crc32_le(0, sbi->uuid, sizeof(sbi->uuid)/2);
+	buf->f_fsid.val[1] = crc32_le(0, sbi->uuid + sizeof(sbi->uuid)/2,
+					sizeof(sbi->uuid)/2);
+- in fs/reiserfs/super.c:reiserfs_statfs(), generate f_fsid by:
+	buf->f_fsid.val[0] = (u32)crc32_le(0, rs->s_uuid, sizeof(rs->s_uuid)/2);
+	buf->f_fsid.val[1] = (u32)crc32_le(0, rs->s_uuid + sizeof(rs->s_uuid)/2,
+				sizeof(rs->s_uuid)/2);
 
----
- kernel/cgroup.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+I will update corresponded patches for the implementation. Thanks for your comments.
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index c298310..a5826f3 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2991,20 +2991,21 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 		mutex_unlock(&cgroup_mutex);
- 		return 0;
- 	}
--	task_lock(tsk);
--	cg = tsk->cgroups;
--	parent = task_cgroup(tsk, subsys->subsys_id);
- 
- 	/* Pin the hierarchy */
--	if (!atomic_inc_not_zero(&parent->root->sb->s_active)) {
-+	if (!atomic_inc_not_zero(&root->sb->s_active)) {
- 		/* We race with the final deactivate_super() */
- 		mutex_unlock(&cgroup_mutex);
- 		return 0;
- 	}
- 
- 	/* Keep the cgroup alive */
-+	task_lock(tsk);
-+	parent = task_cgroup(tsk, subsys->subsys_id);
-+	cg = tsk->cgroups;
- 	get_css_set(cg);
- 	task_unlock(tsk);
-+
- 	mutex_unlock(&cgroup_mutex);
- 
- 	/* Now do the VFS work to create a cgroup */
-@@ -3043,7 +3044,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 		mutex_unlock(&inode->i_mutex);
- 		put_css_set(cg);
- 
--		deactivate_super(parent->root->sb);
-+		deactivate_super(root->sb);
- 		/* The cgroup is still accessible in the VFS, but
- 		 * we're not going to try to rmdir() it at this
- 		 * point. */
-@@ -3069,7 +3070,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
- 	mutex_lock(&cgroup_mutex);
- 	put_css_set(cg);
- 	mutex_unlock(&cgroup_mutex);
--	deactivate_super(parent->root->sb);
-+	deactivate_super(root->sb);
- 	return ret;
- }
- 
 -- 
-1.5.4.rc3
-
-
+Coly Li
+SuSE Labs
