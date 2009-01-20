@@ -1,37 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbZATTsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZATTtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762682AbZATTsy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZATTsq
+	id S1757084AbZATTtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbZATTsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:48:46 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:54478 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754806AbZATTsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:48:45 -0500
-X-Greylist: delayed 1179 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 14:48:45 EST
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: missing incremental patch in http://www.kernel.org/pub/linux/kernel/v2.6/incr/
-Date: Tue, 20 Jan 2009 21:28:02 +0200
-User-Agent: KMail/1.9.10
+	Tue, 20 Jan 2009 14:48:55 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37324 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762678AbZATTsy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 14:48:54 -0500
+Message-ID: <49762AA3.7050402@ct.jp.nec.com>
+Date: Tue, 20 Jan 2009 11:48:51 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Justin Madru <jdm64@gawab.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com> <497617D6.8020707@ct.jp.nec.com> <4976246D.1040008@gawab.com>
+In-Reply-To: <4976246D.1040008@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901202128.02328.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Justin Madru wrote:
+> Hiroshi Shimamoto wrote:
+>> Justin Madru wrote:
+>>   
+>>> Hiroshi Shimamoto wrote:
+>>>     
+>>>> Justin Madru wrote:
+>>>>       
+>>>>> Ok, finally bisected the bug, but the commit isn't related to networking!
+>>>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>>>> on current git and that fixed the bug.
+>>>>>
+>>>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
+>>>>> I want to drop my changes - the revert.
+>>>>> Also how do I find the commit that merged/pulled in this commit?
+>>>>>
+>>>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>>> Date: Fri Dec 5 17:17:09 2008 -0800
+>>>>>
+>>>>> x86: signal: change type of paramter for sys_rt_sigreturn()
+>>>>>
+>>>>> Impact: cleanup on 32-bit
+>>>>>
+>>>>> Peter pointed this parameter can be changed.
+>>>>>
+>>>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>>         
+>>>> Hi,
+>>>> thanks for reporting.
+>>>>
+>>>> I'm not sure why this commit affects.
+>>>> Can you check vmlinux? size, objdump, etc.
+>>>> On my environment, the generated code looks same.
+>>>>
+>>>> Thanks,
+>>>> Hiroshi
+>>>>
+>>>>       
+>>> I tried to do an objdump but it gave an error. How am I suppose to do an 
+>>> objdump?
+>>>
+>>> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
+>>> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
+>>> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
+>>> readelf: Error: Unable to seek to 0xc031f2eb for section headers
+>>> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+>>> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
+>>> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
+>>>     
+>> not vmlinuz, vmlinux.
+>> vmlinuz is a compressed kernel, it is not ELF file.
+>> Usually vmlinux is generated in top of source directory.
+>> I can see disassembled image with objdump -d vmlinux.
+>>
+>> Thanks,
+>> Hiroshi
+>>
+>>   
+> Sorry, didn't know. I tried objdump -d vmlinux, but the resulting file 
+> is ~50MB!
+> Is there a smaller section you're interested in, because that would be 
+> hard to send.
+> Or am I doing it wrong again?
 
-The incremental patch: patch-2.6.27.11-12.* is still missing 
-in http://www.kernel.org/pub/linux/kernel/v2.6/incr/ directory.
+that's OK. No need to send the disassembled result.
+You can diff disassembled file.
+I guess your GCC generates different code when the patch is reverted.
 
-Best wishes.
-
-Marin Mitov
-
+Thanks,
+Hiroshi
