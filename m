@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbZATP7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761199AbZATQD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761762AbZATP7p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 10:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbZATP7f
+	id S1761199AbZATQD1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 11:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbZATQDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 10:59:35 -0500
-Received: from ns2.suse.de ([195.135.220.15]:57838 "EHLO mx2.suse.de"
+	Tue, 20 Jan 2009 11:03:17 -0500
+Received: from rtr.ca ([76.10.145.34]:55205 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZATP7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 10:59:35 -0500
-Message-ID: <4975F653.2000109@suse.de>
-Date: Wed, 21 Jan 2009 00:05:39 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.19 (X11/20090106)
+	id S1755445AbZATQDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 11:03:16 -0500
+Message-ID: <4975F5C1.8090107@rtr.ca>
+Date: Tue, 20 Jan 2009 11:03:13 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Dave Kleikamp <shaggy@austin.ibm.com>
-Subject: [PATCH 11/20] fs/jfs: return f_fsid for statfs(2), v3
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-pci@vger.kernel.org
+Subject: libata, devm_*, and MSI ?
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes jfs return f_fsid info for statfs(2). By Andreas' suggestion, this patch populates
-a persistent f_fsid between boots/mounts with help of on-disk uuid record.
+Tejun / Jeff,
 
-Signed-off-by: Coly Li <coly.li@suse.de>
-Acked-By: Dave Kleikamp <shaggy@austin.ibm.com>
----
- fs/jfs/super.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+I am working on MSI support for sata_mv, and am trying to puzzle out
+exactly what the kernel expects for this.  Looking at other drivers,
+both libata and otherwise, yields a variety of conflicting implementations.
 
-diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-index b37d1f7..6ce1aac 100644
---- a/fs/jfs/super.c
-+++ b/fs/jfs/super.c
-@@ -29,6 +29,7 @@
- #include <linux/posix_acl.h>
- #include <linux/buffer_head.h>
- #include <linux/exportfs.h>
-+#include <linux/crc32.h>
- #include <asm/uaccess.h>
- #include <linux/seq_file.h>
+For starters, the MSI HOW-TO suggests that drivers must be careful
+to invoke pci_disable_msi() on module unload, but I don't see that
+happening anywhere in libata.
 
-@@ -168,7 +169,10 @@ static int jfs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	buf->f_files = maxinodes;
- 	buf->f_ffree = maxinodes - (atomic_read(&imap->im_numinos) -
- 				    atomic_read(&imap->im_numfree));
--
-+	buf->f_fsid.val[0] = (u32)crc32_le(0, sbi->uuid, sizeof(sbi->uuid)/2);
-+	buf->f_fsid.val[1] = (u32)crc32_le(0, sbi->uuid + sizeof(sbi->uuid)/2,
-+					sizeof(sbi->uuid)/2);
-+
- 	buf->f_namelen = JFS_NAME_MAX;
- 	return 0;
- }
+Unless, Tejun, the devm_* routines automatically do this.. do they?
 
--- 
-Coly Li
-SuSE Labs
+Next, there's no mention of a need for invoking pci_intx() in the HOW-TO,
+yet some device drivers call it, and others do not.
 
+Eg. from ahci.c, we have this:
 
+        if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
+                pci_intx(pdev, 1);
+
+Which agrees with the existing code in sata_mv:
+
+        if (msi && pci_enable_msi(pdev))
+                pci_intx(pdev, 1);
+
+Which seems to call pci_intx() only when MSI is *not* used.  Fine.
+But then in sata_vsc.c, we do sort of the opposite:
+
+        if (pci_enable_msi(pdev) == 0)
+                pci_intx(pdev, 0);
+
+Either that one is wrong, or pci_intx() is unnecessary in all cases.
+Again, the MSI HOW-TO doesn't even mention this routine.
+
+Looking through the network drivers, it seems that some of them
+do the pci_intx(pdev,1) call for the cases where pci_enable_msi() fails,
+similar to ahci.c and sata_mv.c.
+
+But not all of them do that.
+
+Perhaps somebody from the PCI side of things might enlighten us all.
+
+Thanks
 
 
 
