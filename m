@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762090AbZATNQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761545AbZATNRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762090AbZATNQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbZATNPx
+	id S1761545AbZATNRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbZATNPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:15:53 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:22949 "EHLO
+	Tue, 20 Jan 2009 08:15:54 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:20932 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756993AbZATNPv (ORCPT
+	with ESMTP id S1757609AbZATNPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:15:51 -0500
+	Tue, 20 Jan 2009 08:15:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=uQ9b3fJVoZZJM5goV3Hvv1Y4XoV2hlrkG5oNO2Kt9iteWwXkxg5Hy+5rfW1wNmVBO7
-         8z8nRvtVdjcA1xHDxJOXSUcrp5A/6LqZw5FBD5iz+skF4TT5RgQg7m8T2n2SopkwD678
-         iGIQeQaaive4YZUtJUl2Isvq9QRDsU/xM5rTE=
+        b=loMMtAh/i9BagMIxqnXqArIxFWlmLDiCu8Rj4z8Eqz+oZ/zNmAZsBSLZn74NU+y1Sy
+         SET4rnrnWyN7tfWsSmScSnXS9SZDnxr9LQ4253SU2Ys/2yHeRssnYOUSYKnUTesH5cS8
+         XnG5RTwyo5AQalFhW2fIjX5fNATJQCKCepKJE=
 From: Brian Gerst <brgerst@gmail.com>
 To: Tejun Heo <tj@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Brian Gerst <brgerst@gmail.com>
-Subject: [PATCH 4/6] x86: Merge mmu_context.h
-Date: Tue, 20 Jan 2009 08:15:43 -0500
-Message-Id: <1232457345-12366-4-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 5/6] x86: Merge hardirq.h
+Date: Tue, 20 Jan 2009 08:15:44 -0500
+Message-Id: <1232457345-12366-5-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
 References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com>
@@ -30,216 +30,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove unused idle_timestamp field from 32-bit.
+
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/mmu_context.h    |   64 ++++++++++++++++++++++++++++++--
- arch/x86/include/asm/mmu_context_32.h |   55 ----------------------------
- arch/x86/include/asm/mmu_context_64.h |   52 --------------------------
- 3 files changed, 60 insertions(+), 111 deletions(-)
- delete mode 100644 arch/x86/include/asm/mmu_context_32.h
- delete mode 100644 arch/x86/include/asm/mmu_context_64.h
+ arch/x86/include/asm/hardirq.h    |   42 ++++++++++++++++++++++++++++++++----
+ arch/x86/include/asm/hardirq_32.h |   33 -----------------------------
+ arch/x86/include/asm/hardirq_64.h |   39 ----------------------------------
+ 3 files changed, 37 insertions(+), 77 deletions(-)
+ delete mode 100644 arch/x86/include/asm/hardirq_32.h
+ delete mode 100644 arch/x86/include/asm/hardirq_64.h
 
-diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
-index 8aeeb3f..7bf6a72 100644
---- a/arch/x86/include/asm/mmu_context.h
-+++ b/arch/x86/include/asm/mmu_context.h
-@@ -21,11 +21,55 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
- int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
- void destroy_context(struct mm_struct *mm);
- 
+diff --git a/arch/x86/include/asm/hardirq.h b/arch/x86/include/asm/hardirq.h
+index 000787d..4f77393 100644
+--- a/arch/x86/include/asm/hardirq.h
++++ b/arch/x86/include/asm/hardirq.h
+@@ -1,11 +1,43 @@
 -#ifdef CONFIG_X86_32
--# include "mmu_context_32.h"
+-# include "hardirq_32.h"
 -#else
--# include "mmu_context_64.h"
+-# include "hardirq_64.h"
+-#endif
++#ifndef _ASM_X86_HARDIRQ_H
++#define _ASM_X86_HARDIRQ_H
 +
-+static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
-+{
-+#ifdef CONFIG_SMP
-+	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
-+#endif
-+}
++#include <linux/threads.h>
++#include <linux/irq.h>
 +
-+static inline void switch_mm(struct mm_struct *prev,
-+			     struct mm_struct *next,
-+			     struct task_struct *tsk)
-+{
-+	int cpu = smp_processor_id();
++typedef struct {
++	unsigned int __softirq_pending;
++	unsigned int __nmi_count;	/* arch dependent */
++	unsigned int apic_timer_irqs;	/* arch dependent */
++	unsigned int irq0_irqs;
++	unsigned int irq_resched_count;
++	unsigned int irq_call_count;
++	unsigned int irq_tlb_count;
++	unsigned int irq_thermal_count;
++	unsigned int irq_spurious_count;
++	unsigned int irq_threshold_count;
++} ____cacheline_aligned irq_cpustat_t;
 +
-+	if (likely(prev != next)) {
-+		/* stop flush ipis for the previous mm */
-+		cpu_clear(cpu, prev->cpu_vm_mask);
-+#ifdef CONFIG_SMP
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
-+		cpu_set(cpu, next->cpu_vm_mask);
++DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
 +
-+		/* Re-load page tables */
-+		load_cr3(next->pgd);
++/* We can have at most NR_VECTORS irqs routed to a cpu at a time */
++#define MAX_HARDIRQS_PER_CPU NR_VECTORS
 +
-+		/*
-+		 * load the LDT, if the LDT is different:
-+		 */
-+		if (unlikely(prev->context.ldt != next->context.ldt))
-+			load_LDT_nolock(&next->context);
-+	}
-+#ifdef CONFIG_SMP
-+	else {
-+		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
-+		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
++#define __ARCH_IRQ_STAT
 +
-+		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
-+			/* We were in lazy tlb mode and leave_mm disabled
-+			 * tlb flush IPI delivery. We must reload CR3
-+			 * to make sure to use no freed page tables.
-+			 */
-+			load_cr3(next->pgd);
-+			load_LDT_nolock(&next->context);
-+		}
-+	}
-+#endif
-+}
++#define inc_irq_stat(member)	percpu_add(irq_stat.member, 1)
++
++#define __ARCH_SET_SOFTIRQ_PENDING 1
++
++#define local_softirq_pending()	percpu_read(irq_stat.__softirq_pending)
++#define set_softirq_pending(x)	percpu_write(irq_stat.__softirq_pending, (x))
++#define or_softirq_pending(x)	percpu_or(irq_stat.__softirq_pending, (x))
++
++extern void ack_bad_irq(unsigned int irq);
  
- #define activate_mm(prev, next)			\
- do {						\
-@@ -33,5 +77,17 @@ do {						\
- 	switch_mm((prev), (next), NULL);	\
- } while (0);
+ extern u64 arch_irq_stat_cpu(unsigned int cpu);
+ #define arch_irq_stat_cpu	arch_irq_stat_cpu
  
-+#ifdef CONFIG_X86_32
-+#define deactivate_mm(tsk, mm)			\
-+do {						\
-+	loadsegment(gs, 0)			\
-+} while (0)
-+#else
-+#define deactivate_mm(tsk, mm)			\
-+do {						\
-+	load_gs_index(0);			\
-+	loadsegment(fs, 0);			\
-+} while (0)
-+#endif
- 
- #endif /* _ASM_X86_MMU_CONTEXT_H */
-diff --git a/arch/x86/include/asm/mmu_context_32.h b/arch/x86/include/asm/mmu_context_32.h
+ extern u64 arch_irq_stat(void);
+ #define arch_irq_stat		arch_irq_stat
++
++#endif /* _ASM_X86_HARDIRQ_H */
+diff --git a/arch/x86/include/asm/hardirq_32.h b/arch/x86/include/asm/hardirq_32.h
 deleted file mode 100644
-index 08b5345..0000000
---- a/arch/x86/include/asm/mmu_context_32.h
+index d4b5d73..0000000
+--- a/arch/x86/include/asm/hardirq_32.h
 +++ /dev/null
-@@ -1,55 +0,0 @@
--#ifndef _ASM_X86_MMU_CONTEXT_32_H
--#define _ASM_X86_MMU_CONTEXT_32_H
+@@ -1,33 +0,0 @@
+-#ifndef _ASM_X86_HARDIRQ_32_H
+-#define _ASM_X86_HARDIRQ_32_H
 -
--static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
--{
--#ifdef CONFIG_SMP
--	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
--		percpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
--#endif
--}
+-#include <linux/threads.h>
+-#include <linux/irq.h>
 -
--static inline void switch_mm(struct mm_struct *prev,
--			     struct mm_struct *next,
--			     struct task_struct *tsk)
--{
--	int cpu = smp_processor_id();
+-typedef struct {
+-	unsigned int __softirq_pending;
+-	unsigned long idle_timestamp;
+-	unsigned int __nmi_count;	/* arch dependent */
+-	unsigned int apic_timer_irqs;	/* arch dependent */
+-	unsigned int irq0_irqs;
+-	unsigned int irq_resched_count;
+-	unsigned int irq_call_count;
+-	unsigned int irq_tlb_count;
+-	unsigned int irq_thermal_count;
+-	unsigned int irq_spurious_count;
+-} ____cacheline_aligned irq_cpustat_t;
 -
--	if (likely(prev != next)) {
--		/* stop flush ipis for the previous mm */
--		cpu_clear(cpu, prev->cpu_vm_mask);
--#ifdef CONFIG_SMP
--		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
--		percpu_write(cpu_tlbstate.active_mm, next);
--#endif
--		cpu_set(cpu, next->cpu_vm_mask);
+-DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
 -
--		/* Re-load page tables */
--		load_cr3(next->pgd);
+-/* We can have at most NR_VECTORS irqs routed to a cpu at a time */
+-#define MAX_HARDIRQS_PER_CPU NR_VECTORS
 -
--		/*
--		 * load the LDT, if the LDT is different:
--		 */
--		if (unlikely(prev->context.ldt != next->context.ldt))
--			load_LDT_nolock(&next->context);
--	}
--#ifdef CONFIG_SMP
--	else {
--		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
--		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
+-#define __ARCH_IRQ_STAT
+-#define __IRQ_STAT(cpu, member) (per_cpu(irq_stat, cpu).member)
 -
--		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
--			/* We were in lazy tlb mode and leave_mm disabled
--			 * tlb flush IPI delivery. We must reload %cr3.
--			 */
--			load_cr3(next->pgd);
--			load_LDT_nolock(&next->context);
--		}
--	}
--#endif
--}
+-#define inc_irq_stat(member)	(__get_cpu_var(irq_stat).member++)
 -
--#define deactivate_mm(tsk, mm)			\
--	asm("movl %0,%%gs": :"r" (0));
+-void ack_bad_irq(unsigned int irq);
+-#include <linux/irq_cpustat.h>
 -
--#endif /* _ASM_X86_MMU_CONTEXT_32_H */
-diff --git a/arch/x86/include/asm/mmu_context_64.h b/arch/x86/include/asm/mmu_context_64.h
+-#endif /* _ASM_X86_HARDIRQ_32_H */
+diff --git a/arch/x86/include/asm/hardirq_64.h b/arch/x86/include/asm/hardirq_64.h
 deleted file mode 100644
-index c457250..0000000
---- a/arch/x86/include/asm/mmu_context_64.h
+index a65bab2..0000000
+--- a/arch/x86/include/asm/hardirq_64.h
 +++ /dev/null
-@@ -1,52 +0,0 @@
--#ifndef _ASM_X86_MMU_CONTEXT_64_H
--#define _ASM_X86_MMU_CONTEXT_64_H
+@@ -1,39 +0,0 @@
+-#ifndef _ASM_X86_HARDIRQ_64_H
+-#define _ASM_X86_HARDIRQ_64_H
 -
--static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
--{
--#ifdef CONFIG_SMP
--	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK)
--		percpu_write(cpu_tlbstate.state, TLBSTATE_LAZY);
--#endif
--}
+-#include <linux/threads.h>
+-#include <linux/irq.h>
+-#include <asm/apic.h>
 -
--static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
--			     struct task_struct *tsk)
--{
--	unsigned cpu = smp_processor_id();
--	if (likely(prev != next)) {
--		/* stop flush ipis for the previous mm */
--		cpu_clear(cpu, prev->cpu_vm_mask);
--#ifdef CONFIG_SMP
--		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
--		percpu_write(cpu_tlbstate.active_mm, next);
--#endif
--		cpu_set(cpu, next->cpu_vm_mask);
--		load_cr3(next->pgd);
+-typedef struct {
+-	unsigned int __softirq_pending;
+-	unsigned int __nmi_count;	/* arch dependent */
+-	unsigned int apic_timer_irqs;	/* arch dependent */
+-	unsigned int irq0_irqs;
+-	unsigned int irq_resched_count;
+-	unsigned int irq_call_count;
+-	unsigned int irq_tlb_count;
+-	unsigned int irq_thermal_count;
+-	unsigned int irq_spurious_count;
+-	unsigned int irq_threshold_count;
+-} ____cacheline_aligned irq_cpustat_t;
 -
--		if (unlikely(next->context.ldt != prev->context.ldt))
--			load_LDT_nolock(&next->context);
--	}
--#ifdef CONFIG_SMP
--	else {
--		percpu_write(cpu_tlbstate.state, TLBSTATE_OK);
--		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
+-DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
 -
--		if (!cpu_test_and_set(cpu, next->cpu_vm_mask)) {
--			/* We were in lazy tlb mode and leave_mm disabled
--			 * tlb flush IPI delivery. We must reload CR3
--			 * to make sure to use no freed page tables.
--			 */
--			load_cr3(next->pgd);
--			load_LDT_nolock(&next->context);
--		}
--	}
--#endif
--}
+-/* We can have at most NR_VECTORS irqs routed to a cpu at a time */
+-#define MAX_HARDIRQS_PER_CPU NR_VECTORS
 -
--#define deactivate_mm(tsk, mm)			\
--do {						\
--	load_gs_index(0);			\
--	asm volatile("movl %0,%%fs"::"r"(0));	\
--} while (0)
+-#define __ARCH_IRQ_STAT 1
 -
--#endif /* _ASM_X86_MMU_CONTEXT_64_H */
+-#define inc_irq_stat(member)	percpu_add(irq_stat.member, 1)
+-
+-#define local_softirq_pending() percpu_read(irq_stat.__softirq_pending)
+-
+-#define __ARCH_SET_SOFTIRQ_PENDING 1
+-
+-#define set_softirq_pending(x) percpu_write(irq_stat.__softirq_pending, (x))
+-#define or_softirq_pending(x)  percpu_or(irq_stat.__softirq_pending, (x))
+-
+-extern void ack_bad_irq(unsigned int irq);
+-
+-#endif /* _ASM_X86_HARDIRQ_64_H */
 -- 
 1.6.1
 
