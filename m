@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbZATL1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbZATL3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760545AbZATL1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 06:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757968AbZATL1G
+	id S1760794AbZATL3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 06:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbZATL3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 06:27:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34724 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756119AbZATL1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 06:27:05 -0500
-Date: Tue, 20 Jan 2009 12:26:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       rusty@rustcorp.com.au
-Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-Message-ID: <20090120112634.GA20858@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de>
+	Tue, 20 Jan 2009 06:29:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59768 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756119AbZATL3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 06:29:12 -0500
+Date: Tue, 20 Jan 2009 06:29:10 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Sandeen <sandeen@sandeen.net>,
+       Jacek Luczak <difrost.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       xfs mailing list <xfs@oss.sgi.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+Message-ID: <20090120112910.GA6831@infradead.org>
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120110542.GE19505@wotan.suse.de>
+In-Reply-To: <20090120004611.GA6445@disturbed>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> Hi,
+On Tue, Jan 20, 2009 at 11:46:11AM +1100, Dave Chinner wrote:
+> On Mon, Jan 19, 2009 at 12:44:48PM -0600, Eric Sandeen wrote:
+> > Jacek Luczak wrote:
+> > > Hi All,
+> > > 
+> > > I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
+> > > didn't found errors. Today I've booted my notebook and XFS bug have occurred.
+> > > System reboot didn't helped, same error appeared.
+> > > 
+> > > Some info:
+> > > [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
+> > > [2] kernel logs:
+> > > http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
+> > > [3] most interesting part of log below.
+> > 
+> > so this happens every mount?  Reproducible is good.  How large is the
+> > filesystem (too large to extract elsewhere for analysis...?) (plus I
+> > suppose it'll be hard to get to it when you can't even boot....)
 > 
-> I'm looking at regressions since 2.6.16, and one is lat_mmap has slowed 
-> down. On further investigation, a large part of this is not due to a 
-> _regression_ as such, but the introduction of CONFIG_PARAVIRT=y.
-> 
-> Now, it is true that lat_mmap is basically a microbenchmark, however it 
-> is exercising the memory mapping and page fault handler paths, so we're 
-> talking about pretty important paths here. So I think it should be of 
-> interest.
-> 
-> I've run the tests on a 2s8c AMD Barcelona system, binding the test to 
-> CPU0, and running 100 times (stddev is a bit hard to bring down, and my 
-> scripts needed 100 runs in order to pick up much smaller changes in the 
-> results -- for CONFIG_PARAVIRT, just a couple of runs should show up the 
-> problem).
-> 
-> Times I believe are in nanoseconds for lmbench, anyway lower is better.
-> 
-> non pv   AVG=464.22 STD=5.56
-> paravirt AVG=502.87 STD=7.36
-> 
-> Nearly 10% performance drop here, which is quite a bit... hopefully 
-> people are testing the speed of their PV implementations against non-PV 
-> bare metal :)
+> XFS folks, I suspect the common link between all the reports of this
+> bug is that they are on 32-bit kernels. I can't reproduce this on
+> a 64 bit kernel, and I'm trying to get a 32-bit UML built right now
+> to test this theory.
 
-Ouch, that looks unacceptably expensive. All the major distros turn 
-CONFIG_PARAVIRT on. paravirt_ops was introduced in x86 with the express 
-promise to have no measurable runtime overhead.
+I'm doing about half of my testing on 32 bit x86, and I couldn't
+reproduce the detailed receipe  in the kernel.org bugzilla yet.
 
-( And i suspect the real life mmap cost is probably even more expensive,
-  as on a Barcelona all of lmbench fits into the cache hence we dont see
-  any real $cache overhead. )
-
-Jeremy, any ideas where this slowdown comes from and how it could be 
-fixed?
-
-	Ingo
+Just curious:  do you have CONFIG_LBD set?
