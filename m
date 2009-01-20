@@ -1,103 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZATTtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762752AbZATTug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbZATTtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 14:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759495AbZATTsz
+	id S1762752AbZATTug (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 14:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZATTuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 14:48:55 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:37324 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762678AbZATTsy (ORCPT
+	Tue, 20 Jan 2009 14:50:22 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47700 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbZATTuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 14:48:54 -0500
-Message-ID: <49762AA3.7050402@ct.jp.nec.com>
-Date: Tue, 20 Jan 2009 11:48:51 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com> <497617D6.8020707@ct.jp.nec.com> <4976246D.1040008@gawab.com>
-In-Reply-To: <4976246D.1040008@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 Jan 2009 14:50:20 -0500
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex:
+ implement adaptive spinning
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+In-Reply-To: <20090120123824.GD7790@elte.hu>
+References: <20090112005228.GS26290@one.firstfloor.org>
+	 <496B86B5.3090707@t-online.de>
+	 <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain>
+	 <20090112193201.GA23848@one.firstfloor.org>
+	 <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain>
+	 <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu>
+	 <20090119062212.GC22584@wotan.suse.de>
+	 <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain>
+	 <20090120005124.GD16304@wotan.suse.de>  <20090120123824.GD7790@elte.hu>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 06:49:00 +1100
+Message-Id: <1232480940.22233.1435.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru wrote:
-> Hiroshi Shimamoto wrote:
->> Justin Madru wrote:
->>   
->>> Hiroshi Shimamoto wrote:
->>>     
->>>> Justin Madru wrote:
->>>>       
->>>>> Ok, finally bisected the bug, but the commit isn't related to networking!
->>>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>> on current git and that fixed the bug.
->>>>>
->>>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
->>>>> I want to drop my changes - the revert.
->>>>> Also how do I find the commit that merged/pulled in this commit?
->>>>>
->>>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>> Date: Fri Dec 5 17:17:09 2008 -0800
->>>>>
->>>>> x86: signal: change type of paramter for sys_rt_sigreturn()
->>>>>
->>>>> Impact: cleanup on 32-bit
->>>>>
->>>>> Peter pointed this parameter can be changed.
->>>>>
->>>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>>>>         
->>>> Hi,
->>>> thanks for reporting.
->>>>
->>>> I'm not sure why this commit affects.
->>>> Can you check vmlinux? size, objdump, etc.
->>>> On my environment, the generated code looks same.
->>>>
->>>> Thanks,
->>>> Hiroshi
->>>>
->>>>       
->>> I tried to do an objdump but it gave an error. How am I suppose to do an 
->>> objdump?
->>>
->>> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
->>> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
->>> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
->>> readelf: Error: Unable to seek to 0xc031f2eb for section headers
->>> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
->>> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
->>> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
->>>     
->> not vmlinuz, vmlinux.
->> vmlinuz is a compressed kernel, it is not ELF file.
->> Usually vmlinux is generated in top of source directory.
->> I can see disassembled image with objdump -d vmlinux.
->>
->> Thanks,
->> Hiroshi
->>
->>   
-> Sorry, didn't know. I tried objdump -d vmlinux, but the resulting file 
-> is ~50MB!
-> Is there a smaller section you're interested in, because that would be 
-> hard to send.
-> Or am I doing it wrong again?
+On Tue, 2009-01-20 at 13:38 +0100, Ingo Molnar wrote:
+> 
+> * Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > > > it seems like a nice opt-in thing that can be used where the aliases 
+> > > > are verified and the code is particularly performance critical...
+> > > 
+> > > Yes. I think we could use it in the kernel, although I'm not sure how 
+> > > many cases we would ever find where we really care.
+> > 
+> > Yeah, we don't tend to do a lot of intensive data processing, so it is 
+> > normally the cache misses that hurt most as you noted earlier.
+> > 
+> > Some places it might be appropriate, though. It might be nice if it can 
+> > bring code size down too...
+> 
+> I checked, its size effects were miniscule [0.17%] on the x86 defconfig 
+> kernel and it seems to be a clear loss in total cost as there would be an 
+> ongoing maintenance cost
 
-that's OK. No need to send the disassembled result.
-You can diff disassembled file.
-I guess your GCC generates different code when the patch is reverted.
+They were talking about 'restrict', not strict-aliasing. Where it can be
+used, it's going to give you optimisations that strict-aliasing can't.
 
-Thanks,
-Hiroshi
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
