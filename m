@@ -1,189 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbZATN3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbZATNeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759202AbZATN3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 08:29:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbZATN2h
+	id S1761827AbZATNeY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 08:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbZATNeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 08:28:37 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:7065 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754919AbZATN2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 08:28:34 -0500
-Date: Tue, 20 Jan 2009 14:27:03 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-Message-ID: <20090120132703.GJ30821@kernel.dk>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com> <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com> <20090114163557.11e097f2.akpm@linux-foundation.org> <20090115012147.GW29283@parisc-linux.org> <20090114180431.f4a96543.akpm@linux-foundation.org> <874p01fg3a.fsf@basil.nowhere.org> <20090115024740.GX29283@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090115024740.GX29283@parisc-linux.org>
+	Tue, 20 Jan 2009 08:34:15 -0500
+Received: from ti-out-0910.google.com ([209.85.142.184]:39130 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754933AbZATNeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 08:34:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=UX9x9dRESKajy4R3pTXIrbBBmaJoo5E3GhG2GegDWQ9BM1jF3uKZMBoYbKHLq4AlS0
+         w1R0tvJzFSN7KAwytEYsahbGAfNGqMI3ALPLGbaUn/zauRPbzih7aUeyWb9nYLXhBaXp
+         Y5OQe5GIwRUKTyeTvDW7IW3jishMiPACERu+k=
+From: tom.leiming@gmail.com
+To: kay.sievers@vrfy.org, greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] driver core: check bus->match without holding device lock
+Date: Tue, 20 Jan 2009 21:34:08 +0800
+Message-Id: <1232458448-4412-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14 2009, Matthew Wilcox wrote:
-> On Thu, Jan 15, 2009 at 03:39:05AM +0100, Andi Kleen wrote:
-> > Andrew Morton <akpm@linux-foundation.org> writes:
-> > >>    some of that back, but not as much as taking them out (even when
-> > >>    the sysctl'd variable is in a __read_mostly section).  We tried a
-> > >>    patch from Jens to speed up the search for a new partition, but it
-> > >>    had no effect.
-> > >
-> > > I find this surprising.
-> > 
-> > The test system has thousands of disks/LUNs which it writes to
-> > all the time, in addition to a workload which is a real cache pig. 
-> > So any increase in the per LUN overhead directly leads to a lot
-> > more cache misses in the kernel because it increases the working set
-> > there sigificantly.
-> 
-> This particular system has 450 spindles, but they're amalgamated into
-> 30 logical volumes by the hardware or firmware.  Linux sees 30 LUNs.
-> Each one, though, has fifteen partitions on it, so that brings us back
-> up to 450 partitions.
-> 
-> This system, btw, is a scale model of the full system that would be used
-> to get published results.  If I remember correctly, a 1% performance
-> regression on this system is likely to translate to a 2% regression on
-> the full-scale system.
+From: Ming Lei <tom.leiming@gmail.com>
 
-Matthew, lets see if we can get this a little closer to disappearing. I
-don't see lookup problems in the current kernel with the one-hit cache,
-but perhaps it's either not getting enough hits in this bigger test case
-or perhaps it's simply the rcu locking and preempt disables that build
-up enough to cause a slowdown.
+This patch moves bus->match out from driver_probe_device and
+does not hold device lock to check the match between a device
+and a driver.
 
-First things first, can you get a run of 2.6.29-rc2 with this patch?
-It'll enable you to turn off per-partition stats in sysfs. I'd suggest
-doing a run with a 2.6.29-rc2 booted with this patch, and then another
-run with part_stats set to 0 for every exposed spindle. Then post those
-profiles!
+The idea has been verified by the commit 6cd495860901,
+which leads to a faster boot. But the commit 6cd495860901 has
+the following drawbacks: 1),only does the quick check in
+the path of __driver_attach->driver_probe_device, not in other
+paths; 2),for a matched device and driver, check the same match
+twice. It is a waste of cpu ,especially for some drivers with long
+device id table (eg. usb-storage driver).
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index a824e49..6f693ae 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -600,7 +600,8 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
- 	q->prep_rq_fn		= NULL;
- 	q->unplug_fn		= generic_unplug_device;
- 	q->queue_flags		= (1 << QUEUE_FLAG_CLUSTER |
--				   1 << QUEUE_FLAG_STACKABLE);
-+				   1 << QUEUE_FLAG_STACKABLE |
-+				   1 << QUEUE_FLAG_PART_STAT);
- 	q->queue_lock		= lock;
+This patch adds a helper of driver_match_device to check the match
+in all paths, and testes the match only once.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/base/bus.c     |    8 +++++++-
+ drivers/base/dd.c      |   19 +++++++------------
+ include/linux/device.h |    6 ++++++
+ 3 files changed, 20 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 83f32b8..c570d16 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -199,6 +199,12 @@ static ssize_t driver_bind(struct device_driver *drv,
  
- 	blk_queue_segment_boundary(q, BLK_SEG_BOUNDARY_MASK);
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index a29cb78..a6ec2e3 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -158,6 +158,29 @@ static ssize_t queue_rq_affinity_show(struct request_queue *q, char *page)
- 	return queue_var_show(set != 0, page);
+ 	dev = bus_find_device_by_name(bus, NULL, buf);
+ 	if (dev && dev->driver == NULL) {
++
++		if (!driver_match_device(drv, dev)) {
++			err = 0;
++			goto not_match;
++		}
++
+ 		if (dev->parent)	/* Needed for USB */
+ 			down(&dev->parent->sem);
+ 		down(&dev->sem);
+@@ -206,7 +212,7 @@ static ssize_t driver_bind(struct device_driver *drv,
+ 		up(&dev->sem);
+ 		if (dev->parent)
+ 			up(&dev->parent->sem);
+-
++not_match:
+ 		if (err > 0) {
+ 			/* success */
+ 			err = count;
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 315bed8..61f32db 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -172,14 +172,8 @@ int driver_probe_done(void)
+  * @drv: driver to bind a device to
+  * @dev: device to try to bind to the driver
+  *
+- * First, we call the bus's match function, if one present, which should
+- * compare the device IDs the driver supports with the device IDs of the
+- * device. Note we don't do this ourselves because we don't know the
+- * format of the ID structures, nor what is to be considered a match and
+- * what is not.
+- *
+- * This function returns 1 if a match is found, -ENODEV if the device is
+- * not registered, and 0 otherwise.
++ * This function returns -ENODEV if the device is not registered,
++ * and 0 otherwise.
+  *
+  * This function must be called with @dev->sem held.  When called for a
+  * USB interface, @dev->parent->sem must be held as well.
+@@ -190,21 +184,22 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
+ 
+ 	if (!device_is_registered(dev))
+ 		return -ENODEV;
+-	if (drv->bus->match && !drv->bus->match(dev, drv))
+-		goto done;
+ 
+ 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+ 		 drv->bus->name, __func__, dev_name(dev), drv->name);
+ 
+ 	ret = really_probe(dev, drv);
+ 
+-done:
+ 	return ret;
  }
  
-+static ssize_t queue_part_stat_store(struct request_queue *q, const char *page,
-+				     size_t count)
-+{
-+	unsigned long nm;
-+	ssize_t ret = queue_var_store(&nm, page, count);
-+
-+	spin_lock_irq(q->queue_lock);
-+	if (nm)
-+		queue_flag_set(QUEUE_FLAG_PART_STAT, q);
-+	else
-+		queue_flag_clear(QUEUE_FLAG_PART_STAT, q);
-+
-+	spin_unlock_irq(q->queue_lock);
-+	return ret;
-+}
-+
-+static ssize_t queue_part_stat_show(struct request_queue *q, char *page)
-+{
-+	unsigned int set = test_bit(QUEUE_FLAG_PART_STAT, &q->queue_flags);
-+
-+	return queue_var_show(set != 0, page);
-+}
-+
- static ssize_t
- queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
+ static int __device_attach(struct device_driver *drv, void *data)
  {
-@@ -222,6 +245,12 @@ static struct queue_sysfs_entry queue_rq_affinity_entry = {
- 	.store = queue_rq_affinity_store,
- };
- 
-+static struct queue_sysfs_entry queue_part_stat_entry = {
-+	.attr = {.name = "part_stats", .mode = S_IRUGO | S_IWUSR },
-+	.show = queue_part_stat_show,
-+	.store = queue_part_stat_store,
-+};
+ 	struct device *dev = data;
 +
- static struct attribute *default_attrs[] = {
- 	&queue_requests_entry.attr,
- 	&queue_ra_entry.attr,
-@@ -231,6 +260,7 @@ static struct attribute *default_attrs[] = {
- 	&queue_hw_sector_size_entry.attr,
- 	&queue_nomerges_entry.attr,
- 	&queue_rq_affinity_entry.attr,
-+	&queue_part_stat_entry.attr,
- 	NULL,
- };
- 
-diff --git a/block/genhd.c b/block/genhd.c
-index 397960c..09cbac2 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -208,6 +208,9 @@ struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector)
- 	struct hd_struct *part;
- 	int i;
- 
-+	if (!blk_queue_part_stat(disk->queue))
-+		goto part0;
++	if (!driver_match_device(drv, dev))
++		return 0;
 +
- 	ptbl = rcu_dereference(disk->part_tbl);
- 
- 	part = rcu_dereference(ptbl->last_lookup);
-@@ -222,6 +225,7 @@ struct hd_struct *disk_map_sector_rcu(struct gendisk *disk, sector_t sector)
- 			return part;
- 		}
- 	}
-+part0:
- 	return &disk->part0;
+ 	return driver_probe_device(drv, dev);
  }
- EXPORT_SYMBOL_GPL(disk_map_sector_rcu);
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 044467e..4d45842 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -449,6 +449,7 @@ struct request_queue
- #define QUEUE_FLAG_STACKABLE   13	/* supports request stacking */
- #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
- #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
-+#define QUEUE_FLAG_PART_STAT   15	/* per-partition stats enabled */
  
- static inline int queue_is_locked(struct request_queue *q)
- {
-@@ -568,6 +569,8 @@ enum {
- #define blk_queue_flushing(q)	((q)->ordseq)
- #define blk_queue_stackable(q)	\
- 	test_bit(QUEUE_FLAG_STACKABLE, &(q)->queue_flags)
-+#define blk_queue_part_stat(q)	\
-+	test_bit(QUEUE_FLAG_PART_STAT, &(q)->queue_flags)
+@@ -257,7 +252,7 @@ static int __driver_attach(struct device *dev, void *data)
+ 	 * is an error.
+ 	 */
  
- #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
- #define blk_pc_request(rq)	((rq)->cmd_type == REQ_TYPE_BLOCK_PC)
-
+-	if (drv->bus->match && !drv->bus->match(dev, drv))
++	if (!driver_match_device(drv, dev))
+ 		return 0;
+ 
+ 	if (dev->parent)	/* Needed for USB */
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 45e5b19..3c61315 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -466,6 +466,12 @@ static inline int device_is_registered(struct device *dev)
+ 	return dev->kobj.state_in_sysfs;
+ }
+ 
++static inline int driver_match_device(struct device_driver *drv,
++				      struct device *dev)
++{
++	return drv->bus->match && drv->bus->match(dev, drv);
++}
++
+ void driver_init(void);
+ 
+ /*
 -- 
-Jens Axboe
+1.6.0
 
