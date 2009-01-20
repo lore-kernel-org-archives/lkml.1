@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbZATAfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZATAhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762263AbZATAfa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbZATAfT
+	id S1761009AbZATAhw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZATAhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:35:19 -0500
-Received: from ns1.suse.de ([195.135.220.2]:43567 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753394AbZATAfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:35:18 -0500
-Date: Tue, 20 Jan 2009 01:35:16 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #12498] OOPS and panic on 2.6.29-rc1 on xen-x86
-Message-ID: <20090120003516.GC16304@wotan.suse.de>
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.fgG.b9QdJB@chimera>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2QN7KFic7LG.A.fgG.b9QdJB@chimera>
-User-Agent: Mutt/1.5.9i
+	Mon, 19 Jan 2009 19:37:43 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:8379 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbZATAhn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 19:37:43 -0500
+Message-ID: <49751CD5.1060902@ct.jp.nec.com>
+Date: Mon, 19 Jan 2009 16:37:41 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] x86: uaccess: rename __put_user_u64() to __put_user_asm_u64()
+References: <49751C12.1030104@ct.jp.nec.com>
+In-Reply-To: <49751C12.1030104@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19, 2009 at 10:32:16PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12498
-> Subject		: OOPS and panic on 2.6.29-rc1 on xen-x86
-> Submitter	: Bryan Donlan <bdonlan@gmail.com>
-> Date		: 2009-01-12 17:26 (8 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e97a630eb0f5b8b380fd67504de6cedebb489003
-> References	: http://marc.info/?l=linux-kernel&m=123178178029065&w=4
-> Handled-By	: Nick Piggin <npiggin@suse.de>
-> 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-This one was fixed by backing out the patch to make vmalloc purge
-spinlock into a mutex.
+Impact: cleanup
+
+rename __put_user_u64() to __put_user_asm_u64() like __get_user_asm_u64().
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/include/asm/uaccess.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index aeb3c1b..69d2757 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -186,7 +186,7 @@ extern int __get_user_bad(void);
+ 
+ 
+ #ifdef CONFIG_X86_32
+-#define __put_user_u64(x, addr, err)					\
++#define __put_user_asm_u64(x, addr, err)				\
+ 	asm volatile("1:	movl %%eax,0(%2)\n"			\
+ 		     "2:	movl %%edx,4(%2)\n"			\
+ 		     "3:\n"						\
+@@ -203,7 +203,7 @@ extern int __get_user_bad(void);
+ 	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
+ 		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ #else
+-#define __put_user_u64(x, ptr, retval) \
++#define __put_user_asm_u64(x, ptr, retval) \
+ 	__put_user_asm(x, ptr, retval, "q", "", "Zr", -EFAULT)
+ #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
+ #endif
+@@ -279,7 +279,7 @@ do {									\
+ 		__put_user_asm(x, ptr, retval, "l", "k", "ir", errret);	\
+ 		break;							\
+ 	case 8:								\
+-		__put_user_u64((__typeof__(*ptr))(x), ptr, retval);	\
++		__put_user_asm_u64((__typeof__(*ptr))(x), ptr, retval);	\
+ 		break;							\
+ 	default:							\
+ 		__put_user_bad();					\
+-- 
+1.6.0.4
+
