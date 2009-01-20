@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbZATHoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbZATHqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbZATHoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZATHn6
+	id S1758576AbZATHqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:46:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZATHp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:43:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45100 "EHLO mx3.mail.elte.hu"
+	Tue, 20 Jan 2009 02:45:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45579 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbZATHn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:43:56 -0500
-Date: Tue, 20 Jan 2009 08:43:12 +0100
+	id S1753220AbZATHpz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:45:55 -0500
+Date: Tue, 20 Jan 2009 08:45:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Justin Madru <jdm64@gawab.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
-Message-ID: <20090120074312.GD16426@elte.hu>
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com>
+To: Zhao Yakui <yakui.zhao@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Suspned/resume can't work on the 2.6.29-rc1 but it can work
+	well on the 2.6.28
+Message-ID: <20090120074534.GE16426@elte.hu>
+References: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49756F3E.6050304@gawab.com>
+In-Reply-To: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,130 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(added Cc:s)
+* Zhao Yakui <yakui.zhao@intel.com> wrote:
 
-* Justin Madru <jdm64@gawab.com> wrote:
+> Hi, All
+>     I do some tests about suspend/resume on my two boxes. One is HP
+> laptop and the other is Asus EEEPC901. The suspend/resume can't work
+> well. Even after core is selected as the test mode, it still can't work
+> well.(echo core > /sys/power/pm_test)
+>     
+>     Then I do the same test by using the 2.6.28 kernel. And
+> suspend/resume can work well.
+>     
+>     Of course I will try to use the git-bisect to identify the first bad 
+> commit ASAP.
 
-> Rafael J. Wysocki wrote:
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.28.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12505
->> Subject		: 2.6.29-rc1 Firefox crashing on page load
->> Submitter	: Justin Madru <jdm64@gawab.com>
->> Date		: 2009-01-16 20:56 (4 days old)
->> References	: http://marc.info/?l=linux-kernel&m=123213941914274&w=4
->> Handled-By	: Justin P. Mattock <justinmattock@gmail.com>
->>
->>
->>
->>   
-> Yes, still a regression sofar, but I've bisected it and checked it with  
-> a revert of the bad commit.
-> The revert does fix the bug, but we've yet to figure out why, or come up  
-> with a patch.
->
-> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Date:   Fri Dec 5 17:17:09 2008 -0800
->
->   x86: signal: change type of paramter for sys_rt_sigreturn()
->
->   Impact: cleanup on 32-bit
->
->   Peter pointed this parameter can be changed.
->
->   Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->   Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
-> :040000 040000 f5fba48247ff200092c38a54e334f495917229d5  
-> b901159897e5d85e0dc2a0c9d904d9a73c1d58a2 M      arch
->
->   arch/x86/include/asm/syscalls.h
->   arch/x86/kernel/signal.c
->
-> diff --git a/arch/x86/include/asm/syscalls.h  
-> b/arch/x86/include/asm/syscalls.h
-> index 87803da..3a5252c 100644 (file)
-> --- a/arch/x86/include/asm/syscalls.h
-> +++ b/arch/x86/include/asm/syscalls.h
-> @@ -33,7 +33,7 @@ asmlinkage int sys_sigaction(int, const struct  
-> old_sigaction __user *,
->                            struct old_sigaction __user *);
-> asmlinkage int sys_sigaltstack(unsigned long);
-> asmlinkage unsigned long sys_sigreturn(unsigned long);
-> -asmlinkage int sys_rt_sigreturn(unsigned long);
-> +asmlinkage int sys_rt_sigreturn(struct pt_regs);
->
-> /* kernel/ioport.c */
-> asmlinkage long sys_iopl(unsigned long);
-> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-> index b1f4d34..b1cc6da 100644 (file)
-> --- a/arch/x86/kernel/signal.c
-> +++ b/arch/x86/kernel/signal.c
-> @@ -642,11 +642,9 @@ badframe:
-> }
->
-> #ifdef CONFIG_X86_32
-> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
-> {
-> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
-> -
-> -       return do_rt_sigreturn(regs);
-> +       return do_rt_sigreturn(&regs);
-> }
-> #else /* !CONFIG_X86_32 */
-> asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+make sure you try this patch from Rafael first (it's not on lkml it 
+appears - Rafael, mind resending the patch to this thread?):
 
-hm, this looks like a compiler bug: GCC might assume above that the 'regs' 
-parameter is the callee's (while in reality they are the caller's and we 
-rely on GCC not clobbering them on the stack).
-
-Justin, does it work if you apply the patch below instead of the revert?
-
-Thanks,
+Subject: [PATCH] PCI PM: Restore standard config registers of all devices early
+        (was: Re: EeePC resume failure - timers)
 
 	Ingo
-
--------------------->
->From c401278356e4eae139e4c15695b6c1cdb63e7376 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 20 Jan 2009 08:38:47 +0100
-Subject: [PATCH] x86: prevent tail call optimization in signal.c
-
-Impact: fix firefox crash
-
-Another victim of GCC believing that on-stack function arguments are
-owned by the callee - while in reality for asmlinkage functions they
-are very much owned by the caller. Stomping on them can corrupt the
-user-space register state, causing weird crashes.
-
-Reported-by: Justin Madru <jdm64@gawab.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/signal.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 89bb766..dee83af 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -634,7 +634,11 @@ badframe:
- #ifdef CONFIG_X86_32
- asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
- {
--	return do_rt_sigreturn(&regs);
-+	int ret = do_rt_sigreturn(&regs);
-+
-+	asmlinkage_protect(1, ret, regs);
-+
-+	return ret;
- }
- #else /* !CONFIG_X86_32 */
- asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
