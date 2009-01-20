@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbZATBlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZATBpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761981AbZATBlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZATBlJ
+	id S1760882AbZATBpV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZATBpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:41:09 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:2141 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZATBlI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:41:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=GI+GQUYe/HI05NGKcs/6SqtI79VOuPBYp/AKnzgV0Jc3spkzkYpH9I7E8+vX7qLrL
-	wkHbQrnZvhU259Epf+msA==
-MIME-Version: 1.0
-In-Reply-To: <20090116120001.f37e1895.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090115192712.33b533c3.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090116120001.f37e1895.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 19 Jan 2009 17:41:02 -0800
-Message-ID: <6599ad830901191741j4668f529s97ee6e896b0c011d@mail.gmail.com>
-Subject: Re: [PATCH 2/4] cgroup:add css_is_populated
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 Jan 2009 20:45:06 -0500
+Received: from main.gmane.org ([80.91.229.2]:33189 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755186AbZATBpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 20:45:04 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Peter Annema <jag@tty.nl>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+Date: Tue, 20 Jan 2009 01:39:39 +0000 (UTC)
+Message-ID: <loom.20090120T012630-735@post.gmane.org>
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.148
-X-GMailtapped: menage
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 70.79.225.63 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.1b3pre) Gecko/20081229 SeaMonkey/2.0a3pre)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 7:00 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Li-san, If you don't like this, could you give me an idea for
-> "How to check cgroup is fully ready or not" ?
->
-> BTW, why "we have a half filled direcotory - oh well" is allowed....
+Justin Madru <jdm64 <at> gawab.com> writes:
+> Ok, finally bisected the bug, but the commit isn't related to networking!
+> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> on current git and that fixed the bug.
 
-That's pretty much inherited from the original cpusets code. It
-probably should be cleaned up, but unless the system is totally hosed
-it seems pretty unlikely for creation of a few dentries to fail.
+...
 
-Paul
+>  #ifdef CONFIG_X86_32
+> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+>  {
+> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
+> -
+> -       return do_rt_sigreturn(regs);
+> +       return do_rt_sigreturn(&regs);
+>  }
+
+Is sizeof(struct pt_regs) different from sizeof(unsigned long)? If so, is some
+code somewhere messing with the stack and not expecting a struct pt_regs to have
+been put on it?
+
+
+
