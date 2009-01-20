@@ -1,126 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbZATHiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbZATHoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbZATHiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZATHim
+	id S1758529AbZATHoP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZATHn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:38:42 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:15338 "EHLO kernel.dk"
+	Tue, 20 Jan 2009 02:43:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45100 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbZATHil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:38:41 -0500
-Date: Tue, 20 Jan 2009 08:37:10 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrea Arcangeli <andrea@suse.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-Message-ID: <20090120073709.GC30821@kernel.dk>
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal> <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal>
+	id S1753220AbZATHn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:43:56 -0500
+Date: Tue, 20 Jan 2009 08:43:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Justin Madru <jdm64@gawab.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
+Message-ID: <20090120074312.GD16426@elte.hu>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120021055.GA6990@Krystal>
+In-Reply-To: <49756F3E.6050304@gawab.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 19 2009, Mathieu Desnoyers wrote:
-> * Jens Axboe (jens.axboe@oracle.com) wrote:
-> > On Sun, Jan 18 2009, Mathieu Desnoyers wrote:
-> > > I looked at the "ls" behavior (while doing a dd) within my LTTng trace
-> > > to create a fio job file.  The said behavior is appended below as "Part
-> > > 1 - ls I/O behavior". Note that the original "ls" test case was done
-> > > with the anticipatory I/O scheduler, which was active by default on my
-> > > debian system with custom vanilla 2.6.28 kernel. Also note that I am
-> > > running this on a raid-1, but have experienced the same problem on a
-> > > standard partition I created on the same machine.
-> > > 
-> > > I created the fio job file appended as "Part 2 - dd+ls fio job file". It
-> > > consists of one dd-like job and many small jobs reading as many data as
-> > > ls did. I used the small test script to batch run this ("Part 3 - batch
-> > > test").
-> > > 
-> > > The results for the ls-like jobs are interesting :
-> > > 
-> > > I/O scheduler        runt-min (msec)   runt-max (msec)
-> > > noop                       41             10563
-> > > anticipatory               63              8185
-> > > deadline                   52             33387
-> > > cfq                        43              1420
-> > 
-> 
-> Extra note : I have a HZ=250 on my system. Changing to 100 or 1000 did
-> not make much difference (also tried with NO_HZ enabled).
-> 
-> > Do you have queuing enabled on your drives? You can check that in
-> > /sys/block/sdX/device/queue_depth. Try setting those to 1 and retest all
-> > schedulers, would be good for comparison.
-> > 
-> 
-> Here are the tests with a queue_depth of 1 :
-> 
-> I/O scheduler        runt-min (msec)   runt-max (msec)
-> noop                       43             38235
-> anticipatory               44              8728
-> deadline                   51             19751
-> cfq                        48               427
-> 
-> 
-> Overall, I wouldn't say it makes much difference.
 
-0,5 seconds vs 1,5 seconds isn't much of a difference?
+(added Cc:s)
 
-> > raid personalities or dm complicates matters, since it introduces a
-> > disconnect between 'ls' and the io scheduler at the bottom...
-> > 
-> 
-> Yes, ideally I should re-run those directly on the disk partitions.
+* Justin Madru <jdm64@gawab.com> wrote:
 
-At least for comparison.
+> Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.28.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12505
+>> Subject		: 2.6.29-rc1 Firefox crashing on page load
+>> Submitter	: Justin Madru <jdm64@gawab.com>
+>> Date		: 2009-01-16 20:56 (4 days old)
+>> References	: http://marc.info/?l=linux-kernel&m=123213941914274&w=4
+>> Handled-By	: Justin P. Mattock <justinmattock@gmail.com>
+>>
+>>
+>>
+>>   
+> Yes, still a regression sofar, but I've bisected it and checked it with  
+> a revert of the bad commit.
+> The revert does fix the bug, but we've yet to figure out why, or come up  
+> with a patch.
+>
+> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Date:   Fri Dec 5 17:17:09 2008 -0800
+>
+>   x86: signal: change type of paramter for sys_rt_sigreturn()
+>
+>   Impact: cleanup on 32-bit
+>
+>   Peter pointed this parameter can be changed.
+>
+>   Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>   Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> :040000 040000 f5fba48247ff200092c38a54e334f495917229d5  
+> b901159897e5d85e0dc2a0c9d904d9a73c1d58a2 M      arch
+>
+>   arch/x86/include/asm/syscalls.h
+>   arch/x86/kernel/signal.c
+>
+> diff --git a/arch/x86/include/asm/syscalls.h  
+> b/arch/x86/include/asm/syscalls.h
+> index 87803da..3a5252c 100644 (file)
+> --- a/arch/x86/include/asm/syscalls.h
+> +++ b/arch/x86/include/asm/syscalls.h
+> @@ -33,7 +33,7 @@ asmlinkage int sys_sigaction(int, const struct  
+> old_sigaction __user *,
+>                            struct old_sigaction __user *);
+> asmlinkage int sys_sigaltstack(unsigned long);
+> asmlinkage unsigned long sys_sigreturn(unsigned long);
+> -asmlinkage int sys_rt_sigreturn(unsigned long);
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs);
+>
+> /* kernel/ioport.c */
+> asmlinkage long sys_iopl(unsigned long);
+> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+> index b1f4d34..b1cc6da 100644 (file)
+> --- a/arch/x86/kernel/signal.c
+> +++ b/arch/x86/kernel/signal.c
+> @@ -642,11 +642,9 @@ badframe:
+> }
+>
+> #ifdef CONFIG_X86_32
+> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+> {
+> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
+> -
+> -       return do_rt_sigreturn(regs);
+> +       return do_rt_sigreturn(&regs);
+> }
+> #else /* !CONFIG_X86_32 */
+> asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
 
-> I am also tempted to create a fio job file which acts like a ssh server
-> receiving a connexion after it has been pruned from the cache while the
-> system if doing heavy I/O. "ssh", in this case, seems to be doing much
-> more I/O than a simple "ls", and I think we might want to see if cfq
-> behaves correctly in such case. Most of this I/O is coming from page
-> faults (identified as traps in the trace) probably because the ssh
-> executable has been thrown out of the cache by
-> 
-> echo 3 > /proc/sys/vm/drop_caches
-> 
-> The behavior of an incoming ssh connexion after clearing the cache is
-> appended below (Part 1 - LTTng trace for incoming ssh connexion). The
-> job file created (Part 2) reads, for each job, a 2MB file with random
-> reads each between 4k-44k. The results are very interesting for cfq :
-> 
-> I/O scheduler        runt-min (msec)   runt-max (msec)
-> noop                       586           110242
-> anticipatory               531            26942
-> deadline                   561           108772
-> cfq                        523            28216
-> 
-> So, basically, ssh being out of the cache can take 28s to answer an
-> incoming ssh connexion even with the cfq scheduler. This is not exactly
-> what I would call an acceptable latency.
+hm, this looks like a compiler bug: GCC might assume above that the 'regs' 
+parameter is the callee's (while in reality they are the caller's and we 
+rely on GCC not clobbering them on the stack).
 
-At some point, you have to stop and consider what is acceptable
-performance for a given IO pattern. Your ssh test case is purely random
-IO, and neither CFQ nor AS would do any idling for that. We can make
-this test case faster for sure, the hard part is making sure that we
-don't regress on async throughput at the same time.
+Justin, does it work if you apply the patch below instead of the revert?
 
-Also remember that with your raid1, it's not entirely reasonable to
-blaim all performance issues on the IO scheduler as per my previous
-mail. It would be a lot more fair to view the disk numbers individually.
+Thanks,
 
-Can you retry this job with 'quantum' set to 1 and 'slice_async_rq' set
-to 1 as well?
+	Ingo
 
-However, I think we should be doing somewhat better at this test case.
+-------------------->
+>From c401278356e4eae139e4c15695b6c1cdb63e7376 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 20 Jan 2009 08:38:47 +0100
+Subject: [PATCH] x86: prevent tail call optimization in signal.c
 
--- 
-Jens Axboe
+Impact: fix firefox crash
 
+Another victim of GCC believing that on-stack function arguments are
+owned by the callee - while in reality for asmlinkage functions they
+are very much owned by the caller. Stomping on them can corrupt the
+user-space register state, causing weird crashes.
+
+Reported-by: Justin Madru <jdm64@gawab.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/signal.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 89bb766..dee83af 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -634,7 +634,11 @@ badframe:
+ #ifdef CONFIG_X86_32
+ asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+ {
+-	return do_rt_sigreturn(&regs);
++	int ret = do_rt_sigreturn(&regs);
++
++	asmlinkage_protect(1, ret, regs);
++
++	return ret;
+ }
+ #else /* !CONFIG_X86_32 */
+ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
