@@ -1,124 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbZATRzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZATR7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbZATRzE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 12:55:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZATRyx
+	id S1757436AbZATR7F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 12:59:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZATR6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 12:54:53 -0500
-Received: from bowden.ucwb.org.au ([203.122.237.119]:35334 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbZATRyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 12:54:52 -0500
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, bugme-daemon@bugzilla.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <4975CBF8.90101@redhat.com>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
-	 <20090120113546.GA26571@elte.hu>
-	 <1232455343.4895.4.camel@kulgan.wumi.org.au>  <4975CBF8.90101@redhat.com>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Wed, 21 Jan 2009 04:24:41 +1030
-Message-Id: <1232474081.4895.76.camel@kulgan.wumi.org.au>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Jan 2009 12:58:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35708 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753085AbZATR6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 12:58:53 -0500
+Date: Tue, 20 Jan 2009 15:58:35 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHv2] ftrace interface for blktrace
+Message-ID: <20090120175835.GM690@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <20090116181611.GE6562@ghostprotocols.net> <20090117190913.GA17722@elte.hu> <20090117191430.GA30821@kernel.dk> <20090117200804.GJ6562@ghostprotocols.net> <20090120144219.GH690@ghostprotocols.net> <alpine.DEB.1.10.0901201007060.2681@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901201007060.2681@gandalf.stny.rr.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-20 at 15:04 +0200, Avi Kivity wrote:
-> Kevin Shanahan wrote:
-> > On Tue, 2009-01-20 at 12:35 +0100, Ingo Molnar wrote:
-> >> This only seems to occur under KVM, right? I.e. you tested it with -no-kvm 
-> >> and the problem went away, correct?
-> >>     
-> >
-> > Well, the I couldn't make the test conditions identical, but it the
-> > problem didn't occur with the test I was able to do:
-> >
-> >   http://marc.info/?l=linux-kernel&m=123228728416498&w=2
-> >
-> >   
+Em Tue, Jan 20, 2009 at 12:03:17PM -0500, Steven Rostedt escreveu:
 > 
-> Can you also try with -no-kvm-irqchip?
+> On Tue, 20 Jan 2009, Arnaldo Carvalho de Melo wrote:
+> > 
+> > Setup debugfs/tracing environment:
+> > 
+> > $ mkdir /d
+> > $ mount -t debugfs none /d
+> > $ ln -s /d/tracing /t
 > 
-> You will need to comment out the lines
+> OK, now you are just making fun of me ;-)
+
+8-)
+ 
+> > Now enable tracing on the desired device, setting up filters if needed:
+> > 
+> > $ echo 1 > /sys/block/sda/sda1/trace/enable
+> > 
+> > root@f10-1 ~]# head /t/trace
+> > # tracer: blk
+> > #
+> >             bash-955   [000]   565.025000:   8,1    A WBS 3932975 + 8 <- (8,1) 3932912
+> >             bash-955   [000]   565.025000:   8,1    Q   R 3932975 + 8 [<idle>]
+> >             bash-955   [000]   565.025000:   8,1    G  RB 3932975 + 8 [<idle>]
+> >             bash-955   [000]   565.025000:   8,1    P  NS [<idle>]
+> >             bash-955   [000]   565.025000:   8,1    I RBS 3932975 + 8 [<idle>]
+> >             bash-955   [000]   565.025000:   8,1    U  WS [<idle>] 1
+> >             bash-955   [000]   565.025000:   8,1    D  WB 3932975 + 8 [<idle>]
+> >           <idle>-0     [000]   565.044000:   8,1    C  RS 3932975 + 8 [0]
+> > [root@f10-1 ~]#
+> > 
+> > This is the standardized format used in the sched_switch, sched_wakeup and
+> > other tracers.
+> > 
+> > This is done by adding a tracer option, that starts disabled, named
+> > "blk_classic", using this construct:
+> > 
+> > /* Select an alternative, minimalistic output than the original one */
+> > #define TRACE_BLK_OPT_CLASSIC   0x1
+> > 
+> > static struct tracer_opt blk_tracer_opts[] = {
+> >         /* Default disable the minimalistic output */
+> >         { TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC ) },
+> >         { }
+> > };
+> > 
+> > static struct tracer_flags blk_tracer_flags = {
+> >         .val  = 0,
+> >         .opts = blk_tracer_opts,
+> > };
+> > 
+> > With this disabled the ->print_line in our struct tracer always returns
+> > TRACE_TYPE_UNHANDLED, leaving to the struct trace_event ->trace routine to
+> > pretty print it if the entry in the ring buffer is of type TRACE_BLK, that
+> > we register now in init_blk_tracer by using register_ftrace_event.
+> > 
+> > I did this because I want, at least while this patch is being considered by
+> > Jens and the other blktrace developers, to both to have the classic format,
+> > activated by:
+> > 
+> > [root@f10-1 ~]# echo blk_classic > /t/trace_options 
+> > [root@f10-1 ~]# cat /t/trace_options 
+> > print-parent nosym-offset nosym-addr noverbose noraw nohex nobin noblock nostacktrace nosched-tree ftrace_printk noftrace_preempt nobranch annotate nouserstacktrace nosym-userobj noprintk-msg-only blk_classic
+> > 
+> > So that we use struct trace -> print_line and have full control of what is
+> > formatted:
+> > 
+> > [root@f10-1 ~]# tail /t/trace
+> >   8,1    0   289.469000  1054  D  WB 526039 + 8 [ls]
+> >   8,1    0   289.470000     0  C  RS 526039 + 8 [1751]
+> >   8,1    0   289.470000  1054  A WBS 266439 + 8 <- (8,1) 266376
+> >   8,1    0   289.470000  1054  Q   R 266439 + 8 [ls]
+> >   8,1    0   289.470000  1054  G  RB 266439 + 8 [ls]
+> >   8,1    0   289.470000  1054  P  NS [ls]
+> >   8,1    0   289.470000  1054  I RBS 266439 + 8 [ls]
+> >   8,1    0   289.470000  1054  U  WS [ls] 1
+> >   8,1    0   289.470000  1054  D  WB 266439 + 8 [ls]
+> >   8,1    0   289.470000     0  C  RS 266439 + 8 [4295]
+> > [root@f10-1 ~]# 
+> > 
+> > Now back to non_classic mode...
+> > 
+> > # echo noblk_classic > /t/trace_options
+> > 
+> > ... where we can mix trace events by doing...
+> > 
+> > # echo stacktrace > /t/trace_options
+> > 
+> > ... and get something interesting:
+> > 
+> > [root@f10-1 ~]# tail /t/trace
+> >               ls-1060  [000]   431.697000:   8,1    A WBS 12320847 + 8 <- (8,1) 12320784
+> >               ls-1060  [000]   431.697000: 
+> >  <= submit_bio
+> >  <= submit_bh
+> >  <= __ext3_get_inode_loc
+> >  <= ext3_iget
+> >  <= ext3_lookup
+> >  <= do_lookup
+> >  <= __link_path_walk
+> >               ls-1060  [000]   431.697000:   8,1    Q   R 12320847 + 8 [ls]
+> >               ls-1060  [000]   431.697000: 
+> >  <= generic_make_request
+> >  <= submit_bio
+> >  <= submit_bh
+> >  <= __ext3_get_inode_loc
+> >  <= ext3_iget
+> >  <= ext3_lookup
+> >  <= do_lookup
+> >               ls-1060  [000]   431.697000:   8,1    G  RB 12320847 + 8 [ls]
+> >               ls-1060  [000]   431.697000: 
+> >  <= get_request
+> >  <= get_request_wait
+> >  <= __make_request
+> >  <= generic_make_request
+> >  <= submit_bio
+> >  <= submit_bh
+> >  <= __ext3_get_inode_loc
+> >               ls-1060  [000]   431.697000:   8,1    P  NS [ls]
+> >               ls-1060  [000]   431.697000: 
+> >  <= __make_request
+> >  <= generic_make_request
+> >  <= submit_bio
+> >  <= submit_bh
+> >  <= __ext3_get_inode_loc
+> >  <= ext3_iget
+> >  <= ext3_lookup
+> >               ls-1060  [000]   431.697000:   8,1    I RBS 12320847 + 8 [ls]
+> >               ls-1060  [000]   431.697000: 
+> >  <= elv_insert
+> >  <= __elv_add_request
+> >  <= __make_request
+> >  <= generic_make_request
+> >  <= submit_bio
+> >  <= submit_bh
+> >  <= __ext3_get_inode_loc
+> > <SNIP>
+> > 
+> > Now lets disable stacktraces:
+> > 
+> > # echo nostacktrace > /t/trace_options
+> > 
+> > And try doing things a bit more verbosely, using the TRACE_ITER_VERBOSE
+> > that were already part of the existing ftrace infrastructure.
+> > 
+> > # echo verbose > /t/trace_options
+> > # cat /t/trace_pipe 
+> >               ls-1065  [000]   694.325000:   8,1   remap WBS 3670207 + 8 <- (8,1) 3670144
+> >               ls-1065  [000]   694.325000:   8,1   queue   R 3670207 + 8 [ls]
+> >               ls-1065  [000]   694.325000:   8,1   getrq  RB 3670207 + 8 [ls]
+> >               ls-1065  [000]   694.325000:   8,1   plug  NS [ls]
+> >               ls-1065  [000]   694.325000:   8,1   insert RBS 3670207 + 8 [ls]
+> >               ls-1065  [000]   694.325000:   8,1   unplug_io  WS [ls] 1
+> >               ls-1065  [000]   694.325000:   8,1   issue  WB 3670207 + 8 [ls]
+> >           <idle>-0     [000]   694.343000:   8,1   complete  RS 3670207 + 8 [191]
+> > 
+> > Hint: look at the action (insert, unplug_io, issue, etc).
+> > 
+> > We can make it a bit more verbose using this iter flag, the above is
+> > just a suggestion on using the standard flags interface.
+> > 
+> > Frederic, for now I'm using t->action as the "sub-type" we discussed.
+> > 
+> > Now that we have noblk_classic mode we can actually look at the struct
+> > trace_event->binary() way of doing things + the
+> > don't-print-anything-just-call-me->binary() flag and then we could
+> > synthesize the old blktrace format and simply do:
+> > 
+> > cat /t/trace_pipe | blkparse -i -
+> > 
+> > As a test to check that everything is as the old blktrace(8) codebase
+> > expects.
+> > 
+> > Jens, there are several fields in struct blk_io_trace that could go,
+> > like pid, cpu, timestamp, because they are already in struct
+> > trace_entry, and sequence, if my understanding of what was discussed
+> > here is not flawed:
+> > 
+> > http://kerneltrap.org/mailarchive/linux-kernel/2008/9/23/3375544
+> > 
+> > Patch against yesterday's linux-tip,
+> > 
+> > Comments?
+> > 
+> > - Arnaldo
+> > 
+> > diff --git a/block/blktrace.c b/block/blktrace.c
+> > index b0a2cae..21116c4 100644
+> > --- a/block/blktrace.c
+> > +++ b/block/blktrace.c
+> > @@ -25,9 +25,27 @@
+> >  #include <linux/time.h>
+> >  #include <trace/block.h>
+> >  #include <asm/uaccess.h>
+> > +#include <../kernel/trace/trace_output.h>
+> >  
+> >  static unsigned int blktrace_seq __read_mostly = 1;
+> >  
+> > +static struct trace_array *blk_tr;
+> > +static int __read_mostly  blk_tracer_enabled;
+> > +
+> > +/* Select an alternative, minimalistic output than the original one */
+> > +#define TRACE_BLK_OPT_CLASSIC 	0x1
+> > +
+> > +static struct tracer_opt blk_tracer_opts[] = {
+> > +	/* Default disable the minimalistic output */
+> > +	{ TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC ) },
+> > +	{ }
+> > +};
+> > +
+> > +static struct tracer_flags blk_tracer_flags = {
+> > +	.val  = 0,
+> > +	.opts = blk_tracer_opts,
+> > +};
+> > +
+> >  /* Global reference count of probes */
+> >  static DEFINE_MUTEX(blk_probe_mutex);
+> >  static atomic_t blk_probes_ref = ATOMIC_INIT(0);
+> > @@ -43,6 +61,9 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
+> >  {
+> >  	struct blk_io_trace *t;
+> >  
+> > +	if (!bt->rchan)
+> > +		return;
+> > +
+> >  	t = relay_reserve(bt->rchan, sizeof(*t) + len);
+> >  	if (t) {
+> >  		const int cpu = smp_processor_id();
+> > @@ -90,6 +111,9 @@ void __trace_note_message(struct blk_trace *bt, const char *fmt, ...)
+> >  	unsigned long flags;
+> >  	char *buf;
+> >  
+> > +	if (!bt->msg_data)
+> > +		return;
+> > +
+> >  	local_irq_save(flags);
+> >  	buf = per_cpu_ptr(bt->msg_data, smp_processor_id());
+> >  	va_start(args, fmt);
+> > @@ -131,13 +155,14 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+> >  		     int rw, u32 what, int error, int pdu_len, void *pdu_data)
+> >  {
+> >  	struct task_struct *tsk = current;
+> > +	struct ring_buffer_event *event = NULL;
+> >  	struct blk_io_trace *t;
+> >  	unsigned long flags;
+> >  	unsigned long *sequence;
+> >  	pid_t pid;
+> > -	int cpu;
+> > +	int cpu, pc = 0;
+> >  
+> > -	if (unlikely(bt->trace_state != Blktrace_running))
+> > +	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
+> >  		return;
+> >  
+> >  	what |= ddir_act[rw & WRITE];
+> > @@ -150,6 +175,24 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+> >  	pid = tsk->pid;
+> >  	if (unlikely(act_log_check(bt, what, sector, pid)))
+> >  		return;
+> > +	cpu = raw_smp_processor_id();
+> > +
+> > +	if (blk_tr) {
+> > +		struct trace_entry *ent;
+> > +		tracing_record_cmdline(current);
+> > +
+> > +		event = ring_buffer_lock_reserve(blk_tr->buffer,
+> > +						 sizeof(*t) + pdu_len, &flags);
+> > +		if (!event)
+> > +			return;
+> > +		
+> > +		ent = ring_buffer_event_data(event);
+> > +		t = (struct blk_io_trace *)ent;
+> > +		pc = preempt_count();
+> > +		tracing_generic_entry_update(ent, 0, pc);
+> > +		ent->type = TRACE_BLK;
+> > +		goto record_it;
+> > +	}
+> >  
+> >  	/*
+> >  	 * A word about the locking here - we disable interrupts to reserve
+> > @@ -163,23 +206,33 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+> >  
+> >  	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
 > 
->     /* ISA IRQs map to GSI 1-1 except for IRQ0 which maps
->      * to GSI 2.  GSI maps to ioapic 1-1.  This is not
->      * the cleanest way of doing it but it should work. */
-> 
->     if (vector == 0)
->         vector = 2;
-> 
-> in qemu/hw/apic.c (should also fix -no-kvm smp).  This will change kvm 
-> wakeups to use signals rather than the in-kernel code, which may be buggy.
+> Do we still use relay?
 
-Okay, I commented out those lines and compiled a new kvm-82 userspace
-and kernel modules. Using those on a vanilla 2.6.28 kernel, with all
-guests run with -no-kvm-irqchip added.
+blkFtrace is an addition to the existing method for the moment, as soon
+as we're all satisfied with functionality + performance, we may then
+remove that code.
+ 
+> -- Steve
 
-As before a number of the XP guests wanted to chug away at 100% CPU
-usage for a long time. Three of the guests clocked up ~40 minutes CPU
-time before I decided to just shut them down. Perhaps coincidentally,
-these three guests are the only ones with Office 2003 installed on them.
-That could be the difference between those guests and the other XP
-guests, but that's probably not important for now.
-
-The two Linux SMP guests booted okay this time, though they seem to only
-use one CPU on the host (I guess kvm is not multi-threaded in this
-mode?). "hermes-old", the guest I am pinging in all my tests, had a lot
-of trouble running the apache2 setup - it was so slow it was difficult
-to load a complete page from our RT system. The kvm process for this
-guest was taking up 100% cpu on the host constantly and all sorts of
-wierd stuff could be seen by watching top in the guest:
-
-top - 03:44:17 up 43 min,  1 user,  load average: 3.95, 1.55, 0.80
-Tasks: 101 total,   4 running,  97 sleeping,   0 stopped,   0 zombie
-Cpu(s): 79.7%us, 10.4%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  9.9%si,
-0.0%st
-Mem:   2075428k total,   391128k used,  1684300k free,    13044k buffers
-Swap:  3502160k total,        0k used,  3502160k free,   118488k cached
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND             
- 2956 postgres  20   0 19704  11m  10m S 1658  0.6   2:55.99 postmaster          
- 2934 www-data  20   0 60392  40m 5132 R   31  2.0   0:17.28 apache2             
- 2958 postgres  20   0 19700  11m 9.8m R   28  0.6   0:20.41 postmaster          
- 2940 www-data  20   0 58652  38m 5016 S   27  1.9   0:04.87 apache2             
- 2937 www-data  20   0 60124  40m 5112 S   18  2.0   0:11.00 apache2             
- 2959 postgres  20   0 19132 5424 4132 S   10  0.3   0:01.50 postmaster          
- 2072 postgres  20   0  8064 1416  548 S    7  0.1   0:23.71 postmaster          
- 2960 postgres  20   0 19132 5368 4060 R    6  0.3   0:01.55 postmaster          
- 2071 postgres  20   0  8560 1972  488 S    5  0.1   0:08.33 postmaster    
-
-Running the ping test with without apache2 running in the guest:
-
---- hermes-old.wumi.org.au ping statistics ---
-900 packets transmitted, 900 received, 0% packet loss, time 902740ms
-rtt min/avg/max/mdev = 0.568/3.745/272.558/16.990 ms
-
-And with apache2 running:
-
---- hermes-old.wumi.org.au ping statistics ---
-900 packets transmitted, 900 received, 0% packet loss, time 902758ms
-rtt min/avg/max/mdev = 0.625/25.634/852.739/76.586 ms
-
-In both cases it's quite variable, but the max latency is still not as
-bad as when running with the irq chip enabled.
-
-Anyway, the test is again not ideal, but I hope we're proving something.
-That's all I can do for tonight - should be ready for more again
-tomorrow night.
-
-Regards,
-Kevin.
-
-
+- Arnaldo
