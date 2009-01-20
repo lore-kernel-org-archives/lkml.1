@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbZATKKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbZATKLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbZATKKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 05:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759601AbZATKK2
+	id S1760316AbZATKLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 05:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZATKLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 05:10:28 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:34937 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759508AbZATKK0 convert rfc822-to-8bit (ORCPT
+	Tue, 20 Jan 2009 05:11:25 -0500
+Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:30070 "EHLO
+	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753175AbZATKLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 05:10:26 -0500
-Message-Id: <4975B139.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 20 Jan 2009 10:10:49 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <mingo@elte.hu>, "Thomas Renninger" <trenn@suse.de>
-Subject: Re: [PATCH] x86: mtrr fix debug parameter
-References: <200901201037.39981.trenn@suse.de>
-In-Reply-To: <200901201037.39981.trenn@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 20 Jan 2009 05:11:23 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhICAGEwdUl5LBURgWdsb2JhbACUBQEBFiK3EoVz
+X-IronPort-AV: E=Sophos;i="4.37,294,1231075800"; 
+   d="scan'208";a="288419954"
+Date: Tue, 20 Jan 2009 21:11:19 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+Cc: Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090120101119.GB10158@disturbed>
+Mail-Followup-To: Eric Sesterhenn <snakebyte@gmx.de>,
+	Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+	linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090120063150.GC5854@alice>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been carrying a change like this for quite some time in a bigger patch,
-but never got to actually split it out and submit it. Thanks for doing this,
-Thomas! (And yes, it did work at the time it was added.)
+On Tue, Jan 20, 2009 at 07:31:50AM +0100, Eric Sesterhenn wrote:
+> * Pavel Machek (pavel@suse.cz) wrote:
+> > Does ext2/3 and vfat survive that kind of attacks? Those are 'in
+> > production' and should survive it...
+> 
+> I regularly (once or twice a week) test 100 corrupted images of 
+> vfat, udf, msdos, swap, iso9660, ext2, ext3, ext4, minix, bfs, befs,
+> hfs, hfs+, qnx4, affs and cramfs on each of my two test machines.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Any reason you are not testing XFS in that set?
 
->>> Thomas Renninger <trenn@suse.de> 20.01.09 10:37 >>>
-while looking at:
-http://bugzilla.kernel.org/show_bug.cgi?id=11541 
-I realized that the mtrr.show param cannot work, because
-the code is processed much too early.
+Cheers,
 
-This patch:
- - Declares mtrr.show as early_param
- - Stays consistent with the previous param (which I doubt
-   that it ever worked), so mtrr.show=1 would still work
- - Declares mtrr_show as initdata
-
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-
----
- arch/x86/kernel/cpu/mtrr/generic.c |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
-+++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -33,11 +33,13 @@ u64 mtrr_tom2;
- struct mtrr_state_type mtrr_state = {};
- EXPORT_SYMBOL_GPL(mtrr_state);
- 
--#undef MODULE_PARAM_PREFIX
--#define MODULE_PARAM_PREFIX "mtrr."
--
--static int mtrr_show;
--module_param_named(show, mtrr_show, bool, 0);
-+static int __initdata mtrr_show;
-+static int __init mtrr_debug(char *opt)
-+{
-+	mtrr_show = 1;
-+	return 0;
-+}
-+early_param("mtrr.show", mtrr_debug);
- 
- /*
-  * Returns the effective MTRR type for the region
-
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
