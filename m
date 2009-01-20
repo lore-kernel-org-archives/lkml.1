@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZATIVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZATIWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZATIVK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 03:21:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZATIUz
+	id S1754616AbZATIWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 03:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZATIV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 03:20:55 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49819 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbZATIUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 03:20:55 -0500
-Message-ID: <49758937.5070300@cn.fujitsu.com>
-Date: Tue, 20 Jan 2009 16:20:07 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 20 Jan 2009 03:21:58 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:32778 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbZATIV5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 03:21:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nf2K4SN+EBwQj9KozYOGJI8wD0lIrBOYakispdC7SCMtFsK4rPzAAmajPumSk1FwrW
+         gpQWJWZw0dI08V22ZtSaUOgPECTcPe7m2ecIULuWG1ih3KHnoJtP6oZxaxQbg/QggtE4
+         m2jQJUHe4GviAF/K7cjcjjsstsb6RIR+/T1ZM=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       Mike Travis <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] kernel BUG at arch/x86/kernel/tlb_32.c:130!
-References: <49756F44.6040801@cn.fujitsu.com> <20090120075440.GA29426@elte.hu> <20090120081759.GA30394@elte.hu>
-In-Reply-To: <20090120081759.GA30394@elte.hu>
+In-Reply-To: <20090119215427.7f23a76f.krzysztof.h1@wp.pl>
+References: <1232363044-8878-1-git-send-email-righi.andrea@gmail.com>
+	 <20090119215427.7f23a76f.krzysztof.h1@wp.pl>
+Date: Tue, 20 Jan 2009 09:21:55 +0100
+Message-ID: <a2776ec50901200021y7583fa40h71d2ea56c89c44a6@mail.gmail.com>
+Subject: Re: [PATCH] fbmem: copy_from/to_user() with mutex held (v2)
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Johannes Weiner <hannes@cmpxchg.org>, Dave Jones <davej@redhat.com>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Mon, Jan 19, 2009 at 9:54 PM, Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+> On Mon, 19 Jan 2009 12:04:04 +0100
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+>
+>> Avoid to call copy_from/to_user() with fb_info->lock mutex held in fbmem
+>> ioctl().
 >>
->>> I was using mmotm 2009-01-16-16-18, and I ran into this BUG,
->>> the line is:
->>> 	BUG_ON(cpumask_empty(cpumask));
->>>
->>> I suspect it is caused by:
->>>
->>> commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
->>> Author: Rusty Russell <rusty@rustcorp.com.au>
->>> Date:   Sat Jan 10 21:58:09 2009 -0800
->>>
->>>     x86: change flush_tlb_others to take a const struct cpumask
->>>
->>>     Impact: reduce stack usage, use new cpumask API.
->> Jaswinder reported a similar crash.
+>> fb_mmap() is called under mm->mmap_sem (A) held, that also acquires
+>> fb_info->lock (B); fb_ioctl() takes fb_info->lock (B) and does
+>> copy_from/to_user() that might acquire mm->mmap_sem (A), causing a
+>> deadlock.
 >>
->> Mike, Rusty, what's going on with this commit? Why does this code:
+>> NOTE: it doesn't push down the fb_info->lock in each own driver's
+>> fb_ioctl(), so there're still potential deadlocks somewhere.
 >>
->> +       if (cpumask_any_but(&mm->cpu_vm_mask, smp_processor_id()) < nr_cpu_ids)
->> +               flush_tlb_others(&mm->cpu_vm_mask, mm, TLB_FLUSH_ALL);
->>
->> Assume that mm->cpu_vm_mask wont change? TLB flushes go async and the 
->> MM's schedulability is not locked during that. I.e. mm->cpu_vm_mask can 
->> change under you while the TLB flush IPIs are flying around - while when 
->> the cpumask was passed on-stack this wouldnt happen.
-> 
-> okay, a testsystem of mine just triggered this crash too.
-> 
-> Li Zefan, Jaswinder, does the patch below fix it for you?
-> 
+>
+>> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+>> index 756efeb..fe6033e 100644
+>> --- a/drivers/video/fbmem.c
+>> +++ b/drivers/video/fbmem.c
+>> @@ -1013,25 +1013,26 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+> (...)
+>>       case FBIOPUT_VSCREENINFO:
+>> -             if (copy_from_user(&var, argp, sizeof(var))) {
+>> -                     ret =  -EFAULT;
+>> -                     break;
+>> -             }
+>> +             if (copy_from_user(&var, argp, sizeof(var)))
+>> +                     return -EFAULT;
+>> +             if (!lock_fb_info(info))
+>> +                     return -ENODEV;
+>>               acquire_console_sem();
+>>               info->flags |= FBINFO_MISC_USEREVENT;
+>>               ret = fb_set_var(info, &var);
+>> @@ -1041,104 +1042,109 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>>                       ret = -EFAULT;
+>>               break;
+>
+> I don't see a call to unlock_fb_info(info) in the case for FBIOPUT_VSCREENINFO.
+> Is it intentional?
 
-I'll test it, but I have to run for several hours to confirm it, since
-the bug is not easy to trigger. :)
+No, it's a bug :(. I'll post a new patch soon.
 
+Thanks for reviewing!
+-Andrea
+
+>
+> Kind regards,
+> Krzysztof
