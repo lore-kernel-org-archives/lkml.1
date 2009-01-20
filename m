@@ -1,54 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZATBSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbZATBS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbZATBSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760230AbZATBSV
+	id S1762222AbZATBS6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbZATBSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:18:21 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44353 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759848AbZATBST (ORCPT
+	Mon, 19 Jan 2009 20:18:24 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:1107 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760123AbZATBSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:18:19 -0500
-X-Sasl-enc: ftBWXYaueUJIVUV0T+bn1vIpkOGyAGx80155IGPh2NPQ 1232414297
-Subject: Re: [PATCH] autofs: fix the wrong usage of
-	the	deprecated	task_pgrp_nr()
-From: Ian Kent <raven@themaw.net>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "SergeE.Hallyn" <serue@us.ibm.com>
-In-Reply-To: <4974B3B7.5060608@zytor.com>
-References: <20090118073441.GA699@redhat.com>
-	 <1232331602.3136.19.camel@zeus.themaw.net>  <49741F14.80808@zytor.com>
-	 <1232351101.3136.87.camel@zeus.themaw.net>  <4974B3B7.5060608@zytor.com>
-Content-Type: text/plain
-Date: Tue, 20 Jan 2009 10:18:19 +0900
-Message-Id: <1232414299.3136.2.camel@zeus.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 19 Jan 2009 20:18:21 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=hjA7RmqGp4vbMlJasDrxaKj4dAYRgXzHytHKLJEIaS1Uak6LCpM5YjIgUMMwQGQwN
+	TYj6MZFaHWFybxbrQhDHA==
+MIME-Version: 1.0
+In-Reply-To: <4972E2FD.1010902@cn.fujitsu.com>
+References: <496FEFCA.9050908@cn.fujitsu.com> <4970000E.7040902@cn.fujitsu.com>
+	 <20090116125738.22c21bf2.akpm@linux-foundation.org>
+	 <4972E2FD.1010902@cn.fujitsu.com>
+Date: Mon, 19 Jan 2009 17:18:16 -0800
+Message-ID: <6599ad830901191718p70dbbf75y3fe0d51ab9a0aaed@mail.gmail.com>
+Subject: Re: [PATCH 1/3] cgroup: convert open-coded mutex_lock(&cgroup_mutex) 
+	calls into cgroup_lock() calls
+From: Paul Menage <menage@google.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, miaox@cn.fujitsu.com,
+       maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.24.198.65
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 09:09 -0800, H. Peter Anvin wrote:
-> Ian Kent wrote:
-> >>>
-> >> The other thing is also: isn't it high time to remove autofs 3?  It has
-> >> been unmaintained for at least 10 years now.  I should know ;)
-> > 
-> > That's a good idea.
-> > Couldn't we rename autofs4 to autofs and add a MODULE_ALIAS("autofs4")
-> > or something?
-> > 
-> 
-> Works for me.  Now, this really isn't an -rc2 kind of thing, but I would
-> ACK such a change for the next merge window.
+On Sun, Jan 18, 2009 at 12:06 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>
+> Convert open-coded mutex_lock(&cgroup_mutex) calls into cgroup_lock()
+> calls and convert mutex_unlock(&cgroup_mutex) calls into cgroup_unlock()
+> calls.
 
-Sounds good to me.
-I'll try for the next merge window.
+I don't really see a lot of value in this patch. I'd prefer to leave
+cgroup.c as it is, and work towards removing the need for external
+code to call cgroup_lock() at all.
 
-Ian
+Paul
 
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Max Krasnyansky <maxk@qualcomm.com>
+> Cc: Miao Xie <miaox@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index c298310..75a352b 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -616,7 +688,7 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
+>                 * agent */
+>                synchronize_rcu();
+>
+> -               mutex_lock(&cgroup_mutex);
+> +               cgroup_lock();
+>                /*
+>                 * Release the subsystem state objects.
+>                 */
+> @@ -624,7 +696,7 @@ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
+>                        ss->destroy(ss, cgrp);
+>
+>                cgrp->root->number_of_cgroups--;
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>
+>                /*
+>                 * Drop the active superblock reference that we took when we
+> @@ -761,14 +833,14 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
+>        struct cgroupfs_root *root = vfs->mnt_sb->s_fs_info;
+>        struct cgroup_subsys *ss;
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        for_each_subsys(root, ss)
+>                seq_printf(seq, ",%s", ss->name);
+>        if (test_bit(ROOT_NOPREFIX, &root->flags))
+>                seq_puts(seq, ",noprefix");
+>        if (strlen(root->release_agent_path))
+>                seq_printf(seq, ",release_agent=%s", root->release_agent_path);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        return 0;
+>  }
+>
+> @@ -843,7 +915,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>        struct cgroup_sb_opts opts;
+>
+>        mutex_lock(&cgrp->dentry->d_inode->i_mutex);
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>
+>        /* See what subsystems are wanted */
+>        ret = parse_cgroupfs_options(data, &opts);
+> @@ -867,7 +939,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>  out_unlock:
+>        if (opts.release_agent)
+>                kfree(opts.release_agent);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+>        return ret;
+>  }
+> @@ -1015,7 +1087,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>                inode = sb->s_root->d_inode;
+>
+>                mutex_lock(&inode->i_mutex);
+> -               mutex_lock(&cgroup_mutex);
+> +               cgroup_lock();
+>
+>                /*
+>                 * We're accessing css_set_count without locking
+> @@ -1026,14 +1098,14 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>                 */
+>                ret = allocate_cg_links(css_set_count, &tmp_cg_links);
+>                if (ret) {
+> -                       mutex_unlock(&cgroup_mutex);
+> +                       cgroup_unlock();
+>                        mutex_unlock(&inode->i_mutex);
+>                        goto drop_new_super;
+>                }
+>
+>                ret = rebind_subsystems(root, root->subsys_bits);
+>                if (ret == -EBUSY) {
+> -                       mutex_unlock(&cgroup_mutex);
+> +                       cgroup_unlock();
+>                        mutex_unlock(&inode->i_mutex);
+>                        goto free_cg_links;
+>                }
+> @@ -1068,7 +1140,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>
+>                cgroup_populate_dir(root_cgrp);
+>                mutex_unlock(&inode->i_mutex);
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>        }
+>
+>        return simple_set_mnt(mnt, sb);
+> @@ -1094,7 +1166,7 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>        BUG_ON(!list_empty(&cgrp->children));
+>        BUG_ON(!list_empty(&cgrp->sibling));
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>
+>        /* Rebind all subsystems back to the default hierarchy */
+>        ret = rebind_subsystems(root, 0);
+> @@ -1118,7 +1190,7 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>        list_del(&root->root_list);
+>        root_count--;
+>
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>
+>        kfree(root);
+>        kill_litter_super(sb);
+> @@ -2392,7 +2464,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
+>         * fs */
+>        atomic_inc(&sb->s_active);
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>
+>        init_cgroup_housekeeping(cgrp);
+>
+> @@ -2427,7 +2499,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
+>        err = cgroup_populate_dir(cgrp);
+>        /* If err < 0, we have a half-filled directory - oh well ;) */
+>
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+>
+>        return 0;
+> @@ -2444,7 +2516,7 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
+>                        ss->destroy(ss, cgrp);
+>        }
+>
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>
+>        /* Release the reference count that we took on the superblock */
+>        deactivate_super(sb);
+> @@ -2550,16 +2622,16 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+>
+>        /* the vfs holds both inode->i_mutex already */
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        if (atomic_read(&cgrp->count) != 0) {
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                return -EBUSY;
+>        }
+>        if (!list_empty(&cgrp->children)) {
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                return -EBUSY;
+>        }
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>
+>        /*
+>         * Call pre_destroy handlers of subsys. Notify subsystems
+> @@ -2567,13 +2639,13 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+>         */
+>        cgroup_call_pre_destroy(cgrp);
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        parent = cgrp->parent;
+>
+>        if (atomic_read(&cgrp->count)
+>            || !list_empty(&cgrp->children)
+>            || !cgroup_clear_css_refs(cgrp)) {
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                return -EBUSY;
+>        }
+>
+> @@ -2598,7 +2670,7 @@ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+>        set_bit(CGRP_RELEASABLE, &parent->flags);
+>        check_for_release(parent);
+>
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        return 0;
+>  }
+>
+> @@ -2752,7 +2824,7 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
+>
+>        retval = 0;
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>
+>        for_each_active_root(root) {
+>                struct cgroup_subsys *ss;
+> @@ -2774,7 +2846,7 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
+>        }
+>
+>  out_unlock:
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        put_task_struct(tsk);
+>  out_free:
+>        kfree(buf);
+> @@ -2801,14 +2873,14 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
+>        int i;
+>
+>        seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\tenabled\n");
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>                struct cgroup_subsys *ss = subsys[i];
+>                seq_printf(m, "%s\t%lu\t%d\t%d\n",
+>                           ss->name, ss->root->subsys_bits,
+>                           ss->root->number_of_cgroups, !ss->disabled);
+>        }
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        return 0;
+>  }
+>
+> @@ -2984,11 +3056,11 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+>
+>        /* First figure out what hierarchy and cgroup we're dealing
+>         * with, and pin them so we can drop cgroup_mutex */
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>  again:
+>        root = subsys->root;
+>        if (root == &rootnode) {
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                return 0;
+>        }
+>        task_lock(tsk);
+> @@ -2998,14 +3070,14 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+>        /* Pin the hierarchy */
+>        if (!atomic_inc_not_zero(&parent->root->sb->s_active)) {
+>                /* We race with the final deactivate_super() */
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                return 0;
+>        }
+>
+>        /* Keep the cgroup alive */
+>        get_css_set(cg);
+>        task_unlock(tsk);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>
+>        /* Now do the VFS work to create a cgroup */
+>        inode = parent->dentry->d_inode;
+> @@ -3036,7 +3108,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+>        /* The cgroup now exists. Retake cgroup_mutex and check
+>         * that we're still in the same state that we thought we
+>         * were. */
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        if ((root != subsys->root) ||
+>            (parent != task_cgroup(tsk, subsys->subsys_id))) {
+>                /* Aargh, we raced ... */
+> @@ -3061,14 +3133,14 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
+>
+>        /* All seems fine. Finish by moving the task into the new cgroup */
+>        ret = cgroup_attach_task(child, tsk);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>
+>  out_release:
+>        mutex_unlock(&inode->i_mutex);
+>
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        put_css_set(cg);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>        deactivate_super(parent->root->sb);
+>        return ret;
+>  }
+> @@ -3162,7 +3234,7 @@ void __css_put(struct cgroup_subsys_state *css)
+>  static void cgroup_release_agent(struct work_struct *work)
+>  {
+>        BUG_ON(work != &release_agent_work);
+> -       mutex_lock(&cgroup_mutex);
+> +       cgroup_lock();
+>        spin_lock(&release_list_lock);
+>        while (!list_empty(&release_list)) {
+>                char *argv[3], *envp[3];
+> @@ -3196,16 +3268,16 @@ static void cgroup_release_agent(struct work_struct *work)
+>                /* Drop the lock while we invoke the usermode helper,
+>                 * since the exec could involve hitting disk and hence
+>                 * be a slow process */
+> -               mutex_unlock(&cgroup_mutex);
+> +               cgroup_unlock();
+>                call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
+> -               mutex_lock(&cgroup_mutex);
+> +               cgroup_lock();
+>  continue_free:
+>                kfree(pathbuf);
+>                kfree(agentbuf);
+>                spin_lock(&release_list_lock);
+>        }
+>        spin_unlock(&release_list_lock);
+> -       mutex_unlock(&cgroup_mutex);
+> +       cgroup_unlock();
+>  }
+>
+>  static int __init cgroup_disable(char *str)
+>
+>
+>
+>
