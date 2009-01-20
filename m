@@ -1,45 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762111AbZATB33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbZATBd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762111AbZATB33 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 20:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbZATB3Q
+	id S1761254AbZATBd0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 20:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZATBdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 20:29:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50920
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756098AbZATB3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 20:29:15 -0500
-Date: Mon, 19 Jan 2009 17:29:17 -0800 (PST)
-Message-Id: <20090119.172917.38569263.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: slavon@bigtelecom.ru, a.p.zijlstra@chello.nl, denys@visp.net.lb,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: [PATCH] Re: deadlocks if use htb
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090119075733.GA4788@ff.dom.local>
-References: <20090119065715.GA4197@ff.dom.local>
-	<49742EE5.9090502@bigtelecom.ru>
-	<20090119075733.GA4788@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Jan 2009 20:33:08 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:42108 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752577AbZATBdH (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 20:33:07 -0500
+Message-Id: <20090120013258.215204000@sgi.com>
+References: <20090120012930.020621000@sgi.com>
+User-Agent: quilt/0.44-16.4
+Date: Tue, 20 Jan 2009 12:29:31 +1100
+From: Greg Banks <gnb@sgi.com>
+To: Linux Kernel ML <linux-kernel@vger.kernel.org>
+Cc: Linux NFS ML <linux-nfs@vger.kernel.org>,
+       Linux NFSv4 ML <nfsv4@linux-nfs.org>,
+       SystemTAP ML <systemtap@sources.redhat.com>
+Subject: [patch 1/5] Move definitions of struct module_sect_attr back into module.h.
+Content-Disposition: inline; filename=gnb-move-module_sect_attr-into-module-h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Mon, 19 Jan 2009 07:57:33 +0000
+The new dprintk module needs to use module_sect_attr.
 
-> On Mon, Jan 19, 2009 at 10:42:29AM +0300, Badalian Vyacheslav wrote:
-> > Tested 2 days (weekend is stress days for this bug, because its have
-> > many traffic) at 3 servers. Fly normal. For completed test need up to 7
-> > days, but i think (imho) this patch not break any functional and may
-> > safely added to stable. 100% help for me patch # 2+3.
-> 
-> Thank you very much, Slavon! (2+3 are of course better tested, but
-> I hope this #4 is more appropriate for -stable.)
+Signed-off-by: Greg Banks <gnb@sgi.com>
+---
 
-I've queued this up, thanks everyone.
+ include/linux/module.h |   15 +++++++++++++++
+ kernel/module.c        |   13 -------------
+ 2 files changed, 15 insertions(+), 13 deletions(-)
+
+Index: bfields/kernel/module.c
+===================================================================
+--- bfields.orig/kernel/module.c
++++ bfields/kernel/module.c
+@@ -1088,19 +1101,6 @@ static unsigned long resolve_symbol(Elf_
+  * J. Corbet <corbet@lwn.net>
+  */
+ #if defined(CONFIG_KALLSYMS) && defined(CONFIG_SYSFS)
+-struct module_sect_attr
+-{
+-	struct module_attribute mattr;
+-	char *name;
+-	unsigned long address;
+-};
+-
+-struct module_sect_attrs
+-{
+-	struct attribute_group grp;
+-	unsigned int nsections;
+-	struct module_sect_attr attrs[0];
+-};
+ 
+ static ssize_t module_sect_show(struct module_attribute *mattr,
+ 				struct module *mod, char *buf)
+Index: bfields/include/linux/module.h
+===================================================================
+--- bfields.orig/include/linux/module.h
++++ bfields/include/linux/module.h
+@@ -231,6 +231,21 @@ enum module_state
+ 	MODULE_STATE_GOING,
+ };
+ 
++struct module_sect_attr
++{
++	struct module_attribute mattr;
++	char *name;
++	unsigned long address;
++};
++
++struct module_sect_attrs
++{
++	struct attribute_group grp;
++	unsigned int nsections;
++	struct module_sect_attr attrs[0];
++};
++
++
+ struct module
+ {
+ 	enum module_state state;
+
+--
+-- 
+Greg Banks, P.Engineer, SGI Australian Software Group.
+the brightly coloured sporks of revolution.
+I don't speak for SGI.
