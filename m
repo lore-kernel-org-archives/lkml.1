@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZATROA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbZATRQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761278AbZATROA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 12:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZATRNt
+	id S1761752AbZATRQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 12:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbZATRQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 12:13:49 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40890 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755991AbZATRNs (ORCPT
+	Tue, 20 Jan 2009 12:16:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38361
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757925AbZATRQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 12:13:48 -0500
-Message-ID: <49760649.8000800@s5r6.in-berlin.de>
-Date: Tue, 20 Jan 2009 18:13:45 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Ionut Leonte <ionut.leonte@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 changes in-kernel name for UVC device ?
-References: <200901201349.33707.ionut.leonte@gmail.com> <ac3eb2510901200507p4b107af6ud87a634af6679223@mail.gmail.com>
-In-Reply-To: <ac3eb2510901200507p4b107af6ud87a634af6679223@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 20 Jan 2009 12:16:14 -0500
+Date: Tue, 20 Jan 2009 09:16:16 -0800 (PST)
+Message-Id: <20090120.091616.224452074.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090120110144.GB17004@ff.dom.local>
+References: <20090120102053.GA17004@ff.dom.local>
+	<20090120103122.GC9167@ioremap.net>
+	<20090120110144.GB17004@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Tue, Jan 20, 2009 at 12:49, Ionut Leonte <ionut.leonte@gmail.com> wrote:
->> I have a Dell laptop with an integrated webcam which works with the 'uvcvideo'
->> module. For kernel versions 2.6.27 and below the following udev rule:
->>
->>   KERNEL=="video[0-9]*",  NAME="v4l/video%n", SYMLINK+="%k", GROUP="video"
->>
->> would create '/dev/video0' as a link to '/dev/v4l/video0'. When switching to
->> 2.6.28 the rule creates '/dev/video1394-0' instead. Obviously most user-space
->> apps were quite surprised by this (as was I).
->>
->> Is this change intended or is it the accidental result of some modification ?
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Tue, 20 Jan 2009 11:01:44 +0000
+
+> On Tue, Jan 20, 2009 at 01:31:22PM +0300, Evgeniy Polyakov wrote:
+> > On Tue, Jan 20, 2009 at 10:20:53AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > > Good question! Alas I can't check this soon, but if it's really like
+> > > this, of course this needs some better idea and rework. (BTW, I'd like
+> > > to prevent here as much as possible some strange activities like 1
+> > > byte (payload) packets getting full pages without any accounting.)
+> > 
+> > I believe approach to meet all our goals is to have own network memory
+> > allocator, so that each skb could have its payload in the fragments, we
+> > would not suffer from the heavy fragmentation and power-of-two overhead
+> > for the larger MTUs, have a reserve for the OOM condition and generally
+> > do not depend on the main system behaviour.
 > 
-> These rules are broken, and match also on firewire devices and not
-> only video4linux devices.
-> 
-> Such rules are not part of the standard udev setup and need to be
-> fixed to work as intended. There is no change or fault at the kernel
-> side.
+> 100% right! But I guess we need this current fix for -stable, and I'm
+> a bit worried about safety.
 
-Exactly.
+Jarek, we already have a page and offset you can use.
 
-> You may just disable the firefire drivers if you don't need them.
-
-It is not even necessary to disable the drivers; it would be sufficient
-to not force-load the video1394 module.  (Or to fix the udev rule.)
-Presence of a Firewire card does not cause video1394 to be auto-loaded;
-only certain types of FireWire cameras cause respective uevents and thus
-autoloading of the special-purpose driver video1394.  Ergo, Ionut's
-userland has a configuration somewhere which loads video1394 explicitly.
-
-> Btw, swapping default kernel names to devfs names and create symlinks
-> for the kernel names is not recommended at all.
-> 
-> Kay
-
--- 
-Stefan Richter
--=====-==--= ---= =-=--
-http://arcgraph.de/sr/
+It's called sk_sndmsg_page but that is just the (current) name.
+Nothing prevents you from reusing it for your purposes here.
