@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbZATIQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZATISA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbZATIQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 03:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbZATIQN
+	id S1758223AbZATISA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 03:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZATIRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 03:16:13 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:5623 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbZATIQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 03:16:11 -0500
-Date: Tue, 20 Jan 2009 09:15:02 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12483] Reference to inexistent struct dmi_device_id
- breaks the build
-Message-ID: <20090120091502.1d5fc96a@hyperion.delvare>
-In-Reply-To: <cX2gZ6Cy9nC.A.UWB.ZJRdJB@chimera>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	<cX2gZ6Cy9nC.A.UWB.ZJRdJB@chimera>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Jan 2009 03:17:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35673 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbZATIRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 03:17:50 -0500
+Date: Tue, 20 Jan 2009 09:16:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Justin Madru <jdm64@gawab.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
+Message-ID: <20090120081650.GA29725@elte.hu>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com> <20090120074312.GD16426@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120074312.GD16426@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009 22:45:44 +0100 (CET), Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12483
-> Subject		: Reference to inexistent struct dmi_device_id breaks the build
-> Submitter	: Jean Delvare <khali@linux-fr.org>
-> Date		: 2009-01-19 01:29 (1 days old)
-> 
 
-Yes, this regression is still present.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
--- 
-Jean Delvare
+> (added Cc:s)
+
+> Justin, does it work if you apply the patch below instead of the revert?
+
+hm, that patch wont build because the protect_asmlinkage macro is rather 
+limited - it cannot deal with structure parameters.
+
+We might be better off with a revert here, and a comment added that points 
+out the problem.
+
+	Ingo
