@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbZATPXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbZATP1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760505AbZATPXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 10:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbZATPXp
+	id S1759947AbZATP1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 10:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbZATP1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 10:23:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59376 "EHLO mx2.redhat.com"
+	Tue, 20 Jan 2009 10:27:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37578 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756383AbZATPXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 10:23:44 -0500
-Date: Tue, 20 Jan 2009 10:22:56 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       horms@verge.net.au, akpm@linux-foundation.org
-Subject: Re: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
-Message-ID: <20090120152255.GB5125@redhat.com>
-References: <20090119212127.GA13157@hmsreliant.think-freely.org> <20090120141551.GA5125@redhat.com> <20090120150958.GB18207@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120150958.GB18207@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755702AbZATP1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 10:27:34 -0500
+Subject: usr/include/linux/reiserfs_fs.h is having lot of KERNEL data
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: reiserfs-devel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 20:57:22 +0530
+Message-Id: <1232465242.3088.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 10:09:58AM -0500, Neil Horman wrote:
-> On Tue, Jan 20, 2009 at 09:15:51AM -0500, Vivek Goyal wrote:
-> > On Mon, Jan 19, 2009 at 04:21:27PM -0500, Neil Horman wrote:
-> > > Hey all-
-> > > 	It would be nice to be able to extract the dmesg log from a vmcore file
-> > > without needing to keep the debug symbols for the running kernel handy all the
-> > > time.  We have a facility to do this in /proc/vmcore.  This patch adds the
-> > > log_buf and log_end symbols to the vmcoreinfo area so that tools (like
-> > > makedumpfile) can easily extract the dmesg logs from a vmcore image.
-> > > 
-> > 
-> > It would be nice to get dmesg log if debug symbols are not around. Can't
-> > we use System.map for getting symbol addresses? vmcoreinfo had started
-> > small and seems to be growing now. I am thinking down the line will making
-> > use of System.map for such cases make sense?
-> > 
-> 
-> System.map only include exported and public symbols.  log_buf and log_end are
-> static, and not reported in the System.map.  Its a nice idea, but not
-> comprehensive for everything in the kernel.
-> 
-> ><snip>
-> > 
-> > Will it be an issue if we make log_buf and log_end non static and directly
-> > access these in kexec.c?
-> > 
-> I had considered that, but was a bit hesitant to do so, since it exposes the
-> internal implementation of the dmesg buffer.  In the event someone disables
-> CONFIG_PRINTK, thats just more code we need to ifdef.  With this implementation
-> we just stub out the log_buf_setup function, and let that be that.  It seems
-> more consice to me this way.
-> 
+usr/include/linux/reiserfs_fs.h is giving 21 'make headers_clean' warnings:
+ usr/include/linux/reiserfs_fs.h:64: leaks CONFIG_REISERFS to userspace where it is not valid
+ usr/include/linux/reiserfs_fs.h:81: leaks CONFIG_REISERFS to userspace where it is not valid
+ usr/include/linux/reiserfs_fs.h:687: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:995: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:997: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1467: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1587: leaks CONFIG_QUOTA to userspace where it is not valid
+ usr/include/linux/reiserfs_fs.h:1760: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1764: extern's make no sense in userspace 
+ usr/include/linux/reiserfs_fs.h:1766: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1769: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1771: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1805: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1908: leaks CONFIG_PROC to userspace where it is not valid
+ usr/include/linux/reiserfs_fs.h:1948: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1949: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1950: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1951: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1962: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1963: extern's make no sense in userspace
+ usr/include/linux/reiserfs_fs.h:1964: extern's make no sense in userspace
 
-Makes sense to me.
+This file is huge and need lot of cleanup.
 
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
+Anyone interested to fix this file.
 
-Thanks
-Vivek
+Thanks,
+
+--
+JSR
+
