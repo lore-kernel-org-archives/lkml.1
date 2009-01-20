@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbZATLgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbZATLqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760881AbZATLgb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 06:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758330AbZATLgU
+	id S1760888AbZATLqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 06:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbZATLqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 06:36:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46245 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbZATLgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 06:36:19 -0500
-Date: Tue, 20 Jan 2009 12:35:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Shanahan <kmshanah@ucwb.org.au>, Avi Kivity <avi@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Kevin Shanahan <kmshanah@flexo.wumi.org.au>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Message-ID: <20090120113546.GA26571@elte.hu>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera> <1232410363.4768.21.camel@kulgan.wumi.org.au>
+	Tue, 20 Jan 2009 06:46:05 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:48049 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757005AbZATLqD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 06:46:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Dkmk4bTMwsBFUq9k0678cfCPZNLzKSwFZzGG+73BNXAF4bLJ9iM8wm5lbXS8JtAnO7
+         APTpAG+W3/4G9ZdT4HvwVbfUAQE5aZOoU3JiMQIs5vlpdIjhjbJxUMfjo6R6N/2ryY3+
+         K8nX5k38UbpBHL2t7jtGCODXzJIDSEOpBDBgY=
+Message-ID: <4975B9C4.7030401@gmail.com>
+Date: Tue, 20 Jan 2009 12:47:16 +0100
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232410363.4768.21.camel@kulgan.wumi.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Christoph Hellwig <hch@infradead.org>
+CC: Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
+       xfs mailing list <xfs@oss.sgi.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+References: <497468C1.3000001@gmail.com> <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org>
+In-Reply-To: <20090120112910.GA6831@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Kevin Shanahan <kmshanah@ucwb.org.au> wrote:
-
-> On Mon, 2009-01-19 at 22:45 +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.27 and 2.6.28.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
-> > Subject		: KVM guests stalling on 2.6.28 (bisected)
-> > Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
-> > Date		: 2009-01-17 03:37 (3 days old)
+Christoph Hellwig pisze:
+> On Tue, Jan 20, 2009 at 11:46:11AM +1100, Dave Chinner wrote:
+>> On Mon, Jan 19, 2009 at 12:44:48PM -0600, Eric Sandeen wrote:
+>>> Jacek Luczak wrote:
+>>>> Hi All,
+>>>>
+>>>> I've stepped into XFS issue/bug. Yesterday I've compiled 2.6.29-rc2 and no
+>>>> didn't found errors. Today I've booted my notebook and XFS bug have occurred.
+>>>> System reboot didn't helped, same error appeared.
+>>>>
+>>>> Some info:
+>>>> [1] config: http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2.config
+>>>> [2] kernel logs:
+>>>> http://pin.if.uz.zgora.pl/~difrost/linux-next/2.6.29-rc2_XFS-bug.log
+>>>> [3] most interesting part of log below.
+>>> so this happens every mount?  Reproducible is good.  How large is the
+>>> filesystem (too large to extract elsewhere for analysis...?) (plus I
+>>> suppose it'll be hard to get to it when you can't even boot....)
+>> XFS folks, I suspect the common link between all the reports of this
+>> bug is that they are on 32-bit kernels. I can't reproduce this on
+>> a 64 bit kernel, and I'm trying to get a 32-bit UML built right now
+>> to test this theory.
 > 
-> Yes, please keep this on the list.
+> I'm doing about half of my testing on 32 bit x86, and I couldn't
+> reproduce the detailed receipe  in the kernel.org bugzilla yet.
+> 
+> Just curious:  do you have CONFIG_LBD set?
+> 
+Hi Christoph,
 
-This only seems to occur under KVM, right? I.e. you tested it with -no-kvm 
-and the problem went away, correct?
+the answer is:
+$ grep LBD .config
+# CONFIG_LBD is not set
 
-This suggests some sort of KVM-specific problem. Scheduler latencies in 
-the seconds that occur under normal load situations are noticed and 
-reported quickly - and there are no such open regressions currently.
-
-Avi, can you reproduce these latencies? A possibly theory would be some 
-sort of guest wakeup problem/race triggered by a shift in 
-preemption/scheduling patterns. Or something related to preempt-notifiers 
-(which KVM is using). A genuine scheduler bug is in the cards too, but the 
-KVM-only angle of this bug gives it a low probability.
-
-	Ingo
+-Jacek
