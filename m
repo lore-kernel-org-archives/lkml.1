@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbZATS1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762550AbZATS2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761738AbZATS1L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 13:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZATS04
+	id S1762550AbZATS2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 13:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZATS2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 13:26:56 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:59200 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752152AbZATS0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 13:26:55 -0500
-Message-ID: <4976176B.2090907@sgi.com>
-Date: Tue, 20 Jan 2009 10:26:51 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 20 Jan 2009 13:28:41 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:43871 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbZATS2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 13:28:40 -0500
+Message-ID: <497617D6.8020707@ct.jp.nec.com>
+Date: Tue, 20 Jan 2009 10:28:38 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ben Hutchings <bhutchings@solarflare.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-net-drivers@solarflare.com
-Subject: Re: [PATCH 4/5] cpumask: convert drivers/net/sfc [PATCH supplied]
-References: <20090107195832.265117000@polaris-admin.engr.sgi.com> <20090107195832.871689000@polaris-admin.engr.sgi.com> <1232384910.31644.13.camel@achroite> <200901201209.34854.rusty@rustcorp.com.au>
-In-Reply-To: <200901201209.34854.rusty@rustcorp.com.au>
+To: Justin Madru <jdm64@gawab.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com>
+In-Reply-To: <49756D07.7080804@gawab.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Tuesday 20 January 2009 03:38:30 Ben Hutchings wrote:
->> On Wed, 2009-01-07 at 11:58 -0800, Mike Travis wrote:
->>> From: Rusty Russell <rusty@rustcorp.com.au>
+Justin Madru wrote:
+> Hiroshi Shimamoto wrote:
+>> Justin Madru wrote:
+>>> Ok, finally bisected the bug, but the commit isn't related to networking!
+>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>> on current git and that fixed the bug.
 >>>
->>> Impact: reduce stack usage, use new cpumask API.
+>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
+>>> I want to drop my changes - the revert.
+>>> Also how do I find the commit that merged/pulled in this commit?
 >>>
->>> Remove a cpumask from the stack.  Ben Hutchings indicated that printing
->>> a warning and returning 1 was acceptable for the corner case where allocation
->>> fails.
+>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>> Date: Fri Dec 5 17:17:09 2008 -0800
 >>>
->>> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->>> Signed-off-by: Mike Travis <travis@sgi.com>
->>> Cc: Ben Hutchings <bhutchings@solarflare.com>
->>> Cc: linux-net-drivers@solarflare.com
->> Acked-by: Ben Hutchings <bhutchings@solarflare.com>
+>>> x86: signal: change type of paramter for sys_rt_sigreturn()
+>>>
+>>> Impact: cleanup on 32-bit
+>>>
+>>> Peter pointed this parameter can be changed.
+>>>
+>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> Hi,
+>> thanks for reporting.
 >>
->> This seems to work.
+>> I'm not sure why this commit affects.
+>> Can you check vmlinux? size, objdump, etc.
+>> On my environment, the generated code looks same.
 >>
->>> ---
->>>  drivers/net/sfc/efx.c |   15 +++++++++++----
->>>  1 file changed, 11 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/drivers/net/sfc/efx.c b/drivers/net/sfc/efx.c
->>> --- a/drivers/net/sfc/efx.c
->>> +++ b/drivers/net/sfc/efx.c
->>> @@ -854,20 +854,27 @@ static void efx_fini_io(struct efx_nic *
->>>   * interrupts across them. */
->>>  static int efx_wanted_rx_queues(void)
->>>  {
->>> -	cpumask_t core_mask;
->>> +	cpumask_var_t core_mask;
->>>  	int count;
->>>  	int cpu;
->>>  
->>> -	cpus_clear(core_mask);
->>> +	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
->>> +		printk(KERN_WARNING
->>> +		       "efx.c: allocation failure, irq balancing hobbled\n");
->> [...]
+>> Thanks,
+>> Hiroshi
 >>
->> This is an exceedingly unlikely error case so the error message is not
->> that important, but if you don't mind re-spinning this then please make
->> it "sfc: RSS disabled due to allocation failure\n".
+> I tried to do an objdump but it gave an error. How am I suppose to do an 
+> objdump?
 > 
-> OK, I'm away from all my machines, at linux.conf.au.  Mike, can you change
-> this if you haven't already?
-> 
-> Thanks,
-> Rusty.
-> 
+> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
+> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
+> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
+> readelf: Error: Unable to seek to 0xc031f2eb for section headers
+> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
+> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
 
-Subject: sfc: modify allocation error message
+not vmlinuz, vmlinux.
+vmlinuz is a compressed kernel, it is not ELF file.
+Usually vmlinux is generated in top of source directory.
+I can see disassembled image with objdump -d vmlinux.
 
-Impact: change error message when alloc_cpumask_var fails.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- drivers/net/sfc/efx.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-2.6-for-ingo.orig/drivers/net/sfc/efx.c
-+++ linux-2.6-for-ingo/drivers/net/sfc/efx.c
-@@ -858,9 +858,9 @@ static int efx_wanted_rx_queues(void)
- 	int count;
- 	int cpu;
- 
--	if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
-+	if (unlikely(!alloc_cpumask_var(&core_mask, GFP_KERNEL))) {
- 		printk(KERN_WARNING
--		       "efx.c: allocation failure, irq balancing hobbled\n");
-+		       "sfc: RSS disabled due to allocation failure\n");
- 		return 1;
- 	}
- 
-
-
+Thanks,
+Hiroshi
