@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZATHLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZATHQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZATHLZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 02:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZATHLQ
+	id S1756764AbZATHQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 02:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZATHQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 02:11:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52587 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZATHLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 02:11:15 -0500
-Date: Tue, 20 Jan 2009 08:08:54 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ian Kent <raven@themaw.net>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-Message-ID: <20090120070854.GA28725@redhat.com>
-References: <20090119083208.GA25297@redhat.com> <1232363717.3136.134.camel@zeus.themaw.net> <20090119124253.GA3268@redhat.com> <1232372016.3136.155.camel@zeus.themaw.net> <20090119143046.GA8284@redhat.com> <20090119174836.GA11295@us.ibm.com> <20090119180534.GA22913@redhat.com> <20090119182447.GA15140@us.ibm.com> <20090119191729.GB24852@redhat.com> <1232415319.3136.18.camel@zeus.themaw.net>
+	Tue, 20 Jan 2009 02:16:00 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:39845 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZATHP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 02:15:59 -0500
+Date: Tue, 20 Jan 2009 08:15:56 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Justin Madru <jdm64@gawab.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
+       John Stoffel <john@stoffel.org>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
+Message-ID: <20090120071555.GA6165@osiris.boeblingen.de.ibm.com>
+References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232415319.3136.18.camel@zeus.themaw.net>
+In-Reply-To: <49751BA0.1040004@gawab.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20, Ian Kent wrote:
+On Mon, Jan 19, 2009 at 04:32:32PM -0800, Justin Madru wrote:
+> Justin P. Mattock wrote:
+>> Justin Madru wrote:
+> Ok, finally bisected the bug, but the commit isn't related to networking!
+> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> Date:   Fri Dec 5 17:17:09 2008 -0800
 >
-> I see you've already backed out part of your original change, which may
-> have been a little premature,
+>    x86: signal: change type of paramter for sys_rt_sigreturn()
+>
+>    Impact: cleanup on 32-bit
+>
+>    Peter pointed this parameter can be changed.
+>
+>    Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+> :040000 040000 f5fba48247ff200092c38a54e334f495917229d5  
+> b901159897e5d85e0dc2a0c9d904d9a73c1d58a2 M      arch
+>
+>    arch/x86/include/asm/syscalls.h
+>    arch/x86/kernel/signal.c
+>
+> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+> index b1f4d34..b1cc6da 100644 (file)
+> --- a/arch/x86/kernel/signal.c
+> +++ b/arch/x86/kernel/signal.c
+> @@ -642,11 +642,9 @@ badframe:
+> }
+>
+> #ifdef CONFIG_X86_32
+> -asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+> +asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+> {
+> -       struct pt_regs *regs = (struct pt_regs *)&__unused;
 
-I think this is fine. When/if we remove task_pgrp_nr() from fs/, we
-can do the trivial patch which just removes this helper from sched.h.
+This probably should have been converted to
 
-And thanks for discussion. Somehow I forgot that the untested changes
-is a pain for maintainers, and it was the bad idea to make the next
-patch which depend on these changes.
+asmlinkage long sys_rt_sigreturn(void)
+{
+	struct pt_regs *regs = task_pt_regs(current);
+	[...]
 
-Oleg.
+> -
+> -       return do_rt_sigreturn(regs);
+> +       return do_rt_sigreturn(&regs);
+> }
+> #else /* !CONFIG_X86_32 */
+> asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
 
+Also there's no reason to have different sys_rt_sigreturn implementations
+for 32 and 64 bit. They just could be merged with do_rt_sigreturn.
