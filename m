@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbZATAvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZATA4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbZATAvw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Jan 2009 19:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761766AbZATAvh
+	id S1761357AbZATA4k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Jan 2009 19:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757728AbZATA4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Jan 2009 19:51:37 -0500
-Received: from mx1.suse.de ([195.135.220.2]:44202 "EHLO mx1.suse.de"
+	Mon, 19 Jan 2009 19:56:30 -0500
+Received: from mga01.intel.com ([192.55.52.88]:22225 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759870AbZATAvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Jan 2009 19:51:32 -0500
-Date: Tue, 20 Jan 2009 01:51:24 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andi Kleen <andi@firstfloor.org>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090120005124.GD16304@wotan.suse.de>
-References: <alpine.LFD.2.00.0901111619400.6528@localhost.localdomain> <20090112005228.GS26290@one.firstfloor.org> <496B86B5.3090707@t-online.de> <alpine.LFD.2.00.0901121034170.6528@localhost.localdomain> <20090112193201.GA23848@one.firstfloor.org> <alpine.LFD.2.00.0901121128080.6528@localhost.localdomain> <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain>
+	id S1755643AbZATA43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Jan 2009 19:56:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,292,1231142400"; 
+   d="scan'208";a="658428537"
+Subject: Suspned/resume can't work on the 2.6.29-rc1 but it can work well
+	on the 2.6.28
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 20 Jan 2009 09:08:00 +0800
+Message-Id: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 08:01:52AM +1100, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 19 Jan 2009, Nick Piggin wrote:
-> > 
-> > I want to know what is the problem with the restrict keyword?
-> > I'm sure I've read Linus ranting about how bad it is in the
-> > past...
-> 
-> No, I don't think I've ranted about 'restrict'. I think it's a reasonable 
-> solution for performance-critical code, and unlike the whole type-aliasing 
-> model, it actually works for the _sane_ cases (ie doing some operation 
-> over two arrays of the same type, and letting the compiler know that it 
-> can access the arrays without fearing that writing to one would affect 
-> reading from the other).
-> 
-> The problem with 'restrict' is that almost nobody uses it, and it does 
-> obviously require programmer input rather than the compiler doing it 
-> automatically. But it should work well as a way to get Fortran-like 
-> performance from HPC workloads written in C - which is where most of the 
-> people are who really want the alias analysis.
-
-OK, that makes sense. I just had a vague feeling that you disliked
-it.
-
+Hi, All
+    I do some tests about suspend/resume on my two boxes. One is HP
+laptop and the other is Asus EEEPC901. The suspend/resume can't work
+well. Even after core is selected as the test mode, it still can't work
+well.(echo core > /sys/power/pm_test)
+    
+    Then I do the same test by using the 2.6.28 kernel. And
+suspend/resume can work well.
+    
+    
+    Of course I will try to use the git-bisect to identify the first bad
+commit ASAP.
  
-> > it seems like a nice opt-in thing that can be used where the aliases are 
-> > verified and the code is particularly performance critical...
-> 
-> Yes. I think we could use it in the kernel, although I'm not sure how many 
-> cases we would ever find where we really care. 
-
-Yeah, we don't tend to do a lot of intensive data processing, so it is
-normally the cache misses that hurt most as you noted earlier.
-
-Some places it might be appropriate, though. It might be nice if it can
-bring code size down too...
+Thanks.
+   Yakui
 
