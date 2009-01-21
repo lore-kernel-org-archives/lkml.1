@@ -1,106 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbZAUBvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbZAUBv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbZAUBvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 20:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZAUBu4
+	id S1762445AbZAUBv3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 20:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZAUBvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 20:50:56 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:48909 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbZAUBuy (ORCPT
+	Tue, 20 Jan 2009 20:51:18 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55270 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761331AbZAUBvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 20:50:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kiunvYybNaVbWJua3p3FOTkdLC3LHUkAfmcFppZrymPI/I+o6xuOkl7PXdlhFrFHOZ
-         bvyXmvEArB9RxgfRBRRdA5puBPjKquzmj6iHs/8tnuSkc1RUhfQAwryfochcJA5jciUw
-         v4onK4bdrl0POK45UO+ledLGSbVaWiCPtaCEg=
-Subject: [PATCH] m68k{nommu}: fixups after the header move
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: torvalds@linux-foundation.org, arnd@arndb.de, gerg@uclinux.org,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org, sam@ravnborg.org, uclinux-dev@uclinux.org,
-       zippel@linux-m68k.org
-In-Reply-To: <1232502275.5653.2.camel@brick>
-References: <200901210058.n0L0wjdf005545@localhost.localdomain>
-	 <1232502275.5653.2.camel@brick>
-Content-Type: text/plain
-Date: Tue, 20 Jan 2009 17:50:51 -0800
-Message-Id: <1232502651.9701.0.camel@brick>
+	Tue, 20 Jan 2009 20:51:17 -0500
+Date: Tue, 20 Jan 2009 23:50:48 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: linux-media@vger.kernel.org, video4linux-list@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Confusion in usr/include/linux/videodev.h
+Message-ID: <20090120235048.4f7200f9@caramujo.chehab.org>
+In-Reply-To: <1232502038.3123.61.camel@localhost.localdomain>
+References: <1232502038.3123.61.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-swab.h seems to have been missed during the header merge.
-Add conditionals similar to byteorder.h and remove the
-now unnecessary byteorder_no/mm.h
+On Wed, 21 Jan 2009 07:10:38 +0530
+Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/m68k/include/asm/byteorder.h    |   11 ++++++-----
- arch/m68k/include/asm/byteorder_mm.h |    6 ------
- arch/m68k/include/asm/byteorder_no.h |    6 ------
- arch/m68k/include/asm/swab.h         |    5 +++++
- 4 files changed, 11 insertions(+), 17 deletions(-)
+> usr/include/linux/videodev.h is giving 2 warnings in 'make headers_check':
+>  usr/include/linux/videodev.h:19: leaks CONFIG_VIDEO to userspace where it is not valid
+>  usr/include/linux/videodev.h:314: leaks CONFIG_VIDEO to userspace where it is not valid
+> 
+> Whole file is covered with #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+> 
+> It means this file is only valid for kernel mode if CONFIG_VIDEO_V4L1_COMPAT is defined but in user mode it is always valid.
+> 		
+> Can we choose some better alternative Or can we use this file as:
+> 
+> #ifdef CONFIG_VIDEO_V4L1_COMPAT
+> #include <linux/videodev.h>
+> #endif
 
-diff --git a/arch/m68k/include/asm/byteorder.h b/arch/m68k/include/asm/byteorder.h
-index f20502a..31b260a 100644
---- a/arch/m68k/include/asm/byteorder.h
-+++ b/arch/m68k/include/asm/byteorder.h
-@@ -1,5 +1,6 @@
--#ifdef __uClinux__
--#include "byteorder_no.h"
--#else
--#include "byteorder_mm.h"
--#endif
-+#ifndef _M68K_BYTEORDER_H
-+#define _M68K_BYTEORDER_H
-+
-+#include <linux/byteorder/big_endian.h>
-+
-+#endif /* _M68K_BYTEORDER_H */
-diff --git a/arch/m68k/include/asm/byteorder_mm.h b/arch/m68k/include/asm/byteorder_mm.h
-deleted file mode 100644
-index 31b260a..0000000
---- a/arch/m68k/include/asm/byteorder_mm.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef _M68K_BYTEORDER_H
--#define _M68K_BYTEORDER_H
--
--#include <linux/byteorder/big_endian.h>
--
--#endif /* _M68K_BYTEORDER_H */
-diff --git a/arch/m68k/include/asm/byteorder_no.h b/arch/m68k/include/asm/byteorder_no.h
-deleted file mode 100644
-index 9c6c76a..0000000
---- a/arch/m68k/include/asm/byteorder_no.h
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#ifndef _M68KNOMMU_BYTEORDER_H
--#define _M68KNOMMU_BYTEORDER_H
--
--#include <linux/byteorder/big_endian.h>
--
--#endif /* _M68KNOMMU_BYTEORDER_H */
-diff --git a/arch/m68k/include/asm/swab.h b/arch/m68k/include/asm/swab.h
-index e69de29..7d7dde1 100644
---- a/arch/m68k/include/asm/swab.h
-+++ b/arch/m68k/include/asm/swab.h
-@@ -0,0 +1,5 @@
-+#ifdef __uClinux__
-+#include "swab_no.h"
-+#else
-+#include "swab_mm.h"
-+#endif
--- 
-1.6.1.249.g455e5
+This is somewhat like what we have on audio devices (where there are OSS and ALSA API's).
 
+V4L1 is the old deprecated userspace API for video devices. It is still
+required by some userspace applications. So, on userspace, it should be
+included. Also, this allows that one userspace app to be compatible with both
+V4L2 API (the current one) and the legacy V4L1 one.
 
+It should be noticed that are still a few drivers using the legacy API yet to
+be converted.
 
+Cheers,
+Mauro
