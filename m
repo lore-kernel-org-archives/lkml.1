@@ -1,61 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZAUXMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZAUXOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZAUXMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 18:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZAUXMW
+	id S1755368AbZAUXOp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 18:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZAUXOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 18:12:22 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52584 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752568AbZAUXMV (ORCPT
+	Wed, 21 Jan 2009 18:14:37 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:32984 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbZAUXOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 18:12:21 -0500
-Date: Wed, 21 Jan 2009 22:58:08 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Hugh Dickins <hugh@veritas.com>,
-       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
-Message-ID: <20090121225808.1f5ffac1@lxorguk.ukuu.org.uk>
-In-Reply-To: <4977A6E5.6080506@ru.mvista.com>
-References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>
-	<18807.33113.550070.329912@harpo.it.uu.se>
-	<20090121214746.2b15d1de@lxorguk.ukuu.org.uk>
-	<4977A6E5.6080506@ru.mvista.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 18:14:36 -0500
+Date: Wed, 21 Jan 2009 18:14:35 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Lars Noschinski <lkml@ml.noschinski.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: XFS error & call trace
+Message-ID: <20090121231435.GA6810@infradead.org>
+References: <20090121222703.GA5522@aprove.informatik.rwth-aachen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121222703.GA5522@aprove.informatik.rwth-aachen.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009 01:51:17 +0300
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-
-> Hello.
+On Wed, Jan 21, 2009 at 11:27:03PM +0100, Lars Noschinski wrote:
+> Hello!
 > 
-> Alan Cox wrote:
-> 
-> >> Hugh Dickins writes:
-> >>  > I've a Dell Precision 670 here (four-year-old EM64T Xeon with ata_piix)
-> >>  > which doesn't like your commit 871af1210f13966ab911ed2166e4ab2ce775b99d
-> >>  > libata: Add 32bit PIO support.  Full dmesg (and .config) attached, but
-> >>  > here's an extract showing the start of the error messages on ata2:
-> >>     
-> >
-> > Cool - so we need two different 32bit PIO methods - at least according to
-> > the docs for the AMD we should use entirely 32bit I/O there. Fun fun
-> >   
-> 
->    Could you refer me to the exact AMD doc that requires that?
+> I just had a crash of my XFS file system on 2.6.29-rc1 (syslog output
+> follows) After this, the file system on /home returned -EIO on most (all?)
+> operations.  After a reboot from cdrom, I found it interesting to see that
+> xfs_check found no error on this partition. Instead, the XFS on the /
+> partition had a lot of errors.
 
-AMD762 page 82, under DevB:1x40 bit 14 and bit 12
+The patch below from Dave Chinner fixes it:
 
-"Note: only 32-bit writes to the data port are allowed when this bit is
-set."
+---
 
+[XFS] Long btree pointers are still 64 bit on disk
+
+On 32 bit machines with CONFIG_LBD=n, XFS reduces the
+in memory size of xfs_fsblock_t to 32 bits so that it
+will fit within 32 bit addressing. However, the disk format
+for long btree pointers are still 64 bits in size.
+
+The recent btree rewrite failed to take this into account
+when initialising new btree blocks, setting sibling pointers
+to NULL and checking if they are NULL. Hence checking whether
+a 64 bit NULL was the same as a 32 bit NULL was failingi
+resulting in NULL sibling pointers failing to be detected
+correctly. This showed up as WANT_CORRUPTED_GOTO shutdowns
+in xfs_btree_delrec.
+
+Fix this by making all the comparisons and setting of long
+pointer btree NULL blocks to the disk format, not the
+in memory format. i.e. use NULLDFSBNO.
+
+Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
+Reported-by: Jacek Luczak <difrost.kernel@gmail.com>
+Reported-by: Danny ter Haar <dth@dth.net>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+
+---
+ fs/xfs/xfs_btree.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/fs/xfs/xfs_btree.c b/fs/xfs/xfs_btree.c
+index 2c3ef20..6bc2136 100644
+--- a/fs/xfs/xfs_btree.c
++++ b/fs/xfs/xfs_btree.c
+@@ -843,7 +843,7 @@ xfs_btree_ptr_is_null(
+ 	union xfs_btree_ptr	*ptr)
+ {
+ 	if (cur->bc_flags & XFS_BTREE_LONG_PTRS)
+-		return be64_to_cpu(ptr->l) == NULLFSBLOCK;
++		return be64_to_cpu(ptr->l) == NULLDFSBNO;
+ 	else
+ 		return be32_to_cpu(ptr->s) == NULLAGBLOCK;
+ }
+@@ -854,7 +854,7 @@ xfs_btree_set_ptr_null(
+ 	union xfs_btree_ptr	*ptr)
+ {
+ 	if (cur->bc_flags & XFS_BTREE_LONG_PTRS)
+-		ptr->l = cpu_to_be64(NULLFSBLOCK);
++		ptr->l = cpu_to_be64(NULLDFSBNO);
+ 	else
+ 		ptr->s = cpu_to_be32(NULLAGBLOCK);
+ }
+@@ -918,8 +918,8 @@ xfs_btree_init_block(
+ 	new->bb_numrecs = cpu_to_be16(numrecs);
+ 
+ 	if (cur->bc_flags & XFS_BTREE_LONG_PTRS) {
+-		new->bb_u.l.bb_leftsib = cpu_to_be64(NULLFSBLOCK);
+-		new->bb_u.l.bb_rightsib = cpu_to_be64(NULLFSBLOCK);
++		new->bb_u.l.bb_leftsib = cpu_to_be64(NULLDFSBNO);
++		new->bb_u.l.bb_rightsib = cpu_to_be64(NULLDFSBNO);
+ 	} else {
+ 		new->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+ 		new->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
+@@ -971,7 +971,7 @@ xfs_btree_ptr_to_daddr(
+ 	union xfs_btree_ptr	*ptr)
+ {
+ 	if (cur->bc_flags & XFS_BTREE_LONG_PTRS) {
+-		ASSERT(be64_to_cpu(ptr->l) != NULLFSBLOCK);
++		ASSERT(be64_to_cpu(ptr->l) != NULLDFSBNO);
+ 
+ 		return XFS_FSB_TO_DADDR(cur->bc_mp, be64_to_cpu(ptr->l));
+ 	} else {
+
+_______________________________________________
+xfs mailing list
+xfs@oss.sgi.com
+http://oss.sgi.com/mailman/listinfo/xfs
