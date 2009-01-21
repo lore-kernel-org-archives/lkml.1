@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZAUTzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZAUT45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753056AbZAUTzd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 14:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZAUTzY
+	id S1753283AbZAUT45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 14:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZAUT4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 14:55:24 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:43341 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbZAUTzX (ORCPT
+	Wed, 21 Jan 2009 14:56:48 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:18334 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbZAUT4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 14:55:23 -0500
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 21 Jan 2009 11:55:11 -0800
-Message-ID: <m13afch1sw.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 21 Jan 2009 14:56:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=PoJsedmPUWIyc/wxsI5M26kZ65rt30E2Vur8dxIHStjaMSVNWr54cXwpFtevUMzox/
+         5Hg+ekOLpV330tR34vnZz8igLJlt8zN6TgvoMpJcB+t62GLoJWYp9xdNoiiDeVMwDx0L
+         Y9g35eqTbJ42m2FwgmtDIdIFTf9r8202zz6IA=
+Message-ID: <49777DF5.1080107@gmail.com>
+Date: Wed, 21 Jan 2009 20:56:37 +0100
+From: Uros Bizjak <ubizjak@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH] sysfs: Take sysfs_mutex when fetching the root inode.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: Unneeded assignment to tsk in recent x86 change
+References: <5787cf470901210432l5327e48el94c53c8fb7fd6d1d@mail.gmail.com> <18807.7643.368198.582428@harpo.it.uu.se>
+In-Reply-To: <18807.7643.368198.582428@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mikael Pettersson wrote:
 
-sysfs_get_inode ultimately calls sysfs_count_nlink when the a
-directory inode is fectched.  sysfs_count_nlink needs to be
-called under the sysfs_mutex to guard against the unlikely
-but possible scenario that the root directory is changing
-as we are counting the number entries in it, and just in
-general to be consistent.
+>  > Impact: Cleanup.
+>  > 
+>  > Remove unneeded assignment to tsk in recent x86 change [1].
+>  
+>
+>  > @@ -795,13 +794,12 @@ asmlinkage
+>  >  void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+>  >  {
+>  >  	unsigned long address;
+>  > -	struct task_struct *tsk;
+>  > +	struct task_struct *tsk = current;
+>  >  	struct mm_struct *mm;
+>  >  	struct vm_area_struct *vma;
+>  >  	int write;
+>  >  	int fault;
+>  >  
+>  > -	tsk = current;
+>  >  	mm = tsk->mm;
+>  >  	prefetchw(&mm->mmap_sem);
+>
+> but this is neither a fix nor IMO a cleanup (it's inconsistent with
+> the other variables in that function)
+>   
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- fs/sysfs/mount.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Hm, I'm not sure I see the inconsistency here. Care to explain this 
+inconsistency in a couple of words?
 
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index ab343e3..f3e34fd 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -53,7 +53,9 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sysfs_sb = sb;
- 
- 	/* get root inode, initialize and unlock it */
-+	mutex_lock(&sysfs_mutex);
- 	inode = sysfs_get_inode(&sysfs_root);
-+	mutex_unlock(&sysfs_mutex);
- 	if (!inode) {
- 		pr_debug("sysfs: could not get root inode\n");
- 		return -ENOMEM;
--- 
-1.5.6.3
+Thanks,
+Uros.
 
