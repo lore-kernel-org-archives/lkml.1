@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbZAUNrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbZAUNuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbZAUNrT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 08:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZAUNrJ
+	id S1758963AbZAUNuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 08:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZAUNum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 08:47:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53036 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752814AbZAUNrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 08:47:08 -0500
-Date: Wed, 21 Jan 2009 14:44:31 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coda: alloc_upcall: s/task_pgrp_nr/task_pgrp_vnr/
-Message-ID: <20090121134431.GA15457@redhat.com>
-References: <20090118073453.GA714@redhat.com> <20090121050311.GD15771@cs.cmu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121050311.GD15771@cs.cmu.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Jan 2009 08:50:42 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:39601 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbZAUNul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 08:50:41 -0500
+Subject: [PATCH] sysrq: include interrupt.h instead of irq.h
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20090121150249.a87aca09.sfr@canb.auug.org.au>
+References: <20090121150249.a87aca09.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 14:49:18 +0100
+Message-Id: <1232545758.31303.2.camel@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21, Jan Harkes wrote:
->
-> On Sun, Jan 18, 2009 at 08:34:53AM +0100, Oleg Nesterov wrote:
-> > Needs an ack from maintaner, I do not know where coda_in_hdr->pgid is used.
->
-> It is used to uniquely identify a process and any of it children during
-> conflict resolution.
->
-> When a conflict is detected, all accesses to the inconsistent object are
-> blocked. A special resolver process is forked off by the cache manager
-> and this is run in a new process group and only accesses from processes
-> in this group are allowed. The resolver process (or any of it's children)
-> compare the conflicting replicas, and ideally resolve the inconsistency
-> after which normal accesses are unblocked.
->
-> So yes this should not a per namespace thing, but also not a process
-> specific pid, the resolver forks off different helper processes
-> depending on the type of files that are involved in the conflict, i.e.
-> mbox files require different merge strategy compared to opendocument
-> files.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-OK, thanks, please ignore this patch then.
+With "cpumask: update irq_desc to use cpumask_var_t" in linux-next
+we get this compile bug on s390:
 
-> I'm not sure what you are trying to do.
+  CC      drivers/char/sysrq.o
+In file included from drivers/char/sysrq.c:38:
+include/linux/irq.h: In function 'init_alloc_desc_masks':
+include/linux/irq.h:442: error: dereferencing pointer to incomplete type
 
-Please look at http://marc.info/?l=linux-kernel&m=123240297918186
+drivers/char/sysrq.c should include interrupt.h instead of irq.h.
 
-And I'd like to kill task_pgrp_nr(). Can't alloc_upcall() use
-task_pgrp_nr_ns(current, &init_pid_ns) instead? This is equivalent.
+Cc: Mike Travis <travis@sgi.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ drivers/char/sysrq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: linux-next/drivers/char/sysrq.c
+===================================================================
+--- linux-next.orig/drivers/char/sysrq.c
++++ linux-next/drivers/char/sysrq.c
+@@ -35,7 +35,7 @@
+ #include <linux/vt_kern.h>
+ #include <linux/workqueue.h>
+ #include <linux/kexec.h>
+-#include <linux/irq.h>
++#include <linux/interrupt.h>
+ #include <linux/hrtimer.h>
+ #include <linux/oom.h>
+ 
 
-But if this pid_t is used in the user-space to identify the process,
-then I think Eric is right.
-
-Oleg.
 
