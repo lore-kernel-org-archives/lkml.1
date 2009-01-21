@@ -1,101 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZAUOTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZAUOYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756328AbZAUOTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 09:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZAUOTb
+	id S1753480AbZAUOYs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZAUOYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 09:19:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:11714 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbZAUOTa (ORCPT
+	Wed, 21 Jan 2009 09:24:39 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:45578 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbZAUOYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 09:19:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=rStjLbOINEH84EOpajS6HpB3eDMBexWaA4G/GoNSj+WQN1myaadIycObo1iyysRoJs
-         gpMP//gpvoIHP0kJlgzqmPiOHFmtHtOMVc9hVffDZrlzthkongtIiZn9wQyBndpHm1ev
-         SUnJWPoBGyj6TWTWZdmF6lIFvHeDNEcPFyWLI=
+	Wed, 21 Jan 2009 09:24:38 -0500
+X-Greylist: delayed 1194 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 09:24:37 EST
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4977302C.1090004@cam.ac.uk>
+Date: Wed, 21 Jan 2009 14:24:44 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Date: Wed, 21 Jan 2009 15:19:28 +0100
-Message-ID: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com>
-Subject: ext4 no space left
-From: Victor Pelt <victor.pelt@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016367659ebfc6b260460fed77e
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] regulator: Hoist struct regulator_dev out of core to
+ fix notifiers
+References: <1232546920-14915-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1232546920-14915-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016367659ebfc6b260460fed77e
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Mark Brown wrote:
+> Commit 872ed3fe176833f7d43748eb88010da4bbd2f983 caused regulator drivers
+> to take the struct regulator_dev lock themselves which requires that the
+> struct be visible to them. Band aid this by making the struct visible.
+Sorry all for introducing the problem in the first place.
 
-Hey,
+Other option for a fix would be to move the lock into the 
+regulator_notifier_call_chain function.  Probably not ideal as would lead
+to possibility of releasing then immediately retaking the lock that we
+were trying to avoid by pushing the locks out in the first place.
 
-i tried to switch my root partition to ext4 (from reiserfs) but i ran
-into problems when copying over all the data that it says 'no space
-left on the device'
-i'm running 2.6.28-gentoo-r1 (based on 2.6.28.1 if i'm not mistaken)
+Guess it's a case of how much we want to put people off directly accessing
+elements of regulator_dev.
 
-i deleted quite a bit and then tried copying again, this time it still
-gave the same error but more files (data wise didn't count if the
-files were bigger) were copied. currently df shows
+Thanks for posting the fix Mark (just beat me to it ;)
 
-rootfs                 5044188   4310972    476980  91% /  <= file
-system that is 'full'
-/dev/root              5044188   4310972    476980  91% /
-rc-svcdir                 1024       132       892  13% /lib/rc/init.d
-udev                     10240        68     10172   1% /dev
-cachedir                  4096         4      4092   1% /lib/splash/cache
-none                    776940         4    776936   1% /dev/shm
-/dev/hda3             24416008  22546040   1869968  93% /opt
-/dev/hda6             11560764   9300396   1673112  85% /home
-tmpfs                   776940      1728    775212   1% /tmp
-tmpfs                  1331200        36   1331164   1% /var/tmp
-tmpfs                 11560764   9300396   1673112  85% /usr/portage/distfiles
+Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/regulator/core.c         |   27 ---------------------------
+>  include/linux/regulator/driver.h |   32 ++++++++++++++++++++++++++++++++
+>  2 files changed, 32 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+> index f17362a..0ed13c2 100644
+> --- a/drivers/regulator/core.c
+> +++ b/drivers/regulator/core.c
+> @@ -30,33 +30,6 @@ static LIST_HEAD(regulator_list);
+>  static LIST_HEAD(regulator_map_list);
+>  
+>  /*
+> - * struct regulator_dev
+> - *
+> - * Voltage / Current regulator class device. One for each regulator.
+> - */
+> -struct regulator_dev {
+> -	struct regulator_desc *desc;
+> -	int use_count;
+> -
+> -	/* lists we belong to */
+> -	struct list_head list; /* list of all regulators */
+> -	struct list_head slist; /* list of supplied regulators */
+> -
+> -	/* lists we own */
+> -	struct list_head consumer_list; /* consumers we supply */
+> -	struct list_head supply_list; /* regulators we supply */
+> -
+> -	struct blocking_notifier_head notifier;
+> -	struct mutex mutex; /* consumer lock */
+> -	struct module *owner;
+> -	struct device dev;
+> -	struct regulation_constraints *constraints;
+> -	struct regulator_dev *supply;	/* for tree */
+> -
+> -	void *reg_data;		/* regulator_dev data */
+> -};
+> -
+> -/*
+>   * struct regulator_map
+>   *
+>   * Used to provide symbolic supply names to devices.
+> diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+> index 2254ad9..c263e36 100644
+> --- a/include/linux/regulator/driver.h
+> +++ b/include/linux/regulator/driver.h
+> @@ -137,6 +137,38 @@ struct regulator_desc {
+>  	struct module *owner;
+>  };
+>  
+> +/*
+> + * struct regulator_dev
+> + *
+> + * Voltage / Current regulator class device. One for each
+> + * regulator.
+> + *
+> + * This should *not* be used directly by anything except the regulator
+> + * core and notification injection (which should take the mutex and do
+> + * no other direct access).
+> + */
+> +struct regulator_dev {
+> +	struct regulator_desc *desc;
+> +	int use_count;
+> +
+> +	/* lists we belong to */
+> +	struct list_head list; /* list of all regulators */
+> +	struct list_head slist; /* list of supplied regulators */
+> +
+> +	/* lists we own */
+> +	struct list_head consumer_list; /* consumers we supply */
+> +	struct list_head supply_list; /* regulators we supply */
+> +
+> +	struct blocking_notifier_head notifier;
+> +	struct mutex mutex; /* consumer lock */
+> +	struct module *owner;
+> +	struct device dev;
+> +	struct regulation_constraints *constraints;
+> +	struct regulator_dev *supply;	/* for tree */
+> +
+> +	void *reg_data;		/* regulator_dev data */
+> +};
+> +
+>  struct regulator_dev *regulator_register(struct regulator_desc *regulator_desc,
+>  	struct device *dev, struct regulator_init_data *init_data,
+>  	void *driver_data);
 
-i like to use that last 470MB if possible
-
-i also inclunded my tune2fs info
-
-fsck didn't help (tried that)
-
---0016367659ebfc6b260460fed77e
-Content-Type: application/octet-stream; name="tune2fs.dump"
-Content-Disposition: attachment; filename="tune2fs.dump"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fq82yuot0
-
-dHVuZTJmcyAxLjQxLjMgKDEyLU9jdC0yMDA4KQpGaWxlc3lzdGVtIHZvbHVtZSBuYW1lOiAgIDxu
-b25lPgpMYXN0IG1vdW50ZWQgb246ICAgICAgICAgIDxub3QgYXZhaWxhYmxlPgpGaWxlc3lzdGVt
-IFVVSUQ6ICAgICAgICAgIGJkOGRhNTc3LTdiNTgtNDViYy05Yzk0LTgyNTRmNzE4ZTU1YQpGaWxl
-c3lzdGVtIG1hZ2ljIG51bWJlcjogIDB4RUY1MwpGaWxlc3lzdGVtIHJldmlzaW9uICM6ICAgIDEg
-KGR5bmFtaWMpCkZpbGVzeXN0ZW0gZmVhdHVyZXM6ICAgICAgaGFzX2pvdXJuYWwgZXh0X2F0dHIg
-cmVzaXplX2lub2RlIGRpcl9pbmRleCBmaWxldHlwZSBuZWVkc19yZWNvdmVyeSBleHRlbnQgZmxl
-eF9iZyBzcGFyc2Vfc3VwZXIgbGFyZ2VfZmlsZSBodWdlX2ZpbGUgdW5pbml0X2JnIGRpcl9ubGlu
-ayBleHRyYV9pc2l6ZQpGaWxlc3lzdGVtIGZsYWdzOiAgICAgICAgIHNpZ25lZF9kaXJlY3Rvcnlf
-aGFzaCAKRGVmYXVsdCBtb3VudCBvcHRpb25zOiAgICAobm9uZSkKRmlsZXN5c3RlbSBzdGF0ZTog
-ICAgICAgICBjbGVhbgpFcnJvcnMgYmVoYXZpb3I6ICAgICAgICAgIENvbnRpbnVlCkZpbGVzeXN0
-ZW0gT1MgdHlwZTogICAgICAgTGludXgKSW5vZGUgY291bnQ6ICAgICAgICAgICAgICAzMjA2NDAK
-QmxvY2sgY291bnQ6ICAgICAgICAgICAgICAxMjgxMTgzClJlc2VydmVkIGJsb2NrIGNvdW50OiAg
-ICAgNjQwNTkKRnJlZSBibG9ja3M6ICAgICAgICAgICAgICAxODMzMDQKRnJlZSBpbm9kZXM6ICAg
-ICAgICAgICAgICA1OTU5MApGaXJzdCBibG9jazogICAgICAgICAgICAgIDAKQmxvY2sgc2l6ZTog
-ICAgICAgICAgICAgICA0MDk2CkZyYWdtZW50IHNpemU6ICAgICAgICAgICAgNDA5NgpSZXNlcnZl
-ZCBHRFQgYmxvY2tzOiAgICAgIDMxMgpCbG9ja3MgcGVyIGdyb3VwOiAgICAgICAgIDMyNzY4CkZy
-YWdtZW50cyBwZXIgZ3JvdXA6ICAgICAgMzI3NjgKSW5vZGVzIHBlciBncm91cDogICAgICAgICA4
-MDE2Cklub2RlIGJsb2NrcyBwZXIgZ3JvdXA6ICAgNTAxCkZsZXggYmxvY2sgZ3JvdXAgc2l6ZTog
-ICAgMTYKRmlsZXN5c3RlbSBjcmVhdGVkOiAgICAgICBUdWUgSmFuIDIwIDE1OjI5OjU4IDIwMDkK
-TGFzdCBtb3VudCB0aW1lOiAgICAgICAgICBXZWQgSmFuIDIxIDE1OjE5OjQxIDIwMDkKTGFzdCB3
-cml0ZSB0aW1lOiAgICAgICAgICBXZWQgSmFuIDIxIDE1OjE5OjQxIDIwMDkKTW91bnQgY291bnQ6
-ICAgICAgICAgICAgICA3Ck1heGltdW0gbW91bnQgY291bnQ6ICAgICAgMzAKTGFzdCBjaGVja2Vk
-OiAgICAgICAgICAgICBXZWQgSmFuIDIxIDAwOjQ5OjUwIDIwMDkKQ2hlY2sgaW50ZXJ2YWw6ICAg
-ICAgICAgICAxNTU1MjAwMCAoNiBtb250aHMpCk5leHQgY2hlY2sgYWZ0ZXI6ICAgICAgICAgTW9u
-IEp1bCAyMCAwMTo0OTo1MCAyMDA5ClJlc2VydmVkIGJsb2NrcyB1aWQ6ICAgICAgMCAodXNlciBy
-b290KQpSZXNlcnZlZCBibG9ja3MgZ2lkOiAgICAgIDAgKGdyb3VwIHJvb3QpCkZpcnN0IGlub2Rl
-OiAgICAgICAgICAgICAgMTEKSW5vZGUgc2l6ZToJICAgICAgICAgIDI1NgpSZXF1aXJlZCBleHRy
-YSBpc2l6ZTogICAgIDI4CkRlc2lyZWQgZXh0cmEgaXNpemU6ICAgICAgMjgKSm91cm5hbCBpbm9k
-ZTogICAgICAgICAgICA4CkRlZmF1bHQgZGlyZWN0b3J5IGhhc2g6ICAgaGFsZl9tZDQKRGlyZWN0
-b3J5IEhhc2ggU2VlZDogICAgICAwNGRmOThmYS01ODUxLTRmMjQtYjIzMi1jOGI0NzM4YWVmMGYK
-Sm91cm5hbCBiYWNrdXA6ICAgICAgICAgICBpbm9kZSBibG9ja3MK
---0016367659ebfc6b260460fed77e--
