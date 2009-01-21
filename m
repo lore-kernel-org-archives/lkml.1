@@ -1,524 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbZAUU3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZAUU3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753306AbZAUU3M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 15:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZAUU24
+	id S1752575AbZAUU3d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 15:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZAUU25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 15:28:56 -0500
-Received: from mail.cyberdogtech.com ([64.22.125.39]:55480 "EHLO
+	Wed, 21 Jan 2009 15:28:57 -0500
+Received: from mail.cyberdogtech.com ([64.22.125.39]:42543 "EHLO
 	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbZAUU2y (ORCPT
+	with ESMTP id S1751530AbZAUU2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Jan 2009 15:28:54 -0500
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 15:28:54 EST
 From: Matt LaPlante <kernel1@cyberdogtech.com>
 To: linux-kernel@vger.kernel.org
 Cc: trivial@kernel.org, Matt LaPlante <kernel1@cyberdogtech.com>
-Subject: [PATCH 1/2] Kconfig cleanup - Resubmits.
-Date: Wed, 21 Jan 2009 14:20:14 -0600
-Message-Id: <1232569214-11899-1-git-send-email-kernel1@cyberdogtech.com>
+Subject: [PATCH 2/2] Kconfig cleanup - new.
+Date: Wed, 21 Jan 2009 14:20:36 -0600
+Message-Id: <1232569236-11926-1-git-send-email-kernel1@cyberdogtech.com>
 X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These changes were submitted and approved previously,
-but never included in mainline.  
-
-http://thread.gmane.org/gmane.linux.kernel/728409/focus=754708
-
-Rebuilt against 2.6.29-rc2.
+These are new kconfig cleanups, as of 2.6.29-rc2.
+Not yet reviewed.
 
 Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
 ---
- arch/arm/mach-omap1/Kconfig          |    2 +-
- arch/blackfin/Kconfig                |    6 +++---
- arch/cris/Kconfig                    |    6 +++---
- arch/cris/arch-v32/Kconfig           |    2 +-
- arch/cris/arch-v32/drivers/Kconfig   |    2 +-
- arch/cris/arch-v32/mach-fs/Kconfig   |    2 +-
- arch/mips/Kconfig                    |    2 +-
- arch/powerpc/Kconfig                 |    2 +-
- arch/powerpc/platforms/Kconfig       |    2 +-
- arch/powerpc/sysdev/bestcomm/Kconfig |    4 ++--
- arch/sh/Kconfig                      |    4 ++--
- arch/x86/Kconfig                     |    4 ++--
- drivers/ata/Kconfig                  |    2 +-
- drivers/gpio/Kconfig                 |    6 +++---
- drivers/input/Kconfig                |    2 +-
- drivers/leds/Kconfig                 |    6 +++---
- drivers/media/dvb/frontends/Kconfig  |    2 +-
- drivers/misc/Kconfig                 |    6 +++---
- drivers/serial/Kconfig               |    2 +-
- drivers/usb/serial/Kconfig           |    4 ++--
- fs/Kconfig                           |    2 +-
- init/Kconfig                         |    4 ++--
- net/Kconfig                          |    2 +-
- net/ipv6/Kconfig                     |   18 +++++++++---------
- net/mac80211/Kconfig                 |    2 +-
- net/netfilter/Kconfig                |    2 +-
- 26 files changed, 49 insertions(+), 49 deletions(-)
+ arch/avr32/Kconfig                  |    6 +++---
+ drivers/hid/Kconfig                 |    2 +-
+ drivers/isdn/mISDN/Kconfig          |   10 ++++++----
+ drivers/media/common/tuners/Kconfig |    2 +-
+ drivers/mfd/Kconfig                 |    2 +-
+ drivers/mmc/host/Kconfig            |    2 +-
+ drivers/scsi/Kconfig                |    4 ++--
+ drivers/staging/Kconfig             |    4 ++--
+ drivers/staging/comedi/Kconfig      |    4 ++--
+ drivers/staging/go7007/Kconfig      |    4 ++--
+ drivers/staging/panel/Kconfig       |    2 +-
+ drivers/usb/gadget/Kconfig          |    2 +-
+ drivers/uwb/Kconfig                 |    4 ++--
+ drivers/xen/Kconfig                 |    2 +-
+ fs/Kconfig                          |    2 +-
+ fs/ext4/Kconfig                     |    2 +-
+ fs/ubifs/Kconfig                    |    4 ++--
+ init/Kconfig                        |    2 +-
+ kernel/trace/Kconfig                |    9 ++++-----
+ net/phonet/Kconfig                  |    2 +-
+ net/wimax/Kconfig                   |    2 +-
+ sound/soc/blackfin/Kconfig          |    2 +-
+ 22 files changed, 38 insertions(+), 37 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/Kconfig b/arch/arm/mach-omap1/Kconfig
-index 10a301e..4c81e70 100644
---- a/arch/arm/mach-omap1/Kconfig
-+++ b/arch/arm/mach-omap1/Kconfig
-@@ -98,7 +98,7 @@ config MACH_OMAP_PALMZ71
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index b189680..296b09c 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -127,13 +127,13 @@ config BOARD_HAMMERHEAD
+ 	select CPU_AT32AP7000
+ 	select USB_ARCH_HAS_HCD
  	help
- 	 Support for the Palm Zire71 PDA. To boot the kernel,
- 	 you'll need a PalmOS compatible bootloader; check out
--	 http://hackndev.com/palm/z71 for more informations.
-+	 http://hackndev.com/palm/z71 for more information.
- 	 Say Y here if you have such a PDA, say N otherwise.
+-	  The Hammerhead platform is built around a AVR32 32-bit microcontroller from Atmel.
++	  The Hammerhead platform is built around an AVR32 32-bit microcontroller from Atmel.
+ 	  It offers versatile peripherals, such as ethernet, usb device, usb host etc.
  
- config MACH_OMAP_PALMTT
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index a949c4f..2d30d37 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -747,7 +747,7 @@ config CACHELINE_ALIGNED_L1
- 	default n if BF54x
- 	depends on !BF531
- 	help
--	  If enabled, cacheline_anligned data is linked
-+	  If enabled, cacheline_aligned data is linked
- 	  into L1 data memory. (less latency)
+-	  The board also incooperates a power supply and is a Power over Ethernet (PoE) Powered
++	  The board also incorporates a power supply and is a Power over Ethernet (PoE) Powered
+ 	  Device (PD).
  
- config SYSCALL_TAB_L1
-@@ -927,7 +927,7 @@ config MPU
- 	  memory they do not own.  This comes at a performance penalty
- 	  and is recommended only for debugging.
- 
--comment "Asynchonous Memory Configuration"
-+comment "Asynchronous Memory Configuration"
- 
- menu "EBIU_AMGCTL Global Control"
- config C_AMCKEN
-@@ -959,7 +959,7 @@ config C_B3PEN
- 	default n
- 
- choice
--	prompt"Enable Asynchonous Memory Banks"
-+	prompt "Enable Asynchronous Memory Banks"
- 	default C_AMBEN_ALL
- 
- config C_AMBEN
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 3462245..7adac38 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -438,7 +438,7 @@ config ETRAX_SERIAL_PORT0_DMA1_IN
- 	help
- 	  Enables the DMA1 input channel for ser0 (ttyS0).
- 	  If you do not enable DMA, an interrupt for each character will be
--	  used when receiveing data.
-+	  used when receiving data.
- 	  Normally you want to use DMA, unless you use the DMA channel for
- 	  something else.
- 
-@@ -565,7 +565,7 @@ config ETRAX_SERIAL_PORT2_DMA7_IN
- 	help
- 	  Enables the DMA7 input channel for ser2 (ttyS2).
- 	  If you do not enable DMA, an interrupt for each character will be
--	  used when receiveing data.
-+	  used when receiving data.
- 	  Normally you want to use DMA, unless you use the DMA channel for
- 	  something else.
- 
-@@ -604,7 +604,7 @@ config ETRAX_SERIAL_PORT3_DMA3_IN
- 	help
- 	  Enables the DMA3 input channel for ser3 (ttyS3).
- 	  If you do not enable DMA, an interrupt for each character will be
--	  used when receiveing data.
-+	  used when receiving data.
- 	  Normally you want to use DMA, unless you use the DMA channel for
- 	  something else.
- 
-diff --git a/arch/cris/arch-v32/Kconfig b/arch/cris/arch-v32/Kconfig
-index 005ed2b..21bbd93 100644
---- a/arch/cris/arch-v32/Kconfig
-+++ b/arch/cris/arch-v32/Kconfig
-@@ -28,7 +28,7 @@ config	ETRAX_NBR_LED_GRP_ONE
- 	help
- 	  Select this if you want one Ethernet LED group. This LED group
- 	  can be used for one or more Ethernet interfaces. However, it is
--	  recomended that each Ethernet interface use a dedicated LED group.
-+	  recommended that each Ethernet interface use a dedicated LED group.
- 
- config	ETRAX_NBR_LED_GRP_TWO
- 	bool "Use two LED groups"
-diff --git a/arch/cris/arch-v32/drivers/Kconfig b/arch/cris/arch-v32/drivers/Kconfig
-index 7a64fce..b9e328e 100644
---- a/arch/cris/arch-v32/drivers/Kconfig
-+++ b/arch/cris/arch-v32/drivers/Kconfig
-@@ -342,7 +342,7 @@ config ETRAX_SERIAL_PORT4_DMA9_IN
- 	help
- 	  Enables the DMA9 input channel for ser4 (ttyS4).
- 	  If you do not enable DMA, an interrupt for each character will be
--	  used when receiveing data.
-+	  used when receiving data.
- 	  Normally you want to use DMA, unless you use the DMA channel for
- 	  something else.
- 
-diff --git a/arch/cris/arch-v32/mach-fs/Kconfig b/arch/cris/arch-v32/mach-fs/Kconfig
-index f6d7447..774de82 100644
---- a/arch/cris/arch-v32/mach-fs/Kconfig
-+++ b/arch/cris/arch-v32/mach-fs/Kconfig
-@@ -59,7 +59,7 @@ config ETRAX_SDRAM_GRP1_CONFIG
- 	depends on ETRAX_ARCH_V32
- 	default "0"
- 	help
--	  SDRAM configuration for group 1. The defult value is 0
-+	  SDRAM configuration for group 1. The default value is 0
- 	  because group 1 is not used in the default configuration,
- 	  described in the help for SDRAM_GRP0_CONFIG.
- 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 52c80c2..a007995 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -136,7 +136,7 @@ config MACH_JAZZ
- 	help
- 	 This a family of machines based on the MIPS R4030 chipset which was
- 	 used by several vendors to build RISC/os and Windows NT workstations.
--	 Members include the Acer PICA, MIPS Magnum 4000, MIPS Millenium and
-+	 Members include the Acer PICA, MIPS Magnum 4000, MIPS Millennium and
- 	 Olivetti M700-10 workstations.
- 
- config LASAT
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e39b73b..6c8bc0f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -342,7 +342,7 @@ config PHYP_DUMP
- 	help
- 	  Hypervisor-assisted dump is meant to be a kdump replacement
- 	  offering robustness and speed not possible without system
--	  hypervisor assistence.
-+	  hypervisor assistance.
- 
- 	  If unsure, say "N"
- 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 200b9cb..9a8bb53 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -298,7 +298,7 @@ config CPM
- config OF_RTC
- 	bool
- 	help
--	  Uses information from the OF or flattened device tree to instatiate
-+	  Uses information from the OF or flattened device tree to instantiate
- 	  platform devices for direct mapped RTC chips like the DS1742 or DS1743.
- 
- source "arch/powerpc/sysdev/bestcomm/Kconfig"
-diff --git a/arch/powerpc/sysdev/bestcomm/Kconfig b/arch/powerpc/sysdev/bestcomm/Kconfig
-index 0b192a1..29e4270 100644
---- a/arch/powerpc/sysdev/bestcomm/Kconfig
-+++ b/arch/powerpc/sysdev/bestcomm/Kconfig
-@@ -9,8 +9,8 @@ config PPC_BESTCOMM
- 	select PPC_LIB_RHEAP
- 	help
- 	  BestComm is the name of the communication coprocessor found
--	  on the Freescale MPC5200 family of processor. It's usage is
--	  optionnal for some drivers (like ATA), but required for
-+	  on the Freescale MPC5200 family of processor.  Its usage is
-+	  optional for some drivers (like ATA), but required for
- 	  others (like FEC).
- 
- 	  If you want to use drivers that require DMA operations,
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index f32a519..d22a762 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -595,10 +595,10 @@ config GUSA_RB
- 	depends on GUSA && CPU_SH3 || (CPU_SH4 && !CPU_SH4A)
- 	help
- 	  Enabling this option will allow the kernel to implement some
--	  atomic operations using a software implemention of load-locked/
-+	  atomic operations using a software implementation of load-locked/
- 	  store-conditional (LLSC). On machines which do not have hardware
- 	  LLSC, this should be more efficient than the other alternative of
--	  disabling insterrupts around the atomic sequence.
-+	  disabling interrupts around the atomic sequence.
- 
- endmenu
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 73f7fe8..b275305 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1095,7 +1095,7 @@ config NODES_SHIFT
- 	depends on NEED_MULTIPLE_NODES
- 	help
- 	  Specify the maximum number of NUMA Nodes available on the target
--	  system.  Increases memory reserved to accomodate various tables.
-+	  system.  Increases memory reserved to accommodate various tables.
- 
- config HAVE_ARCH_BOOTMEM_NODE
- 	def_bool y
-@@ -1273,7 +1273,7 @@ config MTRR_SANITIZER
- 	  add writeback entries.
- 
- 	  Can be disabled with disable_mtrr_cleanup on the kernel command line.
--	  The largest mtrr entry size for a continous block can be set with
-+	  The largest mtrr entry size for a continuous block can be set with
- 	  mtrr_chunk_size.
- 
- 	  If unsure, say Y.
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 503a908..83ec7b7 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -86,7 +86,7 @@ config ATA_SFF
- 
- 	  For users with exclusively modern controllers like AHCI,
- 	  Silicon Image 3124, or Marvell 6440, you may choose to
--	  disable this uneeded SFF support.
-+	  disable this unneeded SFF support.
- 
- 	  If unsure, say Y.
- 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 3d25654..edb0253 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -42,9 +42,9 @@ config DEBUG_GPIO
- 	depends on DEBUG_KERNEL
- 	help
- 	  Say Y here to add some extra checks and diagnostics to GPIO calls.
--	  The checks help ensure that GPIOs have been properly initialized
--	  before they are used and that sleeping calls aren not made from
--	  nonsleeping contexts.  They can make bitbanged serial protocols
-+	  These checks help ensure that GPIOs have been properly initialized
-+	  before they are used, and that sleeping calls are not made from
-+	  non-sleeping contexts.  They can make bitbanged serial protocols
- 	  slower.  The diagnostics help catch the type of setup errors
- 	  that are most common when setting up new platforms or boards.
- 
-diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
-index 5f9d860..cd50c00 100644
---- a/drivers/input/Kconfig
-+++ b/drivers/input/Kconfig
-@@ -143,7 +143,7 @@ config INPUT_APMPOWER
+-	  Additonally, a Cyclone III FPGA from Altera is integrated on the board. The FPGA is
++	  Additionally, a Cyclone III FPGA from Altera is integrated on the board. The FPGA is
+ 	  mapped into the 32-bit AVR memory bus. The FPGA offers two DDR2 SDRAM interfaces, which
+ 	  will cover even the most exceptional need of memory bandwidth. Together with the onboard
+ 	  video decoder the board is ready for video processing.
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index e85c8fe..504cfaa 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -243,7 +243,7 @@ config GREENASIA_FF
+ 	select INPUT_FF_MEMLESS
  	---help---
- 	  Say Y here if you want suspend key events to trigger a user
- 	  requested suspend through APM. This is useful on embedded
--	  systems where such behviour is desired without userspace
-+	  systems where such behaviour is desired without userspace
- 	  interaction. If unsure, say N.
+ 	Say Y here if you have a GreenAsia (Product ID 0x12) based game controller
+-	(like MANTA Warior MM816 and SpeedLink Strike2 SL-6635) or adapter
++	(like MANTA Warrior MM816 and SpeedLink Strike2 SL-6635) or adapter
+ 	and want to enable force feedback support for it.
  
- 	  To compile this driver as a module, choose M here: the
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 7427136..db87b6c 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -100,7 +100,7 @@ config LEDS_HP6XX
- 	tristate "LED Support for the HP Jornada 6xx"
- 	depends on LEDS_CLASS && SH_HP6XX
+ config HID_TOPSEED
+diff --git a/drivers/isdn/mISDN/Kconfig b/drivers/isdn/mISDN/Kconfig
+index 4938355..1747a02 100644
+--- a/drivers/isdn/mISDN/Kconfig
++++ b/drivers/isdn/mISDN/Kconfig
+@@ -14,13 +14,15 @@ config MISDN_DSP
+ 	depends on MISDN
  	help
--	  This option enables led support for the handheld
-+	  This option enables LED support for the handheld
- 	  HP Jornada 620/660/680/690.
+ 	  Enable support for digital audio processing capability.
++
+ 	  This module may be used for special applications that require
+-	  cross connecting of bchannels, conferencing, dtmf decoding
++	  cross connecting of bchannels, conferencing, dtmf decoding,
+ 	  echo cancelation, tone generation, and Blowfish encryption and
+-	  decryption.
+-	  It may use hardware features if available.
++	  decryption. It may use hardware features if available.
++
+ 	  E.g. it is required for PBX4Linux. Go to http://isdn.eversberg.eu
+-	  and get more informations about this module and it's usage.
++	  and get more information about this module and its usage.
++
+ 	  If unsure, say 'N'.
  
- config LEDS_PCA9532
-@@ -108,7 +108,7 @@ config LEDS_PCA9532
- 	depends on LEDS_CLASS && I2C && INPUT && EXPERIMENTAL
- 	help
- 	  This option enables support for NXP pca9532
--	  led controller. It is generally only usefull
-+	  LED controller. It is generally only useful
- 	  as a platform driver
- 
- config LEDS_GPIO
-@@ -144,7 +144,7 @@ config LEDS_CLEVO_MAIL
- 	  	Positivo Mobile (Clevo M5x0V)
- 
- 	  If your model is not listed here you can try the "nodetect"
--	  module paramter.
-+	  module parameter.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called leds-clevo-mail.
-diff --git a/drivers/media/dvb/frontends/Kconfig b/drivers/media/dvb/frontends/Kconfig
-index 0026956..baf808e 100644
---- a/drivers/media/dvb/frontends/Kconfig
-+++ b/drivers/media/dvb/frontends/Kconfig
-@@ -439,7 +439,7 @@ config DVB_TUNER_DIB0070
+ config MISDN_L1OIP
+diff --git a/drivers/media/common/tuners/Kconfig b/drivers/media/common/tuners/Kconfig
+index 6f92bea..da058c1 100644
+--- a/drivers/media/common/tuners/Kconfig
++++ b/drivers/media/common/tuners/Kconfig
+@@ -147,7 +147,7 @@ config MEDIA_TUNER_XC5000
  	default m if DVB_FE_CUSTOMISE
  	help
- 	  A driver for the silicon baseband tuner DiB0070 from DiBcom.
+ 	  A driver for the silicon tuner XC5000 from Xceive.
 -	  This device is only used inside a SiP called togther with a
 +	  This device is only used inside a SiP called together with a
  	  demodulator for now.
  
- comment "SEC control devices for DVB-S"
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 419c378..415d743 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -18,8 +18,8 @@ config ATMEL_PWM
- 	depends on AVR32 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91CAP9
+ config MEDIA_TUNER_MXL5005S
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 06a2b0f..75f35db 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -88,7 +88,7 @@ config MENELAUS
  	help
- 	  This option enables device driver support for the PWM channels
--	  on certain Atmel prcoessors.  Pulse Width Modulation is used for
--	  purposes including software controlled power-efficent backlights
-+	  on certain Atmel processors.  Pulse Width Modulation is used for
-+	  purposes including software controlled power-efficient backlights
- 	  on LCD displays, motor control, and waveform generation.
+ 	  If you say yes here you get support for the Texas Instruments
+ 	  TWL92330/Menelaus Power Management chip. This include voltage
+-	  regulators, Dual slot memory card tranceivers, real-time clock
++	  regulators, Dual slot memory card transceivers, real-time clock
+ 	  and other features that are often used in portable devices like
+ 	  cell phones and PDAs.
  
- config ATMEL_TCLIB
-@@ -150,7 +150,7 @@ config ATMEL_SSC
- 	tristate "Device driver for Atmel SSC peripheral"
- 	depends on AVR32 || ARCH_AT91
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index dfa585f..6509435 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -157,7 +157,7 @@ config MMC_SPI
+ 	select CRC7
+ 	select CRC_ITU_T
+ 	help
+-	  Some systems accss MMC/SD/SDIO cards using a SPI controller
++	  Some systems access MMC/SD/SDIO cards using a SPI controller
+ 	  instead of using a "native" MMC/SD/SDIO controller.  This has a
+ 	  disadvantage of being relatively high overhead, but a compensating
+ 	  advantage of working on many systems without dedicated MMC/SD/SDIO
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 256c7be..0cc3f67 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -1377,7 +1377,7 @@ config SCSI_LPFC_DEBUG_FS
+ 	bool "Emulex LightPulse Fibre Channel debugfs Support"
+ 	depends on SCSI_LPFC && DEBUG_FS
+ 	help
+-	  This makes debugging infomation from the lpfc driver
++	  This makes debugging information from the lpfc driver
+ 	  available via the debugfs filesystem.
+ 
+ config SCSI_SIM710
+@@ -1385,7 +1385,7 @@ config SCSI_SIM710
+ 	depends on (EISA || MCA) && SCSI
+ 	select SCSI_SPI_ATTRS
  	---help---
--	  This option enables device driver support for Atmel Syncronized
-+	  This option enables device driver support for Atmel Synchronized
- 	  Serial Communication peripheral (SSC).
+-	  This driver for NCR53c710 based SCSI host adapters.
++	  This driver is for NCR53c710 based SCSI host adapters.
  
- 	  The SSC peripheral supports a wide variety of serial frame based
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 3e525e3..7ac77ba 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -1374,7 +1374,7 @@ config SERIAL_BFIN_SPORT
- 	depends on BLACKFIN && EXPERIMENTAL
- 	select SERIAL_CORE
- 	help
--	  Enble support SPORT emulate UART on Blackfin series.
-+	  Enable SPORT emulate UART on Blackfin series.
+ 	  It currently supports Compaq EISA cards and NCR MCA cards
+ 
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index ce6badd..190099a 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -4,7 +4,7 @@ menuconfig STAGING
+ 	---help---
+ 	  This option allows you to select a number of drivers that are
+ 	  not of the "normal" Linux kernel quality level.  These drivers
+-	  are placed here in order to get a wider audience for use of
++	  are placed here in order to get a wider audience to make use of
+ 	  them.  Please note that these drivers are under heavy
+ 	  development, may or may not work, and may contain userspace
+ 	  interfaces that most likely will be changed in the near
+@@ -12,7 +12,7 @@ menuconfig STAGING
+ 
+ 	  Using any of these drivers will taint your kernel which might
+ 	  affect support options from both the community, and various
+-	  commercial support orginizations.
++	  commercial support organizations.
+ 
+ 	  If you wish to work on these drivers, to help improve them, or
+ 	  to report problems you have with them, please see the
+diff --git a/drivers/staging/comedi/Kconfig b/drivers/staging/comedi/Kconfig
+index b501bfb..916e22a 100644
+--- a/drivers/staging/comedi/Kconfig
++++ b/drivers/staging/comedi/Kconfig
+@@ -1,8 +1,8 @@
+ config COMEDI
+-	tristate "Data Acquision support (comedi)"
++	tristate "Data acquisition support (comedi)"
+ 	default N
+ 	---help---
+-	  Enable support a wide range of data acquision devices
++	  Enable support a wide range of data acquisition devices
+ 	  for Linux.
+ 
+ config COMEDI_RT
+diff --git a/drivers/staging/go7007/Kconfig b/drivers/staging/go7007/Kconfig
+index f2cf7f6..ca6ade6 100644
+--- a/drivers/staging/go7007/Kconfig
++++ b/drivers/staging/go7007/Kconfig
+@@ -10,7 +10,7 @@ config VIDEO_GO7007
+ 	select CRC32
+ 	default N
+ 	---help---
+-	  This is a video4linux driver for some wierd device...
++	  This is a video4linux driver for some weird device...
  
  	  To compile this driver as a module, choose M here: the
- 	  module will be called bfin_sport_uart.
-diff --git a/drivers/usb/serial/Kconfig b/drivers/usb/serial/Kconfig
-index b361f05..4b3a9cd 100644
---- a/drivers/usb/serial/Kconfig
-+++ b/drivers/usb/serial/Kconfig
-@@ -509,8 +509,8 @@ config USB_SERIAL_SIERRAWIRELESS
- 	help
- 	  Say M here if you want to use Sierra Wireless devices.
- 
--	  Many deviecs have a feature known as TRU-Install, for those devices
--	  to work properly the USB Storage Sierra feature must be enabled.
-+	  Many devices have a feature known as TRU-Install. For those devices
-+	  to work properly, the USB Storage Sierra feature must be enabled.
+ 	  module will be called go7007
+@@ -20,7 +20,7 @@ config VIDEO_GO7007_USB
+ 	depends on VIDEO_GO7007 && USB
+ 	default N
+ 	---help---
+-	  This is a video4linux driver for some wierd device...
++	  This is a video4linux driver for some weird device...
  
  	  To compile this driver as a module, choose M here: the
- 	  module will be called sierra.
+ 	  module will be called go7007-usb
+diff --git a/drivers/staging/panel/Kconfig b/drivers/staging/panel/Kconfig
+index c4b30f2..3abe7c9 100644
+--- a/drivers/staging/panel/Kconfig
++++ b/drivers/staging/panel/Kconfig
+@@ -110,7 +110,7 @@ config PANEL_LCD_BWIDTH
+ 	---help---
+ 	  Most LCDs use a standard controller which supports hardware lines of 40
+ 	  characters, although sometimes only 16, 20 or 24 of them are really wired
+-	  to the terminal. This results in some non-visible but adressable characters,
++	  to the terminal. This results in some non-visible but addressable characters,
+ 	  and is the case for most parallel LCDs. Other LCDs, and some serial ones,
+ 	  however, use the same line width internally as what is visible. The KS0074
+ 	  for example, uses 16 characters per line for 16 visible characters per line.
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 3219d13..292084f 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -390,7 +390,7 @@ config USB_GADGET_FSL_QE
+ 	   controllers having QE or CPM2, given minor tweaks.
+ 
+ 	   Set CONFIG_USB_GADGET to "m" to build this driver as a
+-	   dynmically linked module called "fsl_qe_udc".
++	   dynamically linked module called "fsl_qe_udc".
+ 
+ config USB_FSL_QE
+ 	tristate
+diff --git a/drivers/uwb/Kconfig b/drivers/uwb/Kconfig
+index ca78312..bac8e7a 100644
+--- a/drivers/uwb/Kconfig
++++ b/drivers/uwb/Kconfig
+@@ -48,10 +48,10 @@ config UWB_WHCI
+         help
+           This driver enables the radio controller for WHCI cards.
+ 
+-          WHCI is an specification developed by Intel
++          WHCI is a specification developed by Intel
+           (http://www.intel.com/technology/comms/wusb/whci.htm) much
+           in the spirit of USB's EHCI, but for UWB and Wireless USB
+-          radio/host controllers connected via memmory mapping (eg:
++          radio/host controllers connected via memory mapping (eg:
+           PCI). Most of these cards come also with a Wireless USB host
+           controller.
+ 
+diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
+index 526187c..8ac9cdd 100644
+--- a/drivers/xen/Kconfig
++++ b/drivers/xen/Kconfig
+@@ -37,7 +37,7 @@ config XEN_COMPAT_XENFS
+          The old xenstore userspace tools expect to find "xenbus"
+          under /proc/xen, but "xenbus" is now found at the root of the
+          xenfs filesystem.  Selecting this causes the kernel to create
+-         the compatibilty mount point /proc/xen if it is running on
++         the compatibility mount point /proc/xen if it is running on
+          a xen platform.
+          If in doubt, say yes.
+ 
 diff --git a/fs/Kconfig b/fs/Kconfig
-index 51307b0..b920ad4 100644
+index b920ad4..4baa1b3 100644
 --- a/fs/Kconfig
 +++ b/fs/Kconfig
-@@ -1453,7 +1453,7 @@ config RPCSEC_GSS_SPKM3
- 	select CRYPTO_CBC
+@@ -323,7 +323,7 @@ config PRINT_QUOTA_WARNING
+ 	  Note that this behavior is currently deprecated and may go away in
+ 	  future. Please use notification via netlink socket instead.
+ 
+-# Generic support for tree structured quota files. Seleted when needed.
++# Generic support for tree structured quota files. Selected when needed.
+ config QUOTA_TREE
+ 	 tristate
+ 
+diff --git a/fs/ext4/Kconfig b/fs/ext4/Kconfig
+index 7505482..418b6f3 100644
+--- a/fs/ext4/Kconfig
++++ b/fs/ext4/Kconfig
+@@ -18,7 +18,7 @@ config EXT4_FS
+ 	  filesystem; while there will be some performance gains from
+ 	  the delayed allocation and inode table readahead, the best
+ 	  performance gains will require enabling ext4 features in the
+-	  filesystem, or formating a new filesystem as an ext4
++	  filesystem, or formatting a new filesystem as an ext4
+ 	  filesystem initially.
+ 
+ 	  To compile this file system support as a module, choose M here. The
+diff --git a/fs/ubifs/Kconfig b/fs/ubifs/Kconfig
+index e35b54d..830e3f7 100644
+--- a/fs/ubifs/Kconfig
++++ b/fs/ubifs/Kconfig
+@@ -22,7 +22,7 @@ config UBIFS_FS_ADVANCED_COMPR
+ 	depends on UBIFS_FS
  	help
- 	  Choose Y here to enable Secure RPC using the SPKM3 public key
--	  GSS-API mechansim (RFC 2025).
-+	  GSS-API mechanism (RFC 2025).
+ 	  This option allows to explicitly choose which compressions, if any,
+-	  are enabled in UBIFS. Removing compressors means inbility to read
++	  are enabled in UBIFS. Removing compressors means inability to read
+ 	  existing file systems.
  
- 	  Secure RPC calls with SPKM3 require an auxiliary userspace
- 	  daemon which may be found in the Linux nfs-utils package
-diff --git a/init/Kconfig b/init/Kconfig
-index 2af8382..8249715 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -535,7 +535,7 @@ config PID_NS
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
- 	  Support process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
-+	  processes with the same pid as long as they are in different
- 	  pid namespaces.  This is a building block of containers.
- 
- 	  Unless you want to work with an experimental feature
-@@ -694,7 +694,7 @@ config COMPAT_BRK
- 	  Randomizing heap placement makes heap exploits harder, but it
- 	  also breaks ancient binaries (including anything libc5 based).
- 	  This option changes the bootup default to heap randomization
--	  disabled, and can be overriden runtime by setting
-+	  disabled, and can be overridden at runtime by setting
- 	  /proc/sys/kernel/randomize_va_space to 2.
- 
- 	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
-diff --git a/net/Kconfig b/net/Kconfig
-index bf27760..612b447 100644
---- a/net/Kconfig
-+++ b/net/Kconfig
-@@ -150,7 +150,7 @@ config NETFILTER_ADVANCED
+ 	  If unsure, say 'N'.
+@@ -32,7 +32,7 @@ config UBIFS_FS_LZO
+ 	depends on UBIFS_FS
  	default y
  	help
- 	  If you say Y here you can select between all the netfilter modules.
--	  If you say N the more ununsual ones will not be shown and the
-+	  If you say N the more unusual ones will not be shown and the
- 	  basic ones needed by most people will default to 'M'.
+-	   LZO compressor is generally faster then zlib but compresses worse.
++	   LZO compressor is generally faster than zlib but compresses worse.
+ 	   Say 'Y' if unsure.
  
- 	  If unsure, say Y.
-diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
-index ec99215..ca8cb32 100644
---- a/net/ipv6/Kconfig
-+++ b/net/ipv6/Kconfig
-@@ -22,17 +22,17 @@ menuconfig IPV6
- if IPV6
+ config UBIFS_FS_ZLIB
+diff --git a/init/Kconfig b/init/Kconfig
+index 8249715..bf7d1d5 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -958,7 +958,7 @@ config INIT_ALL_POSSIBLE
+ 	  cpu_possible_map, some of them chose to initialize cpu_possible_map
+ 	  with all 1s, and others with all 0s.  When they were centralised,
+ 	  it was better to provide this option than to break all the archs
+-	  and have several arch maintainers persuing me down dark alleys.
++	  and have several arch maintainers pursuing me down dark alleys.
  
- config IPV6_PRIVACY
--	bool "IPv6: Privacy Extensions support"
-+	bool "IPv6: Privacy Extensions (RFC 3041) support"
- 	---help---
- 	  Privacy Extensions for Stateless Address Autoconfiguration in IPv6
--	  support.  With this option, additional periodically-alter 
--	  pseudo-random global-scope unicast address(es) will assigned to
-+	  support.  With this option, additional periodically-altered
-+	  pseudo-random global-scope unicast address(es) will be assigned to
- 	  your interface(s).
- 	
--	  We use our standard pseudo random algorithm to generate randomized
--	  interface identifier, instead of one described in RFC 3041.
-+	  We use our standard pseudo-random algorithm to generate the
-+          randomized interface identifier, instead of one described in RFC 3041.
+ config STOP_MACHINE
+ 	bool
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index e2a4ff6..d85ab89 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -71,11 +71,10 @@ config FUNCTION_GRAPH_TRACER
+ 	help
+ 	  Enable the kernel to trace a function at both its return
+ 	  and its entry.
+-	  It's first purpose is to trace the duration of functions and
+-	  draw a call graph for each thread with some informations like
+-	  the return value.
+-	  This is done by setting the current return address on the current
+-	  task structure into a stack of calls.
++	  Its first purpose is to trace the duration of functions and
++	  draw a call graph for each thread with some information like
++	  the return value. This is done by setting the current return 
++    address on the current task structure into a stack of calls.
  
--	  By default, kernel do not generate temporary addresses.
-+	  By default the kernel does not generate temporary addresses.
- 	  To use temporary addresses, do
- 	
- 	        echo 2 >/proc/sys/net/ipv6/conf/all/use_tempaddr 
-@@ -43,9 +43,9 @@ config IPV6_ROUTER_PREF
- 	bool "IPv6: Router Preference (RFC 4191) support"
- 	---help---
- 	  Router Preference is an optional extension to the Router
--	  Advertisement message to improve the ability of hosts
--	  to pick more appropriate router, especially when the hosts
--	  is placed in a multi-homed network.
-+	  Advertisement message which improves the ability of hosts
-+	  to pick an appropriate router, especially when the hosts
-+	  are placed in a multi-homed network.
+ config IRQSOFF_TRACER
+ 	bool "Interrupts-off Latency Tracer"
+diff --git a/net/phonet/Kconfig b/net/phonet/Kconfig
+index 51a5669..6ec7d55 100644
+--- a/net/phonet/Kconfig
++++ b/net/phonet/Kconfig
+@@ -6,7 +6,7 @@ config PHONET
+ 	tristate "Phonet protocols family"
+ 	help
+ 	  The Phone Network protocol (PhoNet) is a packet-oriented
+-	  communication protocol developped by Nokia for use with its modems.
++	  communication protocol developed by Nokia for use with its modems.
  
- 	  If unsure, say N.
+ 	  This is required for Maemo to use cellular data connectivity (if
+ 	  supported). It can also be used to control Nokia phones
+diff --git a/net/wimax/Kconfig b/net/wimax/Kconfig
+index 18495cd..1b46747 100644
+--- a/net/wimax/Kconfig
++++ b/net/wimax/Kconfig
+@@ -8,7 +8,7 @@
+ #
+ # As well, enablement of the RFKILL code means we need the INPUT layer
+ # support to inject events coming from hw rfkill switches. That
+-# dependency could be killed if input.h provided appropiate means to
++# dependency could be killed if input.h provided appropriate means to
+ # work when input is disabled.
  
-diff --git a/net/mac80211/Kconfig b/net/mac80211/Kconfig
-index 60c1616..f3d9ae3 100644
---- a/net/mac80211/Kconfig
-+++ b/net/mac80211/Kconfig
-@@ -33,7 +33,7 @@ choice
- 	---help---
- 	  This option selects the default rate control algorithm
- 	  mac80211 will use. Note that this default can still be
--	  overriden through the ieee80211_default_rc_algo module
-+	  overridden through the ieee80211_default_rc_algo module
- 	  parameter if different algorithms are available.
+ comment "WiMAX Wireless Broadband support requires CONFIG_INPUT enabled"
+diff --git a/sound/soc/blackfin/Kconfig b/sound/soc/blackfin/Kconfig
+index 0a2f8f9..811596f 100644
+--- a/sound/soc/blackfin/Kconfig
++++ b/sound/soc/blackfin/Kconfig
+@@ -42,7 +42,7 @@ config SND_BF5XX_AC97
+ 	  You will also need to select the audio interfaces to support below.
  
- config MAC80211_RC_DEFAULT_PID
-diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
-index c2bac9c..fe00572 100644
---- a/net/netfilter/Kconfig
-+++ b/net/netfilter/Kconfig
-@@ -52,7 +52,7 @@ config NF_CT_ACCT
+ 	  Note:
+-	  AC97 codecs which do not implment the slot-16 mode will not function
++	  AC97 codecs which do not implement the slot-16 mode will not function
+ 	  properly with this driver. This driver is known to work with the
+ 	  Analog Devices line of AC97 codecs.
  
- 	  Please note that currently this option only sets a default state.
- 	  You may change it at boot time with nf_conntrack.acct=0/1 kernel
--	  paramater or by loading the nf_conntrack module with acct=0/1.
-+	  parameter or by loading the nf_conntrack module with acct=0/1.
- 
- 	  You may also disable/enable it on a running system with:
- 	   sysctl net.netfilter.nf_conntrack_acct=0/1
 -- 
 1.5.6.3
 
