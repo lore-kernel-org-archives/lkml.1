@@ -1,141 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZAUCj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbZAUCug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbZAUCj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 21:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbZAUCjT
+	id S1761932AbZAUCug (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 21:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbZAUCu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 21:39:19 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:37685 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbZAUCjS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 21:39:18 -0500
-Message-ID: <49768ACF.5010608@gawab.com>
-Date: Tue, 20 Jan 2009 18:39:11 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081205)
-MIME-Version: 1.0
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-CC: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com> <497617D6.8020707@ct.jp.nec.com> <4976246D.1040008@gawab.com> <49762AA3.7050402@ct.jp.nec.com>
-In-Reply-To: <49762AA3.7050402@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Jan 2009 21:50:27 -0500
+Received: from mx1.suse.de ([195.135.220.2]:56279 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755922AbZAUCu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 21:50:26 -0500
+Date: Wed, 21 Jan 2009 03:50:24 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, steiner@sgi.com
+Subject: Re: [patch] x86: make UV support configurable
+Message-ID: <20090121025024.GF24891@wotan.suse.de>
+References: <20090120033604.GF16304@wotan.suse.de> <20090120142733.GD10224@elte.hu> <20090120155000.GA27200@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120155000.GA27200@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroshi Shimamoto wrote:
-> Justin Madru wrote:
->   
->> Hiroshi Shimamoto wrote:
->>     
->>> Justin Madru wrote:
->>>   
->>>       
->>>> Hiroshi Shimamoto wrote:
->>>>     
->>>>         
->>>>> Justin Madru wrote:
->>>>>       
->>>>>           
->>>>>> Ok, finally bisected the bug, but the commit isn't related to networking!
->>>>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>>> on current git and that fixed the bug.
->>>>>>
->>>>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
->>>>>> I want to drop my changes - the revert.
->>>>>> Also how do I find the commit that merged/pulled in this commit?
->>>>>>
->>>>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>>> Date: Fri Dec 5 17:17:09 2008 -0800
->>>>>>
->>>>>> x86: signal: change type of paramter for sys_rt_sigreturn()
->>>>>>
->>>>>> Impact: cleanup on 32-bit
->>>>>>
->>>>>> Peter pointed this parameter can be changed.
->>>>>>
->>>>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>>>>>         
->>>>>>             
->>>>> Hi,
->>>>> thanks for reporting.
->>>>>
->>>>> I'm not sure why this commit affects.
->>>>> Can you check vmlinux? size, objdump, etc.
->>>>> On my environment, the generated code looks same.
->>>>>
->>>>> Thanks,
->>>>> Hiroshi
->>>>>
->>>>>       
->>>>>           
->>>> I tried to do an objdump but it gave an error. How am I suppose to do an 
->>>> objdump?
->>>>
->>>> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
->>>> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
->>>> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
->>>> readelf: Error: Unable to seek to 0xc031f2eb for section headers
->>>> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
->>>> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
->>>> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
->>>>     
->>>>         
->>> not vmlinuz, vmlinux.
->>> vmlinuz is a compressed kernel, it is not ELF file.
->>> Usually vmlinux is generated in top of source directory.
->>> I can see disassembled image with objdump -d vmlinux.
->>>
->>> Thanks,
->>> Hiroshi
->>>
->>>   
->>>       
->> Sorry, didn't know. I tried objdump -d vmlinux, but the resulting file 
->> is ~50MB!
->> Is there a smaller section you're interested in, because that would be 
->> hard to send.
->> Or am I doing it wrong again?
->>     
->
-> that's OK. No need to send the disassembled result.
-> You can diff disassembled file.
-> I guess your GCC generates different code when the patch is reverted.
->
-> Thanks,
-> Hiroshi
->
->   
-Ok, I tried, I really did. But no mater what I did the diff was even bigger
-if not the same size as the original dump! I even tried to cut out the 
-first two fields with
-    cut -f3- dump-revert > dump-revert2
-but that wouldn't shrink the diff size (100,000+ lines).
+On Tue, Jan 20, 2009 at 04:50:00PM +0100, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > > Fixed the EFI omission since the last patch. I have not changed the 
+> > > Kconfig to include (what I think are) false dependencies (which really 
+> > > frustrate me when things get badly tangled up). If people want to test 
+> > > as much stuff as possible even that is not supported by their hardware, 
+> > > we have allyesconfig/allmodconfig. I don't think UV is particularly 
+> > > special in that respect (we allow Intel, AMD, etc CPUs to be configured 
+> > > out)
+> > > 
+> > > If anything, X86_UV should *select* MAXSMP, rather than the other way 
+> > > around. That would be more logical, but even then I don't like adding 
+> > > still a false dep because one might have a small UV system, or want to 
+> > > test with different NR_CPUS.
+> > > 
+> > > Anyway, I think this patch is good as-is. If someone wants to streamline 
+> > > config options with subsequent patches, that's great. If Ingo can be 
+> > > convinced of a better arrangement, fine.
+> > 
+> > Applied to tip/x86/uv, thanks Nick!
+> 
+> hm, build failure with the attached config:
+> 
+> 
+> drivers/built-in.o: In function `gru_cpu_fault_map_id':
+> : undefined reference to `per_cpu____uv_hub_info'
+> drivers/built-in.o: In function `gru_fault':
+> : undefined reference to `per_cpu____uv_hub_info'
+> drivers/built-in.o: In function `gru_try_dropin':
+> grufault.c:(.text+0xbfc6e): undefined reference to 
+> `per_cpu____uv_hub_info'
+> grufault.c:(.text+0xc0042): undefined reference to 
+> `per_cpu____uv_hub_info'
+> [...]
+> 
+> (if possible please send a delta fix on top of your previous patch.)
 
-Does gcc output fluctuate this wildly with such little change?
-Is there a config option that allows gcc to randomize the output?
-I recompiled just to make sure, and even two recompiles of the same 
-source (no revert)
-resulted in a different sha1 hash (didn't test the objdump diff).
-The only thing I can think of is that I compile with -O3 instead of -O2.
+How's this?
 
-I'm sorry, but unless you have any suggestions I've decided to just upload
-the vmlinux files to my server (<40KB up speed) 
-http://jdserver.homelinux.org/bugreports/002/
-and rapidshare
-http://rapidshare.com/files/186890846/vmlinux.tar.bz2.html
-http://rapidshare.com/files/186890848/data-norevert.tar.bz2.html
-http://rapidshare.com/files/186890849/data-revert.tar.bz2.html
+---
+ drivers/misc/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-By the way Ingo has already added the revert to tip/master
-http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commit;h=1d03950243904c89b8854c10516932b029c2a8fa
-
-Justin Madru
+Index: linux-2.6/drivers/misc/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/misc/Kconfig
++++ linux-2.6/drivers/misc/Kconfig
+@@ -170,7 +170,7 @@ config ENCLOSURE_SERVICES
+ config SGI_XP
+ 	tristate "Support communication between SGI SSIs"
+ 	depends on NET
+-	depends on (IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || X86_64) && SMP
++	depends on (IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || X86_UV) && SMP
+ 	select IA64_UNCACHED_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+ 	select GENERIC_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+ 	select SGI_GRU if (IA64_GENERIC || IA64_SGI_UV || X86_64) && SMP
+@@ -197,7 +197,7 @@ config HP_ILO
+ 
+ config SGI_GRU
+ 	tristate "SGI GRU driver"
+-	depends on (X86_64 || IA64_SGI_UV || IA64_GENERIC) && SMP
++	depends on (X86_UV || IA64_SGI_UV || IA64_GENERIC) && SMP
+ 	default n
+ 	select MMU_NOTIFIER
+ 	---help---
