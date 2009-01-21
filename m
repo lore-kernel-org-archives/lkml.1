@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763754AbZAUKRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764388AbZAUKRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763754AbZAUKRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 05:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbZAUKNV
+	id S1764388AbZAUKRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 05:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764335AbZAUKOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 05:13:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58984 "EHLO mx3.mail.elte.hu"
+	Wed, 21 Jan 2009 05:14:19 -0500
+Received: from mail.suse.de ([195.135.220.2]:37642 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764238AbZAUKNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 05:13:17 -0500
-Date: Wed, 21 Jan 2009 11:13:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] x86: Merge hardirq.h
-Message-ID: <20090121101307.GD18728@elte.hu>
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-5-git-send-email-brgerst@gmail.com> <4976DA9C.7000500@kernel.org>
-MIME-Version: 1.0
+	id S1764212AbZAUKOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 05:14:16 -0500
+Date: Wed, 21 Jan 2009 11:14:10 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090121101409.GQ24891@wotan.suse.de>
+References: <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org> <20090121085208.GO24891@wotan.suse.de> <20090121092049.GE15750@one.firstfloor.org> <20090121092550.GP24891@wotan.suse.de> <20090121095418.GG15750@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4976DA9C.7000500@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090121095418.GG15750@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Tejun Heo <tj@kernel.org> wrote:
-
-> Brian Gerst wrote:
-> > Remove unused idle_timestamp field from 32-bit.
+On Wed, Jan 21, 2009 at 10:54:18AM +0100, Andi Kleen wrote:
+> > The point is that the compiler is then free to do it. If things
+> > slow down after the compiler gets *more* information, then that
+> > is a problem with the compiler heuristics rather than the
+> > information we give it.
 > 
-> Dropped.  X86_32 doesn't build.  X86_64 UP doesn't build.  Please at 
-> least do compile testing on all four combinations before sending the 
-> patches.
+> The point was the -Os disables it typically then.
+> (not always, compiler heuristics are far from perfect)
 
-While this patch was indeed broken, generally for -tip patches we are very 
-permissive and do not require testing 4 .config variants: compile testing 
-on the bit width x86 variant that is being modified is enough. If both 
-variant are modified (as in this case) then compiling the 32-bit and 
-64-bit defconfig is enough.
+That'd be just another gcc failing. If it can make the code
+faster without a size increase, then it should (of course
+if it has to start spilling registers etc. then that's a
+different matter, but we're not talking about only 32-bit
+x86 here).
 
-If some build failure slips through it will be handled by automated 
-testing facilities (such as -tip's testing) - it really does not scale if 
-we expect developers to build kernels they dont use (and dont care about 
-nearly as much as about their primary config).
 
-This lowers the bar of entry to developers who submit their patches from 
-low-powered hardware and simply dont have the means to do wide build 
-testing. The many .config variations are not really the developer's fault 
-but our collective fault. Developers should spend their time thinking 
-about patches, not waiting for the nth kernel build to finish.
+> > > Then x86s tend to have very very fast L1 caches and
+> > > if something is not in L1 on reads then the cost of fetching
+> > > something for a read dwarfs the few cycles you can typically
+> > > get out of this.
+> > 
+> > Well most architectures have L1 caches of several cycles. And
+> > L2 miss typically means going to L2 which in some cases the
+> > compiler is expected to attempt to cover as much as possible
+> > (eg in-order architectures).
+> 
+> L2 cache is so much slower that scheduling a few instructions
+> more doesn't help much.
 
-	Ingo
+I think on a lot of CPUs that is actually not the case. Including
+on Nehalem and Montecito CPUs where it is what, like under 15
+cycles?
+
+Even in cases where you have a high latency LLC or go to memory,
+you want to be able to start as many loads as possible before
+stalling. Especially for in-order architectures, but even OOOE
+can stall if it can't resolve store addresses early enough or
+speculate them.
+
+ 
+> > stall, so you still want to get loads out early if possible.
+> > 
+> > Even a lot of OOOE CPUs I think won't have the best alias
+> > anaysis, so all else being equal, it wouldn't hurt them to
+> > move loads earlier.
+> 
+> Hmm, but if the load is nearby it won't matter if a 
+> store is in the middle, because the CPU will just execute
+> over it.
+
+If the address is not known or the store buffer fills up etc
+then it may not be able to. It could even be hundreds of
+instructions here too much for an OOOE processor window. We
+have a lot of huge functions (although granted they'll often
+contain barriers for other reasons like locks or function
+calls anyway).
+ 
+
+> The real big win is if you do some computation inbetween,
+> but at least for typical list manipulation there isn't 
+> really any.
+
+Well, I have a feeling that the MLP side of it could be more
+significant than ILP. But no data.
+
