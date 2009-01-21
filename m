@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbZAUP3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbZAUPdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761637AbZAUP3x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 10:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZAUP3n
+	id S1759898AbZAUPdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 10:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZAUPdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 10:29:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40387 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752954AbZAUP3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 10:29:42 -0500
-Date: Wed, 21 Jan 2009 10:28:58 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linux NFS ML <linux-nfs@vger.kernel.org>,
-       Linux NFSv4 ML <nfsv4@linux-nfs.org>,
-       SystemTAP ML <systemtap@sources.redhat.com>, gnb@sgi.com
-Subject: Re: [patch 0/5] activate & deactivate dprintks individually and
-	severally
-Message-ID: <20090121152858.GA23953@redhat.com>
-References: <20090120012930.020621000@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120012930.020621000@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Jan 2009 10:33:13 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37020 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752921AbZAUPdN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 10:33:13 -0500
+Date: Wed, 21 Jan 2009 15:32:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adam Bliss <abliss@google.com>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk@flint.arm.linux.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: tty_tiocmset() masks out TIOCM_RI and TIOCM_CD, which breaks
+ rfcomm
+Message-ID: <20090121153229.4a11cb8e@lxorguk.ukuu.org.uk>
+In-Reply-To: <ee007d8e0901201524s3be5e8e2m7d1d4026c078a87@mail.gmail.com>
+References: <ee007d8e0901201524s3be5e8e2m7d1d4026c078a87@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 12:29:30PM +1100, Greg Banks wrote:
-> 
-> As mentioned in the recent discussion on NFS trace points on the NFS &
-> SystemTap mailing lists.  This patch allows field support staff and
-> kernel developers debug kernel problems, by enabling them to treat
-> dprintks as precise trace points rather than syslog spamming tools.
-> 
-> This is a forward ported (from 2.6.16), updated, and split version
-> of a patch that has been used in SGI's internal development tree for
-> the last few months.  The very first version of this was used about
-> eighteen months ago when debugging NFS/RDMA, which has an enormous
-> number of dprintks and no other way to debug it.
-> 
-> Jason Baron suggested I post it here for review and contrast with
-> his dynamic dprintk feature.
-> 
+> TIOCM_CD and TIOCM_RI to the list?  Like this:
 
-yes, these two patch sets are very similar in the problem that they are
-addressing. For me, one of the core differences, is that 'dprintk' has
-per-debug statement control, while my solution, 'dynamic debug' has a
-more per-module focused control. 'dprintk' thus checks a different
-variable per-debug line to see if its enabled. On the other hand
-'dynamic debug' can check 1 global variable (in the most common cases),
-to see if its enabled or not. I think we can layer per-line check on top
-of the 1 global variable check and have a more efficient solution that
-still allows for fine-grained debugging.
+CD and RI are inputs which is why they are masked.
 
-'dprintk' also has a richer user interface, which allows for file, line,
-module, and statement control. 
+> Traditionally, RI (Ring Indicator) and CD (Carrier Detect) were
+> typically used for DCE -> DTE communication, so perhaps this is why
+> they were left off initially.  However, when Bluetooth is used to
 
-Thus, I think Greg and I can work together and combine the best features
-of both patches. We will re-post a combined solution.
+The cables end up doing the conversion so the PC world always sees them
+from the one end - even if they are in fact crossed over in the cable.
 
-thanks,
+> It might be appropriate to include other signals as well, such as CTS
+> and DSR.  However, these do not seem necessary for rfcomm, since the
+> rfcomm driver will interpret a DTR as a DSR and an RTS as a CTS.  My
+> main concern is for RI and CD, for which there does not seem to be a
+> workaround.
 
--Jason
+I would have expected the driver to be remapping RI/CD just as it does
+for the DTR<->DSR RTS<->CTS cable switch around.
+
+It's certainly possible to fix it, but that would need a double check on
+the existing drivers and that passing new suprise bits won't do any harm.
+The real question is what should the right behaviour be - and to me that
+seems to be to logically flip all the lines not just DTR/DSR RTS/CTS
