@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZAVAbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZAVAbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZAVAbf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 19:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZAVAbY
+	id S1755614AbZAVAbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 19:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbZAVAbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 19:31:24 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:50780 "EHLO
+	Wed, 21 Jan 2009 19:31:32 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:45831 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbZAVAbY (ORCPT
+	with ESMTP id S1754940AbZAVAbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 19:31:24 -0500
-Date: Wed, 21 Jan 2009 19:13:44 -0500 (EST)
+	Wed, 21 Jan 2009 19:31:31 -0500
+Date: Wed, 21 Jan 2009 18:58:10 -0500 (EST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <20090119061856.GB22584@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0901211903540.18367@qirst.com>
-References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de> <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com> <20090114155923.GC1616@wotan.suse.de>
- <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com> <20090116034356.GM17810@wotan.suse.de> <Pine.LNX.4.64.0901161509160.27283@quilx.com> <20090119061856.GB22584@wotan.suse.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
+Subject: Re: Mainline kernel OLTP performance update
+In-Reply-To: <1232428583.11429.83.camel@ymzhang>
+Message-ID: <alpine.DEB.1.10.0901211852060.18367@qirst.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>  <200901161503.13730.nickpiggin@yahoo.com.au>  <20090115201210.ca1a9542.akpm@linux-foundation.org>  <200901161746.25205.nickpiggin@yahoo.com.au>  <20090116065546.GJ31013@parisc-linux.org>
+  <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org> <1232428583.11429.83.camel@ymzhang>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-716562517-983847473-1232582290=:18367"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009, Nick Piggin wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> > > You only go to the allocator when the percpu queue goes empty though, so
-> > > if memory policy changes (eg context switch or something), then subsequent
-> > > allocations will be of the wrong policy.
-> >
-> > The per cpu queue size in SLUB is limited by the queues only containing
-> > objects from the same page. If you have large queues like SLAB/SLQB(?)
-> > then this could be an issue.
+---716562517-983847473-1232582290=:18367
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+On Tue, 20 Jan 2009, Zhang, Yanmin wrote:
+
+> kmem_cache =EF=BB=BFskbuff_head_cache's object size is just 256, so it sh=
+ares the kmem_cache
+> with =EF=BB=BF:0000256. Their order is 1 which means every slab consists =
+of 2 physical pages.
+
+That order can be changed. Try specifying slub_max_order=3D0 on the kernel
+command line to force an order 0 alloc.
+
+The queues of the page allocator are of limited use due to their overhead.
+Order-1 allocations can actually be 5% faster than order-0. order-0 makes
+sense if pages are pushed rapidly to the page allocator and are then
+reissues elsewhere. If there is a linear consumption then the page
+allocator queues are just overhead.
+
+> Page allocator has an array at zone_pcp(zone, cpu)->pcp to keep a page bu=
+ffer for page order 0.
+> But here =EF=BB=BFskbuff_head_cache's order is 1, so UDP-U-4k couldn't be=
+nefit from the page buffer.
+
+That usually does not matter because of partial list avoiding page
+allocator actions.
+
+> SLQB has no such issue, because:
+> 1) SLQB has a percpu freelist. Free objects are put to the list firstly a=
+nd can be picked up
+> later on quickly without lock. A batch parameter to control the free obje=
+ct recollection is mostly
+> 1024.
+> 2) SLQB slab order mostly is 0, so although sometimes it calls alloc_page=
+s/free_pages, it can
+> benefit from =EF=BB=BFzone_pcp(zone, cpu)->pcp page buffer.
 >
-> And it could be a problem in SLUB too. Chances are that several allocations
-> will be wrong after every policy switch. I could describe situations in which
-> SLUB will allocate with the _wrong_ policy literally 100% of the time.
+> So SLUB need resolve such issues that one process allocates a batch of ob=
+jects and another process
+> frees them batchly.
 
-No it cannot because in SLUB objects must come from the same page.
-Multiple objects in a queue will only ever require a single page and not
-multiple like in SLAB.
-
-> > That means large amounts of memory are going to be caught in these queues.
-> > If its per cpu and one cpu does allocation and the other frees then the
-> > first cpu will consume more and more memory from the page allocator
-> > whereas the second will build up huge per cpu lists.
->
-> Wrong. I said I would allow an option to turn off *periodic trimming*.
-> Or just modify the existing tunables or look at making the trimming
-> more fine grained etc etc. I won't know until I see a workload where it
-> hurts, and I will try to solve it then.
-
-You are not responding to the issue. If you have queues that contain
-objects from multiple pages then every object pointer in these queues can
-pin a page although this actually is a free object.
-
-> > It seems that on SMP systems SLQB will actually increase the number of
-> > queues since it needs 2 queues per cpu instead of the 1 of SLAB.
->
-> I don't know what you mean when you say queues, but SLQB has more
-> than 2 queues per CPU. Great. I like them ;)
-
-This gets better and better.
-
-> > SLAB also
-> > has resizable queues.
->
-> Not significantly because that would require large memory allocations for
-> large queues. And there is no code there to do runtime resizing.
-
-Groan. Please have a look at do_tune_cpucache() in slab.c
+SLUB has a percpu freelist but its bounded by the basic allocation unit.
+You can increase that by modifying the allocation order. Writing a 3 or 5
+into the order value in /sys/kernel/slab/xxx/order would do the trick.
+---716562517-983847473-1232582290=:18367--
