@@ -1,168 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763533AbZAUJCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763818AbZAUJDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763533AbZAUJCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZAUJCO
+	id S1763818AbZAUJDl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZAUJDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:02:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:59177 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbZAUJCM (ORCPT
+	Wed, 21 Jan 2009 04:03:25 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:41018 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbZAUJDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:02:12 -0500
+	Wed, 21 Jan 2009 04:03:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V0YNqe2jpmZkfWgLe7IaxzxxFZShLl3TrJxvuGnc1pBOnqcdL6aIAeOz5QrUkt11pM
-         cRBjnQIyY7BrniNfbau3a+jNIrzZ0oypzBdVrQZ2Ymw0zsprAId4pXy4XxFqqy9RQOBQ
-         qSx4r7I4XVO3DGHh4x2O/0n4yczcXO0rl9NAQ=
-Date: Wed, 21 Jan 2009 10:02:08 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH] tracing/ftrace: add an option to not print the context
-	info for events
-Message-ID: <20090121090207.GA6374@nowhere>
-References: <497671d4.1358560a.7a83.6114@mx.google.com> <alpine.DEB.1.10.0901202151180.14906@gandalf.stny.rr.com>
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=A7yvIzO3gkSXjDCKoCTYyGEp1iioGTQX5xEKl2UAEhwfuv6r53nms34SXnnsdImP1J
+         CBCijT1hbiXgEKpN0gZFqYgELQhqk6xRW/L/r0q0l3nopnRluFueyyPTS48UUAKcowxi
+         GKkTarjAp5ceerT256BO+GfW1ks6DvSL/1Nc8=
+Message-ID: <4976E524.1050607@gmail.com>
+Date: Wed, 21 Jan 2009 10:04:36 +0100
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901202151180.14906@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jacek Luczak <difrost.kernel@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
+       xfs mailing list <xfs@oss.sgi.com>
+Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
+References: <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org> <20090120121335.GA19182@infradead.org> <20090120124515.GA31838@infradead.org> <4975D88B.7020906@gmail.com> <20090120140514.GA2976@infradead.org> <4975DE45.7050004@gmail.com> <20090121040512.GK10158@disturbed>
+In-Reply-To: <20090121040512.GK10158@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 09:55:17PM -0500, Steven Rostedt wrote:
+Dave Chinner pisze:
+> On Tue, Jan 20, 2009 at 03:23:01PM +0100, Jacek Luczak wrote:
+>> Christoph Hellwig pisze:
+>>> On Tue, Jan 20, 2009 at 02:58:35PM +0100, Jacek Luczak wrote:
+>>>> Good job! Is there some ,,quick'' fix?
+>>> The patch below makes it go away for me, alternatively just enable
+>>> CONFIG_LBD.
+>>>
+>>>
+>>> Index: linux-2.6/fs/xfs/xfs_types.h
+>>> ===================================================================
+>>> --- linux-2.6.orig/fs/xfs/xfs_types.h	2009-01-20 14:55:55.806068213 +0100
+>>> +++ linux-2.6/fs/xfs/xfs_types.h	2009-01-20 14:56:01.437945154 +0100
+>>> @@ -96,7 +96,7 @@ typedef	__uint64_t	xfs_dfilblks_t;	/* nu
+>>>  /*
+>>>   * Memory based types are conditional.
+>>>   */
+>>> -#if XFS_BIG_BLKNOS
+>>> +#if 1 //XFS_BIG_BLKNOS
+>>>  typedef	__uint64_t	xfs_fsblock_t;	/* blockno in filesystem (agno|agbno) */
+>>>  typedef __uint64_t	xfs_rfsblock_t;	/* blockno in filesystem (raw) */
+>>>  typedef __uint64_t	xfs_rtblock_t;	/* extent (block) in realtime area */
+>>>
+>> I've applied it and now running ,,fixed'' kernel. What I've notice is:
+>> $ LC_ALL=C df -h
+>> Filesystem            Size  Used Avail Use% Mounted on
+>> /dev/sda1              20G  -40E   40E   -  /
+>> /dev/sda5              20G  -23E   23E   -  /home
+>> /dev/sda6              56G   56G  774M  99% /NORA
+>> /dev/sda7              45G   44G  1.2G  98% /MAGAZYN
 > 
-> On Tue, 20 Jan 2009, Frederic Weisbecker wrote:
-> 
-> > Impact: make trace_event more convenient for tracers
-> > 
-> > All tracers (for the moment) that use the struct trace_event want to have
-> > the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
-> > 
-> > But some other tracers that want to implement their trace_event callbacks will
-> > not necessary need these information.
-> > 
-> > This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
-> > When disabled through:
-> > 
-> > echo nocontext-info > /debugfs/tracing/trace_options
-> 
-> Thanks Frederic,
-> 
-> > 
-> > The pid, cpu and timestamps headers will not be printed.
-> > 
-> > IE with the sched_switch tracer with context-info (default):
-> > 
-> >             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
-> >           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
-> >           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
-> >         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
-> > 
-> > Without context-info:
-> > 
-> >   2935:120:S ==> [001]     0:140:R <idle>
-> >      0:140:R   + [000]    11:115:S events/0
-> >      0:140:R ==> [000]    11:115:R events/0
-> >     11:115:S ==> [000]     0:140:R <idle>
-> > 
-> > A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
-> 
-> How about adding another function method into the tracer, where it could 
-> be what is printed at the start. The default being what is now printed. 
-> This would be for trace and latency trace only.
+> Please try the patch I posted this morning - it fixes the problem
+> properly and shouldn't have this side effect.
 > 
 
+Your patch work for me. I've made also some tests a'la one proposed by
+Christoph, here also everything works. Good work guys!
 
+Have a nice day,
 
-Good idea. So it would be something coupled with TRACE_TER_CONTEXT_INFO ?
-I mean, without this option, the tracers would have to implement a dummy context_info
-callback for these cases if they don't want any.
-
-
- 
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  kernel/trace/trace.c |   61 ++++++++++++++++++++++++++++---------------------
-> >  kernel/trace/trace.h |    3 +-
-> >  2 files changed, 37 insertions(+), 27 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > index 220c264..a59ba48 100644
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -227,7 +227,7 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
-> >  
-> >  /* trace_flags holds trace_options default values */
-> >  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-> > -	TRACE_ITER_ANNOTATE;
-> > +	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
-> >  
-> >  /**
-> >   * trace_wake_up - wake up tasks waiting for trace input
-> > @@ -285,6 +285,7 @@ static const char *trace_options[] = {
-> >  	"userstacktrace",
-> >  	"sym-userobj",
-> >  	"printk-msg-only",
-> > +	"context-info",
-> >  	NULL
-> >  };
-> >  
-> > @@ -1487,21 +1488,23 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
-> >  
-> >  	test_cpu_buff_start(iter);
-> >  
-> > -	comm = trace_find_cmdline(iter->ent->pid);
-> > -
-> > -	t = ns2usecs(iter->ts);
-> > -	usec_rem = do_div(t, 1000000ULL);
-> > -	secs = (unsigned long)t;
-> > -
-> > -	ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
-> > -	if (!ret)
-> > -		return TRACE_TYPE_PARTIAL_LINE;
-> > -	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
-> > -	if (!ret)
-> > -		return TRACE_TYPE_PARTIAL_LINE;
-> > -	ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
-> > -	if (!ret)
-> > -		return TRACE_TYPE_PARTIAL_LINE;
-> > +	if (trace_flags & TRACE_ITER_CONTEXT_INFO) {
-> > +		comm = trace_find_cmdline(iter->ent->pid);
-> > +
-> > +		t = ns2usecs(iter->ts);
-> > +		usec_rem = do_div(t, 1000000ULL);
-> > +		secs = (unsigned long)t;
-> > +
-> > +		ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
-> > +		if (!ret)
-> > +			return TRACE_TYPE_PARTIAL_LINE;
-> > +		ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
-> > +		if (!ret)
-> > +			return TRACE_TYPE_PARTIAL_LINE;
-> > +		ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
-> > +		if (!ret)
-> > +			return TRACE_TYPE_PARTIAL_LINE;
-> > +	}
-> 
-> Or here we can do a:
-> 
-> 	if (iter->tr->context_info)
-> 		ret = iter->tr->context_info(s, iter);
-> 	else
-> 		ret = default_context_info(s, iter);
-> 
-> This may give a tracer more control as to what to print for each entry.
-> 
-> -- Steve
-
-
-Indeed, thanks!
-
+-Jacek
