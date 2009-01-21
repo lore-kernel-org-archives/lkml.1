@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763939AbZAULdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764511AbZAULd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763939AbZAULdR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 06:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZAULdA
+	id S1764511AbZAULd7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 06:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZAULdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 06:33:00 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:36138 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756072AbZAULdA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 06:33:00 -0500
-Date: Wed, 21 Jan 2009 12:34:43 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Size of sector_t in userspace [Was: fix 41 'make headers_check' warnings]
-Message-ID: <20090121113443.GA1579@uranus.ravnborg.org>
-References: <1232273454.23100.9.camel@localhost.localdomain> <20090118110221.GA29602@elte.hu> <1232501276.3123.49.camel@localhost.localdomain> <20090121055356.GA26731@uranus.ravnborg.org> <20090121082125.GW30821@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121082125.GW30821@kernel.dk>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 21 Jan 2009 06:33:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39813 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756228AbZAULdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 06:33:49 -0500
+Message-ID: <49770808.2030909@kernel.org>
+Date: Wed, 21 Jan 2009 20:33:28 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] x86: Merge hardirq.h
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-5-git-send-email-brgerst@gmail.com> <4976DA9C.7000500@kernel.org> <20090121101307.GD18728@elte.hu>
+In-Reply-To: <20090121101307.GD18728@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 21 Jan 2009 11:33:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 09:21:25AM +0100, Jens Axboe wrote:
-> On Wed, Jan 21 2009, Sam Ravnborg wrote:
-> > Hi Jens.
-> > 
-> > In an attempt to fix some of the issues in our exported Headers jsr
-> > encountered some strange stuff in types.h.
-> > 
-> > types.h is exported to userspace where we do not have access to CONFIG_*
-> > symbols.
-> > Despite this we use CONFGI_LBD to decide the size of sector_t like this:
-> > 
-> > #ifdef CONFIG_LBD
-> > typedef u64 sector_t;
-> > typedef u64 blkcnt_t;
-> > #else
-> > typedef unsigned long sector_t;
-> > typedef unsigned long blkcnt_t;
-> > #endif
-> > 
-> > But as CONFIG_LBD is never defined in userspace sector_t is now 32
-> > bit on 32 bit boxes and 64 bit on 64 bit boxes (in userspace).
-> > 
-> > Is sector:t (and the companion blkcnt_t) really used by userspace?
-> > If it is - what size is it expected to have?
+Hello, Ingo.
+
+Ingo Molnar wrote:
+> While this patch was indeed broken, generally for -tip patches we are very 
+> permissive and do not require testing 4 .config variants: compile testing 
+> on the bit width x86 variant that is being modified is enough. If both 
+> variant are modified (as in this case) then compiling the 32-bit and 
+> 64-bit defconfig is enough.
 > 
-> I don't think it's used by userspace, at least it cannot be used in
-> userspace <-> kernelspace interactions, since the size isn't fixed.
+> If some build failure slips through it will be handled by automated 
+> testing facilities (such as -tip's testing) - it really does not scale if 
+> we expect developers to build kernels they dont use (and dont care about 
+> nearly as much as about their primary config).
+> 
+> This lowers the bar of entry to developers who submit their patches from 
+> low-powered hardware and simply dont have the means to do wide build 
+> testing. The many .config variations are not really the developer's fault 
+> but our collective fault. Developers should spend their time thinking 
+> about patches, not waiting for the nth kernel build to finish.
 
-Thanks Jens.
+I just sent a patch with a lot of compile breakages so I'm feeling
+quite embarrassed here but when the patch is touching this low in arch
+code, I don't think small four configuration build isn't too much
+before sending out a patchset.  With two quad core machines and ram
+disk configured, it just doesn't take that much of time (which BTW
+doesn't cost that much these days).  With my typical test config,
+whole build takes about 80 to 90 seconds.  Four times that is still
+under ten minutes.
 
-In that case I suggest we should make it private to the kernel.
-We should not expose types from the kernel that is not used
-in the kerenl.
+Anyways, it's a balancing act.  Four small builds don't sound like too
+much to me.  Hey, if you're okay with it.  :-)
 
-Jaswinder - move it inside a ifdef __KERNEL__ / endif block.
-Reference Jens' answer above and Cc: Jens on the patch.
+Thanks.
 
-Thanks,
-	Sam
+-- 
+tejun
