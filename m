@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbZAUOwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760947AbZAUOxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759318AbZAUOwM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 09:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZAUOv4
+	id S1760947AbZAUOxM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZAUOwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 09:51:56 -0500
-Received: from bowden.ucwb.org.au ([203.122.237.119]:56357 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754883AbZAUOvz (ORCPT
+	Wed, 21 Jan 2009 09:52:49 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:46820 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755254AbZAUOwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 09:51:55 -0500
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: Avi Kivity <avi@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <49773275.3020203@redhat.com>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
-	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
-	 <20090120113546.GA26571@elte.hu>
-	 <1232455343.4895.4.camel@kulgan.wumi.org.au>
-	 <20090120125652.GA1457@elte.hu> <20090120130714.GA11048@elte.hu>
-	 <alpine.DEB.1.10.0901200957220.2681@gandalf.stny.rr.com>
-	 <49760E2D.2060109@redhat.com>
-	 <1232547932.4895.119.camel@kulgan.wumi.org.au>
-	 <49773275.3020203@redhat.com>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Thu, 22 Jan 2009 01:21:42 +1030
-Message-Id: <1232549502.4895.124.camel@kulgan.wumi.org.au>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 21 Jan 2009 09:52:47 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 3/3] ehea: Improve driver behaviour in low mem conditions
+From: Thomas Klein <tklein@de.ibm.com>
+Date: Wed, 21 Jan 2009 15:49:41 +0100
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
+       Thomas Klein <tklein@de.ibm.com>, Hannes Hering <hering2@de.ibm.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200901211549.41352.tklein@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-21 at 16:34 +0200, Avi Kivity wrote:
-> Kevin Shanahan wrote:
-> > On Tue, 2009-01-20 at 19:47 +0200, Avi Kivity wrote:
-> >> Kevin, can you retest with kvm at realtime priority?
-...
+Reworked receive queue fill policies to make the driver more tolerant
+in low memory conditions.
 
-> > --- hermes-old.wumi.org.au ping statistics ---
-> > 900 packets transmitted, 900 received, 0% packet loss, time 899326ms
-> > rtt min/avg/max/mdev = 0.093/0.157/3.611/0.117 ms
-> >
-> > So, a _huge_ difference. But what does it mean?
-> 
-> It means, a scheduling problem.  Can you run the latency tracer (which 
-> only works with realtime priority), so we can tell if it is (a) kvm 
-> failing to wake up the vcpu properly or (b) the scheduler delaying the 
-> vcpu from running.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-Sorry, but are you sure that's going to be useful?
-
-If it only works on realtime threads and I'm not seeing the problem when
-running kvm with realtime priority, is this going to tell you what you
-want to know?
-
-Not trying to be difficult, but that just didn't make sense to me.
-
-Regards,
-Kevin.
-
-
+---
+diff -Nurp -X dontdiff linux-2.6.29-rc2/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.29-rc2/drivers/net/ehea/ehea_main.c	2009-01-20 17:03:17.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-01-20 17:03:57.000000000 +0100
+@@ -370,8 +370,6 @@ static void ehea_refill_rq1(struct ehea_
+ 							      EHEA_L_PKT_SIZE);
+ 			if (!skb_arr_rq1[index]) {
+ 				pr->rq1_skba.os_skbs = fill_wqes - i;
+-				ehea_error("%s: no mem for skb/%d wqes filled",
+-					   dev->name, i);
+ 				break;
+ 			}
+ 		}
+@@ -387,26 +385,19 @@ static void ehea_refill_rq1(struct ehea_
+ 	ehea_update_rq1a(pr->qp, adder);
+ }
+ 
+-static int ehea_init_fill_rq1(struct ehea_port_res *pr, int nr_rq1a)
++static void ehea_init_fill_rq1(struct ehea_port_res *pr, int nr_rq1a)
+ {
+-	int ret = 0;
+ 	struct sk_buff **skb_arr_rq1 = pr->rq1_skba.arr;
+ 	struct net_device *dev = pr->port->netdev;
+ 	int i;
+ 
+ 	for (i = 0; i < pr->rq1_skba.len; i++) {
+ 		skb_arr_rq1[i] = netdev_alloc_skb(dev, EHEA_L_PKT_SIZE);
+-		if (!skb_arr_rq1[i]) {
+-			ehea_error("%s: no mem for skb/%d wqes filled",
+-				   dev->name, i);
+-			ret = -ENOMEM;
+-			goto out;
+-		}
++		if (!skb_arr_rq1[i])
++			break;
+ 	}
+ 	/* Ring doorbell */
+ 	ehea_update_rq1a(pr->qp, nr_rq1a);
+-out:
+-	return ret;
+ }
+ 
+ static int ehea_refill_rq_def(struct ehea_port_res *pr,
+@@ -435,10 +426,12 @@ static int ehea_refill_rq_def(struct ehe
+ 		u64 tmp_addr;
+ 		struct sk_buff *skb = netdev_alloc_skb(dev, packet_size);
+ 		if (!skb) {
+-			ehea_error("%s: no mem for skb/%d wqes filled",
+-				   pr->port->netdev->name, i);
+ 			q_skba->os_skbs = fill_wqes - i;
+-			ret = -ENOMEM;
++			if (q_skba->os_skbs == q_skba->len - 2) {
++				ehea_info("%s: rq%i ran dry - no mem for skb",
++					  pr->port->netdev->name, rq_nr);
++				ret = -ENOMEM;
++			}
+ 			break;
+ 		}
+ 		skb_reserve(skb, NET_IP_ALIGN);
+@@ -1201,11 +1194,11 @@ static int ehea_fill_port_res(struct ehe
+ 	int ret;
+ 	struct ehea_qp_init_attr *init_attr = &pr->qp->init_attr;
+ 
+-	ret = ehea_init_fill_rq1(pr, init_attr->act_nr_rwqes_rq1
+-				     - init_attr->act_nr_rwqes_rq2
+-				     - init_attr->act_nr_rwqes_rq3 - 1);
++	ehea_init_fill_rq1(pr, init_attr->act_nr_rwqes_rq1
++			       - init_attr->act_nr_rwqes_rq2
++			       - init_attr->act_nr_rwqes_rq3 - 1);
+ 
+-	ret |= ehea_refill_rq2(pr, init_attr->act_nr_rwqes_rq2 - 1);
++	ret = ehea_refill_rq2(pr, init_attr->act_nr_rwqes_rq2 - 1);
+ 
+ 	ret |= ehea_refill_rq3(pr, init_attr->act_nr_rwqes_rq3 - 1);
+ 
