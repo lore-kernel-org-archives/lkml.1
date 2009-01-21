@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763512AbZAUEub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751417AbZAUFAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763512AbZAUEub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 23:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZAUEuT
+	id S1751417AbZAUFAI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:00:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZAUE7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 23:50:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:53771 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757208AbZAUEuS (ORCPT
+	Tue, 20 Jan 2009 23:59:51 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:63234 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756932AbZAUE7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 23:50:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VvQPKLE27mW5sRVVog+lydk+KB006yB2u4/8r3HakJPmURvkkPc6C6Jos/fZaaeA/m
-         Dv3aQvyHalMZdMbqAH0sdQ72NCmmA9X5QzAGWF+6o48M/5539GyHh28aQtt+KxfkJwRm
-         iXnq9alu9MHiWqUrRZDd9mi1WyKPTpZPvXad0=
-MIME-Version: 1.0
-In-Reply-To: <m3bpu1xyb9.fsf@intrepid.localdomain>
-References: <1232463174.3088.15.camel@localhost.localdomain>
-	 <1232463242.3088.16.camel@localhost.localdomain>
-	 <200901201847.03030.arnd@arndb.de>
-	 <m3zlhlycso.fsf@intrepid.localdomain>
-	 <1232495335.3123.13.camel@localhost.localdomain>
-	 <m3bpu1xyb9.fsf@intrepid.localdomain>
-Date: Wed, 21 Jan 2009 10:20:17 +0530
-Message-ID: <3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
-Subject: Re: why usr/include/linux/if_frad.h is required
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, netdev@vger.kernel.org,
-       davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 Jan 2009 23:59:50 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoFABA0dklMQWt2/2dsb2JhbACBbckMhXM
+Date: Tue, 20 Jan 2009 23:54:47 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Ben Gamari <bgamari@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org,
+       ltt-dev@lists.casi.polymtl.ca,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC PATCH] block: Fix bio merge induced high I/O
+	latency
+Message-ID: <20090121045447.GA18334@Krystal>
+References: <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal> <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal> <20090120073709.GC30821@kernel.dk> <20090120122855.GF30821@kernel.dk> <20090120232748.GA10605@Krystal> <20090121002507.GA12616@Krystal> <720e76b80901202038p1e1f929ci56e9f35c5a629c88@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <720e76b80901202038p1e1f929ci56e9f35c5a629c88@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:50:12 up 20 days,  4:48,  2 users,  load average: 0.89, 0.57,
+	0.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
->
->> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
->> and no body is complaining about it so it means no body is using it.
->>
->> So should we need to drop #if / #endif pair or the whole file from
->> userspace.
->
-> I think the file. "Empty file exported to userspace", long unused. We
-> can also have it back there, and it being not exported is an indicator
-> that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
+* Ben Gamari (bgamari@gmail.com) wrote:
+> On Tue, Jan 20, 2009 at 7:25 PM, Mathieu Desnoyers
+> <mathieu.desnoyers@polymtl.ca> wrote:
+> > * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> >
+> > As a side-note : I'd like to have my results confirmed by others.
+> 
+> Well, I think the (fixed) patch did help to some degree (I haven't
+> done fio benchmarks to compare against yet). Unfortunately, the I/O
+> wait time problem still remains. I have been waiting 3 minutes now for
+> evolution to start with 88% I/O wait time yet no visible signs of
+> progress. I've confirmed I'm using the CFQ scheduler, so that's not
+> the problem.
+> 
 
-I will definately define #ifdef __KERNEL__ but I am also curious after
-defining it there is no point of making empty
-usr/include/linux/if_frad.h
+Did you also 
 
---
-JSR
+echo 1 > /sys/block/sd{a,b}/device/queue_depth
+echo 1 > /sys/block/sd{a,b}/queue/iosched/slice_async_rq
+echo 1 > /sys/block/sd{a,b}/queue/iosched/quantum
+
+(replacing sd{a,b} with your actual drives) ?
+
+It seems to have been part of the factors that helped (along with the
+patch).
+
+And hopefully you don't have a recent Seagate hard drive like me ? :-)
+
+So you test case is :
+- start a large dd with 1M block size
+- time evolution
+
+?
+
+Mathieu
+
+> Also, Jens, I'd just like to point out that the problem is
+> reproducible across all schedulers. Does your patch seek to tackle a
+> problem specific to the CFQ scheduler, leaving the I/O wait issue for
+> later? Just wondering.
+> 
+> I'll post some benchmarks numbers once I have them. Thanks,
+> 
+> - Ben
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
