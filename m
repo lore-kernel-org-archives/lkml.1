@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763504AbZAUEoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763512AbZAUEub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763504AbZAUEoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 23:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZAUEoH
+	id S1763512AbZAUEub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 23:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZAUEuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 23:44:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:55527 "EHLO
+	Tue, 20 Jan 2009 23:50:19 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:53771 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756279AbZAUEoE (ORCPT
+	with ESMTP id S1757208AbZAUEuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 23:44:04 -0500
+	Tue, 20 Jan 2009 23:50:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=jEHo2z5tFaRyp80mKg6WsfApZmsAicjqA08jfqIP/TxIWtobSJT8mEwHX/Qe3rib4A
-         RITj1Q7FHTeKaK9XuwPLc7P+yXMMvVXjJ9JjItU0qIDtCA3+lhH1yeoEGr7BDh2xeJ3q
-         2OF7IDNKNYOwEGJHDPe1+ae19ZCPDEc1Zj8JM=
+        b=VvQPKLE27mW5sRVVog+lydk+KB006yB2u4/8r3HakJPmURvkkPc6C6Jos/fZaaeA/m
+         Dv3aQvyHalMZdMbqAH0sdQ72NCmmA9X5QzAGWF+6o48M/5539GyHh28aQtt+KxfkJwRm
+         iXnq9alu9MHiWqUrRZDd9mi1WyKPTpZPvXad0=
 MIME-Version: 1.0
-In-Reply-To: <20090120235048.4f7200f9@caramujo.chehab.org>
-References: <1232502038.3123.61.camel@localhost.localdomain>
-	 <20090120235048.4f7200f9@caramujo.chehab.org>
-Date: Wed, 21 Jan 2009 10:14:03 +0530
-Message-ID: <3f9a31f40901202044n73a100faj96a6f3d3973bcc25@mail.gmail.com>
-Subject: Re: Confusion in usr/include/linux/videodev.h
+In-Reply-To: <m3bpu1xyb9.fsf@intrepid.localdomain>
+References: <1232463174.3088.15.camel@localhost.localdomain>
+	 <1232463242.3088.16.camel@localhost.localdomain>
+	 <200901201847.03030.arnd@arndb.de>
+	 <m3zlhlycso.fsf@intrepid.localdomain>
+	 <1232495335.3123.13.camel@localhost.localdomain>
+	 <m3bpu1xyb9.fsf@intrepid.localdomain>
+Date: Wed, 21 Jan 2009 10:20:17 +0530
+Message-ID: <3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
+Subject: Re: why usr/include/linux/if_frad.h is required
 From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, linux-media@vger.kernel.org,
-       video4linux-list@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, netdev@vger.kernel.org,
+       davem@davemloft.net, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 7:20 AM, Mauro Carvalho Chehab
-<mchehab@infradead.org> wrote:
-> On Wed, 21 Jan 2009 07:10:38 +0530
-> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
 >
->> usr/include/linux/videodev.h is giving 2 warnings in 'make headers_check':
->>  usr/include/linux/videodev.h:19: leaks CONFIG_VIDEO to userspace where it is not valid
->>  usr/include/linux/videodev.h:314: leaks CONFIG_VIDEO to userspace where it is not valid
+>> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
+>> and no body is complaining about it so it means no body is using it.
 >>
->> Whole file is covered with #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
->>
->> It means this file is only valid for kernel mode if CONFIG_VIDEO_V4L1_COMPAT is defined but in user mode it is always valid.
->>
->> Can we choose some better alternative Or can we use this file as:
->>
->> #ifdef CONFIG_VIDEO_V4L1_COMPAT
->> #include <linux/videodev.h>
->> #endif
+>> So should we need to drop #if / #endif pair or the whole file from
+>> userspace.
 >
-> This is somewhat like what we have on audio devices (where there are OSS and ALSA API's).
->
-> V4L1 is the old deprecated userspace API for video devices. It is still
-> required by some userspace applications. So, on userspace, it should be
-> included. Also, this allows that one userspace app to be compatible with both
-> V4L2 API (the current one) and the legacy V4L1 one.
->
-> It should be noticed that are still a few drivers using the legacy API yet to
-> be converted.
->
+> I think the file. "Empty file exported to userspace", long unused. We
+> can also have it back there, and it being not exported is an indicator
+> that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
 
-If you have no objections then I will make a patchset which do followings:
-1. Remove  #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined
-(__KERNEL__) from include/linux/videodev.h
-2. cover all #include <linux/videodev.h> with #ifdef
-CONFIG_VIDEO_V4L1_COMPAT in kernel
-
-By this way, we can satisfy both kernel space and userspace issue and
-also get rid of above warnings.
-
-If you have better suggestion then let me know.
-
-Thanks,
+I will definately define #ifdef __KERNEL__ but I am also curious after
+defining it there is no point of making empty
+usr/include/linux/if_frad.h
 
 --
 JSR
