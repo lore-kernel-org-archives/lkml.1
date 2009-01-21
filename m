@@ -1,89 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764039AbZAUK3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbZAUK3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764039AbZAUK3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 05:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZAUK3B
+	id S1764212AbZAUK3v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 05:29:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763921AbZAUK3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 05:29:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41361 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754511AbZAUK27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 05:28:59 -0500
-Date: Wed, 21 Jan 2009 11:28:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, jeffrey.t.kirsher@intel.com,
-       jesse.brandeburg@intel.com, bruce.w.allan@intel.com,
-       peter.p.waskiewicz.jr@intel.com, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: e1000e regression (interface hang) with latest -git
-Message-ID: <20090121102840.GA24967@elte.hu>
+	Wed, 21 Jan 2009 05:29:34 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:65306 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763888AbZAUK3d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 05:29:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SZn145e0U6rdp7UCSBYtOKSRUFll21HYcKhUtManq/19NUZ52sa+uRETzw98zp+t5G
+         AWAm9xK9EnzuRE2pLfyhp2GWEi1HifG1clD8RAxrSHr8RSjIwfJuxcKPx2v2oWWmwFy3
+         QbMxWIFfqyiZGfR9GmLFlBuvFExY0MMp1NwnU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4976EE0B.5090200@cn.fujitsu.com>
+References: <4976EE0B.5090200@cn.fujitsu.com>
+Date: Wed, 21 Jan 2009 11:29:30 +0100
+Message-ID: <c62985530901210229o2acbc623j32cfff9f541d4e29@mail.gmail.com>
+Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/1/21 Lai Jiangshan <laijs@cn.fujitsu.com>:
+>
+> allocating memory for every cpu for single workqueue is waste.
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> index 2f44583..ecd693d 100644
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+> @@ -99,7 +99,7 @@ static
+>  struct cpu_workqueue_struct *wq_per_cpu(struct workqueue_struct *wq, int cpu)
+>  {
+>        if (unlikely(is_wq_single_threaded(wq)))
+> -               cpu = singlethread_cpu;
+> +               return wq->cpu_wq;
+>        return per_cpu_ptr(wq->cpu_wq, cpu);
+>  }
+>
+> @@ -417,7 +417,7 @@ void flush_workqueue(struct workqueue_struct *wq)
+>        lock_map_acquire(&wq->lockdep_map);
+>        lock_map_release(&wq->lockdep_map);
+>        for_each_cpu_mask_nr(cpu, *cpu_map)
+> -               flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
+> +               flush_cpu_workqueue(wq_per_cpu(wq, cpu));
+>  }
+>  EXPORT_SYMBOL_GPL(flush_workqueue);
+>
+> @@ -548,7 +548,7 @@ static void wait_on_work(struct work_struct *work)
+>        cpu_map = wq_cpu_map(wq);
+>
+>        for_each_cpu_mask_nr(cpu, *cpu_map)
+> -               wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+> +               wait_on_cpu_work(wq_per_cpu(wq, cpu), work);
+>  }
+>
+>  static int __cancel_work_timer(struct work_struct *work,
+> @@ -752,17 +752,13 @@ int current_is_keventd(void)
+>
+>  }
+>
+> -static struct cpu_workqueue_struct *
+> -init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
+> +static void init_cpu_workqueue(struct workqueue_struct *wq,
+> +               struct cpu_workqueue_struct *cwq)
+>  {
+> -       struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+> -
+>        cwq->wq = wq;
+>        spin_lock_init(&cwq->lock);
+>        INIT_LIST_HEAD(&cwq->worklist);
+>        init_waitqueue_head(&cwq->more_work);
+> -
+> -       return cwq;
+>  }
+>
+>  static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
+> @@ -816,7 +812,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+>        if (!wq)
+>                return NULL;
+>
+> -       wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+> +       if (singlethread)
+> +               wq->cpu_wq = kmalloc(sizeof(*cwq), GFP_KERNEL);
+> +       else
+> +               wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+>        if (!wq->cpu_wq) {
+>                kfree(wq);
+>                return NULL;
+> @@ -830,7 +829,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+>        INIT_LIST_HEAD(&wq->list);
+>
+>        if (singlethread) {
+> -               cwq = init_cpu_workqueue(wq, singlethread_cpu);
+> +               cwq = wq->cpu_wq;
+> +               init_cpu_workqueue(wq, cwq);
+>                err = create_workqueue_thread(cwq, singlethread_cpu);
+>                start_workqueue_thread(cwq, -1);
+>        } else {
+> @@ -851,7 +851,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+>                 * lock.
+>                 */
+>                for_each_possible_cpu(cpu) {
+> -                       cwq = init_cpu_workqueue(wq, cpu);
+> +                       cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+> +                       init_cpu_workqueue(wq, cwq);
+>                        if (err || !cpu_online(cpu))
+>                                continue;
+>                        err = create_workqueue_thread(cwq, cpu);
+> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+>        const struct cpumask *cpu_map = wq_cpu_map(wq);
+>        int cpu;
+>
+> +       if (is_wq_single_threaded(wq)) {
+> +               cleanup_workqueue_thread(wq->cpu_wq);
+> +               kfree(wq->cpu_wq);
+> +               kfree(wq);
+> +               return;
+> +       }
+> +
+>        cpu_maps_update_begin();
+>        spin_lock(&workqueue_lock);
+>        list_del(&wq->list);
+>
 
-I've got a Nehalem testbox that developed a new e1000e problem in this 
-merge window: after a few minutes of uptime the network interface goes 
-dead - no rx and no tx. If i ifdown/ifup the interface it comes back. If i 
-wait too long then even ifdown/ifup does not help anymore - only a reboot.
 
-Other e1000e using testboxes i have are working just fine - so the problem 
-is specific to this hw.
-
-Is this a known problem?
-
-I have this hw:
-
- 01:00.0 Ethernet controller: Intel Corporation 82575EB Gigabit Network Connection (rev 02)
- 01:00.1 Ethernet controller: Intel Corporation 82575EB Gigabit Network Connection (rev 02)
-
-If this is a new problem, what kind of other info do you need from me to 
-debug and fix this?
-
-I started seeing this very early in the merge window, so candidates would 
-be one of these early commits:
-
-eb14f01: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-cb7b48f: igb/e1000e: Naming interrupt vectors
-5b9ab2e: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-e243455: e1000e: check return code from NVM accesses and fix bank detection
-a20e4cf: e1000e: fix incorrect link status when switch module pulled
-8452759: e1000e: store EEPROM version number to prevent unnecessary NVM reads
-0285c8d: e1000e: cosmetic newline in debug message
-5c48ef3: e1000e: sync change flow control variables with ixgbe
-8f12fe8: e1000e: link up/down messages must follow a specific format
-75eb0fa: e1000e: ESB2 config after link up
-438b365: e1000e: check return of pci_save_state
-1605927: e1000e: update comments listing supported parts for each MAC family
-63dcf3d: e1000e: 82571 check for link fix on 82571 serdes
-5aa49c8: e1000e: commit speed/duplex changes for m88 PHY
-005cbdf: e1000e: disable correctable errors for quad ports while going to D3
-0082982: netdev: add more functions to netdevice ops
-651c246: e1000e: convert to net_device_ops
-198d6ba: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-6ea7ae1: e1000e: enable ECC correction on 82571 silicon
-4cf1653: netdevice: safe convert to netdev_priv() #part-2
-babcda7: drivers/net: Kill now superfluous ->last_rx stores.
-7c510e4: net: convert more to %pM
-
-If you suspect a specific list of commits i can test their revert. (But 
-the box is a slow booter and the problem can take up to 15 minutes to 
-trigger so i'd rather not spend half a day bisecting it, if it can be 
-avoided.)
-
-Thanks,
-
-	Ingo
+Looks like a nice catch!
