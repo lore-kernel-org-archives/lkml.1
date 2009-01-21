@@ -1,83 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZAUJN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZAUJ0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbZAUJN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZAUJNK
+	id S1757745AbZAUJ0R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1749667AbZAUJZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:13:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55662 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbZAUJNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:13:09 -0500
-Date: Wed, 21 Jan 2009 10:28:20 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Dan Carpenter <error27@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       hannes@saeurebad.de
-Subject: Re: emacs indenting howto
-Message-ID: <20090121092820.GF15750@one.firstfloor.org>
-References: <alpine.DEB.2.00.0901191521270.2904@bikeee> <87fxjddys0.fsf@basil.nowhere.org> <alpine.DEB.2.00.0901211145370.4514@bikeee>
+	Wed, 21 Jan 2009 04:25:55 -0500
+Received: from mx1.suse.de ([195.135.220.2]:36134 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752931AbZAUJZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:25:53 -0500
+Date: Wed, 21 Jan 2009 10:25:50 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090121092550.GP24891@wotan.suse.de>
+References: <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org> <20090121085208.GO24891@wotan.suse.de> <20090121092049.GE15750@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901211145370.4514@bikeee>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090121092049.GE15750@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 11:49:29AM +0300, Dan Carpenter wrote:
-> On Wed, 21 Jan 2009, Andi Kleen wrote:
-> >Dan Carpenter <error27@gmail.com> writes:
-> >
-> >>I don't think emacs understands tilda expansion.  It didn't work for me.
-> >
-> >It does when you use expand-file-name
-> >
-> >-Andi
+On Wed, Jan 21, 2009 at 10:20:49AM +0100, Andi Kleen wrote:
+> On Wed, Jan 21, 2009 at 09:52:08AM +0100, Nick Piggin wrote:
+> > On Wed, Jan 21, 2009 at 09:54:02AM +0100, Andi Kleen wrote:
+> > > > GCC 4.3.2. Maybe i missed something obvious?
+> > > 
+> > > The typical use case of restrict is to tell it that multiple given
+> > > arrays are independent and then give the loop optimizer 
+> > > more freedom to handle expressions in the loop that
+> > > accesses these arrays.
+> > > 
+> > > Since there are no loops in the list functions nothing changed.
+> > > 
+> > > Ok presumably there are some other optimizations which 
+> > > rely on that alias information too, but again the list_*
+> > > stuff is probably too simple to trigger any of them.
+> > 
+> > Any function that does several interleaved loads and stores
+> > through different pointers could have much more freedom to
+> > move loads early and stores late. 
 > 
-> No problem.  Here is the updated patch.
+> For once that would require more live registers. It's not
+> a clear and obvious win. Especially not if you have
+> only very little registers, like on 32bit x86.
+> 
+> Then it would typically increase code size.
 
-FWIW this is what I use. It turns on linux-c-mode for anything with
-linux in the path name. While that occasionally mis-hits, it only
-does seldom.
+The point is that the compiler is then free to do it. If things
+slow down after the compiler gets *more* information, then that
+is a problem with the compiler heuristics rather than the
+information we give it.
 
-(defvar is-emacs20 (if (string-match "2[0-9]\\." emacs-version) t nil))
+ 
+> Then x86s tend to have very very fast L1 caches and
+> if something is not in L1 on reads then the cost of fetching
+> something for a read dwarfs the few cycles you can typically
+> get out of this.
 
-(defun linux-c-mode ()
-  "C mode with adjusted defaults for use with the Linux kernel."
-  (interactive)
-  ;; grr - still does not seem to work properly
-  (make-variable-buffer-local 'tab-width)
-  (make-variable-buffer-local 'c-basic-offset)
-  (c-mode)
-;  (if window-system
-;         (change-mode 'passive))
-  (make-variable-buffer-local 'version-control)
-  (setq version-control 't)
-  (c-set-style (if is-emacs20 "linux" "K&R")) 
-  (setq tab-width 8)
-  (setq c-basic-offset 8))
+Well most architectures have L1 caches of several cycles. And
+L2 miss typically means going to L2 which in some cases the
+compiler is expected to attempt to cover as much as possible
+(eg in-order architectures).
 
-(push '(".*/linux.*/.*\\.[ch]\\'" . linux-c-mode) auto-mode-alist)
-(push '(".*/linux.*/.*\\.[ch]\\(-[a-z]+\\)?\\'" . linux-c-mode) auto-mode-alist)
-
-I also have that one but it's probably obsolete by now:
-
-(defun reiserfs-c-mode () 
-  "Hide silly ifdefs for reiserfs" 
-  (interactive)
-  (linux-c-mode) 
-  (setq  hide-ifdef-initially t) 
-  (hide-ifdef-mode 1)
-  (hide-ifdef-define '__KERNEL__)
-  (hide-ifdef-define 'REISERFS_PREALLOCATE) 
-  (hide-ifdef-undef 'CONFIG_REISERFS_CHECK)
-  (hide-ifdef-undef 'REISERFS_CHECK))
-
-(push '(".*/linux.*/fs/reiserfs/[^/]+\\.[ch]\\'" . reiserfs-c-mode) auto-mode-alist)
+If the caches are missed completely, then especially with an
+in-order architecture, you want to issue as many parallel loads
+as possible during the stall. If the compiler can't resolve
+aliases, then it simply won't be able to bring some of those
+loads forward.
 
 
--Andi
+> And lastly even on a in order system stores can 
+> be typically queued without stalling, so it doesn't
+> hurt to do them early.
 
+Store queues are, what? On the order of tens of entries for
+big power hungry x86? I'd guess much smaller for low power
+in-order x86 and ARM etc. These can definitely fill up and
+stall, so you still want to get loads out early if possible.
+
+Even a lot of OOOE CPUs I think won't have the best alias
+anaysis, so all else being equal, it wouldn't hurt them to
+move loads earlier.
+
+
+> Also at least x86 gcc normally doesn't do scheduling 
+> beyond basic blocks, so any if () shuts it up.
+
+I don't think any of this is a reason not to use restrict, though.
+But... there are so many places we could add it to the kernel, and
+probably so few where it makes much difference. Maybe it should be
+able to help some critical core code, though.
