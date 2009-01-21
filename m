@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbZAUIvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764342AbZAUIwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764290AbZAUIvp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763930AbZAUIuW
+	id S1764342AbZAUIwL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764136AbZAUIu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:50:22 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:52905 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763881AbZAUIuT (ORCPT
+	Wed, 21 Jan 2009 03:50:26 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:24416 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763985AbZAUIuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:50:19 -0500
+	Wed, 21 Jan 2009 03:50:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=JR/wRrDnfuLJ5gjHAv76IhiJ+IY4H2DXGCnX+gcuZaYqkiNRUdx4StHkxQYUV0WnGj
-         va4XCCzFU1X0STaZq+LtQ+GjJS9aAH7jQMsJN2hJW5rouvI70c5RMavfRIHb4m+2nWQy
-         aSbnDnYpq4TOs3+giq8Rugjb3nKK/o01sK0oc=
-Date: Wed, 21 Jan 2009 11:49:29 +0300 (EAT)
-From: Dan Carpenter <error27@gmail.com>
-X-X-Sender: dcarpenter@bikeee
-To: Andi Kleen <andi@firstfloor.org>
-cc: Dan Carpenter <error27@gmail.com>, linux-kernel@vger.kernel.org,
-       hannes@saeurebad.de
-Subject: Re: emacs indenting howto
-In-Reply-To: <87fxjddys0.fsf@basil.nowhere.org>
-Message-ID: <alpine.DEB.2.00.0901211145370.4514@bikeee>
-References: <alpine.DEB.2.00.0901191521270.2904@bikeee> <87fxjddys0.fsf@basil.nowhere.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=uXgTZf1n/XFJmPsNAse6PUlN/LOWWJ2dIuvzYQnPRJ7jgEf17pCp40p0FI8QqI5KHw
+         WnSlhlb4X5ER0czKjoiAzimoHPqqeCgSIl4nDbFUASe75mKYFJeiuj4HouwwXS1o9z3C
+         0wakZ7B4mTcwM6brWHpsSJbXHSYzHfZa+yW8M=
+Message-ID: <4976E1CF.9050801@gmail.com>
+Date: Wed, 21 Jan 2009 17:50:23 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] x86: Merge hardirq.h
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-5-git-send-email-brgerst@gmail.com> <4976DA9C.7000500@kernel.org>
+In-Reply-To: <4976DA9C.7000500@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009, Andi Kleen wrote:
-> Dan Carpenter <error27@gmail.com> writes:
->
->> I don't think emacs understands tilda expansion.  It didn't work for me.
->
-> It does when you use expand-file-name
->
-> -Andi
+Tejun Heo wrote:
+> Brian Gerst wrote:
+>> Remove unused idle_timestamp field from 32-bit.
+> 
+> Dropped.  X86_32 doesn't build.  X86_64 UP doesn't build.  Please at
+> least do compile testing on all four combinations before sending the
+> patches.
 
-No problem.  Here is the updated patch.
+One more thing, can you please split the patch into two such that the
+merging and renaming happen as separate steps so that git can tell
+that a file has been renamed instead of oh two of those disappeared
+and this one popped up?  It's a bit tedious but makes log tracking
+much easier.
 
-regards,
-dan carpenter
+Thanks.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-
---- orig/Documentation/CodingStyle	2009-01-21 11:06:56.000000000 +0300
-+++ devel/Documentation/CodingStyle	2009-01-21 11:01:35.000000000 +0300
-@@ -488,7 +488,8 @@
-              (let ((filename (buffer-file-name)))
-                ;; Enable kernel mode for the appropriate files
-                (when (and filename
--                         (string-match "~/src/linux-trees" filename))
-+                         (string-match (expand-file-name "~/src/linux-trees")
-+                              filename))
-                  (setq indent-tabs-mode t)
-                  (c-set-style "linux")
-                  (c-set-offset 'arglist-cont-nonempty
+-- 
+tejun
