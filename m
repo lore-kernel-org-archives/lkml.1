@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbZAUAao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763376AbZAUAcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbZAUAao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 19:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbZAUAab
+	id S1763376AbZAUAcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbZAUAcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 19:30:31 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:13652 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758799AbZAUAaa (ORCPT
+	Tue, 20 Jan 2009 19:32:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53959
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757715AbZAUAcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 19:30:30 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=CE32vBf1S_1Wk3jBroMA:9 a=EkBQLMTU7zh6rfsJ3ErDDajWfHEA:4 a=Y8cocX-fvF4A:10 a=PR-DjfqNVKsA:10
-Message-ID: <49766CA3.7090508@shaw.ca>
-Date: Tue, 20 Jan 2009 18:30:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Diego Calleja <diegocg@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Faulty seagate drives, are going to be blacklisted?
-References: <20090120002923.065f24ca@diego-desktop> <49753D09.8060503@shaw.ca> <20090120162612.7473aadf@diego-desktop>
-In-Reply-To: <20090120162612.7473aadf@diego-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Jan 2009 19:32:01 -0500
+Date: Tue, 20 Jan 2009 16:32:03 -0800 (PST)
+Message-Id: <20090120.163203.199590606.davem@davemloft.net>
+To: arnd@arndb.de
+Cc: jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200901210124.26118.arnd@arndb.de>
+References: <1232496257.3123.19.camel@localhost.localdomain>
+	<20090120.161626.93641145.davem@davemloft.net>
+	<200901210124.26118.arnd@arndb.de>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Diego Calleja wrote:
-> El Mon, 19 Jan 2009 20:55:05 -0600, Robert Hancock <hancockr@shaw.ca> escribió:
-> 
->> There are a few drives which are currently marked to disable NCQ and 
->> warn the user that the firmware that should be upgraded:
->>
->> ST31500341AS
->> ST31000333AS
->> ST3640623AS
->> ST3640323AS
->> ST3320813AS
->> ST3320613AS
->>
->> all for firmware versions SD15 through SD19.
-> 
-> 
-> Yes, I saw them, but apparently the NCQ bug is unrelated to this one.
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 21 Jan 2009 01:24:25 +0100
 
-I suspect it might be related, given that the firmware versions seem to 
-partially overlap.
+> I think we should simply define a macro for use in the kernel, e.g. in
+> <asm/types.h>. There already is a BITS_PER_LONG macro in there, maybe
+> we can add an exported __BITS_PER_LONG there that checks for the right
+> macro on each architecture.
 
-With this issue though, there isn't anything the kernel can do about the 
-problem, so blacklisting doesn't seem to really make much sense.
+That might work.
+
+> On parisc, there is a major confusion in this area, at some point, all
+> checks for __LP64__ got replaced with CONFIG_64BIT there. While I have
+> not understood what the problem with __LP64__ was, the check for
+> CONFIG_64BIT on parisc user space looks very wrong.
+
+Yep.
