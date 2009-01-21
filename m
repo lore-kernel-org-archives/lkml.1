@@ -1,158 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761803AbZAUDFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZAUDIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761803AbZAUDFA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZAUDEv
+	id S1762154AbZAUDIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbZAUDIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:04:51 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28977 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbZAUDEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:04:51 -0500
-Message-ID: <497690D1.1060405@ct.jp.nec.com>
-Date: Tue, 20 Jan 2009 19:04:49 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Tue, 20 Jan 2009 22:08:09 -0500
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:48552 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754191AbZAUDIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 22:08:07 -0500
+Date: Wed, 21 Jan 2009 12:05:04 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Greg KH <greg@kroah.com>, Trilok Soni <soni.trilok@gmail.com>,
+       Arve Hj?nnev?g <arve@android.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>, Brian Swetland <swetland@google.com>,
+       arve@google.com, San Mehat <san@android.com>,
+       Robert Love <rlove@google.com>, linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       ext Juha Yrj?l? <juha.yrjola@solidboot.com>, viktor.rosendahl@nokia.com
+Subject: Re: lowmemory android driver not needed?
+Message-ID: <20090121030504.GA14094@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Greg KH <greg@kroah.com>, Trilok Soni <soni.trilok@gmail.com>,
+	Arve Hj?nnev?g <arve@android.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+	Brian Swetland <swetland@google.com>, arve@google.com,
+	San Mehat <san@android.com>, Robert Love <rlove@google.com>,
+	linux-kernel@vger.kernel.org,
+	"linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+	Tony Lindgren <tony@atomide.com>,
+	ext Juha Yrj?l? <juha.yrjola@solidboot.com>,
+	viktor.rosendahl@nokia.com
+References: <2f11576a0901160316u20030f4u51c9e4c059398b70@mail.gmail.com> <20090116152338.GB9357@kroah.com> <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Jesper Juhl <jj@chaosbits.net>, lkml <linux-kernel@vger.kernel.org>,
-       John Stoffel <john@stoffel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [bisected] 2.6.29-rc1 Firefox crashing on page load
-References: <4970F46F.4060803@gawab.com> <49714266.6020401@gawab.com> <49715039.2090406@gmail.com> <49719B53.8050300@gawab.com> <alpine.LNX.2.00.0901172115170.28288@swampdragon.chaosbits.net> <4972489B.30500@gawab.com> <497260FE.4010102@gmail.com> <4972723B.4000201@gawab.com> <49727BDE.9070509@gmail.com> <49751BA0.1040004@gawab.com> <49752823.9020403@ct.jp.nec.com> <49756D07.7080804@gawab.com> <497617D6.8020707@ct.jp.nec.com> <4976246D.1040008@gawab.com> <49762AA3.7050402@ct.jp.nec.com> <49768ACF.5010608@gawab.com>
-In-Reply-To: <49768ACF.5010608@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru wrote:
-> Hiroshi Shimamoto wrote:
->> Justin Madru wrote:
->>   
->>> Hiroshi Shimamoto wrote:
->>>     
->>>> Justin Madru wrote:
->>>>   
->>>>       
->>>>> Hiroshi Shimamoto wrote:
->>>>>     
->>>>>         
->>>>>> Justin Madru wrote:
->>>>>>       
->>>>>>           
->>>>>>> Ok, finally bisected the bug, but the commit isn't related to networking!
->>>>>>> I did: git revert 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>>>> on current git and that fixed the bug.
->>>>>>>
->>>>>>> By the way, how do I undo my git revert, so I'm back to a pristine tree?
->>>>>>> I want to drop my changes - the revert.
->>>>>>> Also how do I find the commit that merged/pulled in this commit?
->>>>>>>
->>>>>>> commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191
->>>>>>> Author: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>>>> Date: Fri Dec 5 17:17:09 2008 -0800
->>>>>>>
->>>>>>> x86: signal: change type of paramter for sys_rt_sigreturn()
->>>>>>>
->>>>>>> Impact: cleanup on 32-bit
->>>>>>>
->>>>>>> Peter pointed this parameter can be changed.
->>>>>>>
->>>>>>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>>>>>>         
->>>>>>>             
->>>>>> Hi,
->>>>>> thanks for reporting.
->>>>>>
->>>>>> I'm not sure why this commit affects.
->>>>>> Can you check vmlinux? size, objdump, etc.
->>>>>> On my environment, the generated code looks same.
->>>>>>
->>>>>> Thanks,
->>>>>> Hiroshi
->>>>>>
->>>>>>       
->>>>>>           
->>>>> I tried to do an objdump but it gave an error. How am I suppose to do an 
->>>>> objdump?
->>>>>
->>>>> $ objdump -x /boot/vmlinuz-2.6.29-rc2-git
->>>>> objdump: /boot/vmlinuz-2.6.29-rc2-git: File format not recognized
->>>>> $ readelf -a /boot/vmlinuz-2.6.29-rc2-git
->>>>> readelf: Error: Unable to seek to 0xc031f2eb for section headers
->>>>> readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
->>>>> $ ls -la /boot/vmlinuz-2.6.29-rc2-git
->>>>> -rw-r--r-- 1 root root 2286480 2009-01-19 18:44 /boot/vmlinuz-2.6.29-rc2-git
->>>>>     
->>>>>         
->>>> not vmlinuz, vmlinux.
->>>> vmlinuz is a compressed kernel, it is not ELF file.
->>>> Usually vmlinux is generated in top of source directory.
->>>> I can see disassembled image with objdump -d vmlinux.
->>>>
->>>> Thanks,
->>>> Hiroshi
->>>>
->>>>   
->>>>       
->>> Sorry, didn't know. I tried objdump -d vmlinux, but the resulting file 
->>> is ~50MB!
->>> Is there a smaller section you're interested in, because that would be 
->>> hard to send.
->>> Or am I doing it wrong again?
->>>     
->> that's OK. No need to send the disassembled result.
->> You can diff disassembled file.
->> I guess your GCC generates different code when the patch is reverted.
->>
->> Thanks,
->> Hiroshi
->>
->>   
-> Ok, I tried, I really did. But no mater what I did the diff was even bigger
-> if not the same size as the original dump! I even tried to cut out the 
-> first two fields with
->     cut -f3- dump-revert > dump-revert2
-> but that wouldn't shrink the diff size (100,000+ lines).
-
-I'm sorry for lack of explanations.
-The patch changes sys_rt_sigreturn(), it means GCC might generate
-different code for that function. And might be different size, it causes
-all codes after sys_rt_sigreturn() will looks different.
-
-So I think you can see the difference begins from sys_rt_sigreturn().
-
+On Wed, Jan 21, 2009 at 11:50:48AM +0900, KOSAKI Motohiro wrote:
+> I should rewrite memory notification patchset from scratch.
+> the new version will construct on memcg infrastrcture.
 > 
-> Does gcc output fluctuate this wildly with such little change?
-> Is there a config option that allows gcc to randomize the output?
-> I recompiled just to make sure, and even two recompiles of the same 
-> source (no revert)
-> resulted in a different sha1 hash (didn't test the objdump diff).
-> The only thing I can think of is that I compile with -O3 instead of -O2.
+> Why?
 > 
-> I'm sorry, but unless you have any suggestions I've decided to just upload
-> the vmlinux files to my server (<40KB up speed) 
-> http://jdserver.homelinux.org/bugreports/002/
-> and rapidshare
-> http://rapidshare.com/files/186890846/vmlinux.tar.bz2.html
-> http://rapidshare.com/files/186890848/data-norevert.tar.bz2.html
-> http://rapidshare.com/files/186890849/data-revert.tar.bz2.html
-
-thanks for uploading vmlinux, will see the difference.
-And sorry again, actually, it's just for my curiosity.
-I'd like to know what difference this is.
-On my environment GCC(4.2.4-1ubuntu3 and 4.3.2) generates same binary...
-
+> last year, I received many feedback from lkml folks and my article reader.
+> (I monthly write kernel patch introduction article to japanese web
+>  magazine and receive some feedback periodically)
 > 
-> By the way Ingo has already added the revert to tip/master
-> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commit;h=1d03950243904c89b8854c10516932b029c2a8fa
+> I learned many people want flexibility notification.
+> (per workload, per user, et al)
+> eg. nokia lowmem driver have exception process defined by uid.
+> 
+> at top of last year, I thought memcg don't provide good infrastructure.
+> the first version memcg is just pretty funny joke. if its config turn on,
+> memory workload performance decrease ~30% although the user don't use 
+> memcg at runtime. then nobody use it.
+> but recently, KAMEZAWA hiroyuki (and Li zefan, Daisuke Nishimura et al)
+> dramatically improvement memcg performance. 
+> now, memcg overhead become less than 1%. 
+> 
+> Then, I think any memory accounting activity should use this infrastructure.
+> That's my homework.
+> 
+Building on top of the memory cgroup makes sense given that it has a
+lot more knowledge of the actual state in different contexts compared to
+something like security_vm_enough_memory()/__vm_enough_memory().
 
-Yeah, Ingo knows what GCC does. I don't know so much.
+Despite that, a notification layer on top of cgroups in general might be
+worth thinking about, particularly since each controller may want to use
+notifications for different things. It is conceivable that people will
+also want different types of notifications from the memory controller
+beyond a simple lowmem notifier.
 
-Thanks,
-Hiroshi
+The LSM lowmem module itself used multiple notification levels to tune
+application behaviour for instance, though obviously this is something
+that is highly workload dependent.
