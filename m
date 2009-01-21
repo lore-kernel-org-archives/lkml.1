@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbZAUASY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763202AbZAUATY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763298AbZAUASY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 19:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbZAUASO
+	id S1763202AbZAUATY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbZAUATM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 19:18:14 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:61257 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756361AbZAUASO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 19:18:14 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [PATCH 09/16] dma-debug: add checking for map/unmap_page/single
-Date: Wed, 21 Jan 2009 01:17:32 +0100
-User-Agent: KMail/1.9.9
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, dwmw2@infradead.org,
-       iommu@lists.linux-foundation.org, David Miller <davem@davemloft.net>,
-       Oliver Neukum <oliver@neukum.org>, ceggers@gmx.de
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com> <1232376423-11067-10-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1232376423-11067-10-git-send-email-joerg.roedel@amd.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 20 Jan 2009 19:19:12 -0500
+Received: from w241.dkm.cz ([62.24.88.241]:43529 "EHLO machine.or.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757426AbZAUATL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 19:19:11 -0500
+X-Greylist: delayed 458 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Jan 2009 19:19:11 EST
+Date: Wed, 21 Jan 2009 01:11:31 +0100
+From: Petr Baudis <pasky@suse.cz>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-api@vger.kernel.org, aarcange@redhat.com
+Subject: Re: [PATCH v6 0/5] Add preadv & pwritev system calls.
+Message-ID: <20090121001131.GF21648@machine.or.cz>
+References: <1232124344-25892-1-git-send-email-kraxel@redhat.com> <200901161852.04953.arnd@arndb.de> <4970DDF9.4090007@redhat.com> <49748C1B.8090205@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901210117.33153.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19HcupaIjLajAdfGy13s/6vaKpgck+MWQcULd4
- thJi6ecttFUXRB0nwCcUZlB/VI9A0tnaJ0jqQViJ9k4Uph0p90
- zTE7RUm8+5AYYSMNS/B5A==
+In-Reply-To: <49748C1B.8090205@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Joerg Roedel wrote:
-> Impact: add debug callbacks for dma_{un}map_[page|single]
+On Mon, Jan 19, 2009 at 03:20:11PM +0100, Gerd Hoffmann wrote:
+> I do see the point in adding a interface like this ...
+> 
+> >    ssize_t readz (int fd, void *buf, size_t len, void **res)
+> 
+> ... to help the kernel do zero-copy I/O.
+> 
+> I think system calls for vector I/O are *not* the right place for that
+> though.  Usually applications use vectored I/O because they *do* care
+> about the place the data is stored, because vectored I/O allows them to
+> avoid copying data within the application.
 
-In the discussion about "[PATCH] usb/mcs7830: Don't use buffers from
-stack for USB transfers", I have raised the question of whether we can
-add a check for the DMA address being on the stack, I guess this would
-be the right place for it.
+Can you elaborate on this? An application would have to have quite a
+contrived design if its pointers simply cannot be updated according
+to what the kernel returns.
 
-Maybe you can add another check like:
+Then again, I'm not sure why wouldn't readv() actually be
+zerocopy-ready. Just make sure you handle iov_base being NULL gracefully
+now (EINVAL, with the remark that the kernel can write to the iovec
+memory area in the future) and later the kernel can in that case set
+iov_base to the buffer location?
 
-WARN_ON(is_kernel_stack(page_to_virt(page)));
-
-Unfortunately, I can't think of a way to define a generic is_kernel_stack
-function. On most architectures (all that put thread_info at the top of the
-stack), something like this should work:
-
-#ifndef is_kernel_stack
-static inline int is_kernel_stack(void *p)
-{
-	return (unsigned long)p & ~(THREAD_SIZE - 1) == current_thread_info();
-}
-#endif
-
-	Arnd <><
+-- 
+				Petr "Pasky" Baudis
+The average, healthy, well-adjusted adult gets up at seven-thirty
+in the morning feeling just terrible. -- Jean Kerr
