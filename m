@@ -1,64 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbZAUP7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbZAUQBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbZAUP7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 10:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZAUP7o
+	id S1761251AbZAUQBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 11:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZAUQBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 10:59:44 -0500
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:55255 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbZAUP7o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 10:59:44 -0500
-Date: Wed, 21 Jan 2009 16:59:41 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH] driver core: check bus->match without holding device
- lock(v2)
-Message-ID: <20090121165941.00428154@gondolin>
-In-Reply-To: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
-References: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Jan 2009 11:01:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52797 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753130AbZAUQBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 11:01:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Subject: Re: [ACPI] GPE storm detected on FS Amilo Pro
+Date: Wed, 21 Jan 2009 17:00:47 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: astarikovskiy@suse.de, len.brown@intel.com,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4977352B.1040303@gmail.com>
+In-Reply-To: <4977352B.1040303@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901211700.48357.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 23:27:47 +0800,
-tom.leiming@gmail.com wrote:
+On Wednesday 21 January 2009, Jacek Luczak wrote:
+> Hi All,
 
-> From: Ming Lei <tom.leiming@gmail.com>
-> 
-> This patch moves bus->match out from driver_probe_device and
-> does not hold device lock to check the match between a device
-> and a driver.
-> 
-> The idea has been verified by the commit 6cd495860901,
-> which leads to a faster boot. But the commit 6cd495860901 has
-> the following drawbacks: 1),only does the quick check in
-> the path of __driver_attach->driver_probe_device, not in other
-> paths; 2),for a matched device and driver, check the same match
-> twice. It is a waste of cpu ,especially for some drivers with long
-> device id table (eg. usb-storage driver).
-> 
-> This patch adds a helper of driver_match_device to check the match
-> in all paths, and testes the match only once.
-> 
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  drivers/base/base.h |    5 +++++
->  drivers/base/bus.c  |    2 +-
->  drivers/base/dd.c   |   19 +++++++------------
->  3 files changed, 13 insertions(+), 13 deletions(-)
+Hi Jacek,
 
-The patch looks fine to me, and it seems to work well on my s390 LPAR.
+> I've got that ,,GPE storm detected'' issue on my Fujitsu Siemens Amilo Pro
+> notebook.  I was using 2.6.25.20 (which was fine) for a long while and recently
+> started testing some latest git versions starting from 2.6.29-rc2 where I've
+> discovered that issue. So I've made some back kernels and it shows up from
+> 2.6.26 kernel. Bisection between 2.6.25 and 2.6.26 shows that patch:
+> 
+> fa95ba04e6ba11d71e1b87becd054b38faf546c8 is first bad commit
+> commit fa95ba04e6ba11d71e1b87becd054b38faf546c8
+> Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Date:   Fri Mar 21 19:36:02 2008 +0300
+> 
+>     ACPI: EC: Detect irq storm
+> 
+>     Problem seems to be that hw fails to clear GPE after we service it and write 1
+>     into corresponding bit. Thus, as soon as we get interrupts enabled again, we
+>     receive a new one. Google gives too many results for "acer interrupt storm" for
+>     this being one-broken-machine case.
+> 
+>     Reference: http://bugzilla.kernel.org/show_bug.cgi?id=9998
+> 
+>     Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> The bug[1] (reopened recently) seems to be quite different than the one in my
+> case. I've got no ,,side effects'' of that GPE storm. Notebook works fine and I
+> didn't discovered any interrupts problems.
 
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+So everything appears to be OK except that your hardware has a problem,
+which is correctly worked around and the message just tells you what happens.
+
+> Up to 2.6.28 GPE storm information is printed early[2]:
+> 
+> Setting up standard PCI resources
+> ACPI: EC: Look up EC in DSDT
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: EC: non-query interrupt received, switching to interrupt mode
+> ACPI: EC: GPE storm detected, disabling EC GPE
+> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+> ACPI: EC: driver started in poll mode
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> 
+> While recent git[3] which I'm now running, shows it after setting-up AC adapter[4]:
+> 
+> ACPI: AC Adapter [ADP1] (on-line)
+> ACPI: EC: GPE storm detected, transactions will use polling mode
+> Switched to high resolution mode on CPU 1
+> Switched to high resolution mode on CPU 0
+> ACPI: EC: missing confirmations, switch off interrupt mode.
+> ACPI: Battery Slot [BAT0] (battery present)
+> input: Power Button (FF) as /class/input/input0
+> ACPI: Power Button (FF) [PWRF]
+> input: Lid Switch as /class/input/input1
+> ACPI: Lid Switch [LID0]
+> input: Sleep Button (CM) as /class/input/input2
+> ACPI: Sleep Button (CM) [SLPB]
+> 
+> I'm not sure if the origin of that GPE storm is the same in both cases. Will try
+> to do bisection here later if needed.
+> 
+> NOTE: In git kernel I've noticed that after boot and obtaining IP from DHCP I've
+> got such message:
+> 
+> Jan 21 14:44:32 difrost kernel: sky2 eth0: enabling interface
+> Jan 21 14:44:33 difrost kernel: sky2 eth0: Link is up at 100 Mbps, full duplex,
+> flow control rx
+> Jan 21 14:45:36 difrost kernel: ACPI: EC: missing confirmations, switch off
+> interrupt mode.
+> 
+> This is not fully reproducible, didn't shown on [4].
+
+This may be related to the issue behind the GPM storm message.
+
+Thanks,
+Rafael
