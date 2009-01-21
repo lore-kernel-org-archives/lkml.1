@@ -1,136 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZAUX6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbZAUX6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZAUX6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 18:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZAUX6J
+	id S1754550AbZAUX6g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 18:58:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZAUX6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 21 Jan 2009 18:58:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42888 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42910 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbZAUX6I (ORCPT
+	with ESMTP id S1754346AbZAUX6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Jan 2009 18:58:08 -0500
-Message-Id: <20090121235805.771064570@goodmis.org>
+Message-Id: <20090121235806.431954276@goodmis.org>
 References: <20090121235306.224764198@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Jan 2009 18:53:07 -0500
+Date: Wed, 21 Jan 2009 18:53:10 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/5] trace: do not disable wake up tracer on output of trace
-Content-Disposition: inline; filename=0001-trace-do-not-disable-wake-up-tracer-on-output-of-tr.patch
+Subject: [PATCH 4/5] wakeup-tracer: show scheduling data in output
+Content-Disposition: inline; filename=0004-wakeup-tracer-show-scheduling-data-in-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: fix to erased trace output
+Impact: better data for wakeup tracer
 
-To try not to have the outputing of a trace interfere with the wakeup
-tracer, it would disable tracing while the output was printing. But
-if a trace had started when it was disabled, it can show a partial
-trace. To try to solve this, on closing of the tracer, it would
-clear the trace buffer.
-
-The latency tracers (wakeup and irqsoff) have two buffers. One for
-recording and one for holding the max trace that is printed. The
-clearing of the trace above should only affect the recording buffer.
-But for some reason it would move the erased trace to the print
-buffer. Probably due to a race with the closing of the trace and
-the saving ofhe max race.
-
-The above is all pretty useless, and if the user does not want the
-printing of the trace to be traced itself, then the user can manual
-disable tracing. This patch removes all the code that tries to keep
-the output of the tracer from modifying the trace.
+This patch adds the wakeup and schedule calls that are used by
+the scheduler tracer to make the wakeup tracer more readable.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace_sched_wakeup.c |   33 ++-------------------------------
- 1 files changed, 2 insertions(+), 31 deletions(-)
+ kernel/trace/trace_sched_wakeup.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index 42ae1e7..e27adef 100644
+index f489578..93cecda 100644
 --- a/kernel/trace/trace_sched_wakeup.c
 +++ b/kernel/trace/trace_sched_wakeup.c
-@@ -262,12 +262,6 @@ out:
- 	atomic_dec(&wakeup_trace->data[cpu]->disabled);
- }
+@@ -153,6 +153,7 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 		goto out_unlock;
  
--/*
-- * save_tracer_enabled is used to save the state of the tracer_enabled
-- * variable when we disable it when we open a trace output file.
-- */
--static int save_tracer_enabled;
--
- static void start_wakeup_tracer(struct trace_array *tr)
+ 	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
++	tracing_sched_switch_trace(wakeup_trace, data, prev, next, flags, pc);
+ 
+ 	/*
+ 	 * usecs conversion is slow so we try to delay the conversion
+@@ -214,6 +215,7 @@ static void wakeup_reset(struct trace_array *tr)
+ static void
+ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
  {
- 	int ret;
-@@ -306,13 +300,10 @@ static void start_wakeup_tracer(struct trace_array *tr)
++	struct trace_array_cpu *data;
+ 	int cpu = smp_processor_id();
+ 	unsigned long flags;
+ 	long disabled;
+@@ -253,9 +255,12 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
  
- 	register_ftrace_function(&trace_ops);
+ 	local_save_flags(flags);
  
--	if (tracing_is_enabled()) {
-+	if (tracing_is_enabled())
- 		tracer_enabled = 1;
--		save_tracer_enabled = 1;
--	} else {
-+	else
- 		tracer_enabled = 0;
--		save_tracer_enabled = 0;
--	}
+-	wakeup_trace->data[wakeup_cpu]->preempt_timestamp = ftrace_now(cpu);
+-	trace_function(wakeup_trace, wakeup_trace->data[wakeup_cpu],
+-		       CALLER_ADDR1, CALLER_ADDR2, flags, pc);
++	data = wakeup_trace->data[wakeup_cpu];
++	data->preempt_timestamp = ftrace_now(cpu);
++	tracing_sched_wakeup_trace(wakeup_trace, data, p, current,
++				   flags, pc);
++	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2,
++		       flags, pc);
  
- 	return;
- fail_deprobe_wake_new:
-@@ -324,7 +315,6 @@ fail_deprobe:
- static void stop_wakeup_tracer(struct trace_array *tr)
- {
- 	tracer_enabled = 0;
--	save_tracer_enabled = 0;
- 	unregister_ftrace_function(&trace_ops);
- 	unregister_trace_sched_switch(probe_wakeup_sched_switch);
- 	unregister_trace_sched_wakeup_new(probe_wakeup);
-@@ -350,28 +340,11 @@ static void wakeup_tracer_start(struct trace_array *tr)
- {
- 	wakeup_reset(tr);
- 	tracer_enabled = 1;
--	save_tracer_enabled = 1;
- }
- 
- static void wakeup_tracer_stop(struct trace_array *tr)
- {
- 	tracer_enabled = 0;
--	save_tracer_enabled = 0;
--}
--
--static void wakeup_tracer_open(struct trace_iterator *iter)
--{
--	/* stop the trace while dumping */
--	tracer_enabled = 0;
--}
--
--static void wakeup_tracer_close(struct trace_iterator *iter)
--{
--	/* forget about any processes we were recording */
--	if (save_tracer_enabled) {
--		wakeup_reset(iter->tr);
--		tracer_enabled = 1;
--	}
- }
- 
- static struct tracer wakeup_tracer __read_mostly =
-@@ -381,8 +354,6 @@ static struct tracer wakeup_tracer __read_mostly =
- 	.reset		= wakeup_tracer_reset,
- 	.start		= wakeup_tracer_start,
- 	.stop		= wakeup_tracer_stop,
--	.open		= wakeup_tracer_open,
--	.close		= wakeup_tracer_close,
- 	.print_max	= 1,
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest    = trace_selftest_startup_wakeup,
+ out_locked:
+ 	__raw_spin_unlock(&wakeup_lock);
 -- 
 1.5.6.5
 
