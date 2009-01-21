@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZAUWAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZAUWHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbZAUWAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 17:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZAUWAf
+	id S1754365AbZAUWHf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 17:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZAUWHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 17:00:35 -0500
-Received: from outbound-mail-309.bluehost.com ([67.222.54.2]:53013 "HELO
-	outbound-mail-309.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752476AbZAUWAf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 17:00:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=LrEh1LgVEhAeG53EjyDIfZNRuFqZoUx5hhks27s7Z350jVQgstavyfXVVCO4bbIjFkZdZxKJBBNDYsFx9gs9HA4CnAMEh5g4q67vBiI+/5Rl89n3c9mYLlE8wrsLzQ2y;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] PCI fixes
-Date: Wed, 21 Jan 2009 14:00:22 -0800
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>
+	Wed, 21 Jan 2009 17:07:21 -0500
+Received: from thunk.org ([69.25.196.29]:39490 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752855AbZAUWHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 17:07:20 -0500
+Date: Wed, 21 Jan 2009 15:46:46 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Victor Pelt <victor.pelt@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ext4 no space left
+Message-ID: <20090121204645.GB9088@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Victor Pelt <victor.pelt@gmail.com>, linux-kernel@vger.kernel.org
+References: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com> <20090121145513.GH31253@mit.edu> <576cb9750901210718u32aa98ecy87e7298a0f3444f@mail.gmail.com> <20090121170423.GJ31253@mit.edu> <576cb9750901211015g3c8813e6md7c0cdd88b9dada1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901211400.22468.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <576cb9750901211015g3c8813e6md7c0cdd88b9dada1@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider pulling my for-linus branch:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+On Wed, Jan 21, 2009 at 07:15:26PM +0100, Victor Pelt wrote:
+> upgrading to 2.6.29-rc2-git1 did allow me to use most of the space but
+> i still can't quite use all of it. maybe this is to be expected.
 
-It only contains a few fixes, the most notable being Rafael's change to restore
-PCI config space early, fixing bugs on various platforms.
+No, it's not to be expected.  You should be able to use everything up
+to 100% of what is reported by df.  There is the 5% reserved blocks
+which only root is allowed to use, but df takes that into account.  So
+if you can't use that last 62944k reported by df after a reboot, and
+df -i reports enough inodes, that's definitely a bug in ext4.
 
-Shortlog & diffstat below.
+Would you be willing to send me a compressed raw e2image file?  You
+can generate it as follows:
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+    e2image -r /dev/hda2 - | bzip2 > /tmp/hda2.e2i.bz2
 
-Hidetoshi Seto (1):
-      PCI/MSI: bugfix/utilize for msi_capability_init()
+Ideally this should be done while the filesystem is unmounted, or
+mounted read-only. 
 
-Jiri Slaby (1):
-      PCI hotplug: fix lock imbalance in pciehp
+It will give me a copy of the filesystem metadata, but no data blocks.
+That will allow me to try to replicate the problem on my system.  It
+will probably be still too large e-mail, so if you can put it up on
+some web or ftp server, and send me the URL, that would be best.
 
-Rafael J. Wysocki (1):
-      PCI PM: Restore standard config registers of all devices early
+Thanks!!
 
- drivers/pci/hotplug/pciehp_core.c |    4 +-
- drivers/pci/msi.c                 |   16 +++----
- drivers/pci/pci-driver.c          |   91 +++++++++++--------------------------
- drivers/pci/pci.c                 |   63 +++++++++++++++++++++++---
- drivers/pci/pci.h                 |    6 +++
- include/linux/pci.h               |    5 ++
- 6 files changed, 105 insertions(+), 80 deletions(-)
+							- Ted
