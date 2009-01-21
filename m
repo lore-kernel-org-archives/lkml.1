@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbZAUIbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763594AbZAUIdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbZAUIbR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZAUIbB
+	id S1763594AbZAUIdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZAUIc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:31:01 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:44243 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750879AbZAUIbA (ORCPT
+	Wed, 21 Jan 2009 03:32:59 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35695 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754608AbZAUIc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:31:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=HckTfVGKmWLPZsHI4LOwRlt6GcsrrhOOtgORVcLYjJyFxF9h0ZZqbiXwFPM2zXbuel+9uyYPrA2lfjz40qTWx4RlsrCZ7llrhpeHELV4QJnR9Ckpcx4gxaX9SJlMwhxgb7uswR9Q9kKIJlI4h536orQF4vl9eN5subrjuzMoNyA=  ;
-X-YMail-OSG: R9IuX0MVM1khpjAbs9AfySvPCEGb.W0gaodnrI0fmsVtMHUUZYa64TvZ10kR3ubxrULERvzz_.NIHvYG5WVOKPuTFogSq4QNWK6yE.naDLmYA10WOVK0fJudMFWwZ2bG2ohjQrd3yLliFtBd.8cfkqdq1q6MK_E29eUyTYKK7jTx3IslWvIr396szIrjPQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: miaox@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the unallowed node when memory spread is set
-Date: Wed, 21 Jan 2009 19:30:26 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>,
-       "Linux-Kernel" <linux-kernel@vger.kernel.org>
-References: <4976D77C.3020107@cn.fujitsu.com>
-In-Reply-To: <4976D77C.3020107@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 03:32:59 -0500
+Date: Wed, 21 Jan 2009 09:48:08 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mike Waychison <mikew@google.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v1 0/8] Deferred dput() and iput() -- reducing lock contention
+Message-ID: <20090121084808.GC15750@one.firstfloor.org>
+References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <877i4pdx4f.fsf@basil.nowhere.org> <4976BF08.90306@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901211930.27178.nickpiggin@yahoo.com.au>
+In-Reply-To: <4976BF08.90306@google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009 19:06:20 Miao Xie wrote:
-> The task still allocated the page caches on old node after modifying its
-> cpuset's mems when 'memory_spread_page' was set, it is caused by the old
-> mem_allowed_list of the task, the current kernel doesn't updates it unless
-> some function invokes cpuset_update_task_memory_state(), it is too late
-> sometimes. We must update the mem_allowed_list of the tasks in time.
->
-> Slab has the same problem.
->
-> We fixes the bug by updating tasks' mem_allowed_list and spread flag after
-> its cpuset's mems or spread flag is changed.
+On Tue, Jan 20, 2009 at 10:22:00PM -0800, Mike Waychison wrote:
+> Andi Kleen wrote:
+> >Mike Waychison <mikew@google.com> writes:
+> >
+> >>livelock on dcache_lock/inode_lock (specifically in 
+> >>atomic_dec_and_lock()) 
+> >
+> >I'm not sure how something can livelock in atomic_dec_and_lock which
+> >doesn't take a spinlock itself? Are you saying you run into NUMA memory
+> >unfairness here? Or did I misparse you?
+> 
+> By atomic_dec_and_lock, I really meant to say _atomic_dec_and_lock(). 
 
-Thank you, this is a much better way to handle the problem, and keeps
-those costly function calls out of fastpaths.
+Ok. So it's basically just the lock that is taken? 
 
-I don't know the cpuset code well enough to review it right now, but
-the mm/ pieces thank you kindly for it :) Nice patch.
+In theory one could likely provide an x86 specific dec-and_lock that
+might perform better and doesn't lock if the count is still > 0, but that 
+would only help if the reference count is still > 0. Is that a common
+situation in your test?
 
+> It takes the spinlock if the cmpxchg hidden inside atomic_dec_unless fails.
+> 
+> There are likely NUMA unfairness issues at play, but it's not the main 
+> worry at this point.
+> 
+> >
+> >>This patchset is an attempt to try and reduce the locking overheads 
+> >>associated
+> >>with final dput() and final iput().  This is done by batching dentries and
+> >>inodes into per-process queues and processing them in 'parallel' to 
+> >>consolidate
+> >>some of the locking.
+> >
+> >I was wondering what this does to the latencies when dput/iput
+> >is only done for very objects. Does it increase costs then
+> >significantly?
+> 
+> very objects?
+
+Sorry.
+
+"is only done for very few objects". Somnhow the few got lost.
+Basically latency in the unloaded case.
+
+I always worry when people do complicated things for the high
+load case how the more usual "do it for a single object" workload
+fares.
+
+> 
+> >
+> >As a high level comment it seems like a lot of work to work
+> >around global locks, like the inode_lock, where it might be better to 
+> >just split the lock up? Mind you I don't have a clear proposal
+> >how to do that, but surely it's doable somehow.
+> >
+> 
+> Perhaps.. the only plausible way I can think this would be doable would 
+> be to rework the global resources (like the global inode_unused LRU list 
+
+One simple way would be to just use multiple lists with an own lock 
+each. I doubt that would impact the LRU behaviour very much.
+
+> and deal with inode state transitions), but even then, some sort of 
+> consistency needs to happen at the super_block level,
+
+The sb could also look at multiple lists?
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
