@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbZATX6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbZAUAFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbZATX6A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 18:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbZATX5v
+	id S1762445AbZAUAFb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbZAUAFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 18:57:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48505 "EHLO ogre.sisk.pl"
+	Tue, 20 Jan 2009 19:05:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55167 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755521AbZATX5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 18:57:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH PCI PCIe portdrv: Fix allocation of interrupts (rev. 5)
-Date: Wed, 21 Jan 2009 00:57:11 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200901131457.58164.rjw@sisk.pl> <200901171440.42840.rjw@sisk.pl> <4973F60E.5000706@jp.fujitsu.com>
-In-Reply-To: <4973F60E.5000706@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
+	id S1757148AbZAUAFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 19:05:19 -0500
+Subject: Confusion in usr/include/asm-generic/fcntl.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 05:34:17 +0530
+Message-Id: <1232496257.3123.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901210057.12103.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 January 2009, Hidetoshi Seto wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday 17 January 2009, Rafael J. Wysocki wrote:
-> (snip)
-> >> If MSI-X are supported, it allocates as many vectors as there are entries
-> >> in the port's MSI-X table, but no more than 32, and figures out which of them
-> >> will be used for the port services.
-> > 
-> > The patch didn't check which services are available during the MSI-X set up
-> > which was wrong.
-> > 
-> > Also, in the meantime, i thought it might be a good idea to free the interrupt
-> > routing table entries that aren't going to be used after all.
-> > 
-> > The patch below adds this to the previous version and checks for the
-> > availability of port services in the MSI-X setup resume.  I hope it will
-> > be acceptable to everyone.
-> > 
-[--snip--]
-> > +	/*
-> > +	 * Allocate as many entries as the device wants temporarily, so that we
-> > +	 * can check which of them will be useful.
-> > +	 */
-> > +	for (i = 0; i < nr_entries; i++)
-> > +		msix_entries[i].entry = i;
-> 
-> 	/*
-> 	 * So, if msix_entries is correctly equal to the number of entries this
-> 	 * port actually uses, we'll happily go through without using trick.
-> 	 */
+usr/include/asm-generic/fcntl.h is giving 2 'make headers_check' warnings:
+ usr/include/asm-generic/fcntl.h:127: leaks CONFIG_64BIT to userspace where it is not valid
+ usr/include/asm-generic/fcntl.h:149: leaks CONFIG_64BIT to userspace where it is not valid
 
-Good point!
+usr/include/asm-generic/fcntl.h:
+--
+#ifndef CONFIG_64BIT
 
-> > +
-> > +	status = pci_enable_msix(dev, msix_entries, nr_entries);
-> > +	if (status)
-> > +		goto Exit;
-[--snip--]
-> > +
-> 
-> /* Are there any unused entries? */
-> if (nr_allocated > nvec) {
-> 	/* this port have extra entries not for services we know... */
-> 
-> > +	/* Drop the temporary MSI-X setup */
-> > +	pci_disable_msix(dev);
+#ifndef F_GETLK64
+#define F_GETLK64       12      /*  using 'struct flock64' */
+#define F_SETLK64       13
+#define F_SETLKW64      14
+#endif
 
-Yes, I'm going to do that.
+#ifndef HAVE_ARCH_STRUCT_FLOCK64
+#ifndef __ARCH_FLOCK64_PAD
+#define __ARCH_FLOCK64_PAD
+#endif
 
-> > +	/* Now allocate the MSI-X vectors for real */
-> > +	status = pci_enable_msix(dev, msix_entries, nvec);
-> > +	if (status)
-> > +		goto Error;
-> 
-> 	/*
-> 	 * World have broken hardwares, so even spec says numbers are constant,
-> 	 * it would be better to re-check registers after 2nd pci_enable_msix.
-> 	 * Or we just skip this.  (However this was what your concern, Rafael?)
-> 	 */
-> 	if (func_foo_do_paranoia_check(dev, msix_entries, nvec))
-> 		goto Error;	
+struct flock64 {
+        short  l_type;
+        short  l_whence;
+        loff_t l_start;
+        loff_t l_len;
+        pid_t  l_pid;
+        __ARCH_FLOCK64_PAD
+};
+#endif
+#endif /* !CONFIG_64BIT */
+--
 
-Well, I think let's not do it for now.  If there's a system that actually
-breaks here, then we can introduce the extra checking.
+#ifndef CONFIG_64BIT will always be true for userspace. So what is the use of #ifndef CONFIG_64BIT ?
 
 Thanks,
-Rafael
+--
+JSR
+
