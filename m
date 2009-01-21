@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbZAUJyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763670AbZAUJzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbZAUJyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZAUJyK
+	id S1763670AbZAUJzH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:54:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:41428 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754768AbZAUJyJ (ORCPT
+	Wed, 21 Jan 2009 04:54:54 -0500
+Received: from stinky.trash.net ([213.144.137.162]:50211 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753662AbZAUJyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:54:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WZOlW/5GWaRB0fPzceUaRlRKjcBLKWvnU8eYddhZ9yoEOU8qYX9GYWDtOb3A9V9jC3
-         ARmsE87I380gskkofpcS3hlCXXR/8Hv11gK7strFmaiS6PCbZOUOGZ392PFFPx4eNiam
-         0pYYDpgKbhQ/VIDxl4NukJCe+v/lcAW5MIwGQ=
-Date: Wed, 21 Jan 2009 09:54:01 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090121095401.GB5140@ff.dom.local>
-References: <20090120102053.GA17004@ff.dom.local> <20090120103122.GC9167@ioremap.net> <20090120110144.GB17004@ff.dom.local> <20090120.091616.224452074.davem@davemloft.net>
+	Wed, 21 Jan 2009 04:54:53 -0500
+Message-ID: <4976F0EB.8050806@trash.net>
+Date: Wed, 21 Jan 2009 10:54:51 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120.091616.224452074.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: =?ISO-8859-15?Q?K=F6vesdi_Gy=F6rgy?= <kgy@teledigit.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netfilter Developer Mailing List 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: 2.6.28(.1) and netlink: scheduling while atomic
+References: <200901211029.01619.kgy@teledigit.hu>
+In-Reply-To: <200901211029.01619.kgy@teledigit.hu>
+Content-Type: multipart/mixed;
+ boundary="------------030801090002030200070305"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 09:16:16AM -0800, David Miller wrote:
-...
-> Jarek, we already have a page and offset you can use.
-> 
-> It's called sk_sndmsg_page but that is just the (current) name.
-> Nothing prevents you from reusing it for your purposes here.
+This is a multi-part message in MIME format.
+--------------030801090002030200070305
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 
-I'm trying to get some know-how about this field.
+Kövesdi György wrote:
+> The new netlink interface allows to add NAT directly to a conntrack entry.
+> If it is used when the moudule nf-nat-ipv4 is not loaded in, it results in 
+> crash:
+> BUG: scheduling while atomic
+> It is in the kernels 2.6.28 and 2.6.28.1 in the function 
+> ctnetlink_parse_nat_setup(): it calls request_module() which causes the 
+> problem. If the module is already loaded, then there is no problem.
 
-Thanks,
-Jarek P.
+
+Thanks for the report. Does this patch fix it?
+
+--------------030801090002030200070305
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/net/netfilter/nf_conntrack_netlink.c b/net/netfilter/nf_conntrack_netlink.c
+index 3dddec6..c32a7e8 100644
+--- a/net/netfilter/nf_conntrack_netlink.c
++++ b/net/netfilter/nf_conntrack_netlink.c
+@@ -831,13 +831,16 @@ ctnetlink_parse_nat_setup(struct nf_conn *ct,
+ 	if (!parse_nat_setup) {
+ #ifdef CONFIG_MODULES
+ 		rcu_read_unlock();
++		spin_unlock_bh(&nf_conntrack_lock);
+ 		nfnl_unlock();
+ 		if (request_module("nf-nat-ipv4") < 0) {
+ 			nfnl_lock();
++			spin_lock_bh(&nf_conntrack_lock);
+ 			rcu_read_lock();
+ 			return -EOPNOTSUPP;
+ 		}
+ 		nfnl_lock();
++		spin_lock_bh(&nf_conntrack_lock);
+ 		rcu_read_lock();
+ 		if (nfnetlink_parse_nat_setup_hook)
+ 			return -EAGAIN;
+
+--------------030801090002030200070305--
