@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbZAUIVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762410AbZAUIXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763291AbZAUIVe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZAUIVW
+	id S1762410AbZAUIXO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZAUIW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:21:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55544 "EHLO hera.kernel.org"
+	Wed, 21 Jan 2009 03:22:58 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:20396 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbZAUIVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:21:22 -0500
-Message-ID: <4976DAFA.2060500@kernel.org>
-Date: Wed, 21 Jan 2009 17:21:14 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1755233AbZAUIW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:22:57 -0500
+Date: Wed, 21 Jan 2009 09:21:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Size of sector_t in userspace [Was: fix 41 'make headers_check' warnings]
+Message-ID: <20090121082125.GW30821@kernel.dk>
+References: <1232273454.23100.9.camel@localhost.localdomain> <20090118110221.GA29602@elte.hu> <1232501276.3123.49.camel@localhost.localdomain> <20090121055356.GA26731@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] x86: Merge mmu_context.h
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-4-git-send-email-brgerst@gmail.com>
-In-Reply-To: <1232457345-12366-4-git-send-email-brgerst@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 21 Jan 2009 08:21:09 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121055356.GA26731@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> +#ifdef CONFIG_X86_32
-> +#define deactivate_mm(tsk, mm)			\
-> +do {						\
-> +	loadsegment(gs, 0)			\
-> +} while (0)
+On Wed, Jan 21 2009, Sam Ravnborg wrote:
+> Hi Jens.
+> 
+> In an attempt to fix some of the issues in our exported Headers jsr
+> encountered some strange stuff in types.h.
+> 
+> types.h is exported to userspace where we do not have access to CONFIG_*
+> symbols.
+> Despite this we use CONFGI_LBD to decide the size of sector_t like this:
+> 
+> #ifdef CONFIG_LBD
+> typedef u64 sector_t;
+> typedef u64 blkcnt_t;
+> #else
+> typedef unsigned long sector_t;
+> typedef unsigned long blkcnt_t;
+> #endif
+> 
+> But as CONFIG_LBD is never defined in userspace sector_t is now 32
+> bit on 32 bit boxes and 64 bit on 64 bit boxes (in userspace).
+> 
+> Is sector:t (and the companion blkcnt_t) really used by userspace?
+> If it is - what size is it expected to have?
 
-Build fails on x86_32 due to missing ';'.  Fixed patch committed.
+I don't think it's used by userspace, at least it cannot be used in
+userspace <-> kernelspace interactions, since the size isn't fixed.
 
 -- 
-tejun
+Jens Axboe
+
