@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763818AbZAUJDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbZAUJF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763818AbZAUJDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZAUJDZ
+	id S1759780AbZAUJF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZAUJFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:03:25 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:41018 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753662AbZAUJDX (ORCPT
+	Wed, 21 Jan 2009 04:05:40 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41958 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755514AbZAUJFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:03:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=A7yvIzO3gkSXjDCKoCTYyGEp1iioGTQX5xEKl2UAEhwfuv6r53nms34SXnnsdImP1J
-         CBCijT1hbiXgEKpN0gZFqYgELQhqk6xRW/L/r0q0l3nopnRluFueyyPTS48UUAKcowxi
-         GKkTarjAp5ceerT256BO+GfW1ks6DvSL/1Nc8=
-Message-ID: <4976E524.1050607@gmail.com>
-Date: Wed, 21 Jan 2009 10:04:36 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: Jacek Luczak <difrost.kernel@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Eric Sandeen <sandeen@sandeen.net>, LKML <linux-kernel@vger.kernel.org>,
-       xfs mailing list <xfs@oss.sgi.com>
-Subject: Re: [XFS] 2.6.29-rc2: XFS internal error XFS_WANT_CORRUPTED_GOTO
-References: <4974CA20.6050308@sandeen.net> <20090120004611.GA6445@disturbed> <20090120112910.GA6831@infradead.org> <4975B9C4.7030401@gmail.com> <20090120114906.GA12526@infradead.org> <20090120121335.GA19182@infradead.org> <20090120124515.GA31838@infradead.org> <4975D88B.7020906@gmail.com> <20090120140514.GA2976@infradead.org> <4975DE45.7050004@gmail.com> <20090121040512.GK10158@disturbed>
-In-Reply-To: <20090121040512.GK10158@disturbed>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 04:05:38 -0500
+Date: Wed, 21 Jan 2009 10:20:49 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090121092049.GE15750@one.firstfloor.org>
+References: <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org> <20090121085208.GO24891@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121085208.GO24891@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner pisze:
-> On Tue, Jan 20, 2009 at 03:23:01PM +0100, Jacek Luczak wrote:
->> Christoph Hellwig pisze:
->>> On Tue, Jan 20, 2009 at 02:58:35PM +0100, Jacek Luczak wrote:
->>>> Good job! Is there some ,,quick'' fix?
->>> The patch below makes it go away for me, alternatively just enable
->>> CONFIG_LBD.
->>>
->>>
->>> Index: linux-2.6/fs/xfs/xfs_types.h
->>> ===================================================================
->>> --- linux-2.6.orig/fs/xfs/xfs_types.h	2009-01-20 14:55:55.806068213 +0100
->>> +++ linux-2.6/fs/xfs/xfs_types.h	2009-01-20 14:56:01.437945154 +0100
->>> @@ -96,7 +96,7 @@ typedef	__uint64_t	xfs_dfilblks_t;	/* nu
->>>  /*
->>>   * Memory based types are conditional.
->>>   */
->>> -#if XFS_BIG_BLKNOS
->>> +#if 1 //XFS_BIG_BLKNOS
->>>  typedef	__uint64_t	xfs_fsblock_t;	/* blockno in filesystem (agno|agbno) */
->>>  typedef __uint64_t	xfs_rfsblock_t;	/* blockno in filesystem (raw) */
->>>  typedef __uint64_t	xfs_rtblock_t;	/* extent (block) in realtime area */
->>>
->> I've applied it and now running ,,fixed'' kernel. What I've notice is:
->> $ LC_ALL=C df -h
->> Filesystem            Size  Used Avail Use% Mounted on
->> /dev/sda1              20G  -40E   40E   -  /
->> /dev/sda5              20G  -23E   23E   -  /home
->> /dev/sda6              56G   56G  774M  99% /NORA
->> /dev/sda7              45G   44G  1.2G  98% /MAGAZYN
+On Wed, Jan 21, 2009 at 09:52:08AM +0100, Nick Piggin wrote:
+> On Wed, Jan 21, 2009 at 09:54:02AM +0100, Andi Kleen wrote:
+> > > GCC 4.3.2. Maybe i missed something obvious?
+> > 
+> > The typical use case of restrict is to tell it that multiple given
+> > arrays are independent and then give the loop optimizer 
+> > more freedom to handle expressions in the loop that
+> > accesses these arrays.
+> > 
+> > Since there are no loops in the list functions nothing changed.
+> > 
+> > Ok presumably there are some other optimizations which 
+> > rely on that alias information too, but again the list_*
+> > stuff is probably too simple to trigger any of them.
 > 
-> Please try the patch I posted this morning - it fixes the problem
-> properly and shouldn't have this side effect.
-> 
+> Any function that does several interleaved loads and stores
+> through different pointers could have much more freedom to
+> move loads early and stores late. 
 
-Your patch work for me. I've made also some tests a'la one proposed by
-Christoph, here also everything works. Good work guys!
+For once that would require more live registers. It's not
+a clear and obvious win. Especially not if you have
+only very little registers, like on 32bit x86.
 
-Have a nice day,
+Then it would typically increase code size.
 
--Jacek
+Then x86s tend to have very very fast L1 caches and
+if something is not in L1 on reads then the cost of fetching
+something for a read dwarfs the few cycles you can typically
+get out of this.
+
+And lastly even on a in order system stores can 
+be typically queued without stalling, so it doesn't
+hurt to do them early.
+
+Also at least x86 gcc normally doesn't do scheduling 
+beyond basic blocks, so any if () shuts it up.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
