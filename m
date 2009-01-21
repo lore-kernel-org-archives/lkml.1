@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZAUREi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZAURLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbZAUREi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 12:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZAURE1
+	id S1755210AbZAURLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 12:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZAURLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 12:04:27 -0500
-Received: from thunk.org ([69.25.196.29]:60122 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753003AbZAURE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 12:04:26 -0500
-Date: Wed, 21 Jan 2009 12:04:23 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Victor Pelt <victor.pelt@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ext4 no space left
-Message-ID: <20090121170423.GJ31253@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Victor Pelt <victor.pelt@gmail.com>, linux-kernel@vger.kernel.org
-References: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com> <20090121145513.GH31253@mit.edu> <576cb9750901210718u32aa98ecy87e7298a0f3444f@mail.gmail.com>
+	Wed, 21 Jan 2009 12:11:35 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:17271 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbZAURLe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 12:11:34 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Philipp Kohlbecher <xt28@gmx.de>
+Subject: Re: [PATCH] Make PNP IDs all uppercase
+Date: Wed, 21 Jan 2009 10:09:46 -0700
+User-Agent: KMail/1.9.10
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+       Vojtech Pavlik <vojtech@ucw.cz>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       Pau Oliva Fora <pof@eslack.org>, Hans Verkuil <hverkuil@xs4all.nl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jaroslav Kysela <perex@perex.cz>, Adam Belay <abelay@mit.edu>,
+       Len Brown <lenb@kernel.org>,
+       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       linux-acpi@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <49733678.40006@gmx.de> <200901201742.10155.bjorn.helgaas@hp.com> <4976D517.2070406@gmx.de>
+In-Reply-To: <4976D517.2070406@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <576cb9750901210718u32aa98ecy87e7298a0f3444f@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200901211009.48191.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 04:18:35PM +0100, Victor Pelt wrote:
-> i set the number mounted counter to 31, which forced fsck to run on
-> the next reboot. I rebooted, fsck didn't show any erros, but i still
-> got the no space left error when i tried to copy files to the
-> partition.
+On Wednesday 21 January 2009 12:56:07 am Philipp Kohlbecher wrote:
+> Bjorn Helgaas wrote:
+> > On Sunday 18 January 2009 07:02:32 am Philipp Kohlbecher wrote:
+> >> If I understand correctly, ACPI _HIDs (including PNP IDs) should be all 
+> >> uppercase, including the hex digits, cf. ACPI Specification 3.0b [1], 
+> >> pp. 162-3
+> > 
+> > Section 6.1.4, "_HID (Hardware ID)" says:
+> > 
+> >     A valid PNP ID must be of the form “AAA####” where A is an uppercase
+> >     letter and # is a hex digit.  A valid ACPI ID must be of the form
+> >     “ACPI####” where # is a hex digit.
+> > 
+> > I don't see the part about requiring the hex digits to be uppercase.
+> > Did I miss it, or is it somewhere else?
+> 
+> It doesn't say explicitly, hence my reservation. The ACPI specification 
+> does, however, use uppercase hex digits in all examples of _HIDs.
 
-OK, if a reboot didn't help, I'll bet I know what happened.  E2fsprogs
-changed the default default inode ratio, which means that number of
-inodes being created is half what it was previously.  If you do a "df
--i", you'll probably see that you have exhausted the number of inodes
-in the filesystem.
+The PNPBIOS spec doesn't seem to say explicitly either, although the
+examples there also use uppercase.  So it'd probably be nicer if we
+used uppercase everywhere in Linux.  Unfortunately, we have the legacy
+of the kernel using lowercase in PNP IDs, and there are userspace things
+like modprobe aliases that depend on that.
 
-The default inode ratio controlled by /etc/mke2fs.conf, and is
-currently 16k.  That is, it assumes the average size of files on the
-filesystem is at least 16k.  (It previously was 8k.)  For large
-filesystems, this is not a problem; I'm guessing that you have a small
-root filesystem, and probably are using a hard-coded /dev partition,
-so the large number of (zero-length) device files is throwing off the
-average.  If you recreate the filesystem with mke2fs -I 8192, it
-should allow you to copy over all of your files in the root
-filesystem.
+> I do. Thanks for noticing that. Now, how do I make sure this mix-up 
+> doesn't go into the commit message? Re-submit or ask the committer to 
+> correct it?
 
-Finally, note that we made this change for all ext2/3/4 filesystems,
-so this is not unique to ext4; it's just that you reformatted your
-root filesystem for the first time since upgrading to a newer
-e2fsprogs with the changed default, and you ran into this problem.  If
-there are enough people who are using small root filesystems, maybe
-we'll need to have some adjusted hueristics.  Right now we have
-"floppy" for filesystems less than 3 megs, "small" for filesystems
-less than 512 megs, and every thing else is default.  Maybe we need to
-have a "medium" for filesystems smaller than 10 gigs, perhaps, and use
-a default inode ratio of 8192 for medium-sized filesystems....
+I think reposting the patch will be better.  But I would split this
+up into a patch per file, so they can go through the usual maintainers,
+and I think we should wait a bit (see below).
 
-						- Ted
+> > There are definitely some inconsistencies that it would be nice to
+> > fix, if we can do it safely.  For example, for ISAPNP and PNPBIOS
+> > devices, I think we always generate lowercase hex digits in the PNP
+> > IDs.  For PNPACPI, we generate uppercase digits for numeric _HIDs,
+> > but we use string _HIDs unchanged.
+> > 
+> > Did you trip over an actual problem that is fixed by this patch?  If
+> > so, can you give any more details?
+> 
+> Yes. After a package update, hwclock stopped using the "--directisa" 
+> switch and could not access the RTC anymore. My RTC is handled by 
+> rtc-cmos, which is compiled as a module. However, udev did not load this 
+> module, as the device's modalias "acpi:PNP0B00:" did not match any of 
+> the module's aliasas, including "acpi*:PNP0b00:*". Thus, the system 
+> clock was not set correctly at startup (my hardware clock is set to 
+> local time). Changing the PNP IDs in drivers/rtc/rtc-cmos.c to use 
+> uppercase hex digits solved that problem for me.
+
+Nice work debugging that problem!  I would include that synopsis in
+the changelog, because it helps people who trip over the same problem
+and are looking for a solution, and it helps people who want to
+understand why the change was made.
+
+IMO, part of the problem here is that there is a single PNP ID
+namespace, but it's shared between the PNP core and the ACPI core.
+And PNP doesn't emit uevents, so in this case, we're using ACPI
+uevents to load a PNP driver.  The ACPI uevents will be uppercase
+(which matches the IDs in ACPI drivers), but the IDs in PNP drivers
+are typically lowercase (which matches the strings in
+/sys/devices/pnp*/*/id).
+
+I started trying to untangle this last year, but I didn't get far
+enough to be comfortable that I wouldn't break existing userspace
+stuff.  Maybe it's time to resurrect that work.
+
+The RTC problem is not really a regression; it sounds like this is
+a long-standing problem.  Given that, I'd like to have a clearer
+idea of how to clean up the namespace and uevent issues before we
+go changing all the PNP drivers.
+
+Bjorn
+
