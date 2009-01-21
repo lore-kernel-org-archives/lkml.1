@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbZAUAQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZAUARB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762948AbZAUAQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 19:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbZAUAQZ
+	id S1758668AbZAUARB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbZAUAQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 19:16:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37104
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756792AbZAUAQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 19:16:24 -0500
-Date: Tue, 20 Jan 2009 16:16:26 -0800 (PST)
-Message-Id: <20090120.161626.93641145.davem@davemloft.net>
-To: jaswinder@kernel.org
-Cc: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1232496257.3123.19.camel@localhost.localdomain>
-References: <1232496257.3123.19.camel@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 20 Jan 2009 19:16:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37211 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757181AbZAUAQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 19:16:48 -0500
+Subject: Doubts in usr/include/linux/elf.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 05:46:26 +0530
+Message-Id: <1232496986.3123.28.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date: Wed, 21 Jan 2009 05:34:17 +0530
+usr/include/linux/elf.h is giving 4 'make headers_check' warnings:
+ usr/include/linux/elf.h:379: extern's make no sense in userspace
+ usr/include/linux/elf.h:387: extern's make no sense in userspace
+ usr/include/linux/elf.h:401: extern's make no sense in userspace
+ usr/include/linux/elf.h:402: extern's make no sense in userspace
 
-> usr/include/asm-generic/fcntl.h is giving 2 'make headers_check' warnings:
->  usr/include/asm-generic/fcntl.h:127: leaks CONFIG_64BIT to userspace where it is not valid
->  usr/include/asm-generic/fcntl.h:149: leaks CONFIG_64BIT to userspace where it is not valid
-> 
-> usr/include/asm-generic/fcntl.h:
-...
-> #ifndef CONFIG_64BIT will always be true for userspace. So what is the use of #ifndef CONFIG_64BIT ?
 
-Good catch.
+usr/include/linux/elf.h:
+--
+#if ELF_CLASS == ELFCLASS32
 
-This file needs to test for 64-bit'ness using some non-CONFIG_*
-test.  And the standard built-in CPP macros which can be used
-to check for that are different on every platform.
+extern Elf32_Dyn _DYNAMIC [];
+#define elfhdr          elf32_hdr
+#define elf_phdr        elf32_phdr
+#define elf_note        elf32_note
+#define elf_addr_t      Elf32_Off
+
+#else
+
+extern Elf64_Dyn _DYNAMIC [];
+#define elfhdr          elf64_hdr
+#define elf_phdr        elf64_phdr
+#define elf_note        elf64_note
+#define elf_addr_t      Elf64_Off
+
+#endif
+
+/* Optional callbacks to write extra ELF notes. */
+#ifndef ARCH_HAVE_EXTRA_ELF_NOTES
+static __inline__ int elf_coredump_extra_notes_size(void) { return 0; }
+static __inline__ int elf_coredump_extra_notes_write(struct file *file,
+                        loff_t *foffset) { return 0; }
+#else
+extern int elf_coredump_extra_notes_size(void);
+extern int elf_coredump_extra_notes_write(struct file *file, loff_t *foffset);
+#endif
+--
+
+Which things we can drop from this portion to get rid of above warnings.
+
+Thanks
+
+--
+JSR
+
