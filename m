@@ -1,127 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZAUVUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZAUVYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZAUVUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 16:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZAUVUT
+	id S1754227AbZAUVYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 16:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZAUVYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 16:20:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55952 "EHLO mx3.mail.elte.hu"
+	Wed, 21 Jan 2009 16:24:24 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:21326 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbZAUVUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 16:20:16 -0500
-Date: Wed, 21 Jan 2009 22:20:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: igb regression (interface hang) with latest -git
-Message-ID: <20090121212005.GA26992@elte.hu>
-References: <20090121102840.GA24967@elte.hu> <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com> <20090121175158.GA7302@elte.hu> <20090121180344.GA13675@elte.hu> <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com> <20090121182504.GA14259@elte.hu>
+	id S1752817AbZAUVYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 16:24:23 -0500
+Message-ID: <49779284.50603@msgid.tls.msk.ru>
+Date: Thu, 22 Jan 2009 00:24:20 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121182504.GA14259@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Greg KH <greg@kroah.com>
+CC: Sam Liddicott <sam@liddicott.com>, Ming Lei <tom.leiming@gmail.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux USB list <linux-usb@vger.kernel.org>
+Subject: Re: "permanently" unbind a device from a driver?
+References: <497638FF.8050805@msgid.tls.msk.ru> <20090120210254.GA5609@kroah.com> <d82e647a0901210744t1655bacesf23bcd54e30002e9@mail.gmail.com> <20090121162345.GB22615@kroah.com> <4977596D.409@liddicott.com> <20090121181124.GA17410@kroah.com>
+In-Reply-To: <20090121181124.GA17410@kroah.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Wed, Jan 21, 2009 at 05:20:45PM -0000, Sam Liddicott wrote:
+>> * Greg KH wrote, On 21/01/09 16:23:
+>>> On Wed, Jan 21, 2009 at 11:44:03PM +0800, Ming Lei wrote:
+>>>   
+>>>> 2009/1/21 Greg KH <greg@kroah.com>:
+>>>>     
+>>>>> Just add a blacklist rule to the usbhid driver for this device.  There
+>>>>> are a number of devices out there that need this functionality, which is
+>>>>> why there is such a list.
+>>>>>       
+>>>> Is it possible to implement a generic blacklist mechanism in driver core
+>>>> to support the function for all kinds of drivers? or is it necessary to do that?
+>>>>     
+>>> It's not necessary as the hid core already supports this very thing due
+>>> to the need for it (it's the easiest way to write a userspace Windows
+>>> driver, so lots of manufacturers lie about their devices in order to
+>>> work around having to write a Windows kernel driver.)
+>>>
+>>> So just add this device to the hid core blacklist, and you are all set.
+>>>
+>>> Care to send a patch?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Ok, I'm looking at this now, but have a question:
+which quirk code(s)/bits should I use for that?
+Assuming the table in question is in
+ drivers/hid/usbhid/hid-quirks.c
+file.
+What's needed is to stop usbhid module from claiming this device in the
+first place.
 
-> > One other piece of info (in addition to what Bruce requested) that 
-> > would be useful is after you've done ifconfig eht0 up, cat 
-> > /proc/interrupts | grep eth0 and send that output (I want to see your 
-> > MSI-X configuration).
+>> I've often felt that a /proc or /sys interface to allow blacklist
+>> additions or quirk addition would be great.
 > 
-> here it is:
-> 
->  79:         35          0       9836       7451       1197       1360        766          0       2196        995        770          0       2051        863       4714       1879   PCI-MSI-edge      eth0-tx-0
->  80:       2335          0       2718       3651       5024       9850        533          0       1405       1095          0          0       4421       1229          0       2002   PCI-MSI-edge      eth0-tx-1
->  81:         33          0          0       5478       1125       6585       4865       6306          0          0          0        714       3757          0       2662       1020   PCI-MSI-edge      eth0-tx-2
->  82:         21       1428       3136       3783       4249       6833          0          0       4175          0          0       1465       1940       1780       6286          0   PCI-MSI-edge      eth0-tx-3
->  83:         40          0          0       4788          0       1486          0       7185       3998       8637       1409       6785          0          0          0      10060   PCI-MSI-edge      eth0-rx-0
->  84:         70       1441       2606       1342          0       1678       4301       1839          0       6507       6910      16470          0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
->  85:         40       1368          0       3560       5022       2040          5       1719          0       2037        956         40          0      17264       6456       2833   PCI-MSI-edge      eth0-rx-2
->  86:         44        414          5       1164         30       4513       4595       1542          0      10033       1151          0       4961       4203          0      10703   PCI-MSI-edge      eth0-rx-3
->  87:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
+> Some subsystems support this, like the HID subsystem :)
 
-btw., i turned off CONFIG_PCI_MSI and that worked around the interface 
-hang - the box has 40 minutes uptime now and still no hang. (it would hang 
-within 5 minutes previously)
+Oh, I didn't know.  In fact, that's exactly what I was asking in my
+first email in this thread - to have some module parameter or a sysfs
+file which can be touched to stop the module from claiming the device.
+This also helps to debug it, to know the right bits to use.. which I
+don't know...  ;)
 
-can test the revert of any of these commits:
+The device in question which I'm dealing with is an UPS by Powercom,
+Imperial series (they sold other series with UPS support too, namely
+some KING PRO ones, which has exactly the same "interface").  It's
 
-e42e4ba: igb: fix anoying type mismatch warning on rx/tx queue sizing
-8d25332: igb: Fix build warning when DCA is disabled.
-26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
-0e014cb: igb: defeature tx head writeback
-678c610: drivers/net/igb: remove dead code (function 'igb_read_pci_cfg')
-908a7a1: net: Remove unused netdev arg from some NAPI interfaces.
-ea943d4: igb: fixup AER with proper error handling
-5e8427e: igb: Correctly determine pci-e function number in virtual environment
-b4557be: igb: update handling of RCTL for smaller buffer sizes
-cb7b48f: igb/e1000e: Naming interrupt vectors
-40a914f: igb: Add support for pci-e Advanced Error Reporting
-527d47c: igb: link up/down messages must follow a specific format
-5b9ab2e: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-69d728b: igb: loopback bits not correctly cleared from RCTL register
-9b07f3d: igb: remove unneeded bit refrence when enabling jumbo frames
-f5f4cf0: igb: do not use phy ops in ethtool test cleanup for non-copper parts
-0082982: netdev: add more functions to netdevice ops
-68fd991: igb: Fix tx/rx_ring_count parameters for igb on suspend/resume/ring resize
-b2d5653: igb: simplify swap in clean_rx_irq if using packet split
-2e5c692: igb: convert to net_device_ops
-198d6ba: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-4cf1653: netdevice: safe convert to netdev_priv() #part-2
-babcda7: drivers/net: Kill now superfluous ->last_rx stores.
-7c510e4: net: convert more to %pM
+ Bus 001 Device 002: ID 0d9f:0002 Powercom Co., Ltd  Serial to USB adaptor
 
-i had a quick look at all of them but none seem to have a direct 
-connection to MSI-X interrupt generation.
+and this vendor:device is known to cypress_m8 driver, in
+drivers/usb/serial/cypress_m8.[ch]:
 
-There's a couple of ones that could have side effects:
+ /* Powercom UPS, chip CY7C63723 */
+ #define VENDOR_ID_POWERCOM               0x0d9f
+ #define PRODUCT_ID_UPS                   0x0002
 
-Maybe this one:
+So here we go - I only need to know which quirk to use ;)
 
-  26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
+What I do *not* know is if there are other UPS model from the same
+vendor with the same product ID but which really ARE HID devices.
+But having in mind amount of questions asked about this very device,
+all with the same answer (before it was "use this custom binary kernel
+module", since 2.6.25 it's "use cypress_m8 driver"), i think it does
+not matter anymore... ;)
 
-due to its sheer commit size and due to its impact on the hw programming.
+Thanks!
 
-or:
-
-  0e014cb: igb: defeature tx head writeback
-
-Might have some side-effect on tx-completion IRQs and might tickle 
-firmware bugs?
-
-Or:
-
-  5e8427e: igb: Correctly determine pci-e function number in virtual environment
-
-while it should have no impact on a native kernel, it does change the PCI 
-config space access sequences.
-
-Or maybe:
-
-  69d728b: igb: loopback bits not correctly cleared from RCTL register
-
-as this impacts the PCI programming too.
-
-But ... i dont really know this code so i'm guessing around.
-
-	Ingo
+/mjt
