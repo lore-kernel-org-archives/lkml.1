@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZAUVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZAUVQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZAUVOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 16:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZAUVOC
+	id S1754188AbZAUVQp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 16:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAUVQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 16:14:02 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:37128 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZAUVOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 16:14:01 -0500
+	Wed, 21 Jan 2009 16:16:36 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:38858 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbZAUVQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 16:16:35 -0500
+Message-ID: <49779041.6080804@oracle.com>
+Date: Wed, 21 Jan 2009 13:14:41 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+References: <20090121185021.GA8852@elte.hu> <497778E3.1020502@oracle.com> <20090121195623.GA31013@elte.hu>
+In-Reply-To: <20090121195623.GA31013@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18807.36883.413974.491276@harpo.it.uu.se>
-Date: Wed, 21 Jan 2009 22:13:55 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Uros Bizjak <ubizjak@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: Unneeded assignment to tsk in recent x86 change
-In-Reply-To: <49777DF5.1080107@gmail.com>
-References: <5787cf470901210432l5327e48el94c53c8fb7fd6d1d@mail.gmail.com>
-	<18807.7643.368198.582428@harpo.it.uu.se>
-	<49777DF5.1080107@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.49779046.01B5:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uros Bizjak writes:
- > Mikael Pettersson wrote:
- > 
- > >  > Impact: Cleanup.
- > >  > 
- > >  > Remove unneeded assignment to tsk in recent x86 change [1].
- > >  
- > >
- > >  > @@ -795,13 +794,12 @@ asmlinkage
- > >  >  void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- > >  >  {
- > >  >  	unsigned long address;
- > >  > -	struct task_struct *tsk;
- > >  > +	struct task_struct *tsk = current;
- > >  >  	struct mm_struct *mm;
- > >  >  	struct vm_area_struct *vma;
- > >  >  	int write;
- > >  >  	int fault;
- > >  >  
- > >  > -	tsk = current;
- > >  >  	mm = tsk->mm;
- > >  >  	prefetchw(&mm->mmap_sem);
- > >
- > > but this is neither a fix nor IMO a cleanup (it's inconsistent with
- > > the other variables in that function)
- > >   
- > 
- > Hm, I'm not sure I see the inconsistency here. Care to explain this 
- > inconsistency in a couple of words?
+Ingo Molnar wrote:
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> We are pleased to announce version 6 of our performance counters subsystem 
+>>> implementation. The shortlog, diffstat and the combo patch can be found 
+>>> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
+>>> at:
+>>>
+>>>    http://people.redhat.com/mingo/perfcounters/perfcounters-v6-v2.6.29-rc2.patch
+>>>
+>>> It's also available in tip/master at:
+>>>  
+>>>    http://people.redhat.com/mingo/tip.git/README
+>>>  
+>>> There are many changes in the v6 release:
+>>>
+>>>  - PowerPC performance counters support from Paul Mackerras, for POWER6
+>>>    and for the PPC970 family.
+>>>
+>>>  - ioctl API to disable/enable individual counters and groups without
+>>>    closing their fd. This can be useful for libraries, ad-hoc 
+>>>    instrumentation and PAPI support.
+>>>
+>>>  - 'pinned' and 'exclusive' counter attributes - for those
+>>>    applications that want to influence counter scheduling explicitly.
+>>>
+>>>  - The 'perfstat' utility (ex 'timec') has been updated:
+>>>
+>>>       http://people.redhat.com/mingo/perfcounters/perfstat.c
+>>>
+>>>  - 'kerneltop' (easy-to-use text mode NMI profiler) has been updated:
+>>>    
+>>>       http://people.redhat.com/mingo/perfcounters/kerneltop.c
+>> BTW, this kerneltop has nothing to do with that other one??
+>>
+>> 	http://www.xenotime.net/linux/kerneltop/
+> 
+> heh, didnt know about that one - there's no connection other than the name 
+> :-) The project seems somewhat stale but indeed similar in purpose. Can
+> rename to kerneltop2 i guess.
 
-You're initialising some variables in their declarations, and some
-using assignments at the start of the procedure body. In particular,
-for some reason you don't initialise 'mm' in its declaration even
-though you could do so for consistency with 'tsk'.
+Yes, it's stale.  I plan to update it sometime this year.  :)
 
-However, I'm strongly in favour of separating declarations and
-initialisations (esp. ones that need actual computations), so
-rather than subjecting 'mm' to the treatment you gave 'tsk',
-just leave the code alone.
+I don't care if you rename it or not.
+
+-- 
+~Randy
