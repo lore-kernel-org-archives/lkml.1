@@ -1,154 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761557AbZAUSPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZAUSZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761557AbZAUSPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 13:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbZAUSPb
+	id S1757349AbZAUSZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 13:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZAUSZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 13:15:31 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:57900 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759172AbZAUSP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 13:15:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=uUdqFQqc/+Md9QwnMsyHudLtvR0DN+TBdygWSSeCddLBBitaQ2Bgv0vzye6nusPhPj
-         FGi9lRW/rQgVM2CxKfVupVe817TcdDg7uix9ZsxKYNv6DVGhBTAiIY2BIGE2veqOfqPL
-         ZOYJao8rEKRj0AYJcCNSaMmQ5Nma+3TGrzszY=
+	Wed, 21 Jan 2009 13:25:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47967 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753133AbZAUSZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 13:25:13 -0500
+Date: Wed, 21 Jan 2009 19:25:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: e1000e regression (interface hang) with latest -git
+Message-ID: <20090121182504.GA14259@elte.hu>
+References: <20090121102840.GA24967@elte.hu> <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com> <20090121175158.GA7302@elte.hu> <20090121180344.GA13675@elte.hu> <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20090121170423.GJ31253@mit.edu>
-References: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com>
-	 <20090121145513.GH31253@mit.edu>
-	 <576cb9750901210718u32aa98ecy87e7298a0f3444f@mail.gmail.com>
-	 <20090121170423.GJ31253@mit.edu>
-Date: Wed, 21 Jan 2009 19:15:26 +0100
-Message-ID: <576cb9750901211015g3c8813e6md7c0cdd88b9dada1@mail.gmail.com>
-Subject: Re: ext4 no space left
-From: Victor Pelt <victor.pelt@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Victor Pelt <victor.pelt@gmail.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=00504502a30ce5a2c30461022331
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00504502a30ce5a2c30461022331
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-upgrading to 2.6.29-rc2-git1 did allow me to use most of the space but
-i still can't quite use all of it. maybe this is to be expected.
-(note: i'm just trying testing now, everything i used to have on my
-old partition fits. i'm just trying to understand what exactly is
-'full'. it seems the file system is 'holding something back'
+* Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> wrote:
 
-i included a dumo of df, df -i and tune2fs -l /dev/hda2
-(and partition that has ext4 is the / partition or /dev/hda2)
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > The same point remains though: it worked before (and works fine with a 
+> > > distro kernel, 2.6.28-0.140.rc9.git1.fc11.x86_64) and doesnt work with 
+> > > latest -git.
+> > > 
+> > > I'll capture some debug data and send it to you.
+> > 
+> > find attached the debug data:
+> > 
+> >   ethtool.dump.eth0.before
+> >   ethtool.dump.eth0.after
+> >   ethtool.dump.eth0.after2
+> >   boot.log
+> >   config
+> > 
+> > the 'before' dump is before the hang, shortly after bootup. It also 
+> > includes 'ifconfig eth0' output.
+> > 
+> > the 'after' dump is after the hang - while the interface is hung.
+> > 
+> > 'after2' dump is after a 'service network restart' - which brought the 
+> > interface back.
+> > 
+> > Note if i wait long enough (half an hour or so), then not even 'service 
+> > network restart' will bring back the device.
+> > 
+> > The kernel i tested is: v2.6.29-rc2-13-gf3b8436
+> 
+> As Bruce stated, this is an igb issue, not e1000e.  From your boot.log:
 
-victor
+(yes, as i said it too two mails ago - it is an igb.)
 
+> igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> 
+> One other piece of info (in addition to what Bruce requested) that would 
+> be useful is after you've done ifconfig eht0 up, cat /proc/interrupts | 
+> grep eth0 and send that output (I want to see your MSI-X configuration).
 
-On Wed, Jan 21, 2009 at 6:04 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Wed, Jan 21, 2009 at 04:18:35PM +0100, Victor Pelt wrote:
->> i set the number mounted counter to 31, which forced fsck to run on
->> the next reboot. I rebooted, fsck didn't show any erros, but i still
->> got the no space left error when i tried to copy files to the
->> partition.
->
-> OK, if a reboot didn't help, I'll bet I know what happened.  E2fsprogs
-> changed the default default inode ratio, which means that number of
-> inodes being created is half what it was previously.  If you do a "df
-> -i", you'll probably see that you have exhausted the number of inodes
-> in the filesystem.
->
-> The default inode ratio controlled by /etc/mke2fs.conf, and is
-> currently 16k.  That is, it assumes the average size of files on the
-> filesystem is at least 16k.  (It previously was 8k.)  For large
-> filesystems, this is not a problem; I'm guessing that you have a small
-> root filesystem, and probably are using a hard-coded /dev partition,
-> so the large number of (zero-length) device files is throwing off the
-> average.  If you recreate the filesystem with mke2fs -I 8192, it
-> should allow you to copy over all of your files in the root
-> filesystem.
->
-> Finally, note that we made this change for all ext2/3/4 filesystems,
-> so this is not unique to ext4; it's just that you reformatted your
-> root filesystem for the first time since upgrading to a newer
-> e2fsprogs with the changed default, and you ran into this problem.  If
-> there are enough people who are using small root filesystems, maybe
-> we'll need to have some adjusted hueristics.  Right now we have
-> "floppy" for filesystems less than 3 megs, "small" for filesystems
-> less than 512 megs, and every thing else is default.  Maybe we need to
-> have a "medium" for filesystems smaller than 10 gigs, perhaps, and use
-> a default inode ratio of 8192 for medium-sized filesystems....
->
->                                                - Ted
->
+here it is:
 
---00504502a30ce5a2c30461022331
-Content-Type: application/octet-stream; name=dump
-Content-Disposition: attachment; filename=dump
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fq8b8ig10
+ 79:         35          0       9836       7451       1197       1360        766          0       2196        995        770          0       2051        863       4714       1879   PCI-MSI-edge      eth0-tx-0
+ 80:       2335          0       2718       3651       5024       9850        533          0       1405       1095          0          0       4421       1229          0       2002   PCI-MSI-edge      eth0-tx-1
+ 81:         33          0          0       5478       1125       6585       4865       6306          0          0          0        714       3757          0       2662       1020   PCI-MSI-edge      eth0-tx-2
+ 82:         21       1428       3136       3783       4249       6833          0          0       4175          0          0       1465       1940       1780       6286          0   PCI-MSI-edge      eth0-tx-3
+ 83:         40          0          0       4788          0       1486          0       7185       3998       8637       1409       6785          0          0          0      10060   PCI-MSI-edge      eth0-rx-0
+ 84:         70       1441       2606       1342          0       1678       4301       1839          0       6507       6910      16470          0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
+ 85:         40       1368          0       3560       5022       2040          5       1719          0       2037        956         40          0      17264       6456       2833   PCI-MSI-edge      eth0-rx-2
+ 86:         44        414          5       1164         30       4513       4595       1542          0      10033       1151          0       4961       4203          0      10703   PCI-MSI-edge      eth0-rx-3
+ 87:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
 
-ZGYKCkZpbGVzeXN0ZW0gICAgICAgICAgIDFLLWJsb2NrcyAgICAgIFVzZWQgQXZhaWxhYmxlIFVz
-ZSUgTW91bnRlZCBvbgpyb290ZnMgICAgICAgICAgICAgICAgIDUwNDQxODggICA0NzI1MDA4ICAg
-ICA2Mjk0NCAgOTklIC8KL2Rldi9yb290ICAgICAgICAgICAgICA1MDQ0MTg4ICAgNDcyNTAwOCAg
-ICAgNjI5NDQgIDk5JSAvCnJjLXN2Y2RpciAgICAgICAgICAgICAgICAgMTAyNCAgICAgICAxMjAg
-ICAgICAgOTA0ICAxMiUgL2xpYi9yYy9pbml0LmQKdWRldiAgICAgICAgICAgICAgICAgICAgIDEw
-MjQwICAgICAgICA2OCAgICAgMTAxNzIgICAxJSAvZGV2CmNhY2hlZGlyICAgICAgICAgICAgICAg
-ICAgNDA5NiAgICAgICAgIDQgICAgICA0MDkyICAgMSUgL2xpYi9zcGxhc2gvY2FjaGUKbm9uZSAg
-ICAgICAgICAgICAgICAgICAgNzc2ODA0ICAgICAgICAgMCAgICA3NzY4MDQgICAwJSAvZGV2L3No
-bQovZGV2L2hkYTMgICAgICAgICAgICAgMjQ0MTYwMDggIDIyNTQ2MDQwICAgMTg2OTk2OCAgOTMl
-IC9vcHQKL2Rldi9oZGE2ICAgICAgICAgICAgIDExNTYwNzY0ICAgOTk3MDIwOCAgIDEwMDMzMDAg
-IDkxJSAvaG9tZQp0bXBmcyAgICAgICAgICAgICAgICAgICA3NzY4MDQgICAgICAgICAwICAgIDc3
-NjgwNCAgIDAlIC90bXAKdG1wZnMgICAgICAgICAgICAgICAgICAxMzMxMjAwICAgICAgICAgMCAg
-IDEzMzEyMDAgICAwJSAvdmFyL3RtcAp0bXBmcyAgICAgICAgICAgICAgICAgICA3NzY4MDQgICAg
-ICAgICAwICAgIDc3NjgwNCAgIDAlIC91c3IvcG9ydGFnZS9kaXN0ZmlsZXMKCmRmIC1pCgpGaWxl
-c3lzdGVtICAgICAgICAgICAgSW5vZGVzICAgSVVzZWQgICBJRnJlZSBJVXNlJSBNb3VudGVkIG9u
-CnJvb3RmcyAgICAgICAgICAgICAgICAzMjA2NDAgIDI2MTk3OCAgIDU4NjYyICAgODIlIC8KL2Rl
-di9yb290ICAgICAgICAgICAgIDMyMDY0MCAgMjYxOTc4ICAgNTg2NjIgICA4MiUgLwpyYy1zdmNk
-aXIgICAgICAgICAgICAgMTk0MjAxICAgICAgOTQgIDE5NDEwNyAgICAxJSAvbGliL3JjL2luaXQu
-ZAp1ZGV2ICAgICAgICAgICAgICAgICAgMTk0MjAxICAgIDE0MjcgIDE5Mjc3NCAgICAxJSAvZGV2
-CmNhY2hlZGlyICAgICAgICAgICAgICAxOTQyMDEgICAgICAgMiAgMTk0MTk5ICAgIDElIC9saWIv
-c3BsYXNoL2NhY2hlCm5vbmUgICAgICAgICAgICAgICAgICAxOTQyMDEgICAgICAgMSAgMTk0MjAw
-ICAgIDElIC9kZXYvc2htCi9kZXYvaGRhMyAgICAgICAgICAgIDIwNjY1NzYgICA1NDE2MSAyMDEy
-NDE1ICAgIDMlIC9vcHQKL2Rldi9oZGE2ICAgICAgICAgICAgMTQ2ODgwMCAgNTU5MDg4ICA5MDk3
-MTIgICAzOSUgL2hvbWUKdG1wZnMgICAgICAgICAgICAgICAgIDE5NDIwMSAgICAgICA0ICAxOTQx
-OTcgICAgMSUgL3RtcAp0bXBmcyAgICAgICAgICAgICAgICAgMTk0MjAxICAgICAgIDEgIDE5NDIw
-MCAgICAxJSAvdmFyL3RtcAp0bXBmcyAgICAgICAgICAgICAgICAgMTk0MjAxICAgICAgIDEgIDE5
-NDIwMCAgICAxJSAvdXNyL3BvcnRhZ2UvZGlzdGZpbGVzCgp0dW5lMmZzIC1sIC9kZXYvaGRhMgoK
-dHVuZTJmcyAxLjQxLjMgKDEyLU9jdC0yMDA4KQpGaWxlc3lzdGVtIHZvbHVtZSBuYW1lOiAgIDxu
-b25lPgpMYXN0IG1vdW50ZWQgb246ICAgICAgICAgIDxub3QgYXZhaWxhYmxlPgpGaWxlc3lzdGVt
-IFVVSUQ6ICAgICAgICAgIGJkOGRhNTc3LTdiNTgtNDViYy05Yzk0LTgyNTRmNzE4ZTU1YQpGaWxl
-c3lzdGVtIG1hZ2ljIG51bWJlcjogIDB4RUY1MwpGaWxlc3lzdGVtIHJldmlzaW9uICM6ICAgIDEg
-KGR5bmFtaWMpCkZpbGVzeXN0ZW0gZmVhdHVyZXM6ICAgICAgaGFzX2pvdXJuYWwgZXh0X2F0dHIg
-cmVzaXplX2lub2RlIGRpcl9pbmRleCBmaWxldHlwZSBuZWVkc19yZWNvdmVyeSBleHRlbnQgZmxl
-eF9iZyBzcGFyc2Vfc3VwZXIgbGFyZ2VfZmlsZSBodWdlX2ZpbGUgdW5pbml0X2JnIGRpcl9ubGlu
-ayBleHRyYV9pc2l6ZQpGaWxlc3lzdGVtIGZsYWdzOiAgICAgICAgIHNpZ25lZF9kaXJlY3Rvcnlf
-aGFzaCAKRGVmYXVsdCBtb3VudCBvcHRpb25zOiAgICAobm9uZSkKRmlsZXN5c3RlbSBzdGF0ZTog
-ICAgICAgICBjbGVhbgpFcnJvcnMgYmVoYXZpb3I6ICAgICAgICAgIENvbnRpbnVlCkZpbGVzeXN0
-ZW0gT1MgdHlwZTogICAgICAgTGludXgKSW5vZGUgY291bnQ6ICAgICAgICAgICAgICAzMjA2NDAK
-QmxvY2sgY291bnQ6ICAgICAgICAgICAgICAxMjgxMTgzClJlc2VydmVkIGJsb2NrIGNvdW50OiAg
-ICAgNjQwNTkKRnJlZSBibG9ja3M6ICAgICAgICAgICAgICA3OTc5NQpGcmVlIGlub2RlczogICAg
-ICAgICAgICAgIDU4NjYyCkZpcnN0IGJsb2NrOiAgICAgICAgICAgICAgMApCbG9jayBzaXplOiAg
-ICAgICAgICAgICAgIDQwOTYKRnJhZ21lbnQgc2l6ZTogICAgICAgICAgICA0MDk2ClJlc2VydmVk
-IEdEVCBibG9ja3M6ICAgICAgMzEyCkJsb2NrcyBwZXIgZ3JvdXA6ICAgICAgICAgMzI3NjgKRnJh
-Z21lbnRzIHBlciBncm91cDogICAgICAzMjc2OApJbm9kZXMgcGVyIGdyb3VwOiAgICAgICAgIDgw
-MTYKSW5vZGUgYmxvY2tzIHBlciBncm91cDogICA1MDEKRmxleCBibG9jayBncm91cCBzaXplOiAg
-ICAxNgpGaWxlc3lzdGVtIGNyZWF0ZWQ6ICAgICAgIFR1ZSBKYW4gMjAgMTU6Mjk6NTggMjAwOQpM
-YXN0IG1vdW50IHRpbWU6ICAgICAgICAgIFdlZCBKYW4gMjEgMTk6MzU6NDUgMjAwOQpMYXN0IHdy
-aXRlIHRpbWU6ICAgICAgICAgIFdlZCBKYW4gMjEgMTk6MzU6NDUgMjAwOQpNb3VudCBjb3VudDog
-ICAgICAgICAgICAgIDEwCk1heGltdW0gbW91bnQgY291bnQ6ICAgICAgMzAKTGFzdCBjaGVja2Vk
-OiAgICAgICAgICAgICBXZWQgSmFuIDIxIDAwOjQ5OjUwIDIwMDkKQ2hlY2sgaW50ZXJ2YWw6ICAg
-ICAgICAgICAxNTU1MjAwMCAoNiBtb250aHMpCk5leHQgY2hlY2sgYWZ0ZXI6ICAgICAgICAgTW9u
-IEp1bCAyMCAwMTo0OTo1MCAyMDA5ClJlc2VydmVkIGJsb2NrcyB1aWQ6ICAgICAgMCAodXNlciBy
-b290KQpSZXNlcnZlZCBibG9ja3MgZ2lkOiAgICAgIDAgKGdyb3VwIHJvb3QpCkZpcnN0IGlub2Rl
-OiAgICAgICAgICAgICAgMTEKSW5vZGUgc2l6ZToJICAgICAgICAgIDI1NgpSZXF1aXJlZCBleHRy
-YSBpc2l6ZTogICAgIDI4CkRlc2lyZWQgZXh0cmEgaXNpemU6ICAgICAgMjgKSm91cm5hbCBpbm9k
-ZTogICAgICAgICAgICA4CkRlZmF1bHQgZGlyZWN0b3J5IGhhc2g6ICAgaGFsZl9tZDQKRGlyZWN0
-b3J5IEhhc2ggU2VlZDogICAgICAwNGRmOThmYS01ODUxLTRmMjQtYjIzMi1jOGI0NzM4YWVmMGYK
-Sm91cm5hbCBiYWNrdXA6ICAgICAgICAgICBpbm9kZSBibG9ja3MK
---00504502a30ce5a2c30461022331--
+	Ingo
