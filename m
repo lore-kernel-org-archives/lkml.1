@@ -1,75 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbZAUSKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbZAUSLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759814AbZAUSKt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 13:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759745AbZAUSJS
+	id S1758827AbZAUSLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 13:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZAUSLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 13:09:18 -0500
-Received: from kroah.org ([198.145.64.141]:58565 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759750AbZAUSJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 13:09:16 -0500
-Subject: patch staging-otus-logical-bit-and-confusion.patch added to gregkh-2.6 tree
-To: roel.kluin@gmail.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       lrodriguez@atheros.com
-From: <gregkh@suse.de>
-Date: Wed, 21 Jan 2009 10:07:05 -0800
-In-Reply-To: <4971E0F9.508@gmail.com>
-Message-ID: <12325612253994@kroah.org>
+	Wed, 21 Jan 2009 13:11:36 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:48438 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbZAUSLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 13:11:35 -0500
+Date: Wed, 21 Jan 2009 18:10:12 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <20090121143008.GV24891@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
+References: <20090121143008.GV24891@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 Jan 2009, Nick Piggin wrote:
+> 
+> Since last posted, I've cleaned up a few bits and pieces, (hopefully)
+> fixed a known bug where it wouldn't boot on memoryless nodes (I don't
+> have a system to test with), and improved performance and reduced
+> locking somewhat for node-specific and interleaved allocations.
 
-This is a note to let you know that I've just added the patch titled
+I haven't reviewed your postings, but I did give the previous version
+of your patch a try on all my machines.  Some observations and one patch.
 
-    Subject: Staging: otus: logical/bit and confusion
+I was initially _very_ impressed by how well it did on my venerable
+tmpfs loop swapping loads, where I'd expected next to no effect; but
+that turned out to be because on three machines I'd been using SLUB,
+without remembering how default slub_max_order got raised from 1 to 3
+in 2.6.26 (hmm, and Documentation/vm/slub.txt not updated).
 
-to my gregkh-2.6 tree.  Its filename is
+That's been making SLUB behave pretty badly (e.g. elapsed time 30%
+more than SLAB) with swapping loads on most of my machines.  Though
+oddly one seems immune, and another takes four times as long: guess
+it depends on how close to thrashing, but probably more to investigate
+there.  I think my original SLUB versus SLAB comparisons were done on
+the immune one: as I remember, SLUB and SLAB were equivalent on those
+loads when SLUB came in, but even with boot option slub_max_order=1,
+SLUB is still slower than SLAB on such tests (e.g. 2% slower).
+FWIW - swapping loads are not what anybody should tune for.
 
-    staging-otus-logical-bit-and-confusion.patch
+So in fact SLQB comes in very much like SLAB, as I think you'd expect:
+slightly ahead of it on most of the machines, but probably in the noise.
+(SLOB behaves decently: not a winner, but no catastrophic behaviour.)
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+What I love most about SLUB is the way you can reasonably build with
+CONFIG_SLUB_DEBUG=y, very little impact, then switch on the specific
+debugging you want with a boot option when you want it.  That was a
+great stride forward, which you've followed in SLQB: so I'd have to
+prefer SLQB to SLAB (on debuggability) and to SLUB (on high orders).
 
+I do hate the name SLQB.  Despite having no experience of databases,
+I find it almost impossible to type, coming out as SQLB most times.
+Wish you'd invented a plausible vowel instead of the Q; but probably
+too late for that.
 
->From roel.kluin@gmail.com  Wed Jan 21 09:43:08 2009
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Sat, 17 Jan 2009 14:45:29 +0100
-Subject: Staging: otus: logical/bit and confusion
-To: lrodriguez@atheros.com, Greg KH <gregkh@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Message-ID: <4971E0F9.508@gmail.com>
+init/Kconfig describes it as "Qeued allocator": should say "Queued".
 
+Documentation/vm/slqbinfo.c gives several compilation warnings:
+I'd rather leave it to you to fix them, maybe the unused variables
+are about to be used, or maybe there's much worse wrong with it
+than a few compilation warnings, I didn't investigate.
 
-fix logical/bit and confusion
+The only bug I found (but you'll probably want to change the patch
+- which I've rediffed to today's slqb.c, but not retested).
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Cc: <lrodriguez@atheros.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On fake NUMA I hit kernel BUG at mm/slqb.c:1107!  claim_remote_free_list()
+is doing several things without remote_free.lock: that VM_BUG_ON is unsafe
+for one, and even if others are somehow safe today, it will be more robust
+to take the lock sooner.
 
+I moved the prefetchw(head) down to where we know it's going to be the head,
+and replaced the offending VM_BUG_ON by a later WARN_ON which you'd probably
+better remove altogether: once we got the lock, it's hardly interesting.
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 ---
- drivers/staging/otus/80211core/cwm.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/staging/otus/80211core/cwm.c
-+++ b/drivers/staging/otus/80211core/cwm.c
-@@ -75,9 +75,9 @@ void zfCoreCwmBusy(zdev_t* dev, u16_t bu
+ mm/slqb.c |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+--- slqb/mm/slqb.c.orig	2009-01-21 15:23:54.000000000 +0000
++++ slqb/mm/slqb.c	2009-01-21 15:32:44.000000000 +0000
+@@ -1115,17 +1115,12 @@ static void claim_remote_free_list(struc
+ 	void **head, **tail;
+ 	int nr;
  
-     if((wd->wlanMode == ZM_MODE_INFRASTRUCTURE || wd->wlanMode == ZM_MODE_PSEUDO ||
-         wd->wlanMode == ZM_MODE_IBSS)) {
--        if (wd->sta.ie.HtCap.HtCapInfo && HTCAP_SupChannelWidthSet != 0 &&
--            wd->sta.ie.HtInfo.ChannelInfo && ExtHtCap_RecomTxWidthSet != 0 &&
--            (wd->sta.ie.HtInfo.ChannelInfo && ExtHtCap_ExtChannelOffsetAbove) == 1) {
-+        if ((wd->sta.ie.HtCap.HtCapInfo & HTCAP_SupChannelWidthSet) &&
-+            (wd->sta.ie.HtInfo.ChannelInfo & ExtHtCap_RecomTxWidthSet) &&
-+            (wd->sta.ie.HtInfo.ChannelInfo & ExtHtCap_ExtChannelOffsetAbove)) {
+-	VM_BUG_ON(!l->remote_free.list.head != !l->remote_free.list.tail);
+-
+ 	if (!l->remote_free.list.nr)
+ 		return;
  
-             wd->cwm.cw_width = CWM_WIDTH40;
-         }
-
-
-Patches currently in gregkh-2.6 which might be from roel.kluin@gmail.com are
-
-staging/staging-meilhaus-unsigned-won-t-get-negative-after-subtraction.patch
-staging/staging-otus-logical-bit-and-confusion.patch
++	spin_lock(&l->remote_free.lock);
+ 	l->remote_free_check = 0;
+ 	head = l->remote_free.list.head;
+-	/* Get the head hot for the likely subsequent allocation or flush */
+-	prefetchw(head);
+-
+-	spin_lock(&l->remote_free.lock);
+ 	l->remote_free.list.head = NULL;
+ 	tail = l->remote_free.list.tail;
+ 	l->remote_free.list.tail = NULL;
+@@ -1133,9 +1128,15 @@ static void claim_remote_free_list(struc
+ 	l->remote_free.list.nr = 0;
+ 	spin_unlock(&l->remote_free.lock);
+ 
+-	if (!l->freelist.nr)
++	WARN_ON(!head + !tail != !nr + !nr);
++	if (!nr)
++		return;
++
++	if (!l->freelist.nr) {
++		/* Get head hot for likely subsequent allocation or flush */
++		prefetchw(head);
+ 		l->freelist.head = head;
+-	else
++	} else
+ 		set_freepointer(s, l->freelist.tail, head);
+ 	l->freelist.tail = tail;
+ 
