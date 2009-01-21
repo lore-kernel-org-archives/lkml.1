@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763305AbZAUEBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763511AbZAUECv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763305AbZAUEBG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 23:01:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZAUEAx
+	id S1763511AbZAUECv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 23:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZAUECk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 23:00:53 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:3922 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755088AbZAUEAw (ORCPT
+	Tue, 20 Jan 2009 23:02:40 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:1201 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755306AbZAUECj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 23:00:52 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAFgsdkl5LAUp/2dsb2JhbADKc4Vz
-X-IronPort-AV: E=Sophos;i="4.37,298,1231075800"; 
-   d="scan'208";a="272076380"
-Date: Wed, 21 Jan 2009 15:00:42 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090121040042.GI10158@disturbed>
-Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
-	Christoph Hellwig <hch@infradead.org>,
-	Eric Sesterhenn <snakebyte@gmx.de>,
-	Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-btrfs@vger.kernel.org
-References: <20090113142147.GE16333@alice> <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz>
+	Tue, 20 Jan 2009 23:02:39 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=S7GBD6vhMHKfQ48VuDDNnyuTTLSLT9p4j6b8uvXlz5fHEwBmFb5fQDbQSG3mNcHUR
+	/u72fIpHi5gLk09dqwEvg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120222019.GB2320@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <497698E2.7090807@rtr.ca>
+References: <4975F5C1.8090107@rtr.ca>
+	 <alpine.LNX.1.00.0901201626090.19665@iabervon.org>
+	 <497698E2.7090807@rtr.ca>
+Date: Tue, 20 Jan 2009 20:02:33 -0800
+Message-ID: <da824cf30901202002g52fb73f9v8229fb702dcd033d@mail.gmail.com>
+Subject: Re: libata, devm_*, and MSI ?
+From: Grant Grundler <grundler@google.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Daniel Barkalow <barkalow@iabervon.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.143
+X-GMailtapped: grundler
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 11:20:19PM +0100, Pavel Machek wrote:
-> On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
-> > On Tue, Jan 20, 2009 at 11:59:44PM +1100, Dave Chinner wrote:
-> > > > So far the responses from xfs folks have been disappointing, if you are
-> > > > interested in bugreports i can send you some.
-> > > 
-> > > Sure I am.  It would be good if you could start testing XFS along
-> > > with all the other filesystems and report anything you find.
-> > 
-> > I think that was the issue with the debug builds.  If you do this
-> > testing always do it without CONFIG_XFS_DEBUG set as with that option
-> > we intentionally panic on detected disk corruptions.
-> 
-> Uhuh, *_DEBUG options are not supposed to make kernel less
-> stable/robust. Should that crashing functionality be guarded with
-> command line option or something? ext2 has errors=panic mount
-> option...
+On Tue, Jan 20, 2009 at 7:39 PM, Mark Lord <liml@rtr.ca> wrote:
+...
+> Next.. who knows something about debugging MSI across PCI bridges ?
+> I've got a 64-bit box here, PCIe near the core, but with full PCI-X
+> slots on the far side of two bridges.
+>
+> The kernel happily allows my driver to setup MSI, but the interrupts
+> never arrive.  So something somewhere in between is either
+>
+> (1) not set up or quirked quite right, or
+> (2) one of the bridges won't pass MSI and we don't detect that.
+>
+> I'll poke more at it later and post some info, if somebody out there
+> knows enough about this kind of thing to provide some basic hints.
 
-No, it's a debugging option that is described as:
 
-	"Say N unless you are an XFS developer, or you play one on TV."
+Basic Hints:
+1) post lspci -v output to verify device (and bridges) is programmed correctly.
+2) look for chipset quirks that disable global msi
+3) Make sure MMIO ranges for 0xfee00000 are routed to local APIC
+   ie each bridge needs to route that address somehow (negative decode
+is common for upstream).
+4) manually trigger the MSI by doing a MMIO write to the correct
+0xfee00000 address with the assigned vector in order to see if your
+interrupt handler gets called.
 
-Seriously, if you aren't trying to develop XFS stuff then *don't turn it
-on*.
+After that, it's about collecting PCI-X or PCIe traces to verify the
+device is generating the transactions correctly and the bridges are
+forwarding them.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+hth,
+grant
