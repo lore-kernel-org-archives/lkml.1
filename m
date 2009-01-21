@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZAUXm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZAUXoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbZAUXm7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 18:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZAUXms
+	id S1754777AbZAUXoF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 18:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZAUXnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 18:42:48 -0500
-Received: from h4320.serverkompetenz.net ([81.169.172.102]:42743 "EHLO
-	www.deb-support.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754087AbZAUXmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 18:42:47 -0500
-Date: Wed, 21 Jan 2009 23:42:41 +0000
-From: Michael Bramer <michael@debsupport.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Niels de Vos <niels.devos@wincor-nixdorf.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port RS-232 MIC-3620 from advantech'
-Message-ID: <20090121234241.GB10645@deb-support.de>
-References: <20090118135359.GA3087@deb-support.de> <20090119145101.GA16732@ports.donpac.ru> <20090119235122.GE21026@deb-support.de> <20090120151216.GB16732@ports.donpac.ru> <20090121075212.GA18485@deb-support.de> <4976DA3D.7050201@teltonika.lt> <4976DF6F.2010509@wincor-nixdorf.com> <20090121123215.1b3acc4d@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
+	Wed, 21 Jan 2009 18:43:52 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:56744 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754112AbZAUXnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 18:43:51 -0500
+Date: Thu, 22 Jan 2009 00:43:47 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: kmh@nerdshack.com, linux-kernel@vger.kernel.org, lermen@elserv.ffm.fgan.de,
+       lermen@fgan.de, davej@redhat.com, cebbert@redhat.com
+Subject: Re: PROBLEM: loadlin incompatible with 2.6.23 kernels
+Message-ID: <20090121234347.GI5237@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, kmh@nerdshack.com,
+	linux-kernel@vger.kernel.org, lermen@elserv.ffm.fgan.de,
+	lermen@fgan.de, davej@redhat.com, cebbert@redhat.com
+References: <200712022336.SAA12095@granite.sover.net> <4977AB27.8080608@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090121123215.1b3acc4d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: grisu@deb-support.de
-X-SA-Exim-Scanned: No (on www.deb-support.de); SAEximRunCond expanded to false
+In-Reply-To: <4977AB27.8080608@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 12:32:15PM +0000, Alan Cox wrote:
-> > >>  static struct pci_device_id serial_pci_tbl[] = {
-> > >> +       {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
-> > >> +               0x3620, PCI_ANY_ID, 0, 0,
-> > 
-> > Why not use PCI_VENDOR_ID_ADVANTECH as PCI_SUBVENDOR_ID too?
+Hello,
+
+H. Peter Anvin, le Wed 21 Jan 2009 15:09:27 -0800, a écrit :
+> Kenneth Howlett wrote:
+> >I do not know if the problem is with the kernel or with loadlin. Probably
+> >some people will say it is the kernel's fault, and other people will say it
+> >is loadlin's fault.
+> >
+> >I do not know why this occurs with loadlin and not with other boot loaders.
 > 
-> The Advantech vendor id is not 0x3620. This confused me as well which is
-> why I asked for an lspci. Advantech has stuck the device id in the
-> subvendor bits and '1' in the subdevice (so it should be 1 not
-> PCI_ANY_ID).
+> LOADLIN uses memory it isn't allowed to use by the boot protocol.  Newer 
+> kernels use more memory than previous ones, and starts using memory 
+> LOADLIN expects to use.
+> 
+> Unfortunately LOADLIN hasn't been updated for a very long time, and 
+> there doesn't seem to be much interest in maintaining it.
 
-is this better?
+I've fixed loadlin in debian and actually plan to maintain it upstream.
+I had to patch it quite a bit to make it compilable by yasm, but it can
+now boot recent big kernels & initrds.
 
-+       {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
-+               PCI_DEVICE_ID_ADVANTECH_PCI3620, 1, 0, 0,
-
-
-Gruss
-Grisu
--- 
-Michael Bramer  -- http://www.feuerwehr.kreuzau.de/wiki/
-PGP: finger grisu@db.debian.org  -- Linux Sysadmin   -- Use Debian Linux
-"Wenn ich die Folgen geahnt hätte, wäre ich Uhrmacher geworden!"
-                                                 --- Albert Einstein
+Samuel
