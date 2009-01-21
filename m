@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZAUUBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZAUUGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbZAUUBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 15:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZAUUA7
+	id S1753216AbZAUUGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 15:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZAUUGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 15:00:59 -0500
-Received: from rn-out-0910.google.com ([64.233.170.187]:42864 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbZAUUA6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 15:00:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cWYG9tLjFgpldotDiaKYDMgBxOiapzad25K1BT3XFnaunVhQTmGqGdFVJ3kM3a5PIh
-         6tYcSeoctFjx8P6YPgyECYPFwgNXZ5Rk5TlsdGDVrs/K9/pt1b7xZV8jz+1fybvlqYCf
-         f4v8N8Yf9xzFnoggWBYsosNcWAPJqaqsCf0vc=
+	Wed, 21 Jan 2009 15:06:33 -0500
+Received: from www.tglx.de ([62.245.132.106]:53569 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbZAUUGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 15:06:33 -0500
+Date: Wed, 21 Jan 2009 21:06:12 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Brandon Philips <brandon@ifup.org>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: uio: add the uio_aec driver
+Message-ID: <20090121200612.GA9626@local>
+References: <20090120204729.GA26477@jenkins.ifup.org> <20090120214832.GE3027@local> <20090121170116.GA18567@jenkins.ifup.org>
 MIME-Version: 1.0
-In-Reply-To: <20090121171423.GI21473@genesis.frugalware.org>
-References: <20090121171423.GI21473@genesis.frugalware.org>
-Date: Wed, 21 Jan 2009 12:00:57 -0800
-X-Google-Sender-Auth: 8f5e085fbed1fc32
-Message-ID: <1f1b08da0901211200l88fa89s78a51c4e90878d85@mail.gmail.com>
-Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
-From: john stultz <johnstul@us.ibm.com>
-To: Miklos Vajna <vmiklos@frugalware.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       =?ISO-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121170116.GA18567@jenkins.ifup.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 9:14 AM, Miklos Vajna <vmiklos@frugalware.org> wrote:
-> We just recently upgraded from Linux 2.6.27 to 2.6.28.1 and we noticed
-> that on some i686 machines the system clocks runs way faster than
-> necessary, they count about 70 minutes in an hour.
->
-> The strange fact is that using the same config on some other i686
-> machines the problem is not reproducible.
->
-> We had no messages on boot using the quiet option with 2.6.27, now there
-> is a
->
->        IO APIC resources could be not be allocated.
->
-> with 2.6.28. I'm not sure if this is related or not.
->
-> I'm attaching the dmesg of my laptop (where the bug is reproducible),
-> the config and the lspci output.
+On Wed, Jan 21, 2009 at 09:01:16AM -0800, Brandon Philips wrote:
+> > The portio feature is available since .29-rc1, please use it.
+> 
+> Sounds good. I will rework it along with your suggestions below.
 
-Could you send the output from:
-   cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-   cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+Fine. I had a look at their homepage, seems to be interesting hardware.
 
-For both kernels on the affected hardware ?
+> 
+> > > uioport is designed to be a setuid program and checks the permissions of
+> > > the /dev/uio* node and if the user has write permissions it will use
+> > > iopl and out*/in* to access the device.
+> > 
+> > What happens with PCI on PowerPC ?
+> 
+> I don't know. I could use /dev/port but my concern is that the device
+> spec sheet specifies that some writes should be done with outb and
+> others with outl. /dev/port only uses outb. Do you know if outl is
+> different than four outb's to a device?
 
-Also could you attach the dmesg for 2.6.27 on the same hardware?
+It is very probably different (4 WR pulses instead of one), the question
+is if that causes different hardware behaviour. If there's a spec for it,
+then you should definitly obey it.
+
+What I had in mind was that those ioport regions cannot be mmapped on x86,
+but it's possible on ppc, AFAIK.
+Furthermore, you need to think about correct endianness handling.
+
+Thanks,
+Hans
