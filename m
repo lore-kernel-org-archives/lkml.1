@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762175AbZAUISr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763044AbZAUIUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762175AbZAUISr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZAUISg
+	id S1763044AbZAUIUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZAUITu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:18:36 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:47292 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753240AbZAUISf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:18:35 -0500
-Date: Wed, 21 Jan 2009 09:18:30 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Philipp Kohlbecher <xt28@gmx.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
-       Vojtech Pavlik <vojtech@ucw.cz>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       Pau Oliva Fora <pof@eslack.org>, Hans Verkuil <hverkuil@xs4all.nl>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jaroslav Kysela <perex@perex.cz>, Adam Belay <abelay@mit.edu>,
-       Len Brown <lenb@kernel.org>,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       linux-acpi@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make PNP IDs all uppercase
-Message-ID: <20090121091830.225646d9@i1501.lan.towertech.it>
-In-Reply-To: <4976D517.2070406@gmx.de>
-References: <49733678.40006@gmx.de>
-	<200901201742.10155.bjorn.helgaas@hp.com>
-	<4976D517.2070406@gmx.de>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Jan 2009 03:19:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55490 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753240AbZAUITu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:19:50 -0500
+Message-ID: <4976DA9C.7000500@kernel.org>
+Date: Wed, 21 Jan 2009 17:19:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] x86: Merge hardirq.h
+References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-5-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1232457345-12366-5-git-send-email-brgerst@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 21 Jan 2009 08:19:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 08:56:07 +0100
-Philipp Kohlbecher <xt28@gmx.de> wrote:
+Brian Gerst wrote:
+> Remove unused idle_timestamp field from 32-bit.
 
-> switch and could not access the RTC anymore. My RTC is handled by 
-> rtc-cmos, which is compiled as a module. However, udev did not load this 
-> module, as the device's modalias "acpi:PNP0B00:" did not match any of 
+Dropped.  X86_32 doesn't build.  X86_64 UP doesn't build.  Please at
+least do compile testing on all four combinations before sending the
+patches.
 
- your main RTC should be compiled in, or you will have problems
- with fsck.
+Thanks.
 
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+tejun
