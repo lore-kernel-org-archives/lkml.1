@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbZAUIXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbZAUIZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763552AbZAUIXj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbZAUIX1
+	id S1757155AbZAUIZV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZAUIZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:23:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56143 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755318AbZAUIX1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:23:27 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4976DB7B.9030802@s5r6.in-berlin.de>
-Date: Wed, 21 Jan 2009 09:23:23 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Wed, 21 Jan 2009 03:25:05 -0500
+Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:46516 "EHLO
+	teltonika.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755318AbZAUIZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:25:04 -0500
+X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 03:25:03 EST
+Message-ID: <4976DA3D.7050201@teltonika.lt>
+Date: Wed, 21 Jan 2009 10:18:05 +0200
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Ionut Leonte <garglkml@gmail.com>
-CC: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.28 changes in-kernel name for UVC device ?
-References: <200901201349.33707.ionut.leonte@gmail.com> <ac3eb2510901200507p4b107af6ud87a634af6679223@mail.gmail.com> <49760649.8000800@s5r6.in-berlin.de> <200901210523.01282.ionut.leonte@gmail.com>
-In-Reply-To: <200901210523.01282.ionut.leonte@gmail.com>
-X-Enigmail-Version: 0.95.7
+To: Michael Bramer <michael@debsupport.de>
+CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port RS-232
+ MIC-3620 from advantech'
+References: <20090118135359.GA3087@deb-support.de> <20090119145101.GA16732@ports.donpac.ru> <20090119235122.GE21026@deb-support.de> <20090120151216.GB16732@ports.donpac.ru> <20090121075212.GA18485@deb-support.de>
+In-Reply-To: <20090121075212.GA18485@deb-support.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ionut Leonte wrote:
-> On Tuesday 20 January 2009 19:13:45 you wrote:
->> only certain types of FireWire cameras cause respective uevents and thus
->> autoloading of the special-purpose driver video1394.  Ergo, Ionut's
->> userland has a configuration somewhere which loads video1394 explicitly.
+Michael Bramer wrote:
+> On Tue, Jan 20, 2009 at 06:12:16PM +0300, Andrey Panin wrote:
+>> On 019, 01 19, 2009 at 11:51:22PM +0000, Michael Bramer wrote:
+>>> On Mon, Jan 19, 2009 at 05:51:01PM +0300, Andrey Panin wrote:
+>>>> On 018, 01 18, 2009 at 01:53:59PM +0000, Michael Bramer wrote:
+>>>>> +        * ADVANTECH
+>>>>> +        */
+>>>>> +       {
+>>>>> +               .vendor         = PCI_VENDOR_ID_ADVANTECH,
+>>>>> +               .device         = PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>>>>> +               .subvendor      = PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>>>>> +               .subdevice      = PCI_ANY_ID,
+>>>>> +               .setup          = pci_default_setup,
+>>>>> +       },
+>>>>> +       /*
+>>>>>          * AFAVLAB cards - these may be called via parport_serial
+>>>>>          *  It is not clear whether this applies to all products.
+>>>>>          */
+>>>> This part is not needed at all, pci_default_setup() will be used by default.
+>>> ok. I don't test this. But you are right. The last entry in
+>>> pci_serial_quirks should catch it. 
+>>>
+>>> Should I post a new patch, without this 10 lines?
+>> Yes and add Signed-off-by: line please.
 > 
-> It's most likely related to my kernel being monolithic -
+> 
+> the new patch:
+> --------------
+> This Patch add the device information for the 
+> MIC-3620 8-port RS-232 cPCI card from Advantech Co. Ltd.
+> 
+> Signed-off-by: Michael Bramer <grisu@deb-support.de>
+> --- a/drivers/serial/8250_pci.c
+> +++ b/drivers/serial/8250_pci.c
+> @@ -31,6 +31,7 @@
+>  #include "8250.h"
+> 
+>  #undef SERIAL_DEBUG_PCI
+> +#define SERIAL_DEBUG_PCI
 
-Ah, right; I keep forgetting that there is also Y besides M.  :-)
-Anyway, the best course of action is to get the udev device naming rules
-fixed.
+NAK.
 
-I suppose the simplest course of action would be to add the expression
-SUBSYSTEM=="video4linux" to the v4l rule.  Then it won't be applied to
-ieee1394 devices.
--- 
-Stefan Richter
--=====-==--= ---= =-=-=
-http://arcgraph.de/sr/
+>  /*
+>   * init function returns:
+> @@ -768,6 +769,8 @@
+>  #define PCI_SUBDEVICE_ID_OCTPRO422     0x0208
+>  #define PCI_SUBDEVICE_ID_POCTAL232     0x0308
+>  #define PCI_SUBDEVICE_ID_POCTAL422     0x0408
+> +#define PCI_VENDOR_ID_ADVANTECH         0x13fe
+> +#define PCI_DEVICE_ID_ADVANTECH_PCI3620 0x3620
+> 
+>  /*
+>   * Master list of serial port init/setup/exit quirks.
+> @@ -2041,6 +2054,9 @@
+>  #endif
+> 
+>  static struct pci_device_id serial_pci_tbl[] = {
+> +       {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
+> +               0x3620, PCI_ANY_ID, 0, 0,
+> +               pbn_b2_8_921600 },
+>         {       PCI_VENDOR_ID_V3, PCI_DEVICE_ID_V3_V960,
+>                 PCI_SUBVENDOR_ID_CONNECT_TECH,
+>                 PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232, 0, 0,
+> --------------
+> 
+> Gruss
+> Grisu
