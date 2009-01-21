@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764615AbZAUMqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbZAUMsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764615AbZAUMqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 07:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759214AbZAUMp5
+	id S1764470AbZAUMsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 07:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbZAUMsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 07:45:57 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:50043 "EHLO mail.vyatta.com"
+	Wed, 21 Jan 2009 07:48:10 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55611 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758961AbZAUMp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 07:45:56 -0500
-Date: Wed, 21 Jan 2009 23:45:01 +1100
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
-       hpa@zytor.com, brgerst@gmail.com, cl@linux-foundation.org,
-       travis@sgi.com, linux-kernel@vger.kernel.org, steiner@sgi.com,
-       hugh@veritas.com, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Message-ID: <20090121234502.66acbcf9@s6510>
-In-Reply-To: <m1fxjcucp8.fsf@fess.ebiederm.org>
-References: <20090115183942.GA6325@elte.hu>
-	<200901170827.33729.rusty@rustcorp.com.au>
-	<20090116220832.GB20653@elte.hu>
-	<200901201328.24605.rusty@rustcorp.com.au>
-	<20090120104022.GB29346@elte.hu>
-	<4976B82E.1080002@kernel.org>
-	<m1fxjcucp8.fsf@fess.ebiederm.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757419AbZAUMsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 07:48:10 -0500
+Date: Wed, 21 Jan 2009 13:45:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] workqueue: not allow recursion run_workqueue
+Message-ID: <20090121124514.GA13404@redhat.com>
+References: <4976EE11.7010007@cn.fujitsu.com> <1232536373.4847.115.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232536373.4847.115.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 03:21:23 -0800
-ebiederm@xmission.com (Eric W. Biederman) wrote:
-
-> Tejun Heo <tj@kernel.org> writes:
-> 
-> > Ingo Molnar wrote:
-> >> The larger point still remains: the kernel dominantly uses static percpu 
-> >> variables by a margin of 10 to 1, so we cannot just brush away the static 
-> >> percpu variables and must concentrate on optimizing that side with 
-> >> priority. It's nice if the dynamic percpu-alloc side improves as well, of 
-> >> course.
+On 01/21, Peter Zijlstra wrote:
+>
+> On Wed, 2009-01-21 at 17:42 +0800, Lai Jiangshan wrote:
+> > 1) lockdep will complain when recursion run_workqueue
+> > 2) works is not run orderly when recursion run_workqueue
 > >
-> > Well, the infrequent usage of dynamic percpu allocation is in some
-> > part due to the poor implementation, so it's sort of chicken and egg
-> > problem.  I got into this percpu thing because I wanted a percpu
-> > reference count which can be dynamically allocated and it sucked.
-> 
-> Counters are our other special case, and counters are interesting
-> because they are individually very small.  I just looked and the vast
-> majority of the alloc_percpu users are counters.
-> 
-> I just did a rough count in include/linux/snmp.h  and I came
-> up with 171*2 counters.  At 8 bytes per counter that is roughly
-> 2.7K.  Or about two thirds of a 4K page.
+> > 3) BUG!
+> >    We use recursion run_workqueue to hidden deadlock when
+> >    keventd trying to flush its own queue.
+> >
+> >    It's bug. When flush_workqueue()(nested in a work callback)returns,
+> >    the workqueue is not really flushed, the sequence statement of
+> >    this work callback will do some thing bad.
+> >
+> >    So we should not allow workqueue trying to flush its own queue.
+>
+> The patch looks good, but I'm utterly failing to comprehend this
+> changelog. What exactly can go wrong (other than the obvious too deep
+> nest and the fact that lockdep will complain)?
 
-This is crap. only a small fraction of these SNMP counters are
-close enough to the hot path to deserve per-cpu treatment.
+I am confused too.
+
+
+But the change itself looks good to me, I am only worried if we still
+have the callers of flush() from within work->func().
+
+> +	WARN_ON(cwq->thread == current);
+
+probably BUG_ON() is better, we are going to deadlock in this case.
+
+Oleg.
+
