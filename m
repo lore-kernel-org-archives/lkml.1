@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763754AbZAUIeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbZAUIjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763754AbZAUIeh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZAUIeJ
+	id S1763622AbZAUIjH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZAUIiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:34:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42090 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757515AbZAUIeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:34:07 -0500
-Date: Wed, 21 Jan 2009 09:31:36 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, ebiederm@xmission.com,
-       roland@redhat.com, bastian@waldi.eu.org, daniel@hozac.com,
-       xemul@openvz.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
-Message-ID: <20090121083136.GA30368@redhat.com>
-References: <20090117202638.GA11825@us.ibm.com> <3e8340490901202039r1ac7e0te5372690dfe81089@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 21 Jan 2009 03:38:51 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35199 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755997AbZAUIiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:38:50 -0500
+Date: Wed, 21 Jan 2009 09:54:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
+       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-btrfs <linux-btrfs@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Morreale <pmorreale@novell.com>,
+       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
+Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
+Message-ID: <20090121085402.GD15750@one.firstfloor.org>
+References: <496BBE27.2020206@t-online.de> <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3e8340490901202039r1ac7e0te5372690dfe81089@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090120220516.GA10483@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/20, Bryan Donlan wrote:
->
-> On Sat, Jan 17, 2009 at 3:26 PM, Sukadev Bhattiprolu
-> <sukadev@linux.vnet.ibm.com> wrote:
-> >
-> >        - container-init may be immune to unhandled fatal signals (like
-> >          SIGUSR1) even if they are from ancestor namespace (SIGKILL is
-> >          the only reliable signal from ancestor namespace).
->
-> SIGSTOP is normally uncatchable; I note that patch 4 states that
-> SIGSTOP is allowed through to container-init, but given this summary
-> is SIGSTOP still reliable when sent to a container-init from an
-> ancestor namespace?
+> GCC 4.3.2. Maybe i missed something obvious?
 
-Yes we should handle SIGSTOP fine if it sent from the parent namespace.
+The typical use case of restrict is to tell it that multiple given
+arrays are independent and then give the loop optimizer 
+more freedom to handle expressions in the loop that
+accesses these arrays.
 
-Also. Currently it is possible to ptrace the global init, but even
-ptracer can't stop it (but ptrace_stop() works). With these patches
-ptracer can stop init.
+Since there are no loops in the list functions nothing changed.
 
-I forgot to mention this behaviour change, imho this side-effect
-is good.
+Ok presumably there are some other optimizations which 
+rely on that alias information too, but again the list_*
+stuff is probably too simple to trigger any of them.
 
-Oleg.
+-Andi
 
