@@ -1,328 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbZAUP1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763674AbZAUP2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761638AbZAUP1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 10:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbZAUP1J
+	id S1763674AbZAUP2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 10:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbZAUP16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 10:27:09 -0500
-Received: from mx2.suse.de ([195.135.220.15]:35680 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755676AbZAUP1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 10:27:08 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Date: Wed, 21 Jan 2009 20:54:33 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-References: <200901211638.23101.knikanth@suse.de> <20090121131739.GB4997@ioremap.net>
-In-Reply-To: <20090121131739.GB4997@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901212054.34929.knikanth@suse.de>
+	Wed, 21 Jan 2009 10:27:58 -0500
+Received: from ti-out-0910.google.com ([209.85.142.184]:55969 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755676AbZAUP15 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 10:27:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=hu9Ft3n3UAlDcpnoWxaBfuxpAMqzRoR9LbEKDzt1F6AqkgY+mIVPxDG6Z1zVv7wuBK
+         Ex9IvhpniKPKU27zQLBo2q/WQKKwLdxuhaMzw7DY/nMqcLfnMXCDER8M0hsBSzQ9iqeL
+         SSfuwm5DQRsmEJin1/KqsC53k1kYFEMQzCqcM=
+From: tom.leiming@gmail.com
+To: kay.sievers@vrfy.org, greg@kroah.com
+Cc: cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] driver core: check bus->match without holding device lock(v2)
+Date: Wed, 21 Jan 2009 23:27:47 +0800
+Message-Id: <1232551667-4829-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009 18:47:39 Evgeniy Polyakov wrote:
-> On Wed, Jan 21, 2009 at 04:38:21PM +0530, Nikanth Karthikesan 
-(knikanth@suse.de) wrote:
-> > As Alan Cox suggested/wondered in this thread,
-> > http://lkml.org/lkml/2009/1/12/235 , this is a container group based
-> > approach to override the oom killer selection without losing all the
-> > benefits of the current oom killer heuristics and oom_adj interface.
-> >
-> > It adds a tunable oom.victim to the oom cgroup. The oom killer will kill
-> > the process using the usual badness value but only within the cgroup with
-> > the maximum value for oom.victim before killing any process from a cgroup
-> > with a lesser oom.victim number. Oom killing could be disabled by setting
-> > oom.victim=0.
->
-> Looks good, except that in some conditions (everyone has zero for
-> example) victim=0 does not disalbe oom-killer because of !chosen
-> part of the condition.
+From: Ming Lei <tom.leiming@gmail.com>
 
-Thanks for reviewing. Yes, I missed that condition. Adding a check for 
-victim!=0 should fix it. Here is a revised patch with that fixed.
+This patch moves bus->match out from driver_probe_device and
+does not hold device lock to check the match between a device
+and a driver.
 
-Thanks
-Nikanth Karthikesan
+The idea has been verified by the commit 6cd495860901,
+which leads to a faster boot. But the commit 6cd495860901 has
+the following drawbacks: 1),only does the quick check in
+the path of __driver_attach->driver_probe_device, not in other
+paths; 2),for a matched device and driver, check the same match
+twice. It is a waste of cpu ,especially for some drivers with long
+device id table (eg. usb-storage driver).
 
-From: Nikanth Karthikesan <knikanth@suse.de>
+This patch adds a helper of driver_match_device to check the match
+in all paths, and testes the match only once.
 
-Cgroup based OOM killer controller
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 ---
+ drivers/base/base.h |    5 +++++
+ drivers/base/bus.c  |    2 +-
+ drivers/base/dd.c   |   19 +++++++------------
+ 3 files changed, 13 insertions(+), 13 deletions(-)
 
-This is a container group based approach to override the oom killer selection 
-without losing all the benefits of the current oom killer heuristics and 
-oom_adj interface.
-
-It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
-process using the usual badness value but only within the cgroup with the 
-maximum value for oom.victim before killing any process from a cgroup with a 
-lesser oom.victim number. Oom killing could be disabled by setting 
-oom.victim=0.
-
-diff --git a/Documentation/cgroups/oom.txt b/Documentation/cgroups/oom.txt
-new file mode 100644
-index 0000000..9102830
---- /dev/null
-+++ b/Documentation/cgroups/oom.txt
-@@ -0,0 +1,29 @@
-+OOM Killer controller
-+--- ------ ----------
-+
-+The OOM killer kills the process based on a set of heuristics such that only
-+minimum amount of work done will be lost, a large amount of memory would be
-+recovered and minimum no of processes are killed.
-+
-+The user can adjust the score used to select the processes to be killed using
-+/proc/<pid>/oom_adj. Giving it a high score will increase the likelihood of 
-+this process being killed by the oom-killer.  Valid values are in the range 
-+-16 to +15, plus the special value -17, which disables oom-killing altogether
-+for that process.
-+
-+But it is very difficult to suggest an order among tasks to be killed during
-+Out Of Memory situation. The OOM Killer controller aids in doing that.
-+
-+USAGE
-+-----
-+
-+Mount the oom controller by passing 'oom' when mounting cgroups. Echo
-+a value in oom.victim file to change the order. The oom killer would kill
-+all the processes in a cgroup with a higher oom.victim value before killing a
-+process in a cgroup with lower oom.victim value. Among those tasks with same
-+oom.victim value, the usual badness heuristics would be applied. The 
-+/proc/<pid>/oom_adj still helps adjusting the oom killer score. Also having
-+oom.victim = 0 would disable oom killing for the tasks in that cgroup.
-+
-+Note: If this is used without proper consideration, innocent processes may
-+get killed unnecesarily.
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index 9c8d31b..6944f99 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -59,4 +59,8 @@ SUBSYS(freezer)
- SUBSYS(net_cls)
- #endif
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 0a5f055..e2599ba 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -86,6 +86,11 @@ extern void bus_remove_driver(struct device_driver *drv);
  
-+#ifdef CONFIG_CGROUP_OOM
-+SUBSYS(oom)
-+#endif
-+
- /* */
-diff --git a/include/linux/oomcontrol.h b/include/linux/oomcontrol.h
-new file mode 100644
-index 0000000..18146ab
---- /dev/null
-+++ b/include/linux/oomcontrol.h
-@@ -0,0 +1,14 @@
-+#ifndef _LINUX_OOMCONTROL_H
-+#define _LINUX_OOMCONTROL_H
-+
-+#ifdef CONFIG_CGROUP_OOM
-+struct oom_cgroup { 
-+	struct cgroup_subsys_state css;
-+	/*
-+	 * the order to be victimized for this group
-+	 */  
-+	u64 victim;
-+};
-+
-+#endif
-+#endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 2af8382..99ed0de 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -354,6 +354,15 @@ config CGROUP_DEBUG
- 
- 	  Say N if unsure.
- 
-+config CGROUP_OOM
-+	bool "Oom cgroup subsystem"
-+	depends on CGROUPS
-+	help
-+	  This provides a cgroup subsystem which aids controlling
-+	  the order in which tasks whould be killed during
-+	  out of memory situations.
-+	
-+
- config CGROUP_NS
- 	bool "Namespace cgroup subsystem"
- 	depends on CGROUPS
-diff --git a/mm/Makefile b/mm/Makefile
-index 72255be..a5d7222 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -33,3 +33,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
-+obj-$(CONFIG_CGROUP_OOM) += oomcontrol.o 
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 40ba050..64fa38e 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/notifier.h>
- #include <linux/memcontrol.h>
-+#include <linux/oomcontrol.h>
- #include <linux/security.h>
- 
- int sysctl_panic_on_oom;
-@@ -205,6 +206,9 @@ static struct task_struct *select_bad_process(unsigned 
-long *ppoints,
- 	struct task_struct *g, *p;
- 	struct task_struct *chosen = NULL;
- 	struct timespec uptime;
-+#ifdef CONFIG_CGROUP_OOM
-+	u64 chosenvictim = 1, taskvictim;
-+#endif
- 	*ppoints = 0;
- 
- 	do_posix_clock_monotonic_gettime(&uptime);
-@@ -257,10 +261,26 @@ static struct task_struct *select_bad_process(unsigned 
-long *ppoints,
- 			continue;
- 
- 		points = badness(p, uptime.tv_sec);
-+#ifdef CONFIG_CGROUP_OOM
-+		taskvictim = (container_of(p->cgroups->subsys[oom_subsys_id],
-+						struct oom_cgroup, css))->victim;
-+
-+		if (taskvictim > chosenvictim ||
-+			(taskvictim == chosenvictim && points > *ppoints) ||
-+			(taskvictim && !chosen)) {
-+
-+			chosen = p;
-+			*ppoints = points;
-+			chosenvictim = taskvictim;
-+
-+		}
-+		
-+#else
- 		if (points > *ppoints || !chosen) {
- 			chosen = p;
- 			*ppoints = points;
- 		}
-+#endif
- 	} while_each_thread(g, p);
- 
- 	return chosen;
-diff --git a/mm/oomcontrol.c b/mm/oomcontrol.c
-new file mode 100644
-index 0000000..2bfa325
---- /dev/null
-+++ b/mm/oomcontrol.c
-@@ -0,0 +1,95 @@
-+/*
-+ * kernel/cgroup_oom.c - oom handler cgroup.
-+ */
-+
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+#include <linux/slab.h>
-+#include <linux/oomcontrol.h>
-+
-+/*
-+ * Helper to retrieve oom controller data from cgroup
-+ */
-+static struct oom_cgroup *oom_css_from_cgroup(struct cgroup *cgrp)
+ extern void driver_detach(struct device_driver *drv);
+ extern int driver_probe_device(struct device_driver *drv, struct device *dev);
++static inline int driver_match_device(struct device_driver *drv,
++				      struct device *dev)
 +{
-+        return container_of(cgroup_subsys_state(cgrp,
-+                                oom_subsys_id), struct oom_cgroup,
-+                                css);
++	return drv->bus->match && drv->bus->match(dev, drv);
 +}
+ 
+ extern void sysdev_shutdown(void);
+ extern int sysdev_suspend(pm_message_t state);
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 83f32b8..8547b78 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -198,7 +198,7 @@ static ssize_t driver_bind(struct device_driver *drv,
+ 	int err = -ENODEV;
+ 
+ 	dev = bus_find_device_by_name(bus, NULL, buf);
+-	if (dev && dev->driver == NULL) {
++	if (dev && dev->driver == NULL && driver_match_device(drv, dev)) {
+ 		if (dev->parent)	/* Needed for USB */
+ 			down(&dev->parent->sem);
+ 		down(&dev->sem);
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 315bed8..9b721d3 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -172,14 +172,8 @@ int driver_probe_done(void)
+  * @drv: driver to bind a device to
+  * @dev: device to try to bind to the driver
+  *
+- * First, we call the bus's match function, if one present, which should
+- * compare the device IDs the driver supports with the device IDs of the
+- * device. Note we don't do this ourselves because we don't know the
+- * format of the ID structures, nor what is to be considered a match and
+- * what is not.
+- *
+- * This function returns 1 if a match is found, -ENODEV if the device is
+- * not registered, and 0 otherwise.
++ * This function returns -ENODEV if the device is not registered,
++ * 1 if the device is bound sucessfully and 0 otherwise.
+  *
+  * This function must be called with @dev->sem held.  When called for a
+  * USB interface, @dev->parent->sem must be held as well.
+@@ -190,21 +184,22 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
+ 
+ 	if (!device_is_registered(dev))
+ 		return -ENODEV;
+-	if (drv->bus->match && !drv->bus->match(dev, drv))
+-		goto done;
+ 
+ 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+ 		 drv->bus->name, __func__, dev_name(dev), drv->name);
+ 
+ 	ret = really_probe(dev, drv);
+ 
+-done:
+ 	return ret;
+ }
+ 
+ static int __device_attach(struct device_driver *drv, void *data)
+ {
+ 	struct device *dev = data;
 +
++	if (!driver_match_device(drv, dev))
++		return 0;
 +
-+static struct cgroup_subsys_state *oom_create(struct cgroup_subsys *ss,
-+						   struct cgroup *cont)
-+{
-+	struct oom_cgroup *oom_css = kzalloc(sizeof(*oom_css), GFP_KERNEL);
-+	struct oom_cgroup *parent;
-+
-+	if (!oom_css)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/*
-+	 * if root last/only group to be victimized
-+	 * else inherit parents value
-+	 */
-+	if (cont->parent == NULL)
-+		oom_css->victim = 1;
-+	else {
-+		parent = oom_css_from_cgroup(cont->parent);
-+		oom_css->victim = parent->victim;
-+	}
-+
-+	return &oom_css->css;
-+}
-+
-+static void oom_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	kfree(cont->subsys[oom_subsys_id]);
-+}
-+
-+static int oom_victim_write(struct cgroup *cgrp, struct cftype *cft,
-+                                       u64 val)
-+{
-+
-+        cgroup_lock();
-+
-+	(oom_css_from_cgroup(cgrp))->victim = val;
-+
-+        cgroup_unlock();
-+
-+        return 0;
-+}
-+
-+static u64 oom_victim_read(struct cgroup *cgrp, struct cftype *cft)
-+{
-+        u64 victim = (oom_css_from_cgroup(cgrp))->victim;
-+
-+        return victim;
-+}
-+
-+
-+static struct cftype oom_cgroup_files[] = {
-+	{
-+		.name = "victim",
-+		.read_u64 = oom_victim_read,
-+		.write_u64 = oom_victim_write,
-+	},
-+};
-+
-+static int oom_populate(struct cgroup_subsys *ss,
-+                                struct cgroup *cont)
-+{
-+        int ret;
-+
-+        ret = cgroup_add_files(cont, ss, oom_cgroup_files,
-+                                ARRAY_SIZE(oom_cgroup_files));
-+
-+        return ret;
-+}
-+
-+struct cgroup_subsys oom_subsys = {
-+	.name = "oom",
-+	.subsys_id = oom_subsys_id,
-+	.create = oom_create,
-+	.destroy = oom_destroy,
-+	.populate = oom_populate,
-+};
+ 	return driver_probe_device(drv, dev);
+ }
+ 
+@@ -257,7 +252,7 @@ static int __driver_attach(struct device *dev, void *data)
+ 	 * is an error.
+ 	 */
+ 
+-	if (drv->bus->match && !drv->bus->match(dev, drv))
++	if (!driver_match_device(drv, dev))
+ 		return 0;
+ 
+ 	if (dev->parent)	/* Needed for USB */
+-- 
+1.6.0
 
