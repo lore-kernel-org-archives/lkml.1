@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbZAUJc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbZAUJfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760564AbZAUJc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbZAUJcG
+	id S1759653AbZAUJfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZAUJfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:32:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60915 "EHLO mx2.redhat.com"
+	Wed, 21 Jan 2009 04:35:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46972 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759467AbZAUJcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:32:03 -0500
-Message-ID: <4976EB6F.5090503@redhat.com>
-Date: Wed, 21 Jan 2009 10:31:27 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1753392AbZAUJfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:35:25 -0500
+Date: Wed, 21 Jan 2009 10:35:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, brgerst@gmail.com,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCHSET linux-2.6-x86:core/percpu] x86: misc clean up and
+	unify x86_32/64 code paths
+Message-ID: <20090121093509.GA31613@elte.hu>
+References: <1232527578-1960-1-git-send-email-tj@kernel.org> <20090121092633.GA22506@elte.hu>
 MIME-Version: 1.0
-To: Petr Baudis <pasky@suse.cz>
-CC: Ulrich Drepper <drepper@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org, aarcange@redhat.com
-Subject: Re: [PATCH v6 0/5] Add preadv & pwritev system calls.
-References: <1232124344-25892-1-git-send-email-kraxel@redhat.com> <200901161852.04953.arnd@arndb.de> <4970DDF9.4090007@redhat.com> <49748C1B.8090205@redhat.com> <20090121001131.GF21648@machine.or.cz>
-In-Reply-To: <20090121001131.GF21648@machine.or.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090121092633.GA22506@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Baudis wrote:
-> On Mon, Jan 19, 2009 at 03:20:11PM +0100, Gerd Hoffmann wrote:
->> I do see the point in adding a interface like this ...
->>
->>>    ssize_t readz (int fd, void *buf, size_t len, void **res)
->> ... to help the kernel do zero-copy I/O.
->>
->> I think system calls for vector I/O are *not* the right place for that
->> though.  Usually applications use vectored I/O because they *do* care
->> about the place the data is stored, because vectored I/O allows them to
->> avoid copying data within the application.
-> 
-> Can you elaborate on this? An application would have to have quite a
-> contrived design if its pointers simply cannot be updated according
-> to what the kernel returns.
 
-Well.  The "just update the pointers" argument is bogous.  It simply
-doesn't work in general for a number of reasons:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-First, it assumes that there is a pointer you can update in the first place.
+> -tip testing also stumbled upon a build error caused by the UV cleanups 
+> - see the fix below.
 
-Second, it assumes you can easily update all pointer instances pointing
-to your data.  Finding all places which need updating might be
-non-trivial or impossible.  This tends to be true for refcounted data
-structures.
+another detail is fixed below.
 
-Third, updating pointers can have extra costs, such as locking
-requirements in threaded applications.
+	Ingo
 
-Of course there are also tons of applications where it is absolutely no
-problem to just update the pointer.
+--------------->
+>From 3b8f6278445384836f2739462b7964f21fbaa44f Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 21 Jan 2009 10:32:44 +0100
+Subject: [PATCH] x86: make x86_32 use tlb_64.c, build fix
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-But I think that applications using the vectored I/O very likely belong
-to the group which can't.  Otherwise there would be little reason to use
-the vectored API in the first place.
+Fix:
 
-> Then again, I'm not sure why wouldn't readv() actually be
-> zerocopy-ready. Just make sure you handle iov_base being NULL gracefully
-> now (EINVAL, with the remark that the kernel can write to the iovec
-> memory area in the future) and later the kernel can in that case set
-> iov_base to the buffer location?
+  arch/x86/mm/tlb.c:47: error: ‘CONFIG_X86_INTERNODE_CACHE_BYTES’ undeclared here (not in a function)
 
-You could (assuming you don't break POSIX along the way).  I don't think
-apps would use such an interface though for the reasons outlined above.
- The readz() prototype by Ullrich (without iovecs being involved) looks
-much more reasonable to me.
+The CONFIG_X86_INTERNODE_CACHE_BYTES symbol is only defined on 64-bit,
+because vsmp support is 64-bit only. Define it on 32-bit too - where it
+will always be equal to X86_L1_CACHE_BYTES.
 
-cheers,
-  Gerd
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig.cpu |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 8078955..3f02f66 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -300,7 +300,6 @@ config X86_INTERNODE_CACHE_BYTES
+ 	int
+ 	default "4096" if X86_VSMP
+ 	default X86_L1_CACHE_BYTES if !X86_VSMP
+-	depends on X86_64
+ 
+ config X86_CMPXCHG
+ 	def_bool X86_64 || (X86_32 && !M386)
