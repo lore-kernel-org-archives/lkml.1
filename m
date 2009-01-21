@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764324AbZAUL26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763939AbZAULdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764324AbZAUL26 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 06:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZAUL2t
+	id S1763939AbZAULdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 06:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZAULdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 06:28:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48289 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756703AbZAUL2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 06:28:48 -0500
-Date: Wed, 21 Jan 2009 12:28:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: venkatesh.pallipadi@intel.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 warnings in arch/x86/mm/pageattr.c:560
-Message-ID: <20090121112835.GF23469@elte.hu>
-References: <20090120091837.GC19505@wotan.suse.de>
-MIME-Version: 1.0
+	Wed, 21 Jan 2009 06:33:00 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:36138 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756072AbZAULdA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 06:33:00 -0500
+Date: Wed, 21 Jan 2009 12:34:43 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Size of sector_t in userspace [Was: fix 41 'make headers_check' warnings]
+Message-ID: <20090121113443.GA1579@uranus.ravnborg.org>
+References: <1232273454.23100.9.camel@localhost.localdomain> <20090118110221.GA29602@elte.hu> <1232501276.3123.49.camel@localhost.localdomain> <20090121055356.GA26731@uranus.ravnborg.org> <20090121082125.GW30821@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120091837.GC19505@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090121082125.GW30821@kernel.dk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> Hi,
+On Wed, Jan 21, 2009 at 09:21:25AM +0100, Jens Axboe wrote:
+> On Wed, Jan 21 2009, Sam Ravnborg wrote:
+> > Hi Jens.
+> > 
+> > In an attempt to fix some of the issues in our exported Headers jsr
+> > encountered some strange stuff in types.h.
+> > 
+> > types.h is exported to userspace where we do not have access to CONFIG_*
+> > symbols.
+> > Despite this we use CONFGI_LBD to decide the size of sector_t like this:
+> > 
+> > #ifdef CONFIG_LBD
+> > typedef u64 sector_t;
+> > typedef u64 blkcnt_t;
+> > #else
+> > typedef unsigned long sector_t;
+> > typedef unsigned long blkcnt_t;
+> > #endif
+> > 
+> > But as CONFIG_LBD is never defined in userspace sector_t is now 32
+> > bit on 32 bit boxes and 64 bit on 64 bit boxes (in userspace).
+> > 
+> > Is sector:t (and the companion blkcnt_t) really used by userspace?
+> > If it is - what size is it expected to have?
 > 
-> I've been getting this warning intermittently since the merge window
-> opened. Considering that track_pfn_vma_new is called before the ptes
-> are set up in remap_pfn_range (and remap_pfn_range contains a warning
-> if the ptes *are* nonzero), I don't know how this is supposed to work?
-> 
-> Anyway, I can of course test patches.
-> 
-> ------------[ cut here ]------------
-> WARNING: at arch/x86/mm/pageattr.c:560 __change_page_attr_set_clr+0x9ef/0xa00()
-> Hardware name: empty
-> CPA: called for zero pte. vaddr = ffff8800cff4e000 cpa->vaddr = ffff8800cff4e000
+> I don't think it's used by userspace, at least it cannot be used in
+> userspace <-> kernelspace interactions, since the size isn't fixed.
 
-Ok, i have just queued up a fix that could address this - could you please 
-try latest tip/master:
+Thanks Jens.
 
-   http://people.redhat.com/mingo/tip.git/README
+In that case I suggest we should make it private to the kernel.
+We should not expose types from the kernel that is not used
+in the kerenl.
 
-does it still produce that warning?
+Jaswinder - move it inside a ifdef __KERNEL__ / endif block.
+Reference Jens' answer above and Cc: Jens on the patch.
 
-	Ingo
+Thanks,
+	Sam
