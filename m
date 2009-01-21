@@ -1,106 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZAURwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbZAURwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZAURwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 12:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZAURvv
+	id S1758440AbZAURwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 12:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZAURwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 12:51:51 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:57341 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbZAURvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 12:51:50 -0500
-Message-ID: <49776161.1080801@novell.com>
-Date: Wed, 21 Jan 2009 12:54:41 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 21 Jan 2009 12:52:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36753 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbZAURwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 12:52:16 -0500
+Date: Wed, 21 Jan 2009 18:51:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Allan, Bruce W" <bruce.w.allan@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: e1000e regression (interface hang) with latest -git
+Message-ID: <20090121175158.GA7302@elte.hu>
+References: <20090121102840.GA24967@elte.hu> <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux >> LKML" <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RT] [git pull] updates for rt/sched
-References: <497760A1.9090806@novell.com>
-In-Reply-To: <497760A1.9090806@novell.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig99955A69452C03ED1B28036A"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig99955A69452C03ED1B28036A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Gregory Haskins wrote:
-> Hi Steve,
->   Here is a backport of the latest patches that went into tip/sched/rt
->
-> -Greg
->  =20
+* Allan, Bruce W <bruce.w.allan@intel.com> wrote:
 
-[Adding Peter to CC, since he contributed too]
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu]
+> >Sent: Wednesday, January 21, 2009 2:29 AM
+> >To: linux-kernel@vger.kernel.org; Kirsher, Jeffrey T; Brandeburg, Jesse;
+> >Allan, Bruce W; Waskiewicz Jr, Peter P; e1000-devel@lists.sourceforge.net;
+> >netdev@vger.kernel.org
+> >Cc: Rafael J. Wysocki
+> >Subject: e1000e regression (interface hang) with latest -git
+> >
+> >
+> >I've got a Nehalem testbox that developed a new e1000e problem in this
+> >merge window: after a few minutes of uptime the network interface goes
+> >dead - no rx and no tx. If i ifdown/ifup the interface it comes back. If i
+> >wait too long then even ifdown/ifup does not help anymore - only a reboot.
+> >
+> >Other e1000e using testboxes i have are working just fine - so the problem
+> >is specific to this hw.
+> >
+> >Is this a known problem?
+> >
+> >I have this hw:
+> >
+> > 01:00.0 Ethernet controller: Intel Corporation 82575EB Gigabit Network
+> >Connection (rev 02)
+> > 01:00.1 Ethernet controller: Intel Corporation 82575EB Gigabit Network
+> >Connection (rev 02)
+> >
+> >If this is a new problem, what kind of other info do you need from me to
+> >debug and fix this?
+> >
+> >I started seeing this very early in the merge window, so candidates would
+> >be one of these early commits:
+> >
+> >eb14f01: Merge branch 'master' of
+> >master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+> >cb7b48f: igb/e1000e: Naming interrupt vectors
+> >5b9ab2e: Merge branch 'master' of
+> >master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+> >e243455: e1000e: check return code from NVM accesses and fix bank
+> >detection
+> >a20e4cf: e1000e: fix incorrect link status when switch module pulled
+> >8452759: e1000e: store EEPROM version number to prevent unnecessary NVM
+> >reads
+> >0285c8d: e1000e: cosmetic newline in debug message
+> >5c48ef3: e1000e: sync change flow control variables with ixgbe
+> >8f12fe8: e1000e: link up/down messages must follow a specific format
+> >75eb0fa: e1000e: ESB2 config after link up
+> >438b365: e1000e: check return of pci_save_state
+> >1605927: e1000e: update comments listing supported parts for each MAC
+> >family
+> >63dcf3d: e1000e: 82571 check for link fix on 82571 serdes
+> >5aa49c8: e1000e: commit speed/duplex changes for m88 PHY
+> >005cbdf: e1000e: disable correctable errors for quad ports while going to
+> >D3
+> >0082982: netdev: add more functions to netdevice ops
+> >651c246: e1000e: convert to net_device_ops
+> >198d6ba: Merge branch 'master' of
+> >master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+> >6ea7ae1: e1000e: enable ECC correction on 82571 silicon
+> >4cf1653: netdevice: safe convert to netdev_priv() #part-2
+> >babcda7: drivers/net: Kill now superfluous ->last_rx stores.
+> >7c510e4: net: convert more to %pM
+> >
+> >If you suspect a specific list of commits i can test their revert. (But
+> >the box is a slow booter and the problem can take up to 15 minutes to
+> >trigger so i'd rather not spend half a day bisecting it, if it can be
+> >avoided.)
+> >
+> >Thanks,
+> >
+> >	Ingo
+> 
+> 82575EB is not supported by e1000e, it is supported by igb.  Are you 
+> sure that is the correct device?  Please send the system log and output 
+> of:
 
+yeah - sorry, i got confused - it is using IGB:
 
->
-> -------------
-> The following changes since commit 0ea6fdc871f24f65e28cd9a92ead1c881783=
-741a:
->   Gregory Haskins (1):
->         rt/sched: ensure interrupts are disabled during post-schedule()=
+ CONFIG_IGB=y
+ CONFIG_IGB_LRO=y
 
-> processing
->
-> are available in the git repository at:
->
-> =20
-> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.=
-git
-> rt/sched
->
-> Gregory Haskins (6):
->       sched: cleanup inc/dec_rt_tasks
->       sched: track the next-highest priority on each runqueue
->       sched: use highest_prio.curr for pull threshold
->       sched: use highest_prio.next to optimize pull operations
->       sched: de CPP-ify the scheduler code
->       sched: fix build error in kernel/sched_rt.c when RT_GROUP_SCHED &=
-&
-> !SMP
->
-> Peter Zijlstra (1):
->       sched: make plist a library facility
->
->  init/Kconfig      |    1 -
->  kernel/sched.c    |   12 ++-
->  kernel/sched_rt.c |  372
-> ++++++++++++++++++++++++++++++++++------------------
->  lib/Kconfig       |    6 -
->  lib/Makefile      |    4 +-
->  5 files changed, 255 insertions(+), 140 deletions(-)
->
->
->  =20
+The same point remains though: it worked before (and works fine with a 
+distro kernel, 2.6.28-0.140.rc9.git1.fc11.x86_64) and doesnt work with 
+latest -git.
 
+I'll capture some debug data and send it to you.
 
+	Ingo
 
---------------enig99955A69452C03ED1B28036A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkl3YWEACgkQlOSOBdgZUxmZkgCdGH81CVrIM5ms43BhwHNcnLU9
-xrIAn1T1tcik34OP/5iR0Zpt83+0wYJ9
-=Qcrk
------END PGP SIGNATURE-----
-
---------------enig99955A69452C03ED1B28036A--
