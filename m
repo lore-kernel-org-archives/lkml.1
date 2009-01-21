@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbZAUMNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbZAUMU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764175AbZAUMNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 07:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbZAUMNp
+	id S1763719AbZAUMU5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 07:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbZAUMUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 07:13:45 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:62608 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757575AbZAUMNo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 07:13:44 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-Date: Wed, 21 Jan 2009 13:13:16 +0100
-User-Agent: KMail/1.9.9
-Cc: Helge Deller <deller@gmx.de>, David Miller <davem@davemloft.net>,
-       jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>
-References: <1232496257.3123.19.camel@localhost.localdomain> <200901210924.23484.arnd@arndb.de> <20090121113853.GB1579@uranus.ravnborg.org>
-In-Reply-To: <20090121113853.GB1579@uranus.ravnborg.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 21 Jan 2009 07:20:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60666 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754940AbZAUMUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 07:20:47 -0500
+Date: Wed, 21 Jan 2009 13:17:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
+Message-ID: <20090121121756.GA11942@redhat.com>
+References: <4976EE0B.5090200@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901211313.17394.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18j7iXv/AAuslwcLlDS0eK1Lf5TdLZ66HH7aLR
- ZygF2RfLfNz5hEuuyfeIBkmX4GGGeQ57U2AM+JtnzZJEvTl32W
- 423SSfIAdJmsqtS5TBctA==
+In-Reply-To: <4976EE0B.5090200@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009, Sam Ravnborg wrote:
-> Could we add a new symbol for this?
-> We know we are going to use this in several places so a simpler variant
-> would be more readable.
-> 
-> Something like:
-> 
-> #ifdef __64BIT
-> ...
-> #endif
-> 
-> When we define __64BIT we would use the  __BITS_PER_LONG == 64 check.
+On 01/21, Lai Jiangshan wrote:
+>
+> allocating memory for every cpu for single workqueue is waste.
 
-I would prefer using the __BITS_PER_LONG == 64 check directly, because
-it gives you a warning when __BITS_PER_LONG is undefined, whereas the
-#ifdef check gets easily fooled by include order problems. Note that
-this is not a problem in the kernel for CONFIG_* symbols which are
-always defined before the first #include.
+Yes, perhaps this makes sense, we can save a bit of per-cpu memory
+for each single-threaded wq, and the patch looks correct.
 
-	Arnd <><
+> -static struct cpu_workqueue_struct *
+> -init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
+> +static void init_cpu_workqueue(struct workqueue_struct *wq,
+> +		struct cpu_workqueue_struct *cwq)
+>  {
+> -	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+> -
+>  	cwq->wq = wq;
+>  	spin_lock_init(&cwq->lock);
+>  	INIT_LIST_HEAD(&cwq->worklist);
+>  	init_waitqueue_head(&cwq->more_work);
+> -
+> -	return cwq;
+>  }
+
+Do we really need to change the prototype of init_cpu_workqueue()
+and change then change __create_workqueue_key() accordingly?
+Afaics, the only change in init_cpu_workqueue() we need is
+
+	-	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+	+	struct cpu_workqueue_struct *cwq = wq_per_cpu(wq, cpu);
+
+no?
+
+> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+>  	const struct cpumask *cpu_map = wq_cpu_map(wq);
+>  	int cpu;
+>
+> +	if (is_wq_single_threaded(wq)) {
+> +		cleanup_workqueue_thread(wq->cpu_wq);
+> +		kfree(wq->cpu_wq);
+> +		kfree(wq);
+> +		return;
+> +	}
+
+again, not sure I understand why this change is needed. Afaics we
+only need to use kfree(wq->cpu_wq) instead of free_percpu() if
+it is single-threaded.
+
+Oleg.
+
