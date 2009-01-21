@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763376AbZAUAcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762960AbZAUAfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763376AbZAUAcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 19:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbZAUAcE
+	id S1762960AbZAUAfc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbZAUAfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 19:32:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53959
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757715AbZAUAcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 19:32:01 -0500
-Date: Tue, 20 Jan 2009 16:32:03 -0800 (PST)
-Message-Id: <20090120.163203.199590606.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200901210124.26118.arnd@arndb.de>
-References: <1232496257.3123.19.camel@localhost.localdomain>
-	<20090120.161626.93641145.davem@davemloft.net>
-	<200901210124.26118.arnd@arndb.de>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 20 Jan 2009 19:35:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48625 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756875AbZAUAfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 19:35:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH PCI PCIe portdrv: Fix allocation of interrupts (rev. 5)
+Date: Wed, 21 Jan 2009 01:16:08 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200901131457.58164.rjw@sisk.pl> <4973F60E.5000706@jp.fujitsu.com> <49744142.2060806@jp.fujitsu.com>
+In-Reply-To: <49744142.2060806@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901210116.09211.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 21 Jan 2009 01:24:25 +0100
+On Monday 19 January 2009, Kenji Kaneshige wrote:
+> Hidetoshi Seto wrote:
+> > Rafael J. Wysocki wrote:
+> >> On Saturday 17 January 2009, Rafael J. Wysocki wrote:
+> > (snip)
+> >>> If MSI-X are supported, it allocates as many vectors as there are entries
+> >>> in the port's MSI-X table, but no more than 32, and figures out which of them
+> >>> will be used for the port services.
+> >> The patch didn't check which services are available during the MSI-X set up
+> >> which was wrong.
+> >>
+> >> Also, in the meantime, i thought it might be a good idea to free the interrupt
+> >> routing table entries that aren't going to be used after all.
+> >>
+> >> The patch below adds this to the previous version and checks for the
+> >> availability of port services in the MSI-X setup resume.  I hope it will
+> >> be acceptable to everyone.
+> >>
+[--snip--]
+> > 
+> > /* Are there any unused entries? */
+> > if (nr_allocated > nvec) {
+> > 	/* this port have extra entries not for services we know... */
+> > 
+> 
+> Sounds good. That is,
+> 
+> If the number of entries we required equals to nr_entries (from
+> Table size field in Message Control register), we don't need to
+> drop the first MSI-X setup.
 
-> I think we should simply define a macro for use in the kernel, e.g. in
-> <asm/types.h>. There already is a BITS_PER_LONG macro in there, maybe
-> we can add an exported __BITS_PER_LONG there that checks for the right
-> macro on each architecture.
+I've split the patch into two parts, one adding pci_msix_table_size() and the
+other containing the rest of changes.  Also, I've modified the second patch to
+follow the above observation.
 
-That might work.
+The patches will follow as replies to this message.
 
-> On parisc, there is a major confusion in this area, at some point, all
-> checks for __LP64__ got replaced with CONFIG_64BIT there. While I have
-> not understood what the problem with __LP64__ was, the check for
-> CONFIG_64BIT on parisc user space looks very wrong.
+Thanks,
+Rafael
 
-Yep.
