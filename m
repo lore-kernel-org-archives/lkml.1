@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZAUXFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZAUXKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZAUXFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 18:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZAUXFf
+	id S1755061AbZAUXKB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 18:10:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZAUXJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 18:05:35 -0500
-Received: from mail.marywood.edu ([192.159.104.225]:36905 "EHLO
-	mail.marywood.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbZAUXFe (ORCPT
+	Wed, 21 Jan 2009 18:09:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45713 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753355AbZAUXJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 18:05:34 -0500
-X-Greylist: delayed 740 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 18:05:33 EST
-Message-ID: <96c9f4e34575fa173c1f7ed4ecc2688a.squirrel@mail.marywood.edu>
-Date: Wed, 21 Jan 2009 17:52:36 -0500 (EST)
-Subject: Important: Email Account Verification Update ! ! !
-From: "Webmail Help Desk" <Support_team@upgrade.com>
-Reply-To: s_upgradeteam03@live.com
-User-Agent: SquirrelMail/1.4.15
+	Wed, 21 Jan 2009 18:09:50 -0500
+Message-ID: <4977AB27.8080608@zytor.com>
+Date: Wed, 21 Jan 2009 15:09:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+To: kmh@nerdshack.com
+CC: linux-kernel@vger.kernel.org, lermen@elserv.ffm.fgan.de, lermen@fgan.de,
+       davej@redhat.com, cebbert@redhat.com
+Subject: Re: PROBLEM: loadlin incompatible with 2.6.23 kernels
+References: <200712022336.SAA12095@granite.sover.net>
+In-Reply-To: <200712022336.SAA12095@granite.sover.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Helpdesk Program that periodically checks the size of your e-mail
-space is sending you this information. The program runs weekly to
-ensure your inbox does not grow too large, thus preventing you from
-receiving or sending new e-mail. As this message is being sent, you
-have 18 megabytes (MB) or more stored in your inbox. To help us reset
-your space in our database, please enter your current user name
-(_________________)  password (_______________)
+Kenneth Howlett wrote:
+> I do not know if the problem is with the kernel or with loadlin. Probably
+> some people will say it is the kernel's fault, and other people will say it
+> is loadlin's fault.
+> 
+> I do not know why this occurs with loadlin and not with other boot loaders.
 
-You will receive a periodic alert if your inbox size is between 18 and
-20 MB. If your inbox size is 20 MB, a program on your Webmail will
-move your oldest e-mails to a folder in your home directory to ensure
-you can continue receiving incoming e-mail. You will be notified this
-has taken place.
+LOADLIN uses memory it isn't allowed to use by the boot protocol.  Newer 
+kernels use more memory than previous ones, and starts using memory 
+LOADLIN expects to use.
 
-If your inbox grows to 25 MB, you will be unable to receive new e-mail
-and it will be returned to sender. All this is programmed to ensure
-your e-mail continues to function well.
+Unfortunately LOADLIN hasn't been updated for a very long time, and 
+there doesn't seem to be much interest in maintaining it.
 
-Thank you for your cooperation.
-Help Desk.
-
-
-
+	-hpa
