@@ -1,41 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbZAUJjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbZAUJk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763574AbZAUJjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZAUJjN
+	id S1763267AbZAUJk6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:39:13 -0500
-Received: from fxip-0059e.externet.hu ([88.209.247.158]:50477 "EHLO
-	teledigit.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754079AbZAUJjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:39:11 -0500
-X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 04:39:10 EST
-X-AuthUser: kgy@teledigit.hu
-From: =?utf-8?q?K=C3=B6vesdi_Gy=C3=B6rgy?= <kgy@teledigit.hu>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.28(.1) and netlink: scheduling while atomic
-Date: Wed, 21 Jan 2009 10:29:01 +0100
-User-Agent: KMail/1.9.9
-Cc: Netfilter Developer Mailing List <netfilter-devel@vger.kernel.org>
+	Wed, 21 Jan 2009 04:40:48 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:45792 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbZAUJkr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:40:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LM/epsLUd/muEfIsSfNpto+62ad6qIxsiAYQMoeajIHt5B2LSuD8iRHFNobi+fQavZ
+         /HxUae1K2VJ15eeWoyL4nYmtwr3zxkhhnAnqvdn98xpocv8MRIqlTOnbrQGF93x/6LEE
+         cad78k3vcZe4mxlvI90B8Qn69uq/vTzaJXMQA=
+Message-ID: <4976ED99.3070007@gmail.com>
+Date: Wed, 21 Jan 2009 01:40:41 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901211029.01619.kgy@teledigit.hu>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Justin Madru <jdm64@gawab.com>
+CC: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com> <20090120074312.GD16426@elte.hu> <20090120081650.GA29725@elte.hu> <20090120083700.GA5277@elte.hu> <4976EB66.2010301@gawab.com>
+In-Reply-To: <4976EB66.2010301@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Justin Madru wrote:
+> Ingo Molnar wrote:
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>  
+>>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>    
+>>>> (added Cc:s)
+>>>>       Justin, does it work if you apply the patch below instead of 
+>>>> the revert?
+>>>>       
+>>> hm, that patch wont build because the protect_asmlinkage macro is 
+>>> rather limited - it cannot deal with structure parameters.
+>>>
+>>> We might be better off with a revert here, and a comment added that 
+>>> points out the problem.
+>>>     
+>>
+>> Below is the revert+document commit that i have queued up.
+>>
+>> Justin, could you try the tip/master tree (which has this fix included):
+>>
+>>   http://people.redhat.com/mingo/tip.git/README
+>>
+>> does Firefox still work fine?
+>>
+>>     Ingo
+>>
+>> ------------->
+>> >From 779c9b9f8cb87cdfbd299ee7beb62e50ce139a92 Mon Sep 17 00:00:00 2001
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Tue, 20 Jan 2009 09:31:49 +0100
+>> Subject: [PATCH] Revert "x86: signal: change type of paramter for 
+>> sys_rt_sigreturn()"
+>>
+>> This reverts commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191.
+>>
+>> Justin Madru bisected this commit, it was causing weird Firefox
+>> crashes.
+>>
+>> The reason is that GCC mis-optimizes (re-uses) the on-stack 
+>> parameters of
+>> the calling frame, which corrupts the syscall return pt_regs state and
+>> thus corrupts user-space register state.
+>>
+>> So we go back to the slightly less clean but more optimization-safe
+>> method of getting to pt_regs. Also add a comment to explain this.
+>>
+>> Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=12505
+>>
+>> Reported-and-bisected-by: Justin Madru <jdm64@gawab.com>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  arch/x86/include/asm/syscalls.h |    2 +-
+>>  arch/x86/kernel/signal.c        |   11 +++++++++--
+>>  2 files changed, 10 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/syscalls.h 
+>> b/arch/x86/include/asm/syscalls.h
+>> index 9c6797c..c0b0bda 100644
+>> --- a/arch/x86/include/asm/syscalls.h
+>> +++ b/arch/x86/include/asm/syscalls.h
+>> @@ -40,7 +40,7 @@ asmlinkage int sys_sigaction(int, const struct 
+>> old_sigaction __user *,
+>>                   struct old_sigaction __user *);
+>>  asmlinkage int sys_sigaltstack(unsigned long);
+>>  asmlinkage unsigned long sys_sigreturn(unsigned long);
+>> -asmlinkage int sys_rt_sigreturn(struct pt_regs);
+>> +asmlinkage int sys_rt_sigreturn(unsigned long);
+>>  
+>>  /* kernel/ioport.c */
+>>  asmlinkage long sys_iopl(unsigned long);
+>> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+>> index 89bb766..df0587f 100644
+>> --- a/arch/x86/kernel/signal.c
+>> +++ b/arch/x86/kernel/signal.c
+>> @@ -632,9 +632,16 @@ badframe:
+>>  }
+>>  
+>>  #ifdef CONFIG_X86_32
+>> -asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
+>> +/*
+>> + * Note: do not pass in pt_regs directly as with tail-call optimization
+>> + * GCC will incorrectly stomp on the caller's frame and corrupt 
+>> user-space
+>> + * register state:
+>> + */
+>> +asmlinkage int sys_rt_sigreturn(unsigned long __unused)
+>>  {
+>> -    return do_rt_sigreturn(&regs);
+>> +    struct pt_regs *regs = (struct pt_regs *)&__unused;
+>> +
+>> +    return do_rt_sigreturn(regs);
+>>  }
+>>  #else /* !CONFIG_X86_32 */
+>>  asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+>>
+>>   
+> Ok, I officially tested tip/master and firefox is happy it can talk to 
+> friends with google talk ;-)
+> Although.... I don't use google talk.... it just seems to be this 
+> mandatory tab I can't get rid of
+> on my google page that caused a regression to be noticed so that the 
+> kernel could be improved!
+>
+> Justin Madru
+>
+Well I guess the problem has been bisected.
 
-The new netlink interface allows to add NAT directly to a conntrack entry.
-If it is used when the moudule nf-nat-ipv4 is not loaded in, it results in 
-crash:
-BUG: scheduling while atomic
-It is in the kernels 2.6.28 and 2.6.28.1 in the function 
-ctnetlink_parse_nat_setup(): it calls request_module() which causes the 
-problem. If the module is already loaded, then there is no problem.
+regards;
 
-Regards:
-K. Gy.
+Justin P. Mattock
