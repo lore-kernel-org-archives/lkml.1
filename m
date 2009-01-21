@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbZAUFel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbZAUFkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753752AbZAUFel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 00:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZAUFe2
+	id S1759129AbZAUFkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZAUFjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 00:34:28 -0500
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:48381 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbZAUFe0 (ORCPT
+	Wed, 21 Jan 2009 00:39:54 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:33553 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbZAUFjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 00:34:26 -0500
-X-Greylist: delayed 1860 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 00:34:26 EST
-Date: Wed, 21 Jan 2009 00:03:11 -0500
-From: Jan Harkes <jaharkes@cs.cmu.edu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coda: alloc_upcall: s/task_pgrp_nr/task_pgrp_vnr/
-Message-ID: <20090121050311.GD15771@cs.cmu.edu>
-Mail-Followup-To: Oleg Nesterov <oleg@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Pavel Emelyanov <xemul@openvz.org>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org
-References: <20090118073453.GA714@redhat.com>
-MIME-Version: 1.0
+	Wed, 21 Jan 2009 00:39:53 -0500
+Date: Wed, 21 Jan 2009 06:41:38 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, alsa-devel@alsa-project.org,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
+Message-ID: <20090121054138.GA26551@uranus.ravnborg.org>
+References: <1232465902.3088.31.camel@localhost.localdomain> <s5h7i4psepm.wl%tiwai@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090118073453.GA714@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <s5h7i4psepm.wl%tiwai@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 08:34:53AM +0100, Oleg Nesterov wrote:
-> Needs an ack from maintaner, I do not know where coda_in_hdr->pgid is used.
+On Wed, Jan 21, 2009 at 01:08:37AM +0100, Takashi Iwai wrote:
+> At Tue, 20 Jan 2009 21:08:22 +0530,
+> Jaswinder Singh Rajput wrote:
+> > 
+> > usr/include/linux/soundcard.h is giving following warnings for 'make headers_check':
+> >  usr/include/linux/soundcard.h:1047: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1048: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1049: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1050: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1051: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1053: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1055: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1056: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1061: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1062: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1078: extern's make no sense in userspace
+> >  usr/include/linux/soundcard.h:1079: extern's make no sense in userspace
+> > 
+> > Do we need to fix these warnings.
+> 
+> No, these are declarations for OSS-lib.
+> It doesn't belong to kernel, but it's better to keep it for
+> compatibility in some way.
 
-It is used to uniquely identify a process and any of it children during
-conflict resolution.
+But not in the kernel for sure.
+I just checked and for example: OSS_init is not used anywhere in the kernel.
+The kernel headers are not a "dump all your stuff" ground anymore.
 
-When a conflict is detected, all accesses to the inconsistent object are
-blocked. A special resolver process is forked off by the cache manager
-and this is run in a new process group and only accesses from processes
-in this group are allowed. The resolver process (or any of it's children)
-compare the conflicting replicas, and ideally resolve the inconsistency
-after which normal accesses are unblocked.
+So I encourage you to find a better home for the user space library definitons.
+We can let the definiton stay for a while - but eventually they have to
+be dropped from the kernel.
 
-So yes this should not a per namespace thing, but also not a process
-specific pid, the resolver forks off different helper processes
-depending on the type of files that are involved in the conflict, i.e.
-mbox files require different merge strategy compared to opendocument
-files.
-
-I'm not sure what you are trying to do.
-
-Jan
+	Sam
