@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZAUGja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbZAUGyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbZAUGja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 01:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZAUGjS
+	id S1759149AbZAUGyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 01:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZAUGyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 01:39:18 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:36141 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbZAUGjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 01:39:17 -0500
-Date: Wed, 21 Jan 2009 17:38:38 +1100
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>
-Cc: sam@ravnborg.org, jaswinderlinux@gmail.com, khc@pm.waw.pl,
-       jaswinder@kernel.org, arnd@arndb.de, mingo@elte.hu,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: why usr/include/linux/if_frad.h is required
-Message-ID: <20090121173838.3390e5c9@s6510>
-In-Reply-To: <20090120.221504.264090722.davem@davemloft.net>
-References: <m3bpu1xyb9.fsf@intrepid.localdomain>
-	<3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
-	<20090121053310.GA26395@uranus.ravnborg.org>
-	<20090120.221504.264090722.davem@davemloft.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 01:54:00 -0500
+Received: from kroah.org ([198.145.64.141]:37419 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752532AbZAUGyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 01:54:00 -0500
+Date: Tue, 20 Jan 2009 22:48:42 -0800
+From: Greg KH <greg@kroah.com>
+To: We La <w.landgraf@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc2 rt2860 driver
+Message-ID: <20090121064842.GA10184@kroah.com>
+References: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <755926.36103.qm@web112217.mail.gq1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Jan 2009 22:15:04 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+On Sat, Jan 17, 2009 at 06:30:01AM -0800, We La wrote:
+> 1) In the press was published that 2.6.29 would include the rt2860
+> WIFI driver.  However, in 2.6.29-rc2 one find nowhere this driver.
+> rt2x00 don't work, at least ifconfig ra0 up gives a error message.
+> and to compile it from source code, works with 2.6.26.X but not with
+> 2.6.29-rc2 (plenty error messages) What's the situation of the rt2860
+> driver ??  The only senseful criterion for inclusion of a driver in
+> the kernel is not the maturity of the code, but the number of sellings
+> of that hardware in the shops, and that driver is necessary for msi
+> wind notebooks, so it should be included into the kernel.
 
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Wed, 21 Jan 2009 06:33:10 +0100
-> 
-> > On Wed, Jan 21, 2009 at 10:20:17AM +0530, Jaswinder Singh Rajput wrote:
-> > > On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > > > Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
-> > > >
-> > > >> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
-> > > >> and no body is complaining about it so it means no body is using it.
-> > > >>
-> > > >> So should we need to drop #if / #endif pair or the whole file from
-> > > >> userspace.
-> > > >
-> > > > I think the file. "Empty file exported to userspace", long unused. We
-> > > > can also have it back there, and it being not exported is an indicator
-> > > > that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
-> > > 
-> > > I will definately define #ifdef __KERNEL__ but I am also curious after
-> > > defining it there is no point of making empty
-> > > usr/include/linux/if_frad.h
-> > 
-> > Googling a bit did not turn up _any_ non-kernel hits that has relevance.
-> > So based on the information given in this thread I strongly
-> > suggest to drop the export of this header.
-> 
-> Sure, but on the other hand this makes all of the userland APIs
-> essentially inaccessible and undefined.
-> 
-> I bet Sangoma's internal tools reference this stuff.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It is there, and I have gotten reports of it working properly.  What
+problems have you had with it?
 
-There are no references if_frad.h in the version of Sangoma (out of tree) code
-that we use in Vyatta. 
+thanks,
+
+greg k-h
