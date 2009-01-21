@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZAUWnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZAUWoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbZAUWnr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 17:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZAUWnh
+	id S1755076AbZAUWoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 17:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZAUWoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 17:43:37 -0500
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:4562 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbZAUWnh (ORCPT
+	Wed, 21 Jan 2009 17:44:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52440
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753652AbZAUWoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 17:43:37 -0500
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-To: grundler@parisc-linux.org (Grant Grundler)
-Date: Wed, 21 Jan 2009 17:43:34 -0500 (EST)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: arnd@arndb.de, davem@davemloft.net, jaswinder@kernel.org, mingo@elte.hu,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-In-Reply-To: <20090121222522.GB15211@colo.lackof.org> from "Grant Grundler" at Jan 21, 2009 03:25:22 pm
-X-Mailer: ELM [version 2.4 PL25]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Jan 2009 17:44:06 -0500
+Date: Wed, 21 Jan 2009 14:44:08 -0800 (PST)
+Message-Id: <20090121.144408.193919099.davem@davemloft.net>
+To: tklein@de.ibm.com
+Cc: jeff@garzik.org, themann@de.ibm.com, netdev@vger.kernel.org,
+       hering2@de.ibm.com, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       linuxppc-dev@ozlabs.org, ossthema@de.ibm.com
+Subject: Re: [PATCH 1/3] ehea: Use net_device_ops structure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200901211549.01120.tklein@de.ibm.com>
+References: <200901211549.01120.tklein@de.ibm.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090121224335.099C94F30@hiauly1.hia.nrc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > CONFIG_64BIT on parisc user space looks very wrong.
+From: Thomas Klein <tklein@de.ibm.com>
+Date: Wed, 21 Jan 2009 15:49:00 +0100
+
+> Adapt to lately introduced net_device_ops structure.
 > 
-> This shouldn't be exported to user space. Is that what you meant?
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-This does get exported to user space as applications sometimes need
-to know whether they are running under a 32 or 64-bit kernel.  See
-config.guess.  However, it certainly would be wrong to use this
-to make decisions about user space.
-
-Dave
--- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+Applied.
