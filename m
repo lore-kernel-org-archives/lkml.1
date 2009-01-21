@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbZAUJv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbZAUJyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbZAUJv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZAUJvP
+	id S1762326AbZAUJyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZAUJyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:51:15 -0500
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:40063 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZAUJvO (ORCPT
+	Wed, 21 Jan 2009 04:54:10 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:41428 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754768AbZAUJyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:51:14 -0500
-Date: Wed, 21 Jan 2009 01:51:10 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-media@vger.kernel.org, video4linux-list@redhat.com,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Confusion in usr/include/linux/videodev.h
-In-Reply-To: <200901211009.14856.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.58.0901210129350.13170@shell2.speakeasy.net>
-References: <1232502038.3123.61.camel@localhost.localdomain>
- <Pine.LNX.4.58.0901210048500.13170@shell2.speakeasy.net>
- <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
- <200901211009.14856.arnd@arndb.de>
+	Wed, 21 Jan 2009 04:54:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WZOlW/5GWaRB0fPzceUaRlRKjcBLKWvnU8eYddhZ9yoEOU8qYX9GYWDtOb3A9V9jC3
+         ARmsE87I380gskkofpcS3hlCXXR/8Hv11gK7strFmaiS6PCbZOUOGZ392PFFPx4eNiam
+         0pYYDpgKbhQ/VIDxl4NukJCe+v/lcAW5MIwGQ=
+Date: Wed, 21 Jan 2009 09:54:01 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090121095401.GB5140@ff.dom.local>
+References: <20090120102053.GA17004@ff.dom.local> <20090120103122.GC9167@ioremap.net> <20090120110144.GB17004@ff.dom.local> <20090120.091616.224452074.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120.091616.224452074.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009, Arnd Bergmann wrote:
-> On Wednesday 21 January 2009, Jaswinder Singh Rajput wrote:
-> > > diff -r 29c5787efcda linux/include/linux/videodev.h
-> > > --- a/linux/include/linux/videodev.h    Thu Jan 15 09:07:03 2009 -0800
-> > > +++ b/linux/include/linux/videodev.h    Wed Jan 21 00:51:45 2009 -0800
-> > > @@ -15,7 +15,8 @@
-> > >  #include <linux/ioctl.h>
-> > >  #include <linux/videodev2.h>
-> > >
-> > > -#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
-> > > +#if (defined(__KERNEL__) && defined(CONFIG_VIDEO_V4L1_COMPAT)) \
-> > > +    || !defined (__KERNEL__)
-> > >
-> > >  #define VID_TYPE_CAPTURE       1       /* Can capture */
-> > >  #define VID_TYPE_TUNER         2       /* Can tune */
-> > >
-> > > Now CONFIG_VIDEO_V4L1_COMPAT will only be used in the kernel.
-> > >
-> >
-> > No, this will still give warnings.
->
-> You could #define another conditional, like this:
->
-> #ifndef __KERNEL__
-> # define __V4L1_COMPAT_API /* Always provide definitions to user space */
-> #else /* __KERNEL__ */
-> # ifdef CONFIG_VIDEO_V4L1_COMPAT
-> #  define __V4L1_COMPAT_API
-> # endif /* CONFIG_VIDEO_V4L1_COMPAT /*
-> #endif /* __KERNEL__ */
+On Tue, Jan 20, 2009 at 09:16:16AM -0800, David Miller wrote:
+...
+> Jarek, we already have a page and offset you can use.
+> 
+> It's called sk_sndmsg_page but that is just the (current) name.
+> Nothing prevents you from reusing it for your purposes here.
 
-I see what the real problem is now, the unifdef program isn't smart enough
-to realize that it knows the result of !defined(__KERNEL__) || defined(FOO)
-and so it keeps those ifdefs in when it should be able to remove them.
+I'm trying to get some know-how about this field.
 
-This works too:
-
-#ifndef __KERNEL__
-# define __V4L1_COMPAT_API /* Always provide definitions to user space */
-#elif defined(CONFIG_VIDEO_V4L1_COMPAT) /* __KERNEL__ */
-# define __V4L1_COMPAT_API
-#endif /* CONFIG_VIDEO_V4L1_COMPAT */
+Thanks,
+Jarek P.
