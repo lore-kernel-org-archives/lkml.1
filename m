@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbZAUJF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZAUJJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759780AbZAUJF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZAUJFk
+	id S1757567AbZAUJJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZAUJJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:05:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41958 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755514AbZAUJFi (ORCPT
+	Wed, 21 Jan 2009 04:09:39 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:60348 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316AbZAUJJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:05:38 -0500
-Date: Wed, 21 Jan 2009 10:20:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090121092049.GE15750@one.firstfloor.org>
-References: <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org> <20090121085208.GO24891@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 Jan 2009 04:09:38 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: Confusion in usr/include/linux/videodev.h
+Date: Wed, 21 Jan 2009 10:09:13 +0100
+User-Agent: KMail/1.9.9
+Cc: Trent Piepho <xyzzy@speakeasy.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       linux-media@vger.kernel.org, video4linux-list@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1232502038.3123.61.camel@localhost.localdomain> <Pine.LNX.4.58.0901210048500.13170@shell2.speakeasy.net> <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
+In-Reply-To: <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090121085208.GO24891@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901211009.14856.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX197JVhuhVkhqSJLDLmPEbzlmVRq6avkeN56Gnd
+ xJhaC5udinRz2grxHFvORkB0QHyp2sOwafcxcKqv+aIfvLoiv7
+ oVPffEY8OkW78o8MdmH6g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 09:52:08AM +0100, Nick Piggin wrote:
-> On Wed, Jan 21, 2009 at 09:54:02AM +0100, Andi Kleen wrote:
-> > > GCC 4.3.2. Maybe i missed something obvious?
-> > 
-> > The typical use case of restrict is to tell it that multiple given
-> > arrays are independent and then give the loop optimizer 
-> > more freedom to handle expressions in the loop that
-> > accesses these arrays.
-> > 
-> > Since there are no loops in the list functions nothing changed.
-> > 
-> > Ok presumably there are some other optimizations which 
-> > rely on that alias information too, but again the list_*
-> > stuff is probably too simple to trigger any of them.
+On Wednesday 21 January 2009, Jaswinder Singh Rajput wrote:
+
+> > diff -r 29c5787efcda linux/include/linux/videodev.h
+> > --- a/linux/include/linux/videodev.h    Thu Jan 15 09:07:03 2009 -0800
+> > +++ b/linux/include/linux/videodev.h    Wed Jan 21 00:51:45 2009 -0800
+> > @@ -15,7 +15,8 @@
+> >  #include <linux/ioctl.h>
+> >  #include <linux/videodev2.h>
+> >
+> > -#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+> > +#if (defined(__KERNEL__) && defined(CONFIG_VIDEO_V4L1_COMPAT)) \
+> > +    || !defined (__KERNEL__)
+> >
+> >  #define VID_TYPE_CAPTURE       1       /* Can capture */
+> >  #define VID_TYPE_TUNER         2       /* Can tune */
+> >
+> > Now CONFIG_VIDEO_V4L1_COMPAT will only be used in the kernel.
+> >
 > 
-> Any function that does several interleaved loads and stores
-> through different pointers could have much more freedom to
-> move loads early and stores late. 
+> No, this will still give warnings.
 
-For once that would require more live registers. It's not
-a clear and obvious win. Especially not if you have
-only very little registers, like on 32bit x86.
+You could #define another conditional, like this:
 
-Then it would typically increase code size.
+#ifndef __KERNEL__
+# define __V4L1_COMPAT_API /* Always provide definitions to user space */
+#else /* __KERNEL__ */
+# ifdef CONFIG_VIDEO_V4L1_COMPAT
+#  define __V4L1_COMPAT_API
+# endif /* CONFIG_VIDEO_V4L1_COMPAT /*
+#endif /* __KERNEL__ */
 
-Then x86s tend to have very very fast L1 caches and
-if something is not in L1 on reads then the cost of fetching
-something for a read dwarfs the few cycles you can typically
-get out of this.
-
-And lastly even on a in order system stores can 
-be typically queued without stalling, so it doesn't
-hurt to do them early.
-
-Also at least x86 gcc normally doesn't do scheduling 
-beyond basic blocks, so any if () shuts it up.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Arnd <><
