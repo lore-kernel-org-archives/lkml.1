@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbZAUGPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZAUGSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759048AbZAUGPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 01:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZAUGPE
+	id S1760065AbZAUGSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 01:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZAUGSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 01:15:04 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54120
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751055AbZAUGPD (ORCPT
+	Wed, 21 Jan 2009 01:18:04 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:62470 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbZAUGSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 01:15:03 -0500
-Date: Tue, 20 Jan 2009 22:15:04 -0800 (PST)
-Message-Id: <20090120.221504.264090722.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: jaswinderlinux@gmail.com, khc@pm.waw.pl, jaswinder@kernel.org,
-       arnd@arndb.de, mingo@elte.hu, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: why usr/include/linux/if_frad.h is required
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090121053310.GA26395@uranus.ravnborg.org>
-References: <m3bpu1xyb9.fsf@intrepid.localdomain>
-	<3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
-	<20090121053310.GA26395@uranus.ravnborg.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 21 Jan 2009 01:18:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=R/08eEwsEHiZsQNECJAaGTkgT9lJkf3NLrUWNG4YkJSBr+rLKCp5ll/XYjfADboBr6
+         nKVt/PQqn7gYfiliCZbLoRTz4JR/gGgHhO+OpINNNYh+gHvMGkj7LUZ/zmsCrotIgXE/
+         SQ3XuZ8OGCdEGFi00D/QRsS3RLj9i/sfEJ2C4=
+Subject: Re: [ltt-dev] [RFC PATCH] block: Fix bio merge induced high I/O
+ latency
+From: Ben Gamari <bgamari@gmail.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org,
+       ltt-dev@lists.casi.polymtl.ca,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090121045447.GA18334@Krystal>
+References: <20090117162657.GA31965@Krystal>
+	 <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal>
+	 <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal>
+	 <20090120073709.GC30821@kernel.dk> <20090120122855.GF30821@kernel.dk>
+	 <20090120232748.GA10605@Krystal> <20090121002507.GA12616@Krystal>
+	 <720e76b80901202038p1e1f929ci56e9f35c5a629c88@mail.gmail.com>
+	 <20090121045447.GA18334@Krystal>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 01:17:45 -0500
+Message-Id: <1232518666.3695.68.camel@mercury.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 21 Jan 2009 06:33:10 +0100
-
-> On Wed, Jan 21, 2009 at 10:20:17AM +0530, Jaswinder Singh Rajput wrote:
-> > On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > > Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Tue, 2009-01-20 at 23:54 -0500, Mathieu Desnoyers wrote:
+> * Ben Gamari (bgamari@gmail.com) wrote:
+> > On Tue, Jan 20, 2009 at 7:25 PM, Mathieu Desnoyers
+> > <mathieu.desnoyers@polymtl.ca> wrote:
+> > > * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
 > > >
-> > >> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
-> > >> and no body is complaining about it so it means no body is using it.
-> > >>
-> > >> So should we need to drop #if / #endif pair or the whole file from
-> > >> userspace.
-> > >
-> > > I think the file. "Empty file exported to userspace", long unused. We
-> > > can also have it back there, and it being not exported is an indicator
-> > > that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
+> > > As a side-note : I'd like to have my results confirmed by others.
 > > 
-> > I will definately define #ifdef __KERNEL__ but I am also curious after
-> > defining it there is no point of making empty
-> > usr/include/linux/if_frad.h
+> > Well, I think the (fixed) patch did help to some degree (I haven't
+> > done fio benchmarks to compare against yet). Unfortunately, the I/O
+> > wait time problem still remains. I have been waiting 3 minutes now for
+> > evolution to start with 88% I/O wait time yet no visible signs of
+> > progress. I've confirmed I'm using the CFQ scheduler, so that's not
+> > the problem.
+> > 
 > 
-> Googling a bit did not turn up _any_ non-kernel hits that has relevance.
-> So based on the information given in this thread I strongly
-> suggest to drop the export of this header.
+> Did you also 
+> 
+> echo 1 > /sys/block/sd{a,b}/device/queue_depth
+I have been using this in some of my measurements (this is recorded, of
+course).
 
-Sure, but on the other hand this makes all of the userland APIs
-essentially inaccessible and undefined.
+> echo 1 > /sys/block/sd{a,b}/queue/iosched/slice_async_rq
+> echo 1 > /sys/block/sd{a,b}/queue/iosched/quantum
+I haven't been doing this although I will collect a data set with these
+parameters set. It would be to compare the effect of this to the default
+configuration.
 
-I bet Sangoma's internal tools reference this stuff.
+> 
+> (replacing sd{a,b} with your actual drives) ?
+> 
+> It seems to have been part of the factors that helped (along with the
+> patch).
+> 
+> And hopefully you don't have a recent Seagate hard drive like me ? :-)
+Thankfully, no.
+
+> 
+> So you test case is :
+> - start a large dd with 1M block size
+> - time evolution
+> 
+I've been using evolution to get a rough idea of the performance of the
+configurations but not as a benchmark per se. I have some pretty
+good-sized maildirs, so launching evolution for the first time can be
+quite a task, IO-wise. Also, switching between folders used to be quite
+time consuming. It seems like the patch did help a bit on this front
+though.
+
+For a quantitative benchmark I've been using the fio job that you posted
+earlier. I've been collecting results and should have a pretty good data
+set soon.
+
+I'll send out a compilation of all the data I've collected as soon as
+I've finished.
+
+- Ben
+
+
