@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZAUDIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbZAUDIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762154AbZAUDIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbZAUDIJ
+	id S1763329AbZAUDIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbZAUDIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:08:09 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:48552 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754191AbZAUDIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:08:07 -0500
-Date: Wed, 21 Jan 2009 12:05:04 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, Trilok Soni <soni.trilok@gmail.com>,
-       Arve Hj?nnev?g <arve@android.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>, Brian Swetland <swetland@google.com>,
-       arve@google.com, San Mehat <san@android.com>,
-       Robert Love <rlove@google.com>, linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       ext Juha Yrj?l? <juha.yrjola@solidboot.com>, viktor.rosendahl@nokia.com
-Subject: Re: lowmemory android driver not needed?
-Message-ID: <20090121030504.GA14094@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Greg KH <greg@kroah.com>, Trilok Soni <soni.trilok@gmail.com>,
-	Arve Hj?nnev?g <arve@android.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-	Brian Swetland <swetland@google.com>, arve@google.com,
-	San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-	linux-kernel@vger.kernel.org,
-	"linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-	Tony Lindgren <tony@atomide.com>,
-	ext Juha Yrj?l? <juha.yrjola@solidboot.com>,
-	viktor.rosendahl@nokia.com
-References: <2f11576a0901160316u20030f4u51c9e4c059398b70@mail.gmail.com> <20090116152338.GB9357@kroah.com> <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 20 Jan 2009 22:08:32 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60947 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755306AbZAUDIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 22:08:31 -0500
+Date: Tue, 20 Jan 2009 19:05:00 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
+Message-ID: <20090121030500.GA32138@us.ibm.com>
+References: <20090117202638.GA11825@us.ibm.com> <20090119110906.58ccbcbd.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090119110906.58ccbcbd.kamezawa.hiroyu@jp.fujitsu.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 11:50:48AM +0900, KOSAKI Motohiro wrote:
-> I should rewrite memory notification patchset from scratch.
-> the new version will construct on memcg infrastrcture.
-> 
-> Why?
-> 
-> last year, I received many feedback from lkml folks and my article reader.
-> (I monthly write kernel patch introduction article to japanese web
->  magazine and receive some feedback periodically)
-> 
-> I learned many people want flexibility notification.
-> (per workload, per user, et al)
-> eg. nokia lowmem driver have exception process defined by uid.
-> 
-> at top of last year, I thought memcg don't provide good infrastructure.
-> the first version memcg is just pretty funny joke. if its config turn on,
-> memory workload performance decrease ~30% although the user don't use 
-> memcg at runtime. then nobody use it.
-> but recently, KAMEZAWA hiroyuki (and Li zefan, Daisuke Nishimura et al)
-> dramatically improvement memcg performance. 
-> now, memcg overhead become less than 1%. 
-> 
-> Then, I think any memory accounting activity should use this infrastructure.
-> That's my homework.
-> 
-Building on top of the memory cgroup makes sense given that it has a
-lot more knowledge of the actual state in different contexts compared to
-something like security_vm_enough_memory()/__vm_enough_memory().
+KAMEZAWA Hiroyuki [kamezawa.hiroyu@jp.fujitsu.com] wrote:
+| On Sat, 17 Jan 2009 12:26:38 -0800
+| Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
+| 
+| > 
+| > Container-init must behave like global-init to processes within the
+| > container and hence it must be immune to unhandled fatal signals from
+| > within the container (i.e SIG_DFL signals that terminate the process).
+| > 
+| > But the same container-init must behave like a normal process to 
+| > processes in ancestor namespaces and so if it receives the same fatal
+| > signal from a process in ancestor namespace, the signal must be
+| > processed.
+| > 
+| > Implementing these semantics requires that send_signal() determine pid
+| > namespace of the sender but since signals can originate from workqueues/
+| > interrupt-handlers, determining pid namespace of sender may not always
+| > be possible or safe.
+| > 
+| 
+| Is this feature is for blocking signals from children to name-space
+| creator(owner) ?  And automatically used when namespace/cgroup is created ?
+| IOW, Container-init is Namespace-Cgroup-init ? 
 
-Despite that, a notification layer on top of cgroups in general might be
-worth thinking about, particularly since each controller may want to use
-notifications for different things. It is conceivable that people will
-also want different types of notifications from the memory controller
-beyond a simple lowmem notifier.
+I am not sure what "Namespace-cgroup-init refers" to.
 
-The LSM lowmem module itself used multiple notification levels to tune
-application behaviour for instance, though obviously this is something
-that is highly workload dependent.
+But, yes, this patchset applies to the first process in a pid namespace
+i.e the child of clone(NEWPID) call.
+
+| 
+| I'm glad if you add some documentation updates about how-it-works to patch set.
+
+Yes,  when the patchset is accepted, I am planning to add some notes to
+/sbin/init man page. 
+
+Thanks,
+
+Sukadev
