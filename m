@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbZAUDIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762885AbZAUDRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763329AbZAUDIp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbZAUDIc
+	id S1762885AbZAUDRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZAUDQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:08:32 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:60947 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755306AbZAUDIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:08:31 -0500
-Date: Tue, 20 Jan 2009 19:05:00 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
-       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
-Message-ID: <20090121030500.GA32138@us.ibm.com>
-References: <20090117202638.GA11825@us.ibm.com> <20090119110906.58ccbcbd.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 20 Jan 2009 22:16:51 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:60533 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbZAUDQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Jan 2009 22:16:50 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=D9j5jiKW+R5FFsZgtcucvq2qzkf98wunSLzubMYG8/e6LrqOWgvHB/RPJwjut5Inq
+	CFiG5wx6bKnddxFLOLJ9g==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090119110906.58ccbcbd.kamezawa.hiroyu@jp.fujitsu.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090120120728.9be81131.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090109143226.b79d21b4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830901082226h6d47053cp801dafb67b6e2bc9@mail.gmail.com>
+	 <20090109153219.dd8c153d.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1232072445.7955.40.camel@localhost>
+	 <6599ad830901191752o53926bdbve593301aeff7330f@mail.gmail.com>
+	 <20090120120728.9be81131.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 20 Jan 2009 19:16:42 -0800
+Message-ID: <6599ad830901201916o36e5e23bse440025618495ace@mail.gmail.com>
+Subject: Re: [RFC][PATCH] NOOP cgroup subsystem
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: matthltc@us.ibm.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.76
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki [kamezawa.hiroyu@jp.fujitsu.com] wrote:
-| On Sat, 17 Jan 2009 12:26:38 -0800
-| Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
-| 
-| > 
-| > Container-init must behave like global-init to processes within the
-| > container and hence it must be immune to unhandled fatal signals from
-| > within the container (i.e SIG_DFL signals that terminate the process).
-| > 
-| > But the same container-init must behave like a normal process to 
-| > processes in ancestor namespaces and so if it receives the same fatal
-| > signal from a process in ancestor namespace, the signal must be
-| > processed.
-| > 
-| > Implementing these semantics requires that send_signal() determine pid
-| > namespace of the sender but since signals can originate from workqueues/
-| > interrupt-handlers, determining pid namespace of sender may not always
-| > be possible or safe.
-| > 
-| 
-| Is this feature is for blocking signals from children to name-space
-| creator(owner) ?  And automatically used when namespace/cgroup is created ?
-| IOW, Container-init is Namespace-Cgroup-init ? 
+On Mon, Jan 19, 2009 at 7:07 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> In my understanding, "sending signal" requires some protocol/order in userland.
+>
+> Assume that users has to send signal in following order
+>  Application A -> Application B -> Application C.....
+> and may have problems sending signals in following order
+>  Application B -> Application A ->.....
 
-I am not sure what "Namespace-cgroup-init refers" to.
+In a case like that, a user would have to do their own signal sending
+rather than letting the "signal" subsystem handle it. The signal
+subsystem is more useful for doing things like sending less-refined
+signals like SIGSTOP or SIGKILL to all tasks in a cgroup.
 
-But, yes, this patchset applies to the first process in a pid namespace
-i.e the child of clone(NEWPID) call.
+> multilply-mounted means its own hierachy can be created per mount point ?
 
-| 
-| I'm glad if you add some documentation updates about how-it-works to patch set.
+Yes.
 
-Yes,  when the patchset is accepted, I am planning to add some notes to
-/sbin/init man page. 
+> If so, signal subsystem can be used instead of noop.
 
-Thanks,
+Supporting mounting a subsystem in multiple different hierarchies
+would pretty much involve supporting mounting a hierarchy with no
+subsystems (at least in the way I envisaged it), so you wouldn't need
+any subsystem in that case if you were just trying to do grouping.
 
-Sukadev
+Paul
