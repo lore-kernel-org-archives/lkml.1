@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764331AbZAULh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764165AbZAULmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764331AbZAULh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 06:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZAULhN
+	id S1764165AbZAULmt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 06:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZAULmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 06:37:13 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33899 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756604AbZAULhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 06:37:12 -0500
-Date: Wed, 21 Jan 2009 12:38:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Helge Deller <deller@gmx.de>, David Miller <davem@davemloft.net>,
-       jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-Message-ID: <20090121113853.GB1579@uranus.ravnborg.org>
-References: <1232496257.3123.19.camel@localhost.localdomain> <20090120.163203.199590606.davem@davemloft.net> <4976D937.5040704@gmx.de> <200901210924.23484.arnd@arndb.de>
-Mime-Version: 1.0
+	Wed, 21 Jan 2009 06:42:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39234 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756556AbZAULmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 06:42:39 -0500
+Date: Wed, 21 Jan 2009 12:42:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: lockdep and debug objects together are broken?
+Message-ID: <20090121114229.GA10606@elte.hu>
+References: <20090120085559.GB19505@wotan.suse.de> <19f34abd0901201311t2425056dia6182812f7270297@mail.gmail.com> <20090121071950.GM24891@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901210924.23484.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090121071950.GM24891@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0491]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 09:24:22AM +0100, Arnd Bergmann wrote:
-> On Wednesday 21 January 2009, Helge Deller wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> > >> On parisc, there is a major confusion in this area, at some point, all
-> > >> checks for __LP64__ got replaced with CONFIG_64BIT there. While I have
-> > >> not understood what the problem with __LP64__ was, the check for
-> > >> CONFIG_64BIT on parisc user space looks very wrong.
+
+* Nick Piggin <npiggin@suse.de> wrote:
+
+> On Tue, Jan 20, 2009 at 10:11:47PM +0100, Vegard Nossum wrote:
+> > On Tue, Jan 20, 2009 at 9:55 AM, Nick Piggin <npiggin@suse.de> wrote:
+> > > Hi,
+> > >
+> > > I've had a problem frustrating my testing because lockdep was silently turning
+> > > itself off... I patched out the code to disable lockdep after the first error,
+> > > and it started showing up weird errors. kernel/fork.c:990 seemed to be the
+> > > first to trigger (hard irqs disabled) from a call_usermodehelper call. Later,
+> > > migration thread was reported to try to unlock rq->lock although it was
+> > > holding no locks. Then init was reported to return to userspace without
+> > > releasing an objectdebug hash lock.
+> > >
+> > > All that went away and everything seemed to work properly with debug objects
+> > > configured out.
+> > >
+> > > I didn't get too far in trying to debug the problem. But it should be easy
+> > > enough to reproduce (if not, I can post traces or test patches).
 > > 
-> > I think the parisc mess is my fault. I once replaced the __LP64__ by 
-> > CONFIG_64BIT and forgot that some files are exported to userspace.
-> > I'll clean that up and send patches.
+> > I just built a kernel with lockdep and debugobjects enabled, and
+> > everything seemed fine. I think you should post your kernel version,
+> > config, and the lockdep patch (if needed -- it didn't seem to turn
+> > itself off here).
 > 
-> I have a patch set that introduces a lot more asm-generic headers where
-> I also need a generic way to check for this. The approach I chose
-> here was to check "#if __BITS_PER_LONG == 64" for anything that is
-> exported to user space. Maybe you can #define this in asm/types.h
-> and use this check in the parisc headers as well.
+> Are you sure? Ie. sysrq+D a still works properly? In that case, you
+> wouldn't need the lockdep patch because it just prevents the feature from being
+> switched off.
+> 
+> I'll have to dig a bit further, then. The annoying thing is that
+> lockdep turns itself off at the drop of a hat (and this particular
+> problem seems to happen without any backtraces), so it invalidates
+> all your lockdep testing if you don't realise it has turned itself
+> off.
+> 
+> Is there a way to re-arm lockdep? That would be neat.
 
-Could we add a new symbol for this?
-We know we are going to use this in several places so a simpler variant
-would be more readable.
+Not at the moment, and it looks somewhat complicated. All lock state 
+freezes the moment lockdep disarms itself. That's very much a key design 
+element: rarely will you see any real lockdep-inflicted crash - even if it 
+has a bug it is self-disabling itself and running for the door very 
+efficiently.
 
-Something like:
+So by the time you'd rearm, there's a lot of tasks with no proper locking 
+state built up. We might be able to re-arm via stop_machine_run perhaps.
 
-#ifdef __64BIT
-...
-#endif
-
-
-When we define __64BIT we would use the  __BITS_PER_LONG == 64 check.
-
-	Sam
+	Ingo
