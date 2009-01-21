@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbZAURPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbZAURVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbZAURPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 12:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZAURPo
+	id S1755245AbZAURVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 12:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZAURVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 12:15:44 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:5857 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbZAURPn (ORCPT
+	Wed, 21 Jan 2009 12:21:07 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:33358 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbZAURVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 12:15:43 -0500
-Date: Wed, 21 Jan 2009 09:01:16 -0800
-From: Brandon Philips <brandon@ifup.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: uio: add the uio_aec driver
-Message-ID: <20090121170116.GA18567@jenkins.ifup.org>
-References: <20090120204729.GA26477@jenkins.ifup.org> <20090120214832.GE3027@local>
-MIME-Version: 1.0
+	Wed, 21 Jan 2009 12:21:06 -0500
+Date: Wed, 21 Jan 2009 18:22:48 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Getting out-of-kernel modules compiled
+Message-ID: <20090121172248.GA3661@uranus.ravnborg.org>
+References: <Pine.LNX.4.61.0901211052020.16591@chaos.analogic.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090120214832.GE3027@local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <Pine.LNX.4.61.0901211052020.16591@chaos.analogic.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22:48 Tue 20 Jan 2009, Hans J. Koch wrote:
-> On Tue, Jan 20, 2009 at 12:47:29PM -0800, Brandon Philips wrote:
-> > UIO driver for the Adrienne Electronics Corporation PCI time code
-> > device.
-> > 
-> > This device differs from other UIO devices since it uses I/O ports instead of
-> > memory mapped I/O. In order to make it possible for UIO to work with this
-> > device a utility, uioport, can be used to read and write the ports.
+On Wed, Jan 21, 2009 at 10:57:25AM -0500, linux-os (Dick Johnson) wrote:
 > 
-> We just added a feature to UIO that allows you to pass information about
-> such I/O ports to userspace. In struct uio_info, there's now also a port[]
-> array for that purpose. In your case, you will probably want to set the
-> the porttype member of struct uio_port to UIO_PORT_X86.
+> Back in 2004, we make the following to compile
+> out-of-kernel modules. It worked.
 > 
-> The portio feature is available since .29-rc1, please use it.
-
-Sounds good. I will rework it along with your suggestions below.
-
-> > uioport is designed to be a setuid program and checks the permissions of
-> > the /dev/uio* node and if the user has write permissions it will use
-> > iopl and out*/in* to access the device.
+> Now, the kernel build doesn't "know" how to handle "asm.S"
+> files and always thinks a "name.o" file is the result of
+> a "name.c" file, so I can't buld them no  matter how hard
+> I try!
 > 
-> What happens with PCI on PowerPC ?
-
-I don't know. I could use /dev/port but my concern is that the device
-spec sheet specifies that some writes should be done with outb and
-others with outl. /dev/port only uses outb. Do you know if outl is
-different than four outb's to a device?
-
-Cheers,
-
-	Brandon
-
-> > @@ -91,5 +91,6 @@ extern void uio_event_notify(struct uio_
-> >  #define UIO_MEM_PHYS	1
-> >  #define UIO_MEM_LOGICAL	2
-> >  #define UIO_MEM_VIRTUAL 3
-> > +#define UIO_MEM_PORT	4
+> What do I need to do????
 > 
-> As I explained above, this is not needed anymore. The reason we don't want
-> this: It breaks generic userspace tools that rely on the fact that any
-> memory found underneath the maps/ directory in sysfs can be mapped.
+> #
+> #	Project Makefile for kernel versions over 6 
+> #	Created 05-OCT-2004	Richard B. Johnson
+> #
 > 
-> In case of ports we don't have anything to be mapped, we simply want to
-> pass information to userspace. That justifies having a different sysfs
-> directory for it.
-
-ack.
-
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/pci.h>
-> > +#include <linux/init.h>
-> > +#include <linux/interrupt.h>
-> > +#include <linux/cdev.h>
-> > +#include <linux/fs.h>
-> > +#include <linux/io.h>
-> > +#include <asm/system.h>
+> VER	:=	$(shell uname -r)
+> PWD	:=	$(shell pwd)
 > 
-> please put this <asm/...> include under the <linux/...> includes, separated by
-> one blank line. Makes it easier to find. BTW, do you actually need this one?
-
-ack.
-
-> > +	iowrite32(INT_ENABLE, info->mem[0].internal_addr + INT_ENABLE_ADDR);
-> > +	iowrite8(INT_MASK_ALL, info->mem[0].internal_addr + INT_MASK_ADDR);
-> > +	if (ioread8(info->mem[0].internal_addr + INTA_DRVR_ADDR)
-> > +			& INTA_ENABLED_FLAG)
-> > +		printk(KERN_INFO "aectc: interrupts successfully enabled\n");
+> all:		driver
 > 
-> I'd find it better if you printed a message in case of failure...
-> And please use dev_err() etc. instead of printk().
+> driver:
+>  		make V=1 -C /usr/src/linux-$(VER) SUBDIRS=$(PWD) modules
+> 
+> rtc_hwr.o:	rtc_hwr.S
+>  		as -o $@ $<
+> 
+> obj-m		= 	rtc.o
+> obj-m		+= 	rtc_hwr.o
 
-ack.
+kbuild has never (at least for a very long time) not
+supported to implement a module only in assembler.
 
-> BTW, if this test fails, are you sure you can continue and let probe()
-> succeed?
+So you will have no luck trying to build the
+module rtc_hrw.ko
 
-Yes, if it fails the device still has a "polling" mode.
+What you can do is to define a module like htis:
+obj-m := dick.o
+dick-y := rtc.o rtc_hwr.o
+
+This will properly build rtc_hwr.S => rtc_hwr.o
+
+	Sam
