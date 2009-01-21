@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZAUSZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZAUS0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbZAUSZb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 13:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZAUSZO
+	id S1758738AbZAUS0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 13:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZAUS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 13:25:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47967 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753133AbZAUSZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 13:25:13 -0500
-Date: Wed, 21 Jan 2009 19:25:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: e1000e regression (interface hang) with latest -git
-Message-ID: <20090121182504.GA14259@elte.hu>
-References: <20090121102840.GA24967@elte.hu> <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com> <20090121175158.GA7302@elte.hu> <20090121180344.GA13675@elte.hu> <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com>
+	Wed, 21 Jan 2009 13:26:00 -0500
+Received: from kroah.org ([198.145.64.141]:54430 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753541AbZAUSZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 13:25:59 -0500
+Date: Wed, 21 Jan 2009 10:11:24 -0800
+From: Greg KH <greg@kroah.com>
+To: Sam Liddicott <sam@liddicott.com>
+Cc: Ming Lei <tom.leiming@gmail.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux USB list <linux-usb@vger.kernel.org>
+Subject: Re: "permanently" unbind a device from a driver?
+Message-ID: <20090121181124.GA17410@kroah.com>
+References: <497638FF.8050805@msgid.tls.msk.ru> <20090120210254.GA5609@kroah.com> <d82e647a0901210744t1655bacesf23bcd54e30002e9@mail.gmail.com> <20090121162345.GB22615@kroah.com> <4977596D.409@liddicott.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4977596D.409@liddicott.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Waskiewicz Jr, Peter P <peter.p.waskiewicz.jr@intel.com> wrote:
-
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > The same point remains though: it worked before (and works fine with a 
-> > > distro kernel, 2.6.28-0.140.rc9.git1.fc11.x86_64) and doesnt work with 
-> > > latest -git.
-> > > 
-> > > I'll capture some debug data and send it to you.
-> > 
-> > find attached the debug data:
-> > 
-> >   ethtool.dump.eth0.before
-> >   ethtool.dump.eth0.after
-> >   ethtool.dump.eth0.after2
-> >   boot.log
-> >   config
-> > 
-> > the 'before' dump is before the hang, shortly after bootup. It also 
-> > includes 'ifconfig eth0' output.
-> > 
-> > the 'after' dump is after the hang - while the interface is hung.
-> > 
-> > 'after2' dump is after a 'service network restart' - which brought the 
-> > interface back.
-> > 
-> > Note if i wait long enough (half an hour or so), then not even 'service 
-> > network restart' will bring back the device.
-> > 
-> > The kernel i tested is: v2.6.29-rc2-13-gf3b8436
+On Wed, Jan 21, 2009 at 05:20:45PM -0000, Sam Liddicott wrote:
+> * Greg KH wrote, On 21/01/09 16:23:
+> > On Wed, Jan 21, 2009 at 11:44:03PM +0800, Ming Lei wrote:
+> >   
+> >> 2009/1/21 Greg KH <greg@kroah.com>:
+> >>     
+> >>> Just add a blacklist rule to the usbhid driver for this device.  There
+> >>> are a number of devices out there that need this functionality, which is
+> >>> why there is such a list.
+> >>>       
+> >> Is it possible to implement a generic blacklist mechanism in driver core
+> >> to support the function for all kinds of drivers? or is it necessary to do that?
+> >>     
+> >
+> > It's not necessary as the hid core already supports this very thing due
+> > to the need for it (it's the easiest way to write a userspace Windows
+> > driver, so lots of manufacturers lie about their devices in order to
+> > work around having to write a Windows kernel driver.)
+> >
+> > So just add this device to the hid core blacklist, and you are all set.
+> >
+> > Care to send a patch?
+> >   
 > 
-> As Bruce stated, this is an igb issue, not e1000e.  From your boot.log:
+> I've often felt that a /proc or /sys interface to allow blacklist
+> additions or quirk addition would be great.
 
-(yes, as i said it too two mails ago - it is an igb.)
+Some subsystems support this, like the HID subsystem :)
 
-> igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-> igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+It is a subsystem-specific thing as they all do their binding in
+different ways, we can't make this "generic" very easily, sorry.
+
+> Hacking of new devices often runs faster than distro's kernel releases;
+> it will often be very simple to distribute a 1 liner to make some
+> hardware available than tell people to wait until the next major release
+> of their distro.
 > 
-> One other piece of info (in addition to what Bruce requested) that would 
-> be useful is after you've done ifconfig eht0 up, cat /proc/interrupts | 
-> grep eth0 and send that output (I want to see your MSI-X configuration).
+> As a point in instance, a couple of years ago I gave up trying to get
+> some quirks added for usb dual and quad joystick adaptors. I got them
+> added for one of them but not the other. It was just too much hard work.
 
-here it is:
+Where did you send them?  That shouldn't happen, sorry about that.
 
- 79:         35          0       9836       7451       1197       1360        766          0       2196        995        770          0       2051        863       4714       1879   PCI-MSI-edge      eth0-tx-0
- 80:       2335          0       2718       3651       5024       9850        533          0       1405       1095          0          0       4421       1229          0       2002   PCI-MSI-edge      eth0-tx-1
- 81:         33          0          0       5478       1125       6585       4865       6306          0          0          0        714       3757          0       2662       1020   PCI-MSI-edge      eth0-tx-2
- 82:         21       1428       3136       3783       4249       6833          0          0       4175          0          0       1465       1940       1780       6286          0   PCI-MSI-edge      eth0-tx-3
- 83:         40          0          0       4788          0       1486          0       7185       3998       8637       1409       6785          0          0          0      10060   PCI-MSI-edge      eth0-rx-0
- 84:         70       1441       2606       1342          0       1678       4301       1839          0       6507       6910      16470          0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
- 85:         40       1368          0       3560       5022       2040          5       1719          0       2037        956         40          0      17264       6456       2833   PCI-MSI-edge      eth0-rx-2
- 86:         44        414          5       1164         30       4513       4595       1542          0      10033       1151          0       4961       4203          0      10703   PCI-MSI-edge      eth0-rx-3
- 87:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
+> An user-space post-boot uploadable quirk/blacklist would be great and
+> IMHO result in a bigger supply of quirks.
 
-	Ingo
+Again, some subsystems, like HID already support this.
+
+thanks,
+
+greg k-h
