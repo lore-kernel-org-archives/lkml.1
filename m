@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763345AbZAUOyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbZAUOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763345AbZAUOyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 09:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbZAUOyI
+	id S1762589AbZAUOza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZAUOzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 09:54:08 -0500
-Received: from mail.phnxsoft.com ([195.227.45.4]:3175 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbZAUOyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 09:54:07 -0500
-X-Greylist: delayed 1928 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 09:54:07 EST
-Message-ID: <49772F79.8060009@imap.cc>
-Date: Wed, 21 Jan 2009 15:21:45 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.18) Gecko/20081031 SeaMonkey/1.1.13 Mnenhy/0.7.6.0
+	Wed, 21 Jan 2009 09:55:18 -0500
+Received: from thunk.org ([69.25.196.29]:43579 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbZAUOzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 09:55:15 -0500
+Date: Wed, 21 Jan 2009 09:55:13 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Victor Pelt <victor.pelt@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ext4 no space left
+Message-ID: <20090121145513.GH31253@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Victor Pelt <victor.pelt@gmail.com>, linux-kernel@vger.kernel.org
+References: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] x86: Merge hardirq.h
-References: <73c1f2160901160610l57e31a64j56fe9544bd2fd309@mail.gmail.com> <1232457345-12366-5-git-send-email-brgerst@gmail.com> <4976DA9C.7000500@kernel.org> <20090121101307.GD18728@elte.hu> <49770808.2030909@kernel.org>
-In-Reply-To: <49770808.2030909@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE9C94EC3064C7D4C66736E8A"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <576cb9750901210619u3d2abfdclb818f0946f7bc663@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE9C94EC3064C7D4C66736E8A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jan 21, 2009 at 03:19:28PM +0100, Victor Pelt wrote:
+> Hey,
+> 
+> i tried to switch my root partition to ext4 (from reiserfs) but i ran
+> into problems when copying over all the data that it says 'no space
+> left on the device'
+> i'm running 2.6.28-gentoo-r1 (based on 2.6.28.1 if i'm not mistaken)
+> 
+> rootfs                 5044188   4310972    476980  91% /  <= file
+> system that is 'full'
+>
+> i like to use that last 470MB if possible
+> 
+> fsck didn't help (tried that)
 
-Tejun Heo schrieb:
-> [...] but when the patch is touching this low in arch
-> code, I don't think small four configuration build isn't too much
-> before sending out a patchset.  With two quad core machines and ram
-> disk configured, it just doesn't take that much of time (which BTW
-> doesn't cost that much these days).  With my typical test config,
-> whole build takes about 80 to 90 seconds.  Four times that is still
-> under ten minutes.
+If this is the problem I think it is, it's fixed in patches that were
+merged for 2.6.29 (in -rc1), and you can work around it via umounting
+and remounting the filesystem (or in case of the root filesystem,
+rebooting).
 
-Wow. Do want. :-)
+However, when you said "fsck didn't help", what exactly did you mean
+by that?  That fsck didn't show any problems, when you ran it while
+the filesystem was mounted?  Did you actually reboot and force an
+fsck, and then found that you were still getting ENOSPC errors?
 
-SCNR
-T.
+I assume you have tried writing as root, and that quotas are disabled?
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+  	     	  		   	 - Ted
 
+P.S.  If it is the problem I think it is, upgrading 2.6.29-rcX should
+fix the problem, as would using the ext4-stable branch in the ext4 git
+tree, or applying the patches in the for-stable branch of the ext4 git
+tree:
 
---------------enigE9C94EC3064C7D4C66736E8A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJdy+CQ3+did9BuFsRAuI7AJwI7zzl8RfbEr7fVVo1JxtLITA7tgCdGkNW
-Boj4QAzpz0n09XayNEdfkBc=
-=7NdP
------END PGP SIGNATURE-----
-
---------------enigE9C94EC3064C7D4C66736E8A--
+    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
