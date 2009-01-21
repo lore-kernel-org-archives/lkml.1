@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbZAUKq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZAUKsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764225AbZAUKq2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 05:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756754AbZAUKqU
+	id S1764251AbZAUKsh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 05:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbZAUKs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 05:46:20 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59854 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756151AbZAUKqT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 05:46:19 -0500
-Date: Wed, 21 Jan 2009 19:45:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Menage <menage@google.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [RFC][PATCH 4/4] cgroup-memcg fix frequent EBUSY at rmdir v2
-Message-Id: <20090121194509.b5084225.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <6599ad830901210243k433f618bva4ec756b769be4d4@mail.gmail.com>
-References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090108183529.b4fd99f4.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901131848gf7f6996iead1276bc50753b8@mail.gmail.com>
-	<20090114120044.2ecf13db.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901131905ie10e4bl5168ab7f337b27e1@mail.gmail.com>
-	<20090114121205.1bb913aa.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090120194735.cc52c5e0.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901210200q77b2553ag35f706c321a18d83@mail.gmail.com>
-	<20090121193248.94aecb10.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830901210243k433f618bva4ec756b769be4d4@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 05:48:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47690 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756151AbZAUKs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 05:48:27 -0500
+Date: Wed, 21 Jan 2009 11:48:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
+Message-ID: <20090121104811.GB25531@elte.hu>
+References: <4976EE0B.5090200@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4976EE0B.5090200@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 02:43:44 -0800
-Paul Menage <menage@google.com> wrote:
 
-> On Wed, Jan 21, 2009 at 2:32 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> >
-> > Hmm, subsystem may return -EPERM or some..
-> > I'll change this to
-> >
-> >  if (!ret)
-> >    return ret;
-> 
-> You mean
-> 
-> if (ret)
->   return ret;
-> 
-Yes. (>_<!
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
--Kame
+> allocating memory for every cpu for single workqueue is waste.
 
+good idea.
+
+One detail:
+
+> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+>  	const struct cpumask *cpu_map = wq_cpu_map(wq);
+>  	int cpu;
+>  
+> +	if (is_wq_single_threaded(wq)) {
+> +		cleanup_workqueue_thread(wq->cpu_wq);
+> +		kfree(wq->cpu_wq);
+> +		kfree(wq);
+> +		return;
+> +	}
+> +
+>  	cpu_maps_update_begin();
+>  	spin_lock(&workqueue_lock);
+>  	list_del(&wq->list);
+
+Arent we forgetting to remove the workqueue from the &workqueues list in 
+the new single-thread case?
+
+Also, see the checkpatch output from kernel/workqueue.c - the warnings 
+below are correct and should be cleaned up.
+
+	Ingo
+
+WARNING: printk() should include KERN_ facility level
+#268: FILE: workqueue.c:268:
++		printk("%s: recursion depth exceeded: %d\n",
+
+ERROR: code indent should use tabs where possible
+#304: FILE: workqueue.c:304:
++^I^I^I^I       ^Itask_pid_nr(current));$
+
+ERROR: "foo* bar" should be "foo *bar"
+#555: FILE: workqueue.c:555:
++				struct timer_list* timer)
+
+ERROR: code indent should use tabs where possible
+#916: FILE: workqueue.c:916:
++ ^Icpu_maps_update_done();$
+
+kernel/workqueue.c has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
