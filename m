@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZAUWZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZAUW1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZAUWZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 17:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZAUWZf
+	id S1754644AbZAUW1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 17:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZAUW10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 17:25:35 -0500
-Received: from colo.lackof.org ([198.49.126.79]:34794 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbZAUWZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 17:25:34 -0500
-Date: Wed, 21 Jan 2009 15:25:22 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Miller <davem@davemloft.net>, jaswinder@kernel.org, mingo@elte.hu,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-Message-ID: <20090121222522.GB15211@colo.lackof.org>
-References: <1232496257.3123.19.camel@localhost.localdomain> <20090120.161626.93641145.davem@davemloft.net> <200901210124.26118.arnd@arndb.de>
+	Wed, 21 Jan 2009 17:27:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:8267 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZAUW1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 17:27:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=ETAKf9HIZqtmrWt581EcOXtQvxP2GvShd8Hiz7uXjviXgUd/S83Sd5EfQCLhBTKx6G
+         N8XU+OwE2A/Bj3K1Gk4dXV95TvsWer1G1eTpks/vbbGLTDvL2RhRch2uouMWmGp7oITB
+         Q94/biXXmpBEdhH6TG20+j+7dpttwZDABvopA=
+Date: Thu, 22 Jan 2009 01:32:54 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: sam@ravnborg.org
+Cc: albcamus@gmail.com, linux-kernel@vger.kernel.org
+Subject: tags: fix config symbols generation
+Message-ID: <20090121223253.GB10123@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901210124.26118.arnd@arndb.de>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 01:24:25AM +0100, Arnd Bergmann wrote:
-...
-> > This file needs to test for 64-bit'ness using some non-CONFIG_*
-> > test.  And the standard built-in CPP macros which can be used
-> > to check for that are different on every platform.
-> 
-> I think we should simply define a macro for use in the kernel, e.g. in
-> <asm/types.h>. There already is a BITS_PER_LONG macro in there, maybe
-> we can add an exported __BITS_PER_LONG there that checks for the right
-> macro on each architecture.
+commit 4f628248a578585472e19e4cba2c604643af8c6c aka
+"kbuild: reintroduce ALLSOURCE_ARCHS support for tags/cscope"
+breaks tags generation for Kconfig symbols.
 
-I'm pretty sure __LP64__ is the standard compiler defined macro
-for 64-bit builds on most architectures.
+Steps to reproduce:
 
-> On parisc, there is a major confusion in this area, at some point, all
-> checks for __LP64__ got replaced with CONFIG_64BIT there. While I have
-> not understood what the problem with __LP64__ was,
+	make tags
+	vi -t PROC_FS
 
-IIRC, the problem with __LP64__ is it wasn't visible to the CONFIG
-tool chains and dependencies. I believe that's fixed now and parisc
-could deprecate use of CONFIG_64BIT if there is a strong preference
-for __LP64__.
+It should jump to 'config PROC_FS' line.
 
-> the check for
-> CONFIG_64BIT on parisc user space looks very wrong.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-This shouldn't be exported to user space. Is that what you meant?
-PA-RISC user space can currently only be 32-bit anyway.
-So a 64-bit kernel will have to take that into consideration.
+ scripts/tags.sh |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-thanks,
-grant
+--- a/scripts/tags.sh
++++ b/scripts/tags.sh
+@@ -76,7 +76,10 @@ all_sources()
+ 
+ all_kconfigs()
+ {
+-	find_sources $ALLSOURCE_ARCHS 'Kconfig*'
++	for arch in $ALLSOURCE_ARCHS; do
++		find_sources $arch 'Kconfig*'
++	done
++	find_other_sources 'Kconfig*'
+ }
+ 
+ all_defconfigs()
