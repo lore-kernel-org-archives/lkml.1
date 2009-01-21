@@ -1,94 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbZAUJjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbZAUJjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbZAUJjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJjL
+	id S1763574AbZAUJjq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZAUJjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 21 Jan 2009 04:39:13 -0500
+Received: from fxip-0059e.externet.hu ([88.209.247.158]:50477 "EHLO
+	teledigit.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754079AbZAUJjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Jan 2009 04:39:11 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59716 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753724AbZAUJjJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:39:09 -0500
-Date: Wed, 21 Jan 2009 10:54:18 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090121095418.GG15750@one.firstfloor.org>
-References: <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org> <20090121085208.GO24891@wotan.suse.de> <20090121092049.GE15750@one.firstfloor.org> <20090121092550.GP24891@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 04:39:10 EST
+X-AuthUser: kgy@teledigit.hu
+From: =?utf-8?q?K=C3=B6vesdi_Gy=C3=B6rgy?= <kgy@teledigit.hu>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.28(.1) and netlink: scheduling while atomic
+Date: Wed, 21 Jan 2009 10:29:01 +0100
+User-Agent: KMail/1.9.9
+Cc: Netfilter Developer Mailing List <netfilter-devel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20090121092550.GP24891@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901211029.01619.kgy@teledigit.hu>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The point is that the compiler is then free to do it. If things
-> slow down after the compiler gets *more* information, then that
-> is a problem with the compiler heuristics rather than the
-> information we give it.
+Hi,
 
-The point was the -Os disables it typically then.
-(not always, compiler heuristics are far from perfect)
+The new netlink interface allows to add NAT directly to a conntrack entry.
+If it is used when the moudule nf-nat-ipv4 is not loaded in, it results in 
+crash:
+BUG: scheduling while atomic
+It is in the kernels 2.6.28 and 2.6.28.1 in the function 
+ctnetlink_parse_nat_setup(): it calls request_module() which causes the 
+problem. If the module is already loaded, then there is no problem.
 
-> 
->  
-> > Then x86s tend to have very very fast L1 caches and
-> > if something is not in L1 on reads then the cost of fetching
-> > something for a read dwarfs the few cycles you can typically
-> > get out of this.
-> 
-> Well most architectures have L1 caches of several cycles. And
-> L2 miss typically means going to L2 which in some cases the
-> compiler is expected to attempt to cover as much as possible
-> (eg in-order architectures).
-
-L2 cache is so much slower that scheduling a few instructions
-more doesn't help much.
-
-> stall, so you still want to get loads out early if possible.
-> 
-> Even a lot of OOOE CPUs I think won't have the best alias
-> anaysis, so all else being equal, it wouldn't hurt them to
-> move loads earlier.
-
-Hmm, but if the load is nearby it won't matter if a 
-store is in the middle, because the CPU will just execute
-over it.
-
-The real big win is if you do some computation inbetween,
-but at least for typical list manipulation there isn't 
-really any.
-
-> > Also at least x86 gcc normally doesn't do scheduling 
-> > beyond basic blocks, so any if () shuts it up.
-> 
-> I don't think any of this is a reason not to use restrict, though.
-> But... there are so many places we could add it to the kernel, and
-> probably so few where it makes much difference. Maybe it should be
-> able to help some critical core code, though.
-
-Frankly I think it would be another unlikely().
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Regards:
+K. Gy.
