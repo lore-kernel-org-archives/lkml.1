@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763491AbZAUPza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZAUP5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763491AbZAUPza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 10:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZAUPzL
+	id S1760001AbZAUP5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 10:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZAUP51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 10:55:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52768 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751715AbZAUPzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 10:55:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 2/2] PCI PCIe portdrv: Fix allocation of interrupts (rev. 6)
-Date: Wed, 21 Jan 2009 16:53:29 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>
-References: <200901131457.58164.rjw@sisk.pl> <200901210133.57537.rjw@sisk.pl> <497677B9.9080501@jp.fujitsu.com>
-In-Reply-To: <497677B9.9080501@jp.fujitsu.com>
+	Wed, 21 Jan 2009 10:57:27 -0500
+Received: from mail91.analogic.com ([12.187.86.31]:49422 "EHLO
+	mail01.analogic.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753195AbZAUP51 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 10:57:27 -0500
+X-AuditID: 0a770115-a9afebb000000e5e-8e-497745e522d3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901211653.30353.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 21 Jan 2009 15:57:25.0680 (UTC) FILETIME=[F4356300:01C97BE0]
+Content-class: urn:content-classes:message
+Subject: Getting out-of-kernel modules compiled
+Date: Wed, 21 Jan 2009 10:57:25 -0500
+Message-ID: <Pine.LNX.4.61.0901211052020.16591@chaos.analogic.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Getting out-of-kernel modules compiled
+Thread-Index: Acl74PQ+VlfjpIndSkGNuxaA2Oe/EQ==
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009, Hidetoshi Seto wrote:
-> Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> 
-> Nice work, Rafael!
 
-Thanks for the review!
+Back in 2004, we make the following to compile
+out-of-kernel modules. It worked.
 
-Best,
-Rafael
+Now, the kernel build doesn't "know" how to handle "asm.S"
+files and always thinks a "name.o" file is the result of
+a "name.c" file, so I can't buld them no  matter how hard
+I try!
+
+What do I need to do????
+
+#
+#	Project Makefile for kernel versions over 6 
+#	Created 05-OCT-2004	Richard B. Johnson
+#
+
+VER	:=	$(shell uname -r)
+PWD	:=	$(shell pwd)
+
+all:		driver
+
+driver:
+ 		make V=1 -C /usr/src/linux-$(VER) SUBDIRS=$(PWD) modules
+
+rtc_hwr.o:	rtc_hwr.S
+ 		as -o $@ $<
+
+obj-m		= 	rtc.o
+obj-m		+= 	rtc_hwr.o
+
+clean:
+ 		rm -rf *.o *.ko *.mod.c \.*.cmd
+
+make[2]: *** No rule to make target `/root/BCS/rtc/rtc_hwr.c', needed by `/root/BCS/rtc/rtc_hwr.o'.  Stop.
+make[1]: *** [_module_/root/BCS/rtc] Error 2
+make: *** [driver] Error 2
 
 
-> Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > If MSI-X interrupt mode is used by the PCI Express port driver, too
-> > many vectors are allocated and it is not ensured that the right
-> > vectors will be used for the right services.  Namely, the PCI Express
-> > specification states that both PCI Express native PME and PCI Express
-> > hotplug will always use the same MSI or MSI-X message for signalling
-> > interrupts, which implies that the same vector will be used by both
-> > of them.  Also, the VC service does not use interrupts at all.
-> > Moreover, is not clear which of the vectors allocated by
-> > pci_enable_msix() in the current code will be used for PME and
-> > hotplug and which of them will be used for AER if all of these
-> > services are configured.
-> > 
-> > For these reasons, rework the allocation of interrupts for PCI
-> > Express ports so that if MSI-X are enabled, the right vectors will be
-> > used for the right purposes.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4784.32 BogoMips).
+My book : http://www.AbominableFirebug.com/
+.
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged. Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
