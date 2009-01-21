@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbZAUNGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbZAUNKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760205AbZAUNGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 08:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZAUNGl
+	id S1760570AbZAUNKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 08:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZAUNKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 08:06:41 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:62560 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751902AbZAUNGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 08:06:40 -0500
+	Wed, 21 Jan 2009 08:10:32 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58145 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZAUNKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 08:10:31 -0500
+Date: Wed, 21 Jan 2009 08:10:28 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Lampersperger Andreas <lampersperger.andreas@heidenhain.de>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Subject: RE: 2.6.24.7-rt26 and 2.6.26.8-rt13
+In-Reply-To: <CEE27071B8F0914B91B3076CEB63C2B60725B58E@de01ex08.GLOBAL.JHCN.NET>
+Message-ID: <alpine.DEB.1.10.0901210809420.14906@gandalf.stny.rr.com>
+References: <1231557759.922.9.camel@localhost.localdomain> <CEE27071B8F0914B91B3076CEB63C2B60725B58E@de01ex08.GLOBAL.JHCN.NET>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18807.7643.368198.582428@harpo.it.uu.se>
-Date: Wed, 21 Jan 2009 14:06:35 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Uros Bizjak <ubizjak@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: Unneeded assignment to tsk in recent x86 change
-In-Reply-To: <5787cf470901210432l5327e48el94c53c8fb7fd6d1d@mail.gmail.com>
-References: <5787cf470901210432l5327e48el94c53c8fb7fd6d1d@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uros Bizjak writes:
- > Hello!
- > 
- > Impact: Cleanup.
- > 
- > Remove unneeded assignment to tsk in recent x86 change [1].
- > 
- > [1]: http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=d737c7649e2f7bdaa8760a9205dffaa45c117f20
- > 
- > Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
- > 
- > Patch vs. tip/master.
- > 
- > Uros.
- > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
- > index 93a563b..621e9b3 100644
- > --- a/arch/x86/mm/fault.c
- > +++ b/arch/x86/mm/fault.c
- > @@ -421,7 +421,6 @@ static noinline void pgtable_bad(struct pt_regs *regs,
- >  	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
- >  	       tsk->comm, address);
- >  	dump_pagetable(address);
- > -	tsk = current;
- >  	tsk->thread.cr2 = address;
- >  	tsk->thread.trap_no = 14;
- >  	tsk->thread.error_code = error_code;
 
-this bit is ok, clearly *tsk is valid and == current before the assignment
+On Wed, 21 Jan 2009, Lampersperger Andreas wrote:
 
- > @@ -795,13 +794,12 @@ asmlinkage
- >  void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- >  {
- >  	unsigned long address;
- > -	struct task_struct *tsk;
- > +	struct task_struct *tsk = current;
- >  	struct mm_struct *mm;
- >  	struct vm_area_struct *vma;
- >  	int write;
- >  	int fault;
- >  
- > -	tsk = current;
- >  	mm = tsk->mm;
- >  	prefetchw(&mm->mmap_sem);
+> Hi,
+> 
+> I'm using kernel 2.6.26.8-rt13 with CONFIG_DYNAMIC_FTRACE=y set.
+> When loading a kernel object the following message appear:
+> 
+> BUG: sleeping function called from invalid context insmod(1370) at include/asm/uaccess_32.h:560
+> in_atomic():0 [00000000], irqs_disabled():1
+> Pid: 1370, comm: insmod Not tainted 2.6.26.8-rt13-heros5 #8
+>  [<c011e13e>] __might_sleep+0xe5/0xea
+>  [<c011439a>] ftrace_modify_code+0x22/0xa6
+>  [<c0114364>] ? ftrace_test_p6nop+0x0/0xa
+>  [<c0162fb4>] __ftrace_update_code+0xed/0x2cf
+>  [<c0114364>] ? ftrace_test_p6nop+0x0/0xa
+>  [<c0163730>] ftrace_convert_nops+0x57/0x73
+>  [<c0163761>] ftrace_init_module+0x15/0x17
+>  [<c01491da>] sys_init_module+0x14c9/0x1a7d
+>  [<c016d89d>] ? generic_file_aio_read+0x49a/0x4d6
+>  [<c0311ef9>] ? sub_preempt_count+0xa2/0xb0
+>  [<c02180c4>] ? strpbrk+0x0/0x2b
+>  [<c019b7b9>] ? dput+0x34/0xe4
+>  [<c0104b31>] sysenter_past_esp+0x6a/0x99
+>  =======================
+> 
+> Is it not possible to use rt-patches and dynamic tracepoints?
 
-but this is neither a fix nor IMO a cleanup (it's inconsistent with
-the other variables in that function)
+No, it should. That is a bug, I'll try to reproduce it, could you send me 
+your config.
+
+Thanks,
+
+-- Steve
+
