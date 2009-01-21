@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbZAUDaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbZAUDbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbZAUDaS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbZAUDaE
+	id S1763340AbZAUDbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZAUDbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:30:04 -0500
-Received: from mail-bw0-f29.google.com ([209.85.218.29]:36122 "EHLO
-	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbZAUDaC (ORCPT
+	Tue, 20 Jan 2009 22:31:04 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51075 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbZAUDbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:30:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:cc
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=AC2OlYTSAx+9ZbtqCNeLs3LgxpCEJj6ryUkBOvd2WQsliI/+T+MHP5vRQQ/PY5VuwZ
-         4Hzm2ARklnwC3Gzb3ofRZS3XIJb+hbuFuc3kDI3Mu8EI5r2Wz5iPjyxfGjln7enhhvoC
-         /8OkBWfH1z87+WTPucky1qBbDEVEZxAD0qgPA=
-From: Ionut Leonte <garglkml@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2.6.28 changes in-kernel name for UVC device ?
-Date: Wed, 21 Jan 2009 05:23:01 +0200
-User-Agent: KMail/1.9.9
-References: <200901201349.33707.ionut.leonte@gmail.com> <ac3eb2510901200507p4b107af6ud87a634af6679223@mail.gmail.com> <49760649.8000800@s5r6.in-berlin.de>
-In-Reply-To: <49760649.8000800@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 20 Jan 2009 22:31:03 -0500
+Date: Wed, 21 Jan 2009 12:29:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Greg KH <greg@kroah.com>, Paul Mundt <lethal@linux-sh.org>,
+       Trilok Soni <soni.trilok@gmail.com>, Arve Hj?nnev?g <arve@android.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       Brian Swetland <swetland@google.com>, arve@google.com,
+       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
+       linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       ext Juha Yrj?l? <juha.yrjola@solidboot.com>, viktor.rosendahl@nokia.com
+Subject: Re: lowmemory android driver not needed?
+Message-Id: <20090121122952.18e4bb8c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <2f11576a0901160316u20030f4u51c9e4c059398b70@mail.gmail.com>
+	<20090116152338.GB9357@kroah.com>
+	<20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901210523.01282.ionut.leonte@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 January 2009 19:13:45 you wrote:
-> Kay Sievers wrote:
-> > You may just disable the firefire drivers if you don't need them.
->
-> It is not even necessary to disable the drivers; it would be sufficient
-> to not force-load the video1394 module.  (Or to fix the udev rule.)
-> Presence of a Firewire card does not cause video1394 to be auto-loaded;
-> only certain types of FireWire cameras cause respective uevents and thus
-> autoloading of the special-purpose driver video1394.  Ergo, Ionut's
-> userland has a configuration somewhere which loads video1394 explicitly.
+On Wed, 21 Jan 2009 11:50:48 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-It's most likely related to my kernel being monolithic - the only modules I 
-have are out-of-tree ones (like the binary nvidia driver and ndiswrapper). 
-Perhaps it's time I reconsidered my monolithic aproach to kernel building and 
-start compiling stuff as modules again.
+> last year, I received many feedback from lkml folks and my article reader.
+> (I monthly write kernel patch introduction article to japanese web
+>  magazine and receive some feedback periodically)
+> 
+> I learned many people want flexibility notification.
+> (per workload, per user, et al)
+> eg. nokia lowmem driver have exception process defined by uid.
+> 
+> at top of last year, I thought memcg don't provide good infrastructure.
+> the first version memcg is just pretty funny joke. if its config turn on,
+> memory workload performance decrease ~30% although the user don't use 
+> memcg at runtime. then nobody use it.
+> but recently, KAMEZAWA hiroyuki (and Li zefan, Daisuke Nishimura et al)
+> dramatically improvement memcg performance. 
+> now, memcg overhead become less than 1%. 
+                             ^^^^^^^^^^^^
+just depends on workload...
+
+> 
+> Then, I think any memory accounting activity should use this infrastructure.
+> That's my homework.
+> 
+
+But, memcg requires much memory to track usage of pages, a page_cgroup structure, 
+40bytes per page on 64bit, 20bytes per page on 32bit.
+Probably, for embeded people, this additinal memory usage is not acceptable.
+
+Below is just a noise:
+==
+As my personal project, I'd like to write on-demand-fake-numa for generic archs.
+Now, section size is 128MB on x86-64. I'd like to allow following ops.
+
+  # create_new_node (echo node_number > /sys/device/system/node/add_fake_node)
+  # offline memory (echo offline > /sys/device/system/memory/memoryXXX/state)
+  # attach offlined memory to new node
+                   (echo node_number > /sys/device/system/memory/memoryXXX/attach)
+  # online memmory (echo online > /sys/device/system/memory/memoryXXX/state)
+
+Then, memoryXXX (128MB of chunk of memory) is controlled under a new fake node
+"node_number".
+
+For embeded systems, you may be able to modify SECTION_SIZE smaller (8-16MB?) and
+cpuset will give them enough resource isolation.
+(But not so flexible as memory cgroup.)
+
+you can use node+cpuset information to track memory usage by apps.
+
+Note: OOM-Killer kills process within cpuset.
+
+Thanks,
+-Kame
+
+
+
+
+
+
