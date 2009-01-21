@@ -1,120 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZAUJoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbZAUJv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZAUJoK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJni
+	id S1760315AbZAUJv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZAUJvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:43:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65236 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754571AbZAUJnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:43:37 -0500
-Message-ID: <4976EE11.7010007@cn.fujitsu.com>
-Date: Wed, 21 Jan 2009 17:42:41 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 21 Jan 2009 04:51:15 -0500
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:40063 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZAUJvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:51:14 -0500
+Date: Wed, 21 Jan 2009 01:51:10 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       linux-media@vger.kernel.org, video4linux-list@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Confusion in usr/include/linux/videodev.h
+In-Reply-To: <200901211009.14856.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.58.0901210129350.13170@shell2.speakeasy.net>
+References: <1232502038.3123.61.camel@localhost.localdomain>
+ <Pine.LNX.4.58.0901210048500.13170@shell2.speakeasy.net>
+ <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
+ <200901211009.14856.arnd@arndb.de>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] workqueue: not allow recursion run_workqueue
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 Jan 2009, Arnd Bergmann wrote:
+> On Wednesday 21 January 2009, Jaswinder Singh Rajput wrote:
+> > > diff -r 29c5787efcda linux/include/linux/videodev.h
+> > > --- a/linux/include/linux/videodev.h    Thu Jan 15 09:07:03 2009 -0800
+> > > +++ b/linux/include/linux/videodev.h    Wed Jan 21 00:51:45 2009 -0800
+> > > @@ -15,7 +15,8 @@
+> > >  #include <linux/ioctl.h>
+> > >  #include <linux/videodev2.h>
+> > >
+> > > -#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+> > > +#if (defined(__KERNEL__) && defined(CONFIG_VIDEO_V4L1_COMPAT)) \
+> > > +    || !defined (__KERNEL__)
+> > >
+> > >  #define VID_TYPE_CAPTURE       1       /* Can capture */
+> > >  #define VID_TYPE_TUNER         2       /* Can tune */
+> > >
+> > > Now CONFIG_VIDEO_V4L1_COMPAT will only be used in the kernel.
+> > >
+> >
+> > No, this will still give warnings.
+>
+> You could #define another conditional, like this:
+>
+> #ifndef __KERNEL__
+> # define __V4L1_COMPAT_API /* Always provide definitions to user space */
+> #else /* __KERNEL__ */
+> # ifdef CONFIG_VIDEO_V4L1_COMPAT
+> #  define __V4L1_COMPAT_API
+> # endif /* CONFIG_VIDEO_V4L1_COMPAT /*
+> #endif /* __KERNEL__ */
 
-1) lockdep will complain when recursion run_workqueue
-2) works is not run orderly when recursion run_workqueue
+I see what the real problem is now, the unifdef program isn't smart enough
+to realize that it knows the result of !defined(__KERNEL__) || defined(FOO)
+and so it keeps those ifdefs in when it should be able to remove them.
 
-3) BUG!
-   We use recursion run_workqueue to hidden deadlock when
-   keventd trying to flush its own queue.
+This works too:
 
-   It's bug. When flush_workqueue()(nested in a work callback)returns,
-   the workqueue is not really flushed, the sequence statement of
-   this work callback will do some thing bad.
-
-   So we should not allow workqueue trying to flush its own queue.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 2f44583..1129cde 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
- 
- 	struct workqueue_struct *wq;
- 	struct task_struct *thread;
--
--	int run_depth;		/* Detect run_workqueue() recursion depth */
- } ____cacheline_aligned;
- 
- /*
-@@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
- static void run_workqueue(struct cpu_workqueue_struct *cwq)
- {
- 	spin_lock_irq(&cwq->lock);
--	cwq->run_depth++;
--	if (cwq->run_depth > 3) {
--		/* morton gets to eat his hat */
--		printk("%s: recursion depth exceeded: %d\n",
--			__func__, cwq->run_depth);
--		dump_stack();
--	}
- 	while (!list_empty(&cwq->worklist)) {
- 		struct work_struct *work = list_entry(cwq->worklist.next,
- 						struct work_struct, entry);
-@@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
- 		spin_lock_irq(&cwq->lock);
- 		cwq->current_work = NULL;
- 	}
--	cwq->run_depth--;
- 	spin_unlock_irq(&cwq->lock);
- }
- 
-@@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
- 
- static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
- {
--	int active;
-+	int active = 0;
-+	struct wq_barrier barr;
- 
--	if (cwq->thread == current) {
--		/*
--		 * Probably keventd trying to flush its own queue. So simply run
--		 * it by hand rather than deadlocking.
--		 */
--		run_workqueue(cwq);
--		active = 1;
--	} else {
--		struct wq_barrier barr;
-+	WARN_ON(cwq->thread == current);
- 
--		active = 0;
--		spin_lock_irq(&cwq->lock);
--		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
--			insert_wq_barrier(cwq, &barr, &cwq->worklist);
--			active = 1;
--		}
--		spin_unlock_irq(&cwq->lock);
--
--		if (active)
--			wait_for_completion(&barr.done);
-+	spin_lock_irq(&cwq->lock);
-+	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
-+		insert_wq_barrier(cwq, &barr, &cwq->worklist);
-+		active = 1;
- 	}
-+	spin_unlock_irq(&cwq->lock);
-+
-+	if (active)
-+		wait_for_completion(&barr.done);
- 
- 	return active;
- }
-
-
+#ifndef __KERNEL__
+# define __V4L1_COMPAT_API /* Always provide definitions to user space */
+#elif defined(CONFIG_VIDEO_V4L1_COMPAT) /* __KERNEL__ */
+# define __V4L1_COMPAT_API
+#endif /* CONFIG_VIDEO_V4L1_COMPAT */
