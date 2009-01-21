@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764407AbZAUIwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764111AbZAUIyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764407AbZAUIwl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763995AbZAUIwU
+	id S1764111AbZAUIyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758382AbZAUIyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:52:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51123 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763718AbZAUIwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:52:16 -0500
-Date: Wed, 21 Jan 2009 09:52:08 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, paulmck@linux.vnet.ibm.com,
-       Gregory Haskins <ghaskins@novell.com>, Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-btrfs <linux-btrfs@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Morreale <pmorreale@novell.com>,
-       Sven Dietrich <SDietrich@novell.com>, jh@suse.cz
-Subject: Re: gcc inlining heuristics was Re: [PATCH -v7][RFC]: mutex: implement adaptive spinning
-Message-ID: <20090121085208.GO24891@wotan.suse.de>
-References: <20090119001345.GA9880@elte.hu> <20090119062212.GC22584@wotan.suse.de> <alpine.LFD.2.00.0901200754100.2974@localhost.localdomain> <20090120005124.GD16304@wotan.suse.de> <20090120123824.GD7790@elte.hu> <1232480940.22233.1435.camel@macbook.infradead.org> <20090120210515.GC19710@elte.hu> <alpine.LFD.2.00.0901210814130.2892@localhost.localdomain> <20090120220516.GA10483@elte.hu> <20090121085402.GD15750@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121085402.GD15750@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 21 Jan 2009 03:54:11 -0500
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:38543 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758031AbZAUIyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:54:09 -0500
+Date: Wed, 21 Jan 2009 00:54:07 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       linux-media@vger.kernel.org, video4linux-list@redhat.com,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Confusion in usr/include/linux/videodev.h
+In-Reply-To: <3f9a31f40901202044n73a100faj96a6f3d3973bcc25@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0901210048500.13170@shell2.speakeasy.net>
+References: <1232502038.3123.61.camel@localhost.localdomain> 
+ <20090120235048.4f7200f9@caramujo.chehab.org>
+ <3f9a31f40901202044n73a100faj96a6f3d3973bcc25@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 09:54:02AM +0100, Andi Kleen wrote:
-> > GCC 4.3.2. Maybe i missed something obvious?
-> 
-> The typical use case of restrict is to tell it that multiple given
-> arrays are independent and then give the loop optimizer 
-> more freedom to handle expressions in the loop that
-> accesses these arrays.
-> 
-> Since there are no loops in the list functions nothing changed.
-> 
-> Ok presumably there are some other optimizations which 
-> rely on that alias information too, but again the list_*
-> stuff is probably too simple to trigger any of them.
+On Wed, 21 Jan 2009, Jaswinder Singh Rajput wrote:
+> On Wed, Jan 21, 2009 at 7:20 AM, Mauro Carvalho Chehab
+> <mchehab@infradead.org> wrote:
+> > On Wed, 21 Jan 2009 07:10:38 +0530
+> > Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> >> usr/include/linux/videodev.h is giving 2 warnings in 'make headers_check':
+> >>  usr/include/linux/videodev.h:19: leaks CONFIG_VIDEO to userspace where it is not valid
+> >>  usr/include/linux/videodev.h:314: leaks CONFIG_VIDEO to userspace where it is not valid
+> >>
+> >> Whole file is covered with #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+> >>
+> >> It means this file is only valid for kernel mode if CONFIG_VIDEO_V4L1_COMPAT is defined but in user mode it is always valid.
+> >
+> > V4L1 is the old deprecated userspace API for video devices. It is still
+> > required by some userspace applications. So, on userspace, it should be
+> > included. Also, this allows that one userspace app to be compatible with both
+> > V4L2 API (the current one) and the legacy V4L1 one.
+> >
+> > It should be noticed that are still a few drivers using the legacy API yet to
+> > be converted.
+> >
+>
+> If you have no objections then I will make a patchset which do followings:
+> 1. Remove  #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined
+> (__KERNEL__) from include/linux/videodev.h
+> 2. cover all #include <linux/videodev.h> with #ifdef
+> CONFIG_VIDEO_V4L1_COMPAT in kernel
+>
+> By this way, we can satisfy both kernel space and userspace issue and
+> also get rid of above warnings.
+>
+> If you have better suggestion then let me know.
 
-Any function that does several interleaved loads and stores
-through different pointers could have much more freedom to
-move loads early and stores late. Big OOOE CPUs won't care
-so much, but embedded and things (including in-order x86)
-are very important users of the kernel.
+That sounds like it will add a mess of #if's.  How about this?
 
+diff -r 29c5787efcda linux/include/linux/videodev.h
+--- a/linux/include/linux/videodev.h    Thu Jan 15 09:07:03 2009 -0800
++++ b/linux/include/linux/videodev.h    Wed Jan 21 00:51:45 2009 -0800
+@@ -15,7 +15,8 @@
+ #include <linux/ioctl.h>
+ #include <linux/videodev2.h>
+
+-#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
++#if (defined(__KERNEL__) && defined(CONFIG_VIDEO_V4L1_COMPAT)) \
++    || !defined (__KERNEL__)
+
+ #define VID_TYPE_CAPTURE       1       /* Can capture */
+ #define VID_TYPE_TUNER         2       /* Can tune */
+
+Now CONFIG_VIDEO_V4L1_COMPAT will only be used in the kernel.
