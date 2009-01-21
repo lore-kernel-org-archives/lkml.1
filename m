@@ -1,121 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZAUJ07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbZAUJ3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZAUJ07 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZAUJ0t
+	id S1758964AbZAUJ3s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:29:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZAUJ3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:26:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40851 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752931AbZAUJ0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:26:48 -0500
-Date: Wed, 21 Jan 2009 10:26:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, brgerst@gmail.com,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCHSET linux-2.6-x86:core/percpu] x86: misc clean up and
-	unify x86_32/64 code paths
-Message-ID: <20090121092633.GA22506@elte.hu>
-References: <1232527578-1960-1-git-send-email-tj@kernel.org>
+	Wed, 21 Jan 2009 04:29:40 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:21535 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZAUJ3i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:29:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=DStkg+rxu0w0pS95N/SEU4StN3d2bA9DX+Urpm4foU9ew6DeE2SGTMsQyoqa7vkEB
+	RnD+yYgkKrZc9OlLfNjSw==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH] Fix cgroup.h comments
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 21 Jan 2009 01:29:01 -0800
+Message-ID: <20090121092509.28625.67938.stgit@menage.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1232527578-1960-1-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.147
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix cgroup.h comments
 
-* Tejun Heo <tj@kernel.org> wrote:
+This patch fixes the style of some multi-line comments in cgroup.h to
+match Documentation/CodingStyle
 
-> Hello,
-> 
-> This patchset contains the following 10 patches mostly unifying 32 and
-> 64bit code paths.  0001 and 0007-0010 are from me and 0002-0006 are
-> from Brian Gerst.
-> 
->   0001-x86-update-canary-handling-during-switch.patch
->   0002-x86-clean-up-gdt_page-definition.patch
->   0003-x86-fix-percpu_write-with-64-bit-constants.patch
->   0004-x86-set-fs-to-__KERNEL_PERCPU-unconditionally-for.patch
->   0005-x86-merge-mmu_context.h.patch
->   0006-x86-merge-irq_regs.h.patch
->   0007-x86-uv-cleanup.patch
->   0008-x86-prepare-for-tlb-merge.patch
->   0009-x86-make-x86_32-use-tlb_64.c.patch
->   0010-x86-rename-tlb_64.c-to-tlb.c.patch
-> 
-> 0001-0002 clean up after previous percpu changes.  0003 improves
-> percpu op slightly.  0004 simplifies x86_32 init path.  0005-0010
-> unifies mmu_context.h, irq_regs.h and tlb.c, which not only simplifies
-> the source code but also improves performance by applying
-> optimizations implemented for either bitness to the other one while
-> unifying.
-> 
-> The following git tree contains the above changes on top of
-> core/percpu[1].  Please pull from it if there's no objection.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Signed-off-by: Paul Menage <menage@google.com>
 
-Pulled into tip/core/percpu, thanks Tejun.
-
-Very nice stuff! The SMP TLB flush code unification is a gem - i never 
-thought we'd get so far this quick ;-)
-
-Note, i also merged the latest cpumask work into tip/core/percpu, to 
-resolve tlb_32.c conflicts. I also moved tlb.c from arch/x86/kernel/ to 
-arch/x86/mm/, where it really belongs conceptually.
-
--tip testing also stumbled upon a build error caused by the UV cleanups - 
-see the fix below.
-
-	Ingo
-
--------------->
->From 4ec71fa2d2c3f1040348f2604f4b8ccc833d1c2e Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 21 Jan 2009 10:24:27 +0100
-Subject: [PATCH] x86: uv cleanup, build fix
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-Fix:
-
- arch/x86/mm/srat_64.c: In function ‘acpi_numa_processor_affinity_init’:
- arch/x86/mm/srat_64.c:141: error: implicit declaration of function ‘get_uv_system_type’
- arch/x86/mm/srat_64.c:141: error: ‘UV_X2APIC’ undeclared (first use in this function)
- arch/x86/mm/srat_64.c:141: error: (Each undeclared identifier is reported only once
- arch/x86/mm/srat_64.c:141: error: for each function it appears in.)
-
-A couple of UV definitions were moved to asm/uv/uv.h, but srat_64.c did
-not include that header. Add it.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/mm/srat_64.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-index 09737c8..15df1ba 100644
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -21,6 +21,7 @@
- #include <asm/numa.h>
- #include <asm/e820.h>
- #include <asm/genapic.h>
-+#include <asm/uv/uv.h>
+(This is also my first attempt at using git/stgit for local patch
+management in place of quilt - feel free to shout if this format isn't
+quite how you'd like it)
+
+ include/linux/cgroup.h |   71 ++++++++++++++++++++++++++++--------------------
+ 1 files changed, 41 insertions(+), 30 deletions(-)
+
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index e4e8e11..c62627e 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -47,14 +47,18 @@ enum cgroup_subsys_id {
  
- int acpi_numa __initdata;
+ /* Per-subsystem/per-cgroup state maintained by the system. */
+ struct cgroup_subsys_state {
+-	/* The cgroup that this subsystem is attached to. Useful
++	/*
++	 * The cgroup that this subsystem is attached to. Useful
+ 	 * for subsystems that want to know about the cgroup
+-	 * hierarchy structure */
++	 * hierarchy structure
++	 */
+ 	struct cgroup *cgroup;
  
+-	/* State maintained by the cgroup system to allow subsystems
++	/*
++	 * State maintained by the cgroup system to allow subsystems
+ 	 * to be "busy". Should be accessed via css_get(),
+-	 * css_tryget() and and css_put(). */
++	 * css_tryget() and and css_put().
++	 */
+ 
+ 	atomic_t refcnt;
+ 
+@@ -120,8 +124,10 @@ static inline void css_put(struct cgroup_subsys_state *css)
+ enum {
+ 	/* Control Group is dead */
+ 	CGRP_REMOVED,
+-	/* Control Group has previously had a child cgroup or a task,
+-	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set) */
++	/*
++	 * Control Group has previously had a child cgroup or a task,
++	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set)
++	 */
+ 	CGRP_RELEASABLE,
+ 	/* Control Group requires release notifications to userspace */
+ 	CGRP_NOTIFY_ON_RELEASE,
+@@ -130,9 +136,10 @@ enum {
+ struct cgroup {
+ 	unsigned long flags;		/* "unsigned long" so bitops work */
+ 
+-	/* count users of this cgroup. >0 means busy, but doesn't
+-	 * necessarily indicate the number of tasks in the
+-	 * cgroup */
++	/*
++	 * count users of this cgroup. >0 means busy, but doesn't
++	 * necessarily indicate the number of tasks in the cgroup
++	 */
+ 	atomic_t count;
+ 
+ 	/*
+@@ -142,7 +149,7 @@ struct cgroup {
+ 	struct list_head sibling;	/* my parent's children */
+ 	struct list_head children;	/* my children */
+ 
+-	struct cgroup *parent;	/* my parent */
++	struct cgroup *parent;		/* my parent */
+ 	struct dentry *dentry;	  	/* cgroup fs entry, RCU protected */
+ 
+ 	/* Private pointers for each registered subsystem */
+@@ -177,11 +184,12 @@ struct cgroup {
+ 	struct rcu_head rcu_head;
+ };
+ 
+-/* A css_set is a structure holding pointers to a set of
++/*
++ * A css_set is a structure holding pointers to a set of
+  * cgroup_subsys_state objects. This saves space in the task struct
+  * object and speeds up fork()/exit(), since a single inc/dec and a
+- * list_add()/del() can bump the reference count on the entire
+- * cgroup set for a task.
++ * list_add()/del() can bump the reference count on the entire cgroup
++ * set for a task.
+  */
+ 
+ struct css_set {
+@@ -226,13 +234,8 @@ struct cgroup_map_cb {
+ 	void *state;
+ };
+ 
+-/* struct cftype:
+- *
+- * The files in the cgroup filesystem mostly have a very simple read/write
+- * handling, some common function will take care of it. Nevertheless some cases
+- * (read tasks) are special and therefore I define this structure for every
+- * kind of file.
+- *
++/*
++ * struct cftype: handler definitions for cgroup control files
+  *
+  * When reading/writing to a file:
+  *	- the cgroup to use is file->f_dentry->d_parent->d_fsdata
+@@ -241,8 +244,10 @@ struct cgroup_map_cb {
+ 
+ #define MAX_CFTYPE_NAME 64
+ struct cftype {
+-	/* By convention, the name should begin with the name of the
+-	 * subsystem, followed by a period */
++	/*
++	 * By convention, the name should begin with the name of the
++	 * subsystem, followed by a period
++	 */
+ 	char name[MAX_CFTYPE_NAME];
+ 	int private;
+ 
+@@ -321,13 +326,17 @@ struct cgroup_scanner {
+ 	struct ptr_heap *heap;
+ };
+ 
+-/* Add a new file to the given cgroup directory. Should only be
+- * called by subsystems from within a populate() method */
++/*
++ * Add a new file to the given cgroup directory. Should only be
++ * called by subsystems from within a populate() method
++ */
+ int cgroup_add_file(struct cgroup *cgrp, struct cgroup_subsys *subsys,
+ 		       const struct cftype *cft);
+ 
+-/* Add a set of new files to the given cgroup directory. Should
+- * only be called by subsystems from within a populate() method */
++/*
++ * Add a set of new files to the given cgroup directory. Should
++ * only be called by subsystems from within a populate() method
++ */
+ int cgroup_add_files(struct cgroup *cgrp,
+ 			struct cgroup_subsys *subsys,
+ 			const struct cftype cft[],
+@@ -418,7 +427,8 @@ struct cgroup_iter {
+ 	struct list_head *task;
+ };
+ 
+-/* To iterate across the tasks in a cgroup:
++/*
++ * To iterate across the tasks in a cgroup:
+  *
+  * 1) call cgroup_iter_start to intialize an iterator
+  *
+@@ -427,9 +437,10 @@ struct cgroup_iter {
+  *
+  * 3) call cgroup_iter_end() to destroy the iterator.
+  *
+- * Or, call cgroup_scan_tasks() to iterate through every task in a cpuset.
+- *    - cgroup_scan_tasks() holds the css_set_lock when calling the test_task()
+- *      callback, but not while calling the process_task() callback.
++ * Or, call cgroup_scan_tasks() to iterate through every task in a
++ * cgroup - cgroup_scan_tasks() holds the css_set_lock when calling
++ * the test_task() callback, but not while calling the process_task()
++ * callback.
+  */
+ void cgroup_iter_start(struct cgroup *cgrp, struct cgroup_iter *it);
+ struct task_struct *cgroup_iter_next(struct cgroup *cgrp,
+
