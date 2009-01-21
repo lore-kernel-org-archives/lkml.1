@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762193AbZAUJnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZAUJoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762193AbZAUJnr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZAUJni
+	id S1757567AbZAUJoK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 21 Jan 2009 04:43:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56405 "EHLO song.cn.fujitsu.com"
+Received: from cn.fujitsu.com ([222.73.24.84]:65236 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753392AbZAUJnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754571AbZAUJnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Jan 2009 04:43:37 -0500
-Message-ID: <4976EE0B.5090200@cn.fujitsu.com>
-Date: Wed, 21 Jan 2009 17:42:35 +0800
+Message-ID: <4976EE11.7010007@cn.fujitsu.com>
+Date: Wed, 21 Jan 2009 17:42:41 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
 To: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] workqueue: don't alloc_percpu for single workqueue
+Subject: [PATCH] workqueue: not allow recursion run_workqueue
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,106 +25,96 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-allocating memory for every cpu for single workqueue is waste.
+1) lockdep will complain when recursion run_workqueue
+2) works is not run orderly when recursion run_workqueue
+
+3) BUG!
+   We use recursion run_workqueue to hidden deadlock when
+   keventd trying to flush its own queue.
+
+   It's bug. When flush_workqueue()(nested in a work callback)returns,
+   the workqueue is not really flushed, the sequence statement of
+   this work callback will do some thing bad.
+
+   So we should not allow workqueue trying to flush its own queue.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 2f44583..ecd693d 100644
+index 2f44583..1129cde 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -99,7 +99,7 @@ static
- struct cpu_workqueue_struct *wq_per_cpu(struct workqueue_struct *wq, int cpu)
- {
- 	if (unlikely(is_wq_single_threaded(wq)))
--		cpu = singlethread_cpu;
-+		return wq->cpu_wq;
- 	return per_cpu_ptr(wq->cpu_wq, cpu);
- }
+@@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
  
-@@ -417,7 +417,7 @@ void flush_workqueue(struct workqueue_struct *wq)
- 	lock_map_acquire(&wq->lockdep_map);
- 	lock_map_release(&wq->lockdep_map);
- 	for_each_cpu_mask_nr(cpu, *cpu_map)
--		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-+		flush_cpu_workqueue(wq_per_cpu(wq, cpu));
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
- 
-@@ -548,7 +548,7 @@ static void wait_on_work(struct work_struct *work)
- 	cpu_map = wq_cpu_map(wq);
- 
- 	for_each_cpu_mask_nr(cpu, *cpu_map)
--		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-+		wait_on_cpu_work(wq_per_cpu(wq, cpu), work);
- }
- 
- static int __cancel_work_timer(struct work_struct *work,
-@@ -752,17 +752,13 @@ int current_is_keventd(void)
- 
- }
- 
--static struct cpu_workqueue_struct *
--init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
-+static void init_cpu_workqueue(struct workqueue_struct *wq,
-+		struct cpu_workqueue_struct *cwq)
- {
--	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+ 	struct workqueue_struct *wq;
+ 	struct task_struct *thread;
 -
- 	cwq->wq = wq;
- 	spin_lock_init(&cwq->lock);
- 	INIT_LIST_HEAD(&cwq->worklist);
- 	init_waitqueue_head(&cwq->more_work);
--
--	return cwq;
+-	int run_depth;		/* Detect run_workqueue() recursion depth */
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ {
+ 	spin_lock_irq(&cwq->lock);
+-	cwq->run_depth++;
+-	if (cwq->run_depth > 3) {
+-		/* morton gets to eat his hat */
+-		printk("%s: recursion depth exceeded: %d\n",
+-			__func__, cwq->run_depth);
+-		dump_stack();
+-	}
+ 	while (!list_empty(&cwq->worklist)) {
+ 		struct work_struct *work = list_entry(cwq->worklist.next,
+ 						struct work_struct, entry);
+@@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ 		spin_lock_irq(&cwq->lock);
+ 		cwq->current_work = NULL;
+ 	}
+-	cwq->run_depth--;
+ 	spin_unlock_irq(&cwq->lock);
  }
  
- static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
-@@ -816,7 +812,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	if (!wq)
- 		return NULL;
+@@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
  
--	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
-+	if (singlethread)
-+		wq->cpu_wq = kmalloc(sizeof(*cwq), GFP_KERNEL);
-+	else
-+		wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
- 	if (!wq->cpu_wq) {
- 		kfree(wq);
- 		return NULL;
-@@ -830,7 +829,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	INIT_LIST_HEAD(&wq->list);
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+ {
+-	int active;
++	int active = 0;
++	struct wq_barrier barr;
  
- 	if (singlethread) {
--		cwq = init_cpu_workqueue(wq, singlethread_cpu);
-+		cwq = wq->cpu_wq;
-+		init_cpu_workqueue(wq, cwq);
- 		err = create_workqueue_thread(cwq, singlethread_cpu);
- 		start_workqueue_thread(cwq, -1);
- 	} else {
-@@ -851,7 +851,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 		 * lock.
- 		 */
- 		for_each_possible_cpu(cpu) {
--			cwq = init_cpu_workqueue(wq, cpu);
-+			cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+			init_cpu_workqueue(wq, cwq);
- 			if (err || !cpu_online(cpu))
- 				continue;
- 			err = create_workqueue_thread(cwq, cpu);
-@@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
- 	const struct cpumask *cpu_map = wq_cpu_map(wq);
- 	int cpu;
+-	if (cwq->thread == current) {
+-		/*
+-		 * Probably keventd trying to flush its own queue. So simply run
+-		 * it by hand rather than deadlocking.
+-		 */
+-		run_workqueue(cwq);
+-		active = 1;
+-	} else {
+-		struct wq_barrier barr;
++	WARN_ON(cwq->thread == current);
  
-+	if (is_wq_single_threaded(wq)) {
-+		cleanup_workqueue_thread(wq->cpu_wq);
-+		kfree(wq->cpu_wq);
-+		kfree(wq);
-+		return;
-+	}
+-		active = 0;
+-		spin_lock_irq(&cwq->lock);
+-		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-			insert_wq_barrier(cwq, &barr, &cwq->worklist);
+-			active = 1;
+-		}
+-		spin_unlock_irq(&cwq->lock);
+-
+-		if (active)
+-			wait_for_completion(&barr.done);
++	spin_lock_irq(&cwq->lock);
++	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
++		insert_wq_barrier(cwq, &barr, &cwq->worklist);
++		active = 1;
+ 	}
++	spin_unlock_irq(&cwq->lock);
 +
- 	cpu_maps_update_begin();
- 	spin_lock(&workqueue_lock);
- 	list_del(&wq->list);
++	if (active)
++		wait_for_completion(&barr.done);
+ 
+ 	return active;
+ }
 
 
