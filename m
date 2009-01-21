@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbZAUFWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763608AbZAUFWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbZAUFWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 00:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZAUFVM
+	id S1763608AbZAUFWo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZAUFVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 00:21:12 -0500
-Received: from kroah.org ([198.145.64.141]:53323 "EHLO coco.kroah.org"
+	Wed, 21 Jan 2009 00:21:13 -0500
+Received: from kroah.org ([198.145.64.141]:53327 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751841AbZAUFVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 00:21:09 -0500
+	id S1752470AbZAUFVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 00:21:10 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+Cc: Jesper Nilsson <Jesper.Nilsson@axis.com>,
+       Bastien ROUCARIES <roucaries.bastien@gmail.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, stable <stable@kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 4/5] debugfs: introduce stub for debugfs_create_size_t() when DEBUG_FS=n
-Date: Tue, 20 Jan 2009 21:19:56 -0800
-Message-Id: <1232515197-3974-4-git-send-email-gregkh@suse.de>
+Subject: [PATCH 5/5] klist.c: bit 0 in pointer can't be used as flag
+Date: Tue, 20 Jan 2009 21:19:57 -0800
+Message-Id: <1232515197-3974-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <20090121051855.GA3665@kroah.com>
 References: <20090121051855.GA3665@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
 
-Toralf Förster <toralf.foerster@gmx.de> reported a build failure in
-the WiMAX stack when CONFIG_DEBUG_FS=n
+The commit a1ed5b0cffe4b16a93a6a3390e8cee0fbef94f86
+(klist: don't iterate over deleted entries) introduces use of the
+low bit in a pointer to indicate if the knode is dead or not,
+assuming that this bit is always free.
 
-http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
+This is not true for all architectures, CRIS for example may align data
+on byte borders.
 
-This is due to debugfs_create_size_t() missing an stub that returns
--ENODEV when the DEBUGFS subsystem is not configured in (like the rest
-of the debugfs API).
+The result is a bunch of warnings on bootup, devices not being
+added correctly etc, reported by Hinko Kocevar <hinko.kocevar@cetrtapot.si>:
 
-This patch adds said stub.
+------------[ cut here ]------------
+WARNING: at lib/klist.c:62 ()
+Modules linked in:
 
-Reported-by: Toralf Förster <toralf.foerster@gmx.de>
-Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Stack from c1fe1cf0:
+       c01cc7f4 c1fe1d11 c000eb4e c000e4de 00000000 00000000 c1f4f78f c1f50c2d
+       c01d008c c1fdd1a0 c1fdd1a0 c1fe1d38 c0192954 c1fe0000 00000000 c1fe1dc0
+       00000002 7fffffff c1fe1da8 c0192d50 c1fe1dc0 00000002 7fffffff c1ff9fcc
+Call Trace: [<c000eb4e>] [<c000e4de>] [<c0192954>] [<c0192d50>] [<c001d49e>] [<c000b688>] [<c0192a3c>]
+       [<c000b63e>] [<c000b63e>] [<c001a542>] [<c00b55b0>] [<c00411c0>] [<c00b559c>] [<c01918e6>] [<c0191988>]
+       [<c01919d0>] [<c00cd9c8>] [<c00cdd6a>] [<c0034178>] [<c000409a>] [<c0015576>] [<c0029130>] [<c0029078>]
+       [<c0029170>] [<c0012336>] [<c00b4076>] [<c00b4770>] [<c006d6e4>] [<c006d974>] [<c006dca0>] [<c0028d6c>]
+       [<c0028e12>] [<c0006424>] <4>---[ end trace 4eaa2a86a8e2da22 ]---
+------------[ cut here ]------------
+Repeat ad nauseam.
+
+Wed, Jan 14, 2009 at 12:11:32AM +0100, Bastien ROUCARIES wrote:
+> Perhaps using a pointerhackalign trick on this structure where
+> #define pointerhackalign(x) __attribute__ ((aligned (x)))
+> and declare
+> struct klist_node {
+> ...
+> }  pointerhackalign(2);
+>
+> Because  __attribute__ ((aligned (x))) could only increase alignment
+> it will safe to do that and serve as documentation purpose :)
+
+That works, but we need to do it not for the struct klist_node,
+but for the struct we insert into the void * in klist_node,
+which is struct klist.
+
+Reported-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si
+Cc: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/debugfs.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ include/linux/klist.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index 23936b1..0f5c33b 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -162,6 +162,13 @@ static inline struct dentry *debugfs_create_x32(const char *name, mode_t mode,
- 	return ERR_PTR(-ENODEV);
- }
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index d5a27af..e91a4e5 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -22,7 +22,7 @@ struct klist {
+ 	struct list_head	k_list;
+ 	void			(*get)(struct klist_node *);
+ 	void			(*put)(struct klist_node *);
+-};
++} __attribute__ ((aligned (4)));
  
-+struct dentry *debugfs_create_size_t(const char *name, mode_t mode,
-+				     struct dentry *parent,
-+				     size_t *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- 						 struct dentry *parent,
- 						 u32 *value)
+ #define KLIST_INIT(_name, _get, _put)					\
+ 	{ .k_lock	= __SPIN_LOCK_UNLOCKED(_name.k_lock),		\
 -- 
 1.6.0.4
 
