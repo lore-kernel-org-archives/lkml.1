@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763194AbZAUAsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762431AbZAUAtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763194AbZAUAsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 19:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbZAUAsW
+	id S1762431AbZAUAtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbZAUAs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 19:48:22 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58297 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757666AbZAUAsW (ORCPT
+	Tue, 20 Jan 2009 19:48:57 -0500
+Received: from smtpauth18.prod.mesa1.secureserver.net ([64.202.165.31]:38895
+	"HELO smtpauth18.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756371AbZAUAs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 19:48:22 -0500
-Message-ID: <497670C6.7010304@zytor.com>
-Date: Tue, 20 Jan 2009 16:48:06 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 20 Jan 2009 19:48:56 -0500
+From: "Andrew S. Johnson" <andy@asjohnson.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #12426] TMDC Joystick no longer works in kernel 2.6.28
+Date: Tue, 20 Jan 2009 18:48:31 -0600
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.1iB.fJRdJB@chimera>
+In-Reply-To: <cX2gZ6Cy9nC.A.1iB.fJRdJB@chimera>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-References: <1232496257.3123.19.camel@localhost.localdomain> <20090120.161626.93641145.davem@davemloft.net>
-In-Reply-To: <20090120.161626.93641145.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901201848.32080.andy@asjohnson.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-> Date: Wed, 21 Jan 2009 05:34:17 +0530
-> 
->> usr/include/asm-generic/fcntl.h is giving 2 'make headers_check' warnings:
->>  usr/include/asm-generic/fcntl.h:127: leaks CONFIG_64BIT to userspace where it is not valid
->>  usr/include/asm-generic/fcntl.h:149: leaks CONFIG_64BIT to userspace where it is not valid
->>
->> usr/include/asm-generic/fcntl.h:
-> ...
->> #ifndef CONFIG_64BIT will always be true for userspace. So what is the use of #ifndef CONFIG_64BIT ?
-> 
-> Good catch.
-> 
-> This file needs to test for 64-bit'ness using some non-CONFIG_*
-> test.  And the standard built-in CPP macros which can be used
-> to check for that are different on every platform.
-> 
+On Monday 19 January 2009 03:45:43 pm Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a
+> report of regressions introduced between 2.6.27 and 2.6.28.
+>
+> The following bug entry is on the current list of known
+> regressions introduced between 2.6.27 and 2.6.28.  Please verify
+> if it still should be listed and let me know (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12426
+> Subject		: TMDC Joystick no longer works in kernel 2.6.28
+> Submitter	: Andrew S. Johnson <andy@asjohnson.com>
+> Date		: 2009-01-10 21:53 (10 days old)
+> References	:
+> http://marc.info/?l=linux-kernel&m=123162486415366&w=4
 
-There are a few ways to check for 64-bitness that are 
-platform-independent, unfortunately each of them have drawbacks.
+I have installed kernel 2.6.28.1, and this still does not work.
 
-a) the gcc-specific way:
-
-	#if __SIZEOF_POINTER__ == 8
-
-    or
-
-	#ifdef __LP64__
-
-    or any other number of variants.
-
-    It has the obvious disadvantage of being gcc-specific, although
-    it seems rather likely that other Linux-supporting compilers might
-    also define these macros.
-
-b) the standard C way:
-
-	#include <limits.h>
-
-	#if LONG_MAX > 2147483647L
-
-    it has the obvious disadvantage of needing to include <limits.h>...
-
-We can, of course, also do our own thing as DaveM suggested; this is 
-probably the best option.  FWIW, glibc has _WORDSIZE which is equivalent 
-to what we call BITS_PER_LONG.  We might as well export it under that 
-name (presumably under #ifndef).
-
-	-hpa
+Andy Johnson
