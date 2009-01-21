@@ -1,97 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbZAUCvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZAUCza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762640AbZAUCvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 21:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZAUCvh
+	id S1761335AbZAUCza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 21:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZAUCzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 21:51:37 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37324 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbZAUCvg (ORCPT
+	Tue, 20 Jan 2009 21:55:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:43578 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754108AbZAUCzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 21:51:36 -0500
-Date: Wed, 21 Jan 2009 11:50:48 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: lowmemory android driver not needed?
-Cc: kosaki.motohiro@jp.fujitsu.com, Paul Mundt <lethal@linux-sh.org>,
-       Trilok Soni <soni.trilok@gmail.com>, Arve Hj?nnev?g <arve@android.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       ext Juha Yrj?l? <juha.yrjola@solidboot.com>, viktor.rosendahl@nokia.com
-In-Reply-To: <20090116152338.GB9357@kroah.com>
-References: <2f11576a0901160316u20030f4u51c9e4c059398b70@mail.gmail.com> <20090116152338.GB9357@kroah.com>
-Message-Id: <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 20 Jan 2009 21:55:20 -0500
+Date: Tue, 20 Jan 2009 21:55:17 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH] tracing/ftrace: add an option to not print the context
+ info for events
+In-Reply-To: <497671d4.1358560a.7a83.6114@mx.google.com>
+Message-ID: <alpine.DEB.1.10.0901202151180.14906@gandalf.stny.rr.com>
+References: <497671d4.1358560a.7a83.6114@mx.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Jan 16, 2009 at 08:16:51PM +0900, KOSAKI Motohiro wrote:
-> > 
-> > As far as I know, embedded guys strong want to lowmem notification mecanism.
+
+On Tue, 20 Jan 2009, Frederic Weisbecker wrote:
+
+> Impact: make trace_event more convenient for tracers
 > 
-> I think the big server guys also want the same thing :)
-
-Yeah! I know, because my company is definitry big server vendor :)
-
-
-> > At least, I and my mem_notify receive multiple contact from embedded
-> > and JavaVM developer.
-> >  (include sun javavm engineer)
-> > 
-> > In ideal, I think linux MM should care this requirement directly.
+> All tracers (for the moment) that use the struct trace_event want to have
+> the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
 > 
-> I agree.
+> But some other tracers that want to implement their trace_event callbacks will
+> not necessary need these information.
 > 
-> > LSM and driver notifier is easy breakable because these component
-> > deeply depend on MM.
+> This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
+> When disabled through:
 > 
-> Agreed.
+> echo nocontext-info > /debugfs/tracing/trace_options
+
+Thanks Frederic,
+
 > 
-> > (eg, I developed /dev/mem_notify patch last year. but this patch don't
-> > work on 2.6.28 because split-lru patch series totally changed MM
-> > reclaim processing.)
-> > 
-> > Unfortunately, we don't have any consensus of memory notification requirement.
-> > various people have various requirement. so, if I can discuss it and
-> > we get consensus, I'm glad.
+> The pid, cpu and timestamps headers will not be printed.
 > 
-> Care to work on your mem_notify patch again and bring it up to date?
-> That would be a good place to start working from, right?
+> IE with the sched_switch tracer with context-info (default):
+> 
+>             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
+>           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
+>           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
+>         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
+> 
+> Without context-info:
+> 
+>   2935:120:S ==> [001]     0:140:R <idle>
+>      0:140:R   + [000]    11:115:S events/0
+>      0:140:R ==> [000]    11:115:R events/0
+>     11:115:S ==> [000]     0:140:R <idle>
+> 
+> A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
 
-Unfortunately No ;)
-
-I should rewrite memory notification patchset from scratch.
-the new version will construct on memcg infrastrcture.
-
-Why?
-
-last year, I received many feedback from lkml folks and my article reader.
-(I monthly write kernel patch introduction article to japanese web
- magazine and receive some feedback periodically)
-
-I learned many people want flexibility notification.
-(per workload, per user, et al)
-eg. nokia lowmem driver have exception process defined by uid.
-
-at top of last year, I thought memcg don't provide good infrastructure.
-the first version memcg is just pretty funny joke. if its config turn on,
-memory workload performance decrease ~30% although the user don't use 
-memcg at runtime. then nobody use it.
-but recently, KAMEZAWA hiroyuki (and Li zefan, Daisuke Nishimura et al)
-dramatically improvement memcg performance. 
-now, memcg overhead become less than 1%. 
-
-Then, I think any memory accounting activity should use this infrastructure.
-That's my homework.
+How about adding another function method into the tracer, where it could 
+be what is printed at the start. The default being what is now printed. 
+This would be for trace and latency trace only.
 
 
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/trace.c |   61 ++++++++++++++++++++++++++++---------------------
+>  kernel/trace/trace.h |    3 +-
+>  2 files changed, 37 insertions(+), 27 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 220c264..a59ba48 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -227,7 +227,7 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
+>  
+>  /* trace_flags holds trace_options default values */
+>  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
+> -	TRACE_ITER_ANNOTATE;
+> +	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
+>  
+>  /**
+>   * trace_wake_up - wake up tasks waiting for trace input
+> @@ -285,6 +285,7 @@ static const char *trace_options[] = {
+>  	"userstacktrace",
+>  	"sym-userobj",
+>  	"printk-msg-only",
+> +	"context-info",
+>  	NULL
+>  };
+>  
+> @@ -1487,21 +1488,23 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
+>  
+>  	test_cpu_buff_start(iter);
+>  
+> -	comm = trace_find_cmdline(iter->ent->pid);
+> -
+> -	t = ns2usecs(iter->ts);
+> -	usec_rem = do_div(t, 1000000ULL);
+> -	secs = (unsigned long)t;
+> -
+> -	ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
+> -	if (!ret)
+> -		return TRACE_TYPE_PARTIAL_LINE;
+> -	ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
+> -	if (!ret)
+> -		return TRACE_TYPE_PARTIAL_LINE;
+> -	ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
+> -	if (!ret)
+> -		return TRACE_TYPE_PARTIAL_LINE;
+> +	if (trace_flags & TRACE_ITER_CONTEXT_INFO) {
+> +		comm = trace_find_cmdline(iter->ent->pid);
+> +
+> +		t = ns2usecs(iter->ts);
+> +		usec_rem = do_div(t, 1000000ULL);
+> +		secs = (unsigned long)t;
+> +
+> +		ret = trace_seq_printf(s, "%16s-%-5d ", comm, entry->pid);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +		ret = trace_seq_printf(s, "[%03d] ", iter->cpu);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +		ret = trace_seq_printf(s, "%5lu.%06lu: ", secs, usec_rem);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +	}
+
+Or here we can do a:
+
+	if (iter->tr->context_info)
+		ret = iter->tr->context_info(s, iter);
+	else
+		ret = default_context_info(s, iter);
+
+This may give a tracer more control as to what to print for each entry.
+
+-- Steve
 
