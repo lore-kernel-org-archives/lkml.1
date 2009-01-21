@@ -1,89 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZAUVQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZAUVUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbZAUVQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 16:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZAUVQg
+	id S1754158AbZAUVUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 16:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZAUVUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 16:16:36 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:38858 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbZAUVQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 16:16:35 -0500
-Message-ID: <49779041.6080804@oracle.com>
-Date: Wed, 21 Jan 2009 13:14:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 21 Jan 2009 16:20:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55952 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbZAUVUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 16:20:16 -0500
+Date: Wed, 21 Jan 2009 22:20:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: igb regression (interface hang) with latest -git
+Message-ID: <20090121212005.GA26992@elte.hu>
+References: <20090121102840.GA24967@elte.hu> <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com> <20090121175158.GA7302@elte.hu> <20090121180344.GA13675@elte.hu> <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com> <20090121182504.GA14259@elte.hu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-References: <20090121185021.GA8852@elte.hu> <497778E3.1020502@oracle.com> <20090121195623.GA31013@elte.hu>
-In-Reply-To: <20090121195623.GA31013@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49779046.01B5:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121182504.GA14259@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > One other piece of info (in addition to what Bruce requested) that 
+> > would be useful is after you've done ifconfig eht0 up, cat 
+> > /proc/interrupts | grep eth0 and send that output (I want to see your 
+> > MSI-X configuration).
 > 
->> Ingo Molnar wrote:
->>> We are pleased to announce version 6 of our performance counters subsystem 
->>> implementation. The shortlog, diffstat and the combo patch can be found 
->>> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
->>> at:
->>>
->>>    http://people.redhat.com/mingo/perfcounters/perfcounters-v6-v2.6.29-rc2.patch
->>>
->>> It's also available in tip/master at:
->>>  
->>>    http://people.redhat.com/mingo/tip.git/README
->>>  
->>> There are many changes in the v6 release:
->>>
->>>  - PowerPC performance counters support from Paul Mackerras, for POWER6
->>>    and for the PPC970 family.
->>>
->>>  - ioctl API to disable/enable individual counters and groups without
->>>    closing their fd. This can be useful for libraries, ad-hoc 
->>>    instrumentation and PAPI support.
->>>
->>>  - 'pinned' and 'exclusive' counter attributes - for those
->>>    applications that want to influence counter scheduling explicitly.
->>>
->>>  - The 'perfstat' utility (ex 'timec') has been updated:
->>>
->>>       http://people.redhat.com/mingo/perfcounters/perfstat.c
->>>
->>>  - 'kerneltop' (easy-to-use text mode NMI profiler) has been updated:
->>>    
->>>       http://people.redhat.com/mingo/perfcounters/kerneltop.c
->> BTW, this kerneltop has nothing to do with that other one??
->>
->> 	http://www.xenotime.net/linux/kerneltop/
+> here it is:
 > 
-> heh, didnt know about that one - there's no connection other than the name 
-> :-) The project seems somewhat stale but indeed similar in purpose. Can
-> rename to kerneltop2 i guess.
+>  79:         35          0       9836       7451       1197       1360        766          0       2196        995        770          0       2051        863       4714       1879   PCI-MSI-edge      eth0-tx-0
+>  80:       2335          0       2718       3651       5024       9850        533          0       1405       1095          0          0       4421       1229          0       2002   PCI-MSI-edge      eth0-tx-1
+>  81:         33          0          0       5478       1125       6585       4865       6306          0          0          0        714       3757          0       2662       1020   PCI-MSI-edge      eth0-tx-2
+>  82:         21       1428       3136       3783       4249       6833          0          0       4175          0          0       1465       1940       1780       6286          0   PCI-MSI-edge      eth0-tx-3
+>  83:         40          0          0       4788          0       1486          0       7185       3998       8637       1409       6785          0          0          0      10060   PCI-MSI-edge      eth0-rx-0
+>  84:         70       1441       2606       1342          0       1678       4301       1839          0       6507       6910      16470          0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
+>  85:         40       1368          0       3560       5022       2040          5       1719          0       2037        956         40          0      17264       6456       2833   PCI-MSI-edge      eth0-rx-2
+>  86:         44        414          5       1164         30       4513       4595       1542          0      10033       1151          0       4961       4203          0      10703   PCI-MSI-edge      eth0-rx-3
+>  87:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
 
-Yes, it's stale.  I plan to update it sometime this year.  :)
+btw., i turned off CONFIG_PCI_MSI and that worked around the interface 
+hang - the box has 40 minutes uptime now and still no hang. (it would hang 
+within 5 minutes previously)
 
-I don't care if you rename it or not.
+can test the revert of any of these commits:
 
--- 
-~Randy
+e42e4ba: igb: fix anoying type mismatch warning on rx/tx queue sizing
+8d25332: igb: Fix build warning when DCA is disabled.
+26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
+0e014cb: igb: defeature tx head writeback
+678c610: drivers/net/igb: remove dead code (function 'igb_read_pci_cfg')
+908a7a1: net: Remove unused netdev arg from some NAPI interfaces.
+ea943d4: igb: fixup AER with proper error handling
+5e8427e: igb: Correctly determine pci-e function number in virtual environment
+b4557be: igb: update handling of RCTL for smaller buffer sizes
+cb7b48f: igb/e1000e: Naming interrupt vectors
+40a914f: igb: Add support for pci-e Advanced Error Reporting
+527d47c: igb: link up/down messages must follow a specific format
+5b9ab2e: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+69d728b: igb: loopback bits not correctly cleared from RCTL register
+9b07f3d: igb: remove unneeded bit refrence when enabling jumbo frames
+f5f4cf0: igb: do not use phy ops in ethtool test cleanup for non-copper parts
+0082982: netdev: add more functions to netdevice ops
+68fd991: igb: Fix tx/rx_ring_count parameters for igb on suspend/resume/ring resize
+b2d5653: igb: simplify swap in clean_rx_irq if using packet split
+2e5c692: igb: convert to net_device_ops
+198d6ba: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
+4cf1653: netdevice: safe convert to netdev_priv() #part-2
+babcda7: drivers/net: Kill now superfluous ->last_rx stores.
+7c510e4: net: convert more to %pM
+
+i had a quick look at all of them but none seem to have a direct 
+connection to MSI-X interrupt generation.
+
+There's a couple of ones that could have side effects:
+
+Maybe this one:
+
+  26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
+
+due to its sheer commit size and due to its impact on the hw programming.
+
+or:
+
+  0e014cb: igb: defeature tx head writeback
+
+Might have some side-effect on tx-completion IRQs and might tickle 
+firmware bugs?
+
+Or:
+
+  5e8427e: igb: Correctly determine pci-e function number in virtual environment
+
+while it should have no impact on a native kernel, it does change the PCI 
+config space access sequences.
+
+Or maybe:
+
+  69d728b: igb: loopback bits not correctly cleared from RCTL register
+
+as this impacts the PCI programming too.
+
+But ... i dont really know this code so i'm guessing around.
+
+	Ingo
