@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZAUOCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZAUODX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZAUOCF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 09:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZAUOBx
+	id S1757754AbZAUODX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZAUODI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 09:01:53 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:49693 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbZAUOBw (ORCPT
+	Wed, 21 Jan 2009 09:03:08 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:51910 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642AbZAUODG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 09:01:52 -0500
-X-Greylist: delayed 494 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 09:01:52 EST
-Date: Wed, 21 Jan 2009 08:50:25 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Richard Henderson <rth@twiddle.net>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       andi@firstfloor.org, ak@linux.intel.com, sfr@canb.auug.org.au,
-       travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] compiler-gcc.h: add more comments to RELOC_HIDE
-In-Reply-To: <4974AAA9.2000406@twiddle.net>
-Message-ID: <alpine.DEB.1.10.0901210848080.7422@qirst.com>
-References: <200901100040.n0A0eruc013680@imap1.linux-foundation.org> <20090110122945.GA28033@elte.hu> <Pine.LNX.4.64.0901121128470.30369@quilx.com> <200901151227.27935.rusty@rustcorp.com.au> <Pine.LNX.4.64.0901151428020.28153@quilx.com> <496FC375.90408@twiddle.net>
- <Pine.LNX.4.64.0901161433410.27177@quilx.com> <4974AAA9.2000406@twiddle.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 21 Jan 2009 09:03:06 -0500
+From: Christian Lamparter <chunkeey@web.de>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH -stable] p54usb: fix traffic stalls / packet drop
+Date: Wed, 21 Jan 2009 15:03:11 +0100
+User-Agent: KMail/1.9.9
+Cc: Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Artur Skawina <art.08.09@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Linux wireless <linux-wireless@vger.kernel.org>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <20090120223957.GA6088@suse.de> <20090120235626.GA3094@tuxdriver.com>
+In-Reply-To: <20090120235626.GA3094@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901211503.11849.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18gxu7o34rbJ13yS9nFH+1uoFNTYWrPUDn+CSJn
+	PFpp5pLg0kRh0RHZtLaw5pJKtXRa6jSs/TDKeqlCv2z8axvs9W
+	AYLGmiMqM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009, Richard Henderson wrote:
+On Wednesday 21 January 2009 00:56:26 John W. Linville wrote:
+> On Tue, Jan 20, 2009 at 02:39:57PM -0800, Greg KH wrote:
+> > On Tue, Jan 20, 2009 at 11:11:11PM +0100, Christian Lamparter wrote:
+> > > All p54usb devices need a explicit termination packet, in oder to finish the pending transfer properly.
+> > > Else, the firmware could freeze, or simply drop the frame.
+> > > 
+> > > Signed-off-by: Christian Lamparter <chunkeey@web.de>
+> > > Cc: stable <stable@kernel.org>
+> > > ---
+> > > Attached is the patch is for the stable series only.
+> > > Bugzilla reference: http://bugzilla.kernel.org/show_bug.cgi?id=12260
+> > > (wireless-testing needs a different one)
+> > 
+> > What do you mean, this is for 2.6.28-stable or 2.6.27-stable only, and
+> > not 2.6.29?  Why?
+> 
+> At least part of that patch is already in 2.6.29.  I think Christian
+> may have combined another patch into the -stable version, one that
+> he posted today for -rc inclusion.
 
-> > We are talking about
-> >
-> > (long)&foo + long_variable
-> >
-> > Are you saying that the compiler will be ignoring the high bits in
-> > variable because of the size of foo?
->
-> No, I'm saying that all those high bits will be passed along and won't
-> fit in the 16-bit relocation that'll come out of the assembler, leading
-> to a hard linker error.
+Yup, the -stable patch includes the diff "hunks" for all devices.
 
-Why would a 16 bit relocation be generated if the compiler knows that a 32
-bit/64 bit entity is added to the address of a variable?
+linux-wireless is a different affair, because the fix for LM87
+(aka "p54usb: fix random traffic stalls (LM87)" ) is already merged.
+So the patch I posted on linux-wirelss (-rc inclusion) only has the
+diffs for the 1st generation and 2nd generation with old firmwares.
 
-> > It looks like its useless and more an indication of either a broken
-> > compiler or wrong assumptions about the compiler. Removing RELOC_HIDE
-> > should allow the compiler to freely optimize the per cpu address
-> > calculations.
->
-> Something I'm pretty sure we don't want the compiler to be able to do.
-
-Other compilers (like icc) seem to have no problem with it. Why not?
+Regards,
+	Chr
