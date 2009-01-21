@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764355AbZAULNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763761AbZAULUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764355AbZAULNi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 06:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764156AbZAULNY
+	id S1763761AbZAULUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 06:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZAULUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 06:13:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53644 "EHLO mx2.mail.elte.hu"
+	Wed, 21 Jan 2009 06:20:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52185 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764144AbZAULNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 06:13:22 -0500
-Date: Wed, 21 Jan 2009 12:13:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mandeep Singh Baines <msb@google.com>
-Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, rientjes@google.com,
-       mbligh@google.com, thockin@google.com
-Subject: Re: [PATCH] softlockup: remove hung_task_check_count
-Message-ID: <20090121111314.GA23469@elte.hu>
-References: <20090121014615.GA21018@google.com>
+	id S1756024AbZAULUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 06:20:31 -0500
+Message-ID: <497704E3.1040001@kernel.org>
+Date: Wed, 21 Jan 2009 20:20:03 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121014615.GA21018@google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1190]
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, brgerst@gmail.com,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCHSET linux-2.6-x86:core/percpu] x86: misc clean up and	unify
+ x86_32/64 code paths
+References: <1232527578-1960-1-git-send-email-tj@kernel.org> <20090121092633.GA22506@elte.hu> <20090121093509.GA31613@elte.hu> <20090121104311.GA15947@elte.hu> <20090121110248.GA21659@elte.hu>
+In-Reply-To: <20090121110248.GA21659@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 21 Jan 2009 11:20:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> i went for this solution instead - it covers more .c files and is the 
+> right thing to do as well.
 
-* Mandeep Singh Baines <msb@google.com> wrote:
+Heh... Looks like I'm the one who should be doing much more build
+testing.  Sorry about the mess.
 
->  	read_lock(&tasklist_lock);
->  	do_each_thread(g, t) {
-> -		if (!--max_count)
-> -			goto unlock;
-> +		if (!--max_count) {
-> +			/*
-> +			 * Drop the lock every once in a while and resched if
-> +			 * necessary. Don't want to hold the lock too long.
-> +			 */
-> +			get_task_struct(t);
-> +			read_unlock(&tasklist_lock);
-> +			max_count = HUNG_TASK_CHECK_COUNT;
-> +			if (need_resched())
-> +				schedule();
-> +			read_lock(&tasklist_lock);
-> +			put_task_struct(t);
-> +			/*
-> +			 * t was unlinked from tasklist. Can't continue in this
-> +			 * case. Exit and try again next time.
-> +			 */
-> +			if (t->state == TASK_DEAD)
-> +				goto unlock;
-> +		}
+Thanks.
 
-firstly, this bit should move into a helper function. Also, why dont you 
-do the need_resched() check first (it's very lighweight) - and thus only 
-do the heavy ops (get-task-struct & tasklist_lock unlock) if that is set?
-
-But most importantly, isnt the logic above confused? --max_count will 
-reach zero exactly once, and then we'll loop for a long time.
-
-	Ingo
+-- 
+tejun
