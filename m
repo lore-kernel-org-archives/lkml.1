@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbZAUDbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbZAUDjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763340AbZAUDbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZAUDbE
+	id S932151AbZAUDjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZAUDjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:31:04 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51075 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbZAUDbD (ORCPT
+	Tue, 20 Jan 2009 22:39:03 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:42986 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754191AbZAUDjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:31:03 -0500
-Date: Wed, 21 Jan 2009 12:29:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, Paul Mundt <lethal@linux-sh.org>,
-       Trilok Soni <soni.trilok@gmail.com>, Arve Hj?nnev?g <arve@android.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       ext Juha Yrj?l? <juha.yrjola@solidboot.com>, viktor.rosendahl@nokia.com
-Subject: Re: lowmemory android driver not needed?
-Message-Id: <20090121122952.18e4bb8c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <2f11576a0901160316u20030f4u51c9e4c059398b70@mail.gmail.com>
-	<20090116152338.GB9357@kroah.com>
-	<20090122114955.32F3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Jan 2009 22:39:00 -0500
+Message-ID: <497698D2.1050804@snapgear.com>
+Date: Wed, 21 Jan 2009 13:38:58 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: torvalds@linux-foundation.org, arnd@arndb.de, gerg@uclinux.org,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org, sam@ravnborg.org, uclinux-dev@uclinux.org,
+       zippel@linux-m68k.org
+Subject: Re: [git pull] m68k and m68knommu merge of includes
+References: <200901210058.n0L0wjdf005545@localhost.localdomain> <1232502275.5653.2.camel@brick>
+In-Reply-To: <1232502275.5653.2.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 11:50:48 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Hi Harvey,
 
-> last year, I received many feedback from lkml folks and my article reader.
-> (I monthly write kernel patch introduction article to japanese web
->  magazine and receive some feedback periodically)
+Harvey Harrison wrote:
+> On Wed, 2009-01-21 at 10:58 +1000, Greg Ungerer wrote:
+>> Hi Linus,
+>>
+>> Please consider pulling this merge of the m68k and m68knommu include files.
+>> It comepletely moves include/asm-m68k to arch/m68k/include as part of the
+>> process, and ultimately results in both m68k and m68knommu arch code using
+>> the same set of includes. More cleanup can follow, but this is the
+>> necessary first step.
+>>
+>> Thanks
+>> Greg
 > 
-> I learned many people want flexibility notification.
-> (per workload, per user, et al)
-> eg. nokia lowmem driver have exception process defined by uid.
-> 
-> at top of last year, I thought memcg don't provide good infrastructure.
-> the first version memcg is just pretty funny joke. if its config turn on,
-> memory workload performance decrease ~30% although the user don't use 
-> memcg at runtime. then nobody use it.
-> but recently, KAMEZAWA hiroyuki (and Li zefan, Daisuke Nishimura et al)
-> dramatically improvement memcg performance. 
-> now, memcg overhead become less than 1%. 
-                             ^^^^^^^^^^^^
-just depends on workload...
+> I think you need to check your arch/m68k/include/asm/swab.h as I get an
+> empty file when I pull this.  It looks like it needs a conditional 
+> include of swab_mm/swab_no similar to the other files.
 
-> 
-> Then, I think any memory accounting activity should use this infrastructure.
-> That's my homework.
-> 
-
-But, memcg requires much memory to track usage of pages, a page_cgroup structure, 
-40bytes per page on 64bit, 20bytes per page on 32bit.
-Probably, for embeded people, this additinal memory usage is not acceptable.
-
-Below is just a noise:
-==
-As my personal project, I'd like to write on-demand-fake-numa for generic archs.
-Now, section size is 128MB on x86-64. I'd like to allow following ops.
-
-  # create_new_node (echo node_number > /sys/device/system/node/add_fake_node)
-  # offline memory (echo offline > /sys/device/system/memory/memoryXXX/state)
-  # attach offlined memory to new node
-                   (echo node_number > /sys/device/system/memory/memoryXXX/attach)
-  # online memmory (echo online > /sys/device/system/memory/memoryXXX/state)
-
-Then, memoryXXX (128MB of chunk of memory) is controlled under a new fake node
-"node_number".
-
-For embeded systems, you may be able to modify SECTION_SIZE smaller (8-16MB?) and
-cpuset will give them enough resource isolation.
-(But not so flexible as memory cgroup.)
-
-you can use node+cpuset information to track memory usage by apps.
-
-Note: OOM-Killer kills process within cpuset.
-
-Thanks,
--Kame
+Yes, something went wrong there...
 
 
+> Also, because of the byteorder changes, it looks like you don't need
+> a separate byteorder_mm/no as they both just include the generic
+> include/linux/byteorder/big_endian.h
+
+Are you happy to just apply your follow up patch to fix these issues,
+after this has been pulled?
+
+Regards
+Greg
 
 
-
-
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
