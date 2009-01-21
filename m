@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZAUQsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZAUQuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbZAUQsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 11:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZAUQsk
+	id S1754883AbZAUQuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 11:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZAUQuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 11:48:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:32850 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501AbZAUQsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 11:48:40 -0500
-Message-ID: <49775108.7040200@kernel.org>
-Date: Wed, 21 Jan 2009 08:44:56 -0800
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 Jan 2009 11:50:07 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:52335 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750880AbZAUQuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 11:50:06 -0500
+Message-ID: <4977523B.6000507@sgi.com>
+Date: Wed, 21 Jan 2009 08:50:03 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
-       David Miller <davem@davemloft.net>, jaswinder@kernel.org, mingo@elte.hu,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
-Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
-References: <1232496257.3123.19.camel@localhost.localdomain> <200901210924.23484.arnd@arndb.de> <20090121113853.GB1579@uranus.ravnborg.org> <200901211313.17394.arnd@arndb.de>
-In-Reply-To: <200901211313.17394.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] sysrq: include interrupt.h instead of irq.h
+References: <20090121150249.a87aca09.sfr@canb.auug.org.au> <1232545758.31303.2.camel@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <1232545758.31303.2.camel@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
+Thanks for catching this Heiko!
+Mike
+
+Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> I would prefer using the __BITS_PER_LONG == 64 check directly, because
-> it gives you a warning when __BITS_PER_LONG is undefined, whereas the
-> #ifdef check gets easily fooled by include order problems. Note that
-> this is not a problem in the kernel for CONFIG_* symbols which are
-> always defined before the first #include.
+> With "cpumask: update irq_desc to use cpumask_var_t" in linux-next
+> we get this compile bug on s390:
+> 
+>   CC      drivers/char/sysrq.o
+> In file included from drivers/char/sysrq.c:38:
+> include/linux/irq.h: In function 'init_alloc_desc_masks':
+> include/linux/irq.h:442: error: dereferencing pointer to incomplete type
+> 
+> drivers/char/sysrq.c should include interrupt.h instead of irq.h.
+> 
+> Cc: Mike Travis <travis@sgi.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  drivers/char/sysrq.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-next/drivers/char/sysrq.c
+> ===================================================================
+> --- linux-next.orig/drivers/char/sysrq.c
+> +++ linux-next/drivers/char/sysrq.c
+> @@ -35,7 +35,7 @@
+>  #include <linux/vt_kern.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/kexec.h>
+> -#include <linux/irq.h>
+> +#include <linux/interrupt.h>
+>  #include <linux/hrtimer.h>
+>  #include <linux/oom.h>
+>  
 > 
 
-I fully agree with this.  It actually *is* a problem for CONFIG_*
-symbols too, since people typo them all the time.
-
-	-hpa
