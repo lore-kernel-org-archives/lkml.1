@@ -1,128 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZAUVfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZAUVgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbZAUVfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 16:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZAUVfb
+	id S1754616AbZAUVgj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 16:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZAUVg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 16:35:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54166 "EHLO ogre.sisk.pl"
+	Wed, 21 Jan 2009 16:36:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55499 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbZAUVfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 16:35:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: igb regression (interface hang) with latest -git
-Date: Wed, 21 Jan 2009 22:34:41 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <20090121102840.GA24967@elte.hu> <20090121182504.GA14259@elte.hu> <20090121212005.GA26992@elte.hu>
-In-Reply-To: <20090121212005.GA26992@elte.hu>
+	id S1751408AbZAUVg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 16:36:28 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: fix handling of ccm vectors with null assoc data
+Date: Wed, 21 Jan 2009 16:41:01 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901212234.42749.rjw@sisk.pl>
+Message-Id: <200901211641.02351.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > One other piece of info (in addition to what Bruce requested) that 
-> > > would be useful is after you've done ifconfig eht0 up, cat 
-> > > /proc/interrupts | grep eth0 and send that output (I want to see your 
-> > > MSI-X configuration).
-> > 
-> > here it is:
-> > 
-> >  79:         35          0       9836       7451       1197       1360        766          0       2196        995        770          0       2051        863       4714       1879   PCI-MSI-edge      eth0-tx-0
-> >  80:       2335          0       2718       3651       5024       9850        533          0       1405       1095          0          0       4421       1229          0       2002   PCI-MSI-edge      eth0-tx-1
-> >  81:         33          0          0       5478       1125       6585       4865       6306          0          0          0        714       3757          0       2662       1020   PCI-MSI-edge      eth0-tx-2
-> >  82:         21       1428       3136       3783       4249       6833          0          0       4175          0          0       1465       1940       1780       6286          0   PCI-MSI-edge      eth0-tx-3
-> >  83:         40          0          0       4788          0       1486          0       7185       3998       8637       1409       6785          0          0          0      10060   PCI-MSI-edge      eth0-rx-0
-> >  84:         70       1441       2606       1342          0       1678       4301       1839          0       6507       6910      16470          0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
-> >  85:         40       1368          0       3560       5022       2040          5       1719          0       2037        956         40          0      17264       6456       2833   PCI-MSI-edge      eth0-rx-2
-> >  86:         44        414          5       1164         30       4513       4595       1542          0      10033       1151          0       4961       4203          0      10703   PCI-MSI-edge      eth0-rx-3
-> >  87:          1          0          0          0          0          0          0          0          0          0          0          0          0          0          0          0   PCI-MSI-edge      eth0
-> 
-> btw., i turned off CONFIG_PCI_MSI and that worked around the interface 
-> hang - the box has 40 minutes uptime now and still no hang. (it would hang 
-> within 5 minutes previously)
-> 
-> can test the revert of any of these commits:
-> 
-> e42e4ba: igb: fix anoying type mismatch warning on rx/tx queue sizing
-> 8d25332: igb: Fix build warning when DCA is disabled.
-> 26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
-> 0e014cb: igb: defeature tx head writeback
-> 678c610: drivers/net/igb: remove dead code (function 'igb_read_pci_cfg')
-> 908a7a1: net: Remove unused netdev arg from some NAPI interfaces.
-> ea943d4: igb: fixup AER with proper error handling
-> 5e8427e: igb: Correctly determine pci-e function number in virtual environment
-> b4557be: igb: update handling of RCTL for smaller buffer sizes
-> cb7b48f: igb/e1000e: Naming interrupt vectors
-> 40a914f: igb: Add support for pci-e Advanced Error Reporting
-> 527d47c: igb: link up/down messages must follow a specific format
-> 5b9ab2e: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-> 69d728b: igb: loopback bits not correctly cleared from RCTL register
-> 9b07f3d: igb: remove unneeded bit refrence when enabling jumbo frames
-> f5f4cf0: igb: do not use phy ops in ethtool test cleanup for non-copper parts
-> 0082982: netdev: add more functions to netdevice ops
-> 68fd991: igb: Fix tx/rx_ring_count parameters for igb on suspend/resume/ring resize
-> b2d5653: igb: simplify swap in clean_rx_irq if using packet split
-> 2e5c692: igb: convert to net_device_ops
-> 198d6ba: Merge branch 'master' of master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6
-> 4cf1653: netdevice: safe convert to netdev_priv() #part-2
-> babcda7: drivers/net: Kill now superfluous ->last_rx stores.
-> 7c510e4: net: convert more to %pM
-> 
-> i had a quick look at all of them but none seem to have a direct 
-> connection to MSI-X interrupt generation.
-> 
-> There's a couple of ones that could have side effects:
-> 
-> Maybe this one:
-> 
->   26bc19e: igb: re-order queues to support cleaner use of ivar on 82576
-> 
-> due to its sheer commit size and due to its impact on the hw programming.
-> 
-> or:
-> 
->   0e014cb: igb: defeature tx head writeback
-> 
-> Might have some side-effect on tx-completion IRQs and might tickle 
-> firmware bugs?
-> 
-> Or:
-> 
->   5e8427e: igb: Correctly determine pci-e function number in virtual environment
-> 
-> while it should have no impact on a native kernel, it does change the PCI 
-> config space access sequences.
-> 
-> Or maybe:
-> 
->   69d728b: igb: loopback bits not correctly cleared from RCTL register
-> 
-> as this impacts the PCI programming too.
-> 
-> But ... i dont really know this code so i'm guessing around.
+Its a valid use case to have null associated data in a ccm vector, but
+this case isn't being handled properly right now.
 
-Well, AER (Advanced Error Reporting) is currently broken w/ MSI-X, so maybe
-this one:
+The following ccm decryption/verification test vector, using the
+rfc4309 implementation regularly triggers a panic, as will any
+other vector with null assoc data:
 
-40a914f: igb: Add support for pci-e Advanced Error Reporting
+* key: ab2f8a74b71cd2b1ff802e487d82f8b9
+* iv: c6fb7d800d13abd8a6b2d8
+* Associated Data: [NULL]
+* Tag Length: 8
+* input: d5e8939fc7892e2b
 
-Thanks,
-Rafael
+The resulting panic looks like so:
+
+Unable to handle kernel paging request at ffff810064ddaec0 RIP: 
+ [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
+PGD 8063 PUD 0 
+Oops: 0002 [1] SMP 
+last sysfs file: /module/libata/version
+CPU 0
+Modules linked in: crypto_tester_kmod(U) seqiv krng ansi_cprng chainiv rng ctr aes_generic aes_x86_64 ccm cryptomgr testmgr_cipher testmgr aead crypto_blkcipher crypto_a
+lgapi des ipv6 xfrm_nalgo crypto_api autofs4 hidp l2cap bluetooth nfs lockd fscache nfs_acl sunrpc ip_conntrack_netbios_ns ipt_REJECT xt_state ip_conntrack nfnetlink xt_
+tcpudp iptable_filter ip_tables x_tables dm_mirror dm_log dm_multipath scsi_dh dm_mod video hwmon backlight sbs i2c_ec button battery asus_acpi acpi_memhotplug ac lp sg 
+snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss joydev snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ide_cd snd_pcm floppy parport_p
+c shpchp e752x_edac snd_timer e1000 i2c_i801 edac_mc snd soundcore snd_page_alloc i2c_core cdrom parport serio_raw pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd uhci_h
+cd ohci_hcd ehci_hcd
+Pid: 12844, comm: crypto-tester Tainted: G      2.6.18-128.el5.fips1 #1
+RIP: 0010:[<ffffffff8864c4d7>]  [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
+RSP: 0018:ffff8100134434e8  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff8100104898b0 RCX: ffffffffab6aea10
+RDX: 0000000000000010 RSI: ffff8100104898c0 RDI: ffff810064ddaec0
+RBP: 0000000000000000 R08: ffff8100104898b0 R09: 0000000000000000
+R10: ffff8100103bac84 R11: ffff8100104898b0 R12: ffff810010489858
+R13: ffff8100104898b0 R14: ffff8100103bac00 R15: 0000000000000000
+FS:  00002ab881adfd30(0000) GS:ffffffff803ac000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: ffff810064ddaec0 CR3: 0000000012a88000 CR4: 00000000000006e0
+Process crypto-tester (pid: 12844, threadinfo ffff810013442000, task ffff81003d165860)
+Stack:  ffff8100103bac00 ffff8100104898e8 ffff8100134436f8 ffffffff00000000
+ 0000000000000000 ffff8100104898b0 0000000000000000 ffff810010489858
+ 0000000000000000 ffff8100103bac00 ffff8100134436f8 ffffffff8864c634
+Call Trace:
+ [<ffffffff8864c634>] :ccm:crypto_ccm_auth+0x12d/0x140
+ [<ffffffff8864cf73>] :ccm:crypto_ccm_decrypt+0x161/0x23a
+ [<ffffffff88633643>] :crypto_tester_kmod:cavs_test_rfc4309_ccm+0x4a5/0x559
+[...]
+
+The above is from a RHEL5-based kernel, but upstream is susceptible too.
+
+The fix is trivial: in crypto/ccm.c:crypto_ccm_auth(), pctx->ilen contains
+whatever was in memory when pctx was allocated if assoclen is 0. The tested
+fix is to simply add an else clause setting pctx->ilen to 0 for the
+assoclen == 0 case, so that get_data_to_compute() doesn't try doing
+things its not supposed to.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
+---
+ crypto/ccm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/ccm.c b/crypto/ccm.c
+index 7cf7e5a..c36d654 100644
+--- a/crypto/ccm.c
++++ b/crypto/ccm.c
+@@ -266,6 +266,8 @@ static int crypto_ccm_auth(struct aead_request *req, struct scatterlist *plain,
+ 	if (assoclen) {
+ 		pctx->ilen = format_adata(idata, assoclen);
+ 		get_data_to_compute(cipher, pctx, req->assoc, req->assoclen);
++	} else {
++		pctx->ilen = 0;
+ 	}
+ 
+ 	/* compute plaintext into mac */
+
+-- 
+Jarod Wilson
+jarod@redhat.com
