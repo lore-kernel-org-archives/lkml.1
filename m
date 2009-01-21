@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbZAUFeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbZAUFel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759620AbZAUFeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 00:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZAUFeQ
+	id S1753752AbZAUFel (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZAUFe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 00:34:16 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:2057 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbZAUFeP (ORCPT
+	Wed, 21 Jan 2009 00:34:28 -0500
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:48381 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbZAUFe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 00:34:15 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=IibP2WHnzrZTMskJ1QEA:9 a=fUm603IMYD_svt-vg-gA:7 a=eEtXXrcoMiFeklv2ZJ4GFeSxEQUA:4
-Message-ID: <4976B3D3.70501@shaw.ca>
-Date: Tue, 20 Jan 2009 23:34:11 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 21 Jan 2009 00:34:26 -0500
+X-Greylist: delayed 1860 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 00:34:26 EST
+Date: Wed, 21 Jan 2009 00:03:11 -0500
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] coda: alloc_upcall: s/task_pgrp_nr/task_pgrp_vnr/
+Message-ID: <20090121050311.GD15771@cs.cmu.edu>
+Mail-Followup-To: Oleg Nesterov <oleg@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Pavel Emelyanov <xemul@openvz.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
+References: <20090118073453.GA714@redhat.com>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: linux <linux@celticblues.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: disabling interupts
-References: <49760A60.7040804@celticblues.com>
-In-Reply-To: <49760A60.7040804@celticblues.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090118073453.GA714@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux wrote:
-> Please advise if this question is OT.  (If so, where can I post it or 
-> read more about said topic?)
-> 
-> I have an application that grabs frames from a frame grabber.  It is 
-> dropping frames, sometimes, 30 frames at a time.  I suspect this is 
-> occuring due to background tasks or something like that interupting the 
-> app.   In the future I may go to a hard RT linux, but for now, I just 
-> have time to try to reduce the number and frequency of frame drops.
-> I read on some linux websites that one can disable interrupts to 
-> increase performance and/or reduce latencies.
-> My questions are
-> 
-> 1.  Is this an acceptable practice?  If not, what are my other options?
-> 
-> 2.  How can I do this? 
-> Would I use:
->    void local_irq_save(unsigned long flags);
->    void local_irq_restore(unsigned long flags);
-> 
-> 
-> 3.  What interupts should I consider disabling?
-> 
-> Ed
+On Sun, Jan 18, 2009 at 08:34:53AM +0100, Oleg Nesterov wrote:
+> Needs an ack from maintaner, I do not know where coda_in_hdr->pgid is used.
 
-You haven't provided nearly enough details in order to answer this 
-question. What kind of frame grabber, what driver is it using? Where do 
-you think the frames are being dropped?
+It is used to uniquely identify a process and any of it children during
+conflict resolution.
+
+When a conflict is detected, all accesses to the inconsistent object are
+blocked. A special resolver process is forked off by the cache manager
+and this is run in a new process group and only accesses from processes
+in this group are allowed. The resolver process (or any of it's children)
+compare the conflicting replicas, and ideally resolve the inconsistency
+after which normal accesses are unblocked.
+
+So yes this should not a per namespace thing, but also not a process
+specific pid, the resolver forks off different helper processes
+depending on the type of files that are involved in the conflict, i.e.
+mbox files require different merge strategy compared to opendocument
+files.
+
+I'm not sure what you are trying to do.
+
+Jan
