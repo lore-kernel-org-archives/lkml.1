@@ -1,67 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZAUODX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbZAUOIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbZAUODX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 09:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZAUODI
+	id S1756418AbZAUOIw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZAUOIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 09:03:08 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:51910 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbZAUODG (ORCPT
+	Wed, 21 Jan 2009 09:08:43 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38038 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753282AbZAUOIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 09:03:06 -0500
-From: Christian Lamparter <chunkeey@web.de>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH -stable] p54usb: fix traffic stalls / packet drop
-Date: Wed, 21 Jan 2009 15:03:11 +0100
-User-Agent: KMail/1.9.9
-Cc: Greg KH <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Artur Skawina <art.08.09@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Linux wireless <linux-wireless@vger.kernel.org>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <20090120223957.GA6088@suse.de> <20090120235626.GA3094@tuxdriver.com>
-In-Reply-To: <20090120235626.GA3094@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901211503.11849.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX18gxu7o34rbJ13yS9nFH+1uoFNTYWrPUDn+CSJn
-	PFpp5pLg0kRh0RHZtLaw5pJKtXRa6jSs/TDKeqlCv2z8axvs9W
-	AYLGmiMqM=
+	Wed, 21 Jan 2009 09:08:42 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jonathan Cameron <jic23@cam.ac.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Hoist struct regulator_dev out of core to fix notifiers
+Date: Wed, 21 Jan 2009 14:08:40 +0000
+Message-Id: <1232546920-14915-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009 00:56:26 John W. Linville wrote:
-> On Tue, Jan 20, 2009 at 02:39:57PM -0800, Greg KH wrote:
-> > On Tue, Jan 20, 2009 at 11:11:11PM +0100, Christian Lamparter wrote:
-> > > All p54usb devices need a explicit termination packet, in oder to finish the pending transfer properly.
-> > > Else, the firmware could freeze, or simply drop the frame.
-> > > 
-> > > Signed-off-by: Christian Lamparter <chunkeey@web.de>
-> > > Cc: stable <stable@kernel.org>
-> > > ---
-> > > Attached is the patch is for the stable series only.
-> > > Bugzilla reference: http://bugzilla.kernel.org/show_bug.cgi?id=12260
-> > > (wireless-testing needs a different one)
-> > 
-> > What do you mean, this is for 2.6.28-stable or 2.6.27-stable only, and
-> > not 2.6.29?  Why?
-> 
-> At least part of that patch is already in 2.6.29.  I think Christian
-> may have combined another patch into the -stable version, one that
-> he posted today for -rc inclusion.
+Commit 872ed3fe176833f7d43748eb88010da4bbd2f983 caused regulator drivers
+to take the struct regulator_dev lock themselves which requires that the
+struct be visible to them. Band aid this by making the struct visible.
 
-Yup, the -stable patch includes the diff "hunks" for all devices.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c         |   27 ---------------------------
+ include/linux/regulator/driver.h |   32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 27 deletions(-)
 
-linux-wireless is a different affair, because the fix for LM87
-(aka "p54usb: fix random traffic stalls (LM87)" ) is already merged.
-So the patch I posted on linux-wirelss (-rc inclusion) only has the
-diffs for the 1st generation and 2nd generation with old firmwares.
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index f17362a..0ed13c2 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -30,33 +30,6 @@ static LIST_HEAD(regulator_list);
+ static LIST_HEAD(regulator_map_list);
+ 
+ /*
+- * struct regulator_dev
+- *
+- * Voltage / Current regulator class device. One for each regulator.
+- */
+-struct regulator_dev {
+-	struct regulator_desc *desc;
+-	int use_count;
+-
+-	/* lists we belong to */
+-	struct list_head list; /* list of all regulators */
+-	struct list_head slist; /* list of supplied regulators */
+-
+-	/* lists we own */
+-	struct list_head consumer_list; /* consumers we supply */
+-	struct list_head supply_list; /* regulators we supply */
+-
+-	struct blocking_notifier_head notifier;
+-	struct mutex mutex; /* consumer lock */
+-	struct module *owner;
+-	struct device dev;
+-	struct regulation_constraints *constraints;
+-	struct regulator_dev *supply;	/* for tree */
+-
+-	void *reg_data;		/* regulator_dev data */
+-};
+-
+-/*
+  * struct regulator_map
+  *
+  * Used to provide symbolic supply names to devices.
+diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+index 2254ad9..c263e36 100644
+--- a/include/linux/regulator/driver.h
++++ b/include/linux/regulator/driver.h
+@@ -137,6 +137,38 @@ struct regulator_desc {
+ 	struct module *owner;
+ };
+ 
++/*
++ * struct regulator_dev
++ *
++ * Voltage / Current regulator class device. One for each
++ * regulator.
++ *
++ * This should *not* be used directly by anything except the regulator
++ * core and notification injection (which should take the mutex and do
++ * no other direct access).
++ */
++struct regulator_dev {
++	struct regulator_desc *desc;
++	int use_count;
++
++	/* lists we belong to */
++	struct list_head list; /* list of all regulators */
++	struct list_head slist; /* list of supplied regulators */
++
++	/* lists we own */
++	struct list_head consumer_list; /* consumers we supply */
++	struct list_head supply_list; /* regulators we supply */
++
++	struct blocking_notifier_head notifier;
++	struct mutex mutex; /* consumer lock */
++	struct module *owner;
++	struct device dev;
++	struct regulation_constraints *constraints;
++	struct regulator_dev *supply;	/* for tree */
++
++	void *reg_data;		/* regulator_dev data */
++};
++
+ struct regulator_dev *regulator_register(struct regulator_desc *regulator_desc,
+ 	struct device *dev, struct regulator_init_data *init_data,
+ 	void *driver_data);
+-- 
+1.5.6.5
 
-Regards,
-	Chr
