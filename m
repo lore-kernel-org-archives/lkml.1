@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbZAUGVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZAUGja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760297AbZAUGVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 01:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZAUGU7
+	id S1759304AbZAUGja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 01:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZAUGjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 01:20:59 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:48479 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZAUGU6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 01:20:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=dgw31vZ+MYNAt1WS3eMdhoGG1OsalIVU0RKwQpIY+/skeTV8JHMl6DPwuqcR3cN2M
-	rcWNBQCRoResvpGoiuYRw==
-Message-ID: <4976BF08.90306@google.com>
-Date: Tue, 20 Jan 2009 22:22:00 -0800
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH v1 0/8] Deferred dput() and iput() -- reducing lock contention
-References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <877i4pdx4f.fsf@basil.nowhere.org>
-In-Reply-To: <877i4pdx4f.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Jan 2009 01:39:18 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:36141 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196AbZAUGjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 01:39:17 -0500
+Date: Wed, 21 Jan 2009 17:38:38 +1100
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: sam@ravnborg.org, jaswinderlinux@gmail.com, khc@pm.waw.pl,
+       jaswinder@kernel.org, arnd@arndb.de, mingo@elte.hu,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: why usr/include/linux/if_frad.h is required
+Message-ID: <20090121173838.3390e5c9@s6510>
+In-Reply-To: <20090120.221504.264090722.davem@davemloft.net>
+References: <m3bpu1xyb9.fsf@intrepid.localdomain>
+	<3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
+	<20090121053310.GA26395@uranus.ravnborg.org>
+	<20090120.221504.264090722.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.37
-X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Mike Waychison <mikew@google.com> writes:
-> 
->> livelock on dcache_lock/inode_lock (specifically in atomic_dec_and_lock()) 
-> 
-> I'm not sure how something can livelock in atomic_dec_and_lock which
-> doesn't take a spinlock itself? Are you saying you run into NUMA memory
-> unfairness here? Or did I misparse you?
+On Tue, 20 Jan 2009 22:15:04 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-By atomic_dec_and_lock, I really meant to say _atomic_dec_and_lock(). 
-It takes the spinlock if the cmpxchg hidden inside atomic_dec_unless fails.
-
-There are likely NUMA unfairness issues at play, but it's not the main 
-worry at this point.
-
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Wed, 21 Jan 2009 06:33:10 +0100
 > 
->> This patchset is an attempt to try and reduce the locking overheads associated
->> with final dput() and final iput().  This is done by batching dentries and
->> inodes into per-process queues and processing them in 'parallel' to consolidate
->> some of the locking.
+> > On Wed, Jan 21, 2009 at 10:20:17AM +0530, Jaswinder Singh Rajput wrote:
+> > > On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> > > > Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+> > > >
+> > > >> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
+> > > >> and no body is complaining about it so it means no body is using it.
+> > > >>
+> > > >> So should we need to drop #if / #endif pair or the whole file from
+> > > >> userspace.
+> > > >
+> > > > I think the file. "Empty file exported to userspace", long unused. We
+> > > > can also have it back there, and it being not exported is an indicator
+> > > > that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
+> > > 
+> > > I will definately define #ifdef __KERNEL__ but I am also curious after
+> > > defining it there is no point of making empty
+> > > usr/include/linux/if_frad.h
+> > 
+> > Googling a bit did not turn up _any_ non-kernel hits that has relevance.
+> > So based on the information given in this thread I strongly
+> > suggest to drop the export of this header.
 > 
-> I was wondering what this does to the latencies when dput/iput
-> is only done for very objects. Does it increase costs then
-> significantly?
-
-very objects?
-
+> Sure, but on the other hand this makes all of the userland APIs
+> essentially inaccessible and undefined.
 > 
-> As a high level comment it seems like a lot of work to work
-> around global locks, like the inode_lock, where it might be better to 
-> just split the lock up? Mind you I don't have a clear proposal
-> how to do that, but surely it's doable somehow.
-> 
+> I bet Sangoma's internal tools reference this stuff.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Perhaps.. the only plausible way I can think this would be doable would 
-be to rework the global resources (like the global inode_unused LRU list 
-and deal with inode state transitions), but even then, some sort of 
-consistency needs to happen at the super_block level, which means the 
-smallest I can see the lock becoming would be per-super_block, which 
-doesn't solve the problem afaict.
+There are no references if_frad.h in the version of Sangoma (out of tree) code
+that we use in Vyatta. 
