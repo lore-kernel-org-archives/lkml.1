@@ -1,96 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763608AbZAUFWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbZAUFXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763608AbZAUFWo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 00:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZAUFVN
+	id S1763686AbZAUFXK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbZAUFVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 00:21:13 -0500
-Received: from kroah.org ([198.145.64.141]:53327 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752470AbZAUFVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 00:21:10 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Jesper Nilsson <Jesper.Nilsson@axis.com>,
-       Bastien ROUCARIES <roucaries.bastien@gmail.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>, stable <stable@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 5/5] klist.c: bit 0 in pointer can't be used as flag
-Date: Tue, 20 Jan 2009 21:19:57 -0800
-Message-Id: <1232515197-3974-5-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <20090121051855.GA3665@kroah.com>
-References: <20090121051855.GA3665@kroah.com>
+	Wed, 21 Jan 2009 00:21:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53789 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759309AbZAUFV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 00:21:29 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Avuton Olrich <avuton@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due to dc1e35c
+From: Andi Kleen <andi@firstfloor.org>
+References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com>
+	<4974CC8B.1030403@zytor.com>
+	<3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com>
+	<4974DD86.2090300@zytor.com>
+	<20090119201115.GD31356@linux-os.sc.intel.com>
+	<3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com>
+	<20090119215736.GE31356@linux-os.sc.intel.com>
+	<4974F9A8.7060107@zytor.com>
+Date: Wed, 21 Jan 2009 06:20:37 +0100
+In-Reply-To: <4974F9A8.7060107@zytor.com> (H. Peter Anvin's message of "Mon, 19 Jan 2009 14:07:36 -0800")
+Message-ID: <87bpu1dyl6.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-
-The commit a1ed5b0cffe4b16a93a6a3390e8cee0fbef94f86
-(klist: don't iterate over deleted entries) introduces use of the
-low bit in a pointer to indicate if the knode is dead or not,
-assuming that this bit is always free.
-
-This is not true for all architectures, CRIS for example may align data
-on byte borders.
-
-The result is a bunch of warnings on bootup, devices not being
-added correctly etc, reported by Hinko Kocevar <hinko.kocevar@cetrtapot.si>:
-
-------------[ cut here ]------------
-WARNING: at lib/klist.c:62 ()
-Modules linked in:
-
-Stack from c1fe1cf0:
-       c01cc7f4 c1fe1d11 c000eb4e c000e4de 00000000 00000000 c1f4f78f c1f50c2d
-       c01d008c c1fdd1a0 c1fdd1a0 c1fe1d38 c0192954 c1fe0000 00000000 c1fe1dc0
-       00000002 7fffffff c1fe1da8 c0192d50 c1fe1dc0 00000002 7fffffff c1ff9fcc
-Call Trace: [<c000eb4e>] [<c000e4de>] [<c0192954>] [<c0192d50>] [<c001d49e>] [<c000b688>] [<c0192a3c>]
-       [<c000b63e>] [<c000b63e>] [<c001a542>] [<c00b55b0>] [<c00411c0>] [<c00b559c>] [<c01918e6>] [<c0191988>]
-       [<c01919d0>] [<c00cd9c8>] [<c00cdd6a>] [<c0034178>] [<c000409a>] [<c0015576>] [<c0029130>] [<c0029078>]
-       [<c0029170>] [<c0012336>] [<c00b4076>] [<c00b4770>] [<c006d6e4>] [<c006d974>] [<c006dca0>] [<c0028d6c>]
-       [<c0028e12>] [<c0006424>] <4>---[ end trace 4eaa2a86a8e2da22 ]---
-------------[ cut here ]------------
-Repeat ad nauseam.
-
-Wed, Jan 14, 2009 at 12:11:32AM +0100, Bastien ROUCARIES wrote:
-> Perhaps using a pointerhackalign trick on this structure where
-> #define pointerhackalign(x) __attribute__ ((aligned (x)))
-> and declare
-> struct klist_node {
-> ...
-> }  pointerhackalign(2);
+"H. Peter Anvin" <hpa@zytor.com> writes:
 >
-> Because  __attribute__ ((aligned (x))) could only increase alignment
-> it will safe to do that and serve as documentation purpose :)
+> We should, or if this block is reversible, we should probably just
+> undo it (the reason people put this block in places is because of,
+> ahem, inferior operating systems having bugs.)
 
-That works, but we need to do it not for the struct klist_node,
-but for the struct we insert into the void * in klist_node,
-which is struct klist.
+Even if it's undone it would be still a good idea to make the cpuid
+code bulletproof, just in case someone writes a broken emulator or similar.
 
-Reported-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si
-Cc: Bastien ROUCARIES <roucaries.bastien@gmail.com>
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- include/linux/klist.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-Andi
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index d5a27af..e91a4e5 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -22,7 +22,7 @@ struct klist {
- 	struct list_head	k_list;
- 	void			(*get)(struct klist_node *);
- 	void			(*put)(struct klist_node *);
--};
-+} __attribute__ ((aligned (4)));
- 
- #define KLIST_INIT(_name, _get, _put)					\
- 	{ .k_lock	= __SPIN_LOCK_UNLOCKED(_name.k_lock),		\
 -- 
-1.6.0.4
-
+ak@linux.intel.com -- Speaking for myself only.
