@@ -1,87 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZAUKsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763942AbZAUKvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764251AbZAUKsh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 05:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbZAUKs2
+	id S1763942AbZAUKvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 05:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZAUKvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 05:48:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47690 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756151AbZAUKs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 05:48:27 -0500
-Date: Wed, 21 Jan 2009 11:48:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
-Message-ID: <20090121104811.GB25531@elte.hu>
-References: <4976EE0B.5090200@cn.fujitsu.com>
+	Wed, 21 Jan 2009 05:51:25 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:28566 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754312AbZAUKvY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 05:51:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=a2EfCuCCo6+/t9bnufL2tqQax4DoR458H792CXGMYpZzkO+/il5hgnOMWFMOCcIg/
+	01MeeC04O47iHeMRCqGvQ==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH] Add cpu_relax() calls in css_tryget() and
+	cgroup_clear_css_refs()
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 21 Jan 2009 02:51:16 -0800
+Message-ID: <20090121105116.1059.30614.stgit@menage.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4976EE0B.5090200@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.18
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add cpu_relax() calls in css_tryget() and cgroup_clear_css_refs()
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+css_tryget() and cgroup_clear_css_refs() contain polling loops; these
+loops should have cpu_relax calls in them to reduce cross-cache
+traffic.
 
-> allocating memory for every cpu for single workqueue is waste.
+Signed-off-by: Paul Menage <menage@google.com>
 
-good idea.
+---
 
-One detail:
+ include/linux/cgroup.h |    1 +
+ kernel/cgroup.c        |    7 +++++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
->  	const struct cpumask *cpu_map = wq_cpu_map(wq);
->  	int cpu;
->  
-> +	if (is_wq_single_threaded(wq)) {
-> +		cleanup_workqueue_thread(wq->cpu_wq);
-> +		kfree(wq->cpu_wq);
-> +		kfree(wq);
-> +		return;
-> +	}
-> +
->  	cpu_maps_update_begin();
->  	spin_lock(&workqueue_lock);
->  	list_del(&wq->list);
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index e267e62..e4e8e11 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -99,6 +99,7 @@ static inline bool css_tryget(struct cgroup_subsys_state *css)
+ 	while (!atomic_inc_not_zero(&css->refcnt)) {
+ 		if (test_bit(CSS_REMOVED, &css->flags))
+ 			return false;
++		cpu_relax();
+ 	}
+ 	return true;
+ }
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 2ae7cb4..adcd0bb 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2509,7 +2509,7 @@ static int cgroup_clear_css_refs(struct cgroup *cgrp)
+ 	for_each_subsys(cgrp->root, ss) {
+ 		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
+ 		int refcnt;
+-		do {
++		while (1) {
+ 			/* We can only remove a CSS with a refcnt==1 */
+ 			refcnt = atomic_read(&css->refcnt);
+ 			if (refcnt > 1) {
+@@ -2523,7 +2523,10 @@ static int cgroup_clear_css_refs(struct cgroup *cgrp)
+ 			 * css_tryget() to spin until we set the
+ 			 * CSS_REMOVED bits or abort
+ 			 */
+-		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
++			if (atomic_cmpxchg(&css->refcnt, refcnt, 0) == refcnt)
++				break;
++			cpu_relax();
++		}
+ 	}
+  done:
+ 	for_each_subsys(cgrp->root, ss) {
 
-Arent we forgetting to remove the workqueue from the &workqueues list in 
-the new single-thread case?
-
-Also, see the checkpatch output from kernel/workqueue.c - the warnings 
-below are correct and should be cleaned up.
-
-	Ingo
-
-WARNING: printk() should include KERN_ facility level
-#268: FILE: workqueue.c:268:
-+		printk("%s: recursion depth exceeded: %d\n",
-
-ERROR: code indent should use tabs where possible
-#304: FILE: workqueue.c:304:
-+^I^I^I^I       ^Itask_pid_nr(current));$
-
-ERROR: "foo* bar" should be "foo *bar"
-#555: FILE: workqueue.c:555:
-+				struct timer_list* timer)
-
-ERROR: code indent should use tabs where possible
-#916: FILE: workqueue.c:916:
-+ ^Icpu_maps_update_done();$
-
-kernel/workqueue.c has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
