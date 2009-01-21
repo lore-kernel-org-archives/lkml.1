@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbZAUKnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbZAUKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbZAUKnx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 05:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759385AbZAUKnZ
+	id S1763945AbZAUKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 05:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbZAUKnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 05:43:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44166 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759084AbZAUKnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 05:43:24 -0500
-Date: Wed, 21 Jan 2009 11:43:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, brgerst@gmail.com,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCHSET linux-2.6-x86:core/percpu] x86: misc clean up and
-	unify x86_32/64 code paths
-Message-ID: <20090121104311.GA15947@elte.hu>
-References: <1232527578-1960-1-git-send-email-tj@kernel.org> <20090121092633.GA22506@elte.hu> <20090121093509.GA31613@elte.hu>
+	Wed, 21 Jan 2009 05:43:53 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:28097 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755219AbZAUKnv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 05:43:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=eaIsLuPi7+rYkvhbuRzYFsdIU8bLC3TDlkeBpIMvTcWeXjxjbQhZ0ppf1f/jxCYxl
+	e0LzWfep0rSkWG+tmttXA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121093509.GA31613@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090121193248.94aecb10.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090108182556.621e3ee6.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090108183529.b4fd99f4.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830901131848gf7f6996iead1276bc50753b8@mail.gmail.com>
+	 <20090114120044.2ecf13db.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830901131905ie10e4bl5168ab7f337b27e1@mail.gmail.com>
+	 <20090114121205.1bb913aa.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090120194735.cc52c5e0.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830901210200q77b2553ag35f706c321a18d83@mail.gmail.com>
+	 <20090121193248.94aecb10.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 21 Jan 2009 02:43:44 -0800
+Message-ID: <6599ad830901210243k433f618bva4ec756b769be4d4@mail.gmail.com>
+Subject: Re: [RFC][PATCH 4/4] cgroup-memcg fix frequent EBUSY at rmdir v2
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.78
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 21, 2009 at 2:32 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> Hmm, subsystem may return -EPERM or some..
+> I'll change this to
+>
+>  if (!ret)
+>    return ret;
 
-This one was needed as well.
+You mean
 
-	Ingo
+if (ret)
+  return ret;
 
-------------------->
->From 61e0178cf01b4acc914e9653b421e925f22be0cd Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 21 Jan 2009 11:30:07 +0100
-Subject: [PATCH] x86: uv cleanup, build fix #2
-
-Fix more build-failure fallout from the UV cleanup - the UV drivers
-were not updated to include <asm/uv/uv.h>.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/misc/sgi-gru/grufile.c |    1 +
- drivers/misc/sgi-xp/xp_main.c  |    2 ++
- drivers/misc/sgi-xp/xp_uv.c    |    1 +
- 3 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/misc/sgi-gru/grufile.c b/drivers/misc/sgi-gru/grufile.c
-index 6509838..50f6357 100644
---- a/drivers/misc/sgi-gru/grufile.c
-+++ b/drivers/misc/sgi-gru/grufile.c
-@@ -53,6 +53,7 @@
- #define IS_UV()		0
- #endif
- 
-+#include <asm/uv/uv.h>
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_mmrs.h>
- 
-diff --git a/drivers/misc/sgi-xp/xp_main.c b/drivers/misc/sgi-xp/xp_main.c
-index 16f8dca..1a553e6 100644
---- a/drivers/misc/sgi-xp/xp_main.c
-+++ b/drivers/misc/sgi-xp/xp_main.c
-@@ -18,6 +18,8 @@
- #include <linux/device.h>
- #include "xp.h"
- 
-+#include <asm/uv/uv.h>
-+
- /* define the XP debug device structures to be used with dev_dbg() et al */
- 
- struct device_driver xp_dbg_name = {
-diff --git a/drivers/misc/sgi-xp/xp_uv.c b/drivers/misc/sgi-xp/xp_uv.c
-index d238576..c55cc8a 100644
---- a/drivers/misc/sgi-xp/xp_uv.c
-+++ b/drivers/misc/sgi-xp/xp_uv.c
-@@ -14,6 +14,7 @@
-  */
- 
- #include <linux/device.h>
-+#include <asm/uv/uv.h>
- #include <asm/uv/uv_hub.h>
- #if defined CONFIG_X86_64
- #include <asm/uv/bios.h>
+Paul
