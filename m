@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbZAUNuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZAUOCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758963AbZAUNuy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 08:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZAUNum
+	id S1756614AbZAUOCF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 09:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZAUOBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 08:50:42 -0500
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:39601 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZAUNul (ORCPT
+	Wed, 21 Jan 2009 09:01:53 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:49693 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbZAUOBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 08:50:41 -0500
-Subject: [PATCH] sysrq: include interrupt.h instead of irq.h
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <20090121150249.a87aca09.sfr@canb.auug.org.au>
-References: <20090121150249.a87aca09.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 21 Jan 2009 14:49:18 +0100
-Message-Id: <1232545758.31303.2.camel@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 09:01:52 -0500
+X-Greylist: delayed 494 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 09:01:52 EST
+Date: Wed, 21 Jan 2009 08:50:25 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Richard Henderson <rth@twiddle.net>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       andi@firstfloor.org, ak@linux.intel.com, sfr@canb.auug.org.au,
+       travis@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] compiler-gcc.h: add more comments to RELOC_HIDE
+In-Reply-To: <4974AAA9.2000406@twiddle.net>
+Message-ID: <alpine.DEB.1.10.0901210848080.7422@qirst.com>
+References: <200901100040.n0A0eruc013680@imap1.linux-foundation.org> <20090110122945.GA28033@elte.hu> <Pine.LNX.4.64.0901121128470.30369@quilx.com> <200901151227.27935.rusty@rustcorp.com.au> <Pine.LNX.4.64.0901151428020.28153@quilx.com> <496FC375.90408@twiddle.net>
+ <Pine.LNX.4.64.0901161433410.27177@quilx.com> <4974AAA9.2000406@twiddle.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Mon, 19 Jan 2009, Richard Henderson wrote:
 
-With "cpumask: update irq_desc to use cpumask_var_t" in linux-next
-we get this compile bug on s390:
+> > We are talking about
+> >
+> > (long)&foo + long_variable
+> >
+> > Are you saying that the compiler will be ignoring the high bits in
+> > variable because of the size of foo?
+>
+> No, I'm saying that all those high bits will be passed along and won't
+> fit in the 16-bit relocation that'll come out of the assembler, leading
+> to a hard linker error.
 
-  CC      drivers/char/sysrq.o
-In file included from drivers/char/sysrq.c:38:
-include/linux/irq.h: In function 'init_alloc_desc_masks':
-include/linux/irq.h:442: error: dereferencing pointer to incomplete type
+Why would a 16 bit relocation be generated if the compiler knows that a 32
+bit/64 bit entity is added to the address of a variable?
 
-drivers/char/sysrq.c should include interrupt.h instead of irq.h.
+> > It looks like its useless and more an indication of either a broken
+> > compiler or wrong assumptions about the compiler. Removing RELOC_HIDE
+> > should allow the compiler to freely optimize the per cpu address
+> > calculations.
+>
+> Something I'm pretty sure we don't want the compiler to be able to do.
 
-Cc: Mike Travis <travis@sgi.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- drivers/char/sysrq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-next/drivers/char/sysrq.c
-===================================================================
---- linux-next.orig/drivers/char/sysrq.c
-+++ linux-next/drivers/char/sysrq.c
-@@ -35,7 +35,7 @@
- #include <linux/vt_kern.h>
- #include <linux/workqueue.h>
- #include <linux/kexec.h>
--#include <linux/irq.h>
-+#include <linux/interrupt.h>
- #include <linux/hrtimer.h>
- #include <linux/oom.h>
- 
-
-
+Other compilers (like icc) seem to have no problem with it. Why not?
