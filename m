@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbZAUFXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbZAUFbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763686AbZAUFXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 00:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbZAUFVa
+	id S1759149AbZAUFbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 00:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZAUFb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 00:21:30 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53789 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759309AbZAUFV3 (ORCPT
+	Wed, 21 Jan 2009 00:31:27 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:32796 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbZAUFb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 00:21:29 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Avuton Olrich <avuton@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due to dc1e35c
-From: Andi Kleen <andi@firstfloor.org>
-References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com>
-	<4974CC8B.1030403@zytor.com>
-	<3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com>
-	<4974DD86.2090300@zytor.com>
-	<20090119201115.GD31356@linux-os.sc.intel.com>
-	<3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com>
-	<20090119215736.GE31356@linux-os.sc.intel.com>
-	<4974F9A8.7060107@zytor.com>
-Date: Wed, 21 Jan 2009 06:20:37 +0100
-In-Reply-To: <4974F9A8.7060107@zytor.com> (H. Peter Anvin's message of "Mon, 19 Jan 2009 14:07:36 -0800")
-Message-ID: <87bpu1dyl6.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 21 Jan 2009 00:31:26 -0500
+Date: Wed, 21 Jan 2009 06:33:10 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       netdev@vger.kernel.org, davem@davemloft.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: why usr/include/linux/if_frad.h is required
+Message-ID: <20090121053310.GA26395@uranus.ravnborg.org>
+References: <1232463174.3088.15.camel@localhost.localdomain> <1232463242.3088.16.camel@localhost.localdomain> <200901201847.03030.arnd@arndb.de> <m3zlhlycso.fsf@intrepid.localdomain> <1232495335.3123.13.camel@localhost.localdomain> <m3bpu1xyb9.fsf@intrepid.localdomain> <3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3f9a31f40901202050u4b85fef2p8b9848b865c4fda0@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
->
-> We should, or if this block is reversible, we should probably just
-> undo it (the reason people put this block in places is because of,
-> ahem, inferior operating systems having bugs.)
+On Wed, Jan 21, 2009 at 10:20:17AM +0530, Jaswinder Singh Rajput wrote:
+> On Wed, Jan 21, 2009 at 6:36 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> > Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+> >
+> >> usr/include/linux/if_frad.h is covered with CONFIG_DLCI from many years
+> >> and no body is complaining about it so it means no body is using it.
+> >>
+> >> So should we need to drop #if / #endif pair or the whole file from
+> >> userspace.
+> >
+> > I think the file. "Empty file exported to userspace", long unused. We
+> > can also have it back there, and it being not exported is an indicator
+> > that it's not used. I guess the #ifdef __KERNEL__ can be removed, too.
+> 
+> I will definately define #ifdef __KERNEL__ but I am also curious after
+> defining it there is no point of making empty
+> usr/include/linux/if_frad.h
 
-Even if it's undone it would be still a good idea to make the cpuid
-code bulletproof, just in case someone writes a broken emulator or similar.
+Googling a bit did not turn up _any_ non-kernel hits that has relevance.
+So based on the information given in this thread I strongly
+suggest to drop the export of this header.
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Sam
