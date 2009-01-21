@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZAUJJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZAUJN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZAUJJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZAUJJj
+	id S1758203AbZAUJN1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZAUJNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:09:39 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:60348 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbZAUJJi (ORCPT
+	Wed, 21 Jan 2009 04:13:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55662 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbZAUJNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:09:38 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: Confusion in usr/include/linux/videodev.h
-Date: Wed, 21 Jan 2009 10:09:13 +0100
-User-Agent: KMail/1.9.9
-Cc: Trent Piepho <xyzzy@speakeasy.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-media@vger.kernel.org, video4linux-list@redhat.com,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1232502038.3123.61.camel@localhost.localdomain> <Pine.LNX.4.58.0901210048500.13170@shell2.speakeasy.net> <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
-In-Reply-To: <3f9a31f40901210059g51d46f56t85364d886b757a6e@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 04:13:09 -0500
+Date: Wed, 21 Jan 2009 10:28:20 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Dan Carpenter <error27@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       hannes@saeurebad.de
+Subject: Re: emacs indenting howto
+Message-ID: <20090121092820.GF15750@one.firstfloor.org>
+References: <alpine.DEB.2.00.0901191521270.2904@bikeee> <87fxjddys0.fsf@basil.nowhere.org> <alpine.DEB.2.00.0901211145370.4514@bikeee>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901211009.14856.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX197JVhuhVkhqSJLDLmPEbzlmVRq6avkeN56Gnd
- xJhaC5udinRz2grxHFvORkB0QHyp2sOwafcxcKqv+aIfvLoiv7
- oVPffEY8OkW78o8MdmH6g==
+In-Reply-To: <alpine.DEB.2.00.0901211145370.4514@bikeee>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009, Jaswinder Singh Rajput wrote:
-
-> > diff -r 29c5787efcda linux/include/linux/videodev.h
-> > --- a/linux/include/linux/videodev.h    Thu Jan 15 09:07:03 2009 -0800
-> > +++ b/linux/include/linux/videodev.h    Wed Jan 21 00:51:45 2009 -0800
-> > @@ -15,7 +15,8 @@
-> >  #include <linux/ioctl.h>
-> >  #include <linux/videodev2.h>
+On Wed, Jan 21, 2009 at 11:49:29AM +0300, Dan Carpenter wrote:
+> On Wed, 21 Jan 2009, Andi Kleen wrote:
+> >Dan Carpenter <error27@gmail.com> writes:
 > >
-> > -#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
-> > +#if (defined(__KERNEL__) && defined(CONFIG_VIDEO_V4L1_COMPAT)) \
-> > +    || !defined (__KERNEL__)
+> >>I don't think emacs understands tilda expansion.  It didn't work for me.
 > >
-> >  #define VID_TYPE_CAPTURE       1       /* Can capture */
-> >  #define VID_TYPE_TUNER         2       /* Can tune */
+> >It does when you use expand-file-name
 > >
-> > Now CONFIG_VIDEO_V4L1_COMPAT will only be used in the kernel.
-> >
+> >-Andi
 > 
-> No, this will still give warnings.
+> No problem.  Here is the updated patch.
 
-You could #define another conditional, like this:
+FWIW this is what I use. It turns on linux-c-mode for anything with
+linux in the path name. While that occasionally mis-hits, it only
+does seldom.
 
-#ifndef __KERNEL__
-# define __V4L1_COMPAT_API /* Always provide definitions to user space */
-#else /* __KERNEL__ */
-# ifdef CONFIG_VIDEO_V4L1_COMPAT
-#  define __V4L1_COMPAT_API
-# endif /* CONFIG_VIDEO_V4L1_COMPAT /*
-#endif /* __KERNEL__ */
+(defvar is-emacs20 (if (string-match "2[0-9]\\." emacs-version) t nil))
 
-	Arnd <><
+(defun linux-c-mode ()
+  "C mode with adjusted defaults for use with the Linux kernel."
+  (interactive)
+  ;; grr - still does not seem to work properly
+  (make-variable-buffer-local 'tab-width)
+  (make-variable-buffer-local 'c-basic-offset)
+  (c-mode)
+;  (if window-system
+;         (change-mode 'passive))
+  (make-variable-buffer-local 'version-control)
+  (setq version-control 't)
+  (c-set-style (if is-emacs20 "linux" "K&R")) 
+  (setq tab-width 8)
+  (setq c-basic-offset 8))
+
+(push '(".*/linux.*/.*\\.[ch]\\'" . linux-c-mode) auto-mode-alist)
+(push '(".*/linux.*/.*\\.[ch]\\(-[a-z]+\\)?\\'" . linux-c-mode) auto-mode-alist)
+
+I also have that one but it's probably obsolete by now:
+
+(defun reiserfs-c-mode () 
+  "Hide silly ifdefs for reiserfs" 
+  (interactive)
+  (linux-c-mode) 
+  (setq  hide-ifdef-initially t) 
+  (hide-ifdef-mode 1)
+  (hide-ifdef-define '__KERNEL__)
+  (hide-ifdef-define 'REISERFS_PREALLOCATE) 
+  (hide-ifdef-undef 'CONFIG_REISERFS_CHECK)
+  (hide-ifdef-undef 'REISERFS_CHECK))
+
+(push '(".*/linux.*/fs/reiserfs/[^/]+\\.[ch]\\'" . reiserfs-c-mode) auto-mode-alist)
+
+
+-Andi
+
