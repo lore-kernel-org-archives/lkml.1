@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZAUBOC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763141AbZAUBSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932098AbZAUBOC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 20:14:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbZAUBNv
+	id S1763141AbZAUBSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 20:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbZAUBRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 20:13:51 -0500
-Received: from web32404.mail.mud.yahoo.com ([68.142.207.197]:42804 "HELO
-	web32404.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757738AbZAUBNv (ORCPT
+	Tue, 20 Jan 2009 20:17:53 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45552 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757676AbZAUBRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 20:13:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=zBvnyWlzogAgp8h94Z7M/KH7AnjBHSEe/pxQuTRviZBzzXoUi/p2NdZ5xC0qPgZXn9LlWxfmdd68QRT6+vQ4rkl0u2SV1RkHS5naKevZjaN6/6EpKuDsr3IQqAB2q646MlOVvAgJ7WFO502EIExZ7CCSCZeolKFeT++fYqQgKbg=;
-X-YMail-OSG: Ii5451IVM1mGS0pEi6WZG.LZsy1T4H.dB0UGCZv2Alk.a5v.02jHJ0mAGvC6CDYfweWv1xf3Wr.atzdAg7Oc.MspERcSUSbPeBVD8EbE0tAkAzcib7a58yRoo81P3_DAi2s1O6KTnGbHhKuCsCRsWq5EwwwNkl5A1BQ8u79KS5p0qq83k08qtR2o3zj7
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Tue, 20 Jan 2009 17:07:09 -0800 (PST)
-From: Anil kumar <anils_r@yahoo.com>
-Reply-To: anils_r@yahoo.com
-Subject: scsi command timeout_per_command and scsi device timeout
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+	Tue, 20 Jan 2009 20:17:52 -0500
+Message-ID: <497677A6.7000107@jp.fujitsu.com>
+Date: Wed, 21 Jan 2009 10:17:26 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <521553.39263.qm@web32404.mail.mud.yahoo.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 1/2] PCI/MSI: Introduce pci_msix_table_size()
+References: <200901131457.58164.rjw@sisk.pl> <49744142.2060806@jp.fujitsu.com> <200901210116.09211.rjw@sisk.pl> <200901210118.44162.rjw@sisk.pl>
+In-Reply-To: <200901210118.44162.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-What is the relation between scsi_cmd->timeout_per_command and scsi_device->timeout?
-I set a timeout value for scsi_device->timeout in slave_configure, but I don't see this value being taken by scsi_cmd->timeout_per_command.
+Thanks,
+H.Seto
 
-If they are not related, then how can I set command timeout for all commands to my driver to avoid command timeouts.
+Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Introduce new function pci_msix_table_size() returning the size of
+> the MSI-X table of given PCI device or 0 if the device doesn't
+> support MSI-X.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
 
-with regards,
-  Anil
 
 
-      
