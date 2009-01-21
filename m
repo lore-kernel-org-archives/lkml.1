@@ -1,152 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbZAUJk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762193AbZAUJnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbZAUJk6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 04:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZAUJks
+	id S1762193AbZAUJnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 04:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZAUJni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 04:40:48 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:45792 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbZAUJkr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 04:40:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LM/epsLUd/muEfIsSfNpto+62ad6qIxsiAYQMoeajIHt5B2LSuD8iRHFNobi+fQavZ
-         /HxUae1K2VJ15eeWoyL4nYmtwr3zxkhhnAnqvdn98xpocv8MRIqlTOnbrQGF93x/6LEE
-         cad78k3vcZe4mxlvI90B8Qn69uq/vTzaJXMQA=
-Message-ID: <4976ED99.3070007@gmail.com>
-Date: Wed, 21 Jan 2009 01:40:41 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 21 Jan 2009 04:43:38 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56405 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753392AbZAUJnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 04:43:37 -0500
+Message-ID: <4976EE0B.5090200@cn.fujitsu.com>
+Date: Wed, 21 Jan 2009 17:42:35 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Justin Madru <jdm64@gawab.com>
-CC: Ingo Molnar <mingo@elte.hu>, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
-References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.C4F.Q9QdJB@chimera> <49756F3E.6050304@gawab.com> <20090120074312.GD16426@elte.hu> <20090120081650.GA29725@elte.hu> <20090120083700.GA5277@elte.hu> <4976EB66.2010301@gawab.com>
-In-Reply-To: <4976EB66.2010301@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] workqueue: don't alloc_percpu for single workqueue
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Madru wrote:
-> Ingo Molnar wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>  
->>> * Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>    
->>>> (added Cc:s)
->>>>       Justin, does it work if you apply the patch below instead of 
->>>> the revert?
->>>>       
->>> hm, that patch wont build because the protect_asmlinkage macro is 
->>> rather limited - it cannot deal with structure parameters.
->>>
->>> We might be better off with a revert here, and a comment added that 
->>> points out the problem.
->>>     
->>
->> Below is the revert+document commit that i have queued up.
->>
->> Justin, could you try the tip/master tree (which has this fix included):
->>
->>   http://people.redhat.com/mingo/tip.git/README
->>
->> does Firefox still work fine?
->>
->>     Ingo
->>
->> ------------->
->> >From 779c9b9f8cb87cdfbd299ee7beb62e50ce139a92 Mon Sep 17 00:00:00 2001
->> From: Ingo Molnar <mingo@elte.hu>
->> Date: Tue, 20 Jan 2009 09:31:49 +0100
->> Subject: [PATCH] Revert "x86: signal: change type of paramter for 
->> sys_rt_sigreturn()"
->>
->> This reverts commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191.
->>
->> Justin Madru bisected this commit, it was causing weird Firefox
->> crashes.
->>
->> The reason is that GCC mis-optimizes (re-uses) the on-stack 
->> parameters of
->> the calling frame, which corrupts the syscall return pt_regs state and
->> thus corrupts user-space register state.
->>
->> So we go back to the slightly less clean but more optimization-safe
->> method of getting to pt_regs. Also add a comment to explain this.
->>
->> Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=12505
->>
->> Reported-and-bisected-by: Justin Madru <jdm64@gawab.com>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->> ---
->>  arch/x86/include/asm/syscalls.h |    2 +-
->>  arch/x86/kernel/signal.c        |   11 +++++++++--
->>  2 files changed, 10 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/x86/include/asm/syscalls.h 
->> b/arch/x86/include/asm/syscalls.h
->> index 9c6797c..c0b0bda 100644
->> --- a/arch/x86/include/asm/syscalls.h
->> +++ b/arch/x86/include/asm/syscalls.h
->> @@ -40,7 +40,7 @@ asmlinkage int sys_sigaction(int, const struct 
->> old_sigaction __user *,
->>                   struct old_sigaction __user *);
->>  asmlinkage int sys_sigaltstack(unsigned long);
->>  asmlinkage unsigned long sys_sigreturn(unsigned long);
->> -asmlinkage int sys_rt_sigreturn(struct pt_regs);
->> +asmlinkage int sys_rt_sigreturn(unsigned long);
->>  
->>  /* kernel/ioport.c */
->>  asmlinkage long sys_iopl(unsigned long);
->> diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
->> index 89bb766..df0587f 100644
->> --- a/arch/x86/kernel/signal.c
->> +++ b/arch/x86/kernel/signal.c
->> @@ -632,9 +632,16 @@ badframe:
->>  }
->>  
->>  #ifdef CONFIG_X86_32
->> -asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
->> +/*
->> + * Note: do not pass in pt_regs directly as with tail-call optimization
->> + * GCC will incorrectly stomp on the caller's frame and corrupt 
->> user-space
->> + * register state:
->> + */
->> +asmlinkage int sys_rt_sigreturn(unsigned long __unused)
->>  {
->> -    return do_rt_sigreturn(&regs);
->> +    struct pt_regs *regs = (struct pt_regs *)&__unused;
->> +
->> +    return do_rt_sigreturn(regs);
->>  }
->>  #else /* !CONFIG_X86_32 */
->>  asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
->>
->>   
-> Ok, I officially tested tip/master and firefox is happy it can talk to 
-> friends with google talk ;-)
-> Although.... I don't use google talk.... it just seems to be this 
-> mandatory tab I can't get rid of
-> on my google page that caused a regression to be noticed so that the 
-> kernel could be improved!
->
-> Justin Madru
->
-Well I guess the problem has been bisected.
 
-regards;
+allocating memory for every cpu for single workqueue is waste.
 
-Justin P. Mattock
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 2f44583..ecd693d 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -99,7 +99,7 @@ static
+ struct cpu_workqueue_struct *wq_per_cpu(struct workqueue_struct *wq, int cpu)
+ {
+ 	if (unlikely(is_wq_single_threaded(wq)))
+-		cpu = singlethread_cpu;
++		return wq->cpu_wq;
+ 	return per_cpu_ptr(wq->cpu_wq, cpu);
+ }
+ 
+@@ -417,7 +417,7 @@ void flush_workqueue(struct workqueue_struct *wq)
+ 	lock_map_acquire(&wq->lockdep_map);
+ 	lock_map_release(&wq->lockdep_map);
+ 	for_each_cpu_mask_nr(cpu, *cpu_map)
+-		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
++		flush_cpu_workqueue(wq_per_cpu(wq, cpu));
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
+ 
+@@ -548,7 +548,7 @@ static void wait_on_work(struct work_struct *work)
+ 	cpu_map = wq_cpu_map(wq);
+ 
+ 	for_each_cpu_mask_nr(cpu, *cpu_map)
+-		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
++		wait_on_cpu_work(wq_per_cpu(wq, cpu), work);
+ }
+ 
+ static int __cancel_work_timer(struct work_struct *work,
+@@ -752,17 +752,13 @@ int current_is_keventd(void)
+ 
+ }
+ 
+-static struct cpu_workqueue_struct *
+-init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
++static void init_cpu_workqueue(struct workqueue_struct *wq,
++		struct cpu_workqueue_struct *cwq)
+ {
+-	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+-
+ 	cwq->wq = wq;
+ 	spin_lock_init(&cwq->lock);
+ 	INIT_LIST_HEAD(&cwq->worklist);
+ 	init_waitqueue_head(&cwq->more_work);
+-
+-	return cwq;
+ }
+ 
+ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
+@@ -816,7 +812,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	if (!wq)
+ 		return NULL;
+ 
+-	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
++	if (singlethread)
++		wq->cpu_wq = kmalloc(sizeof(*cwq), GFP_KERNEL);
++	else
++		wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+ 	if (!wq->cpu_wq) {
+ 		kfree(wq);
+ 		return NULL;
+@@ -830,7 +829,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	INIT_LIST_HEAD(&wq->list);
+ 
+ 	if (singlethread) {
+-		cwq = init_cpu_workqueue(wq, singlethread_cpu);
++		cwq = wq->cpu_wq;
++		init_cpu_workqueue(wq, cwq);
+ 		err = create_workqueue_thread(cwq, singlethread_cpu);
+ 		start_workqueue_thread(cwq, -1);
+ 	} else {
+@@ -851,7 +851,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 		 * lock.
+ 		 */
+ 		for_each_possible_cpu(cpu) {
+-			cwq = init_cpu_workqueue(wq, cpu);
++			cwq = per_cpu_ptr(wq->cpu_wq, cpu);
++			init_cpu_workqueue(wq, cwq);
+ 			if (err || !cpu_online(cpu))
+ 				continue;
+ 			err = create_workqueue_thread(cwq, cpu);
+@@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 	const struct cpumask *cpu_map = wq_cpu_map(wq);
+ 	int cpu;
+ 
++	if (is_wq_single_threaded(wq)) {
++		cleanup_workqueue_thread(wq->cpu_wq);
++		kfree(wq->cpu_wq);
++		kfree(wq);
++		return;
++	}
++
+ 	cpu_maps_update_begin();
+ 	spin_lock(&workqueue_lock);
+ 	list_del(&wq->list);
+
+
