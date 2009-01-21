@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbZAUIZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763674AbZAUIZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbZAUIZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 03:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZAUIZF
+	id S1763674AbZAUIZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 03:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbZAUIZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 03:25:05 -0500
-Received: from 81-7-68-229.static.zebra.lt ([81.7.68.229]:46516 "EHLO
-	teltonika.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755318AbZAUIZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 03:25:04 -0500
-X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 03:25:03 EST
-Message-ID: <4976DA3D.7050201@teltonika.lt>
-Date: Wed, 21 Jan 2009 10:18:05 +0200
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 21 Jan 2009 03:25:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:60747 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755514AbZAUIZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 03:25:31 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
+Date: Wed, 21 Jan 2009 09:24:22 +0100
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, jaswinder@kernel.org, mingo@elte.hu,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>
+References: <1232496257.3123.19.camel@localhost.localdomain> <20090120.163203.199590606.davem@davemloft.net> <4976D937.5040704@gmx.de>
+In-Reply-To: <4976D937.5040704@gmx.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Michael Bramer <michael@debsupport.de>
-CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port RS-232
- MIC-3620 from advantech'
-References: <20090118135359.GA3087@deb-support.de> <20090119145101.GA16732@ports.donpac.ru> <20090119235122.GE21026@deb-support.de> <20090120151216.GB16732@ports.donpac.ru> <20090121075212.GA18485@deb-support.de>
-In-Reply-To: <20090121075212.GA18485@deb-support.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901210924.23484.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+lFiLv4fm9rqYjP2MjQnD+HZKhatzUsWTJGhE
+ hWzykKW/5JZGnoJg8AGqwLSHPeoBiH3I7Ht3pVVuOk4mL5OJt1
+ lUvP/H0MUg4UIPEEDKH0A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Bramer wrote:
-> On Tue, Jan 20, 2009 at 06:12:16PM +0300, Andrey Panin wrote:
->> On 019, 01 19, 2009 at 11:51:22PM +0000, Michael Bramer wrote:
->>> On Mon, Jan 19, 2009 at 05:51:01PM +0300, Andrey Panin wrote:
->>>> On 018, 01 18, 2009 at 01:53:59PM +0000, Michael Bramer wrote:
->>>>> +        * ADVANTECH
->>>>> +        */
->>>>> +       {
->>>>> +               .vendor         = PCI_VENDOR_ID_ADVANTECH,
->>>>> +               .device         = PCI_DEVICE_ID_ADVANTECH_PCI3620,
->>>>> +               .subvendor      = PCI_DEVICE_ID_ADVANTECH_PCI3620,
->>>>> +               .subdevice      = PCI_ANY_ID,
->>>>> +               .setup          = pci_default_setup,
->>>>> +       },
->>>>> +       /*
->>>>>          * AFAVLAB cards - these may be called via parport_serial
->>>>>          *  It is not clear whether this applies to all products.
->>>>>          */
->>>> This part is not needed at all, pci_default_setup() will be used by default.
->>> ok. I don't test this. But you are right. The last entry in
->>> pci_serial_quirks should catch it. 
->>>
->>> Should I post a new patch, without this 10 lines?
->> Yes and add Signed-off-by: line please.
+On Wednesday 21 January 2009, Helge Deller wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> >> On parisc, there is a major confusion in this area, at some point, all
+> >> checks for __LP64__ got replaced with CONFIG_64BIT there. While I have
+> >> not understood what the problem with __LP64__ was, the check for
+> >> CONFIG_64BIT on parisc user space looks very wrong.
 > 
-> 
-> the new patch:
-> --------------
-> This Patch add the device information for the 
-> MIC-3620 8-port RS-232 cPCI card from Advantech Co. Ltd.
-> 
-> Signed-off-by: Michael Bramer <grisu@deb-support.de>
-> --- a/drivers/serial/8250_pci.c
-> +++ b/drivers/serial/8250_pci.c
-> @@ -31,6 +31,7 @@
->  #include "8250.h"
-> 
->  #undef SERIAL_DEBUG_PCI
-> +#define SERIAL_DEBUG_PCI
+> I think the parisc mess is my fault. I once replaced the __LP64__ by 
+> CONFIG_64BIT and forgot that some files are exported to userspace.
+> I'll clean that up and send patches.
 
-NAK.
+I have a patch set that introduces a lot more asm-generic headers where
+I also need a generic way to check for this. The approach I chose
+here was to check "#if __BITS_PER_LONG == 64" for anything that is
+exported to user space. Maybe you can #define this in asm/types.h
+and use this check in the parisc headers as well.
 
->  /*
->   * init function returns:
-> @@ -768,6 +769,8 @@
->  #define PCI_SUBDEVICE_ID_OCTPRO422     0x0208
->  #define PCI_SUBDEVICE_ID_POCTAL232     0x0308
->  #define PCI_SUBDEVICE_ID_POCTAL422     0x0408
-> +#define PCI_VENDOR_ID_ADVANTECH         0x13fe
-> +#define PCI_DEVICE_ID_ADVANTECH_PCI3620 0x3620
-> 
->  /*
->   * Master list of serial port init/setup/exit quirks.
-> @@ -2041,6 +2054,9 @@
->  #endif
-> 
->  static struct pci_device_id serial_pci_tbl[] = {
-> +       {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
-> +               0x3620, PCI_ANY_ID, 0, 0,
-> +               pbn_b2_8_921600 },
->         {       PCI_VENDOR_ID_V3, PCI_DEVICE_ID_V3_V960,
->                 PCI_SUBVENDOR_ID_CONNECT_TECH,
->                 PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232, 0, 0,
-> --------------
-> 
-> Gruss
-> Grisu
+	Arnd <><
