@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbZAUSNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbZAUSP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbZAUSNl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 13:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZAUSNM
+	id S1759191AbZAUSP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 13:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZAUSPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 13:13:12 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:5375 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbZAUSNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 13:13:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=QT5R9LnH9QkjdKMGUT0HAg1S22pePjMmq1/RDYSTbcFKpgsDII4A4BXAggMC/RzOt
-	z1SRNvDkqa28JrIqMrg7Q==
+	Wed, 21 Jan 2009 13:15:08 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:37702 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbZAUSPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 13:15:05 -0500
+Message-ID: <497765E6.4030108@garzik.org>
+Date: Wed, 21 Jan 2009 13:13:58 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090121153229.4a11cb8e@lxorguk.ukuu.org.uk>
-References: <ee007d8e0901201524s3be5e8e2m7d1d4026c078a87@mail.gmail.com>
-	 <20090121153229.4a11cb8e@lxorguk.ukuu.org.uk>
-Date: Wed, 21 Jan 2009 10:13:02 -0800
-Message-ID: <ee007d8e0901211013i7a5b3bc9w23c9c94e88296c0@mail.gmail.com>
-Subject: Re: tty_tiocmset() masks out TIOCM_RI and TIOCM_CD, which breaks 
-	rfcomm
-From: Adam Bliss <abliss@google.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Russell King <rmk@flint.arm.linux.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matthew Wilcox <matthew@wil.cx>, Benny Halevy <bhalevy@panasas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Avishay Traeger <avishay@gmail.com>,
+       open-osd development <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] exofs: mkexofs
+References: <4947BFAA.4030208@panasas.com>	<4947CA5C.50104@panasas.com>	<20081229121423.efde9d06.akpm@linux-foundation.org>	<495B8D90.1090004@panasas.com>	<1230739053.3408.74.camel@localhost.localdomain>	<4960D3CA.2000202@panasas.com>	<1231783926.3256.29.camel@localhost.localdomain>	<496B989F.7050907@garzik.org>	<1231790190.15161.29.camel@localhost.localdomain>	<496BA671.3070900@garzik.org>	<1231802758.27151.18.camel@localhost.localdomain>	<496C9ABE.8060300@garzik.org>	<20090113140328.3aab5a35@lxorguk.ukuu.org.uk>	<496CA26E.1080708@garzik.org> <20090113161450.2fdd1d5d@lxorguk.ukuu.org.uk> <496CCD9F.2000401@panasas.com>
+In-Reply-To: <496CCD9F.2000401@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.148
-X-GMailtapped: abliss
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Alan.  Thanks for the reply.
+BTW, where can the latest libosd be found?
 
-On Wed, Jan 21, 2009 at 07:32, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> I would have expected the driver to be remapping RI/CD just as it does
-> for the DTR<->DSR RTS<->CTS cable switch around.
->
-> It's certainly possible to fix it, but that would need a double check on
-> the existing drivers and that passing new suprise bits won't do any harm.
-> The real question is what should the right behaviour be - and to me that
-> seems to be to logically flip all the lines not just DTR/DSR RTS/CTS
+I'll want to use that for osdblk (export a single OSD object as a Linux 
+block device).
 
-What would you expect the driver to map RI and CD to?  I don't think
-there are DTE->DCE signals that correspond to RI and CD.  Possibly
-OUT1 and OUT2 could be used, since I don't think these are used
-anywhere else in rfcomm, but this might be unintuitive.  I'll let
-Marcel address that idea.
+	Jeff
 
---Adam
+
+
+
