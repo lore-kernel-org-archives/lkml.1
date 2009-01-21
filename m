@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbZAUSNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbZAUSNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758953AbZAUSNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 13:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZAUSNJ
+	id S1761274AbZAUSNl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 13:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZAUSNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 21 Jan 2009 13:13:12 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:5375 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbZAUSNJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Jan 2009 13:13:09 -0500
-Received: from mga03.intel.com ([143.182.124.21]:52821 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZAUSNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 13:13:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,301,1231142400"; 
-   d="scan'208";a="102393311"
-Date: Wed, 21 Jan 2009 10:12:54 -0800 (Pacific Standard Time)
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: e1000e regression (interface hang) with latest -git
-In-Reply-To: <20090121180344.GA13675@elte.hu>
-Message-ID: <Pine.WNT.4.64.0901211010250.6372@ppwaskie-MOBL2.amr.corp.intel.com>
-References: <20090121102840.GA24967@elte.hu>
- <8DD2590731AB5D4C9DBF71A877482A900DABEA6F@orsmsx509.amr.corp.intel.com>
- <20090121175158.GA7302@elte.hu> <20090121180344.GA13675@elte.hu>
-ReplyTo: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-X-X-Sender: amrppwaskie@imapmail.glb.intel.com
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=QT5R9LnH9QkjdKMGUT0HAg1S22pePjMmq1/RDYSTbcFKpgsDII4A4BXAggMC/RzOt
+	z1SRNvDkqa28JrIqMrg7Q==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090121153229.4a11cb8e@lxorguk.ukuu.org.uk>
+References: <ee007d8e0901201524s3be5e8e2m7d1d4026c078a87@mail.gmail.com>
+	 <20090121153229.4a11cb8e@lxorguk.ukuu.org.uk>
+Date: Wed, 21 Jan 2009 10:13:02 -0800
+Message-ID: <ee007d8e0901211013i7a5b3bc9w23c9c94e88296c0@mail.gmail.com>
+Subject: Re: tty_tiocmset() masks out TIOCM_RI and TIOCM_CD, which breaks 
+	rfcomm
+From: Adam Bliss <abliss@google.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk@flint.arm.linux.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.148
+X-GMailtapped: abliss
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > The same point remains though: it worked before (and works fine with a 
-> > distro kernel, 2.6.28-0.140.rc9.git1.fc11.x86_64) and doesnt work with 
-> > latest -git.
-> > 
-> > I'll capture some debug data and send it to you.
-> 
-> find attached the debug data:
-> 
->   ethtool.dump.eth0.before
->   ethtool.dump.eth0.after
->   ethtool.dump.eth0.after2
->   boot.log
->   config
-> 
-> the 'before' dump is before the hang, shortly after bootup. It also 
-> includes 'ifconfig eth0' output.
-> 
-> the 'after' dump is after the hang - while the interface is hung.
-> 
-> 'after2' dump is after a 'service network restart' - which brought the 
-> interface back.
-> 
-> Note if i wait long enough (half an hour or so), then not even 'service 
-> network restart' will bring back the device.
-> 
-> The kernel i tested is: v2.6.29-rc2-13-gf3b8436
+Hi, Alan.  Thanks for the reply.
 
-As Bruce stated, this is an igb issue, not e1000e.  From your boot.log:
+On Wed, Jan 21, 2009 at 07:32, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> I would have expected the driver to be remapping RI/CD just as it does
+> for the DTR<->DSR RTS<->CTS cable switch around.
+>
+> It's certainly possible to fix it, but that would need a double check on
+> the existing drivers and that passing new suprise bits won't do any harm.
+> The real question is what should the right behaviour be - and to me that
+> seems to be to logically flip all the lines not just DTR/DSR RTS/CTS
 
-igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-igb: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+What would you expect the driver to map RI and CD to?  I don't think
+there are DTE->DCE signals that correspond to RI and CD.  Possibly
+OUT1 and OUT2 could be used, since I don't think these are used
+anywhere else in rfcomm, but this might be unintuitive.  I'll let
+Marcel address that idea.
 
-One other piece of info (in addition to what Bruce requested) that would 
-be useful is after you've done ifconfig eht0 up, cat /proc/interrupts | 
-grep eth0 and send that output (I want to see your MSI-X configuration).
-
-Cheers,
--PJ Waskiewicz
+--Adam
