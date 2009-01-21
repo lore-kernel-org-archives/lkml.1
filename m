@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbZAUEjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763504AbZAUEoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763552AbZAUEjj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 23:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbZAUEj3
+	id S1763504AbZAUEoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 23:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZAUEoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 23:39:29 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:58662 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756782AbZAUEj2 (ORCPT
+	Tue, 20 Jan 2009 23:44:07 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:55527 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279AbZAUEoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 23:39:28 -0500
+	Tue, 20 Jan 2009 23:44:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=fdPbukUFskJzwQ1kbJmH/ehpp8dQuLM1Uy91yWiESjgQohVxuDqrlcMOKVU2O2I1gF
-         51xsk8JcIQ+BwlJIwHoUb8v7I++yjhRL8vl6wAjyX7CXrSj/65RIKf8r0+PDtUlPPvwG
-         lS43nJjIhDXth3yFjwGUwmb5tHLA71dO6PBVI=
+        b=jEHo2z5tFaRyp80mKg6WsfApZmsAicjqA08jfqIP/TxIWtobSJT8mEwHX/Qe3rib4A
+         RITj1Q7FHTeKaK9XuwPLc7P+yXMMvVXjJ9JjItU0qIDtCA3+lhH1yeoEGr7BDh2xeJ3q
+         2OF7IDNKNYOwEGJHDPe1+ae19ZCPDEc1Zj8JM=
 MIME-Version: 1.0
-In-Reply-To: <20090117202638.GA11825@us.ibm.com>
-References: <20090117202638.GA11825@us.ibm.com>
-Date: Tue, 20 Jan 2009 23:39:27 -0500
-Message-ID: <3e8340490901202039r1ac7e0te5372690dfe81089@mail.gmail.com>
-Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
-From: Bryan Donlan <bdonlan@gmail.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
-       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090120235048.4f7200f9@caramujo.chehab.org>
+References: <1232502038.3123.61.camel@localhost.localdomain>
+	 <20090120235048.4f7200f9@caramujo.chehab.org>
+Date: Wed, 21 Jan 2009 10:14:03 +0530
+Message-ID: <3f9a31f40901202044n73a100faj96a6f3d3973bcc25@mail.gmail.com>
+Subject: Re: Confusion in usr/include/linux/videodev.h
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, linux-media@vger.kernel.org,
+       video4linux-list@redhat.com, Sam Ravnborg <sam@ravnborg.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 17, 2009 at 3:26 PM, Sukadev Bhattiprolu
-<sukadev@linux.vnet.ibm.com> wrote:
+On Wed, Jan 21, 2009 at 7:20 AM, Mauro Carvalho Chehab
+<mchehab@infradead.org> wrote:
+> On Wed, 21 Jan 2009 07:10:38 +0530
+> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 >
-> Container-init must behave like global-init to processes within the
-> container and hence it must be immune to unhandled fatal signals from
-> within the container (i.e SIG_DFL signals that terminate the process).
+>> usr/include/linux/videodev.h is giving 2 warnings in 'make headers_check':
+>>  usr/include/linux/videodev.h:19: leaks CONFIG_VIDEO to userspace where it is not valid
+>>  usr/include/linux/videodev.h:314: leaks CONFIG_VIDEO to userspace where it is not valid
+>>
+>> Whole file is covered with #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+>>
+>> It means this file is only valid for kernel mode if CONFIG_VIDEO_V4L1_COMPAT is defined but in user mode it is always valid.
+>>
+>> Can we choose some better alternative Or can we use this file as:
+>>
+>> #ifdef CONFIG_VIDEO_V4L1_COMPAT
+>> #include <linux/videodev.h>
+>> #endif
 >
-> But the same container-init must behave like a normal process to
-> processes in ancestor namespaces and so if it receives the same fatal
-> signal from a process in ancestor namespace, the signal must be
-> processed.
+> This is somewhat like what we have on audio devices (where there are OSS and ALSA API's).
 >
-> Implementing these semantics requires that send_signal() determine pid
-> namespace of the sender but since signals can originate from workqueues/
-> interrupt-handlers, determining pid namespace of sender may not always
-> be possible or safe.
+> V4L1 is the old deprecated userspace API for video devices. It is still
+> required by some userspace applications. So, on userspace, it should be
+> included. Also, this allows that one userspace app to be compatible with both
+> V4L2 API (the current one) and the legacy V4L1 one.
 >
-> This patchset implements the design/simplified semantics suggested by
-> Oleg Nesterov.  The simplified semantics for container-init are:
+> It should be noticed that are still a few drivers using the legacy API yet to
+> be converted.
 >
->        - container-init must never be terminated by a signal from a
->          descendant process.
->
->        - container-init must never be immune to SIGKILL from an ancestor
->          namespace (so a process in parent namespace must always be able
->          to terminate a descendant container).
->
->        - container-init may be immune to unhandled fatal signals (like
->          SIGUSR1) even if they are from ancestor namespace (SIGKILL is
->          the only reliable signal from ancestor namespace).
 
-SIGSTOP is normally uncatchable; I note that patch 4 states that
-SIGSTOP is allowed through to container-init, but given this summary
-is SIGSTOP still reliable when sent to a container-init from an
-ancestor namespace?
+If you have no objections then I will make a patchset which do followings:
+1. Remove  #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined
+(__KERNEL__) from include/linux/videodev.h
+2. cover all #include <linux/videodev.h> with #ifdef
+CONFIG_VIDEO_V4L1_COMPAT in kernel
+
+By this way, we can satisfy both kernel space and userspace issue and
+also get rid of above warnings.
+
+If you have better suggestion then let me know.
+
+Thanks,
+
+--
+JSR
