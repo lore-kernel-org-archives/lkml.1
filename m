@@ -1,56 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbZAULGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbZAULLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763959AbZAULGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 06:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbZAULGG
+	id S1763926AbZAULLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 06:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZAULLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 06:06:06 -0500
-Received: from ns2.tasking.nl ([195.193.207.10]:16140 "EHLO ns2.tasking.nl"
+	Wed, 21 Jan 2009 06:11:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:54892 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755864AbZAULGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 06:06:05 -0500
-X-Greylist: delayed 473 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Jan 2009 06:06:04 EST
+	id S1754599AbZAULK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 06:10:59 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
 To: linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-X-Newsreader: knews 1.0b.1
-Reply-To: dick.streefland@altium.nl (Dick Streefland)
-Organization: Altium BV
-X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
-References: <567e52cd0901201139s1bd4e585o4a3af400c213d237@mail.gmail.com>
-From: dick.streefland@altium.nl (Dick Streefland)
-Subject: Re: plz help fixing lirc_igorplugusb kernel module
-Content-Type: text/plain; charset=us-ascii
-NNTP-Posting-Host: 172.17.1.66
-Message-ID: <87c.4976ffbf.5f61c@altium.nl>
-Date: Wed, 21 Jan 2009 10:58:07 -0000
+Subject: [RFC] [PATCH] Cgroup based OOM killer controller
+Date: Wed, 21 Jan 2009 16:38:21 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901211638.23101.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alex <gsmdib@gmail.com> wrote:
-| Jan 20 19:11:42 s lirc_igorplugusb[3]: Device buffer overrun.
-| Jan 20 19:11:48 s lirc_igorplugusb[3]: Device buffer overrun.
-| Jan 20 19:11:49 s lirc_igorplugusb[3]: Device buffer overrun.
-| --
-| The problem naturally lies in the last third lines which reflect the
-| way kernel module reacts to key presses on remote. The very same
-| device works flawlessly under Win + Girder.
-| I'd be very thankful if someone could help me fixing the issue (or
-| rather if I could help fixing this issue).
+As Alan Cox suggested/wondered in this thread, 
+http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
+to override the oom killer selection without losing all the benefits of the 
+current oom killer heuristics and oom_adj interface.
 
-This error is caused by an IR code longer than 36 pulse/space periods.
-Perhaps the Windows driver simply ignores this condition? Did you try
-to remove the code that handles this case and where this message is
-issued?
+It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
+process using the usual badness value but only within the cgroup with the 
+maximum value for oom.victim before killing any process from a cgroup with a 
+lesser oom.victim number. Oom killing could be disabled by setting 
+oom.victim=0.
 
-<plug>
-You can also try my USBtiny implementation, which also works with this
-driver. It limits the number of periods to 35 by wrapping the last 16
-periods: http://www.xs4all.nl/~dicks/avr/usbtiny/
-</plug>
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
--- 
-Dick Streefland                      ////                      Altium BV
-dick.streefland@altium.nl           (@ @)          http://www.altium.com
---------------------------------oOO--(_)--OOo---------------------------
+---
+
+diff --git a/Documentation/cgroups/oom.txt b/Documentation/cgroups/oom.txt
+new file mode 100644
+index 0000000..9102830
+--- /dev/null
++++ b/Documentation/cgroups/oom.txt
+@@ -0,0 +1,29 @@
++OOM Killer controller
++--- ------ ----------
++
++The OOM killer kills the process based on a set of heuristics such that only
++minimum amount of work done will be lost, a large amount of memory would be
++recovered and minimum no of processes are killed.
++
++The user can adjust the score used to select the processes to be killed using
++/proc/<pid>/oom_adj. Giving it a high score will increase the likelihood of 
++this process being killed by the oom-killer.  Valid values are in the range 
++-16 to +15, plus the special value -17, which disables oom-killing altogether
++for that process.
++
++But it is very difficult to suggest an order among tasks to be killed during
++Out Of Memory situation. The OOM Killer controller aids in doing that.
++
++USAGE
++-----
++
++Mount the oom controller by passing 'oom' when mounting cgroups. Echo
++a value in oom.victim file to change the order. The oom killer would kill
++all the processes in a cgroup with a higher oom.victim value before killing a
++process in a cgroup with lower oom.victim value. Among those tasks with same
++oom.victim value, the usual badness heuristics would be applied. The 
++/proc/<pid>/oom_adj still helps adjusting the oom killer score. Also having
++oom.victim = 0 would disable oom killing for the tasks in that cgroup.
++
++Note: If this is used without proper consideration, innocent processes may
++get killed unnecesarily.
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index 9c8d31b..6944f99 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -59,4 +59,8 @@ SUBSYS(freezer)
+ SUBSYS(net_cls)
+ #endif
+ 
++#ifdef CONFIG_CGROUP_OOM
++SUBSYS(oom)
++#endif
++
+ /* */
+diff --git a/include/linux/oomcontrol.h b/include/linux/oomcontrol.h
+new file mode 100644
+index 0000000..18146ab
+--- /dev/null
++++ b/include/linux/oomcontrol.h
+@@ -0,0 +1,14 @@
++#ifndef _LINUX_OOMCONTROL_H
++#define _LINUX_OOMCONTROL_H
++
++#ifdef CONFIG_CGROUP_OOM
++struct oom_cgroup { 
++	struct cgroup_subsys_state css;
++	/*
++	 * the order to be victimized for this group
++	 */  
++	u64 victim;
++};
++
++#endif
++#endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 2af8382..99ed0de 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -354,6 +354,15 @@ config CGROUP_DEBUG
+ 
+ 	  Say N if unsure.
+ 
++config CGROUP_OOM
++	bool "Oom cgroup subsystem"
++	depends on CGROUPS
++	help
++	  This provides a cgroup subsystem which aids controlling
++	  the order in which tasks whould be killed during
++	  out of memory situations.
++	
++
+ config CGROUP_NS
+ 	bool "Namespace cgroup subsystem"
+ 	depends on CGROUPS
+diff --git a/mm/Makefile b/mm/Makefile
+index 72255be..a5d7222 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -33,3 +33,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_OOM) += oomcontrol.o 
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 40ba050..f697d50 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/notifier.h>
+ #include <linux/memcontrol.h>
++#include <linux/oomcontrol.h>
+ #include <linux/security.h>
+ 
+ int sysctl_panic_on_oom;
+@@ -205,6 +206,9 @@ static struct task_struct *select_bad_process(unsigned 
+long *ppoints,
+ 	struct task_struct *g, *p;
+ 	struct task_struct *chosen = NULL;
+ 	struct timespec uptime;
++#ifdef CONFIG_CGROUP_OOM
++	u64 chosenvictim = 1, taskvictim;
++#endif
+ 	*ppoints = 0;
+ 
+ 	do_posix_clock_monotonic_gettime(&uptime);
+@@ -257,10 +261,26 @@ static struct task_struct *select_bad_process(unsigned 
+long *ppoints,
+ 			continue;
+ 
+ 		points = badness(p, uptime.tv_sec);
++#ifdef CONFIG_CGROUP_OOM
++		taskvictim = (container_of(p->cgroups->subsys[oom_subsys_id],
++						struct oom_cgroup, css))->victim;
++
++		if (taskvictim > chosenvictim ||
++			(taskvictim == chosenvictim && points > *ppoints) ||
++			!chosen) {
++
++			chosen = p;
++			*ppoints = points;
++			chosenvictim = taskvictim;
++
++		}
++		
++#else
+ 		if (points > *ppoints || !chosen) {
+ 			chosen = p;
+ 			*ppoints = points;
+ 		}
++#endif
+ 	} while_each_thread(g, p);
+ 
+ 	return chosen;
+diff --git a/mm/oomcontrol.c b/mm/oomcontrol.c
+new file mode 100644
+index 0000000..2bfa325
+--- /dev/null
++++ b/mm/oomcontrol.c
+@@ -0,0 +1,95 @@
++/*
++ * kernel/cgroup_oom.c - oom handler cgroup.
++ */
++
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/oomcontrol.h>
++
++/*
++ * Helper to retrieve oom controller data from cgroup
++ */
++static struct oom_cgroup *oom_css_from_cgroup(struct cgroup *cgrp)
++{
++        return container_of(cgroup_subsys_state(cgrp,
++                                oom_subsys_id), struct oom_cgroup,
++                                css);
++}
++
++
++static struct cgroup_subsys_state *oom_create(struct cgroup_subsys *ss,
++						   struct cgroup *cont)
++{
++	struct oom_cgroup *oom_css = kzalloc(sizeof(*oom_css), GFP_KERNEL);
++	struct oom_cgroup *parent;
++
++	if (!oom_css)
++		return ERR_PTR(-ENOMEM);
++
++	/*
++	 * if root last/only group to be victimized
++	 * else inherit parents value
++	 */
++	if (cont->parent == NULL)
++		oom_css->victim = 1;
++	else {
++		parent = oom_css_from_cgroup(cont->parent);
++		oom_css->victim = parent->victim;
++	}
++
++	return &oom_css->css;
++}
++
++static void oom_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	kfree(cont->subsys[oom_subsys_id]);
++}
++
++static int oom_victim_write(struct cgroup *cgrp, struct cftype *cft,
++                                       u64 val)
++{
++
++        cgroup_lock();
++
++	(oom_css_from_cgroup(cgrp))->victim = val;
++
++        cgroup_unlock();
++
++        return 0;
++}
++
++static u64 oom_victim_read(struct cgroup *cgrp, struct cftype *cft)
++{
++        u64 victim = (oom_css_from_cgroup(cgrp))->victim;
++
++        return victim;
++}
++
++
++static struct cftype oom_cgroup_files[] = {
++	{
++		.name = "victim",
++		.read_u64 = oom_victim_read,
++		.write_u64 = oom_victim_write,
++	},
++};
++
++static int oom_populate(struct cgroup_subsys *ss,
++                                struct cgroup *cont)
++{
++        int ret;
++
++        ret = cgroup_add_files(cont, ss, oom_cgroup_files,
++                                ARRAY_SIZE(oom_cgroup_files));
++
++        return ret;
++}
++
++struct cgroup_subsys oom_subsys = {
++	.name = "oom",
++	.subsys_id = oom_subsys_id,
++	.create = oom_create,
++	.destroy = oom_destroy,
++	.populate = oom_populate,
++};
 
