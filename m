@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbZAUDt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763249AbZAUDyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763332AbZAUDt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Jan 2009 22:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbZAUDtS
+	id S1763249AbZAUDyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Jan 2009 22:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZAUDyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Jan 2009 22:49:18 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:40514 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757056AbZAUDtR (ORCPT
+	Tue, 20 Jan 2009 22:54:09 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45843 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755306AbZAUDyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Jan 2009 22:49:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BZXH0A/Kg4T9jONg1Wlajffb7CNSa/+6lhIJODVK35Pqg7QTiqF6yry/O3Qzpr3XSm
-         UwXZ4gUiiSB9KfTeTi6ZG/3a3Df3KRjH8kjuyYH0wFRd6NY21fOwIxnERLJURObibof2
-         oF/uUF0e1pGXyCfVKOQCxG5Legrq0VoPgJ/zM=
-Subject: Re: [git pull] m68k and m68knommu merge of includes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: torvalds@linux-foundation.org, arnd@arndb.de, gerg@uclinux.org,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org, sam@ravnborg.org, uclinux-dev@uclinux.org,
-       zippel@linux-m68k.org
-In-Reply-To: <497698D2.1050804@snapgear.com>
-References: <200901210058.n0L0wjdf005545@localhost.localdomain>
-	 <1232502275.5653.2.camel@brick>  <497698D2.1050804@snapgear.com>
-Content-Type: text/plain
-Date: Tue, 20 Jan 2009 19:49:14 -0800
-Message-Id: <1232509755.9701.2.camel@brick>
+	Tue, 20 Jan 2009 22:54:08 -0500
+Date: Wed, 21 Jan 2009 12:53:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
+Message-Id: <20090121125300.b5916256.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090121030500.GA32138@us.ibm.com>
+References: <20090117202638.GA11825@us.ibm.com>
+	<20090119110906.58ccbcbd.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090121030500.GA32138@us.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-21 at 13:38 +1000, Greg Ungerer wrote:
-> > 
-> > I think you need to check your arch/m68k/include/asm/swab.h as I get an
-> > empty file when I pull this.  It looks like it needs a conditional 
-> > include of swab_mm/swab_no similar to the other files.
-> 
-> Yes, something went wrong there...
-> 
-> 
-> > Also, because of the byteorder changes, it looks like you don't need
-> > a separate byteorder_mm/no as they both just include the generic
-> > include/linux/byteorder/big_endian.h
-> 
-> Are you happy to just apply your follow up patch to fix these issues,
-> after this has been pulled?
+On Tue, 20 Jan 2009 19:05:00 -0800
+Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
 
-Sounds fine to me, hopefully Linus will just apply it right after he
-pulls.
+> KAMEZAWA Hiroyuki [kamezawa.hiroyu@jp.fujitsu.com] wrote:
+> | On Sat, 17 Jan 2009 12:26:38 -0800
+> | Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
+> | 
+> | > 
+> | > Container-init must behave like global-init to processes within the
+> | > container and hence it must be immune to unhandled fatal signals from
+> | > within the container (i.e SIG_DFL signals that terminate the process).
+> | > 
+> | > But the same container-init must behave like a normal process to 
+> | > processes in ancestor namespaces and so if it receives the same fatal
+> | > signal from a process in ancestor namespace, the signal must be
+> | > processed.
+> | > 
+> | > Implementing these semantics requires that send_signal() determine pid
+> | > namespace of the sender but since signals can originate from workqueues/
+> | > interrupt-handlers, determining pid namespace of sender may not always
+> | > be possible or safe.
+> | > 
+> | 
+> | Is this feature is for blocking signals from children to name-space
+> | creator(owner) ?  And automatically used when namespace/cgroup is created ?
+> | IOW, Container-init is Namespace-Cgroup-init ? 
+> 
+> I am not sure what "Namespace-cgroup-init refers" to.
+> 
+> But, yes, this patchset applies to the first process in a pid namespace
+> i.e the child of clone(NEWPID) call.
+> 
+O.K. thank you.
 
-Harvey
+What makes me confused is "Container". There is no "Container" in
+the linux kernel, just cgroup and its subsyss.
+(Some source codes still use "cont" but new codes all use "cgroup" or "cgrp" )
+
+So, I asked whether "Container" means "Namespace subsys" or something different.
+
+-Kame
 
