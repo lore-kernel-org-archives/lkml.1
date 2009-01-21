@@ -1,111 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbZAUQBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZAUQK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761251AbZAUQBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 11:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZAUQBM
+	id S1757512AbZAUQK3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 11:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbZAUQKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 11:01:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52797 "EHLO ogre.sisk.pl"
+	Wed, 21 Jan 2009 11:10:18 -0500
+Received: from waste.org ([66.93.16.53]:56805 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbZAUQBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 11:01:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jacek Luczak <difrost.kernel@gmail.com>
-Subject: Re: [ACPI] GPE storm detected on FS Amilo Pro
-Date: Wed, 21 Jan 2009 17:00:47 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: astarikovskiy@suse.de, len.brown@intel.com,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4977352B.1040303@gmail.com>
-In-Reply-To: <4977352B.1040303@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901211700.48357.rjw@sisk.pl>
+	id S1750880AbZAUQKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 11:10:15 -0500
+Subject: Re: Kmemtrace(slab and slub, except slob) doesn't work on PPC64
+	board,
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: =?UTF-8?Q?=E5=88=98=E7=94=9F=E5=B9=B3?= 
+	<liushengping@tsinghua.org.cn>,
+       eduard.munteanu@linux360.ro, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <49770EB3.5040404@cs.helsinki.fi>
+References: <18682661.270411232413952442.JavaMail.coremail@mailserver2>
+	 <49770EB3.5040404@cs.helsinki.fi>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 21 Jan 2009 10:09:12 -0600
+Message-Id: <1232554153.5202.234.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009, Jacek Luczak wrote:
-> Hi All,
+On Wed, 2009-01-21 at 14:01 +0200, Pekka Enberg wrote:
+> (I am cc'ing linux-kernel)
+> 
+> 刘生平 wrote:
+> > Hi Guys,
+> > I have done several experiments on Apple Xserver G5(using kernel config files: linux-2.6-torvalds/arch/powerpc/configs/g5_defconfig)
+> > and on moto_acta6101, found kmemtrace can cause kernel panic during system startup when enabling slab or slub except slob, I think it only happened on PPC64 platform, the kernel panic message as follows:
+> > Console: colour dummy device 80x25�console handover: boot [udbg0] -> real [ttyPZ0]
+> > Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+> > Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+> > Memory: 1007104k/1048576k available (5152k kernel code, 40816k reserved, 712k data, 208k bss, 236k init)
+> > Unable to handle kernel paging request for data at address 0x6000000000000000
+> > Faulting instruction address: 0xc0000000000cb5d0
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > PREEMPT LTT NESTING LEVEL : 0 
+> > PowerMac
+> > Modules linked in:
+> > NIP: c0000000000cb5d0 LR: c0000000000cb5c4 CTR: 0000000000000000
+> > REGS: c0000000005bf800 TRAP: 0300   Not tainted  (2.6.27.11-WR3.0zz_standard)
+> > MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 84000084  XER: 00000000
+> > DAR: 6000000000000000, DSISR: 0000000008000000
+> > TASK = c00000000052dd50[0] 'swapper' THREAD: c0000000005bc000
+> > GPR00: c0000000000cb5c4 c0000000005bfa80 c0000000005bf8e0 6000000000000000 
+> > GPR04: 00000000000004d0 d000000000000000 c000000001540068 0000000000000000 
+> > GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000800000000 
+> > GPR12: 0000000084000084 c0000000005cd300 c00000000052da20 0000000000000391 
+> > GPR16: d000000000005000 d000000000004fff 000000000023f3b8 c00000000045fbe8 
+> > GPR20: c0000000005c9000 d000000000005000 c00000003d006e00 c00000000050dfe0 
+> > GPR24: c0000000005bfd40 0000000000000391 c0000000000ade04 00000000000004d0 
+> > GPR28: 0000000000000000 0000000000000001 c000000000562828 0000000000000005 
+> > NIP [c0000000000cb5d0] .kmem_cache_alloc+0x50/0x180
+> > LR [c0000000000cb5c4] .kmem_cache_alloc+0x44/0x180
+> > Call Trace:
+> > [c0000000005bfa80] [c0000000000cb5c4] .kmem_cache_alloc+0x44/0x180 (unreliable)
+> > [c0000000005bfb30] [c0000000000ade04] .__pud_alloc+0x34/0xe0
+> > [c0000000005bfbc0] [c0000000000bc550] .map_vm_area+0x320/0x350
+> > [c0000000005bfcd0] [c0000000000bccf0] .__vmalloc_area_node+0x100/0x1d0
+> > [c0000000005bfd90] [c000000000092958] .relay_open+0x3a8/0x580
+> > [c0000000005bfe70] [c0000000000d114c] .kmemtrace_init+0x4c/0xe0
+> > [c0000000005bfef0] [c0000000004cd8a4] .start_kernel+0x2cc/0x410
+> > [c0000000005bff90] [c0000000000073a4] .start_here_common+0x3c/0x98
+> > Instruction dump:
+> > f8010010 ebc29180 f821ff51 7c7c1b78 7c9b2378 38000000 8bad01ca 980d01ca 
+> > 481418e1 60000000 78631f24 7c7c182a <81230000> 2f890000 419e0108 3929ffff 
+> > ---[ end trace 31fd0ba7d8756001 ]---
+> > Kernel panic - not syncing: Attempted to kill the idle task!
+> > Rebooting in 180 seconds..
+> > Apple RackMac3,1 5.1.7f1 BootROM built on 08/25/04 at 15:11:09
+> > Copyright 1994-2004 Apple Computer, Inc.
+> > All Rights Reserved.
+> > 
+> > Welcome to Open Firmware, the system time and date is: 06:44:18 07/27/1970
+> > 
+> > To continue booting, type "mac-boot" and press return.
+> > To shut down, type "shut-down" and press return.
+> > 
+> > 
+> > what's your suggestion?
+> 
+> Hmm, I can't really work out what exactly is going wrong there. I 
+> suspect that the fact that ppc64 uses kmem_cache_alloc() for 
+> __pud_alloc() -> pud_alloc_one() whereas x86 uses the page allocator is 
+> the culprit here.
 
-Hi Jacek,
+Looks to me as if kmemtrace is in the middle of being initialized at
+this point, unexpectedly calls into slab, and slab is tripping over the
+half-initialized tracing structure.
 
-> I've got that ,,GPE storm detected'' issue on my Fujitsu Siemens Amilo Pro
-> notebook.  I was using 2.6.25.20 (which was fine) for a long while and recently
-> started testing some latest git versions starting from 2.6.29-rc2 where I've
-> discovered that issue. So I've made some back kernels and it shows up from
-> 2.6.26 kernel. Bisection between 2.6.25 and 2.6.26 shows that patch:
-> 
-> fa95ba04e6ba11d71e1b87becd054b38faf546c8 is first bad commit
-> commit fa95ba04e6ba11d71e1b87becd054b38faf546c8
-> Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-> Date:   Fri Mar 21 19:36:02 2008 +0300
-> 
->     ACPI: EC: Detect irq storm
-> 
->     Problem seems to be that hw fails to clear GPE after we service it and write 1
->     into corresponding bit. Thus, as soon as we get interrupts enabled again, we
->     receive a new one. Google gives too many results for "acer interrupt storm" for
->     this being one-broken-machine case.
-> 
->     Reference: http://bugzilla.kernel.org/show_bug.cgi?id=9998
-> 
->     Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> The bug[1] (reopened recently) seems to be quite different than the one in my
-> case. I've got no ,,side effects'' of that GPE storm. Notebook works fine and I
-> didn't discovered any interrupts problems.
+When you say 'except slob', does that mean slob worked or slob was
+untested?
 
-So everything appears to be OK except that your hardware has a problem,
-which is correctly worked around and the message just tells you what happens.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-> Up to 2.6.28 GPE storm information is printed early[2]:
-> 
-> Setting up standard PCI resources
-> ACPI: EC: Look up EC in DSDT
-> ACPI: Interpreter enabled
-> ACPI: (supports S0 S3 S4 S5)
-> ACPI: Using IOAPIC for interrupt routing
-> ACPI: EC: non-query interrupt received, switching to interrupt mode
-> ACPI: EC: GPE storm detected, disabling EC GPE
-> ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
-> ACPI: EC: driver started in poll mode
-> ACPI: PCI Root Bridge [PCI0] (0000:00)
-> 
-> While recent git[3] which I'm now running, shows it after setting-up AC adapter[4]:
-> 
-> ACPI: AC Adapter [ADP1] (on-line)
-> ACPI: EC: GPE storm detected, transactions will use polling mode
-> Switched to high resolution mode on CPU 1
-> Switched to high resolution mode on CPU 0
-> ACPI: EC: missing confirmations, switch off interrupt mode.
-> ACPI: Battery Slot [BAT0] (battery present)
-> input: Power Button (FF) as /class/input/input0
-> ACPI: Power Button (FF) [PWRF]
-> input: Lid Switch as /class/input/input1
-> ACPI: Lid Switch [LID0]
-> input: Sleep Button (CM) as /class/input/input2
-> ACPI: Sleep Button (CM) [SLPB]
-> 
-> I'm not sure if the origin of that GPE storm is the same in both cases. Will try
-> to do bisection here later if needed.
-> 
-> NOTE: In git kernel I've noticed that after boot and obtaining IP from DHCP I've
-> got such message:
-> 
-> Jan 21 14:44:32 difrost kernel: sky2 eth0: enabling interface
-> Jan 21 14:44:33 difrost kernel: sky2 eth0: Link is up at 100 Mbps, full duplex,
-> flow control rx
-> Jan 21 14:45:36 difrost kernel: ACPI: EC: missing confirmations, switch off
-> interrupt mode.
-> 
-> This is not fully reproducible, didn't shown on [4].
 
-This may be related to the issue behind the GPM storm message.
-
-Thanks,
-Rafael
