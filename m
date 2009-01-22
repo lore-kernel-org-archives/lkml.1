@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZAVDES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZAVD26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZAVDES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 22:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZAVDEG
+	id S1756922AbZAVD26 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 22:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZAVD2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 22:04:06 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:52976 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756058AbZAVDEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 22:04:05 -0500
-Date: Thu, 22 Jan 2009 14:04:00 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
-Message-ID: <20090122030400.GA10229@gondor.apana.org.au>
-References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com> <20090116033105.GB10390@gondor.apana.org.au> <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 21 Jan 2009 22:28:49 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35814 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756203AbZAVD2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 22:28:48 -0500
+Subject: Re: SET_PERSONALITY and TASK_SIZE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
+References: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Thu, 22 Jan 2009 14:28:23 +1100
+Message-Id: <1232594903.23611.96.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 10:32:17AM +0800, Huang Ying wrote:
->
-> This is the first attempt to use a dedicate workqueue for crypto. It is
-> not intended to be merged. Please feedback your comments, especially on
-> desgin.
 
-Thanks for the patch!
+> However we should use the PER_MASK if we want to check for PER_LINUX32,
+> since there are more bits in the personality flags. In case any of the
+> 'extra' bits is set we may incorrectly set personality to PER_LINUX even
+> when we want PER_LINUX32.
+> 
+> Looks like more architectures should do something like:
+> 
+> 	if (personality(current->personality) != PER_LINUX32)
 
-> +		spin_lock_init(&cpu_queue->lock);
+If you do gitk mm/memory.c, and look at the first 2 or 3 commits from
+Hugh near the botto,, I -think- they may explain why you no longer see
+the use of TASK_SIZE in there, ie, we may have fixed that in 2.6.12...
 
-Since we're switching to per-cpu queues it would be good to just
-kill the spin lock.  AFAICS the only place you really need it is
-in cryptd_tfm_in_queue.  That's just used for debugging so we can
-just kill it and lose this spin lock.
+So from that point of view, it's quite possible that we no longer need
+to defer the personality switch, which would allow to simplify things
+quite a bit on ppc64, unless there is some -other- reason here...
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ben.
+
+
