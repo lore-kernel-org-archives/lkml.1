@@ -1,131 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZAVOdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbZAVOhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbZAVOdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 09:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZAVOc7
+	id S1757256AbZAVOhL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 09:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZAVOg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 09:32:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36690 "EHLO mx2.redhat.com"
+	Thu, 22 Jan 2009 09:36:58 -0500
+Received: from ns2.tasking.nl ([195.193.207.10]:47482 "EHLO ns2.tasking.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401AbZAVOc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 09:32:57 -0500
-Date: Thu, 22 Jan 2009 15:32:53 +0100
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.14.2-rc2
-Message-ID: <20090122143253.GE7131@nb.net.home>
-MIME-Version: 1.0
+	id S1751534AbZAVOg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 09:36:57 -0500
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+X-Newsreader: knews 1.0b.1
+Reply-To: dick.streefland@altium.nl (Dick Streefland)
+Organization: Altium BV
+X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
+References: <87c.4976ffbf.5f61c@altium.nl> <567e52cd0901201139s1bd4e585o4a3af400c213d237@mail.gmail.com> <87c.4976ffbf.5f61c@altium.nl> <21605162.post@talk.nabble.com>
+From: dick.streefland@altium.nl (Dick Streefland)
+Subject: Re: plz help fixing lirc_igorplugusb kernel module
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+NNTP-Posting-Host: 172.17.1.66
+Message-ID: <4237.49788488.6c688@altium.nl>
+Date: Thu, 22 Jan 2009 14:36:56 -0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+gsmd <gsmdib@gmail.com> wrote:
+| Here's the section from lirc_igorplugusb.c
+| (ftp.gnu.org/tmp/linux-libre-fsf2_2.6.28/linux-2.6.28/ubuntu/lirc/lirc_igorplugusb/lirc_igorplugusb.c)
+| that displays the message:
+| --
+| 		if (ir->buf_in[2] != 0) {
+| 			printk(DRIVER_NAME "[%d]: Device buffer overrun.\n",
+| 				ir->devnum);
+| 			/* start at earliest byte */
+| 			i = DEVICE_HEADERLEN + ir->buf_in[2];
+| 			/* where are we now? space, gap or pulse? */
+| 		}
+| --
+| With my limited C knowledge I don't see what would prevent displaying the
+| key code (when I run irw) after the message. Haven't tried removing it
+| though.
 
-The second util-linux-ng 2.14.2 release candidate is available at
+The variable 'i' is modified, which affects the amount of data that is
+returned to LIRC. I suggest removing at least this line, to see if
+that helps.
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
-
-(Note that 2.14.2 is stable maintenance release.)
-
-Feedback and bug reports, as always, are welcomed.
-
-	Karel
-
-
-Util-linux-ng 2.14.2 Release Notes
-==================================
-
-ChangeLog between v2.14.1 and v2.14.2
--------------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
-
-build-sys:
-   - add -luuid to BLKID_LIBS  [Karel Zak]
-   - release++ (v2.14.2-rc1)  [Karel Zak]
-cfdisk:
-   - accept yes/no as fallback  [Matthias Koenig]
-chrt:
-   - support CFS SCHED_IDLE priority and document it  [Martin Steigerwald]
-docs:
-   - update AUTHORS file  [Karel Zak]
-   - update v2.14.2 ReleaseNotes  [Karel Zak]
-fdisk:
-   - add some missing includes  [Matthias Koenig]
-   - cannot create partition with starting beyond 1 TB  [Karel Zak]
-   - fix man page typo  [Karel Zak]
-   - remove obsolete information from man page  [Karel Zak]
-   - remove unnecessary gettext call  [Karel Zak]
-   - several strings without gettext calls  [Pedro Ribeiro]
-   - support +cylinder notation  [Karel Zak]
-hwclock:
-   - remove "cli" and "sti" from i386 CMOS code  [Karel Zak]
-   - remove x86_64-specific bogon  [David Brownell]
-include:
-   - use __BYTE_ORDER rather than AC specific WORDS_BIGENDIAN  [Karel Zak]
-ionice:
-   - Extend the man page to explain the "none" class and cpu-nice inheritance  [Jakob Unterwurzacher]
-   - a little cleanup of "none" description  [Karel Zak]
-ldattach:
-   - don't compile for non-linux systems  [Samuel Thibault]
-lib:
-   - add __BYTE_ORDER to md5.c  [Karel Zak]
-logger:
-   - several strings without gettext calls  [Pedro Ribeiro]
-login:
-   - fix compiler warning (int32 time() arg)  [Karel Zak]
-   - fix warning "dereferencing type-punned pointer will break strict-aliasing rules"  [Karel Zak]
-losetup:
-   - add warning about read-only mode  [Karel Zak]
-   - missing EBUSY error hint message  [Karel Zak]
-   - several strings without gettext strings  [Pedro Ribeiro]
-   - try to set up loop readonly if EACCES  [Matthias Koenig]
-mkfs.cramfs:
-   - several strings without gettext calls  [Pedro Ribeiro]
-mkfs.minix:
-   - fix size detection  [Matthias Koenig]
-more:
-   - dont use a.out.h  [Mike Frysinger]
-   - minor fixes to magic()  [James Youngman]
-mount:
-   - add i_version support  [Karel Zak]
-   - add info about /proc/mounts to mount.1  [Karel Zak]
-   - add info about semantics of read-only mount to mount.8  [Karel Zak]
-   - add rootcontext= SELinux mount option  [Karel Zak]
-   - clean up SPEC canonicalization  [Karel Zak]
-   - cleans up mount(8) troff markup  [Sam Varshavchik]
-   - create separate section for fs-independent options in mount.8  [Karel Zak]
-   - finalize support of quoted LABELs/UUIDs  [Karel Zak]
-   - fix mount_static_LDADD  [Karel Zak]
-   - fix typo  [Guan Xin]
-   - fix typo  [Karel Zak]
-   - make file_t SELinux warning optional and shorter  [Karel Zak]
-   - mtab created multiple times with -a option  [Karel Zak]
-   - remove link to namesys.com  [Karel Zak]
-   - remove spurious newline from mount.8  [Mike Frysinger]
-   - reorder list of options in mount.8  [Karel Zak]
-   - retry on ENOMEDIUM  [Matthias Koenig]
-   - suggest to use blockdev --setro rather than losetup  [Karel Zak]
-   - sundries.h add klibc support  [maximilian attems]
-   - sync FAT info in mount.8 with Documentation/filesystems/vfat.txt  [Karel Zak]
-   - sync tmpfs info in mount.8 with Documentation/filesystems/tmpfs.txt  [Karel Zak]
-   - use subsections in mount.8 DESCRIPTION  [Karel Zak]
-   - warn on "file_t" selinux context  [Karel Zak]
-po:
-   - merge changes  [Karel Zak]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update fr.po (from translationproject.org)  [Nicolas Provost]
-   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
-   - update sv.po (from translationproject.org)  [Daniel Nylander]
-readprofile:
-   - several strings without gettext calls  [Pedro Ribeiro]
-setterm:
-   - fix -blank man page  [Karel Zak]
-
-- use getpagesize()  [maximilian attems]
 -- 
- Karel Zak  <kzak@redhat.com>
+Dick Streefland                      ////                      Altium BV
+dick.streefland@altium.nl           (@ @)          http://www.altium.com
+--------------------------------oOO--(_)--OOo---------------------------
+
