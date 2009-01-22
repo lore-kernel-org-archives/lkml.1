@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbZAVR5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbZAVR5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761988AbZAVR5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbZAVRzE
+	id S1760710AbZAVR5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761699AbZAVR4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:55:04 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42963 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761369AbZAVRzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:55:01 -0500
-Date: Thu, 22 Jan 2009 18:56:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Walrond <andrew@walrond.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
-Message-ID: <20090122175645.GA14178@uranus.ravnborg.org>
-References: <49786A59.6040706@walrond.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49786A59.6040706@walrond.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 22 Jan 2009 12:56:43 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:3112 "EHLO SMTP02.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761678AbZAVR4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:56:42 -0500
+X-IronPort-AV: E=Sophos;i="4.37,307,1231131600"; 
+   d="scan'208";a="36800697"
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Campbell <Ian.Campbell@citrix.com>,
+       Ian Campbell <ian.campbell@citrix.com>, Milton Miller <miltonm@bga.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] HVC: do not request the irq twice.
+Date: Thu, 22 Jan 2009 17:56:08 +0000
+Message-Id: <1232646968-32671-1-git-send-email-Ian.Campbell@citrix.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 22 Jan 2009 17:56:40.0829 (UTC) FILETIME=[C76C3AD0:01C97CBA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 12:45:13PM +0000, Andrew Walrond wrote:
-> Breaks kbd like this:
-> 
->  /usr/include/linux/serial.h:164: error: expected 
-> specifier-qualifier-list before '__u32'
+Otherwise:
+  root@bogga:~# tty
+  /dev/hvc0
+  root@bogga:~# reboot
 
-This is know and fixed. The fix is to include linux/types.h
-in serial.h.
 
-> 
-> and net-tools like this:
-> 
->  In file included from /usr/include/linux/if_tunnel.h:5,
->                   from iptunnel.c:39:
->  /usr/include/linux/ip.h:85: error: redefinition of 'struct iphdr'
-> 
-> Both build fine with 2.6.27.10 headers.
+  Broadcast message from root@bogga (hvc0) (Thu Jan 22 17:51:20 2009):
 
-Herbert added an include of ip.h in commit:
+  The system is going down for reboot NOW!
+  INIT: Switching to runlevel: 6
+  INIT: Sending processes the TERM signal
+  hvc_open: request_irq failed with rc -16.
 
-commit c19e654ddbe3831252f61e76a74d661e1a755530
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Thu Oct 9 11:59:55 2008 -0700
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Milton Miller <miltonm@bga.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/char/hvc_irq.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-    gre: Add netlink interface
+diff --git a/drivers/char/hvc_irq.c b/drivers/char/hvc_irq.c
+index 2623e17..8152a13 100644
+--- a/drivers/char/hvc_irq.c
++++ b/drivers/char/hvc_irq.c
+@@ -28,6 +28,10 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
+ 		hp->irq_requested = 0;
+ 		return 0;
+ 	}
++
++	if (hp->irq_requested)
++		return 0;
++
+ 	rc = request_irq(irq, hvc_handle_interrupt, IRQF_DISABLED,
+ 			   "hvc_console", hp);
+ 	if (!rc)
+-- 
+1.5.6.5
 
-    This patch adds a netlink interface that will eventually displace
-    the existing ioctl interface.  It utilises the elegant rtnl_link_ops
-    mechanism.
-
-This causes struct iphdr to be redefined.
-But there is noting wrong in including ip.h in if_tunnel.h.
-
-I checked the include guards and they are correct.
-
-Could you please investige where it picks up the first definition
-of struct iphdr.
-
-> Hope that's useful.
-
-Anything that can improve the exported user headers are useful - thanks.
-
-	Sam
