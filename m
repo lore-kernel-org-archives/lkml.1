@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZAVILe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZAVITT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZAVILe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZAVILY
+	id S1754645AbZAVITT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZAVITI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:11:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53170 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbZAVILX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:11:23 -0500
-Date: Thu, 22 Jan 2009 09:11:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: yinghai@kernel.org, mpm@selenic.com, linux-kernel@vger.kernel.org
-Subject: Re: sparc64 build breakage...
-Message-ID: <20090122081101.GA32212@elte.hu>
-References: <20090121.171553.142827920.davem@davemloft.net> <20090121.172451.72573335.davem@davemloft.net>
+	Thu, 22 Jan 2009 03:19:08 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:44387 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbZAVITH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 03:19:07 -0500
+From: Paul Collins <paul@burly.ondioline.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
+References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
+	<200901211713.39630.rjw@sisk.pl>
+Date: Thu, 22 Jan 2009 21:19:04 +1300
+In-Reply-To: <200901211713.39630.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 21 Jan 2009 17:13:39 +0100")
+Message-ID: <87k58nda87.fsf@burly.wgtn.ondioline.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121.172451.72573335.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-* David Miller <davem@davemloft.net> wrote:
+> On Wednesday 21 January 2009, Paul Collins wrote:
+>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
+>> suspend or resume -- it's hard to tell.  (The suspend message is
+>> timestamped in syslog with the time I resumed, so I guess it was
+>> buffered along with the subsequent "Badness" messages.)
+>
+> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
+> problem for you.
 
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
-> 
-> > 
-> > This change:
-> > 
-> > commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
-> > Author: Yinghai Lu <yinghai@kernel.org>
-> > Date:   Wed Jan 7 15:03:13 2009 -0800
-> > 
-> >     sparseirq: make some func to be used with genirq
-> > 
-> > breaks the sparc64 build:
-> ..
-> > This should fix it:
-> > 
-> > sparc64: Fix build by using kstat_irqs_cpu().
-> 
-> And here is a mix for the next failure.
+It does not fix the problem.
 
-Applied your fixes to tip/irq/sparseirq:
+-- 
+Paul Collins
+Wellington, New Zealand
 
- e81838d: sparc64: Fix build by using kstat_irqs_cpu()
- 623d3f0: sparc64: Fix build by including linux/irq.h into time_64.c
-
-thanks David!
-
-> But really, either linux/kernel_stat.h provides the 
-> kstat_incr_irqs_this_cpu interface or linux/irq.h does, not both.
-
-Yes, but every time someone tries to clean those dependencies up, it gets 
-held up by non-genirq architectures:
-
- /*
-  * Please do not include this file in generic code.  There is currently
-  * no requirement for any architecture to implement anything held
-  * within this file.
-  *
-  * Thanks. --rmk
-  */
-
-Meanwhile that particular comment is moot because ARM is genirq - but 
-there's a handful of other non-genirq architectures so this area of code 
-continues to be a mess.
-
-I guess we could move all the APIs to kernel_stat.h. Yinghai?
-
-	Ingo
+Dag vijandelijk luchtschip de huismeester is dood
