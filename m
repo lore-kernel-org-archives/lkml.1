@@ -1,174 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZAVJF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZAVJHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbZAVJF2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZAVJEz
+	id S1756193AbZAVJHc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZAVJHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:04:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:5264 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbZAVJEw (ORCPT
+	Thu, 22 Jan 2009 04:07:14 -0500
+Received: from mxpdbe2.wincor-nixdorf.com ([80.154.98.130]:39799 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752714AbZAVJHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:04:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ElK13O8fxwmQHuZ/nK1tBwdsIYpmfQLpziiBwLsE+3Z69kcxwaMxGomsx9VD65leYD
-         iZjy8HclEKUZ2HubYlbAX/wsO6Bxkvq5m15vYKYG4J7+mkwKCtxp8ncB9ssWxxhp2DKv
-         OrjOHtIoRgTS2j95MOReNMAAnJMewV9fuTnOY=
-Date: Thu, 22 Jan 2009 09:04:42 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
-Message-ID: <20090122090442.GB11139@ff.dom.local>
-References: <20090120102053.GA17004@ff.dom.local> <20090120103122.GC9167@ioremap.net> <20090120110144.GB17004@ff.dom.local> <20090120.091616.224452074.davem@davemloft.net>
+	Thu, 22 Jan 2009 04:07:12 -0500
+Message-ID: <49783679.8010005@wincor-nixdorf.com>
+Date: Thu, 22 Jan 2009 10:03:53 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120.091616.224452074.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tosoni <jp.tosoni@acksys.fr>
+CC: "'Michael Bramer'" <michael@debsupport.de>,
+       "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
+       "'Paulius Zaleckas'" <paulius.zaleckas@teltonika.lt>,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port RS-232
+ MIC-3620 from advantech'
+References: <6E0880DF84464BF2AA0275ABFFCCDAF2@acksys.local>
+In-Reply-To: <6E0880DF84464BF2AA0275ABFFCCDAF2@acksys.local>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFEEE667096B364B681E561B2"
+X-OriginalArrivalTime: 22 Jan 2009 09:06:51.0275 (UTC) FILETIME=[C35F3DB0:01C97C70]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 20, 2009 at 09:16:16AM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Tue, 20 Jan 2009 11:01:44 +0000
-> 
-> > On Tue, Jan 20, 2009 at 01:31:22PM +0300, Evgeniy Polyakov wrote:
-> > > On Tue, Jan 20, 2009 at 10:20:53AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
-> > > > Good question! Alas I can't check this soon, but if it's really like
-> > > > this, of course this needs some better idea and rework. (BTW, I'd like
-> > > > to prevent here as much as possible some strange activities like 1
-> > > > byte (payload) packets getting full pages without any accounting.)
-> > > 
-> > > I believe approach to meet all our goals is to have own network memory
-> > > allocator, so that each skb could have its payload in the fragments, we
-> > > would not suffer from the heavy fragmentation and power-of-two overhead
-> > > for the larger MTUs, have a reserve for the OOM condition and generally
-> > > do not depend on the main system behaviour.
-> > 
-> > 100% right! But I guess we need this current fix for -stable, and I'm
-> > a bit worried about safety.
-> 
-> Jarek, we already have a page and offset you can use.
-> 
-> It's called sk_sndmsg_page but that is just the (current) name.
-> Nothing prevents you from reusing it for your purposes here.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFEEE667096B364B681E561B2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It seems this sk_sndmsg_page usage (refcounting) isn't consistent.
-I used here tcp_sndmsg() way, but I think I'll go back to this question
-soon.
+Tosoni wrote:
+>> On Wed, Jan 21, 2009 at 12:32:15PM +0000, Alan Cox wrote:
+>>>>>>  static struct pci_device_id serial_pci_tbl[] =3D {
+>>>>>> +       {       PCI_VENDOR_ID_ADVANTECH,
+>> PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>>>>>> +               0x3620, PCI_ANY_ID, 0, 0,
+>>>> Why not use PCI_VENDOR_ID_ADVANTECH as PCI_SUBVENDOR_ID too?
+>>> The Advantech vendor id is not 0x3620. This confused me as
+>> well which is
+>>> why I asked for an lspci. Advantech has stuck the device id in the
+>>> subvendor bits and '1' in the subdevice (so it should be 1 not
+>>> PCI_ANY_ID).
+>> is this better?
+>>
+>> +       {       PCI_VENDOR_ID_ADVANTECH,
+>> PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>> +               PCI_DEVICE_ID_ADVANTECH_PCI3620, 1, 0, 0,
+>=20
+> Since the name describes a device id where it should be a (sub)vendor i=
+d,
+> I would suggest that you add a line of comment to explain the case.
+> So that no one will be tempted to change it back to PCI_VENDOR_ID_ADVAN=
+TECH
+> in the future.
 
-Thanks,
-Jarek P.
+Definitely!
 
-------------> take 3
+Niels
 
-net: Optimize memory usage when splicing from sockets.
 
-The recent fix of data corruption when splicing from sockets uses
-memory very inefficiently allocating a new page to copy each chunk of
-linear part of skb. This patch uses the same page until it's full
-(almost) by caching the page in sk_sndmsg_page field.
+--------------enigFEEE667096B364B681E561B2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-With changes from David S. Miller <davem@davemloft.net>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+iD8DBQFJeDZ55KAkGQPO/QoRAhWlAKDfr/kTM19Nf5amrlEVFpaadxB50QCeMehC
+6XE0CeYNWP2iAam1+/dYRSA=
+=lf7o
+-----END PGP SIGNATURE-----
 
-Tested-by: needed...
----
-
- net/core/skbuff.c |   45 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 35 insertions(+), 10 deletions(-)
-
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 2e5f2ca..2e64c1b 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -1333,14 +1333,39 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
- 	put_page(spd->pages[i]);
- }
- 
--static inline struct page *linear_to_page(struct page *page, unsigned int len,
--					  unsigned int offset)
--{
--	struct page *p = alloc_pages(GFP_KERNEL, 0);
-+static inline struct page *linear_to_page(struct page *page, unsigned int *len,
-+					  unsigned int *offset,
-+					  struct sk_buff *skb)
-+{
-+	struct sock *sk = skb->sk;
-+	struct page *p = sk->sk_sndmsg_page;
-+	unsigned int off;
-+
-+	if (!p) {
-+new_page:
-+		p = sk->sk_sndmsg_page = alloc_pages(sk->sk_allocation, 0);
-+		if (!p)
-+			return NULL;
- 
--	if (!p)
--		return NULL;
--	memcpy(page_address(p) + offset, page_address(page) + offset, len);
-+		off = sk->sk_sndmsg_off = 0;
-+		/* hold one ref to this page until it's full */
-+	} else {
-+		unsigned int mlen;
-+
-+		off = sk->sk_sndmsg_off;
-+		mlen = PAGE_SIZE - off;
-+		if (mlen < 64 && mlen < *len) {
-+			put_page(p);
-+			goto new_page;
-+		}
-+
-+		*len = min_t(unsigned int, *len, mlen);
-+	}
-+
-+	memcpy(page_address(p) + off, page_address(page) + *offset, *len);
-+	sk->sk_sndmsg_off += *len;
-+	*offset = off;
-+	get_page(p);
- 
- 	return p;
- }
-@@ -1349,21 +1374,21 @@ static inline struct page *linear_to_page(struct page *page, unsigned int len,
-  * Fill page/offset/length into spd, if it can hold more pages.
-  */
- static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
--				unsigned int len, unsigned int offset,
-+				unsigned int *len, unsigned int offset,
- 				struct sk_buff *skb, int linear)
- {
- 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
- 		return 1;
- 
- 	if (linear) {
--		page = linear_to_page(page, len, offset);
-+		page = linear_to_page(page, len, &offset, skb);
- 		if (!page)
- 			return 1;
- 	} else
- 		get_page(page);
- 
- 	spd->pages[spd->nr_pages] = page;
--	spd->partial[spd->nr_pages].len = len;
-+	spd->partial[spd->nr_pages].len = *len;
- 	spd->partial[spd->nr_pages].offset = offset;
- 	spd->nr_pages++;
- 
-@@ -1405,7 +1430,7 @@ static inline int __splice_segment(struct page *page, unsigned int poff,
- 		/* the linear region may spread across several pages  */
- 		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
- 
--		if (spd_fill_page(spd, page, flen, poff, skb, linear))
-+		if (spd_fill_page(spd, page, &flen, poff, skb, linear))
- 			return 1;
- 
- 		__segment_seek(&page, &poff, &plen, flen);
+--------------enigFEEE667096B364B681E561B2--
