@@ -1,44 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbZAVPa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZAVPfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbZAVPa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZAVPaP
+	id S1755092AbZAVPfa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZAVPfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:30:15 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56082 "EHLO khc.piap.pl"
+	Thu, 22 Jan 2009 10:35:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41275 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbZAVPaO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:30:14 -0500
-To: Miguel =?iso-8859-2?Q?=C1ngel_=C1lvarez?= 
-	<gotzoncabanes@gmail.com>
-Cc: Karl Hiramoto <karl@hiramoto.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: IXP4XX queues
-References: <b0438a630901212342o543ed522p60376f764b6248b5@mail.gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 22 Jan 2009 16:30:10 +0100
-In-Reply-To: <b0438a630901212342o543ed522p60376f764b6248b5@mail.gmail.com>
- ("Miguel =?iso-8859-2?Q?=C1ngel_=C1lvarez=22's?= message of "Thu\, 22 Jan
- 2009 08\:42\:28 +0100")
-Message-ID: <m3k58nicjh.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+	id S1752483AbZAVPfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 10:35:19 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: stable@kernel.org
+Cc: smfrench@gmail.com, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH -stable] cifs: make sure we allocate enough storage for socket address
+Date: Thu, 22 Jan 2009 10:35:13 -0500
+Message-Id: <1232638513-9022-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miguel Ángel Álvarez <gotzoncabanes@gmail.com> writes:
+cifs_mount declares a struct sockaddr on the stack and then casts it
+to the proper address type. The storage allocated is fine for ipv4,
+but is too small for ipv6 addresses. Declare it as
+"struct sockaddr_storage" instead of struct sockaddr".
 
-> Last December we talked about 64 queues and IXP4XX. Karl has a patch
-> for them, and although I think it could be better to splitt it into
-> two different ones ("plain 64 queue expansion" for which I proposed a
-> modified patch based on Karl's, and "debugging and other things"), I
-> prefer Karl's to none.
+This bug was manifesting itself as oopses and address corruption when
+mounting IPv6 addresses.
 
-I will look at this stuff again soon, currently -ENOTIME but this
-condition will only last for few days. Thanks for the reminder.
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Tested-by: Stefan Bader <stefan.bader@canonical.com>
+---
+ fs/cifs/connect.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 223647f..f254235 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1349,7 +1349,7 @@ cifs_parse_mount_options(char *options, const char *devname,
+ }
+ 
+ static struct TCP_Server_Info *
+-cifs_find_tcp_session(struct sockaddr *addr)
++cifs_find_tcp_session(struct sockaddr_storage *addr)
+ {
+ 	struct list_head *tmp;
+ 	struct TCP_Server_Info *server;
+@@ -1369,11 +1369,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
+ 		if (server->tcpStatus == CifsNew)
+ 			continue;
+ 
+-		if (addr->sa_family == AF_INET &&
++		if (addr->ss_family == AF_INET &&
+ 		    (addr4->sin_addr.s_addr !=
+ 		     server->addr.sockAddr.sin_addr.s_addr))
+ 			continue;
+-		else if (addr->sa_family == AF_INET6 &&
++		else if (addr->ss_family == AF_INET6 &&
+ 			 memcmp(&server->addr.sockAddr6.sin6_addr,
+ 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
+ 			continue;
+@@ -2027,7 +2027,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 	int rc = 0;
+ 	int xid;
+ 	struct socket *csocket = NULL;
+-	struct sockaddr addr;
++	struct sockaddr_storage addr;
+ 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
+ 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
+ 	struct smb_vol volume_info;
+@@ -2039,7 +2039,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 
+ /* cFYI(1, ("Entering cifs_mount. Xid: %d with: %s", xid, mount_data)); */
+ 
+-	memset(&addr, 0, sizeof(struct sockaddr));
++	memset(&addr, 0, sizeof(struct sockaddr_storage));
+ 	memset(&volume_info, 0, sizeof(struct smb_vol));
+ 	if (cifs_parse_mount_options(mount_data, devname, &volume_info)) {
+ 		rc = -EINVAL;
+@@ -2069,9 +2069,9 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
+ 					    &sin_server6->sin6_addr.in6_u);
+ 			if (rc > 0)
+-				addr.sa_family = AF_INET6;
++				addr.ss_family = AF_INET6;
+ 		} else {
+-			addr.sa_family = AF_INET;
++			addr.ss_family = AF_INET;
+ 		}
+ 
+ 		if (rc <= 0) {
+@@ -2113,7 +2113,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 
+ 	srvTcp = cifs_find_tcp_session(&addr);
+ 	if (!srvTcp) { /* create socket */
+-		if (addr.sa_family == AF_INET6) {
++		if (addr.ss_family == AF_INET6) {
+ 			cFYI(1, ("attempting ipv6 connect"));
+ 			/* BB should we allow ipv6 on port 139? */
+ 			/* other OS never observed in Wild doing 139 with v6 */
+@@ -2144,7 +2144,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+ 		} else {
+ 			srvTcp->noblocksnd = volume_info.noblocksnd;
+ 			srvTcp->noautotune = volume_info.noautotune;
+-			if (addr.sa_family == AF_INET6)
++			if (addr.ss_family == AF_INET6)
+ 				memcpy(&srvTcp->addr.sockAddr6, sin_server6,
+ 					sizeof(struct sockaddr_in6));
+ 			else
 -- 
-Krzysztof Halasa
+1.5.5.6
+
