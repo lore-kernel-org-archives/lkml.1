@@ -1,396 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZAVJh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZAVJhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757605AbZAVJh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZAVJhL
+	id S1757899AbZAVJhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZAVJhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:37:11 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50870 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbZAVJhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:37:08 -0500
-Date: Thu, 22 Jan 2009 18:35:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/7] memcg : use CSS ID in memcg
-Message-Id: <20090122183557.3b058e98.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090122183411.3cabdfd2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090122183411.3cabdfd2.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Jan 2009 04:37:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49396 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755247AbZAVJhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:37:14 -0500
+Date: Thu, 22 Jan 2009 10:36:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090122093649.GD24758@elte.hu>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090122093046.GC5891@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Use css ID in memcg.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Assigning CSS ID for each memcg and use css_get_next() for scanning hierarchy.
+> On Thu, Jan 22, 2009 at 05:14:24PM +0800, Lai Jiangshan wrote:
+> > 1) lockdep will complain when recursion run_workqueue
+> > 2) works is not run orderly when recursion run_workqueue
+> > 
+> > 3) BUG!
+> >    We use recursion run_workqueue to hidden deadlock when
+> >    keventd trying to flush its own queue.
+> > 
+> >    It's bug. When flush_workqueue()(nested in a work callback)returns,
+> >    the workqueue is not really flushed, the sequence statement of
+> >    this work callback will do some thing bad.
+> > 
+> >    So we should not allow workqueue trying to flush its own queue.
+> > 
+> > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > ---
+> > diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> > index 2f44583..1129cde 100644
+> > --- a/kernel/workqueue.c
+> > +++ b/kernel/workqueue.c
+> > @@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
+> >  
+> >  	struct workqueue_struct *wq;
+> >  	struct task_struct *thread;
+> > -
+> > -	int run_depth;		/* Detect run_workqueue() recursion depth */
+> >  } ____cacheline_aligned;
+> >  
+> >  /*
+> > @@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+> >  static void run_workqueue(struct cpu_workqueue_struct *cwq)
+> >  {
+> >  	spin_lock_irq(&cwq->lock);
+> > -	cwq->run_depth++;
+> > -	if (cwq->run_depth > 3) {
+> > -		/* morton gets to eat his hat */
+> > -		printk("%s: recursion depth exceeded: %d\n",
+> > -			__func__, cwq->run_depth);
+> > -		dump_stack();
+> > -	}
+> >  	while (!list_empty(&cwq->worklist)) {
+> >  		struct work_struct *work = list_entry(cwq->worklist.next,
+> >  						struct work_struct, entry);
+> > @@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+> >  		spin_lock_irq(&cwq->lock);
+> >  		cwq->current_work = NULL;
+> >  	}
+> > -	cwq->run_depth--;
+> >  	spin_unlock_irq(&cwq->lock);
+> >  }
+> >  
+> > @@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+> >  
+> >  static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+> >  {
+> > -	int active;
+> > +	int active = 0;
+> > +	struct wq_barrier barr;
+> >  
+> > -	if (cwq->thread == current) {
+> > -		/*
+> > -		 * Probably keventd trying to flush its own queue. So simply run
+> > -		 * it by hand rather than deadlocking.
+> > -		 */
+> > -		run_workqueue(cwq);
+> > -		active = 1;
+> > -	} else {
+> > -		struct wq_barrier barr;
+> > +	BUG_ON(cwq->thread == current);
+> 
+> Hi Lai,
+> 
+> BUG_ON seems perhaps a bit too much for such case. The system
+> will run in an endless loop because of a mistake that will not have
+> necessarily a fatal end.
+> WARN_ON should be enough (plus the warn that lockdep will raise
+> too in this case).
 
-	Assume folloing tree.
+WARN_ONCE() is the best method usually - we want a one-time and expressive 
+warning, not just a stack dump. (i.e. not WARN_ON and not WARN_ON_ONCE)
 
-	group_A (ID=3)
-		/01 (ID=4)
-		   /0A (ID=7)
-		/02 (ID=10)
-	group_B (ID=5)
-	and task in group_A/01/0A hits limit at group_A.
+Plus some thinking needs to be put into exiting from that function in a way 
+that the system will still be usable enough to report the bug.
 
-	reclaim will be done in following order (round-robin).
-	group_A(3) -> group_A/01 (4) -> group_A/01/0A (7) -> group_A/02(10)
-	-> group_A -> .....
-
-	Round robin by ID. The last visited cgroup is recorded and restart
-	from it when it start reclaim again.
-	(More smart algorithm can be implemented..)
-
-	No cgroup_mutex or hierarchy_mutex is required.
-
-Changelog (v3) -> (v4)
-  - dropped css_is_populated() check
-  - removed scan_age and use more simple logic.
-
-Changelog (v2) -> (v3)
-  - Added css_is_populatd() check
-  - Adjusted to rc1 + Nishimrua's fixes.
-  - Increased comments.
-
-Changelog (v1) -> (v2)
-  - Updated texts.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/memcontrol.c |  220 ++++++++++++++++++++------------------------------------
- 1 file changed, 82 insertions(+), 138 deletions(-)
-
-Index: mmotm-2.6.29-Jan16/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.29-Jan16.orig/mm/memcontrol.c
-+++ mmotm-2.6.29-Jan16/mm/memcontrol.c
-@@ -95,6 +95,15 @@ static s64 mem_cgroup_read_stat(struct m
- 	return ret;
- }
- 
-+static s64 mem_cgroup_local_usage(struct mem_cgroup_stat *stat)
-+{
-+	s64 ret;
-+
-+	ret = mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_CACHE);
-+	ret += mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_RSS);
-+	return ret;
-+}
-+
- /*
-  * per-zone information in memory controller.
-  */
-@@ -154,9 +163,9 @@ struct mem_cgroup {
- 
- 	/*
- 	 * While reclaiming in a hiearchy, we cache the last child we
--	 * reclaimed from. Protected by hierarchy_mutex
-+	 * reclaimed from.
- 	 */
--	struct mem_cgroup *last_scanned_child;
-+	int last_scanned_child;
- 	/*
- 	 * Should the accounting and control be hierarchical, per subtree?
- 	 */
-@@ -629,103 +638,6 @@ unsigned long mem_cgroup_isolate_pages(u
- #define mem_cgroup_from_res_counter(counter, member)	\
- 	container_of(counter, struct mem_cgroup, member)
- 
--/*
-- * This routine finds the DFS walk successor. This routine should be
-- * called with hierarchy_mutex held
-- */
--static struct mem_cgroup *
--__mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
--{
--	struct cgroup *cgroup, *curr_cgroup, *root_cgroup;
--
--	curr_cgroup = curr->css.cgroup;
--	root_cgroup = root_mem->css.cgroup;
--
--	if (!list_empty(&curr_cgroup->children)) {
--		/*
--		 * Walk down to children
--		 */
--		cgroup = list_entry(curr_cgroup->children.next,
--						struct cgroup, sibling);
--		curr = mem_cgroup_from_cont(cgroup);
--		goto done;
--	}
--
--visit_parent:
--	if (curr_cgroup == root_cgroup) {
--		/* caller handles NULL case */
--		curr = NULL;
--		goto done;
--	}
--
--	/*
--	 * Goto next sibling
--	 */
--	if (curr_cgroup->sibling.next != &curr_cgroup->parent->children) {
--		cgroup = list_entry(curr_cgroup->sibling.next, struct cgroup,
--						sibling);
--		curr = mem_cgroup_from_cont(cgroup);
--		goto done;
--	}
--
--	/*
--	 * Go up to next parent and next parent's sibling if need be
--	 */
--	curr_cgroup = curr_cgroup->parent;
--	goto visit_parent;
--
--done:
--	return curr;
--}
--
--/*
-- * Visit the first child (need not be the first child as per the ordering
-- * of the cgroup list, since we track last_scanned_child) of @mem and use
-- * that to reclaim free pages from.
-- */
--static struct mem_cgroup *
--mem_cgroup_get_next_node(struct mem_cgroup *root_mem)
--{
--	struct cgroup *cgroup;
--	struct mem_cgroup *orig, *next;
--	bool obsolete;
--
--	/*
--	 * Scan all children under the mem_cgroup mem
--	 */
--	mutex_lock(&mem_cgroup_subsys.hierarchy_mutex);
--
--	orig = root_mem->last_scanned_child;
--	obsolete = mem_cgroup_is_obsolete(orig);
--
--	if (list_empty(&root_mem->css.cgroup->children)) {
--		/*
--		 * root_mem might have children before and last_scanned_child
--		 * may point to one of them. We put it later.
--		 */
--		if (orig)
--			VM_BUG_ON(!obsolete);
--		next = NULL;
--		goto done;
--	}
--
--	if (!orig || obsolete) {
--		cgroup = list_first_entry(&root_mem->css.cgroup->children,
--				struct cgroup, sibling);
--		next = mem_cgroup_from_cont(cgroup);
--	} else
--		next = __mem_cgroup_get_next_node(orig, root_mem);
--
--done:
--	if (next)
--		mem_cgroup_get(next);
--	root_mem->last_scanned_child = next;
--	if (orig)
--		mem_cgroup_put(orig);
--	mutex_unlock(&mem_cgroup_subsys.hierarchy_mutex);
--	return (next) ? next : root_mem;
--}
--
- static bool mem_cgroup_check_under_limit(struct mem_cgroup *mem)
- {
- 	if (do_swap_account) {
-@@ -755,46 +667,79 @@ static unsigned int get_swappiness(struc
- }
- 
- /*
-- * Dance down the hierarchy if needed to reclaim memory. We remember the
-- * last child we reclaimed from, so that we don't end up penalizing
-- * one child extensively based on its position in the children list.
-+ * Visit the first child (need not be the first child as per the ordering
-+ * of the cgroup list, since we track last_scanned_child) of @mem and use
-+ * that to reclaim free pages from.
-+ */
-+static struct mem_cgroup *
-+mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-+{
-+	struct mem_cgroup *ret = NULL;
-+	struct cgroup_subsys_state *css;
-+	int nextid, found;
-+
-+	if (!root_mem->use_hierarchy) {
-+		css_get(&root_mem->css);
-+		ret = root_mem;
-+	}
-+
-+	while (!ret) {
-+		rcu_read_lock();
-+		nextid = root_mem->last_scanned_child + 1;
-+		css = css_get_next(&mem_cgroup_subsys, nextid, &root_mem->css,
-+				   &found);
-+		if (css && css_tryget(css))
-+			ret = container_of(css, struct mem_cgroup, css);
-+
-+		rcu_read_unlock();
-+		/* Updates scanning parameter */
-+		spin_lock(&root_mem->reclaim_param_lock);
-+		if (!css) {
-+			/* this means start scan from ID:1 */
-+			root_mem->last_scanned_child = 0;
-+		} else
-+			root_mem->last_scanned_child = found;
-+		spin_unlock(&root_mem->reclaim_param_lock);
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * Scan the hierarchy if needed to reclaim memory. We remember the last child
-+ * we reclaimed from, so that we don't end up penalizing one child extensively
-+ * based on its position in the children list.
-  *
-  * root_mem is the original ancestor that we've been reclaim from.
-+ *
-+ * We give up and return to the caller when we visit root_mem twice.
-+ * (other groups can be removed while we're walking....)
-  */
- static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 						gfp_t gfp_mask, bool noswap)
- {
--	struct mem_cgroup *next_mem;
--	int ret = 0;
--
--	/*
--	 * Reclaim unconditionally and don't check for return value.
--	 * We need to reclaim in the current group and down the tree.
--	 * One might think about checking for children before reclaiming,
--	 * but there might be left over accounting, even after children
--	 * have left.
--	 */
--	ret += try_to_free_mem_cgroup_pages(root_mem, gfp_mask, noswap,
--					   get_swappiness(root_mem));
--	if (mem_cgroup_check_under_limit(root_mem))
--		return 1;	/* indicate reclaim has succeeded */
--	if (!root_mem->use_hierarchy)
--		return ret;
--
--	next_mem = mem_cgroup_get_next_node(root_mem);
--
--	while (next_mem != root_mem) {
--		if (mem_cgroup_is_obsolete(next_mem)) {
--			next_mem = mem_cgroup_get_next_node(root_mem);
-+	struct mem_cgroup *victim;
-+	int ret, total = 0;
-+	int loop = 0;
-+
-+	while (loop < 2) {
-+		victim = mem_cgroup_select_victim(root_mem);
-+		if (victim == root_mem)
-+			loop++;
-+		if (!mem_cgroup_local_usage(&victim->stat)) {
-+			/* this cgroup's local usage == 0 */
-+			css_put(&victim->css);
- 			continue;
- 		}
--		ret += try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
--						   get_swappiness(next_mem));
-+		/* we use swappiness of local cgroup */
-+		ret = try_to_free_mem_cgroup_pages(victim, gfp_mask, noswap,
-+						   get_swappiness(victim));
-+		css_put(&victim->css);
-+		total += ret;
- 		if (mem_cgroup_check_under_limit(root_mem))
--			return 1;	/* indicate reclaim has succeeded */
--		next_mem = mem_cgroup_get_next_node(root_mem);
-+			return 1 + total;
- 	}
--	return ret;
-+	return total;
- }
- 
- bool mem_cgroup_oom_called(struct task_struct *task)
-@@ -1324,8 +1269,8 @@ __mem_cgroup_uncharge_common(struct page
- 	res_counter_uncharge(&mem->res, PAGE_SIZE);
- 	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
- 		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
--
- 	mem_cgroup_charge_statistics(mem, pc, false);
-+
- 	ClearPageCgroupUsed(pc);
- 	/*
- 	 * pc->mem_cgroup is not cleared here. It will be accessed when it's
-@@ -2178,6 +2123,8 @@ static void __mem_cgroup_free(struct mem
- {
- 	int node;
- 
-+	free_css_id(&mem_cgroup_subsys, &mem->css);
-+
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 
-@@ -2228,11 +2175,12 @@ static struct cgroup_subsys_state * __re
- mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- {
- 	struct mem_cgroup *mem, *parent;
-+	long error = -ENOMEM;
- 	int node;
- 
- 	mem = mem_cgroup_alloc();
- 	if (!mem)
--		return ERR_PTR(-ENOMEM);
-+		return ERR_PTR(error);
- 
- 	for_each_node_state(node, N_POSSIBLE)
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
-@@ -2260,7 +2208,7 @@ mem_cgroup_create(struct cgroup_subsys *
- 		res_counter_init(&mem->res, NULL);
- 		res_counter_init(&mem->memsw, NULL);
- 	}
--	mem->last_scanned_child = NULL;
-+	mem->last_scanned_child = 0;
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
- 	if (parent)
-@@ -2269,7 +2217,7 @@ mem_cgroup_create(struct cgroup_subsys *
- 	return &mem->css;
- free_out:
- 	__mem_cgroup_free(mem);
--	return ERR_PTR(-ENOMEM);
-+	return ERR_PTR(error);
- }
- 
- static void mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
-@@ -2283,12 +2231,7 @@ static void mem_cgroup_destroy(struct cg
- 				struct cgroup *cont)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	struct mem_cgroup *last_scanned_child = mem->last_scanned_child;
- 
--	if (last_scanned_child) {
--		VM_BUG_ON(!mem_cgroup_is_obsolete(last_scanned_child));
--		mem_cgroup_put(last_scanned_child);
--	}
- 	mem_cgroup_put(mem);
- }
- 
-@@ -2327,6 +2270,7 @@ struct cgroup_subsys mem_cgroup_subsys =
- 	.populate = mem_cgroup_populate,
- 	.attach = mem_cgroup_move_task,
- 	.early_init = 0,
-+	.use_id = 1,
- };
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-
+	Ingo
