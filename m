@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbZAVG3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZAVGap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbZAVG3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 01:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZAVG3X
+	id S1757687AbZAVGap (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 01:30:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZAVGaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 01:29:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:22313 "EHLO
+	Thu, 22 Jan 2009 01:30:35 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:30485 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755905AbZAVG3W convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1754244AbZAVGae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 01:29:22 -0500
+	Thu, 22 Jan 2009 01:30:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=sgG3hs4u3EYQlVU2+RDDDlRcWDo/0g0HKJBhNXw5iWF0kpwim5AbeaBz1TsvIQUQz5
+         7ItiFr3mLoyxlC0ozCirkrvmoCCW3xQ/GkJrF7OJeEKL6LSH1/wfL79BOPOUMSJvaE1S
+         GXJ3m94K/Zuc0G98o7J25568VfVv0kQ7Rx8SQ=
+Message-ID: <49781251.8070807@gmail.com>
+Date: Thu, 22 Jan 2009 11:29:37 +0500
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.1.19) Gecko/20081226 SeaMonkey/1.1.14
 MIME-Version: 1.0
-In-Reply-To: <200901221142.00803.knikanth@suse.de>
-References: <200901211638.23101.knikanth@suse.de>
-	 <200901221043.13684.knikanth@suse.de>
-	 <d6200be20901212139u3683c829x4db1840a28986a6f@mail.gmail.com>
-	 <200901221142.00803.knikanth@suse.de>
-Date: Wed, 21 Jan 2009 22:29:20 -0800
-Message-ID: <d6200be20901212229y47353d3ft72fbfed6ffaba999@mail.gmail.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Menage <menage@google.com>,
-       containers@lists.linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Arjan Opmeer <arjan@opmeer.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>
+Subject: Re: [Bug #12406] 2.6.28 thinks that my PS/2 mouse is a touchpad
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.HKC.vJRdJB@chimera> <20090120014507.GA1557@adopmeer.homeip.net> <200901200119.59851.dmitry.torokhov@gmail.com>
+In-Reply-To: <200901200119.59851.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 10:12 PM, Nikanth Karthikesan <knikanth@suse.de> wrote:
-> On Thursday 22 January 2009 11:09:45 Arve Hjønnevåg wrote:
->> On Wed, Jan 21, 2009 at 9:13 PM, Nikanth Karthikesan <knikanth@suse.de>
-> wrote:
->> > To use oom_adj effectively one should continuously monitor oom_score of
->> > all the processes, which is a complex moving target and keep on adjusting
->> > the oom_adj of many tasks which still cannot guarantee the order. This
->> > controller is deterministic and hence easier to use.
->>
->> Why not add an option to make oom_adj ensure strict ordering instead?
->
-> This could be done in 2 ways.
-> 1. Make oom_adj itself strict.(based on some other parameter?)
-> - Adds to confusion whether the current oom_adj is a strict value or the usual
-> suggestion.
-> - It would disable the oom_adj suggestion which could have been used till now.
-> - It is a public interface, and changing that might break some one's script.
->
-> 2. Add addtional parameter, say  /proc/<pid>/oom_order
-> - Not easy to use.
-> - Say I had assigned the oom.victim to a task and it had forked a lot. Now to
-> change the value for all the tasks it is easier with cgroups.
-> - Some optimization that Kame specified earlier would be harder to achieve.
->
+Dmitry Torokhov wrote:
+> Sorry, must have missed that. I think it's gonna be a bit chatty if
+> user happens to have Logitech++ device attached, however I think if
+> we complement it with the patch below I think it should work OK.
 
-Both options would work for us, but option 1 require no change to our
-user space code. I agree that some operations are easier with a
-cgroups approach, but since we don't perform these operations it would
-be nice to not require cgroups to control the oom killer.
+Dmitry, I don't see the effect of your patch. I.e., both the patch by 
+Arjan referenced in the bug, and combination of that patch with yours, 
+produce a working mouse and this dmesg output:
+
+psmouse serio1: ID: 10 00 64<6>elantech.c: Elantech version query result 
+0x00, 0x01, 0x64.
+elantech.c: Probably not a real Elantech touchpad. Aborting.
+input: ImExPS/2 Logitech Wheel Mouse as /class/input/input18
 
 -- 
-Arve Hjønnevåg
+Alexander E. Patrakov
