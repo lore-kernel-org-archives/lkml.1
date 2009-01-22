@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZAVTKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZAVTLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbZAVTKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 14:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbZAVTK3
+	id S1758138AbZAVTLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 14:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZAVTK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 14:10:29 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:58275 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755457AbZAVTK3 (ORCPT
+	Thu, 22 Jan 2009 14:10:58 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:50656 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755542AbZAVTK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 14:10:29 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Subject: Re: [PATCH] HVC: do not request the irq twice.
-Date: Thu, 22 Jan 2009 20:09:43 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <1232646968-32671-1-git-send-email-Ian.Campbell@citrix.com>
-In-Reply-To: <1232646968-32671-1-git-send-email-Ian.Campbell@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Jan 2009 14:10:57 -0500
+Date: Thu, 22 Jan 2009 20:12:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Walrond <andrew@walrond.org>, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
+Message-ID: <20090122191239.GA16347@uranus.ravnborg.org>
+References: <49786A59.6040706@walrond.org> <20090122175645.GA14178@uranus.ravnborg.org> <4978C301.1040705@walrond.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901222009.43342.borntraeger@de.ibm.com>
+In-Reply-To: <4978C301.1040705@walrond.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Thursday 22 January 2009 18:56:08 schrieb Ian Campbell:
-> --- a/drivers/char/hvc_irq.c
-> +++ b/drivers/char/hvc_irq.c
-> @@ -28,6 +28,10 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
->  		hp->irq_requested = 0;
->  		return 0;
->  	}
-> +
-> +	if (hp->irq_requested)
-> +		return 0;
-> +
->  	rc = request_irq(irq, hvc_handle_interrupt, IRQF_DISABLED,
->  			   "hvc_console", hp);
->  	if (!rc)
+[restored lkml]
 
-Unfortunately I have no system with an irq based hvc console - I cannot test 
-this patch. Anyway, the patch looks sane:
+On Thu, Jan 22, 2009 at 07:03:29PM +0000, Andrew Walrond wrote:
+> Sam Ravnborg wrote:
+> >
+> >I checked the include guards and they are correct.
+> >
+> >Could you please investige where it picks up the first definition
+> >of struct iphdr.
+> >
+> >  
+> Here you go:
+> 
+> $ make iptunnel.o
+> 
+> cc -D_GNU_SOURCE -O2 -Wall -g  -I. -idirafter ./include/ -Ilib   -c -o 
+> iptunnel.o iptunnel.c
+> In file included from /usr/include/linux/if_tunnel.h:5,
+>                 from iptunnel.c:39:
+> /usr/include/linux/ip.h:85: error: redefinition of 'struct iphdr'
+> 
+> $ grep -r iphdr /usr/include/
+> 
+> /usr/include/netinet/ip.h:struct iphdr
+> /usr/include/netinet/tcp.h: * This should be defined as MIN(512, IP_MSS 
+> - sizeof (struct tcpiphdr)).
+> /usr/include/linux/if_tunnel.h:    struct iphdr        iph;
+> /usr/include/linux/ip.h:struct iphdr {
+> 
+> $ grep netinet/ip.h iptunnel.c
+> 
+> #include <netinet/ip.h>
+> 
+> So linux/ip.h is clashing with glibc(2.8)'s netinet/ip.h
 
-Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
+I took a look at my netinet/ip.h and this is obviously
+the same structure.
+But I do not know what the right answer is here.
 
-If this really fixes a problem, I am asking myself, if notifier_del can be 
-called several times as well. If yes, it might be better to call free_irq at 
-the last notifier_del - which means we need proper refcounting. Otherwise the 
-console switches into polling mode....
+Added netdev..
 
-Christian, blaming Rusty for using hvc_console in virtio_console which made me 
-somehow responsible for this code...  ;-)
+This may be a general thing. Because iphdr is
+no a kernel thing, it is an IP thing. So one could argue
+that the kernel should not export it in the first place.
+
+	Sam
