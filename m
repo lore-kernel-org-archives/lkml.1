@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZAVOEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZAVOF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZAVOEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 09:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZAVOEZ
+	id S1755328AbZAVOF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 09:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZAVOFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 09:04:25 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:44974 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbZAVOEY (ORCPT
+	Thu, 22 Jan 2009 09:05:19 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:36287 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbZAVOFR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 09:04:24 -0500
-Date: Thu, 22 Jan 2009 19:34:15 +0530
+	Thu, 22 Jan 2009 09:05:17 -0500
+Date: Thu, 22 Jan 2009 19:35:09 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
        akpm@linux-foundation.org, mingo@elte.hu, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 2/10] x86 architecture implementation of Hardware
-	Breakpoint interfaces
-Message-ID: <20090122140415.GA19592@in.ibm.com>
+Subject: [RFC Patch 3/10] Modifying generic debug exception to use virtual
+	debug registers
+Message-ID: <20090122140509.GB19592@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
 References: <20090122135640.GA11161@in.ibm.com>
 MIME-Version: 1.0
@@ -29,610 +29,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces two new files named hw_breakpoint.[ch] inside x86 specific
-directories. They contain functions which help validate and serve requests for 
-using Hardware Breakpoint registers on x86 processors.
+This patch modifies the breakpoint exception handler code to use the abstract
+register names.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/Makefile        |    2 
- arch/x86/kernel/hw_breakpoint.c |  438 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/hw_breakpoint.h |  134 ++++++++++++
- 3 files changed, 573 insertions(+), 1 deletion(-)
+ arch/x86/kernel/traps.c |   68 ++++++++++++++++--------------------------------
+ 1 file changed, 24 insertions(+), 44 deletions(-)
 
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/hw_breakpoint.c
+Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/traps.c
 ===================================================================
---- /dev/null
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/hw_breakpoint.c
-@@ -0,0 +1,438 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) 2007 Alan Stern
-+ * Copyright (C) 2008 IBM Corporation
-+ */
-+
-+/*
-+ * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
-+ * using the CPU's debug registers.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/irqflags.h>
-+#include <linux/kdebug.h>
-+#include <linux/kernel.h>
-+#include <linux/kprobes.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/notifier.h>
-+#include <linux/rculist.h>
-+#include <linux/sched.h>
-+#include <linux/smp.h>
-+#include <linux/percpu.h>
-+#include <linux/kallsyms.h>
-+
-+#include <asm/debugreg.h>
-+#include <asm/hw_breakpoint.h>
-+#include <asm/processor.h>
-+
-+/* Arch-specific hook routines */
-+
-+/*
-+ * Install the kernel breakpoints in their debug registers.
-+ */
-+static void arch_install_chbi(struct cpu_hw_breakpoint *chbi)
-+{
-+	struct hw_breakpoint **bps;
-+
-+	/* Don't allow debug exceptions while we update the registers */
-+	set_debugreg(0UL, 7);
-+	chbi->cur_kbpdata = rcu_dereference(cur_kbpdata);
-+
-+	/* Kernel breakpoints are stored starting in DR0 and going up */
-+	bps = chbi->cur_kbpdata->bps;
-+	switch (chbi->cur_kbpdata->num_kbps) {
-+	case 4:
-+		set_debugreg(bps[3]->info.address, 3);
-+	case 3:
-+		set_debugreg(bps[2]->info.address, 2);
-+	case 2:
-+		set_debugreg(bps[1]->info.address, 1);
-+	case 1:
-+		set_debugreg(bps[0]->info.address, 0);
-+	}
-+	/* No need to set DR6 */
-+	set_debugreg(chbi->cur_kbpdata->mkdr7, 7);
-+}
-+
-+/*
-+ * Update an out-of-date thread hw_breakpoint info structure.
-+ */
-+static void arch_update_thbi(struct thread_hw_breakpoint *thbi,
-+		struct kernel_bp_data *thr_kbpdata)
-+{
-+	int num = thr_kbpdata->num_kbps;
-+
-+	thbi->tkdr7 = thr_kbpdata->mkdr7 | (thbi->tdr7 & ~kdr7_masks[num]);
-+}
-+
-+/*
-+ * Install the thread breakpoints in their debug registers.
-+ */
-+static void arch_install_thbi(struct thread_hw_breakpoint *thbi)
-+{
-+	/* Install the user breakpoints.  Kernel breakpoints are stored
-+	 * starting in DR0 and going up; there are num_kbps of them.
-+	 * User breakpoints are stored starting in DR3 and going down,
-+	 * as many as we have room for.
-+	 */
-+	switch (thbi->num_installed) {
-+	case 4:
-+		set_debugreg(thbi->tdr[0], 0);
-+	case 3:
-+		set_debugreg(thbi->tdr[1], 1);
-+	case 2:
-+		set_debugreg(thbi->tdr[2], 2);
-+	case 1:
-+		set_debugreg(thbi->tdr[3], 3);
-+	}
-+	/* No need to set DR6 */
-+	set_debugreg(thbi->tkdr7, 7);
-+}
-+
-+/*
-+ * Install the debug register values for just the kernel, no thread.
-+ */
-+static void arch_install_none(struct cpu_hw_breakpoint *chbi)
-+{
-+	set_debugreg(chbi->cur_kbpdata->mkdr7, 7);
-+}
-+
-+/*
-+ * Create a new kbpdata entry.
-+ */
-+static void arch_new_kbpdata(struct kernel_bp_data *new_kbpdata)
-+{
-+	int num = new_kbpdata->num_kbps;
-+
-+	new_kbpdata->mkdr7 = kdr7 & (kdr7_masks[num] | DR_GLOBAL_SLOWDOWN);
-+}
-+
-+/*
-+ * Store a thread breakpoint array entry's address
-+ */
-+static void arch_store_thread_bp_array(struct thread_hw_breakpoint *thbi,
-+		struct hw_breakpoint *bp, int i)
-+{
-+	thbi->tdr[i] = bp->info.address;
-+}
-+
-+/*
-+ * Store a breakpoint's encoded address, length, and type.
-+ */
-+static void arch_store_info(struct hw_breakpoint *bp)
-+{
-+	if(bp->info.address)
-+		return;
-+	bp->info.address = (unsigned long)kallsyms_lookup_name(bp->info.name);
-+}
-+
-+/*
-+ * Validate the arch-specific HW Breakpoint register settings
-+ */
-+static int arch_validate_hwbkpt_settings(struct hw_breakpoint *bp,
-+						unsigned int *align)
-+{
-+	int ret = -EINVAL;
-+
-+	switch (bp->info.type) {
-+	case HW_BREAKPOINT_WRITE:
-+				break;
-+	case HW_BREAKPOINT_RW:
-+				break;
-+	default:
-+		return ret;
-+	}
-+
-+	switch (bp->info.len) {
-+	case HW_BREAKPOINT_LEN_1:
-+		*align = 0;
-+		break;
-+	case HW_BREAKPOINT_LEN_2:
-+		*align = 1;
-+		break;
-+	case HW_BREAKPOINT_LEN_4:
-+		*align = 3;
-+		break;
-+	default:
-+		return ret;
-+	}
-+
-+	if (bp->triggered) {
-+		ret = 0;
-+		arch_store_info(bp);
-+	}
-+	return ret;
-+}
-+
-+/*
-+ * Check for virtual address in user space.
-+ */
-+static int arch_check_va_in_userspace(unsigned long va,
-+		struct task_struct *tsk)
-+{
-+#ifndef	CONFIG_X86_64
-+#define	TASK_SIZE_OF(t)	TASK_SIZE
-+#endif
-+	return (va < TASK_SIZE_OF(tsk));
-+}
-+
-+/*
-+ * Check for virtual address in kernel space.
-+ */
-+static int arch_check_va_in_kernelspace(unsigned long va)
-+{
-+#ifndef	CONFIG_X86_64
-+#define	TASK_SIZE64	TASK_SIZE
-+#endif
-+	return (va >= TASK_SIZE64);
-+}
-+
-+/*
-+ * Encode the length, type, Exact, and Enable bits for a particular breakpoint
-+ * as stored in debug register 7.
-+ */
-+static unsigned long encode_dr7(int drnum, unsigned len, unsigned type)
-+{
-+	unsigned long temp;
-+
-+	temp = (len | type) & 0xf;
-+	temp <<= (DR_CONTROL_SHIFT + drnum * DR_CONTROL_SIZE);
-+	temp |= (DR_GLOBAL_ENABLE << (drnum * DR_ENABLE_SIZE)) |
-+				DR_GLOBAL_SLOWDOWN;
-+	return temp;
-+}
-+
-+/*
-+ * Calculate the DR7 value for a list of kernel or user breakpoints.
-+ */
-+static unsigned long calculate_dr7(struct thread_hw_breakpoint *thbi)
-+{
-+	int is_user;
-+	struct list_head *bp_list;
-+	struct hw_breakpoint *bp;
-+	int i;
-+	int drnum;
-+	unsigned long dr7;
-+
-+	if (thbi) {
-+		is_user = 1;
-+		bp_list = &thbi->thread_bps;
-+		drnum = HB_NUM - 1;
-+	} else {
-+		is_user = 0;
-+		bp_list = &kernel_bps;
-+		drnum = 0;
-+	}
-+
-+	/* Kernel bps are assigned from DR0 on up, and user bps are assigned
-+	 * from DR3 on down.  Accumulate all 4 bps; the kernel DR7 mask will
-+	 * select the appropriate bits later.
-+	 */
-+	dr7 = 0;
-+	i = 0;
-+	list_for_each_entry(bp, bp_list, node) {
-+
-+		/* Get the debug register number and accumulate the bits */
-+		dr7 |= encode_dr7(drnum, bp->info.len, bp->info.type);
-+		if (++i >= HB_NUM)
-+			break;
-+		if (is_user)
-+			--drnum;
-+		else
-+			++drnum;
-+	}
-+	return dr7;
-+}
-+
-+/*
-+ * Register a new user breakpoint structure.
-+ */
-+static void arch_register_user_hw_breakpoint(struct hw_breakpoint *bp,
-+		struct thread_hw_breakpoint *thbi)
-+{
-+	thbi->tdr7 = calculate_dr7(thbi);
-+
-+	/* If this is an execution breakpoint for the current PC address,
-+	 * we should clear the task's RF so that the bp will be certain
-+	 * to trigger.
-+	 *
-+	 * FIXME: It's not so easy to get hold of the task's PC as a linear
-+	 * address!  ptrace.c does this already...
-+	 */
-+}
-+
-+/*
-+ * Unregister a user breakpoint structure.
-+ */
-+static void arch_unregister_user_hw_breakpoint(struct hw_breakpoint *bp,
-+		struct thread_hw_breakpoint *thbi)
-+{
-+	thbi->tdr7 = calculate_dr7(thbi);
-+}
-+
-+/*
-+ * Register a kernel breakpoint structure.
-+ */
-+static void arch_register_kernel_hw_breakpoint(
-+		struct hw_breakpoint *bp)
-+{
-+	kdr7 = calculate_dr7(NULL);
-+}
-+
-+/*
-+ * Unregister a kernel breakpoint structure.
-+ */
-+static void arch_unregister_kernel_hw_breakpoint(
-+		struct hw_breakpoint *bp)
-+{
-+	kdr7 = calculate_dr7(NULL);
-+}
-+
-+
-+/* End of arch-specific hook routines */
-+
-+
-+/*
-+ * Copy out the debug register information for a core dump.
-+ *
-+ * tsk must be equal to current.
-+ */
-+void dump_thread_hw_breakpoint(struct task_struct *tsk, int u_debugreg[8])
-+{
-+	struct thread_hw_breakpoint *thbi = tsk->thread.hw_breakpoint_info;
-+	int i;
-+
-+	memset(u_debugreg, 0, sizeof u_debugreg);
-+	if (thbi) {
-+		for (i = 0; i < HB_NUM; ++i)
-+			u_debugreg[i] = thbi->vdr_bps[i].info.address;
-+		u_debugreg[7] = thbi->vdr7;
-+	}
-+	u_debugreg[6] = tsk->thread.vdr6;
-+}
-+
-+/*
-+ * Handle debug exception notifications.
-+ */
-+
-+static void switch_to_none_hw_breakpoint(void);
-+
-+static int __kprobes hw_breakpoint_handler(struct die_args *args)
-+{
-+	struct cpu_hw_breakpoint *chbi;
-+	int i;
-+	struct hw_breakpoint *bp;
-+	struct thread_hw_breakpoint *thbi = NULL;
-+
-+	/* The DR6 value is stored in args->err */
-+#define DR6	(args->err)
-+
-+	if (DR6 & DR_STEP)
-+		return NOTIFY_DONE;
-+
-+	chbi = &cpu_data(get_cpu());
-+
-+	/* Disable all breakpoints so that the callbacks can run without
-+	 * triggering recursive debug exceptions.
-+	 */
-+	set_debugreg(0UL, 7);
-+
-+	/* Assert that local interrupts are disabled */
-+	/* Reset the DRn bits in the virtualized register value.
-+	 * The ptrace trigger routine will add in whatever is needed.
-+	 */
-+	current->thread.vdr6 &= ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3);
-+
-+	/* Are we a victim of lazy debug-register switching? */
-+	if (!chbi->bp_task)
-+		;
-+	else if (chbi->bp_task != current) {
-+
-+		/* No user breakpoints are valid.  Perform the belated
-+		 * debug-register switch.
-+		 */
-+		switch_to_none_hw_breakpoint();
-+	} else {
-+		thbi = chbi->bp_task->thread.hw_breakpoint_info;
-+	}
-+
-+	/* Handle all the breakpoints that were triggered */
-+	for (i = 0; i < HB_NUM; ++i) {
-+		if (likely(!(DR6 & (DR_TRAP0 << i))))
-+			continue;
-+
-+		/* Find the corresponding hw_breakpoint structure and
-+		 * invoke its triggered callback.
-+		 */
-+		if (i < chbi->cur_kbpdata->num_kbps)
-+			bp = chbi->cur_kbpdata->bps[i];
-+		else if (thbi)
-+			bp = thbi->bps[i];
-+		else		/* False alarm due to lazy DR switching */
-+			continue;
-+		if (bp) {
-+			switch (bp->info.type) {
-+			case HW_BREAKPOINT_WRITE:
-+			case HW_BREAKPOINT_RW:
-+				if (bp->triggered)
-+					(bp->triggered)(bp, args->regs);
-+				/* Re-enable the breakpoints */
-+				set_debugreg(thbi ? thbi->tkdr7 :
-+						chbi->cur_kbpdata->mkdr7, 7);
-+				put_cpu_no_resched();
-+
-+				return NOTIFY_STOP;
-+			}
-+		}
-+	}
-+	/* Stop processing further if the exception is a stray one */
-+	if (!(DR6 & ~(DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)))
-+		return NOTIFY_STOP;
-+
-+	return NOTIFY_DONE;
-+#undef DR6
-+}
-+
-+/*
-+ * Handle debug exception notifications.
-+ */
-+static int __kprobes hw_breakpoint_exceptions_notify(
-+		struct notifier_block *unused, unsigned long val, void *data)
-+{
-+	if (val != DIE_DEBUG)
-+		return NOTIFY_DONE;
-+	return hw_breakpoint_handler(data);
-+}
-+
-+static struct notifier_block hw_breakpoint_exceptions_nb = {
-+	.notifier_call = hw_breakpoint_exceptions_notify,
-+	.priority = 0x7fffffff /* we need to be notified first */
-+};
-+
-+static int __init init_hw_breakpoint(void)
-+{
-+	load_debug_registers();
-+	return register_die_notifier(&hw_breakpoint_exceptions_nb);
-+}
-+
-+core_initcall(init_hw_breakpoint);
-+
-+
-+/* Grab the arch-independent code */
-+#include "../../../kernel/hw_breakpoint.c"
-+
-Index: linux-hbkpt-lkml-29-rc2/include/asm-x86/hw_breakpoint.h
-===================================================================
---- /dev/null
-+++ linux-hbkpt-lkml-29-rc2/include/asm-x86/hw_breakpoint.h
-@@ -0,0 +1,134 @@
-+#ifndef	_I386_HW_BREAKPOINT_H
-+#define	_I386_HW_BREAKPOINT_H
-+
-+#ifdef	__KERNEL__
-+#define	__ARCH_HW_BREAKPOINT_H
-+
-+struct arch_hw_breakpoint {
-+	char		*name; /* Contains name of the symbol to set bkpt */
-+	unsigned long	address;
-+	u8		len;
-+	u8		type;
-+} __attribute__((packed));
-+
-+#include <asm-generic/hw_breakpoint.h>
-+
-+/* HW breakpoint accessor routines */
-+static inline const void *hw_breakpoint_get_kaddress(struct hw_breakpoint *bp)
-+{
-+	return (const void *) bp->info.address;
-+}
-+
-+static inline const void __user *hw_breakpoint_get_uaddress
-+						(struct hw_breakpoint *bp)
-+{
-+	return (const void __user *) bp->info.address;
-+}
-+
-+static inline unsigned hw_breakpoint_get_len(struct hw_breakpoint *bp)
-+{
-+	return bp->info.len;
-+}
-+
-+static inline unsigned hw_breakpoint_get_type(struct hw_breakpoint *bp)
-+{
-+	return bp->info.type;
-+}
-+
-+/* Kernel symbol lookup routine for installing Data HW Breakpoint Address */
-+static inline unsigned long hw_breakpoint_lookup_name(const char *name)
-+{
-+	return kallsyms_lookup_name(name);
-+}
-+
-+/* Available HW breakpoint length encodings */
-+#define HW_BREAKPOINT_LEN_1		0x40
-+#define HW_BREAKPOINT_LEN_2		0x44
-+#define HW_BREAKPOINT_LEN_4		0x4c
-+#define HW_BREAKPOINT_LEN_EXECUTE	0x40
-+
-+/* Available HW breakpoint type encodings */
-+#define HW_BREAKPOINT_WRITE	0x81	/* trigger on memory write */
-+#define HW_BREAKPOINT_RW	0x83	/* trigger on memory read or write */
-+
-+#define HB_NUM 4
-+
-+/* Per-thread HW breakpoint and debug register info */
-+struct thread_hw_breakpoint {
-+
-+	/* utrace support */
-+	struct list_head	node;		/* Entry in thread list */
-+	struct list_head	thread_bps;	/* Thread's breakpoints */
-+	struct hw_breakpoint	*bps[HB_NUM];	/* Highest-priority bps */
-+	unsigned long		tdr[HB_NUM];	/*  and their addresses */
-+	int			num_installed;	/* Number of installed bps */
-+	unsigned		gennum;		/* update-generation number */
-+
-+	/* Only the portions below are arch-specific */
-+
-+	/* ptrace support -- Note that vdr6 is stored directly in the
-+	 * thread_struct so that it is always available.
-+	 */
-+	unsigned long		vdr7;			/* Virtualized DR7 */
-+	struct hw_breakpoint	vdr_bps[HB_NUM];	/* Breakpoints
-+			representing virtualized debug registers 0 - 3 */
-+	unsigned long		tdr7;		/* Thread's DR7 value */
-+	unsigned long		tkdr7;		/* Thread + kernel DR7 value */
-+};
-+
-+/* Kernel-space breakpoint data */
-+struct kernel_bp_data {
-+	unsigned		gennum;		/* Generation number */
-+	int			num_kbps;	/* Number of kernel bps */
-+	struct hw_breakpoint	*bps[HB_NUM];	/* Loaded breakpoints */
-+
-+	/* Only the portions below are arch-specific */
-+	unsigned long		mkdr7;		/* Masked kernel DR7 value */
-+};
-+
-+/* Per-CPU debug register info */
-+struct cpu_hw_breakpoint {
-+	struct kernel_bp_data	*cur_kbpdata;	/* Current kbpdata[] entry */
-+	struct task_struct	*bp_task;	/* The thread whose bps
-+			are currently loaded in the debug registers */
-+};
-+
-+/* Global info */
-+static struct kernel_bp_data	kbpdata[2];	/* Old and new settings */
-+static int			cur_kbpindex;	/* Alternates 0, 1, ... */
-+static struct kernel_bp_data	*cur_kbpdata = &kbpdata[0];
-+			/* Always equal to &kbpdata[cur_kbpindex] */
-+
-+static u8			tprio[HB_NUM];	/* Thread bp max priorities */
-+static LIST_HEAD(kernel_bps);			/* Kernel breakpoint list */
-+static LIST_HEAD(thread_list);			/* thread_hw_breakpoint list */
-+
-+/* Only the portions below are arch-specific */
-+
-+static unsigned long		kdr7;		/* Unmasked kernel DR7 value */
-+
-+/* Masks for the bits in DR7 related to kernel breakpoints, for various
-+ * values of num_kbps.  Entry n is the mask for when there are n kernel
-+ * breakpoints, in debug registers 0 - (n-1).  The DR_GLOBAL_SLOWDOWN bit
-+ * (GE) is handled specially.
-+ */
-+static const unsigned long	kdr7_masks[HB_NUM + 1] = {
-+	0x00000000,
-+	0x000f0003,	/* LEN0, R/W0, G0, L0 */
-+	0x00ff000f,	/* Same for 0,1 */
-+	0x0fff003f,	/* Same for 0,1,2 */
-+	0xffff00ff	/* Same for 0,1,2,3 */
-+};
-+
-+/*
-+ * Ptrace support: breakpoint trigger routine.
-+ */
-+
-+int __register_user_hw_breakpoint(struct task_struct *tsk,
-+			struct hw_breakpoint *bp);
-+void __unregister_user_hw_breakpoint(struct task_struct *tsk,
-+			struct hw_breakpoint *bp);
-+
-+#endif	/* __KERNEL__ */
-+#endif	/* _I386_HW_BREAKPOINT_H */
-+
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/Makefile
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/Makefile
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/Makefile
-@@ -35,7 +35,7 @@ obj-$(CONFIG_X86_64)	+= sys_x86_64.o x86
- obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
- obj-y			+= bootflag.o e820.o
- obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
--obj-y			+= alternative.o i8253.o pci-nommu.o
-+obj-y			+= alternative.o i8253.o pci-nommu.o hw_breakpoint.o
- obj-y			+= tsc.o io_delay.o rtc.o
+--- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/traps.c
++++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/traps.c
+@@ -570,10 +570,11 @@ asmlinkage __kprobes struct pt_regs *syn
+ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
+-	unsigned long condition;
++	unsigned long dr6;
+ 	int si_code;
  
- obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+-	get_debugreg(condition, 6);
++	get_debugreg(dr6, 6);
++	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
+ 
+ 	/*
+ 	 * The processor cleared BTF, so don't mark that we need it set.
+@@ -581,61 +582,40 @@ dotraplinkage void __kprobes do_debug(st
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
+ 	tsk->thread.debugctlmsr = 0;
+ 
+-	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
++	/* Store the virtualized DR6 value */
++	tsk->thread.vdr6 = dr6;
++
++	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
+ 						SIGTRAP) == NOTIFY_STOP)
+ 		return;
+ 
+ 	/* It's safe to allow irq's after DR6 has been saved */
+ 	preempt_conditional_sti(regs);
+ 
+-	/* Mask out spurious debug traps due to lazy DR7 setting */
+-	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
+-		if (!tsk->thread.debugreg7)
+-			goto clear_dr7;
++	if (regs->flags & X86_VM_MASK) {
++		handle_vm86_trap((struct kernel_vm86_regs *) regs,
++				error_code, 1);
++		return;
+ 	}
+ 
+ #ifdef CONFIG_X86_32
+-	if (regs->flags & X86_VM_MASK)
+-		goto debug_vm86;
+ #endif
+ 
+-	/* Save debug status register where ptrace can see it */
+-	tsk->thread.debugreg6 = condition;
+-
+ 	/*
+-	 * Single-stepping through TF: make sure we ignore any events in
+-	 * kernel space (but re-enable TF when returning to user mode).
++	 * Single-stepping through system calls: ignore any exceptions in
++	 * kernel space, but re-enable TF when returning to user mode.
++	 *
++	 * We already checked v86 mode above, so we can check for kernel mode
++	 * by just checking the CPL of CS.
+ 	 */
+-	if (condition & DR_STEP) {
+-		if (!user_mode(regs))
+-			goto clear_TF_reenable;
+-	}
+-
+-	si_code = get_si_code(condition);
+-	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code, si_code);
+-
+-	/*
+-	 * Disable additional traps. They'll be re-enabled when
+-	 * the signal is delivered.
+-	 */
+-clear_dr7:
+-	set_debugreg(0, 7);
+-	preempt_conditional_cli(regs);
+-	return;
+-
+-#ifdef CONFIG_X86_32
+-debug_vm86:
+-	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
+-	preempt_conditional_cli(regs);
+-	return;
+-#endif
+-
+-clear_TF_reenable:
+-	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
+-	regs->flags &= ~X86_EFLAGS_TF;
+-	preempt_conditional_cli(regs);
+-	return;
++	if ((dr6 & DR_STEP) && !user_mode(regs)) {
++		tsk->thread.vdr6 &= ~DR_STEP;
++		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
++		regs->flags &= ~X86_EFLAGS_TF;
++	}
++	si_code = get_si_code(dr6);
++	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		send_sigtrap(tsk, regs, error_code, si_code);
+ }
+ 
+ #ifdef CONFIG_X86_64
