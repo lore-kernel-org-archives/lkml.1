@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZAVAUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZAVAZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbZAVAUb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 19:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZAVAUW
+	id S1755884AbZAVAZI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 19:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbZAVAY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 19:20:22 -0500
-Received: from h155.mvista.com ([63.81.120.155]:6264 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754798AbZAVAUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 19:20:21 -0500
-Message-ID: <4977BBBD.90704@ru.mvista.com>
-Date: Thu, 22 Jan 2009 03:20:13 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 21 Jan 2009 19:24:56 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:33293 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754732AbZAVAYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 19:24:55 -0500
+Date: Thu, 22 Jan 2009 01:24:47 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: kmh@nerdshack.com, linux-kernel@vger.kernel.org, lermen@elserv.ffm.fgan.de,
+       lermen@fgan.de, davej@redhat.com, cebbert@redhat.com
+Subject: Re: PROBLEM: loadlin incompatible with 2.6.23 kernels
+Message-ID: <20090122002447.GJ5237@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, kmh@nerdshack.com,
+	linux-kernel@vger.kernel.org, lermen@elserv.ffm.fgan.de,
+	lermen@fgan.de, davej@redhat.com, cebbert@redhat.com
+References: <200712022336.SAA12095@granite.sover.net> <4977AB27.8080608@zytor.com> <20090121234347.GI5237@const.famille.thibault.fr> <4977BAC2.3060009@zytor.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Hugh Dickins <hugh@veritas.com>,
-       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
-References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>	<18807.33113.550070.329912@harpo.it.uu.se>	<20090121214746.2b15d1de@lxorguk.ukuu.org.uk>	<4977A6E5.6080506@ru.mvista.com> <20090121225808.1f5ffac1@lxorguk.ukuu.org.uk> <4977B10B.5050904@ru.mvista.com> <4977B1D1.2010305@ru.mvista.com>
-In-Reply-To: <4977B1D1.2010305@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4977BAC2.3060009@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+H. Peter Anvin, le Wed 21 Jan 2009 16:16:02 -0800, a écrit :
+> Samuel Thibault wrote:
+> >>
+> >>Unfortunately LOADLIN hasn't been updated for a very long time, and 
+> >>there doesn't seem to be much interest in maintaining it.
+> >
+> >I've fixed loadlin in debian and actually plan to maintain it upstream.
+> >I had to patch it quite a bit to make it compilable by yasm, but it can
+> >now boot recent big kernels & initrds.
+> >
+> 
+> Excellent news!  Is there a new upstream location (or do you need one)?
 
->>>>>>  > I've a Dell Precision 670 here (four-year-old EM64T Xeon with 
->>>>>> ata_piix)
->>>>>>  > which doesn't like your commit 
->>>>>> 871af1210f13966ab911ed2166e4ab2ce775b99d
->>>>>>  > libata: Add 32bit PIO support.  Full dmesg (and .config) 
->>>>>> attached, but
->>>>>>  > here's an extract showing the start of the error messages on 
->>>>>> ata2:
->>>>>>             
->>>>> Cool - so we need two different 32bit PIO methods - at least 
->>>>> according to
->>>>> the docs for the AMD we should use entirely 32bit I/O there. Fun fun
->>>>>         
->>>>    Could you refer me to the exact AMD doc that requires that?
->>>>     
->>>
->>> AMD762 page 82, under DevB:1x40 bit 14 and bit 12
->>>   
->>
->>   What exactly AMD-762 document has this? I'm not seeing it in either 
->> stasheet ot software/BIOS design guide. Besides, AMD-762 is a north 
->> bridge and doesn't include IDE.
->
->  Finally found it in the AMD-768 datasheet.
->
->>> "Note: only 32-bit writes to the data port are allowed when this bit is
->>> set."
->>>   
->>  
->>   Now tell me who forces you to set that bit (I assume it's the write 
->> buffer enable) for the ATAPI devices?
->
->   Yes, it's the write buffer enable (about which I have written already).
+Not yet, there will be when I take some time to settle one on
+thefreecat.org.  In the meanwhile you can just get it from debian.
 
-   IMHO, this is the same situation as with the prefetch -- you want to 
-avoid additional data read (write in this case) cycles to with an ATAPI 
-device, so you have to turn it off.
-
-MBR, Sergei
-
-
+Samuel
