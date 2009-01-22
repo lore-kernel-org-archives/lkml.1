@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZAVRXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZAVRZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbZAVRXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:23:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZAVRW4
+	id S1757558AbZAVRZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZAVRZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:22:56 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47726 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbZAVRWz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:22:55 -0500
-Date: Thu, 22 Jan 2009 17:22:39 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Daniel Lowengrub <lowdanie@gmail.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
-In-Reply-To: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901221658550.14302@blonde.anvils>
-References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
+	Thu, 22 Jan 2009 12:25:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60920 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755007AbZAVRZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:25:43 -0500
+Date: Thu, 22 Jan 2009 18:23:12 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090122172312.GB27250@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090122093046.GC5891@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Daniel Lowengrub wrote:
-> The goal of this patch is to improve the efficiency of the find_vma
-> function in mm/mmap.c. The function first checks whether the vma
-> stored in the cache is the one it's looking for. Currently, it's
-> possible for the cache to be correct and still get rejected because
-> the function checks whether the given address is inside the vma in the
-> cache, not whether the cached vma is the smallest one that's bigger
-> than the address.  To solve this problem I turned the list of vma's
-> into a doubly linked list, and using that list made a function that
-> can check if a given vma is the one that find_vma is looking for.
-> This gives a greater number of cache hits than the standerd method.
-> The doubly linked list can be used to optimize other parts of the
-> memory management as well.  I'll implement some of those possibilities
-> in the next patch.
-> Signed-off-by: Daniel Lowengrub <lowdanie@gmail.com>
+On 01/22, Frederic Weisbecker wrote:
+>
+> On Thu, Jan 22, 2009 at 05:14:24PM +0800, Lai Jiangshan wrote:
+> >  static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+> >  {
+> > -	int active;
+> > +	int active = 0;
+> > +	struct wq_barrier barr;
+> >
+> > -	if (cwq->thread == current) {
+> > -		/*
+> > -		 * Probably keventd trying to flush its own queue. So simply run
+> > -		 * it by hand rather than deadlocking.
+> > -		 */
+> > -		run_workqueue(cwq);
+> > -		active = 1;
+> > -	} else {
+> > -		struct wq_barrier barr;
+> > +	BUG_ON(cwq->thread == current);
+>
+> Hi Lai,
+>
+> BUG_ON seems perhaps a bit too much for such case. The system
+> will run in an endless loop because of a mistake that will not have
+> necessarily a fatal end.
 
-Do you have some performance figures to support this patch?
-Some of the lmbench tests may be appropriate.
+Confused. Why do you think the system will run in an endless loop?
+cwq-thread will exit.
 
-The thing is, expanding vm_area_struct to include another pointer
-will have its own cost, which may well outweigh the efficiency
-(in one particular case) which you're adding.  Expanding mm_struct
-for this would be much more palatable, but I don't think that flies.
+> WARN_ON should be enough (plus the warn that lockdep will raise
+> too in this case).
 
-And it seems a little greedy to require both an rbtree and a doubly
-linked list for working our way around the vmas.
+and if cwq-thread proceeds after WARN_ON() it will be "lost" anyway
+because it will sleep forever.
 
-I suspect that originally your enhancement would only have hit when
-extending the stack: which I guess isn't enough to justify the cost.
-But it could well be that unmapped area handling has grown more
-complex down the years, and you get some hits now from that.
+Not that I think BUG_ON() is much better, except it is more "loud".
 
-You mention using the doubly linked list to optimize some other parts
-of mm too: I guess those interfaces where we have to pass around prev
-would be simplified, are you thinking of those, or something else?
 
-(I don't think we need unmap_vmas to go backwards!)
+As for the patch itself, I completely agree with Peter.
 
-Hugh
+Oleg.
+
