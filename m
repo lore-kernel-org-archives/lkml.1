@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZAVPm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZAVPnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbZAVPm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZAVPmu
+	id S1756326AbZAVPnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZAVPnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:42:50 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43311 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752616AbZAVPmu (ORCPT
+	Thu, 22 Jan 2009 10:43:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:44016 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755338AbZAVPnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:42:50 -0500
-Date: Thu, 22 Jan 2009 10:42:48 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>, <akpm@linux-foundation.org>,
-       <mingo@elte.hu>, <richardj_moore@uk.ibm.com>,
-       <naren@linux.vnet.ibm.com>
-Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces - v4
-In-Reply-To: <20090122135640.GA11161@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0901221032220.2417-100000@iolanthe.rowland.org>
+	Thu, 22 Jan 2009 10:43:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=DyO5iGdiJzU8YjiJaGC3jkOxVYP7PuSSMRqgdxpZrrjToQ/yWtosDAf5cOlQnsBmRz
+         dIs0t6WIh91+ihY8Ned8lFVqA7oJF9qLv3ELKOlMb5e0ynJM2MkBfDtV+kC0urdPu80q
+         cLyGRX4KmIcQjwWpLIbS9EJETWiYb45jyjYGE=
+Message-ID: <49789401.8080108@gmail.com>
+Date: Thu, 22 Jan 2009 16:42:57 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: rusty@rustcorp.com.au, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] virtio: fix BAD_RING, START_US and END_USE macros
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, K.Prasad wrote:
+fix BAD_RING, START_US and END_USE macros
 
-> Hi All,
-> 	Please find the new set of patches that introduce kernel
-> interfaces to use Hardware Breakpoint registers and an implementation
-> for x86 (and x86_64) architecture, now labelled as Version IV.
-> 
-> The patches are based on 2.6.29-rc2 and have been tested to work fine on
-> x86 architecture. Some of the major changes over the previous version of
-> patches include:
-> i) A sample kernel module that uses Data Hardware breakpoint over a
-> kernel variable to monitor write operations. See
-> samples/hw_breakpoint/data_breakpoint.c.
-> ii) Changes in the register_kernel_hw_breakpoint() interface to accept
-> only one parameter - pointer to a 'hw_breakpoint' structure which will
-> contain all relevant data members.
+When these macros aren't called with a variable named vq as first
+argument, this would result in a build failure.
 
-I see some problems with this immediately.  Firstly, as a result of
-this change the sample code in include/asm-generic/hw_breakpoint.h is
-now incorrect.  You need to change the comments when you change the
-code.
-
-Second, your arch_store_info() routine is broken.  It checks for a
-kernel symbol name even if when a userspace breakpoint is being
-registered.  You should move that check up into validate_settings().
-
-As a related matter, why did you put the "name" field into the
-arch-dependent part?  Clearly it should be arch-independent.
-
-Alan Stern
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+index 5777196..12273bf 100644
+--- a/drivers/virtio/virtio_ring.c
++++ b/drivers/virtio/virtio_ring.c
+@@ -23,15 +23,15 @@
+ 
+ #ifdef DEBUG
+ /* For development, we want to crash whenever the ring is screwed. */
+-#define BAD_RING(vq, fmt...)			\
+-	do { dev_err(&vq->vq.vdev->dev, fmt); BUG(); } while(0)
+-#define START_USE(vq) \
+-	do { if ((vq)->in_use) panic("in_use = %i\n", (vq)->in_use); (vq)->in_use = __LINE__; mb(); } while(0)
+-#define END_USE(vq) \
+-	do { BUG_ON(!(vq)->in_use); (vq)->in_use = 0; mb(); } while(0)
++#define BAD_RING(_vq, fmt...)			\
++	do { dev_err(&_vq->vq.vdev->dev, fmt); BUG(); } while(0)
++#define START_USE(_vq) \
++	do { if ((_vq)->in_use) panic("in_use = %i\n", (_vq)->in_use); (_vq)->in_use = __LINE__; mb(); } while(0)
++#define END_USE(_vq) \
++	do { BUG_ON(!(_vq)->in_use); (_vq)->in_use = 0; mb(); } while(0)
+ #else
+-#define BAD_RING(vq, fmt...)			\
+-	do { dev_err(&vq->vq.vdev->dev, fmt); (vq)->broken = true; } while(0)
++#define BAD_RING(_vq, fmt...)			\
++	do { dev_err(&_vq->vq.vdev->dev, fmt); (_vq)->broken = true; } while(0)
+ #define START_USE(vq)
+ #define END_USE(vq)
+ #endif
