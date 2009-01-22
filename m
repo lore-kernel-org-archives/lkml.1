@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZAVBHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZAVBQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbZAVBHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 20:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZAVBH2
+	id S1755667AbZAVBQB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 20:16:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZAVBPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 20:07:28 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:60472 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbZAVBH2 (ORCPT
+	Wed, 21 Jan 2009 20:15:51 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35880
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754745AbZAVBPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 20:07:28 -0500
-Date: Wed, 21 Jan 2009 20:07:22 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] crypto: fix handling of ccm vectors with null assoc
-	data
-Message-ID: <20090122010722.GA6937@localhost.localdomain>
-References: <200901211641.02351.jarod@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901211641.02351.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Wed, 21 Jan 2009 20:15:51 -0500
+Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
+Message-Id: <20090121.171553.142827920.davem@davemloft.net>
+To: yinghai@kernel.org
+CC: mpm@selenic.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: sparc64 build breakage...
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-On Wed, Jan 21, 2009 at 04:41:01PM -0500, Jarod Wilson wrote:
-> Its a valid use case to have null associated data in a ccm vector, but
-> this case isn't being handled properly right now.
-> 
-> The following ccm decryption/verification test vector, using the
-> rfc4309 implementation regularly triggers a panic, as will any
-> other vector with null assoc data:
-> 
-> * key: ab2f8a74b71cd2b1ff802e487d82f8b9
-> * iv: c6fb7d800d13abd8a6b2d8
-> * Associated Data: [NULL]
-> * Tag Length: 8
-> * input: d5e8939fc7892e2b
-> 
-> The resulting panic looks like so:
-> 
-> Unable to handle kernel paging request at ffff810064ddaec0 RIP: 
->  [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-> PGD 8063 PUD 0 
-> Oops: 0002 [1] SMP 
-> last sysfs file: /module/libata/version
-> CPU 0
-> Modules linked in: crypto_tester_kmod(U) seqiv krng ansi_cprng chainiv rng ctr aes_generic aes_x86_64 ccm cryptomgr testmgr_cipher testmgr aead crypto_blkcipher crypto_a
-> lgapi des ipv6 xfrm_nalgo crypto_api autofs4 hidp l2cap bluetooth nfs lockd fscache nfs_acl sunrpc ip_conntrack_netbios_ns ipt_REJECT xt_state ip_conntrack nfnetlink xt_
-> tcpudp iptable_filter ip_tables x_tables dm_mirror dm_log dm_multipath scsi_dh dm_mod video hwmon backlight sbs i2c_ec button battery asus_acpi acpi_memhotplug ac lp sg 
-> snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss joydev snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ide_cd snd_pcm floppy parport_p
-> c shpchp e752x_edac snd_timer e1000 i2c_i801 edac_mc snd soundcore snd_page_alloc i2c_core cdrom parport serio_raw pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd uhci_h
-> cd ohci_hcd ehci_hcd
-> Pid: 12844, comm: crypto-tester Tainted: G      2.6.18-128.el5.fips1 #1
-> RIP: 0010:[<ffffffff8864c4d7>]  [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-> RSP: 0018:ffff8100134434e8  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: ffff8100104898b0 RCX: ffffffffab6aea10
-> RDX: 0000000000000010 RSI: ffff8100104898c0 RDI: ffff810064ddaec0
-> RBP: 0000000000000000 R08: ffff8100104898b0 R09: 0000000000000000
-> R10: ffff8100103bac84 R11: ffff8100104898b0 R12: ffff810010489858
-> R13: ffff8100104898b0 R14: ffff8100103bac00 R15: 0000000000000000
-> FS:  00002ab881adfd30(0000) GS:ffffffff803ac000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: ffff810064ddaec0 CR3: 0000000012a88000 CR4: 00000000000006e0
-> Process crypto-tester (pid: 12844, threadinfo ffff810013442000, task ffff81003d165860)
-> Stack:  ffff8100103bac00 ffff8100104898e8 ffff8100134436f8 ffffffff00000000
->  0000000000000000 ffff8100104898b0 0000000000000000 ffff810010489858
->  0000000000000000 ffff8100103bac00 ffff8100134436f8 ffffffff8864c634
-> Call Trace:
->  [<ffffffff8864c634>] :ccm:crypto_ccm_auth+0x12d/0x140
->  [<ffffffff8864cf73>] :ccm:crypto_ccm_decrypt+0x161/0x23a
->  [<ffffffff88633643>] :crypto_tester_kmod:cavs_test_rfc4309_ccm+0x4a5/0x559
-> [...]
-> 
-> The above is from a RHEL5-based kernel, but upstream is susceptible too.
-> 
-> The fix is trivial: in crypto/ccm.c:crypto_ccm_auth(), pctx->ilen contains
-> whatever was in memory when pctx was allocated if assoclen is 0. The tested
-> fix is to simply add an else clause setting pctx->ilen to 0 for the
-> assoclen == 0 case, so that get_data_to_compute() doesn't try doing
-> things its not supposed to.
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n0M1G4wM017608
 
 
-This looks good to me.  Thanks Jarod!
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+This change:
 
+commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
+Author: Yinghai Lu <yinghai@kernel.org>
+Date:   Wed Jan 7 15:03:13 2009 -0800
+
+    sparseirq: make some func to be used with genirq
+
+breaks the sparc64 build:
+
+arch/sparc/kernel/irq_64.c: In function â€˜show_interruptsâ€™:
+arch/sparc/kernel/irq_64.c:188: error: â€˜struct kernel_statâ€™ has no member named â€˜irqsâ€™
+make[1]: *** [arch/sparc/kernel/irq_64.o] Error 1
+
+This should fix it:
+
+sparc64: Fix build by using kstat_irqs_cpu().
+
+Changeset d7e51e66899f95dabc89b4d4c6674a6e50fa37fc ("sparseirq: make
+some func to be used with genirq") broke the build on sparc64:
+
+arch/sparc/kernel/irq_64.c: In function â€˜show_interruptsâ€™:
+arch/sparc/kernel/irq_64.c:188: error: â€˜struct kernel_statâ€™ has no member named â€˜irqsâ€™
+make[1]: *** [arch/sparc/kernel/irq_64.o] Error 1
+
+Fix by using the kstat_irqs_cpu() interface.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc/kernel/irq_64.c b/arch/sparc/kernel/irq_64.c
+index 4ac5c65..5b33d59 100644
+--- a/arch/sparc/kernel/irq_64.c
++++ b/arch/sparc/kernel/irq_64.c
+@@ -185,7 +185,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 		seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
+ 		for_each_online_cpu(j)
+-			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
++			seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
+ #endif
+ 		seq_printf(p, " %9s", irq_desc[i].chip->typename);
+ 		seq_printf(p, "  %s", action->name);
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
