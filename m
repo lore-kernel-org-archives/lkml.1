@@ -1,570 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZAVBYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZAVBZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbZAVBYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 20:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbZAVBYb
+	id S1755269AbZAVBZB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 20:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbZAVBYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 20:24:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:51913 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830AbZAVBYa (ORCPT
+	Wed, 21 Jan 2009 20:24:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57438
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754904AbZAVBYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 20:24:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:cc:subject;
-        b=fX1A8SniE164uzgmemXOU/iPoGypt9Zuc2FQNTClgFM+U6eyL90K5iZt2pYphAVwA1
-         vIXzJqbYypoYT14X1ByoFpODLFJzenfphvKeV+Wxp7aE+COvT/21N7acAn0gv78GlJS7
-         pA+9Yq56DH9FMmCIjScyQSBur4RS2o4qosOaA=
-Message-ID: <4977cacb.1358560a.19ec.ffffcb09@mx.google.com>
-Date: Wed, 21 Jan 2009 17:24:27 -0800 (PST)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/2] tracing/function-graph-tracer: various fixes and features
+	Wed, 21 Jan 2009 20:24:49 -0500
+Date: Wed, 21 Jan 2009 17:24:51 -0800 (PST)
+Message-Id: <20090121.172451.72573335.davem@davemloft.net>
+To: yinghai@kernel.org
+Cc: mpm@selenic.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: sparc64 build breakage...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090121.171553.142827920.davem@davemloft.net>
+References: <20090121.171553.142827920.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n0M1PCwM017651
 
-I thought I would have the time to implement the callbacks in trace_event too but I
-really have to sleep :-(
-That will be for later.
---
+From: David Miller <davem@davemloft.net>
+Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
 
-This patch brings various bugfixes:
+> 
+> This change:
+> 
+> commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
+> Author: Yinghai Lu <yinghai@kernel.org>
+> Date:   Wed Jan 7 15:03:13 2009 -0800
+> 
+>     sparseirq: make some func to be used with genirq
+> 
+> breaks the sparc64 build:
+..
+> This should fix it:
+> 
+> sparc64: Fix build by using kstat_irqs_cpu().
 
-_ Drop the first irrelevant task switch on the very beginning of a trace.
-  But actually that only solves the first time one does print the trace file.
-  I have to fix the others cases too.
-_ Drop the OVERHEAD word from the headers, the DURATION word is sufficient and will not
-  overlap other columns.
-_ Make the headers fit well their respective columns whatever the selected options.
+And here is a mix for the next failure.
 
-Ie, default options:
+But really, either linux/kernel_stat.h provides the
+kstat_incr_irqs_this_cpu interface or linux/irq.h does, not both.
 
-# tracer: function_graph
-#
-# CPU  DURATION                  FUNCTION CALLS
-# |     |   |                     |   |   |   |
+sparc64: Fix build by including linux/irq.h into time_64.c
 
- 1)   0.646 us    |                    }
- 1)               |                    mem_cgroup_del_lru_list() {
- 1)   0.624 us    |                      lookup_page_cgroup();
- 1)   1.970 us    |                    }
+Changeset d7e51e66899f95dabc89b4d4c6674a6e50fa37fc ("sparseirq: make
+some func to be used with genirq") broke the build on sparc64:
+    
+arch/sparc/kernel/time_64.c: In function ‚Äòtimer_interrupt‚Äô:
+arch/sparc/kernel/time_64.c:732: error: implicit declaration of function ‚Äòkstat_incr_irqs_this_cpu‚Äô
+make[1]: *** [arch/sparc/kernel/time_64.o] Error 1
 
-echo funcgraph-proc > trace_options
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-# tracer: function_graph
-#
-# CPU  TASK/PID        DURATION                  FUNCTION CALLS
-# |    |    |           |   |                     |   |   |   |
-
- 0)   bash-2937    |   0.895 us    |                }
- 0)   bash-2937    |   0.888 us    |                __rcu_read_unlock();
- 0)   bash-2937    |   0.864 us    |                conv_uni_to_pc();
- 0)   bash-2937    |   1.015 us    |                __rcu_read_lock();
-
-echo nofuncgraph-cpu > trace_options
-echo nofuncgraph-proc > trace_options
-
-# tracer: function_graph
-#
-#   DURATION                  FUNCTION CALLS
-#    |   |                     |   |   |   |
-
-  3.752 us    |                  native_pud_val();
-  0.616 us    |                  native_pud_val();
-  0.624 us    |                  native_pmd_val();
-
-
-About features, one can now disable the duration (this will hide the overhead too
-for convenient reasons and because on  doesn't need overhead if it hasn't the duration
-
-echo nofuncgraph-duration > trace_options
-
-# tracer: function_graph
-#
-#                FUNCTION CALLS
-#                |   |   |   |
-
-          cap_vm_enough_memory() {
-            __vm_enough_memory() {
-              vm_acct_memory();
-            }
-          }
-        }
-
-And at last, an option to print the absolute time:
-
-//Restart from default options
-echo funcgraph-abstime > trace_options
-
-# tracer: function_graph
-#
-#      TIME       CPU  DURATION                  FUNCTION CALLS
-#       |         |     |   |                     |   |   |   |
-
-  261.339774 |   1) + 42.823 us   |    }
-  261.339775 |   1)   1.045 us    |    _spin_lock_irq();
-  261.339777 |   1)   0.940 us    |    _spin_lock_irqsave();
-  261.339778 |   1)   0.752 us    |    _spin_unlock_irqrestore();
-  261.339780 |   1)   0.857 us    |    _spin_unlock_irq();
-  261.339782 |   1)               |    flush_to_ldisc() {
-  261.339783 |   1)               |      tty_ldisc_ref() {
-  261.339783 |   1)               |        tty_ldisc_try() {
-  261.339784 |   1)   1.075 us    |          _spin_lock_irqsave();
-  261.339786 |   1)   0.842 us    |          _spin_unlock_irqrestore();
-  261.339788 |   1)   4.211 us    |        }
-  261.339788 |   1)   5.662 us    |      }
-
-The format is seconds.usecs
-I guess no one needs the nanosec precision here, the main goal is to find when happened
-the events on a cpu when the trace switches from one cpu to another.
-
-ie:
-
-  274.874760 |   1)   0.676 us    |      _spin_unlock();
-  274.874762 |   1)   0.609 us    |      native_load_sp0();
-  274.874763 |   1)   0.602 us    |      native_load_tls();
-  274.878739 |   0)   0.722 us    |                  }
-  274.878740 |   0)   0.714 us    |                  native_pmd_val();
-  274.878741 |   0)   0.730 us    |                  native_pmd_val();
-
-Here there is a 4000 usecs difference when we switch the cpu.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_functions_graph.c |  245 +++++++++++++++++++++-------------
- 1 files changed, 151 insertions(+), 94 deletions(-)
-
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 3c54598..a65947c 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -1,7 +1,7 @@
- /*
-  *
-  * Function graph tracer.
-- * Copyright (c) 2008 Frederic Weisbecker <fweisbec@gmail.com>
-+ * Copyright (c) 2008-2009 Frederic Weisbecker <fweisbec@gmail.com>
-  * Mostly borrowed from function tracer which
-  * is Copyright (c) Steven Rostedt <srostedt@redhat.com>
-  *
-@@ -21,9 +21,11 @@
- #define TRACE_GRAPH_PRINT_CPU		0x2
- #define TRACE_GRAPH_PRINT_OVERHEAD	0x4
- #define TRACE_GRAPH_PRINT_PROC		0x8
-+#define TRACE_GRAPH_PRINT_DURATION	0x10
-+#define TRACE_GRAPH_PRINT_ABS_TIME	0X20
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index db310aa..f95066b 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -36,10 +36,10 @@
+ #include <linux/clocksource.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/irq.h>
  
- static struct tracer_opt trace_opts[] = {
--	/* Display overruns ? */
-+	/* Display overruns? (for self-debug purpose) */
- 	{ TRACER_OPT(funcgraph-overrun, TRACE_GRAPH_PRINT_OVERRUN) },
- 	/* Display CPU ? */
- 	{ TRACER_OPT(funcgraph-cpu, TRACE_GRAPH_PRINT_CPU) },
-@@ -31,12 +33,17 @@ static struct tracer_opt trace_opts[] = {
- 	{ TRACER_OPT(funcgraph-overhead, TRACE_GRAPH_PRINT_OVERHEAD) },
- 	/* Display proc name/pid */
- 	{ TRACER_OPT(funcgraph-proc, TRACE_GRAPH_PRINT_PROC) },
-+	/* Display duration of execution */
-+	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
-+	/* Display absolute time of an entry */
-+	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
- 	{ } /* Empty entry */
- };
- 
- static struct tracer_flags tracer_flags = {
- 	/* Don't display overruns and proc by default */
--	.val = TRACE_GRAPH_PRINT_CPU | TRACE_GRAPH_PRINT_OVERHEAD,
-+	.val = TRACE_GRAPH_PRINT_CPU | TRACE_GRAPH_PRINT_OVERHEAD |
-+	       TRACE_GRAPH_PRINT_DURATION,
- 	.opts = trace_opts
- };
- 
-@@ -165,6 +172,8 @@ verif_pid(struct trace_seq *s, pid_t pid, int cpu)
- 	prev_pid = last_pid[cpu];
- 	last_pid[cpu] = pid;
- 
-+	if (prev_pid == -1)
-+		return TRACE_TYPE_HANDLED;
- /*
-  * Context-switch trace line:
- 
-@@ -232,9 +241,34 @@ trace_branch_is_leaf(struct trace_iterator *iter,
- 	return true;
- }
- 
-+/* Signal a overhead of time execution to the output */
-+static int
-+print_graph_overhead(unsigned long long duration, struct trace_seq *s)
-+{
-+	/* If duration disappear, we don't need anything */
-+	if (!(tracer_flags.val & TRACE_GRAPH_PRINT_DURATION))
-+		return 1;
-+
-+	/* Non nested entry or return */
-+	if (duration == -1)
-+		return trace_seq_printf(s, "  ");
-+
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
-+		/* Duration exceeded 100 msecs */
-+		if (duration > 100000ULL)
-+			return trace_seq_printf(s, "! ");
-+
-+		/* Duration exceeded 10 msecs */
-+		if (duration > 10000ULL)
-+			return trace_seq_printf(s, "+ ");
-+	}
-+
-+	return trace_seq_printf(s, "  ");
-+}
-+
- static enum print_line_t
- print_graph_irq(struct trace_seq *s, unsigned long addr,
--				enum trace_type type, int cpu, pid_t pid)
-+		enum trace_type type, int cpu, pid_t pid)
- {
- 	int ret;
- 
-@@ -242,35 +276,40 @@ print_graph_irq(struct trace_seq *s, unsigned long addr,
- 		addr >= (unsigned long)__irqentry_text_end)
- 		return TRACE_TYPE_UNHANDLED;
- 
--	if (type == TRACE_GRAPH_ENT) {
--		ret = trace_seq_printf(s, "==========> |  ");
--	} else {
--		/* Cpu */
--		if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
--			ret = print_graph_cpu(s, cpu);
--			if (ret == TRACE_TYPE_PARTIAL_LINE)
--				return TRACE_TYPE_PARTIAL_LINE;
--		}
--		/* Proc */
--		if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
--			ret = print_graph_proc(s, pid);
--			if (ret == TRACE_TYPE_PARTIAL_LINE)
--				return TRACE_TYPE_PARTIAL_LINE;
-+	/* Cpu */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
-+		ret = print_graph_cpu(s, cpu);
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+	/* Proc */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
-+		ret = print_graph_proc(s, pid);
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+		ret = trace_seq_printf(s, " | ");
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
- 
--			ret = trace_seq_printf(s, " | ");
--			if (!ret)
--				return TRACE_TYPE_PARTIAL_LINE;
--		}
-+	/* No overhead */
-+	ret = print_graph_overhead(-1, s);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
--		/* No overhead */
--		if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--			ret = trace_seq_printf(s, "  ");
--			if (!ret)
--				return TRACE_TYPE_PARTIAL_LINE;
--		}
-+	if (type == TRACE_GRAPH_ENT)
-+		ret = trace_seq_printf(s, "==========>");
-+	else
-+		ret = trace_seq_printf(s, "<==========");
-+
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* Don't close the duration column if haven't one */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
-+		trace_seq_printf(s, " |");
-+	ret = trace_seq_printf(s, "\n");
- 
--		ret = trace_seq_printf(s, "<========== |\n");
--	}
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 	return TRACE_TYPE_HANDLED;
-@@ -289,7 +328,7 @@ print_graph_duration(unsigned long long duration, struct trace_seq *s)
- 	sprintf(msecs_str, "%lu", (unsigned long) duration);
- 
- 	/* Print msecs */
--	ret = trace_seq_printf(s, msecs_str);
-+	ret = trace_seq_printf(s, "%s", msecs_str);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
-@@ -322,19 +361,15 @@ print_graph_duration(unsigned long long duration, struct trace_seq *s)
- 
- }
- 
--/* Signal a overhead of time execution to the output */
--static int
--print_graph_overhead(unsigned long long duration, struct trace_seq *s)
-+static int print_graph_abs_time(u64 t, struct trace_seq *s)
- {
--	/* Duration exceeded 100 msecs */
--	if (duration > 100000ULL)
--		return trace_seq_printf(s, "! ");
-+	unsigned long usecs_rem;
- 
--	/* Duration exceeded 10 msecs */
--	if (duration > 10000ULL)
--		return trace_seq_printf(s, "+ ");
-+	usecs_rem = do_div(t, 1000000000);
-+	usecs_rem /= 1000;
- 
--	return trace_seq_printf(s, "  ");
-+	return trace_seq_printf(s, "%5lu.%06lu |  ",
-+			(unsigned long)t, usecs_rem);
- }
- 
- /* Case of a leaf function on its call entry */
-@@ -357,16 +392,16 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 	duration = graph_ret->rettime - graph_ret->calltime;
- 
- 	/* Overhead */
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--		ret = print_graph_overhead(duration, s);
--		if (!ret)
--			return TRACE_TYPE_PARTIAL_LINE;
--	}
-+	ret = print_graph_overhead(duration, s);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	/* Duration */
--	ret = print_graph_duration(duration, s);
--	if (ret == TRACE_TYPE_PARTIAL_LINE)
--		return TRACE_TYPE_PARTIAL_LINE;
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION) {
-+		ret = print_graph_duration(duration, s);
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
- 
- 	/* Function */
- 	for (i = 0; i < call->depth * TRACE_GRAPH_INDENT; i++) {
-@@ -395,25 +430,17 @@ print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
- 	struct ftrace_graph_ent *call = &entry->graph_ent;
- 
- 	/* No overhead */
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--		ret = trace_seq_printf(s, "  ");
--		if (!ret)
--			return TRACE_TYPE_PARTIAL_LINE;
--	}
-+	ret = print_graph_overhead(-1, s);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
--	/* Interrupt */
--	ret = print_graph_irq(s, call->func, TRACE_GRAPH_ENT, cpu, pid);
--	if (ret == TRACE_TYPE_UNHANDLED) {
--		/* No time */
-+	/* No time */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION) {
- 		ret = trace_seq_printf(s, "            |  ");
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
--	} else {
--		if (ret == TRACE_TYPE_PARTIAL_LINE)
--			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
--
- 	/* Function */
- 	for (i = 0; i < call->depth * TRACE_GRAPH_INDENT; i++) {
- 		ret = trace_seq_printf(s, " ");
-@@ -434,15 +461,29 @@ print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
- 
- static enum print_line_t
- print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
--			struct trace_iterator *iter, int cpu)
-+			struct trace_iterator *iter)
- {
- 	int ret;
-+	int cpu = iter->cpu;
- 	struct trace_entry *ent = iter->ent;
-+	struct ftrace_graph_ent *call = &field->graph_ent;
- 
- 	/* Pid */
- 	if (verif_pid(s, ent->pid, cpu) == TRACE_TYPE_PARTIAL_LINE)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
-+	/* Interrupt */
-+	ret = print_graph_irq(s, call->func, TRACE_GRAPH_ENT, cpu, ent->pid);
-+	if (ret == TRACE_TYPE_PARTIAL_LINE)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* Absolute time */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
-+		ret = print_graph_abs_time(iter->ts, s);
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+
- 	/* Cpu */
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
- 		ret = print_graph_cpu(s, cpu);
-@@ -470,16 +511,24 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
- 
- static enum print_line_t
- print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
--		   struct trace_entry *ent, int cpu)
-+		   struct trace_entry *ent, struct trace_iterator *iter)
- {
- 	int i;
- 	int ret;
-+	int cpu = iter->cpu;
- 	unsigned long long duration = trace->rettime - trace->calltime;
- 
- 	/* Pid */
- 	if (verif_pid(s, ent->pid, cpu) == TRACE_TYPE_PARTIAL_LINE)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
-+	/* Absolute time */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
-+		ret = print_graph_abs_time(iter->ts, s);
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+
- 	/* Cpu */
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
- 		ret = print_graph_cpu(s, cpu);
-@@ -499,16 +548,16 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 	}
- 
- 	/* Overhead */
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--		ret = print_graph_overhead(duration, s);
--		if (!ret)
--			return TRACE_TYPE_PARTIAL_LINE;
--	}
-+	ret = print_graph_overhead(duration, s);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	/* Duration */
--	ret = print_graph_duration(duration, s);
--	if (ret == TRACE_TYPE_PARTIAL_LINE)
--		return TRACE_TYPE_PARTIAL_LINE;
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION) {
-+		ret = print_graph_duration(duration, s);
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
- 
- 	/* Closing brace */
- 	for (i = 0; i < trace->depth * TRACE_GRAPH_INDENT; i++) {
-@@ -543,6 +592,13 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
- 	int i;
- 	int ret;
- 
-+	/* Absolute time */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
-+		ret = print_graph_abs_time(iter->ts, s);
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+
- 	/* Pid */
- 	if (verif_pid(s, ent->pid, iter->cpu) == TRACE_TYPE_PARTIAL_LINE)
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -566,17 +622,17 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
- 	}
- 
- 	/* No overhead */
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--		ret = trace_seq_printf(s, "  ");
-+	ret = print_graph_overhead(-1, s);
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
-+	/* No time */
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION) {
-+		ret = trace_seq_printf(s, "            |  ");
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
--	/* No time */
--	ret = trace_seq_printf(s, "            |  ");
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
- 	/* Indentation */
- 	if (trace->depth > 0)
- 		for (i = 0; i < (trace->depth + 1) * TRACE_GRAPH_INDENT; i++) {
-@@ -614,13 +670,12 @@ print_graph_function(struct trace_iterator *iter)
- 	case TRACE_GRAPH_ENT: {
- 		struct ftrace_graph_ent_entry *field;
- 		trace_assign_type(field, entry);
--		return print_graph_entry(field, s, iter,
--					 iter->cpu);
-+		return print_graph_entry(field, s, iter);
- 	}
- 	case TRACE_GRAPH_RET: {
- 		struct ftrace_graph_ret_entry *field;
- 		trace_assign_type(field, entry);
--		return print_graph_return(&field->ret, s, entry, iter->cpu);
-+		return print_graph_return(&field->ret, s, entry, iter);
- 	}
- 	case TRACE_PRINT: {
- 		struct print_entry *field;
-@@ -636,25 +691,27 @@ static void print_graph_headers(struct seq_file *s)
- {
- 	/* 1st line */
- 	seq_printf(s, "# ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
-+		seq_printf(s, "     TIME       ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
--		seq_printf(s, "CPU ");
-+		seq_printf(s, "CPU");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
--		seq_printf(s, "TASK/PID     ");
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD)
--		seq_printf(s, "OVERHEAD/");
--	seq_printf(s, "DURATION            FUNCTION CALLS\n");
-+		seq_printf(s, "  TASK/PID      ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
-+		seq_printf(s, "  DURATION   ");
-+	seq_printf(s, "               FUNCTION CALLS\n");
- 
- 	/* 2nd line */
- 	seq_printf(s, "# ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
-+		seq_printf(s, "      |         ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
--		seq_printf(s, "|   ");
-+		seq_printf(s, "|  ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
--		seq_printf(s, "|      |     ");
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
--		seq_printf(s, "|        ");
--		seq_printf(s, "|                   |   |   |   |\n");
--	} else
--		seq_printf(s, "    |               |   |   |   |\n");
-+		seq_printf(s, "  |    |        ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
-+		seq_printf(s, "   |   |      ");
-+	seq_printf(s, "               |   |   |   |\n");
- }
- static struct tracer graph_trace __read_mostly = {
- 	.name	     	= "function_graph",
--- 
-1.6.0.4
-
-
+ #include <asm/oplib.h>
+ #include <asm/timer.h>
+-#include <asm/irq.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/starfire.h>
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
