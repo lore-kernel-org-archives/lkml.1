@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbZAVW4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZAVW6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbZAVW4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 17:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759513AbZAVW4V
+	id S1759525AbZAVW6d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 17:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZAVW6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 17:56:21 -0500
-Received: from mga03.intel.com ([143.182.124.21]:45557 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759435AbZAVW4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 17:56:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,308,1231142400"; 
-   d="scan'208";a="102930208"
-Date: Thu, 22 Jan 2009 14:56:18 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+	Thu, 22 Jan 2009 17:58:24 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:58372 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752571AbZAVW6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 17:58:23 -0500
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+From: Zachary Amsden <zach@vmware.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Avuton Olrich <avuton@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due to dc1e35c
-Message-ID: <20090122225618.GA16033@linux-os.sc.intel.com>
-References: <4974CC8B.1030403@zytor.com> <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com> <4974DD86.2090300@zytor.com> <20090119201115.GD31356@linux-os.sc.intel.com> <3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com> <20090119215736.GE31356@linux-os.sc.intel.com> <4974F9A8.7060107@zytor.com> <87bpu1dyl6.fsf@basil.nowhere.org> <20090122222250.GI28352@linux-os.sc.intel.com> <4978F5F8.1040103@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Nick Piggin <npiggin@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "jeremy@xensource.com" <jeremy@xensource.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+In-Reply-To: <4978F7DC.1040503@zytor.com>
+References: <20090120110542.GE19505@wotan.suse.de>
+	 <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>
+	 <49763806.5090009@goop.org> <20090120205653.GA19710@elte.hu>
+	 <20090121072718.GN24891@wotan.suse.de>  <4977A051.8050203@goop.org>
+	 <1232663311.16317.176.camel@bodhitayantram.eng.vmware.com>
+	 <4978F6C6.3090003@goop.org>  <4978F7DC.1040503@zytor.com>
+Content-Type: text/plain
+Date: Thu, 22 Jan 2009 14:58:40 -0800
+Message-Id: <1232665120.16317.186.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4978F5F8.1040103@zytor.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 02:40:56PM -0800, H. Peter Anvin wrote:
-> Suresh Siddha wrote:
-> > Ok. Here is the patch for this aswell. Thanks.
-> 
-> I wonder if it wouldn't be better to do this in the CPUID code rather
-> than in the xsave code...
+On Thu, 2009-01-22 at 14:49 -0800, H. Peter Anvin wrote:
 
-We can do this in the cpuid code aswell, but the dependency information
-varies from feature to feature and there are no architectural methods here.
-So I think its better to keep it near the code enabling that feaure.
+> There is also the option to use assembly wrappers to avoid relying on 
+> the calling convention.  This is particularly so since we have sites 
+> where as little as a two-byte instruction gets bloated up with huge 
+> push/pop sequences around a tiny instruction.  Those would be better 
+> served with a direct call to a stub (5 bytes), which would be repatched 
+> to the two-byte instruction + 3 byte nop.
 
-thanks,
-suresh
+Yes, for known trivial ops (most!), there isn't any reason to ever have
+a call to begin with; simply an inline instruction sequence would be
+fine, and only those callers that override the sequence would need to
+patch.  It's possible to write clever macros to assure there is always
+space for a 5 byte call.
+
+Zach
+
