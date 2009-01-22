@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZAVFgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZAVFj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbZAVFgL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 00:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZAVFfy
+	id S1756889AbZAVFj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 00:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZAVFjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 00:35:54 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:48108 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbZAVFfx (ORCPT
+	Thu, 22 Jan 2009 00:39:48 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:30228 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbZAVFjr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 00:35:53 -0500
-Date: Thu, 22 Jan 2009 06:37:36 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, jaswinderlinux@gmail.com, khc@pm.waw.pl,
-       jaswinder@kernel.org, arnd@arndb.de, mingo@elte.hu,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: why usr/include/linux/if_frad.h is required
-Message-ID: <20090122053736.GA6214@uranus.ravnborg.org>
-References: <20090121053310.GA26395@uranus.ravnborg.org> <20090120.221504.264090722.davem@davemloft.net> <20090121173838.3390e5c9@s6510> <20090121.153712.84781438.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121.153712.84781438.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 22 Jan 2009 00:39:47 -0500
+MIME-Version: 1.0
+In-Reply-To: <200901221043.13684.knikanth@suse.de>
+References: <200901211638.23101.knikanth@suse.de>
+	 <20090122122843.7e94878e.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200901221043.13684.knikanth@suse.de>
+Date: Wed, 21 Jan 2009 21:39:45 -0800
+Message-ID: <d6200be20901212139u3683c829x4db1840a28986a6f@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Menage <menage@google.com>,
+       containers@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 03:37:12PM -0800, David Miller wrote:
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Wed, 21 Jan 2009 17:38:38 +1100
-> 
-> > There are no references if_frad.h in the version of Sangoma (out of
-> > tree) code that we use in Vyatta.
-> 
-> frad-0.20:src/dlcicfg.c
-> 
-> It includes linux/if_frad.h and also performs the DLCI_SET_CONF
-> ioctl.
-> 
-> Enough evidence to show we need to keep this header in the
-> export set.  Let's just kill the bogus CONFIG_* ifdef
-> tests in there.
+On Wed, Jan 21, 2009 at 9:13 PM, Nikanth Karthikesan <knikanth@suse.de> wrote:
+> To use oom_adj effectively one should continuously monitor oom_score of all
+> the processes, which is a complex moving target and keep on adjusting the
+> oom_adj of many tasks which still cannot guarantee the order. This controller
+> is deterministic and hence easier to use.
+>
 
-Thanks for investigating David.
+Why not add an option to make oom_adj ensure strict ordering instead?
 
-	Sam
-
+-- 
+Arve Hjønnevåg
