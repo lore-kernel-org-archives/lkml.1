@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZAVCBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZAVCCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbZAVCBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 21:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZAVCAe
+	id S1755358AbZAVCCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 21:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZAVCAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 21:00:34 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:44888 "EHLO
+	Wed, 21 Jan 2009 21:00:39 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:44897 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756623AbZAVCAd (ORCPT
+	by vger.kernel.org with ESMTP id S1756662AbZAVCAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 21:00:33 -0500
-Date: Thu, 22 Jan 2009 05:00:32 +0300
+	Wed, 21 Jan 2009 21:00:37 -0500
+Date: Thu, 22 Jan 2009 05:00:35 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -20,9 +20,9 @@ Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        "Joe D'Abbraccio" <Joe.D'abbraccio@freescale.com>,
        sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/10] sdhci: Add quirk to suppress PIO interrupts during
-	DMA transfers
-Message-ID: <20090122020032.GF11492@oksana.dev.rtsoft.ru>
+Subject: [PATCH 07/10] sdhci: Add support for hosts that don't specify
+	clocks in the cap. register
+Message-ID: <20090122020035.GG11492@oksana.dev.rtsoft.ru>
 References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -33,88 +33,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some hosts (that is, FSL eSDHC) throw PIO interrupts during DMA
-transfers, this causes tons of unneeded interrupts, and thus highly
-degraded speed.
+FSL eSDHC hosts don't provide clocks bits in the capabilities register,
+instead we're getting clocks values from the device tree.
 
-This patch adds SDHCI_QUIRK_PIO_IRQS_DURING_DMA quirk. When specified,
-the sdhci driver will disable PIO interrupts during DMA transfers.
+There is somewhat similar change[1] from Ben Dooks, the change adds
+callbacks for getting the clocks. But for eSDHC the callbacks are
+superfluous, since the clocks are static.
+
+[1] http://lkml.org/lkml/2008/12/2/157
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   30 ++++++++++++++++++++++++++++++
- drivers/mmc/host/sdhci.h |    3 +++
- 2 files changed, 33 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci.c |   31 +++++++++++++++----------------
+ 1 files changed, 15 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index c3737fe..57b8ffe 100644
+index 57b8ffe..9ac088a 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -589,6 +589,33 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	return count;
- }
- 
-+static void sdhci_set_pio_irqs(struct sdhci_host *host, bool state)
-+{
-+	bool current_state = !(host->flags & SDHCI_PIO_DISABLED);
-+	u32 ier;
-+
-+	/*
-+	 * We only care about PIO IRQs if the host issues PIO IRQs during
-+	 * DMA transfers. Otherwise we can keep the irqs always enabled.
-+	 */
-+	if (!(host->quirks & SDHCI_QUIRK_PIO_IRQS_DURING_DMA))
-+		return;
-+
-+	if (current_state == state)
-+		return;
-+
-+	ier = sdhci_readl(host, SDHCI_INT_ENABLE);
-+	if (state) {
-+		ier |= SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL;
-+		host->flags &= ~SDHCI_PIO_DISABLED;
-+	} else {
-+		ier &= ~(SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL);
-+		host->flags |= SDHCI_PIO_DISABLED;
-+	}
-+	sdhci_writel(host, SDHCI_INT_ENABLE, ier);
-+	sdhci_writel(host, SDHCI_SIGNAL_ENABLE, ier);
-+}
-+
- static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- {
- 	u8 count;
-@@ -735,6 +762,9 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 		sg_miter_start(&host->sg_miter,
- 			data->sg, data->sg_len, SG_MITER_ATOMIC);
- 		host->blocks = data->blocks;
-+		sdhci_set_pio_irqs(host, true);
-+	} else {
-+		sdhci_set_pio_irqs(host, false);
+@@ -1693,24 +1693,23 @@ int sdhci_add_host(struct sdhci_host *host)
+ 		mmc_dev(host->mmc)->dma_mask = &host->dma_mask;
  	}
  
- 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 2747340..7e3b01f 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -221,6 +221,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
- /* Controller has all registers of 32 bit width */
- #define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
-+/* Controller issues PIO interrupts during DMA transfers */
-+#define SDHCI_QUIRK_PIO_IRQS_DURING_DMA			(1<<19)
+-	host->max_clk =
+-		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
+-	if (host->max_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++	if (!host->max_clk) {
++		host->max_clk = (caps & SDHCI_CLOCK_BASE_MASK) >>
++						SDHCI_CLOCK_BASE_SHIFT;
++		if (host->max_clk == 0) {
++			printk(KERN_ERR "%s: Hardware doesn't specify base "
++				"clock frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->max_clk *= 1000000;
+ 	}
+-	host->max_clk *= 1000000;
  
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
-@@ -242,6 +244,7 @@ struct sdhci_host {
- #define SDHCI_USE_ADMA		(1<<1)		/* Host is ADMA capable */
- #define SDHCI_REQ_USE_DMA	(1<<2)		/* Use DMA for this req. */
- #define SDHCI_DEVICE_DEAD	(1<<3)		/* Device unresponsive */
-+#define SDHCI_PIO_DISABLED	(1<<4)		/* PIO IRQs disabled */
+-	host->timeout_clk =
+-		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
+-	if (host->timeout_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++	if (!host->timeout_clk) {
++		host->timeout_clk = (caps & SDHCI_TIMEOUT_CLK_MASK) >>
++						SDHCI_TIMEOUT_CLK_SHIFT;
++		if (caps & SDHCI_TIMEOUT_CLK_UNIT)
++			host->timeout_clk *= 1000;
+ 	}
+-	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
+-		host->timeout_clk *= 1000;
  
- 	unsigned int		version;	/* SDHCI spec. version */
- 
+ 	/*
+ 	 * Set host parameters.
 -- 
 1.5.6.5
 
