@@ -1,75 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZAVJa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZAVJbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbZAVJa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZAVJaq
+	id S1756575AbZAVJbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZAVJax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:30:46 -0500
-Received: from mga10.intel.com ([192.55.52.92]:51702 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754087AbZAVJaq (ORCPT
+	Thu, 22 Jan 2009 04:30:53 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:46902 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757078AbZAVJav (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:30:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,305,1231142400"; 
-   d="scan'208";a="659185985"
-Subject: Re: [patch] SLQB slab allocator
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1232616430.14549.11.camel@penberg-laptop>
-References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
-	 <20090114150900.GC25401@wotan.suse.de>
-	 <20090114152207.GD25401@wotan.suse.de>
-	 <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
-	 <20090114155923.GC1616@wotan.suse.de>
-	 <Pine.LNX.4.64.0901141219140.26507@quilx.com>
-	 <20090115061931.GC17810@wotan.suse.de>
-	 <Pine.LNX.4.64.0901151434150.28387@quilx.com>
-	 <20090116034356.GM17810@wotan.suse.de>
-	 <Pine.LNX.4.64.0901161509160.27283@quilx.com>
-	 <20090119061856.GB22584@wotan.suse.de>
-	 <alpine.DEB.1.10.0901211903540.18367@qirst.com>
-	 <1232616430.14549.11.camel@penberg-laptop>
-Content-Type: text/plain
-Date: Thu, 22 Jan 2009 17:30:38 +0800
-Message-Id: <1232616638.11429.131.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Jan 2009 04:30:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=puRmGw93+9+F9sk/y7lEa00TjqvYLyWFNyHWtLg4o/tIeb+U/EHwDDCWC2O/nY9Iah
+         8wpwbwld+OpWByL2An0PrPseh0rPiz+DxL1loJJNtN9SWs/xqGWmKbNgxj5GWX5xVvWZ
+         OUUj10RPbLo5eX+GVQFOjS5IfNITdnA7bCYhs=
+Date: Thu, 22 Jan 2009 10:30:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090122093046.GC5891@nowhere>
+References: <497838F0.7020408@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <497838F0.7020408@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-22 at 11:27 +0200, Pekka Enberg wrote:
-> Hi Christoph,
+On Thu, Jan 22, 2009 at 05:14:24PM +0800, Lai Jiangshan wrote:
+> 1) lockdep will complain when recursion run_workqueue
+> 2) works is not run orderly when recursion run_workqueue
 > 
-> On Mon, 19 Jan 2009, Nick Piggin wrote:
-> > > > > You only go to the allocator when the percpu queue goes empty though, so
-> > > > > if memory policy changes (eg context switch or something), then subsequent
-> > > > > allocations will be of the wrong policy.
-> > > >
-> > > > The per cpu queue size in SLUB is limited by the queues only containing
-> > > > objects from the same page. If you have large queues like SLAB/SLQB(?)
-> > > > then this could be an issue.
-> > >
-> > > And it could be a problem in SLUB too. Chances are that several allocations
-> > > will be wrong after every policy switch. I could describe situations in which
-> > > SLUB will allocate with the _wrong_ policy literally 100% of the time.
+> 3) BUG!
+>    We use recursion run_workqueue to hidden deadlock when
+>    keventd trying to flush its own queue.
 > 
-> On Wed, 2009-01-21 at 19:13 -0500, Christoph Lameter wrote:
-> > No it cannot because in SLUB objects must come from the same page.
-> > Multiple objects in a queue will only ever require a single page and not
-> > multiple like in SLAB.
+>    It's bug. When flush_workqueue()(nested in a work callback)returns,
+>    the workqueue is not really flushed, the sequence statement of
+>    this work callback will do some thing bad.
 > 
-> There's one potential problem with "per-page queues", though. The bigger
-> the object, the smaller the "queue" (i.e. less objects per page). Also,
-> partial lists are less likely to help for big objects because they get
-> emptied so quickly and returned to the page allocator. Perhaps we should
-> do a small "full list" for caches with large objects?
-That helps definitely. We could use a batch to control the list size.
+>    So we should not allow workqueue trying to flush its own queue.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> index 2f44583..1129cde 100644
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+> @@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
+>  
+>  	struct workqueue_struct *wq;
+>  	struct task_struct *thread;
+> -
+> -	int run_depth;		/* Detect run_workqueue() recursion depth */
+>  } ____cacheline_aligned;
+>  
+>  /*
+> @@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+>  static void run_workqueue(struct cpu_workqueue_struct *cwq)
+>  {
+>  	spin_lock_irq(&cwq->lock);
+> -	cwq->run_depth++;
+> -	if (cwq->run_depth > 3) {
+> -		/* morton gets to eat his hat */
+> -		printk("%s: recursion depth exceeded: %d\n",
+> -			__func__, cwq->run_depth);
+> -		dump_stack();
+> -	}
+>  	while (!list_empty(&cwq->worklist)) {
+>  		struct work_struct *work = list_entry(cwq->worklist.next,
+>  						struct work_struct, entry);
+> @@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+>  		spin_lock_irq(&cwq->lock);
+>  		cwq->current_work = NULL;
+>  	}
+> -	cwq->run_depth--;
+>  	spin_unlock_irq(&cwq->lock);
+>  }
+>  
+> @@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+>  
+>  static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+>  {
+> -	int active;
+> +	int active = 0;
+> +	struct wq_barrier barr;
+>  
+> -	if (cwq->thread == current) {
+> -		/*
+> -		 * Probably keventd trying to flush its own queue. So simply run
+> -		 * it by hand rather than deadlocking.
+> -		 */
+> -		run_workqueue(cwq);
+> -		active = 1;
+> -	} else {
+> -		struct wq_barrier barr;
+> +	BUG_ON(cwq->thread == current);
 
+Hi Lai,
+
+BUG_ON seems perhaps a bit too much for such case. The system
+will run in an endless loop because of a mistake that will not have
+necessarily a fatal end.
+WARN_ON should be enough (plus the warn that lockdep will raise
+too in this case).
+
+Thanks.
+Frederic.
+
+ 
+> -		active = 0;
+> -		spin_lock_irq(&cwq->lock);
+> -		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+> -			insert_wq_barrier(cwq, &barr, &cwq->worklist);
+> -			active = 1;
+> -		}
+> -		spin_unlock_irq(&cwq->lock);
+> -
+> -		if (active)
+> -			wait_for_completion(&barr.done);
+> +	spin_lock_irq(&cwq->lock);
+> +	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+> +		insert_wq_barrier(cwq, &barr, &cwq->worklist);
+> +		active = 1;
+>  	}
+> +	spin_unlock_irq(&cwq->lock);
+> +
+> +	if (active)
+> +		wait_for_completion(&barr.done);
+>  
+>  	return active;
+>  }
+> 
 
