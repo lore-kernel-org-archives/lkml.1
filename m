@@ -1,306 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZAVI0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZAVI2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZAVI0B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:26:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZAVIZt
+	id S1755300AbZAVI2G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:28:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbZAVI1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:25:49 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:25319 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750788AbZAVIZr (ORCPT
+	Thu, 22 Jan 2009 03:27:54 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:14594 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZAVI1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:25:47 -0500
-X-YMail-OSG: OT5CuxAVM1m18FDh4dPJOtve_a_CgsdeQ8mgjGCbOsSkQQwDGhyvJKjVIjxdfL5pGzSGXRFLBAD5zX3JNqWEKwtcyhYCd0tW3pvv8zVEW0Zr3Y8M2aFX0qQJdIMq7f9l4sjc7BjpIgyngHnZXe2tc2ReroWLhG7z5nC1dyWhMZ80DhtLbbhlu_LuE5EYjTDap_YakDhItP2Ch23tQhlt9p7Qiu7l5WuKSx1m_7y_OaCTN3vzzjg-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 4/4] [Target_Core_Mod/ConfigFS] Add
-	target/core/$HBA/$STORAGE_OBJECT/pr for T10 reservations
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Joel Becker <joel.becker@oracle.com>
-Content-Type: text/plain
-Date: Thu, 22 Jan 2009 00:25:23 -0800
-Message-Id: <1232612723.1274.535.camel@haakon2.linux-iscsi.org>
+	Thu, 22 Jan 2009 03:27:53 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org,
+       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
+       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
+       Tom Tucker <tom@opengridcomputing.com>
+In-Reply-To: <20090108212605.GG19312@fieldses.org>
+References: <1227737539.31008.2.camel@localhost.localdomain>
+	 <1228090631.7112.11.camel@heimdal.trondhjem.org>
+	 <1228169383.20370.3.camel@localhost.localdomain>
+	 <1228565812.10856.30.camel@localhost.localdomain>
+	 <1229279045.3721.1.camel@localhost.localdomain>
+	 <20081216175503.GG16388@fieldses.org>
+	 <1229452775.3721.25.camel@localhost.localdomain>
+	 <20090107222115.GI965@fieldses.org> <20090108182003.GB17623@fieldses.org>
+	 <1231449753.21688.12.camel@localhost.localdomain>
+	 <20090108212605.GG19312@fieldses.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uHRqfsyV6HZS9hIRcwKT"
+Date: Thu, 22 Jan 2009 08:27:40 +0000
+Message-Id: <1232612860.29604.57.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
+	than 120 seconds"
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=jSbuyrlv4UgA:10 a=ehd10kmKHQgA:10 a=_1bWovqJ4m7YRGcjR84A:9 a=pp-GT_zZN2RttzHnk9saL1BnYcAA:4 a=LY0hPdMaydYA:10 a=Y4OpwDRjLgsNX43194YA:9 a=mRDw4Ncl1OHV3KFTRdj1F4T-DdMA:4 a=rPt6xJ-oxjAA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 18ebd433d4123895fca5272f7da81decd78fc3ae Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Wed, 21 Jan 2009 23:59:24 -0800
-Subject: [PATCH 4/4] [Target_Core_Mod/ConfigFS] Add target/core/$HBA/$STORAGE_OBJECT/pr for T10 reservations
 
-This patch adds se_device_t->se_dev_pr_group of type struct config_group and
-target_core_dev_pr_cit of type struct config_item_type in target_core_configfs.c.
-The new ConfigFS group is located at target/core/$HBA/$STORAGE_OBJECT/pr.
-Here are the attributes for registered storage for $STORAGE_OBJECTS from
-Target_Core_Mod/IBLOCK, Target_Core_Mod/PSCSI and Target_Core_Mod/RAMDISK
-subsystem plugins respectively:
+--=-uHRqfsyV6HZS9hIRcwKT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-`-- target
-    |-- core
-    |   |-- iblock_0
-    |   |   |-- hba_info
-    |   |   `-- lvm_test0
-	<SNIP>
-    |   |       |-- pr
-    |   |       |   |-- res_active
-    |   |       |   `-- res_type
-    |   |       `-- wwn
-    |   |           |-- evpd_assoc_logical_unit
-    |   |           |-- evpd_assoc_scsi_target_device
-    |   |           |-- evpd_assoc_target_port
-    |   |           |-- evpd_protocol_identifier
-    |   |           `-- evpd_unit_serial
-    |   |-- pscsi_0
-    |   |   |-- hba_info
-    |   |   `-- sdd
-	<SNIP>
-    |   |       |-- pr
-    |   |       |   |-- res_active
-    |   |       |   `-- res_type
-    |   |       `-- wwn
-    |   |           |-- evpd_assoc_logical_unit
-    |   |           |-- evpd_assoc_scsi_target_device
-    |   |           |-- evpd_assoc_target_port
-    |   |           |-- evpd_protocol_identifier
-    |   |           `-- evpd_unit_serial
-    |   `-- rd_mcp_0
-    |       |-- hba_info
-    |       `-- ramdisk
-	<SNIP>
-    |           |-- pr
-    |           |   |-- res_active
-    |           |   `-- res_type
-    |           `-- wwn
-    |               |-- evpd_assoc_logical_unit
-    |               |-- evpd_assoc_scsi_target_device
-    |               |-- evpd_assoc_target_port
-    |               |-- evpd_protocol_identifier
-    |               `-- evpd_unit_serial
+On Thu, 2009-01-08 at 16:26 -0500, J. Bruce Fields wrote:
+>=20
+> > > (Merged now, so testing mainline as of today should work too.)
+> >=20
+> > The server isn't really a machine I want to test random kernels on,
+> is
+> > there some subset of those changesets which it would be useful for
+> me to
+> > pull back onto the 2.6.26 kernel I'm using to test? (I can most like
+> > manage the backporting myself).
+> >=20
+> > These two look like the relevant ones to me but I'm not sure:
+> > 22945e4a1c7454c97f5d8aee1ef526c83fef3223 svc: Clean up deferred
+> requests on transport destruction
+> > 69b6ba3712b796a66595cfaf0a5ab4dfe1cf964a SUNRPC: Ensure the server
+> closes sockets in a timely fashion
+> >=20
+> > I think 69b6 was in the set of three I tested previously and the
+> other
+> > two turned into 2294?
+>=20
+> Yep, exactly.--b.
 
-These attributes are defined as READ-ONLY, here is what their output currently
-looks like:
+The client machine now has an uptime of ten days without error after
+these two patches were applied to the server.
 
-target:/sys/kernel/config/target/core# cat iblock_0/lvm_test0/pr/*
-FABRIC[iSCSI]: Initiator: iqn.1996-04.de.suse:01:1661f9ee7b5
-SPC2_RESERVATIONS
+Thanks everybody,
+Ian.
 
-target:/sys/kernel/config/target/core# cat pscsi_0/sdd/pr/*
-None
-SPC_PASSTHROUGH
+--=20
+Ian Campbell
 
-target:/sys/kernel/config/target/core# cat rd_mcp_0/ramdisk/pr/*
-None
-SPC2_RESERVATIONS
+I used to think that the brain was the most wonderful organ in
+my body.  Then I realized who was telling me this.
+		-- Emo Phillips
 
-This is a WIP and will be changing as >= SPC-3 compliant persistent reservations
-are added to target_core_pr.c for Target_Core_Mod/ConfigFS.
+--=-uHRqfsyV6HZS9hIRcwKT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_base.h     |    1 +
- drivers/lio-core/target_core_configfs.c |  137 ++++++++++++++++++++++++++++++-
- 2 files changed, 134 insertions(+), 4 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/drivers/lio-core/target_core_base.h b/drivers/lio-core/target_core_base.h
-index 8902128..99d2373 100644
---- a/drivers/lio-core/target_core_base.h
-+++ b/drivers/lio-core/target_core_base.h
-@@ -557,6 +557,7 @@ typedef struct se_subsystem_dev_s {
-         spinlock_t      se_dev_lock;
-         void            *se_dev_su_ptr;
-         struct config_group se_dev_group;
-+	struct config_group se_dev_pr_group;	/* For T10 Reservations */
- } ____cacheline_aligned se_subsystem_dev_t;
- 
- #define T10_RES(su_dev)		(&(su_dev)->t10_reservation)
-diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
-index 04c23b6..5b1d275 100644
---- a/drivers/lio-core/target_core_configfs.c
-+++ b/drivers/lio-core/target_core_configfs.c
-@@ -3,7 +3,7 @@
-  *
-  * This file contains ConfigFS logic for the Generic Target Engine project.
-  *
-- * Copyright (c) 2008  Nicholas A. Bellinger <nab@linux-iscsi.org>
-+ * Copyright (c) 2008, 2009  Nicholas A. Bellinger <nab@linux-iscsi.org>
-  *
-  * based on configfs Copyright (C) 2005 Oracle.  All rights reserved.
-  *
-@@ -709,6 +709,131 @@ static struct config_item_type target_core_dev_wwn_cit = {
- 
- //  End functions for struct config_item_type target_core_dev_wwn_cit
- 
-+//  Start functions for struct config_item_type target_core_dev_pr_cit
-+
-+CONFIGFS_EATTR_STRUCT(target_core_dev_pr, se_subsystem_dev_s);
-+#define SE_DEV_PR_ATTR(_name, _mode)						\
-+static struct target_core_dev_pr_attribute target_core_dev_pr_##_name = 	\
-+	__CONFIGFS_EATTR(_name, _mode,						\
-+	target_core_dev_wwn_show_attr_##_name,					\
-+	target_core_dev_wwn_store_attr_##_name);
-+
-+#define SE_DEV_PR_ATTR_RO(_name);						\
-+static struct target_core_dev_pr_attribute target_core_dev_pr_##_name =		\
-+	__CONFIGFS_EATTR_RO(_name,						\
-+	target_core_dev_pr_show_attr_##_name);					\
-+
-+/*
-+ * res_active
-+ */
-+static ssize_t target_core_dev_pr_show_spc3_res (
-+	struct se_device_s *dev,
-+	char *page,
-+	ssize_t *len)
-+{
-+	*len += sprintf(page+*len, "Not Implemented yet\n");
-+	return(*len);
-+}
-+
-+static ssize_t target_core_dev_pr_show_spc2_res (
-+        struct se_device_s *dev,
-+        char *page,
-+	ssize_t *len)
-+{
-+	se_node_acl_t *se_nacl;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!(se_nacl = dev->dev_reserved_node_acl)) {
-+		*len += sprintf(page+*len, "None\n");
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return(*len);
-+	}
-+	*len += sprintf(page+*len, "FABRIC[%s]: Initiator: %s\n",
-+		TPG_TFO(se_nacl->se_tpg)->get_fabric_name(),
-+		se_nacl->initiatorname);
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return(*len);
-+}
-+
-+static ssize_t target_core_dev_pr_show_attr_res_active (
-+	struct se_subsystem_dev_s *su_dev,
-+	char *page)
-+{
-+	ssize_t len = 0;
-+
-+	switch (T10_RES(su_dev)->res_type) {
-+	case SPC3_PERSISTENT_RESERVATIONS:
-+		target_core_dev_pr_show_spc3_res(su_dev->se_dev_ptr,
-+				page, &len);
-+		break;
-+	case SPC2_RESERVATIONS:
-+		target_core_dev_pr_show_spc2_res(su_dev->se_dev_ptr,
-+				page, &len);
-+		break;
-+	case SPC_PASSTHROUGH:
-+		len += sprintf(page+len, "None\n");
-+		break;
-+	default:
-+		len += sprintf(page+len, "Unknown\n");
-+		break;
-+	}
-+
-+	return(len);
-+}
-+
-+SE_DEV_PR_ATTR_RO(res_active);
-+
-+/*
-+ * res_type
-+ */
-+static ssize_t target_core_dev_pr_show_attr_res_type (
-+	struct se_subsystem_dev_s *su_dev,
-+	char *page)
-+{
-+	ssize_t len = 0;
-+	
-+	switch (T10_RES(su_dev)->res_type) {
-+	case SPC3_PERSISTENT_RESERVATIONS:
-+		len = sprintf(page, "SPC3_PERSISTENT_RESERVATIONS\n");
-+		break;
-+	case SPC2_RESERVATIONS:
-+		len = sprintf(page, "SPC2_RESERVATIONS\n");
-+		break;
-+	case SPC_PASSTHROUGH:
-+		len = sprintf(page, "SPC_PASSTHROUGH\n");
-+		break;
-+	default:
-+		len = sprintf(page, "UNKNOWN\n");
-+		break;
-+	}
-+
-+	return(len);
-+}
-+
-+SE_DEV_PR_ATTR_RO(res_type);
-+
-+CONFIGFS_EATTR_OPS(target_core_dev_pr, se_subsystem_dev_s, se_dev_pr_group);
-+
-+static struct configfs_attribute *target_core_dev_pr_attrs[] = {
-+	&target_core_dev_pr_res_active.attr,
-+	&target_core_dev_pr_res_type.attr,
-+	NULL,
-+};
-+
-+static struct configfs_item_operations target_core_dev_pr_ops = {
-+	.show_attribute		= target_core_dev_pr_attr_show,
-+	.store_attribute	= target_core_dev_pr_attr_store,
-+};
-+
-+static struct config_item_type target_core_dev_pr_cit = {
-+	.ct_item_ops		= &target_core_dev_pr_ops,
-+	.ct_attrs		= target_core_dev_pr_attrs,
-+	.ct_owner		= THIS_MODULE,
-+};
-+
-+//  End functions for struct config_item_type target_core_dev_pr_cit
-+
- //  Start functions for struct config_item_type target_core_dev_cit
- 
- static ssize_t target_core_show_dev_info (void *p, char *page)
-@@ -956,7 +1081,7 @@ static struct config_group *target_core_call_createdev (
- 	se_dev->se_dev_hba = hba;
- 	dev_cg = &se_dev->se_dev_group;
- 
--	if (!(dev_cg->default_groups = kzalloc(sizeof(struct config_group) * 3,
-+	if (!(dev_cg->default_groups = kzalloc(sizeof(struct config_group) * 4,
- 			GFP_KERNEL)))
- 		goto out;
- 
-@@ -973,11 +1098,14 @@ static struct config_group *target_core_call_createdev (
- 			&target_core_dev_cit);
- 	config_group_init_type_name(&se_dev->se_dev_attrib.da_group, "attrib",
- 			&target_core_dev_attrib_cit);
-+	config_group_init_type_name(&se_dev->se_dev_pr_group, "pr",
-+			&target_core_dev_pr_cit);
- 	config_group_init_type_name(&se_dev->t10_wwn.t10_wwn_group, "wwn",
- 			&target_core_dev_wwn_cit);
- 	dev_cg->default_groups[0] = &se_dev->se_dev_attrib.da_group;
--	dev_cg->default_groups[1] = &se_dev->t10_wwn.t10_wwn_group;
--	dev_cg->default_groups[2] = NULL;
-+	dev_cg->default_groups[1] = &se_dev->se_dev_pr_group;
-+	dev_cg->default_groups[2] = &se_dev->t10_wwn.t10_wwn_group;
-+	dev_cg->default_groups[3] = NULL;
- 
- 	printk("Target_Core_ConfigFS: Allocated se_subsystem_dev_t: %p se_dev_su_ptr: %p\n",
- 			se_dev, se_dev->se_dev_su_ptr);
-@@ -1294,6 +1422,7 @@ extern void target_core_exit_configfs (void)
- 	return;
- }
- 
-+MODULE_DESCRIPTION("Target_Core_Mod/ConfigFS");
- MODULE_AUTHOR("nab@Linux-iSCSI.org");
- MODULE_LICENSE("GPL");
- 
--- 
-1.5.4.1
+iEYEABECAAYFAkl4LfwACgkQM0+0qS9rzVlkXwCgvpL+UOpmjrfNlYjQZOY4g6fn
+jYYAoIDboUhwTpo8mIocPrAyN8ONTlnl
+=4tQq
+-----END PGP SIGNATURE-----
 
-
+--=-uHRqfsyV6HZS9hIRcwKT--
 
