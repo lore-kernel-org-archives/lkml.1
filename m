@@ -1,245 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbZAVUg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbZAVUkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbZAVUg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 15:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZAVUgs
+	id S1757634AbZAVUkf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 15:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZAVUk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 15:36:48 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:27759 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbZAVUgq (ORCPT
+	Thu, 22 Jan 2009 15:40:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51543 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbZAVUkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 15:36:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=a60qomJsKl1mCRW3s5Hci9q/QN7Aca2YB8OWZm+NK9Avl8djgKxsiiobw+b6qXzI4Q
-         dlwpzn1JwK0ru6zdNdn9h2pxpK14UQGXU4kIw+IEr2UAIooxe4DBVSs34qGmaaP0XQbA
-         LUMbJ4snvybgjKzX8HiQDHmZxLA3RNvPW3e/k=
+	Thu, 22 Jan 2009 15:40:25 -0500
+Date: Thu, 22 Jan 2009 15:40:23 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: lockdep and preemptoff tracer are fighting again.
+Message-ID: <alpine.DEB.1.10.0901221523400.5838@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <496fd1d3.0d135e0a.171b.43ea@mx.google.com>
-References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com>
-Date: Thu, 22 Jan 2009 21:36:44 +0100
-Message-ID: <c62985530901221236h692181b7p7c9e10b2ccf4ed8c@mail.gmail.com>
-Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: dmitry.torokhov@gmail.com, dtor@mail.ru
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/16 Frederic Weisbecker <fweisbec@gmail.com>:
-> While looking at the workqueue tracer, I noticed that kpsmoused receives
-> rarely (if not never) events.
->
-> Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
-> workqueue. But recync are rare. While reading an old discussion, it seems
-> that usual workqueue events can't be used for that purpose because resync
-> can take too much time and could delay the other works in queue.
->
-> But if you have built psmouse driver, this workqueue will always be present
-> whether you have a ps/2 port or not. And its events are rare.
->
-> To avoid this pointless task, this patch makes the kpsmoused a kernel
-> thread only created on the fly when a recync is needed. Once the recync is done,
-> this thread will die. So you will almost never see it, and it will not be
-> an inactive task anymore.
->
-> This thread is created through a usual workqueue event (because we can't create
-> it from interrupt).
->
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  drivers/input/mouse/psmouse-base.c |   76 ++++++++++++++++++++++--------------
->  drivers/input/mouse/psmouse.h      |    4 +-
->  2 files changed, 50 insertions(+), 30 deletions(-)
->
-> diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-> index f8f86de..7b78cee 100644
-> --- a/drivers/input/mouse/psmouse-base.c
-> +++ b/drivers/input/mouse/psmouse-base.c
-> @@ -20,6 +20,7 @@
->  #include <linux/init.h>
->  #include <linux/libps2.h>
->  #include <linux/mutex.h>
-> +#include <linux/kthread.h>
->
->  #include "psmouse.h"
->  #include "synaptics.h"
-> @@ -104,8 +105,6 @@ static struct attribute_group psmouse_attribute_group = {
->  */
->  static DEFINE_MUTEX(psmouse_mutex);
->
-> -static struct workqueue_struct *kpsmoused_wq;
-> -
->  struct psmouse_protocol {
->        enum psmouse_type type;
->        const char *name;
-> @@ -203,11 +202,6 @@ static psmouse_ret_t psmouse_process_byte(struct psmouse *psmouse)
->        return PSMOUSE_FULL_PACKET;
->  }
->
-> -void psmouse_queue_work(struct psmouse *psmouse, struct delayed_work *work,
-> -               unsigned long delay)
-> -{
-> -       queue_delayed_work(kpsmoused_wq, work, delay);
-> -}
->
->  /*
->  * __psmouse_set_state() sets new psmouse state and resets all flags.
-> @@ -313,7 +307,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
->                       psmouse->name, psmouse->phys, psmouse->pktcnt);
->                psmouse->badbyte = psmouse->packet[0];
->                __psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
-> -               psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-> +               atomic_inc(&psmouse->nb_recync_pending);
-> +               schedule_work(&psmouse->resync_work);
->                goto out;
->        }
->
-> @@ -350,7 +345,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
->            time_after(jiffies, psmouse->last + psmouse->resync_time * HZ)) {
->                psmouse->badbyte = psmouse->packet[0];
->                __psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
-> -               psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-> +               atomic_inc(&psmouse->nb_recync_pending);
-> +               schedule_work(&psmouse->resync_work);
->                goto out;
->        }
->
-> @@ -979,13 +975,16 @@ static int psmouse_poll(struct psmouse *psmouse)
->
->
->  /*
-> - * psmouse_resync() attempts to re-validate current protocol.
-> + * psmouse_resync_thread() attempts to re-validate current protocol.
-> + * This thread is created on the fly when needed because its job can take too
-> + * much time on events workqueues, and the resync is rare enough to avoid
-> + * the need of a private workqueue.
->  */
->
-> -static void psmouse_resync(struct work_struct *work)
-> +static int psmouse_resync_thread(void *v)
->  {
-> -       struct psmouse *parent = NULL, *psmouse =
-> -               container_of(work, struct psmouse, resync_work.work);
-> +       struct psmouse *psmouse = v;
-> +       struct psmouse *parent = NULL;
->        struct serio *serio = psmouse->ps2dev.serio;
->        psmouse_ret_t rc = PSMOUSE_GOOD_DATA;
->        int failed = 0, enabled = 0;
-> @@ -1072,6 +1071,30 @@ static void psmouse_resync(struct work_struct *work)
->                psmouse_activate(parent);
->  out:
->        mutex_unlock(&psmouse_mutex);
-> +
-> +       /*
-> +        * While disconnecting, the driver wants to be sure all resync are done
-> +        */
-> +       if (!atomic_dec_return(&psmouse->nb_recync_pending))
-> +               wake_up(&psmouse->recync_pending_queue);
-> +       return 0;
-> +}
-> +
-> +/* Launch the recync thread */
-> +static void psmouse_resync_thread_helper(struct work_struct *work)
-> +{
-> +       struct task_struct *t;
-> +       struct psmouse *psmouse;
-> +
-> +       psmouse = container_of(work, struct psmouse, resync_work);
-> +
-> +       t = kthread_run(psmouse_resync_thread, psmouse, "kpsmoused");
-> +       if (t == ERR_PTR(-ENOMEM)) {
-> +               printk(KERN_WARNING "psmouse.c: failed to create kpsmoused"
-> +                                   " thread\n");
-> +               if (!atomic_dec_return(&psmouse->nb_recync_pending))
-> +                       wake_up(&psmouse->recync_pending_queue);
-> +       }
->  }
->
->  /*
-> @@ -1120,6 +1143,7 @@ static void psmouse_cleanup(struct serio *serio)
->  static void psmouse_disconnect(struct serio *serio)
->  {
->        struct psmouse *psmouse, *parent = NULL;
-> +       DEFINE_WAIT(wait);
->
->        psmouse = serio_get_drvdata(serio);
->
-> @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
->
->        /* make sure we don't have a resync in progress */
->        mutex_unlock(&psmouse_mutex);
-> -       flush_workqueue(kpsmoused_wq);
-> +
-> +       prepare_to_wait(&psmouse->recync_pending_queue, &wait,
-> +                               TASK_UNINTERRUPTIBLE);
-> +       if (atomic_read(&psmouse->nb_recync_pending))
-> +               schedule();
-> +       finish_wait(&psmouse->recync_pending_queue, &wait);
-> +
->        mutex_lock(&psmouse_mutex);
->
->        if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
-> @@ -1244,7 +1274,8 @@ static int psmouse_connect(struct serio *serio, struct serio_driver *drv)
->                goto err_free;
->
->        ps2_init(&psmouse->ps2dev, serio);
-> -       INIT_DELAYED_WORK(&psmouse->resync_work, psmouse_resync);
-> +       INIT_WORK(&psmouse->resync_work, psmouse_resync_thread_helper);
-> +       init_waitqueue_head(&psmouse->recync_pending_queue);
->        psmouse->dev = input_dev;
->        snprintf(psmouse->phys, sizeof(psmouse->phys), "%s/input0", serio->phys);
->
-> @@ -1647,25 +1678,12 @@ static int psmouse_get_maxproto(char *buffer, struct kernel_param *kp)
->
->  static int __init psmouse_init(void)
->  {
-> -       int err;
-> -
-> -       kpsmoused_wq = create_singlethread_workqueue("kpsmoused");
-> -       if (!kpsmoused_wq) {
-> -               printk(KERN_ERR "psmouse: failed to create kpsmoused workqueue\n");
-> -               return -ENOMEM;
-> -       }
-> -
-> -       err = serio_register_driver(&psmouse_drv);
-> -       if (err)
-> -               destroy_workqueue(kpsmoused_wq);
-> -
-> -       return err;
-> +       return serio_register_driver(&psmouse_drv);
->  }
->
->  static void __exit psmouse_exit(void)
->  {
->        serio_unregister_driver(&psmouse_drv);
-> -       destroy_workqueue(kpsmoused_wq);
->  }
->
->  module_init(psmouse_init);
-> diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
-> index 54ed267..6dc16ba 100644
-> --- a/drivers/input/mouse/psmouse.h
-> +++ b/drivers/input/mouse/psmouse.h
-> @@ -39,7 +39,9 @@ struct psmouse {
->        void *private;
->        struct input_dev *dev;
->        struct ps2dev ps2dev;
-> -       struct delayed_work resync_work;
-> +       struct work_struct resync_work;
-> +       atomic_t nb_recync_pending;
-> +       wait_queue_head_t recync_pending_queue;
->        char *vendor;
->        char *name;
->        unsigned char packet[8];
-> --
 
 
-Well, absolutely no thought about this patch? :-)
+Hey guys, I can consistently hit this bug when running the preempt tracer:
+
+------------[ cut here ]------------
+WARNING: at kernel/lockdep.c:2899 check_flags+0x154/0x18b()
+Hardware name: Precision WorkStation 470    
+Modules linked in: radeon drm autofs4 hidp rfcomm l2cap bluetooth sunrpc nf_conn
+track_netbios_ns ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 xt_state iptable_fi
+lter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 sb
+s sbshc battery ac snd_intel8x0 snd_ac97_codec sg ac97_bus snd_seq_dummy snd_seq
+_oss snd_seq_midi_event floppy snd_seq snd_seq_device snd_pcm_oss ide_cd_mod snd
+_mixer_oss cdrom snd_pcm e1000 serio_raw snd_timer snd i2c_i801 button soundcore
+ ata_generic i2c_core iTCO_wdt snd_page_alloc e752x_edac iTCO_vendor_support shp
+chp edac_core pcspkr dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod 
+ata_piix libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+Pid: 3855, comm: sshd Not tainted 2.6.29-rc2-tip #366
+Call Trace:
+ [<ffffffff80245e9f>] warn_slowpath+0xd8/0xf7
+ [<ffffffff80297154>] ? ring_buffer_unlock_commit+0x24/0xa3
+ [<ffffffff80299501>] ? trace_function+0xad/0xbc
+ [<ffffffff8025c1ff>] ? remove_wait_queue+0x4d/0x52
+ [<ffffffff8029e5dc>] ? trace_preempt_on+0x113/0x130
+ [<ffffffff8029e4ba>] ? check_critical_timing+0x12e/0x13d
+ [<ffffffff8025c1ff>] ? remove_wait_queue+0x4d/0x52
+ [<ffffffff8029f75b>] ? stack_trace_call+0x249/0x25d
+ [<ffffffff802da06e>] ? fput+0x4/0x1c
+ [<ffffffff802e7edc>] ? free_poll_entry+0x26/0x2a
+ [<ffffffff802da06e>] ? fput+0x4/0x1c
+ [<ffffffff8020c2d6>] ? ftrace_call+0x5/0x2b
+ [<ffffffff8029f75b>] ? stack_trace_call+0x249/0x25d
+ [<ffffffff80543dec>] ? _spin_lock_irqsave+0xb/0x59
+ [<ffffffff802699bf>] check_flags+0x154/0x18b
+ [<ffffffff8026de66>] lock_acquire+0x41/0xa9
+ [<ffffffff80543dfd>] ? _spin_lock_irqsave+0x1c/0x59
+ [<ffffffff80543e27>] _spin_lock_irqsave+0x46/0x59
+ [<ffffffff8029519c>] ? ring_buffer_reset_cpu+0x31/0x6b
+ [<ffffffff8029519c>] ring_buffer_reset_cpu+0x31/0x6b
+ [<ffffffff80299ec6>] tracing_reset+0x46/0x9b
+ [<ffffffff8029e33f>] trace_preempt_off+0x100/0x14d
+ [<ffffffff8024b491>] ? local_bh_disable+0x12/0x14
+ [<ffffffff8024b44f>] ? __local_bh_disable+0xc0/0xf0
+ [<ffffffff8024b491>] ? local_bh_disable+0x12/0x14
+ [<ffffffff80543b95>] ? _spin_lock_bh+0x16/0x4c
+ [<ffffffff80546df1>] add_preempt_count+0x12d/0x132
+ [<ffffffff8024b44f>] __local_bh_disable+0xc0/0xf0
+ [<ffffffff8024b491>] local_bh_disable+0x12/0x14
+ [<ffffffff80543b95>] _spin_lock_bh+0x16/0x4c
+ [<ffffffff804ab49a>] lock_sock_nested+0x28/0xe5
+ [<ffffffff80292c90>] ? ftrace_list_func+0x24/0x39
+ [<ffffffff8020c2d6>] ? ftrace_call+0x5/0x2b
+ [<ffffffff804eff87>] tcp_sendmsg+0x27/0xac2
+ [<ffffffff803556c7>] ? cap_socket_sendmsg+0x4/0xd
+ [<ffffffff80292c90>] ? ftrace_list_func+0x24/0x39
+ [<ffffffff8020c2d6>] ? ftrace_call+0x5/0x2b
+ [<ffffffff804a82b0>] sock_aio_write+0x109/0x11d
+ [<ffffffff8029f75b>] ? stack_trace_call+0x249/0x25d
+ [<ffffffff8020c2d6>] ? ftrace_call+0x5/0x2b
+ [<ffffffff802d8881>] do_sync_write+0xf0/0x137
+ [<ffffffff8025c002>] ? autoremove_wake_function+0x0/0x3d
+ [<ffffffff8020c2d6>] ? ftrace_call+0x5/0x2b
+ [<ffffffff803553ca>] ? cap_file_permission+0x9/0xd
+ [<ffffffff80353c88>] ? security_file_permission+0x16/0x18
+ [<ffffffff802d921c>] vfs_write+0x103/0x17d
+ [<ffffffff802d978f>] sys_write+0x4e/0x8c
+ [<ffffffff8020c64b>] system_call_fastpath+0x16/0x1b
+---[ end trace 713cc9df66b54d6e ]---
+
+
+The cause is simple. The following happens:
+
+local_bh_disable is called, which calls __local_bh_disable which does a 
+add_preempt_count(SOFTIRQ_OFFSET).
+
+Thus, add_preempt_count adds the SOFTIRQ_OFFSET to the preempt_count of 
+current, and then calls trace_preempt_off.
+
+This goes into the preempt tracer which calls start_critical_timing, and 
+this will reset the ring buffer for the CPU, because this is the start of 
+the trace.
+
+ring_buffer_reset_cpu() calls spin_lock_irqsave() which eventually calls 
+spin_acquire which is lock_acquire in lockdep.
+
+lock_acquire calls check_flags which performs this check:
+
+	if (!hardirq_count()) {
+		if (softirq_count())
+			DEBUG_LOCKS_WARN_ON(current->softirqs_enabled);
+		else
+			DEBUG_LOCKS_WARN_ON(!current->softirqs_enabled);
+	}
+
+With this:
+
+#define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+#define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+
+
+The hardirq_count returns false, but the softirq_count returns true and 
+softirqs_enalbed is also true. The problem lies in local_bh_disable:
+
+static void __local_bh_disable(unsigned long ip)
+{
+	unsigned long flags;
+
+	WARN_ON_ONCE(in_irq());
+
+	raw_local_irq_save(flags);
+	add_preempt_count(SOFTIRQ_OFFSET); <-- here softirq_count is true
+	/*
+	 * Were softirqs turned off above:
+	 */
+	if (softirq_count() == SOFTIRQ_OFFSET)
+		trace_softirqs_off(ip); <-- here softirqs_enabled is false
+	raw_local_irq_restore(flags);
+}
+
+If we call into lockdep between softirq_count == true and 
+softirqs_enabled == false, we hit the WARN_ON.
+
+The trace_softirqs_off() sets softirs_enabled to false. But because the 
+tracer calls into lockdep between the two, we hit this warning.
+
+If we try to swap the trace_softirqs_off with the add_preempt_count we hit 
+another warning thatch checks to make sure softirq_count is true in the 
+trace_softirqs_off code.
+
+We need a way to have lockdep and the preempt tracer to be able to talk to 
+each other and let it know that it should not fail here.
+
+Any ideas?
+
+-- Steve
+
+
