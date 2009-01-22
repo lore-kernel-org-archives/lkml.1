@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZAVNeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbZAVNe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbZAVNeF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 08:34:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZAVNdg
+	id S1757613AbZAVNe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 08:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbZAVNdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 08:33:36 -0500
+	Thu, 22 Jan 2009 08:33:37 -0500
 Received: from rv-out-0506.google.com ([209.85.198.239]:23575 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbZAVNde (ORCPT
+	with ESMTP id S1754318AbZAVNdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 08:33:34 -0500
+	Thu, 22 Jan 2009 08:33:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=LL3ccAQYrU4yKfXp6YqlKToBNpVoSITjdB2PbBNXV0qrEupblpLdp/WvJw6otmZjlC
-         xLpQG6xCyBdjUwm+qdlbJckNIPicU/EHtwH790aFRS3+TGKHv6PpVPSa44huBE91QVh3
-         mNaMFq1t5Hu2z1hLxyASUaFajGufUanho44dw=
+        b=GuRai7vf7txSDeST9EaK8Khs+Ym5lE6uwKmFBUuNnBqBAAQBJrTfmnS/la+/Opzo1G
+         b/DdP1wEuNURVgr8LK7NM4SwECSIjdqQIrg1v1P0V5PCTWL8srZEf3TQsX4fSDaKZW7T
+         d8z96ijXbpUl9L+Q1+GGwiJFBNHarLieJNbwo=
 From: Brian Gerst <brgerst@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
        Brian Gerst <brgerst@gmail.com>
-Subject: [PATCH 2/5] x86-64: Remove include of apic.h from hardirq_64.h
-Date: Thu, 22 Jan 2009 08:33:35 -0500
-Message-Id: <1232631218-5092-2-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 3/5] x86: Sync hardirq_{32,64}.h
+Date: Thu, 22 Jan 2009 08:33:36 -0500
+Message-Id: <1232631218-5092-3-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <73c1f2160901220533n53cdbb33q2eec14d47176533d@mail.gmail.com>
 References: <73c1f2160901220533n53cdbb33q2eec14d47176533d@mail.gmail.com>
@@ -30,52 +30,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-APIC definitions aren't needed here.  Remove the include and fix
-up the fallout.
+In general, use the 64-bit version.
 
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/hardirq_64.h |    1 -
- arch/x86/kernel/efi_64.c          |    1 +
- arch/x86/kernel/irq_64.c          |    1 +
- 3 files changed, 2 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/hardirq_32.h |   14 ++++++++++----
+ arch/x86/include/asm/hardirq_64.h |   10 +++++-----
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
+diff --git a/arch/x86/include/asm/hardirq_32.h b/arch/x86/include/asm/hardirq_32.h
+index a70ed05..e5a332c 100644
+--- a/arch/x86/include/asm/hardirq_32.h
++++ b/arch/x86/include/asm/hardirq_32.h
+@@ -14,6 +14,7 @@ typedef struct {
+ 	unsigned int irq_tlb_count;
+ 	unsigned int irq_thermal_count;
+ 	unsigned int irq_spurious_count;
++	unsigned int irq_threshold_count;
+ } ____cacheline_aligned irq_cpustat_t;
+ 
+ DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+@@ -22,11 +23,16 @@ DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+ #define MAX_HARDIRQS_PER_CPU NR_VECTORS
+ 
+ #define __ARCH_IRQ_STAT
+-#define __IRQ_STAT(cpu, member) (per_cpu(irq_stat, cpu).member)
+ 
+-#define inc_irq_stat(member)	(__get_cpu_var(irq_stat).member++)
++#define inc_irq_stat(member)	percpu_add(irq_stat.member, 1)
+ 
+-void ack_bad_irq(unsigned int irq);
+-#include <linux/irq_cpustat.h>
++#define local_softirq_pending()	percpu_read(irq_stat.__softirq_pending)
++
++#define __ARCH_SET_SOFTIRQ_PENDING
++
++#define set_softirq_pending(x)	percpu_write(irq_stat.__softirq_pending, (x))
++#define or_softirq_pending(x)	percpu_or(irq_stat.__softirq_pending, (x))
++
++extern void ack_bad_irq(unsigned int irq);
+ 
+ #endif /* _ASM_X86_HARDIRQ_32_H */
 diff --git a/arch/x86/include/asm/hardirq_64.h b/arch/x86/include/asm/hardirq_64.h
-index a65bab2..873c3c7 100644
+index 873c3c7..392e7d6 100644
 --- a/arch/x86/include/asm/hardirq_64.h
 +++ b/arch/x86/include/asm/hardirq_64.h
-@@ -3,7 +3,6 @@
+@@ -22,16 +22,16 @@ DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+ /* We can have at most NR_VECTORS irqs routed to a cpu at a time */
+ #define MAX_HARDIRQS_PER_CPU NR_VECTORS
  
- #include <linux/threads.h>
- #include <linux/irq.h>
--#include <asm/apic.h>
+-#define __ARCH_IRQ_STAT 1
++#define __ARCH_IRQ_STAT
  
- typedef struct {
- 	unsigned int __softirq_pending;
-diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
-index 652c528..a4ee291 100644
---- a/arch/x86/kernel/efi_64.c
-+++ b/arch/x86/kernel/efi_64.c
-@@ -36,6 +36,7 @@
- #include <asm/proto.h>
- #include <asm/efi.h>
- #include <asm/cacheflush.h>
-+#include <asm/fixmap.h>
+ #define inc_irq_stat(member)	percpu_add(irq_stat.member, 1)
  
- static pgd_t save_pgd __initdata;
- static unsigned long efi_flags __initdata;
-diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
-index 0b254de..018963a 100644
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -18,6 +18,7 @@
- #include <linux/smp.h>
- #include <asm/io_apic.h>
- #include <asm/idle.h>
-+#include <asm/apic.h>
+-#define local_softirq_pending() percpu_read(irq_stat.__softirq_pending)
++#define local_softirq_pending()	percpu_read(irq_stat.__softirq_pending)
  
- DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- EXPORT_PER_CPU_SYMBOL(irq_stat);
+-#define __ARCH_SET_SOFTIRQ_PENDING 1
++#define __ARCH_SET_SOFTIRQ_PENDING
+ 
+-#define set_softirq_pending(x) percpu_write(irq_stat.__softirq_pending, (x))
+-#define or_softirq_pending(x)  percpu_or(irq_stat.__softirq_pending, (x))
++#define set_softirq_pending(x)	percpu_write(irq_stat.__softirq_pending, (x))
++#define or_softirq_pending(x)	percpu_or(irq_stat.__softirq_pending, (x))
+ 
+ extern void ack_bad_irq(unsigned int irq);
+ 
 -- 
 1.6.1
 
