@@ -1,154 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZAVQ5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbZAVRDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZAVQ5L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 11:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZAVQ45
+	id S1756319AbZAVRDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbZAVRDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 11:56:57 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:47059 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752438AbZAVQ44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 11:56:56 -0500
-Message-ID: <4978A553.8000103@sgi.com>
-Date: Thu, 22 Jan 2009 08:56:51 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 22 Jan 2009 12:03:09 -0500
+Received: from vs02.svr02.mucip.net ([83.170.6.69]:40998 "EHLO
+	mailout.mucip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752438AbZAVRDI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:03:08 -0500
+Message-ID: <4978A6C1.5000003@birkenwald.de>
+Date: Thu, 22 Jan 2009 18:02:57 +0100
+From: Bernhard Schmidt <berni@birkenwald.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, Tony Luck <tony.luck@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] cpumask: modifiy oprofile initialization
-References: <20090122131153.GP21604@erda.amd.com> <1232630055-32451-1-git-send-email-robert.richter@amd.com>
-In-Reply-To: <1232630055-32451-1-git-send-email-robert.richter@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Layton <jlayton@redhat.com>
+CC: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       stefan.bader@canonical.com, Suresh Jayaraman <sjayaraman@suse.de>,
+       Shirish Pargaonkar <shirishpargaonkar@gmail.com>,
+       Steve French <smfrench@gmail.com>
+Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression 2.6.27.4
+ -> 2.6.27.9
+References: <20090118221329.GA12742@pest>	<20090118210314.30832598@tleilax.poochiereds.net>	<20090119103248.GA28699@schleppi.birkenwald.de>	<20090119160725.34124637@tleilax.poochiereds.net>	<20090119213819.GA6532@pest> <20090122094517.42e724e4@barsoom.rdu.redhat.com>
+In-Reply-To: <20090122094517.42e724e4@barsoom.rdu.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter wrote:
-> Delta patch to f7df8ed164996cd2c6aca9674388be6ef78d8b37 for
-> tip/cpus4096.
+Hello Jeff,
+
+> I think I may see the bug...
 > 
-> Moved initialization to sync_start()/sync_stop(). No changes needed in
-> buffer_sync.h and oprof.c anymore.
+> I think the "addr" struct in cifs_mount is too small for ipv6 addresses.
+> Here's a proposed patch for 2.6.27.y. Could you apply it and let me
+> know if it fixes the bug?
 
-Great, thanks Robert!
+Sorry, I was out of town, I'll build a kernel asap.
 
-Are you pushing this via some upstream queue so I can drop it from mine?
+Stefan confirmed the bug (on i386 platform, apparently x86_64 did not 
+expose the broken behaviour) and the bug fixed at Ubuntu with your 
+patch. See https://bugs.launchpad.net/bugs/318565 . So I assume he 
+tested it and it fixed the problem, but I'll test as well myself.
 
-Thanks,
-Mike
-
-> 
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Mike Travis <travis@sgi.com>
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> ---
->  drivers/oprofile/buffer_sync.c |   20 ++++++--------------
->  drivers/oprofile/buffer_sync.h |    4 ----
->  drivers/oprofile/oprof.c       |    9 +--------
->  3 files changed, 7 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-> index c3ea5fa..8574622 100644
-> --- a/drivers/oprofile/buffer_sync.c
-> +++ b/drivers/oprofile/buffer_sync.c
-> @@ -154,6 +154,10 @@ int sync_start(void)
->  {
->  	int err;
->  
-> +	if (!alloc_cpumask_var(&marked_cpus, GFP_KERNEL))
-> +		return -ENOMEM;
-> +	cpumask_clear(marked_cpus);
-> +
->  	start_cpu_work();
->  
->  	err = task_handoff_register(&task_free_nb);
-> @@ -179,6 +183,7 @@ out2:
->  	task_handoff_unregister(&task_free_nb);
->  out1:
->  	end_sync();
-> +	free_cpumask_var(marked_cpus);
->  	goto out;
->  }
->  
-> @@ -190,6 +195,7 @@ void sync_stop(void)
->  	profile_event_unregister(PROFILE_TASK_EXIT, &task_exit_nb);
->  	task_handoff_unregister(&task_free_nb);
->  	end_sync();
-> +	free_cpumask_var(marked_cpus);
->  }
->  
->  
-> @@ -565,20 +571,6 @@ void sync_buffer(int cpu)
->  	mutex_unlock(&buffer_mutex);
->  }
->  
-> -int __init buffer_sync_init(void)
-> -{
-> -	if (!alloc_cpumask_var(&marked_cpus, GFP_KERNEL))
-> -		return -ENOMEM;
-> -
-> -	cpumask_clear(marked_cpus);
-> -		return 0;
-> -}
-> -
-> -void __exit buffer_sync_cleanup(void)
-> -{
-> -	free_cpumask_var(marked_cpus);
-> -}
-> -
->  /* The function can be used to add a buffer worth of data directly to
->   * the kernel buffer. The buffer is assumed to be a circular buffer.
->   * Take the entries from index start and end at index end, wrapping
-> diff --git a/drivers/oprofile/buffer_sync.h b/drivers/oprofile/buffer_sync.h
-> index 0ebf5db..3110732 100644
-> --- a/drivers/oprofile/buffer_sync.h
-> +++ b/drivers/oprofile/buffer_sync.h
-> @@ -19,8 +19,4 @@ void sync_stop(void);
->  /* sync the given CPU's buffer */
->  void sync_buffer(int cpu);
->  
-> -/* initialize/destroy the buffer system. */
-> -int buffer_sync_init(void);
-> -void buffer_sync_cleanup(void);
-> -
->  #endif /* OPROFILE_BUFFER_SYNC_H */
-> diff --git a/drivers/oprofile/oprof.c b/drivers/oprofile/oprof.c
-> index ced39f6..3cffce9 100644
-> --- a/drivers/oprofile/oprof.c
-> +++ b/drivers/oprofile/oprof.c
-> @@ -183,10 +183,6 @@ static int __init oprofile_init(void)
->  {
->  	int err;
->  
-> -	err = buffer_sync_init();
-> -	if (err)
-> -		return err;
-> -
->  	err = oprofile_arch_init(&oprofile_ops);
->  
->  	if (err < 0 || timer) {
-> @@ -195,10 +191,8 @@ static int __init oprofile_init(void)
->  	}
->  
->  	err = oprofilefs_register();
-> -	if (err) {
-> +	if (err)
->  		oprofile_arch_exit();
-> -		buffer_sync_cleanup();
-> -	}
->  
->  	return err;
->  }
-> @@ -208,7 +202,6 @@ static void __exit oprofile_exit(void)
->  {
->  	oprofilefs_unregister();
->  	oprofile_arch_exit();
-> -	buffer_sync_cleanup();
->  }
->  
->  
-
+Thanks!
+Bernhard
