@@ -1,237 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbZAVRyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbZAVRzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbZAVRyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759138AbZAVRum
+	id S1760324AbZAVRzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbZAVRun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:50:42 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:56062 "EHLO relay.sgi.com"
+	Thu, 22 Jan 2009 12:50:43 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:39034 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758893AbZAVRub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:50:31 -0500
-Message-Id: <20090122175030.392184000@sgi.com>
+	id S1760112AbZAVRuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:50:32 -0500
+Message-Id: <20090122175027.881139000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Thu, 22 Jan 2009 11:49:31 -0600
+Date: Thu, 22 Jan 2009 11:49:24 -0600
 From: steiner@sgi.com
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 14/14] Support multiple pagesizes in GRU
+Subject: [Patch 07/14] Add statistics to the GRU context management functions
 References: <20090122174917.563627000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_large_pages
+Content-Disposition: inline; filename=uv_outofline_mcs_instructions_statistics
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Add multiple pagesize support to the GRU driver.
+Add statistics to the GRU context management functions.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
----
- drivers/misc/sgi-gru/grufault.c     |   15 +++++++++++++++
- drivers/misc/sgi-gru/gruhandles.c   |   34 ++++------------------------------
- drivers/misc/sgi-gru/gruhandles.h   |    2 +-
- drivers/misc/sgi-gru/grukservices.c |    2 +-
- drivers/misc/sgi-gru/grumain.c      |   17 +++++++++++------
- drivers/misc/sgi-gru/grutables.h    |    3 +++
- 6 files changed, 35 insertions(+), 38 deletions(-)
 
-Index: linux/drivers/misc/sgi-gru/grufault.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-01-22 11:33:08.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grufault.c	2009-01-22 11:33:56.000000000 -0600
-@@ -360,6 +360,13 @@ static int gru_try_dropin(struct gru_thr
- 	if (ret == -2)
- 		goto failupm;
- 
-+	if (!(gts->ts_sizeavail & GRU_SIZEAVAIL(pageshift))) {
-+		gts->ts_sizeavail |= GRU_SIZEAVAIL(pageshift);
-+		if (atomic || !gru_update_cch(gts, 0)) {
-+			gts->ts_force_cch_reload = 1;
-+			goto failupm;
-+		}
-+	}
- 	gru_cb_set_istatus_active(cb);
- 	tfh_write_restart(tfh, gpa, GAA_RAM, vaddr, asid, write,
- 			  GRU_PAGESIZE(pageshift));
-@@ -535,6 +542,14 @@ int gru_handle_user_call_os(unsigned lon
- 		gts->ts_force_unload = 1;
- 	}
- 
-+	/*
-+	 * CCH may contain stale data if ts_force_cch_reload is set.
-+	 */
-+	if (gts->ts_gru && gts->ts_force_cch_reload) {
-+		gru_update_cch(gts, 0);
-+		gts->ts_force_cch_reload = 0;
-+	}
-+
- 	ret = -EAGAIN;
- 	cbrnum = thread_cbr_number(gts, ucbnum);
- 	if (gts->ts_force_unload) {
+---
+ drivers/misc/sgi-gru/gruhandles.c |   12 +++++++++++
+ drivers/misc/sgi-gru/gruprocfs.c  |   39 ++++++++++++++++++++++++++++++++++++++
+ drivers/misc/sgi-gru/grutables.h  |    8 +++++++
+ 3 files changed, 59 insertions(+)
+
 Index: linux/drivers/misc/sgi-gru/gruhandles.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/gruhandles.c	2009-01-22 11:33:03.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/gruhandles.c	2009-01-22 11:39:01.000000000 -0600
-@@ -72,42 +72,16 @@ static int wait_instruction_complete(voi
+--- linux.orig/drivers/misc/sgi-gru/gruhandles.c	2009-01-15 08:18:08.000000000 -0600
++++ linux/drivers/misc/sgi-gru/gruhandles.c	2009-01-15 08:18:09.000000000 -0600
+@@ -35,6 +35,16 @@
+ /* Extract the status field from a kernel handle */
+ #define GET_MSEG_HANDLE_STATUS(h)	(((*(unsigned long *)(h)) >> 16) & 3)
+ 
++struct mcs_op_statistic mcs_op_statistics[mcsop_last];
++
++static void update_mcs_stats(enum mcs_op op, unsigned long clks)
++{
++	atomic_long_inc(&mcs_op_statistics[op].count);
++	atomic_long_add(clks, &mcs_op_statistics[op].total);
++	if (mcs_op_statistics[op].max < clks)
++		mcs_op_statistics[op].max = clks;
++}
++
+ static void start_instruction(void *h)
+ {
+ 	unsigned long *w0 = h;
+@@ -57,6 +67,8 @@ static int wait_instruction_complete(voi
+ 		if (GRU_OPERATION_TIMEOUT < (get_cycles() - start_time))
+ 			panic("GRU %p is malfunctioning\n", h);
+ 	}
++	if (gru_options & OPT_STATS)
++		update_mcs_stats(opc, get_cycles() - start_time);
  	return status;
  }
  
--#if defined CONFIG_IA64
--static void cch_allocate_set_asids(
--		  struct gru_context_configuration_handle *cch, int asidval)
-+int cch_allocate(struct gru_context_configuration_handle *cch,
-+		int asidval, int sizeavail, unsigned long cbrmap,
-+		unsigned long dsrmap)
- {
- 	int i;
- 
- 	for (i = 0; i < 8; i++) {
- 		cch->asid[i] = (asidval++);
--#if 0
--		/* ZZZ hugepages not supported yet */
--		if (i == RGN_HPAGE)
--			cch->sizeavail[i] = GRU_SIZEAVAIL(hpage_shift);
--		else
--#endif
--			cch->sizeavail[i] = GRU_SIZEAVAIL(PAGE_SHIFT);
-+		cch->sizeavail[i] = sizeavail;
- 	}
--}
--#elif defined CONFIG_X86_64
--static void cch_allocate_set_asids(
--		  struct gru_context_configuration_handle *cch, int asidval)
--{
--	int i;
--
--	for (i = 0; i < 8; i++) {
--		cch->asid[i] = asidval++;
--		cch->sizeavail[i] = GRU_SIZEAVAIL(PAGE_SHIFT) |
--			GRU_SIZEAVAIL(21);
--	}
--}
--#endif
--
--int cch_allocate(struct gru_context_configuration_handle *cch,
--			       int asidval, unsigned long cbrmap,
--			       unsigned long dsrmap)
--{
--	cch_allocate_set_asids(cch, asidval);
- 	cch->dsr_allocation_map = dsrmap;
- 	cch->cbr_allocation_map = cbrmap;
- 	cch->opc = CCHOP_ALLOCATE;
-Index: linux/drivers/misc/sgi-gru/gruhandles.h
+Index: linux/drivers/misc/sgi-gru/gruprocfs.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/gruhandles.h	2009-01-22 11:33:02.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/gruhandles.h	2009-01-22 11:33:56.000000000 -0600
-@@ -496,7 +496,7 @@ enum gru_cbr_state {
- #define GRUMAXINVAL		1024UL
- 
- int cch_allocate(struct gru_context_configuration_handle *cch,
--       int asidval, unsigned long cbrmap, unsigned long dsrmap);
-+       int asidval, int sizeavail, unsigned long cbrmap, unsigned long dsrmap);
- 
- int cch_start(struct gru_context_configuration_handle *cch);
- int cch_interrupt(struct gru_context_configuration_handle *cch);
-Index: linux/drivers/misc/sgi-gru/grukservices.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-01-22 11:33:09.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grukservices.c	2009-01-22 11:33:56.000000000 -0600
-@@ -672,7 +672,7 @@ int gru_kservices_init(struct gru_state 
- 	cch->tlb_int_enable = 0;
- 	cch->tfm_done_bit_enable = 0;
- 	cch->unmap_enable = 1;
--	err = cch_allocate(cch, 0, cbr_map, dsr_map);
-+	err = cch_allocate(cch, 0, 0, cbr_map, dsr_map);
- 	if (err) {
- 		gru_dbg(grudev,
- 			"Unable to allocate kernel CCH: gid %d, err %d\n",
-Index: linux/drivers/misc/sgi-gru/grumain.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grumain.c	2009-01-22 11:33:05.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grumain.c	2009-01-22 11:33:56.000000000 -0600
-@@ -326,6 +326,7 @@ static struct gru_thread_state *gru_allo
- 	gts->ts_vma = vma;
- 	gts->ts_tlb_int_select = -1;
- 	gts->ts_gms = gru_register_mmu_notifier();
-+	gts->ts_sizeavail = GRU_SIZEAVAIL(PAGE_SHIFT);
- 	if (!gts->ts_gms)
- 		goto err;
- 
-@@ -552,7 +553,8 @@ static void gru_load_context(struct gru_
- 		cch->tlb_int_select = gts->ts_tlb_int_select;
- 	}
- 	cch->tfm_done_bit_enable = 0;
--	err = cch_allocate(cch, asid, gts->ts_cbr_map, gts->ts_dsr_map);
-+	err = cch_allocate(cch, asid, gts->ts_sizeavail, gts->ts_cbr_map,
-+				gts->ts_dsr_map);
- 	if (err) {
- 		gru_dbg(grudev,
- 			"err %d: cch %p, gts %p, cbr 0x%lx, dsr 0x%lx\n",
-@@ -573,11 +575,12 @@ static void gru_load_context(struct gru_
- /*
-  * Update fields in an active CCH:
-  * 	- retarget interrupts on local blade
-+ * 	- update sizeavail mask
-  * 	- force a delayed context unload by clearing the CCH asids. This
-  * 	  forces TLB misses for new GRU instructions. The context is unloaded
-  * 	  when the next TLB miss occurs.
-  */
--static int gru_update_cch(struct gru_thread_state *gts, int int_select)
-+int gru_update_cch(struct gru_thread_state *gts, int force_unload)
- {
- 	struct gru_context_configuration_handle *cch;
- 	struct gru_state *gru = gts->ts_gru;
-@@ -591,9 +594,11 @@ static int gru_update_cch(struct gru_thr
- 			goto exit;
- 		if (cch_interrupt(cch))
- 			BUG();
--		if (int_select >= 0) {
--			gts->ts_tlb_int_select = int_select;
--			cch->tlb_int_select = int_select;
-+		if (!force_unload) {
-+			for (i = 0; i < 8; i++)
-+				cch->sizeavail[i] = gts->ts_sizeavail;
-+			gts->ts_tlb_int_select = gru_cpu_fault_map_id();
-+			cch->tlb_int_select = gru_cpu_fault_map_id();
- 		} else {
- 			for (i = 0; i < 8; i++)
- 				cch->asid[i] = 0;
-@@ -625,7 +630,7 @@ static int gru_retarget_intr(struct gru_
- 
- 	gru_dbg(grudev, "retarget from %d to %d\n", gts->ts_tlb_int_select,
- 		gru_cpu_fault_map_id());
--	return gru_update_cch(gts, gru_cpu_fault_map_id());
-+	return gru_update_cch(gts, 0);
+--- linux.orig/drivers/misc/sgi-gru/gruprocfs.c	2009-01-15 08:18:06.000000000 -0600
++++ linux/drivers/misc/sgi-gru/gruprocfs.c	2009-01-15 08:18:09.000000000 -0600
+@@ -122,6 +122,30 @@ static ssize_t statistics_write(struct f
+ 	return count;
  }
  
++static int mcs_statistics_show(struct seq_file *s, void *p)
++{
++	int op;
++	unsigned long total, count, max;
++	static char *id[] = {"cch_allocate", "cch_start", "cch_interrupt",
++		"cch_interrupt_sync", "cch_deallocate", "tgh_invalidate"};
++
++	for (op = 0; op < mcsop_last; op++) {
++		count = atomic_long_read(&mcs_op_statistics[op].count);
++		total = atomic_long_read(&mcs_op_statistics[op].total);
++		max = mcs_op_statistics[op].max;
++		seq_printf(s, "%-20s%12ld%12ld%12ld\n", id[op], count,
++			   count ? total / count : 0, max);
++	}
++	return 0;
++}
++
++static ssize_t mcs_statistics_write(struct file *file,
++			const char __user *userbuf, size_t count, loff_t *data)
++{
++	memset(mcs_op_statistics, 0, sizeof(mcs_op_statistics));
++	return count;
++}
++
+ static int options_show(struct seq_file *s, void *p)
+ {
+ 	seq_printf(s, "0x%lx\n", gru_options);
+@@ -137,6 +161,7 @@ static ssize_t options_write(struct file
+ 	if (copy_from_user
+ 	    (buf, userbuf, count < sizeof(buf) ? count : sizeof(buf)))
+ 		return -EFAULT;
++	buf[count - 1] = '\0';
+ 	if (!strict_strtoul(buf, 10, &val))
+ 		gru_options = val;
  
+@@ -233,6 +258,11 @@ static int statistics_open(struct inode 
+ 	return single_open(file, statistics_show, NULL);
+ }
+ 
++static int mcs_statistics_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, mcs_statistics_show, NULL);
++}
++
+ static int options_open(struct inode *inode, struct file *file)
+ {
+ 	return single_open(file, options_show, NULL);
+@@ -257,6 +287,14 @@ static const struct file_operations stat
+ 	.release 	= single_release,
+ };
+ 
++static const struct file_operations mcs_statistics_fops = {
++	.open 		= mcs_statistics_open,
++	.read 		= seq_read,
++	.write 		= mcs_statistics_write,
++	.llseek 	= seq_lseek,
++	.release 	= single_release,
++};
++
+ static const struct file_operations options_fops = {
+ 	.open 		= options_open,
+ 	.read 		= seq_read,
+@@ -285,6 +323,7 @@ static struct proc_entry {
+ 	struct proc_dir_entry *entry;
+ } proc_files[] = {
+ 	{"statistics", 0644, &statistics_fops},
++	{"mcs_statistics", 0644, &mcs_statistics_fops},
+ 	{"debug_options", 0644, &options_fops},
+ 	{"cch_status", 0444, &cch_fops},
+ 	{"gru_status", 0444, &gru_fops},
 Index: linux/drivers/misc/sgi-gru/grutables.h
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-01-22 11:33:09.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grutables.h	2009-01-22 11:33:56.000000000 -0600
-@@ -361,6 +361,7 @@ struct gru_thread_state {
- 	long			ts_user_options;/* misc user option flags */
- 	pid_t			ts_tgid_owner;	/* task that is using the
- 						   context - for migration */
-+	unsigned short		ts_sizeavail;	/* Pagesizes in use */
- 	int			ts_tsid;	/* thread that owns the
- 						   structure */
- 	int			ts_tlb_int_select;/* target cpu if interrupts
-@@ -374,6 +375,7 @@ struct gru_thread_state {
- 						   required for contest */
- 	char			ts_blade;	/* If >= 0, migrate context if
- 						   ref from diferent blade */
-+	char			ts_force_cch_reload;
- 	char			ts_force_unload;/* force context to be unloaded
- 						   after migration */
- 	char			ts_cbr_idx[GRU_CBR_AU];/* CBR numbers of each
-@@ -597,6 +599,7 @@ extern struct gru_thread_state *gru_find
- extern struct gru_thread_state *gru_alloc_thread_state(struct vm_area_struct
- 				*vma, int tsid);
- extern void gru_unload_context(struct gru_thread_state *gts, int savestate);
-+extern int gru_update_cch(struct gru_thread_state *gts, int force_unload);
- extern void gts_drop(struct gru_thread_state *gts);
- extern void gru_tgh_flush_init(struct gru_state *gru);
- extern int gru_kservices_init(struct gru_state *gru);
+--- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-01-15 08:18:08.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grutables.h	2009-01-15 08:18:09.000000000 -0600
+@@ -242,6 +242,14 @@ struct gru_stats_s {
+ enum mcs_op {cchop_allocate, cchop_start, cchop_interrupt, cchop_interrupt_sync,
+ 	cchop_deallocate, tghop_invalidate, mcsop_last};
+ 
++struct mcs_op_statistic {
++	atomic_long_t	count;
++	atomic_long_t	total;
++	unsigned long	max;
++};
++
++extern struct mcs_op_statistic mcs_op_statistics[mcsop_last];
++
+ #define OPT_DPRINT	1
+ #define OPT_STATS	2
+ #define GRU_QUICKLOOK	4
 
