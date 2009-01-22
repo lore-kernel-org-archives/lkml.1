@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbZAVWhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbZAVWla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbZAVWhw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 17:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZAVWho
+	id S1758934AbZAVWla (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 17:41:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZAVWlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 17:37:44 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:49229 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753890AbZAVWhn (ORCPT
+	Thu, 22 Jan 2009 17:41:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54760 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbZAVWlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 17:37:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=n2L0z+pe8jGFNF/iWQHHbVhETLTWL2B2ucNOEoEL3fIRd6/9xdx1XyRzpZAUfRo8+N
-         NU4fUdwpcXLArNNQsX1MFCA+1nGR5/AZpwOeQvD98v+s2sXze2Vf7QZ8rJKTGdGXrqRH
-         LRyb5MrMtFLciOFyjxX5dtLdHdludbhOurQvg=
+	Thu, 22 Jan 2009 17:41:19 -0500
+Message-ID: <4978F5F8.1040103@zytor.com>
+Date: Thu, 22 Jan 2009 14:40:56 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <4978C812.90702@gmail.com>
-References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI>
-	 <20090122114237.GA13845@atrey.karlin.mff.cuni.cz>
-	 <4978C812.90702@gmail.com>
-Date: Fri, 23 Jan 2009 00:37:41 +0200
-X-Google-Sender-Auth: 41f73cb5f7e7cc15
-Message-ID: <84144f020901221437g68cba782wf20153783d296e6@mail.gmail.com>
-Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in 
-	wb35_probe()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>, Avuton Olrich <avuton@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fail to early boot with v2.6.27-rc2 to at least v2.6.29-rc2 due
+ to dc1e35c
+References: <3aa654a40901190604l2149c592ne4fbf782fa46655f@mail.gmail.com> <4974CC8B.1030403@zytor.com> <3aa654a40901191131p7c141378m1bcd3baeed098e09@mail.gmail.com> <4974DD86.2090300@zytor.com> <20090119201115.GD31356@linux-os.sc.intel.com> <3aa654a40901191346i12cc736m40bebd422100a088@mail.gmail.com> <20090119215736.GE31356@linux-os.sc.intel.com> <4974F9A8.7060107@zytor.com> <87bpu1dyl6.fsf@basil.nowhere.org> <20090122222250.GI28352@linux-os.sc.intel.com>
+In-Reply-To: <20090122222250.GI28352@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 9:25 PM, Sandro Bonazzola
-<sandro.bonazzola@gmail.com> wrote:
-> #  iwlist wlan0 scan
-> wlan0     Interface doesn't support scanning.
->
-> #  iwlist wmaster0 scan
-> wmaster0  Interface doesn't support scanning.
->
-> # ifconfig wlan0 10.0.4.1
-> SIOCSIFADDR: No such device
-> wlan0: ERROR while getting interface flags: No such device
->
-> # ifconfig wmaster0 10.0.4.1
-> SIOCSIFFLAGS: Operation not supported
+Suresh Siddha wrote:
+> Ok. Here is the patch for this aswell. Thanks.
 
-Can you run that under strace? Looks to me like there indeed is a
-wmaster0 device but there's something fishy going on how we initialize
-it.
+I wonder if it wouldn't be better to do this in the CPUID code rather 
+than in the xsave code...
+
+	-hpa
