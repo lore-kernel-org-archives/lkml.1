@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZAVMH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZAVMPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZAVMH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 07:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZAVMHN
+	id S1756088AbZAVMPp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 07:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZAVMPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 07:07:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58853 "EHLO mx3.mail.elte.hu"
+	Thu, 22 Jan 2009 07:15:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58800 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZAVMHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 07:07:11 -0500
-Date: Thu, 22 Jan 2009 13:06:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Karel Zak <kzak@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-Message-ID: <20090122120620.GA24295@elte.hu>
-References: <20090121185021.GA8852@elte.hu> <20090122112238.GC7131@nb.net.home>
+	id S1752503AbZAVMPf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 07:15:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ykzhao <yakui.zhao@intel.com>
+Subject: Re: Suspned/resume can't work on the 2.6.29-rc1 but it can work well on the 2.6.28
+Date: Thu, 22 Jan 2009 13:14:47 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: travis@sgi.com, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <1232413680.3971.32.camel@yakui_zhao.sh.intel.com> <200901202132.04682.rjw@sisk.pl> <1232590009.3651.16.camel@localhost.localdomain>
+In-Reply-To: <1232590009.3651.16.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090122112238.GC7131@nb.net.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901221314.47801.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Karel Zak <kzak@redhat.com> wrote:
-
-> On Wed, Jan 21, 2009 at 07:50:21PM +0100, Ingo Molnar wrote:
-> >  - The 'perfstat' utility (ex 'timec') has been updated:
+On Thursday 22 January 2009, ykzhao wrote:
+> On Wed, 2009-01-21 at 04:32 +0800, Rafael J. Wysocki wrote:
+> > On Tuesday 20 January 2009, Ingo Molnar wrote:
+> > >
+> > > * Zhao Yakui <yakui.zhao@intel.com> wrote:
+> > >
+> > > > Hi, All
+> > > >     I do some tests about suspend/resume on my two boxes. One is HP
+> > > > laptop and the other is Asus EEEPC901. The suspend/resume can't work
+> > > > well. Even after core is selected as the test mode, it still can't work
+> > > > well.(echo core > /sys/power/pm_test)
+> > > >
+> > > >     Then I do the same test by using the 2.6.28 kernel. And
+> > > > suspend/resume can work well.
+> > > >
+> > > >     Of course I will try to use the git-bisect to identify the first bad
+> > > > commit ASAP.
+> > >
+> > > make sure you try this patch from Rafael first (it's not on lkml it
+> > > appears - Rafael, mind resending the patch to this thread?):
 > > 
-> >       http://people.redhat.com/mingo/perfcounters/perfstat.c
-> 
->  what are your planning to do with this utility? We can merge it into 
->  util-linux-ng.
+> > Appended, and it is at:
+> > http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commit;h=aa8c6c93747f7b55fa11e1624fec8ca33763a805
+> > 
+> > > Subject: [PATCH] PCI PM: Restore standard config registers of all devices early
+> > >         (was: Re: EeePC resume failure - timers)
+> > >
+> > >       Ingo
+> > 
+> > However, first please verify if the patches from
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12495 (3 patches)
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12422 (1 patch)
+> > 
+> > on top of the current mainline fix the problem.
+> Sorry for the slow response. Thanks for the patches.
+> After the four patches are applied on the 2.6.29-rc2 kernel, the
+> suspend/resume can work again on the two boxes. After the
+> commit(﻿aa8c6c93747f7b55fa11e1624fec8ca33763a805) is applied, it still
+> works well.
 
-That would be nice to do, if/once/when the subsystem and the syscall 
-itself is merged upstream. The syscall ABI might change until that 
-happens.
+Good, thanks for the confirmation.
+ 
+> But when I use git-bisect, the git-bisect reports that the
+> commit(9ea09af3bd3090e8349ca2899ca2011bd94cda85) is the bad commit.
+>  >stop_machine: introduce stop_machine_create/destroy
+>   As several patches are included in this patch set, I don't try whether
+> the suspend/resume can work well by reverting them.
 
-	Ingo
+This has been fixed by commit a0e280e0f33f6c859a235fb69a875ed8f3420388
+(stop_machine/cpu hotplug: fix disable_nonboot_cpus).
+
+Thanks,
+Rafael
