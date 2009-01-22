@@ -1,187 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZAVJCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZAVJF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZAVJCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbZAVJC2
+	id S1755841AbZAVJF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZAVJEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:02:28 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:47241 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZAVJC1 (ORCPT
+	Thu, 22 Jan 2009 04:04:55 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:5264 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753650AbZAVJEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:02:27 -0500
+	Thu, 22 Jan 2009 04:04:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=pY2mOPZbK7UbVLec8hnA18aJ3E70IwEFIC992voV+g2FkH4ybrhTzCSDot8ooCbItc
-         0WMahAZAQytOaUl2RxNlaHcenOpftjqLRnVGqmPMptyI4BntdHV7myM+07jXzl3pGuRc
-         DeH3lp3wPnRRm+hT9UtvRlgA0BcgPrneTCcl8=
-Date: Thu, 22 Jan 2009 10:02:22 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: various fixes and
-	features
-Message-ID: <20090122090221.GA5891@nowhere>
-References: <4977cacb.1358560a.19ec.ffffcb09@mx.google.com> <alpine.DEB.1.10.0901212037090.1737@gandalf.stny.rr.com>
+        b=ElK13O8fxwmQHuZ/nK1tBwdsIYpmfQLpziiBwLsE+3Z69kcxwaMxGomsx9VD65leYD
+         iZjy8HclEKUZ2HubYlbAX/wsO6Bxkvq5m15vYKYG4J7+mkwKCtxp8ncB9ssWxxhp2DKv
+         OrjOHtIoRgTS2j95MOReNMAAnJMewV9fuTnOY=
+Date: Thu, 22 Jan 2009 09:04:42 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
+Message-ID: <20090122090442.GB11139@ff.dom.local>
+References: <20090120102053.GA17004@ff.dom.local> <20090120103122.GC9167@ioremap.net> <20090120110144.GB17004@ff.dom.local> <20090120.091616.224452074.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901212037090.1737@gandalf.stny.rr.com>
+In-Reply-To: <20090120.091616.224452074.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 08:43:24PM -0500, Steven Rostedt wrote:
+On Tue, Jan 20, 2009 at 09:16:16AM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Tue, 20 Jan 2009 11:01:44 +0000
 > 
-> On Wed, 21 Jan 2009, Frederic Weisbecker wrote:
-> 
-> > I thought I would have the time to implement the callbacks in trace_event too but I
-> > really have to sleep :-(
-> > That will be for later.
-> 
-> No need to rush. Get to sleep.
-> 
-> > --
+> > On Tue, Jan 20, 2009 at 01:31:22PM +0300, Evgeniy Polyakov wrote:
+> > > On Tue, Jan 20, 2009 at 10:20:53AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > > > Good question! Alas I can't check this soon, but if it's really like
+> > > > this, of course this needs some better idea and rework. (BTW, I'd like
+> > > > to prevent here as much as possible some strange activities like 1
+> > > > byte (payload) packets getting full pages without any accounting.)
+> > > 
+> > > I believe approach to meet all our goals is to have own network memory
+> > > allocator, so that each skb could have its payload in the fragments, we
+> > > would not suffer from the heavy fragmentation and power-of-two overhead
+> > > for the larger MTUs, have a reserve for the OOM condition and generally
+> > > do not depend on the main system behaviour.
 > > 
-> > This patch brings various bugfixes:
-> > 
-> > _ Drop the first irrelevant task switch on the very beginning of a trace.
-> >   But actually that only solves the first time one does print the trace file.
-> >   I have to fix the others cases too.
+> > 100% right! But I guess we need this current fix for -stable, and I'm
+> > a bit worried about safety.
 > 
-> I'm not sure what you mean by the first time here. Can you explain it
-> a bit better.
+> Jarek, we already have a page and offset you can use.
+> 
+> It's called sk_sndmsg_page but that is just the (current) name.
+> Nothing prevents you from reusing it for your purposes here.
 
+It seems this sk_sndmsg_page usage (refcounting) isn't consistent.
+I used here tcp_sndmsg() way, but I think I'll go back to this question
+soon.
 
-On the very first time one cat the trace file, the per cpu pid array is init to -1.
-So the comparison between the current pid and the previous one (-1) is always false
-and then a task switch is printed.
-This one is fixed.
+Thanks,
+Jarek P.
 
-The other cases are when one cat the trace file after closing it.
-The pid array is not anymore filled with -1 values but with old traced pid, and then
-a task switch is printed here too.
-I will have to hook on open and reset the pid table to -1 to fix that.
+------------> take 3
 
+net: Optimize memory usage when splicing from sockets.
+
+The recent fix of data corruption when splicing from sockets uses
+memory very inefficiently allocating a new page to copy each chunk of
+linear part of skb. This patch uses the same page until it's full
+(almost) by caching the page in sk_sndmsg_page field.
+
+With changes from David S. Miller <davem@davemloft.net>
+
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+
+Tested-by: needed...
+---
+
+ net/core/skbuff.c |   45 +++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 35 insertions(+), 10 deletions(-)
+
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 2e5f2ca..2e64c1b 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -1333,14 +1333,39 @@ static void sock_spd_release(struct splice_pipe_desc *spd, unsigned int i)
+ 	put_page(spd->pages[i]);
+ }
  
-> > _ Drop the OVERHEAD word from the headers, the DURATION word is sufficient and will not
-> >   overlap other columns.
-> > _ Make the headers fit well their respective columns whatever the selected options.
-> > 
-> > Ie, default options:
-> > 
-> > # tracer: function_graph
-> > #
-> > # CPU  DURATION                  FUNCTION CALLS
-> > # |     |   |                     |   |   |   |
-> > 
-> >  1)   0.646 us    |                    }
-> >  1)               |                    mem_cgroup_del_lru_list() {
-> >  1)   0.624 us    |                      lookup_page_cgroup();
-> >  1)   1.970 us    |                    }
-> > 
-> > echo funcgraph-proc > trace_options
-> > 
-> > # tracer: function_graph
-> > #
-> > # CPU  TASK/PID        DURATION                  FUNCTION CALLS
-> > # |    |    |           |   |                     |   |   |   |
-> > 
-> >  0)   bash-2937    |   0.895 us    |                }
-> >  0)   bash-2937    |   0.888 us    |                __rcu_read_unlock();
-> >  0)   bash-2937    |   0.864 us    |                conv_uni_to_pc();
-> >  0)   bash-2937    |   1.015 us    |                __rcu_read_lock();
-> > 
-> > echo nofuncgraph-cpu > trace_options
-> > echo nofuncgraph-proc > trace_options
-> > 
-> > # tracer: function_graph
-> > #
-> > #   DURATION                  FUNCTION CALLS
-> > #    |   |                     |   |   |   |
-> > 
-> >   3.752 us    |                  native_pud_val();
-> >   0.616 us    |                  native_pud_val();
-> >   0.624 us    |                  native_pmd_val();
-> > 
-> > 
-> > About features, one can now disable the duration (this will hide the overhead too
-> > for convenient reasons and because on  doesn't need overhead if it hasn't the duration
-> > 
-> > echo nofuncgraph-duration > trace_options
-> > 
-> > # tracer: function_graph
-> > #
-> > #                FUNCTION CALLS
-> > #                |   |   |   |
-> > 
-> >           cap_vm_enough_memory() {
-> >             __vm_enough_memory() {
-> >               vm_acct_memory();
-> >             }
-> >           }
-> >         }
-> > 
-> > And at last, an option to print the absolute time:
-> > 
-> > //Restart from default options
-> > echo funcgraph-abstime > trace_options
-> > 
-> > # tracer: function_graph
-> > #
-> > #      TIME       CPU  DURATION                  FUNCTION CALLS
-> > #       |         |     |   |                     |   |   |   |
-> > 
-> >   261.339774 |   1) + 42.823 us   |    }
-> >   261.339775 |   1)   1.045 us    |    _spin_lock_irq();
-> >   261.339777 |   1)   0.940 us    |    _spin_lock_irqsave();
-> >   261.339778 |   1)   0.752 us    |    _spin_unlock_irqrestore();
-> >   261.339780 |   1)   0.857 us    |    _spin_unlock_irq();
-> >   261.339782 |   1)               |    flush_to_ldisc() {
-> >   261.339783 |   1)               |      tty_ldisc_ref() {
-> >   261.339783 |   1)               |        tty_ldisc_try() {
-> >   261.339784 |   1)   1.075 us    |          _spin_lock_irqsave();
-> >   261.339786 |   1)   0.842 us    |          _spin_unlock_irqrestore();
-> >   261.339788 |   1)   4.211 us    |        }
-> >   261.339788 |   1)   5.662 us    |      }
-> > 
-> > The format is seconds.usecs
-> > I guess no one needs the nanosec precision here, the main goal is to find when happened
-> > the events on a cpu when the trace switches from one cpu to another.
-> > 
-> > ie:
-> > 
-> >   274.874760 |   1)   0.676 us    |      _spin_unlock();
-> >   274.874762 |   1)   0.609 us    |      native_load_sp0();
-> >   274.874763 |   1)   0.602 us    |      native_load_tls();
-> >   274.878739 |   0)   0.722 us    |                  }
-> >   274.878740 |   0)   0.714 us    |                  native_pmd_val();
-> >   274.878741 |   0)   0.730 us    |                  native_pmd_val();
-> > 
-> > Here there is a 4000 usecs difference when we switch the cpu.
-> 
-> These examples will most likely be cut from the change log. Updating
-> ftrace.txt would be nice ;-)
-
-
-Yes, definetly. I didn't drop my hands into this yet because of my
-messy english :-)
-But I know some people who could review it :-)
-
-
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  kernel/trace/trace_functions_graph.c |  245 +++++++++++++++++++++-------------
-> >  1 files changed, 151 insertions(+), 94 deletions(-)
-> > 
-> 
-> -- Steve
-> 
-
-Thanks.
-
+-static inline struct page *linear_to_page(struct page *page, unsigned int len,
+-					  unsigned int offset)
+-{
+-	struct page *p = alloc_pages(GFP_KERNEL, 0);
++static inline struct page *linear_to_page(struct page *page, unsigned int *len,
++					  unsigned int *offset,
++					  struct sk_buff *skb)
++{
++	struct sock *sk = skb->sk;
++	struct page *p = sk->sk_sndmsg_page;
++	unsigned int off;
++
++	if (!p) {
++new_page:
++		p = sk->sk_sndmsg_page = alloc_pages(sk->sk_allocation, 0);
++		if (!p)
++			return NULL;
+ 
+-	if (!p)
+-		return NULL;
+-	memcpy(page_address(p) + offset, page_address(page) + offset, len);
++		off = sk->sk_sndmsg_off = 0;
++		/* hold one ref to this page until it's full */
++	} else {
++		unsigned int mlen;
++
++		off = sk->sk_sndmsg_off;
++		mlen = PAGE_SIZE - off;
++		if (mlen < 64 && mlen < *len) {
++			put_page(p);
++			goto new_page;
++		}
++
++		*len = min_t(unsigned int, *len, mlen);
++	}
++
++	memcpy(page_address(p) + off, page_address(page) + *offset, *len);
++	sk->sk_sndmsg_off += *len;
++	*offset = off;
++	get_page(p);
+ 
+ 	return p;
+ }
+@@ -1349,21 +1374,21 @@ static inline struct page *linear_to_page(struct page *page, unsigned int len,
+  * Fill page/offset/length into spd, if it can hold more pages.
+  */
+ static inline int spd_fill_page(struct splice_pipe_desc *spd, struct page *page,
+-				unsigned int len, unsigned int offset,
++				unsigned int *len, unsigned int offset,
+ 				struct sk_buff *skb, int linear)
+ {
+ 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
+ 		return 1;
+ 
+ 	if (linear) {
+-		page = linear_to_page(page, len, offset);
++		page = linear_to_page(page, len, &offset, skb);
+ 		if (!page)
+ 			return 1;
+ 	} else
+ 		get_page(page);
+ 
+ 	spd->pages[spd->nr_pages] = page;
+-	spd->partial[spd->nr_pages].len = len;
++	spd->partial[spd->nr_pages].len = *len;
+ 	spd->partial[spd->nr_pages].offset = offset;
+ 	spd->nr_pages++;
+ 
+@@ -1405,7 +1430,7 @@ static inline int __splice_segment(struct page *page, unsigned int poff,
+ 		/* the linear region may spread across several pages  */
+ 		flen = min_t(unsigned int, flen, PAGE_SIZE - poff);
+ 
+-		if (spd_fill_page(spd, page, flen, poff, skb, linear))
++		if (spd_fill_page(spd, page, &flen, poff, skb, linear))
+ 			return 1;
+ 
+ 		__segment_seek(&page, &poff, &plen, flen);
