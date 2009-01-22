@@ -1,157 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZAVQpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZAVQtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZAVQpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 11:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbZAVQol
+	id S1756558AbZAVQtl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 11:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbZAVQtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 11:44:41 -0500
-Received: from cardassian.kabelfoon.nl ([62.45.45.18]:53379 "EHLO
-	cardassian.kabelfoon.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757000AbZAVQoj (ORCPT
+	Thu, 22 Jan 2009 11:49:32 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:50694 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbZAVQtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 11:44:39 -0500
-X-Greylist: delayed 1599 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Jan 2009 11:44:38 EST
-Message-ID: <49789C33.1050102@caiway.nl>
-Date: Thu, 22 Jan 2009 17:17:55 +0100
-From: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 22 Jan 2009 11:49:31 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 22 Jan 2009 08:49:21 -0800
+In-Reply-To: <m13afch1sw.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Wed\, 21 Jan 2009 11\:55\:11 -0800")
+Message-ID: <m1k58nffqm.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+References: <m13afch1sw.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH 0/4] [Target_Core_Mod]: Add SPC-3 reserverations infrastructure
-References: <1232612501.1274.526.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1232612501.1274.526.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 
+X-Spam-Combo: ;Greg Kroah-Hartman <gregkh@suse.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH] sysfs: Reference sysfs_dirent from sysfs inodes.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicholas,
 
-I just read your email on lkml.org and just had to reply...
+The sysfs_dirent serves as both an inode and a directory entry
+for sysfs.  To prevent the sysfs inode numbers from being freed
+prematurely hold a reference to sysfs_dirent from the sysfs inode.
 
-Nicholas A. Bellinger wrote:
-> Greetings all,
->
-> This series of patches adds SCSI reservation infrastructure to
-> Target_Core_Mod/ConfigFS for current legacy SPC-2 reservations, as well
-> as WIP code for adding SPC-3 compliant persistent reservations to
-> Target_Core_Mod.
->   
-Thanks for this introduction and mentioning SCSI in it. Because the rest 
-of your mail barely shows the relation.
-If I understand correctly, this does not apply to ATA/SATA disks? What 
-about network storage?
->  drivers/lio-core/Makefile                |    1 -
->  drivers/lio-core/target_core_base.h      |   36 +--
->  drivers/lio-core/target_core_configfs.c  |  137 +---------
->  drivers/lio-core/target_core_device.c    |    1 -
->  drivers/lio-core/target_core_pr.c        |  427 ------------------------------
->  drivers/lio-core/target_core_pr.h        |   25 --
->  drivers/lio-core/target_core_tpg.c       |    4 +
->  drivers/lio-core/target_core_transport.c |  315 ++++++++++++----------
->  drivers/lio-core/target_core_transport.h |    4 +-
->  include/scsi/scsi.h                      |   22 --
->  10 files changed, 186 insertions(+), 786 deletions(-)
->   
-Just a tiny hint there by that change to scsi.h.
-> On target_core_mod module load and /sys/kernel/config/target/core configuration with
->   
-And no hint here at all. What is an admin to expect when he sees the 
-above path?
-I'm not an expert in /sys at all, but /sys/kernel/config makes some 
-sense. But what gets configured in /sys/kernel/config/target?
-I usually go 'round in the embedded world. And 'target' is the tiny 
-board that you develop for and that ends up in some or other device that 
-customers buy.
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
+ fs/sysfs/inode.c |   10 ++++++++++
+ fs/sysfs/mount.c |    1 +
+ fs/sysfs/sysfs.h |    1 +
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-Hope you get the idea.
-- shouldn't it be /sys/kernel/config/scsi/target or somesuch?
-- perhaps the code should move to drivers/scsi?
-
-Thanks,
-Jan Evert
-
-
-> Target_Core_Mod/IBLOCK, Target_Core_Mod/pSCSI, and Target_Core_Mod/RAMDISK_MCP $STORAGE_OBJECTS:
->
-> TARGET_CORE[0]: Loading Generic Kernel Storage Engine: v3.0.0 on Linux/i686 on 2.6.28
-> TARGET_CORE[0]: Initialized ConfigFS Fabric Infrastructure: v1.0.0 on Linux/i686 on 2.6.28
-> SE_PC[1] - Registered Plugin Class: TRANSPORT
-> PLUGIN_TRANSPORT[1] - pscsi registered
-> PLUGIN_TRANSPORT[4] - iblock registered
-> PLUGIN_TRANSPORT[5] - rd_dr registered
-> PLUGIN_TRANSPORT[6] - rd_mcp registered
-> PLUGIN_TRANSPORT[7] - fileio registered
-> SE_PC[2] - Registered Plugin Class: OBJ
-> PLUGIN_OBJ[1] - dev registered
-> Target_Core_ConfigFS: Located se_plugin: cfa41090 plugin_name: iblock hba_type: 4 plugin_dep_id: 0
-> CORE_HBA[0] - Linux-iSCSI.org iBlock HBA Driver v3.0 on Generic Target Core Stack v3.0.0
-> CORE_HBA[0] - Attached iBlock HBA: 0 to Generic Target Core TCQ Depth: 512
-> CORE_HBA[0] - Attached HBA to Generic Target Core
-> IBLOCK: Allocated ib_dev for lvm_test0
-> Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cfa40000 se_dev_su_ptr: c8c74400
-> IBLOCK: Claiming struct block_device: cf63cf00
-> IBLOCK: Created bio_set() for major/minor: 254:2
-> iblock: Using SPC2_RESERVATIONS emulation
-> CORE_iBLOCK[0] - Activating Device with TCQ: 0 at Major: 254 Minor 2
->   Vendor: LIO-ORG   Model: IBLOCK            Revision: v3.0
->   Type:   Direct-Access                      ANSI SCSI revision: 02
-> T10 EVPD Unit Serial Number: 1234567890:0_254_2
-> T10 EVPD Page Length: 37
-> T10 EVPD Identifer Length: 33
-> T10 EVPD Identifier Association: addressed logical unit
-> T10 EVPD Identifier Type: T10 Vendor ID based
-> T10 EVPD ASCII Device Identifier: LIO-ORG IBLOCK:1234567890:0_254_2
-> Target_Core_ConfigFS: Registered iblock se_dev->se_dev_ptr: c7f95800 from fd
-> Target_Core_ConfigFS: Located se_plugin: cfa41024 plugin_name: pscsi hba_type: 1 plugin_dep_id: 0
-> CORE_HBA[1] - Linux-iSCSI.org Parallel SCSI HBA Driver v3.0 on Generic Target Core Stack v3.0.0
-> CORE_HBA[1] - MPT SPI Host
-> CORE_HBA[1] - Attached Parallel SCSI HBA to Generic Target Core with TCQ Depth: 127 MaxSectors: 8192
-> CORE_HBA[1] - Attached HBA to Generic Target Core
-> PSCSI: Allocated pdv: cd047160 for sdd
-> Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cfa43800 se_dev_su_ptr: cd047160
-> PSCSI: Claiming cf2d8000 Major:Minor - 8:48
-> pscsi: Using SPC_PASSTHROUGH, no reservation emulation
-> CORE_PSCSI[0] - Activating Device with TCQ: 32 at Parallel SCSI Location (Channel/Target/LUN) 0/3/0
->   Vendor: VMware,   Model: VMware Virtual S  Revision: 1.0 
->   Type:   Direct-Access                      ANSI SCSI revision: 02
-> PSCSI Status Byte exception at task: ca63d000 CDB: 0x12 Result: 0x08000002
-> CORE_PSCSI[0] - Added TYPE_DISK for 0:3:0
-> Target_Core_ConfigFS: Registered pscsi se_dev->se_dev_ptr: c8f92000 from fd
-> Target_Core_ConfigFS: Located se_plugin: cfa410d8 plugin_name: rd_mcp hba_type: 6 plugin_dep_id: 0
-> CORE_HBA[2] - Linux-iSCSI.org Ramdisk HBA Driver v3.0 on Generic Target Core Stack v3.0.0
-> CORE_HBA[2] - Attached Ramdisk HBA: 0 to Generic Target Core TCQ Depth: 256 MaxSectors: 1024
-> CORE_HBA[2] - Attached HBA to Generic Target Core
-> Target_Core_ConfigFS: Allocated se_subsystem_dev_t: c85bf800 se_dev_su_ptr: c8fe5880
-> RAMDISK: Referencing Page Count: 16384
-> CORE_RD[0] - Built Ramdisk Device ID: 0 space of 16384 pages in 6 tables
-> rd_mcp: Using SPC2_RESERVATIONS emulation
-> CORE_RD[0] - Activating Device with TCQ: 0 at Ramdisk Device ID: 0
->   Vendor: LIO-ORG   Model: RAMDISK-MCP       Revision: v3.0
->   Type:   Direct-Access                      ANSI SCSI revision: 02
-> T10 EVPD Unit Serial Number: 1234567890:2_0
-> T10 EVPD Page Length: 38
-> T10 EVPD Identifer Length: 34
-> T10 EVPD Identifier Association: addressed logical unit
-> T10 EVPD Identifier Type: T10 Vendor ID based
-> T10 EVPD ASCII Device Identifier: LIO-ORG RAMDISK-MCP:1234567890:2_0
-> CORE_RD[0] - Added LIO MEMCPY Ramdisk Device ID: 0 of 16384 pages in 6 tables, 67108864 total bytes
-> Target_Core_ConfigFS: Registered se_dev->se_dev_ptr: c8f93400
->
-> <SNIP>
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->   
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index dfa3d94..dd269df 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -147,6 +147,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ {
+ 	struct bin_attribute *bin_attr;
+ 
++	inode->i_private = sysfs_get(sd);
+ 	inode->i_mapping->a_ops = &sysfs_aops;
+ 	inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
+ 	inode->i_op = &sysfs_inode_operations;
+@@ -214,6 +215,15 @@ struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
+ 	return inode;
+ }
+ 
++void sysfs_delete_inode(struct inode *inode)
++{
++	struct sysfs_dirent *sd  = inode->i_private;
++
++	truncate_inode_pages(&inode->i_data, 0);
++	clear_inode(inode);
++	sysfs_put(sd);
++}
++
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
+ {
+ 	struct sysfs_addrm_cxt acxt;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index f3e34fd..59fcd58 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -30,6 +30,7 @@ struct kmem_cache *sysfs_dir_cachep;
+ static const struct super_operations sysfs_ops = {
+ 	.statfs		= simple_statfs,
+ 	.drop_inode	= generic_delete_inode,
++	.delete_inode	= sysfs_delete_inode,
+ };
+ 
+ struct sysfs_dirent sysfs_root = {
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 93c6d6b..9055d04 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -145,6 +145,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+  * inode.c
+  */
+ struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++void sysfs_delete_inode(struct inode *inode);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+ int sysfs_inode_init(void);
+-- 
+1.5.6.3
 
