@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbZAVNfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZAVNhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523AbZAVNfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 08:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZAVNf0
+	id S1757605AbZAVNhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 08:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZAVNhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 08:35:26 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:45849 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbZAVNfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 08:35:25 -0500
-Date: Thu, 22 Jan 2009 14:34:46 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Andrew S. Johnson" <andy@asjohnson.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12426] TMDC Joystick no longer works in kernel 2.6.28
-In-Reply-To: <200901201848.32080.andy@asjohnson.com>
-Message-ID: <alpine.LRH.1.10.0901221432320.13438@twin.jikos.cz>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.1iB.fJRdJB@chimera> <200901201848.32080.andy@asjohnson.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Thu, 22 Jan 2009 08:37:04 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:42496 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbZAVNhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 08:37:03 -0500
+Message-ID: <4978767D.4060700@intertwingly.net>
+Date: Thu, 22 Jan 2009 08:37:01 -0500
+From: Sam Ruby <rubys@intertwingly.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Jan 2009, Andrew S. Johnson wrote:
+Hardware summary: http://tinyurl.com/ap79ra
+APIC details: http://intertwingly.net/stories/2009/01/22/
+Note acpidump.err: Wrong checksum for OEMB!
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12426
-> > Subject		: TMDC Joystick no longer works in kernel 2.6.28
-> > Submitter	: Andrew S. Johnson <andy@asjohnson.com>
-> > Date		: 2009-01-10 21:53 (10 days old)
-> > References	:
-> > http://marc.info/?l=linux-kernel&m=123162486415366&w=4
-> I have installed kernel 2.6.28.1, and this still does not work.
+Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
 
-What exactly doesn't work? Namely:
+[    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+[    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
+  Boot with apic=debug and send a report.  Then try booting with the 
+'noapic' option.
+[    0.296001]
 
-- do you see jsX node appearing in /dev after you modprobe joydev 
-  manually?
-- do you see the corresponding entry for the gameport in 
-  /sys/bus/gameport/{devices,drivers} ?
+Able to get past this issue using "noapic", at which point things mostly 
+work, but rsync of large iso images result in corrupt files.  Able to 
+copy those same files using Vista on the same machine, or using Hardy on 
+another machine.  This problem may not be related to the above, but it 
+seems plausible to me that this might be an interrupt issue.
 
--- 
-Jiri Kosina
-SUSE Labs
+memtest86+ runs clean.
 
+Quite willing to invest time in installing kernels or distributions on 
+fresh hard drives, run tests, obtain debug information, and report back.
+
+More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
+
+Not subscribed, but will actively monitor the web archives for this 
+mailing list for the next several days.
+
+- Sam Ruby
