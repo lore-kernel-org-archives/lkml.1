@@ -1,171 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbZAVFuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZAVGET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbZAVFuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 00:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZAVFuk
+	id S1757407AbZAVGET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 01:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZAVGEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 00:50:40 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:38897 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752193AbZAVFuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 00:50:40 -0500
-In-Reply-To: <20090122043747.GU10158@disturbed>
-References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au> <20090122043747.GU10158@disturbed>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <23D29935-1EEE-4B94-A3FC-0DFA5B89E388@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Sesterhenn <snakebyte@gmx.de>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       Pavel Machek <pavel@suse.cz>, npiggin@yahoo.com.au,
-       Chris Mason <chris.mason@oracle.com>
+	Thu, 22 Jan 2009 01:04:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52147 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754777AbZAVGEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 01:04:06 -0500
+Message-ID: <49780C3A.1050601@cn.fujitsu.com>
+Date: Thu, 22 Jan 2009 14:03:38 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] workqueue: not allow recursion run_workqueue
+References: <4976EE11.7010007@cn.fujitsu.com> <1232536373.4847.115.camel@laptop>
+In-Reply-To: <1232536373.4847.115.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Felix Blyakher <felixb@sgi.com>
-Subject: Re: [PATCH] Re: Corrupted XFS log replay oops.
-Date: Wed, 21 Jan 2009 23:50:02 -0600
-To: Dave Chinner <david@fromorbit.com>
-X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jan 21, 2009, at 10:37 PM, Dave Chinner wrote:
-
-> On Wed, Jan 21, 2009 at 03:03:06PM +1100, Nick Piggin wrote:
->> On Wednesday 21 January 2009 14:57:03 Dave Chinner wrote:
->>>> [  235.250167] ------------[ cut here ]------------
->>>> [  235.250354] kernel BUG at mm/vmalloc.c:164!
->>>> [  235.250478] invalid opcode: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
->>>> [  235.250869] last sysfs file: /sys/block/ram9/range
->>>> [  235.250998] Modules linked in:
-> ......
->>>> [  235.251037] Call Trace:
->>>> [  235.251037]  [<c01414cf>] ? trace_hardirqs_on+0xb/0xd
->>>> [  235.251037]  [<c018367c>] ? vm_map_ram+0x36e/0x38a
->>>> [  235.251037]  [<c03b2e1e>] ? _xfs_buf_map_pages+0x42/0x6d
->>>> [  235.251037]  [<c03b3773>] ? xfs_buf_get_noaddr+0xbc/0x11f
->>>> [  235.251037]  [<c03a2406>] ? xlog_get_bp+0x5a/0x5d
->>>> [  235.251037]  [<c03a28fa>] ? xlog_find_verify_log_record 
->>>> +0x26/0x208
->>>> [  235.251037]  [<c03a3521>] ? xlog_find_zeroed+0x1d6/0x214
->>>> [  235.251037]  [<c03a3584>] ? xlog_find_head+0x25/0x358
->>>
->>> .....
->>>
->>> Ok, that's crashing in the new vmap code. It might take a couple
->>> of days before I get a chance to look at this, but I've cc'd Nick  
->>> Piggin
->>> in case he has a chance to look at it before that. It's probably
->>> an XFS bug, anyway.
+Peter Zijlstra wrote:
+> On Wed, 2009-01-21 at 17:42 +0800, Lai Jiangshan wrote:
+>> 1) lockdep will complain when recursion run_workqueue
+>> 2) works is not run orderly when recursion run_workqueue
 >>
->> Hmm, it is crashing in BUG_ON(addr >= end); where this could happen
->> if XFS asks to map a really huge (or -ve) number of pages and wraps
->> the range, or if vmap subsystem returns an address right near the
->> end of the address range and addr+size wraps (which would be a bug
->> in vmap of course, but I think maybe less likely).
->
-> It's a zero length range, not a negative value. A debug XFS would
-> have assert failed on it, but it was completely unchecked on
-> production builds. The following patch checks the length of blocks
-> to build/read/write for being valid. Instead of an oops, we get:
->
-> [ 1572.665001] XFS mounting filesystem loop0
-> [ 1572.666942] XFS: Invalid block length (0x0) given for buffer
-> [ 1572.667141] XFS: Log inconsistent (didn't find previous header)
-> [ 1572.667141] XFS: empty log check failed
-> [ 1572.667141] XFS: log mount/recovery failed: error 5
-> [ 1572.671487] XFS: log mount failed
->
-> Cheers,
->
-> Dave.
-> -- 
-> Dave Chinner
-> david@fromorbit.com
->
-> [XFS] Check buffer lengths in log recovery
->
-> Before trying to obtain, read or write a buffer,
-> check that the buffer length is actually valid. If
-> it is not valid, then something read in the recovery
-> process has been corrupted and we should abort
-> recovery.
->
-> Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+>> 3) BUG!
+>>    We use recursion run_workqueue to hidden deadlock when
+>>    keventd trying to flush its own queue.
+>>
+>>    It's bug. When flush_workqueue()(nested in a work callback)returns,
+>>    the workqueue is not really flushed, the sequence statement of
+>>    this work callback will do some thing bad.
+>>
+>>    So we should not allow workqueue trying to flush its own queue.
+> 
+> The patch looks good, but I'm utterly failing to comprehend this
+> changelog. What exactly can go wrong (other than the obvious too deep
+> nest and the fact that lockdep will complain)?
 
-Reviewed-by: Felix Blyakher <felixb@sgi.com>
+void do_some_cleanup(void)
+{
+	find_all_queued_work_struct_and_mark_it_old();
+	flush_workqueue(workqueue);
+	/* we can destroy old work_struct for we have flushed them */
+	destroy_old_work_structs();
+}
 
-> ---
->  fs/xfs/xfs_log_recover.c |   31 +++++++++++++++++++++++++------
->  1 files changed, 25 insertions(+), 6 deletions(-)
->
-> diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-> index 35cca98..b1047de 100644
-> --- a/fs/xfs/xfs_log_recover.c
-> +++ b/fs/xfs/xfs_log_recover.c
-> @@ -70,16 +70,21 @@ STATIC void	xlog_recover_check_summary(xlog_t *);
->  xfs_buf_t *
->  xlog_get_bp(
->  	xlog_t		*log,
-> -	int		num_bblks)
-> +	int		nbblks)
->  {
-> -	ASSERT(num_bblks > 0);
-> +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-> +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer",  
-> nbblks);
-> +		XFS_ERROR_REPORT("xlog_get_bp(1)",
-> +				 XFS_ERRLEVEL_HIGH, log->l_mp);
-> +		return NULL;
-> +	}
->
->  	if (log->l_sectbb_log) {
-> -		if (num_bblks > 1)
-> -			num_bblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
-> -		num_bblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, num_bblks);
-> +		if (nbblks > 1)
-> +			nbblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
-> +		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
->  	}
-> -	return xfs_buf_get_noaddr(BBTOB(num_bblks), log->l_mp- 
-> >m_logdev_targp);
-> +	return xfs_buf_get_noaddr(BBTOB(nbblks), log->l_mp->m_logdev_targp);
->  }
->
->  void
-> @@ -102,6 +107,13 @@ xlog_bread(
->  {
->  	int		error;
->
-> +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-> +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer",  
-> nbblks);
-> +		XFS_ERROR_REPORT("xlog_bread(1)",
-> +				 XFS_ERRLEVEL_HIGH, log->l_mp);
-> +		return EFSCORRUPTED;
-> +	}
-> +
->  	if (log->l_sectbb_log) {
->  		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
->  		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
-> @@ -139,6 +151,13 @@ xlog_bwrite(
->  {
->  	int		error;
->
-> +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-> +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer",  
-> nbblks);
-> +		XFS_ERROR_REPORT("xlog_bwrite(1)",
-> +				 XFS_ERRLEVEL_HIGH, log->l_mp);
-> +		return EFSCORRUPTED;
-> +	}
-> +
->  	if (log->l_sectbb_log) {
->  		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
->  		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
->
-> _______________________________________________
-> xfs mailing list
-> xfs@oss.sgi.com
-> http://oss.sgi.com/mailman/listinfo/xfs
+if work->func() called do_some_cleanup(), it's very probably a bug.
+
+> 
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+>> index 2f44583..1129cde 100644
+>> --- a/kernel/workqueue.c
+>> +++ b/kernel/workqueue.c
+>> @@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
+>>  
+>>  	struct workqueue_struct *wq;
+>>  	struct task_struct *thread;
+>> -
+>> -	int run_depth;		/* Detect run_workqueue() recursion depth */
+>>  } ____cacheline_aligned;
+>>  
+>>  /*
+>> @@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+>>  static void run_workqueue(struct cpu_workqueue_struct *cwq)
+>>  {
+>>  	spin_lock_irq(&cwq->lock);
+>> -	cwq->run_depth++;
+>> -	if (cwq->run_depth > 3) {
+>> -		/* morton gets to eat his hat */
+>> -		printk("%s: recursion depth exceeded: %d\n",
+>> -			__func__, cwq->run_depth);
+>> -		dump_stack();
+>> -	}
+>>  	while (!list_empty(&cwq->worklist)) {
+>>  		struct work_struct *work = list_entry(cwq->worklist.next,
+>>  						struct work_struct, entry);
+>> @@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+>>  		spin_lock_irq(&cwq->lock);
+>>  		cwq->current_work = NULL;
+>>  	}
+>> -	cwq->run_depth--;
+>>  	spin_unlock_irq(&cwq->lock);
+>>  }
+>>  
+>> @@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+>>  
+>>  static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+>>  {
+>> -	int active;
+>> +	int active = 0;
+>> +	struct wq_barrier barr;
+>>  
+>> -	if (cwq->thread == current) {
+>> -		/*
+>> -		 * Probably keventd trying to flush its own queue. So simply run
+>> -		 * it by hand rather than deadlocking.
+>> -		 */
+>> -		run_workqueue(cwq);
+>> -		active = 1;
+>> -	} else {
+>> -		struct wq_barrier barr;
+>> +	WARN_ON(cwq->thread == current);
+>>  
+>> -		active = 0;
+>> -		spin_lock_irq(&cwq->lock);
+>> -		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+>> -			insert_wq_barrier(cwq, &barr, &cwq->worklist);
+>> -			active = 1;
+>> -		}
+>> -		spin_unlock_irq(&cwq->lock);
+>> -
+>> -		if (active)
+>> -			wait_for_completion(&barr.done);
+>> +	spin_lock_irq(&cwq->lock);
+>> +	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+>> +		insert_wq_barrier(cwq, &barr, &cwq->worklist);
+>> +		active = 1;
+>>  	}
+>> +	spin_unlock_irq(&cwq->lock);
+>> +
+>> +	if (active)
+>> +		wait_for_completion(&barr.done);
+>>  
+>>  	return active;
+>>  }
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> 
+> 
+
 
