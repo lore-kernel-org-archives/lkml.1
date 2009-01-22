@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbZAVTEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZAVTKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923AbZAVTEx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 14:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbZAVTEn
+	id S1757447AbZAVTKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 14:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbZAVTK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 14:04:43 -0500
-Received: from marvin.heresymail.org ([87.106.62.5]:33729 "EHLO
-	marvin.heresymail.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbZAVTEn (ORCPT
+	Thu, 22 Jan 2009 14:10:29 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:58275 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755457AbZAVTK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 14:04:43 -0500
-Message-ID: <4978C346.9070504@walrond.org>
-Date: Thu, 22 Jan 2009 19:04:38 +0000
-From: Andrew Walrond <andrew@walrond.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 22 Jan 2009 14:10:29 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [PATCH] HVC: do not request the irq twice.
+Date: Thu, 22 Jan 2009 20:09:43 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <1232646968-32671-1-git-send-email-Ian.Campbell@citrix.com>
+In-Reply-To: <1232646968-32671-1-git-send-email-Ian.Campbell@citrix.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
-References: <49786A59.6040706@walrond.org> <20090122175645.GA14178@uranus.ravnborg.org>
-In-Reply-To: <20090122175645.GA14178@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901222009.43342.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->
-> I checked the include guards and they are correct.
->
-> Could you please investige where it picks up the first definition
-> of struct iphdr.
->
->   
-Here you go:
+Am Thursday 22 January 2009 18:56:08 schrieb Ian Campbell:
+> --- a/drivers/char/hvc_irq.c
+> +++ b/drivers/char/hvc_irq.c
+> @@ -28,6 +28,10 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
+>  		hp->irq_requested = 0;
+>  		return 0;
+>  	}
+> +
+> +	if (hp->irq_requested)
+> +		return 0;
+> +
+>  	rc = request_irq(irq, hvc_handle_interrupt, IRQF_DISABLED,
+>  			   "hvc_console", hp);
+>  	if (!rc)
 
-$ make iptunnel.o
+Unfortunately I have no system with an irq based hvc console - I cannot test 
+this patch. Anyway, the patch looks sane:
 
-cc -D_GNU_SOURCE -O2 -Wall -g  -I. -idirafter ./include/ -Ilib   -c -o
-iptunnel.o iptunnel.c
-In file included from /usr/include/linux/if_tunnel.h:5,
-                 from iptunnel.c:39:
-/usr/include/linux/ip.h:85: error: redefinition of 'struct iphdr'
+Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-$ grep -r iphdr /usr/include/
+If this really fixes a problem, I am asking myself, if notifier_del can be 
+called several times as well. If yes, it might be better to call free_irq at 
+the last notifier_del - which means we need proper refcounting. Otherwise the 
+console switches into polling mode....
 
-/usr/include/netinet/ip.h:struct iphdr
-/usr/include/netinet/tcp.h: * This should be defined as MIN(512, IP_MSS
-- sizeof (struct tcpiphdr)).
-/usr/include/linux/if_tunnel.h:    struct iphdr        iph;
-/usr/include/linux/ip.h:struct iphdr {
-
-$ grep netinet/ip.h iptunnel.c
-
-#include <netinet/ip.h>
-
-So linux/ip.h is clashing with glibc(2.8)'s netinet/ip.h
-
-Andrew Walrond
-
+Christian, blaming Rusty for using hvc_console in virtio_console which made me 
+somehow responsible for this code...  ;-)
