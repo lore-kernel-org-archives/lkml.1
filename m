@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZAVMsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZAVMs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbZAVMsB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 07:48:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVMrv
+	id S1757538AbZAVMs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 07:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbZAVMrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 22 Jan 2009 07:47:53 -0500
+Received: from mail.mnsspb.ru ([84.204.75.2]:43088 "EHLO mail.mnsspb.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754711AbZAVMrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Jan 2009 07:47:51 -0500
-Received: from excu-mxob-1.symantec.com ([198.6.49.12]:54053 "EHLO
-	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848AbZAVMru (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 07:47:50 -0500
-Date: Thu, 22 Jan 2009 12:47:11 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0901221239260.21677@blonde.anvils>
-References: <20090121143008.GV24891@wotan.suse.de> 
- <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
- <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
+From: Dmitry Gryazin <gdu@mns.spb.ru>
+Organization: MNS
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] ide: motherboard-info based blacklist for ide-dma
+Date: Thu, 22 Jan 2009 15:43:03 +0300
+User-Agent: KMail/1.9.9
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Kirill Smelkov <kirr@mns.spb.ru>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, navy-patches@mns.spb.ru
+References: <1230651239-29388-1-git-send-email-kirr@mns.spb.ru> <200901151448.52900.gdu@mns.spb.ru> <49707F20.4030600@ru.mvista.com>
+In-Reply-To: <49707F20.4030600@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901221543.03763.gdu@mns.spb.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Pekka Enberg wrote:
-> On Wed, Jan 21, 2009 at 8:10 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> > I was initially _very_ impressed by how well it did on my venerable
-> > tmpfs loop swapping loads, where I'd expected next to no effect; but
-> > that turned out to be because on three machines I'd been using SLUB,
-> > without remembering how default slub_max_order got raised from 1 to 3
-> > in 2.6.26 (hmm, and Documentation/vm/slub.txt not updated).
-> >
-> > That's been making SLUB behave pretty badly (e.g. elapsed time 30%
-> > more than SLAB) with swapping loads on most of my machines.  Though
-> > oddly one seems immune, and another takes four times as long: guess
-> > it depends on how close to thrashing, but probably more to investigate
-> > there.  I think my original SLUB versus SLAB comparisons were done on
-> > the immune one: as I remember, SLUB and SLAB were equivalent on those
-> > loads when SLUB came in, but even with boot option slub_max_order=1,
-> > SLUB is still slower than SLAB on such tests (e.g. 2% slower).
-> > FWIW - swapping loads are not what anybody should tune for.
-> 
-> What kind of machine are you seeing this on? It sounds like it could
-> be a side-effect from commit 9b2cd506e5f2117f94c28a0040bf5da058105316
-> ("slub: Calculate min_objects based on number of processors").
+On Friday 16 January 2009 03:35:44 pm Sergei Shtylyov wrote:
+> Hello.
+>
+> Dmitry Gryazin wrote:
+> >>>> True.  However it should be possible to handle it correctly by adding
+> >>>> the
+> >>>> DMA quirk to the respective host drivers (seems to be via82cxxx.c in
+> >>>> case of
+> >>>> IEI PCISA-C3/EDEN).
+> >>>
+> >>>   Yeah, this seems a viable approach...
+> >>>
+> >>>> Kirill, could you please look into adding such quirk to via82cxxx
+> >>>> instead?
+> >>>>
+> >>>> [ It seems the best place to add it would be via_init_one() as we
+> >>>> could just
+> >>>
+> >>>   No, not really -- the issue is not at all as simple as this patch
+> >>> tried to present it. Looking at its "Quick Startup Reference"
+> >>> (http://f.ipc2u.ru/files/add/doc/496/M_PCISA-C800EV_ENG.pdf), the EPIC
+> >>> board has *two* normal IDE connectors in addition to the CF slot
+> >>> (connected to the secondary port -- and it seems possible that a hard
+> >>> drive can be connected to the same port as CF), so the right place
+> >>> seems to rather be in [mu]dma_filter() methods -- and the decision
+> >>> should be strictly based on the drive type indicating CF, i.e. by
+> >>> calling ata_id_is_cfa().
 
-Thanks, yes, that could well account for the residual difference: the
-machines in question have 2 or 4 cpus, so the old slub_min_objects=4
-has effectively become slub_min_objects=12 or slub_min_objects=16.
+I have tried my old Trancend 64Mb, RamStar 521Mb and NCP 64Mb cards. My old 
+cards returned right id[ATA_ID_CONFIG] = 0x848A.
 
-I'm now trying with slub_max_order=1 slub_min_objects=4 on the boot
-lines (though I'll need to curtail tests on a couple of machines),
-and will report back later.
+But I have to use Kingston CF Card 1Gb 2008.
+ata_id_is_cfa() returns 0 for it and
+id[ATA_ID_MAJOR_VER]	= 0
+id[ATA_ID_CONFIG]		= 0x044A
 
-It's great that SLUB provides these knobs; not so great that it needs them.
+I have only CF+ specification revision 2.0, but I've found in wiki:
+(http://en.wikipedia.org/wiki/CompactFlash#CF.2B_specification_revisions)
+"... While the current revision 4.1 from 2004 works only in ATA mode, ..."
 
-Hugh
+So I have reached an impasse. How to identify modern CF cards?
