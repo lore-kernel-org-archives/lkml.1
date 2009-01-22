@@ -1,131 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbZAVRxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZAVRyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760141AbZAVRxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbZAVRui
+	id S1758166AbZAVRyQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbZAVRuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:50:38 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:39037 "EHLO relay.sgi.com"
+	Thu, 22 Jan 2009 12:50:39 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:39028 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760094AbZAVRua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:50:30 -0500
-Message-Id: <20090122175028.969013000@sgi.com>
+	id S1759364AbZAVRu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:50:29 -0500
+Message-Id: <20090122175025.834895000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Thu, 22 Jan 2009 11:49:27 -0600
+Date: Thu, 22 Jan 2009 11:49:19 -0600
 From: steiner@sgi.com
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 10/14] Restructure the GRU vtop functions
+Subject: [Patch 02/14] Add definitions of ia64 GRU MMRs.
 References: <20090122174917.563627000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_vtop
+Content-Disposition: inline; filename=uv_mmrs_gru_ia64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Restructure the GRU vtop functions in preparation for future changes.
-This patch simply moves code around & does not change the algorithm.
+Add definitions for IA64 GRU MMRs.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
----
- drivers/misc/sgi-gru/grufault.c |   68 +++++++++++++++++++++++++---------------
- 1 file changed, 44 insertions(+), 24 deletions(-)
 
-Index: linux/drivers/misc/sgi-gru/grufault.c
+---
+ arch/ia64/include/asm/uv/uv_mmrs.h |  158 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 155 insertions(+), 3 deletions(-)
+
+Index: linux/arch/ia64/include/asm/uv/uv_mmrs.h
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-01-15 08:18:10.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grufault.c	2009-01-15 08:18:12.000000000 -0600
-@@ -267,6 +267,44 @@ err:
- 	return 1;
- }
+--- linux.orig/arch/ia64/include/asm/uv/uv_mmrs.h	2009-01-11 07:28:11.000000000 -0600
++++ linux/arch/ia64/include/asm/uv/uv_mmrs.h	2009-01-11 07:28:34.000000000 -0600
+@@ -8,8 +8,8 @@
+  * Copyright (C) 2007-2008 Silicon Graphics, Inc. All rights reserved.
+  */
  
-+static int gru_vtop(struct gru_thread_state *gts, unsigned long vaddr,
-+		    int write, int atomic, unsigned long *gpa, int *pageshift)
-+{
-+	struct mm_struct *mm = gts->ts_mm;
-+	struct vm_area_struct *vma;
-+	unsigned long paddr;
-+	int ret, ps;
-+
-+	vma = find_vma(mm, vaddr);
-+	if (!vma)
-+		goto inval;
-+
-+	/*
-+	 * Atomic lookup is faster & usually works even if called in non-atomic
-+	 * context.
-+	 */
-+	rmb();	/* Must/check ms_range_active before loading PTEs */
-+	ret = atomic_pte_lookup(vma, vaddr, write, &paddr, &ps);
-+	if (ret) {
-+		if (atomic)
-+			goto upm;
-+		if (non_atomic_pte_lookup(vma, vaddr, write, &paddr, &ps))
-+			goto inval;
-+	}
-+	if (is_gru_paddr(paddr))
-+		goto inval;
-+	paddr = paddr & ~((1UL << ps) - 1);
-+	*gpa = uv_soc_phys_ram_to_gpa(paddr);
-+	*pageshift = ps;
-+	return 0;
-+
-+inval:
-+	return -1;
-+upm:
-+	return -2;
-+}
-+
-+
- /*
-  * Drop a TLB entry into the GRU. The fault is described by info in an TFH.
-  *	Input:
-@@ -281,10 +319,8 @@ static int gru_try_dropin(struct gru_thr
- 			  struct gru_tlb_fault_handle *tfh,
- 			  unsigned long __user *cb)
- {
--	struct mm_struct *mm = gts->ts_mm;
--	struct vm_area_struct *vma;
--	int pageshift, asid, write, ret;
--	unsigned long paddr, gpa, vaddr;
-+	int pageshift = 0, asid, write, ret, atomic = !cb;
-+	unsigned long gpa = 0, vaddr = 0;
+-#ifndef __ASM_IA64_UV_MMRS__
+-#define __ASM_IA64_UV_MMRS__
++#ifndef _ASM_IA64_UV_UV_MMRS_H
++#define _ASM_IA64_UV_UV_MMRS_H
  
- 	/*
- 	 * NOTE: The GRU contains magic hardware that eliminates races between
-@@ -318,28 +354,12 @@ static int gru_try_dropin(struct gru_thr
- 	if (atomic_read(&gts->ts_gms->ms_range_active))
- 		goto failactive;
+ #define UV_MMR_ENABLE		(1UL << 63)
  
--	vma = find_vma(mm, vaddr);
--	if (!vma)
--		goto failinval;
--
--	/*
--	 * Atomic lookup is faster & usually works even if called in non-atomic
--	 * context.
--	 */
--	rmb();	/* Must/check ms_range_active before loading PTEs */
--	ret = atomic_pte_lookup(vma, vaddr, write, &paddr, &pageshift);
--	if (ret) {
--		if (!cb)
--			goto failupm;
--		if (non_atomic_pte_lookup(vma, vaddr, write, &paddr,
--					  &pageshift))
--			goto failinval;
--	}
--	if (is_gru_paddr(paddr))
-+	ret = gru_vtop(gts, vaddr, write, atomic, &gpa, &pageshift);
-+	if (ret == -1)
- 		goto failinval;
-+	if (ret == -2)
-+		goto failupm;
+@@ -243,6 +243,158 @@ union uvh_event_occurred0_u {
+ #define UVH_EVENT_OCCURRED0_ALIAS_32 0x005f0
  
--	paddr = paddr & ~((1UL << pageshift) - 1);
--	gpa = uv_soc_phys_ram_to_gpa(paddr);
- 	gru_cb_set_istatus_active(cb);
- 	tfh_write_restart(tfh, gpa, GAA_RAM, vaddr, asid, write,
- 			  GRU_PAGESIZE(pageshift));
+ /* ========================================================================= */
++/*                         UVH_GR0_TLB_INT0_CONFIG                           */
++/* ========================================================================= */
++#define UVH_GR0_TLB_INT0_CONFIG 0x61b00UL
++
++#define UVH_GR0_TLB_INT0_CONFIG_VECTOR_SHFT 0
++#define UVH_GR0_TLB_INT0_CONFIG_VECTOR_MASK 0x00000000000000ffUL
++#define UVH_GR0_TLB_INT0_CONFIG_DM_SHFT 8
++#define UVH_GR0_TLB_INT0_CONFIG_DM_MASK 0x0000000000000700UL
++#define UVH_GR0_TLB_INT0_CONFIG_DESTMODE_SHFT 11
++#define UVH_GR0_TLB_INT0_CONFIG_DESTMODE_MASK 0x0000000000000800UL
++#define UVH_GR0_TLB_INT0_CONFIG_STATUS_SHFT 12
++#define UVH_GR0_TLB_INT0_CONFIG_STATUS_MASK 0x0000000000001000UL
++#define UVH_GR0_TLB_INT0_CONFIG_P_SHFT 13
++#define UVH_GR0_TLB_INT0_CONFIG_P_MASK 0x0000000000002000UL
++#define UVH_GR0_TLB_INT0_CONFIG_T_SHFT 15
++#define UVH_GR0_TLB_INT0_CONFIG_T_MASK 0x0000000000008000UL
++#define UVH_GR0_TLB_INT0_CONFIG_M_SHFT 16
++#define UVH_GR0_TLB_INT0_CONFIG_M_MASK 0x0000000000010000UL
++#define UVH_GR0_TLB_INT0_CONFIG_APIC_ID_SHFT 32
++#define UVH_GR0_TLB_INT0_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
++
++union uvh_gr0_tlb_int0_config_u {
++    unsigned long	v;
++    struct uvh_gr0_tlb_int0_config_s {
++	unsigned long	vector_  :  8;  /* RW */
++	unsigned long	dm       :  3;  /* RW */
++	unsigned long	destmode :  1;  /* RW */
++	unsigned long	status   :  1;  /* RO */
++	unsigned long	p        :  1;  /* RO */
++	unsigned long	rsvd_14  :  1;  /*    */
++	unsigned long	t        :  1;  /* RO */
++	unsigned long	m        :  1;  /* RW */
++	unsigned long	rsvd_17_31: 15;  /*    */
++	unsigned long	apic_id  : 32;  /* RW */
++    } s;
++};
++
++/* ========================================================================= */
++/*                         UVH_GR0_TLB_INT1_CONFIG                           */
++/* ========================================================================= */
++#define UVH_GR0_TLB_INT1_CONFIG 0x61b40UL
++
++#define UVH_GR0_TLB_INT1_CONFIG_VECTOR_SHFT 0
++#define UVH_GR0_TLB_INT1_CONFIG_VECTOR_MASK 0x00000000000000ffUL
++#define UVH_GR0_TLB_INT1_CONFIG_DM_SHFT 8
++#define UVH_GR0_TLB_INT1_CONFIG_DM_MASK 0x0000000000000700UL
++#define UVH_GR0_TLB_INT1_CONFIG_DESTMODE_SHFT 11
++#define UVH_GR0_TLB_INT1_CONFIG_DESTMODE_MASK 0x0000000000000800UL
++#define UVH_GR0_TLB_INT1_CONFIG_STATUS_SHFT 12
++#define UVH_GR0_TLB_INT1_CONFIG_STATUS_MASK 0x0000000000001000UL
++#define UVH_GR0_TLB_INT1_CONFIG_P_SHFT 13
++#define UVH_GR0_TLB_INT1_CONFIG_P_MASK 0x0000000000002000UL
++#define UVH_GR0_TLB_INT1_CONFIG_T_SHFT 15
++#define UVH_GR0_TLB_INT1_CONFIG_T_MASK 0x0000000000008000UL
++#define UVH_GR0_TLB_INT1_CONFIG_M_SHFT 16
++#define UVH_GR0_TLB_INT1_CONFIG_M_MASK 0x0000000000010000UL
++#define UVH_GR0_TLB_INT1_CONFIG_APIC_ID_SHFT 32
++#define UVH_GR0_TLB_INT1_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
++
++union uvh_gr0_tlb_int1_config_u {
++    unsigned long	v;
++    struct uvh_gr0_tlb_int1_config_s {
++	unsigned long	vector_  :  8;  /* RW */
++	unsigned long	dm       :  3;  /* RW */
++	unsigned long	destmode :  1;  /* RW */
++	unsigned long	status   :  1;  /* RO */
++	unsigned long	p        :  1;  /* RO */
++	unsigned long	rsvd_14  :  1;  /*    */
++	unsigned long	t        :  1;  /* RO */
++	unsigned long	m        :  1;  /* RW */
++	unsigned long	rsvd_17_31: 15;  /*    */
++	unsigned long	apic_id  : 32;  /* RW */
++    } s;
++};
++
++/* ========================================================================= */
++/*                         UVH_GR1_TLB_INT0_CONFIG                           */
++/* ========================================================================= */
++#define UVH_GR1_TLB_INT0_CONFIG 0x61f00UL
++
++#define UVH_GR1_TLB_INT0_CONFIG_VECTOR_SHFT 0
++#define UVH_GR1_TLB_INT0_CONFIG_VECTOR_MASK 0x00000000000000ffUL
++#define UVH_GR1_TLB_INT0_CONFIG_DM_SHFT 8
++#define UVH_GR1_TLB_INT0_CONFIG_DM_MASK 0x0000000000000700UL
++#define UVH_GR1_TLB_INT0_CONFIG_DESTMODE_SHFT 11
++#define UVH_GR1_TLB_INT0_CONFIG_DESTMODE_MASK 0x0000000000000800UL
++#define UVH_GR1_TLB_INT0_CONFIG_STATUS_SHFT 12
++#define UVH_GR1_TLB_INT0_CONFIG_STATUS_MASK 0x0000000000001000UL
++#define UVH_GR1_TLB_INT0_CONFIG_P_SHFT 13
++#define UVH_GR1_TLB_INT0_CONFIG_P_MASK 0x0000000000002000UL
++#define UVH_GR1_TLB_INT0_CONFIG_T_SHFT 15
++#define UVH_GR1_TLB_INT0_CONFIG_T_MASK 0x0000000000008000UL
++#define UVH_GR1_TLB_INT0_CONFIG_M_SHFT 16
++#define UVH_GR1_TLB_INT0_CONFIG_M_MASK 0x0000000000010000UL
++#define UVH_GR1_TLB_INT0_CONFIG_APIC_ID_SHFT 32
++#define UVH_GR1_TLB_INT0_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
++
++union uvh_gr1_tlb_int0_config_u {
++    unsigned long	v;
++    struct uvh_gr1_tlb_int0_config_s {
++	unsigned long	vector_  :  8;  /* RW */
++	unsigned long	dm       :  3;  /* RW */
++	unsigned long	destmode :  1;  /* RW */
++	unsigned long	status   :  1;  /* RO */
++	unsigned long	p        :  1;  /* RO */
++	unsigned long	rsvd_14  :  1;  /*    */
++	unsigned long	t        :  1;  /* RO */
++	unsigned long	m        :  1;  /* RW */
++	unsigned long	rsvd_17_31: 15;  /*    */
++	unsigned long	apic_id  : 32;  /* RW */
++    } s;
++};
++
++/* ========================================================================= */
++/*                         UVH_GR1_TLB_INT1_CONFIG                           */
++/* ========================================================================= */
++#define UVH_GR1_TLB_INT1_CONFIG 0x61f40UL
++
++#define UVH_GR1_TLB_INT1_CONFIG_VECTOR_SHFT 0
++#define UVH_GR1_TLB_INT1_CONFIG_VECTOR_MASK 0x00000000000000ffUL
++#define UVH_GR1_TLB_INT1_CONFIG_DM_SHFT 8
++#define UVH_GR1_TLB_INT1_CONFIG_DM_MASK 0x0000000000000700UL
++#define UVH_GR1_TLB_INT1_CONFIG_DESTMODE_SHFT 11
++#define UVH_GR1_TLB_INT1_CONFIG_DESTMODE_MASK 0x0000000000000800UL
++#define UVH_GR1_TLB_INT1_CONFIG_STATUS_SHFT 12
++#define UVH_GR1_TLB_INT1_CONFIG_STATUS_MASK 0x0000000000001000UL
++#define UVH_GR1_TLB_INT1_CONFIG_P_SHFT 13
++#define UVH_GR1_TLB_INT1_CONFIG_P_MASK 0x0000000000002000UL
++#define UVH_GR1_TLB_INT1_CONFIG_T_SHFT 15
++#define UVH_GR1_TLB_INT1_CONFIG_T_MASK 0x0000000000008000UL
++#define UVH_GR1_TLB_INT1_CONFIG_M_SHFT 16
++#define UVH_GR1_TLB_INT1_CONFIG_M_MASK 0x0000000000010000UL
++#define UVH_GR1_TLB_INT1_CONFIG_APIC_ID_SHFT 32
++#define UVH_GR1_TLB_INT1_CONFIG_APIC_ID_MASK 0xffffffff00000000UL
++
++union uvh_gr1_tlb_int1_config_u {
++    unsigned long	v;
++    struct uvh_gr1_tlb_int1_config_s {
++	unsigned long	vector_  :  8;  /* RW */
++	unsigned long	dm       :  3;  /* RW */
++	unsigned long	destmode :  1;  /* RW */
++	unsigned long	status   :  1;  /* RO */
++	unsigned long	p        :  1;  /* RO */
++	unsigned long	rsvd_14  :  1;  /*    */
++	unsigned long	t        :  1;  /* RO */
++	unsigned long	m        :  1;  /* RW */
++	unsigned long	rsvd_17_31: 15;  /*    */
++	unsigned long	apic_id  : 32;  /* RW */
++    } s;
++};
++
++/* ========================================================================= */
+ /*                               UVH_INT_CMPB                                */
+ /* ========================================================================= */
+ #define UVH_INT_CMPB 0x22080UL
+@@ -670,4 +822,4 @@ union uvh_si_alias2_overlay_config_u {
+ };
+ 
+ 
+-#endif /* __ASM_IA64_UV_MMRS__ */
++#endif /* _ASM_IA64_UV_UV_MMRS_H */
 
