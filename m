@@ -1,103 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbZAVVgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZAVVmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbZAVVgf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 16:36:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZAVVgZ
+	id S1755542AbZAVVmf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 16:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZAVVmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 16:36:25 -0500
-Received: from www84.your-server.de ([213.133.104.84]:38572 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZAVVgY convert rfc822-to-8bit (ORCPT
+	Thu, 22 Jan 2009 16:42:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32782
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752438AbZAVVmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 16:36:24 -0500
-Subject: Re: Detailed Stack Information Patch [0/3]
-From: Stefani Seibold <stefani@seibold.net>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090122194126.GA5352@logfs.org>
-References: <1232446597.784.15.camel@matrix>
-	 <20090122194126.GA5352@logfs.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Thu, 22 Jan 2009 22:39:28 +0100
-Message-Id: <1232660368.9652.18.camel@matrix>
+	Thu, 22 Jan 2009 16:42:22 -0500
+Date: Thu, 22 Jan 2009 13:42:24 -0800 (PST)
+Message-Id: <20090122.134224.224850288.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-01-22
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090122194320.GD3646@tuxdriver.com>
+References: <20090122194320.GD3646@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8BIT
-X-Authenticated-Sender: stefani@seibold.net
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, i had explained what is the reason for the patch.
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Thu, 22 Jan 2009 14:43:21 -0500
 
-Second, the number of #ifdef is not more or less than other features
-which extends the task_struct on demand.
+> Here is this week's round of fixes intended for 2.6.29.  Most of them
+> are small and obvious.  There are a couple of bigger ones for p54,
+> one that corrects some frame corruption on monitor interfaces and
+> another that corrects a potential use-after-free bug.  There is also
+> an orinoco patch that looks big because it is moving some code around
+> to avoid a locking issue.  All of them have cooked in wireless-testing
+> and have had extensive testing.
+ ...
+>   git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
 
-There is no way to do this without #ifdef's, only if i add this feature
-without a CONFIG_.... option.
-
-I think the main reason why i get low responses is, because i posted it
-to the wrong mail list. kernel-mm would be a better place for this.
-
-So i will wait until 2.6.29 is out, then move my patch to this version,
-enhance it, add a diffstat and try it again which are more detailed
-reason why this patch should be included.
-
-But this patch did nit solve a problem, it is a feature like
-PROC_PAGE_MONITOR or similar. It will help to figure out, how much stack
-will be consumed by a particular process or thread.
-
-It also not a patch which cares Joe Kernelhacker, it cares Jane
-Userlandhacker!
-
-Thnx,
-Steffi
-
-Am Donnerstag, den 22.01.2009, 20:41 +0100 schrieb Jörn Engel:
-> On Tue, 20 January 2009 11:16:37 +0100, Stefani Seibold wrote:
-> > 
-> > this is a patch which give you a better overview of the userland
-> > application stack usage, especially for embedded linux.
-> > 
-> > Currently you are only able to dump the main process/thread stack usage
-> > which is showed in proc/pid/status by the "VmStk" Value. But you get no
-> > information about the consumed stack memory of the the threads.
-> >
-> > [...]
-> > 
-> > This patch is against 2.6.28.1. The patch is cpu independent, so it
-> > should work on all linux supported architectures, it was tested under
-> > x86 and powerpc. Also there is not dependency a library: glibc, uclibc
-> > and all other should work.
-> > 
-> > I hope you like it and want ask what is necessary for inclusion into the
-> > main stream kernel or linux-next? If you have ideas how to do things in
-> > a better way, please let me know.
-> 
-> First goal would be to get people interested.  Why would Joe
-> Kernelhacker care about this, what problem would it solve for him?  Next
-> goal is to prove to akpm that the solved problems are worth the
-> maintenance burden this code brings.
-> 
-> It would be nice to have diffstat added to each patch to give people
-> a quick overview.  More importantly, the number of #ifdef's in the
-> patches may raise a red flag.  You should try to remove them from common
-> code and have a single one in the headers:
-> 
-> #ifdef CONFIG_NEW_FEATURE
-> 
-> void handle_this(int foo, long bar);
-> 
-> #else
-> 
-> static inline void handle_this(int foo, long bar)
-> {
-> }
-> #endif
-> 
-> Not sure what else to say.  I'm still wondering whether it will solve a
-> problem for me.
-> 
-> Jörn
-> 
-
+Pulled, thanks a lot John.
