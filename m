@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZAVLLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZAVLYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbZAVLLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 06:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZAVLLk
+	id S1756733AbZAVLYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 06:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZAVLX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 06:11:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35901 "EHLO smtps.tip.net.au"
+	Thu, 22 Jan 2009 06:23:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48317 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751215AbZAVLLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 06:11:39 -0500
-Date: Thu, 22 Jan 2009 22:11:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Finish fs/Kconfig split
-Message-Id: <20090122221123.ef9bd664.sfr@canb.auug.org.au>
-In-Reply-To: <20090122104316.GA3631@x200.localdomain>
-References: <20090122104316.GA3631@x200.localdomain>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__22_Jan_2009_22_11_23_+1100_9fid7cjr+xAZnUuc"
+	id S1751621AbZAVLX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 06:23:57 -0500
+Date: Thu, 22 Jan 2009 12:22:38 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+Message-ID: <20090122112238.GC7131@nb.net.home>
+References: <20090121185021.GA8852@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121185021.GA8852@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__22_Jan_2009_22_11_23_+1100_9fid7cjr+xAZnUuc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Alexey,
+ Hi,
 
-On Thu, 22 Jan 2009 13:43:16 +0300 Alexey Dobriyan <adobriyan@gmail.com> wr=
-ote:
->
-> Linus, please pull from
->=20
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/misc.git Kconfig
->=20
-> to get finalization of fs/Kconfig split into individual fs/*/Kconfig file=
-s.
-> FS maintainers liked the idea overall and patches for ext* et al are alre=
-ady in.
->=20
-> I can sit here and carefully minimize reject pain for everyone or you can=
- do
-> the right thing.
+On Wed, Jan 21, 2009 at 07:50:21PM +0100, Ingo Molnar wrote:
+>  - The 'perfstat' utility (ex 'timec') has been updated:
+> 
+>       http://people.redhat.com/mingo/perfcounters/perfstat.c
 
-There were a few conflicts against the current linux-next, but they were
-all in the nfs tree (and the FS-Cache changes in there) apart from one
-small conflict in the nfsd tree.  None looked hard to fix up (as you would
-expect).
+ what are your planning to do with this utility? We can merge it into
+ util-linux-ng.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+    Karel
 
---Signature=_Thu__22_Jan_2009_22_11_23_+1100_9fid7cjr+xAZnUuc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl4VFsACgkQjjKRsyhoI8w+DQCgqcz4swGhvNEvtg0X7lviTTSF
-L9wAn1GhXJMCg4gt2AEaMzIJRtlcku3H
-=h/9W
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Jan_2009_22_11_23_+1100_9fid7cjr+xAZnUuc--
+-- 
+ Karel Zak  <kzak@redhat.com>
