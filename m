@@ -1,139 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbZAVDxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbZAVEiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbZAVDxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 22:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbZAVDxM
+	id S1757314AbZAVEiG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 23:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbZAVEhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 22:53:12 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:33096 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756431AbZAVDxL (ORCPT
+	Wed, 21 Jan 2009 23:37:54 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:48871 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755874AbZAVEhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 22:53:11 -0500
-Subject: [PATCH][RFC] Sanity check sysfs clocksource changes
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0901220014240.27472@localhost.localdomain>
-References: <20090121145236.04c17ed7.akpm@linux-foundation.org>
-	 <20090121225547.GA16127@elte.hu>
-	 <alpine.LFD.2.00.0901220006170.27472@localhost.localdomain>
-	 <20090121231006.GA9967@elte.hu>
-	 <alpine.LFD.2.00.0901220014240.27472@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Jan 2009 19:53:06 -0800
-Message-Id: <1232596386.6997.39.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 23:37:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEACCFd0l5LAUp/2dsb2JhbADJT4Vz
+X-IronPort-AV: E=Sophos;i="4.37,304,1231075800"; 
+   d="scan'208";a="272861008"
+Date: Thu, 22 Jan 2009 15:37:47 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, Pavel Machek <pavel@suse.cz>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       npiggin@yahoo.com.au, xfs@oss.sgi.com
+Subject: [PATCH] Re: Corrupted XFS log replay oops.
+Message-ID: <20090122043747.GU10158@disturbed>
+Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
+	Eric Sesterhenn <snakebyte@gmx.de>, Pavel Machek <pavel@suse.cz>,
+	Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+	npiggin@yahoo.com.au, xfs@oss.sgi.com
+References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901211503.07308.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all,
-	Thomas, Andrew and Ingo pointed out that we don't have any safety
-checks in the clocksource sysfs entries to make sure sysadmins don't try
-to change the clocksource to a non high-res timer capable clocksource
-(such as jiffies) when high-res timers (HRT) is enabled. Doing so will
-likely hang a system.
+On Wed, Jan 21, 2009 at 03:03:06PM +1100, Nick Piggin wrote:
+> On Wednesday 21 January 2009 14:57:03 Dave Chinner wrote:
+> > > [  235.250167] ------------[ cut here ]------------
+> > > [  235.250354] kernel BUG at mm/vmalloc.c:164!
+> > > [  235.250478] invalid opcode: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+> > > [  235.250869] last sysfs file: /sys/block/ram9/range
+> > > [  235.250998] Modules linked in:
+......
+> > > [  235.251037] Call Trace:
+> > > [  235.251037]  [<c01414cf>] ? trace_hardirqs_on+0xb/0xd
+> > > [  235.251037]  [<c018367c>] ? vm_map_ram+0x36e/0x38a
+> > > [  235.251037]  [<c03b2e1e>] ? _xfs_buf_map_pages+0x42/0x6d
+> > > [  235.251037]  [<c03b3773>] ? xfs_buf_get_noaddr+0xbc/0x11f
+> > > [  235.251037]  [<c03a2406>] ? xlog_get_bp+0x5a/0x5d
+> > > [  235.251037]  [<c03a28fa>] ? xlog_find_verify_log_record+0x26/0x208
+> > > [  235.251037]  [<c03a3521>] ? xlog_find_zeroed+0x1d6/0x214
+> > > [  235.251037]  [<c03a3584>] ? xlog_find_head+0x25/0x358
+> >
+> > .....
+> >
+> > Ok, that's crashing in the new vmap code. It might take a couple
+> > of days before I get a chance to look at this, but I've cc'd Nick Piggin
+> > in case he has a chance to look at it before that. It's probably
+> > an XFS bug, anyway.
+> 
+> Hmm, it is crashing in BUG_ON(addr >= end); where this could happen
+> if XFS asks to map a really huge (or -ve) number of pages and wraps
+> the range, or if vmap subsystem returns an address right near the
+> end of the address range and addr+size wraps (which would be a bug
+> in vmap of course, but I think maybe less likely).
 
-This patch tries to correct this by filtering non HRT clocksources from
-available_clocksources and not accepting non HRT clocksources with HRT
-is is enabled.
+It's a zero length range, not a negative value. A debug XFS would
+have assert failed on it, but it was completely unchecked on
+production builds. The following patch checks the length of blocks
+to build/read/write for being valid. Instead of an oops, we get:
 
-This has been lightly tested, and seems to work, but there may be some
-drawbacks.
+[ 1572.665001] XFS mounting filesystem loop0
+[ 1572.666942] XFS: Invalid block length (0x0) given for buffer
+[ 1572.667141] XFS: Log inconsistent (didn't find previous header)
+[ 1572.667141] XFS: empty log check failed
+[ 1572.667141] XFS: log mount/recovery failed: error 5
+[ 1572.671487] XFS: log mount failed
 
-One issue I realized was that when TSCs disqualified, they are marked as
-not CLOCK_SOURCE_VALID_FOR_HRES. This means on boxes with unsycned TSCs,
-the only available clocksource may be the slower acpi_pm and the user
-will not be able to override it with the TSC as is currently possible.
-(even if that seems ill-advised).
+Cheers,
 
-So Thomas, what do you think? Should we just use
-CLOCK_SOURCE_IS_CONTINUOUS flag or is CLOCK_SOURCE_VALID_FOR_HRES really
-what we want?
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+[XFS] Check buffer lengths in log recovery
 
+Before trying to obtain, read or write a buffer,
+check that the buffer length is actually valid. If
+it is not valid, then something read in the recovery
+process has been corrupted and we should abort
+recovery. 
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index bd37078..05f67f0 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -305,7 +305,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
- 
- extern ktime_t ktime_get(void);
- extern ktime_t ktime_get_real(void);
--
-+extern int hrtimer_hres_active(void);
- 
- DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
- 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 2dc30c5..fa4abdc 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -476,7 +476,7 @@ static inline int hrtimer_is_hres_enabled(void)
- /*
-  * Is the high resolution mode active ?
-  */
--static inline int hrtimer_hres_active(void)
-+int hrtimer_hres_active(void)
+Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+---
+ fs/xfs/xfs_log_recover.c |   31 +++++++++++++++++++++++++------
+ 1 files changed, 25 insertions(+), 6 deletions(-)
+
+diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
+index 35cca98..b1047de 100644
+--- a/fs/xfs/xfs_log_recover.c
++++ b/fs/xfs/xfs_log_recover.c
+@@ -70,16 +70,21 @@ STATIC void	xlog_recover_check_summary(xlog_t *);
+ xfs_buf_t *
+ xlog_get_bp(
+ 	xlog_t		*log,
+-	int		num_bblks)
++	int		nbblks)
  {
- 	return __get_cpu_var(hrtimer_bases).hres_active;
- }
-@@ -689,7 +689,7 @@ static int hrtimer_switch_to_hres(void)
+-	ASSERT(num_bblks > 0);
++	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
++		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
++		XFS_ERROR_REPORT("xlog_get_bp(1)",
++				 XFS_ERRLEVEL_HIGH, log->l_mp);
++		return NULL;
++	}
  
- #else
- 
--static inline int hrtimer_hres_active(void) { return 0; }
-+int hrtimer_hres_active(void) { return 0; }
- static inline int hrtimer_is_hres_enabled(void) { return 0; }
- static inline int hrtimer_switch_to_hres(void) { return 0; }
- static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index ca89e15..1bb1161 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -30,6 +30,7 @@
- #include <linux/module.h>
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
-+#include <linux/hrtimer.h>
- 
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
-@@ -436,6 +437,17 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
- 		}
+ 	if (log->l_sectbb_log) {
+-		if (num_bblks > 1)
+-			num_bblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
+-		num_bblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, num_bblks);
++		if (nbblks > 1)
++			nbblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
++		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
  	}
+-	return xfs_buf_get_noaddr(BBTOB(num_bblks), log->l_mp->m_logdev_targp);
++	return xfs_buf_get_noaddr(BBTOB(nbblks), log->l_mp->m_logdev_targp);
+ }
  
-+	/* Check to make sure we don't switch to a non-HRT usable
-+	 * clocksource if HRT is enabled and running
-+	 */
-+	if (hrtimer_hres_active() &&
-+	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
-+		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
-+			"Cannot switch while in HRT mode\n", ovr->name);
-+		ovr = NULL;
-+		override_name[0] = 0;
+ void
+@@ -102,6 +107,13 @@ xlog_bread(
+ {
+ 	int		error;
+ 
++	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
++		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
++		XFS_ERROR_REPORT("xlog_bread(1)",
++				 XFS_ERRLEVEL_HIGH, log->l_mp);
++		return EFSCORRUPTED;
 +	}
 +
- 	/* Reselect, when the override name has changed */
- 	if (ovr != clocksource_override) {
- 		clocksource_override = ovr;
-@@ -464,7 +476,10 @@ sysfs_show_available_clocksources(struct sys_device *dev,
+ 	if (log->l_sectbb_log) {
+ 		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
+ 		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
+@@ -139,6 +151,13 @@ xlog_bwrite(
+ {
+ 	int		error;
  
- 	spin_lock_irq(&clocksource_lock);
- 	list_for_each_entry(src, &clocksource_list, list) {
--		count += snprintf(buf + count,
-+		/* Don't show non-HRES clocksource if HRES is enabled */
-+		if (!hrtimer_hres_active() ||
-+				(src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
-+			count += snprintf(buf + count,
- 				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
- 				  "%s ", src->name);
- 	}
-
-
++	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
++		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
++		XFS_ERROR_REPORT("xlog_bwrite(1)",
++				 XFS_ERRLEVEL_HIGH, log->l_mp);
++		return EFSCORRUPTED;
++	}
++
+ 	if (log->l_sectbb_log) {
+ 		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
+ 		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
