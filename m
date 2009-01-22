@@ -1,112 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZAVPCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZAVPOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZAVPCu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbZAVPCi
+	id S1755457AbZAVPOz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZAVPOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:02:38 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:44354 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753796AbZAVPCh (ORCPT
+	Thu, 22 Jan 2009 10:14:46 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:43122 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbZAVPOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:02:37 -0500
-Date: Thu, 22 Jan 2009 17:02:12 +0200 (EET)
-Message-Id: <20090122.170212.39296966.Hiroshi.DOYU@nokia.com>
-To: linux@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 6/6] omap2 iommu: entries for Kconfig and Makefile
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-In-Reply-To: <20090117165920.GD12341@n2100.arm.linux.org.uk>
-References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com>
-	<20090116083735.18344.92890.stgit@oreo.research.nokia.com>
-	<20090117165920.GD12341@n2100.arm.linux.org.uk>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
- boundary="--Next_Part(Thu_Jan_22_17_02_12_2009_320)--"
+	Thu, 22 Jan 2009 10:14:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=My23uRSZH9zvpE2xuosogrjcSF7zr0T1qMjIJdDNJzImheKnwltTXChMCol+oKtz2Q
+         +fPoVI0wMIshppN5VXBR8N2mxJfp0XNtJHmaCNi96b0dDqex3pg31+GJwBOgPdLuDE/Z
+         ApzTgmJSgEZlEjTTRaMvT1YU7h7h0adCDRDk4=
+MIME-Version: 1.0
+In-Reply-To: <20090120115500.GA4442@elte.hu>
+References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com>
+	 <b647ffbd0901190841j785172e5n24d29511a2e61332@mail.gmail.com>
+	 <20090119164440.GA20754@elte.hu> <200901192025.37711.rjw@sisk.pl>
+	 <c4e36d110901191431j62168b4yaf8a4ffdbbe38bea@mail.gmail.com>
+	 <20090119234905.GC452@elte.hu>
+	 <c4e36d110901200241x487092e9na0cda704de666d2b@mail.gmail.com>
+	 <c4e36d110901200348n4009800dyebaf932039babf30@mail.gmail.com>
+	 <20090120115500.GA4442@elte.hu>
+Date: Thu, 22 Jan 2009 16:14:42 +0100
+Message-ID: <c4e36d110901220714j524343c5k2673d5626aef2460@mail.gmail.com>
+Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       dbrownell@users.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jan 2009 15:02:13.0736 (UTC) FILETIME=[688C9680:01C97CA2]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-----Next_Part(Thu_Jan_22_17_02_12_2009_320)--
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+2009/1/20 Ingo Molnar <mingo@elte.hu>:
+>
+> (Cc:-ed Johannes Berg)
+>
+> * Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
+>
+>> With network enabled - the error is back - thus it might be a bug in
+>> ieee80211 stack ??
+>
+> yes, the crash implicates the ieee80211 stack [ieee80211_stop() in
+> net/mac80211/iface.c]:
+>
+>> general protection fault: 0000 [#1] SMP
+>> RIP: 0010:[<ffffffff8053ce01>]  [<ffffffff8053ce01>] wait_for_common+0x131/0x190
+>> Process NetworkManager (pid: 2265, threadinfo ffff88006b508000, task
+>> Call Trace:
+>>  [<ffffffff8025a735>] synchronize_rcu+0x35/0x40
+>>  [<ffffffff8025a620>] ? wakeme_after_rcu+0x0/0x10
+>>  [<ffffffff8053ce3f>] ? wait_for_common+0x16f/0x190
+>>  [<ffffffff8024b424>] ? local_bh_enable+0xa4/0x110
+>>  [<ffffffff804c8ce1>] ? dev_deactivate+0x151/0x1d0
+>>  [<ffffffff804b750d>] ? dev_close+0x6d/0xd0
+>>  [<ffffffffa016b042>] ? ieee80211_stop+0x562/0x570 [mac80211]
+>>  [<ffffffffa016ab59>] ? ieee80211_stop+0x79/0x570 [mac80211]
 
-Hi Russell,
+Any progress with this problem ?
 
-From: "ext Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 6/6] omap2 iommu: entries for Kconfig and Makefile
-Date: Sat, 17 Jan 2009 16:59:20 +0000
+Btw - I've tried your branch   tip-latest
+(52a4061e1d88ad242c8022f68df3686c3bc05159)
+ - and this branch now resets my machine during resume. (it suspends -
+auto-wake-up and reboots)
+ - so it this branch actually suggested to be used/tested ?
 
-> On Fri, Jan 16, 2009 at 10:37:35AM +0200, Hiroshi DOYU wrote:
-> > Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> > ---
-> > 
-> >  arch/arm/mach-omap2/Makefile |    5 +++++
-> >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
-> > index bbd12bc..443e71f 100644
-> > --- a/arch/arm/mach-omap2/Makefile
-> > +++ b/arch/arm/mach-omap2/Makefile
-> > @@ -24,6 +24,11 @@ endif
-> >  obj-$(CONFIG_ARCH_OMAP2)		+= clock24xx.o
-> >  obj-$(CONFIG_ARCH_OMAP3)		+= clock34xx.o
-> >  
-> > +obj-$(CONFIG_OMAP_IOMMU)		+= iommu2.o
-> > +ifeq ($(CONFIG_ARCH_OMAP3),y)
-> > +obj-$(CONFIG_OMAP_IOMMU)		+= omap3-iommu.o
-> > +endif
-> > +
-> 
-> I can see this expanding still further... so what about nipping it now
-> before it gets out of hand:
-> 
-> iommu-y					+= iommu2.o
-> iommu-$(CONFIG_ARCH_OMAP3)		+= omap3-iommu.o
-> 
-> obj-$(CONFIG_OMAP_IOMMU)		+= $(iommu-y)
-
-Much simpler. Thanks. The updated one is attached.
-
-----Next_Part(Thu_Jan_22_17_02_12_2009_320)--
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0006-omap2-iommu-entries-for-Kconfig-and-Makefile.patch"
-
->From 80c17b5d26e89a3c5a65b2dfac02eeaf6426404b Mon Sep 17 00:00:00 2001
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Date: Mon, 19 Jan 2009 13:01:01 +0200
-Subject: [PATCH 6/6] omap2 iommu: entries for Kconfig and Makefile
-
-Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
----
- arch/arm/mach-omap2/Makefile |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
-index bbd12bc..4f6123d 100644
---- a/arch/arm/mach-omap2/Makefile
-+++ b/arch/arm/mach-omap2/Makefile
-@@ -24,6 +24,11 @@ endif
- obj-$(CONFIG_ARCH_OMAP2)		+= clock24xx.o
- obj-$(CONFIG_ARCH_OMAP3)		+= clock34xx.o
- 
-+iommu-y					+= iommu2.o
-+iommu-$(CONFIG_ARCH_OMAP3)		+= omap3-iommu.o
-+
-+obj-$(CONFIG_OMAP_IOMMU)		+= $(iommu-y)
-+
- # Specific board support
- obj-$(CONFIG_MACH_OMAP_GENERIC)		+= board-generic.o
- obj-$(CONFIG_MACH_OMAP_H4)		+= board-h4.o
--- 
-1.6.1.rc4
-
-
-----Next_Part(Thu_Jan_22_17_02_12_2009_320)----
+Zdenek
