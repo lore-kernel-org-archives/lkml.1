@@ -1,67 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZAVVFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZAVVGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbZAVVFH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 16:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZAVVE4
+	id S1758188AbZAVVGY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 16:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZAVVGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 16:04:56 -0500
-Received: from torrent.cc.mcgill.ca ([132.206.27.49]:39776 "EHLO
-	torrent.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbZAVVEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 16:04:55 -0500
-Subject: Memory not being reported
-From: David Ronis <ronis@ronispc.chem.mcgill.ca>
-Reply-To: ronis@ronispc.chem.mcgill.ca
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Department of Chemistry, McGill University
-Date: Thu, 22 Jan 2009 16:04:55 -0500
-Message-Id: <1232658295.3455.7.camel@ronispc.chem.mcgill.ca>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.11.25.160724
-X-McGill-WhereFrom: Internal
+	Thu, 22 Jan 2009 16:06:17 -0500
+Received: from broadrack.ru ([195.178.208.66]:57616 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752296AbZAVVGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 16:06:16 -0500
+Date: Fri, 23 Jan 2009 00:06:14 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: David Rientjes <rientjes@google.com>
+Cc: Nikanth Karthikesan <knikanth@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-ID: <20090122210613.GA10158@ioremap.net>
+References: <200901212054.34929.knikanth@suse.de> <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com> <20090122095026.GA10579@ioremap.net> <alpine.DEB.2.00.0901220156310.1738@chino.kir.corp.google.com> <20090122101424.GA12317@ioremap.net> <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com> <20090122132133.GA17524@ioremap.net> <alpine.DEB.2.00.0901221216330.2085@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0901221216330.2085@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm running 2.6.28.1 on an i686 (slackware-12.1 for the most part) box.
-I recently added some extra memory, expanding from 2Gb to 4.  Everything
-works as expected except that not all of the memory seems to be seen.
+On Thu, Jan 22, 2009 at 12:28:45PM -0800, David Rientjes (rientjes@google.com) wrote:
+> I don't know what you're talking about, cpusets are simply a client of the 
+> cgroup interface.
 
-free returns:
+Only the fact that cpusets have _very_ special meaning in the oom-killer
+codepath, while it should be just another tunable (if it should be
+special code at all at the first place, why there were no objection and
+argument, that tasks could have different oom_adj?).
 
-             total       used       free     shared    buffers
-cached
-Mem:       3374860    2099504    1275356          0      86612
-1032024
--/+ buffers/cache:     980868    2393992
-Swap:       497972          0     497972
+> The problem that I'm identifying with this change is that the 
+> user-specified priority (in terms of oom.victim settings) conflicts when 
+> the kernel encounters a system-wide unconstrained oom versus a 
+> cpuset-constrained oom.
+> 
+> The oom.victim priority may well be valid for a system-wide condition 
+> where a specific aggregate of tasks are less critical than others and 
+> would be preferred to be killed.  But that doesn't help in a 
+> cpuset-constrained oom on the same machine if it doesn't lead to future 
+> memory freeing.
+
+And that is The Main Point. Not to help some subsystem, but be useful
+for others. It is different tunable. It has really nothing with cpusets.
+It is not aimed to help or make things worse for the cpusets. I even do
+not understand why this very specific case not used by the wast majority
+of the users was even rised in the discussion of the system-wide
+oom-killer bahaviour and its more precise cgroup tunable.
+
+This is different. It has its own tunable, which is used when cpusets
+are enabled. Discussed tunable should be used at its own time. Admin has
+a right to decide how he wants to tune oom-killer behaviour. And the
+only point I hear, is that something does not help when we have cpusets
+enabled.
+
+> Cpusets are special in this regard because the oom killer's heuristics in 
+> this case are based on a function of the oom triggering task, current.  We 
+> check for tasks sharing current->mems_allowed so that we are freeing 
+> memory that the task can eventually use.  So this new oom cgroup cannot be 
+> used on any machine with one or more cpusets that may oom without the 
+> possibility of needlessly killing tasks.
+
+Then do not use anything else when cpusets are enabled.
+Do not compile SuperH cpu support when you do not have such processes.
+Do not enable iscsi support if you do not need this.
+Do not enable cgroup oom-killer tunable when you want cpuset.
+
+> > Having userspace to decide which task to kill may not work in some cases
+> > at all (when task is swapped and we need to kill someone to get the mem
+> > to swap out the task, which will make that decision).
+> > 
+> 
+> Yes, and it's always possible for userspace to defer back to the kernel in 
+> such cases.  But in the majority of cases that you seem to be interested 
+> in, this type of notification system seems like it would work quite well:
+> 
+>  - to replace your oom_victim patch, your userspace handler could simply
+>    issue a SIGKILL to the chosen job in place of the oom killer.  The 
+>    added benefit here is that your userspace handler could actually 
+>    support a prioritized list so if one application isn't running, it
+>    could check another, and another, etc., and
+> 
+>  - to replace this oom.victim patch, the userspace handler could check
+>    for the presence of the aggregate of tasks that would have appeared
+>    attached to the new cgroup and issue the same SIGKILL.
+
+Besides the fact that it is possible that userspace will not even wake
+up. Since to wake it up we have to swap it out, which in turn needs some
+memory, which we do not have, since we are in, hmm, Out-Of-Memory
+condition.
+
+There may be cases when this will work, I do not argue. But so far the
+most common case I imagine is when it will not be able to wake up :)
+
+> > If by the 'userspace' you do not mean special kernel thread, but in
+> > this case there is no difference compared to existing in-kernel code.
+> 
+> That wakes up any userspace notifier that you've attached to the cgroup 
+> representing the tasks you're interested in controlling oom responses for.  
+> Your userspace application can then effectively take the place of the oom 
+> killer by expanding a cpuset's memory, elevating a memory controller 
+> reservation, killing current, or using its own heuristics to respond to 
+> the problem.
+> 
+> But we should probably discuss the implementation of the per-cgroup oom 
+> notifier in the thread dedicated to it, not this one.
+
+Please explain, how task will make that decision (like freeing some
+ram), when it can not be even swapped out? It is a great idea to be able
+to monitor memory usage, but relying on that just does not work.
+
+> > At OOM time there is no userspace. We can not wakeup anyone or send (and
+> > expect it will be received) some notification. The only alive entity in
+> > the system is the kernel, who has to decide who must be killed based on
+> > some data provided by administrator (or by default with some
+> > heuristics).
+> > 
+> 
+> This is completely and utterly wrong.  If you had read the code 
+> thoroughly, you would see that the page allocation is deferred until 
+> userspace has the opportunity to respond.  That time in deferral isn't 
+> absurd, it would take time for the oom killer's exiting task to free 
+> memory anyway.  The change simply allows a delay between a page 
+> allocation failure and invoking the oom killer.
+> 
+> It will even work on UP systems since the page allocator has multiple 
+> reschedule points where a dedicated or monitoring application attached to 
+> the cgroup could add or free memory itself so the allocation succeeds when 
+> current is rescheduled.
+
+Yup, it will wait for some timeout while userspace will respond. The
+problem is that it will not in some cases. And so far I think (and I may
+be wrong), that it will not be able to respond most of the time.
+
+In every oom-condition I worked with, system was completely unusable
+before oom-killer started to berserk several processes. They were not
+able to allocate some data to read network input (atomic context) and to
+even read a console input.
 
 
-and cat /proc/meminfo gives:
+What I want to say is the simple matter of the iteraction within the
+kernel oom-handler. Let it be as smart or as stupid as admin decided. I
+have no objection against letting it to get some knowledge from the
+outsude of its own world (like wait for userspace to respond). I vote by
+both hands for implementing some kind of notification mechanism which
+could be used by the userspace to get oom-notifications in particular
+and to watch its (or system-wide) memory usage in general.
 
-MemTotal:        3374860 kB
-MemFree:         1199184 kB
-Buffers:           86816 kB
-Cached:          1036240 kB
-SwapCached:            0 kB
-Active:          1375864 kB
+But all those things should be additional tunables. Which do not even
+remotely, even theoretically allow a lockup. So userspace notifications
+are great as long as this is not the only way to have a progress in the
+OOM situation. And the highest priority in this case should be kernel
+and its tunables (like proposed cgroup patch), since relying on
+userspace in this case may be fatal. But of course it can be enabled and
+contribute.
 
-etc.
-
-On the other hand, user-space tools like lshw show the 4 1Gb DIMMS as
-does the BIOS configuration boot menu.
-
-One suspicion is that the configure option CONFIG_HIGHMEM4G=y
-should be unset and the CONFIG_HIGHMEM64G  should be.
-
-Any help would be appreciated, as would a separate CC since I don't
-subscribe to the list.
-
-Thanks in advance
-
-David
-
+-- 
+	Evgeniy Polyakov
