@@ -1,107 +1,394 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbZAVRw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbZAVRws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760599AbZAVRw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760099AbZAVRua
+	id S1760596AbZAVRws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbZAVRud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:50:30 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:39031 "EHLO relay.sgi.com"
+	Thu, 22 Jan 2009 12:50:33 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:56050 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758579AbZAVRu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759415AbZAVRu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Jan 2009 12:50:27 -0500
-Message-Id: <20090122175026.265884000@sgi.com>
+Message-Id: <20090122175026.606987000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Thu, 22 Jan 2009 11:49:20 -0600
+Date: Thu, 22 Jan 2009 11:49:21 -0600
 From: steiner@sgi.com
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 03/14] Add macros for using the UV hub to send interrupts
+Subject: [Patch 04/14] Misc GRU cleanup
 References: <20090122174917.563627000@sgi.com>
-Content-Disposition: inline; filename=uv_send_ipi
+Content-Disposition: inline; filename=uv_gru_misc_fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Add macros for using the UV hub to send interrupts. Change the IPI
-code to use these macros. These macros will also be used in additional
-patches that will follow.
+Misc trivial GRU drivers fixes:
+	- fix long lines
+	- eliminate extra whitespace
+	- eliminate compiler warning
+	- better validation of invalidate user parameters
+	- bug fix for GRU TLB flush (not the cpu TLB flush)
+
+These changes are all internal to the SGI GRU driver and have no effect
+on the base kernel.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- arch/ia64/include/asm/uv/uv_hub.h |    6 ++++++
- arch/x86/include/asm/uv/uv_hub.h  |   12 ++++++++++++
- arch/x86/kernel/genx2apic_uv_x.c  |    9 ++-------
- 3 files changed, 20 insertions(+), 7 deletions(-)
+ drivers/misc/sgi-gru/gru_instructions.h |   22 ++++++++++++----------
+ drivers/misc/sgi-gru/grufault.c         |   19 ++++++++++++-------
+ drivers/misc/sgi-gru/grufile.c          |   25 +++++++++++++++----------
+ drivers/misc/sgi-gru/gruhandles.h       |    2 +-
+ drivers/misc/sgi-gru/grukservices.c     |    4 ++--
+ drivers/misc/sgi-gru/grumain.c          |    6 +++---
+ drivers/misc/sgi-gru/grutables.h        |   15 ++++++++-------
+ drivers/misc/sgi-gru/grutlbpurge.c      |    5 ++---
+ 8 files changed, 55 insertions(+), 43 deletions(-)
 
-Index: linux/arch/ia64/include/asm/uv/uv_hub.h
+Index: linux/drivers/misc/sgi-gru/gru_instructions.h
 ===================================================================
---- linux.orig/arch/ia64/include/asm/uv/uv_hub.h	2009-01-11 07:28:11.000000000 -0600
-+++ linux/arch/ia64/include/asm/uv/uv_hub.h	2009-01-11 07:28:36.000000000 -0600
-@@ -305,5 +305,11 @@ static inline int uv_num_possible_blades
- 	return 1;
- }
+--- linux.orig/drivers/misc/sgi-gru/gru_instructions.h	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/gru_instructions.h	2009-01-21 15:51:41.000000000 -0600
+@@ -19,8 +19,11 @@
+ #ifndef __GRU_INSTRUCTIONS_H__
+ #define __GRU_INSTRUCTIONS_H__
  
-+static inline void uv_hub_send_ipi(int pnode, int apicid, int vector)
-+{
-+	/* not currently needed on ia64 */
-+}
+-#define gru_flush_cache_hook(p)
+-#define gru_emulator_wait_hook(p, w)
++extern int gru_check_status_proc(void *cb);
++extern int gru_wait_proc(void *cb);
++extern void gru_wait_abort_proc(void *cb);
 +
 +
- #endif /* __ASM_IA64_UV_HUB__ */
- 
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-01-11 07:28:11.000000000 -0600
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-01-11 07:28:36.000000000 -0600
-@@ -16,6 +16,7 @@
- #include <linux/timer.h>
- #include <asm/types.h>
- #include <asm/percpu.h>
-+#include <asm/uv/uv_mmrs.h>
- 
  
  /*
-@@ -401,4 +402,15 @@ static inline void uv_set_cpu_scir_bits(
- 	}
- }
+  * Architecture dependent functions
+@@ -29,16 +32,16 @@
+ #if defined(CONFIG_IA64)
+ #include <linux/compiler.h>
+ #include <asm/intrinsics.h>
+-#define __flush_cache(p)		ia64_fc(p)
++#define __flush_cache(p)		ia64_fc((unsigned long)p)
+ /* Use volatile on IA64 to ensure ordering via st4.rel */
+-#define gru_ordered_store_int(p,v)					\
++#define gru_ordered_store_int(p, v)					\
+ 		do {							\
+ 			barrier();					\
+ 			*((volatile int *)(p)) = v; /* force st.rel */	\
+ 		} while (0)
+ #elif defined(CONFIG_X86_64)
+ #define __flush_cache(p)		clflush(p)
+-#define gru_ordered_store_int(p,v)					\
++#define gru_ordered_store_int(p, v)					\
+ 		do {							\
+ 			barrier();					\
+ 			*(int *)p = v;					\
+@@ -558,20 +561,19 @@ extern int gru_get_cb_exception_detail(v
  
-+static inline void uv_hub_send_ipi(int pnode, int apicid, int vector)
-+{
-+	unsigned long val;
-+
-+	val = (1UL << UVH_IPI_INT_SEND_SHFT) |
-+			((apicid & 0x3f) << UVH_IPI_INT_APIC_ID_SHFT) |
-+			(vector << UVH_IPI_INT_VECTOR_SHFT);
-+	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
-+}
-+
-+
- #endif /* _ASM_X86_UV_UV_HUB_H */
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
+ #define GRU_EXC_STR_SIZE		256
+ 
+-extern int gru_check_status_proc(void *cb);
+-extern int gru_wait_proc(void *cb);
+-extern void gru_wait_abort_proc(void *cb);
+ 
+ /*
+  * Control block definition for checking status
+  */
+ struct gru_control_block_status {
+ 	unsigned int	icmd		:1;
+-	unsigned int	unused1		:31;
++	unsigned int	ima		:3;
++	unsigned int	reserved0	:4;
++	unsigned int	unused1		:24;
+ 	unsigned int	unused2		:24;
+ 	unsigned int	istatus		:2;
+ 	unsigned int	isubstatus	:4;
+-	unsigned int	inused3		:2;
++	unsigned int	unused3		:2;
+ };
+ 
+ /* Get CB status */
+Index: linux/drivers/misc/sgi-gru/grufault.c
 ===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2009-01-11 07:28:11.000000000 -0600
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2009-01-11 07:28:36.000000000 -0600
-@@ -113,17 +113,12 @@ int uv_wakeup_secondary(int phys_apicid,
+--- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grufault.c	2009-01-21 15:52:29.000000000 -0600
+@@ -368,6 +368,7 @@ failupm:
  
- static void uv_send_IPI_one(int cpu, int vector)
- {
--	unsigned long val, apicid, lapicid;
-+	unsigned long apicid;
- 	int pnode;
+ failfmm:
+ 	/* FMM state on UPM call */
++	gru_flush_cache(tfh);
+ 	STAT(tlb_dropin_fail_fmm);
+ 	gru_dbg(grudev, "FAILED fmm tfh: 0x%p, state %d\n", tfh, tfh->state);
+ 	return 0;
+@@ -497,10 +498,8 @@ int gru_handle_user_call_os(unsigned lon
+ 	if (!gts)
+ 		return -EINVAL;
  
- 	apicid = per_cpu(x86_cpu_to_apicid, cpu);
--	lapicid = apicid & 0x3f;		/* ZZZ macro needed */
- 	pnode = uv_apicid_to_pnode(apicid);
--	val =
--	    (1UL << UVH_IPI_INT_SEND_SHFT) | (lapicid <<
--					      UVH_IPI_INT_APIC_ID_SHFT) |
--	    (vector << UVH_IPI_INT_VECTOR_SHFT);
--	uv_write_global_mmr64(pnode, UVH_IPI_INT, val);
-+	uv_hub_send_ipi(pnode, apicid, vector);
+-	if (ucbnum >= gts->ts_cbr_au_count * GRU_CBR_AU_SIZE) {
+-		ret = -EINVAL;
++	if (ucbnum >= gts->ts_cbr_au_count * GRU_CBR_AU_SIZE)
+ 		goto exit;
+-	}
+ 
+ 	/*
+ 	 * If force_unload is set, the UPM TLB fault is phony. The task
+@@ -508,6 +507,10 @@ int gru_handle_user_call_os(unsigned lon
+ 	 * unload the context. The task will page fault and assign a new
+ 	 * context.
+ 	 */
++	if (gts->ts_tgid_owner == current->tgid && gts->ts_blade >= 0 &&
++				gts->ts_blade != uv_numa_blade_id())
++		gts->ts_force_unload = 1;
++
+ 	ret = -EAGAIN;
+ 	cbrnum = thread_cbr_number(gts, ucbnum);
+ 	if (gts->ts_force_unload) {
+@@ -541,11 +544,13 @@ int gru_get_exception_detail(unsigned lo
+ 	if (!gts)
+ 		return -EINVAL;
+ 
+-	if (gts->ts_gru) {
+-		ucbnum = get_cb_number((void *)excdet.cb);
++	ucbnum = get_cb_number((void *)excdet.cb);
++	if (ucbnum >= gts->ts_cbr_au_count * GRU_CBR_AU_SIZE) {
++		ret = -EINVAL;
++	} else if (gts->ts_gru) {
+ 		cbrnum = thread_cbr_number(gts, ucbnum);
+ 		cbe = get_cbe_by_index(gts->ts_gru, cbrnum);
+-		prefetchw(cbe);		/* Harmless on hardware, required for emulator */
++		prefetchw(cbe);/* Harmless on hardware, required for emulator */
+ 		excdet.opc = cbe->opccpy;
+ 		excdet.exopc = cbe->exopccpy;
+ 		excdet.ecause = cbe->ecause;
+@@ -609,7 +614,7 @@ int gru_user_flush_tlb(unsigned long arg
+ 	if (!gts)
+ 		return -EINVAL;
+ 
+-	gru_flush_tlb_range(gts->ts_gms, req.vaddr, req.vaddr + req.len);
++	gru_flush_tlb_range(gts->ts_gms, req.vaddr, req.len);
+ 	gru_unlock_gts(gts);
+ 
+ 	return 0;
+Index: linux/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grufile.c	2009-01-21 15:51:50.000000000 -0600
+@@ -57,7 +57,8 @@
+ #include <asm/uv/uv_mmrs.h>
+ 
+ struct gru_blade_state *gru_base[GRU_MAX_BLADES] __read_mostly;
+-unsigned long gru_start_paddr, gru_end_paddr __read_mostly;
++unsigned long gru_start_paddr __read_mostly;
++unsigned long gru_end_paddr __read_mostly;
+ struct gru_stats_s gru_stats;
+ 
+ /* Guaranteed user available resources on each node */
+@@ -113,7 +114,7 @@ static int gru_file_mmap(struct file *fi
+ 		return -EPERM;
+ 
+ 	if (vma->vm_start & (GRU_GSEG_PAGESIZE - 1) ||
+-	    			vma->vm_end & (GRU_GSEG_PAGESIZE - 1))
++				vma->vm_end & (GRU_GSEG_PAGESIZE - 1))
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |=
+@@ -307,7 +308,7 @@ static int gru_init_tables(unsigned long
+ 	for_each_online_node(nid) {
+ 		bid = uv_node_to_blade_id(nid);
+ 		pnode = uv_node_to_pnode(nid);
+-		if (gru_base[bid])
++		if (bid < 0 || gru_base[bid])
+ 			continue;
+ 		page = alloc_pages_node(nid, GFP_KERNEL, order);
+ 		if (!page)
+@@ -320,11 +321,11 @@ static int gru_init_tables(unsigned long
+ 		dsrbytes = 0;
+ 		cbrs = 0;
+ 		for (gru = gru_base[bid]->bs_grus, chip = 0;
+-		     		chip < GRU_CHIPLETS_PER_BLADE;
++				chip < GRU_CHIPLETS_PER_BLADE;
+ 				chip++, gru++) {
+ 			paddr = gru_chiplet_paddr(gru_base_paddr, pnode, chip);
+ 			vaddr = gru_chiplet_vaddr(gru_base_vaddr, pnode, chip);
+-			gru_init_chiplet(gru, paddr, vaddr, bid, nid, chip);
++			gru_init_chiplet(gru, paddr, vaddr, nid, bid, chip);
+ 			n = hweight64(gru->gs_cbr_map) * GRU_CBR_AU_SIZE;
+ 			cbrs = max(cbrs, n);
+ 			n = hweight64(gru->gs_dsr_map) * GRU_DSR_AU_BYTES;
+@@ -382,26 +383,26 @@ static int __init gru_init(void)
+ 	void *gru_start_vaddr;
+ 
+ 	if (!IS_UV())
+-		return 0;
++		return -ENODEV;
+ 
+ #if defined CONFIG_IA64
+ 	gru_start_paddr = 0xd000000000UL; /* ZZZZZZZZZZZZZZZZZZZ fixme */
+ #else
+ 	gru_start_paddr = uv_read_local_mmr(UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR) &
+ 				0x7fffffffffffUL;
+-
+ #endif
+ 	gru_start_vaddr = __va(gru_start_paddr);
+-	gru_end_paddr = gru_start_paddr + MAX_NUMNODES * GRU_SIZE;
++	gru_end_paddr = gru_start_paddr + GRU_MAX_BLADES * GRU_SIZE;
+ 	printk(KERN_INFO "GRU space: 0x%lx - 0x%lx\n",
+ 	       gru_start_paddr, gru_end_paddr);
+ 	irq = get_base_irq();
+ 	for (chip = 0; chip < GRU_CHIPLETS_PER_BLADE; chip++) {
+ 		ret = request_irq(irq + chip, gru_intr, 0, id, NULL);
+-		/* TODO: fix irq handling on x86. For now ignore failures because
++		/* TODO: fix irq handling on x86. For now ignore failure because
+ 		 * interrupts are not required & not yet fully supported */
+ 		if (ret) {
+-			printk("!!!WARNING: GRU ignoring request failure!!!\n");
++			printk(KERN_WARNING
++			       "!!!WARNING: GRU ignoring request failure!!!\n");
+ 			ret = 0;
+ 		}
+ 		if (ret) {
+@@ -481,7 +482,11 @@ struct vm_operations_struct gru_vm_ops =
+ 	.fault		= gru_fault,
+ };
+ 
++#ifndef MODULE
+ fs_initcall(gru_init);
++#else
++module_init(gru_init);
++#endif
+ module_exit(gru_exit);
+ 
+ module_param(gru_options, ulong, 0644);
+Index: linux/drivers/misc/sgi-gru/gruhandles.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/gruhandles.h	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/gruhandles.h	2009-01-21 15:51:49.000000000 -0600
+@@ -489,7 +489,7 @@ enum gru_cbr_state {
+  * 	 64m			26	8
+  * 	...
+  */
+-#define GRU_PAGESIZE(sh)	((((sh) > 20 ? (sh) + 2: (sh)) >> 1) - 6)
++#define GRU_PAGESIZE(sh)	((((sh) > 20 ? (sh) + 2 : (sh)) >> 1) - 6)
+ #define GRU_SIZEAVAIL(sh)	(1UL << GRU_PAGESIZE(sh))
+ 
+ /* minimum TLB purge count to ensure a full purge */
+Index: linux/drivers/misc/sgi-gru/grukservices.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grukservices.c	2009-01-21 15:51:50.000000000 -0600
+@@ -122,7 +122,7 @@ int gru_get_cb_exception_detail(void *cb
+ 	struct gru_control_block_extended *cbe;
+ 
+ 	cbe = get_cbe(GRUBASE(cb), get_cb_number(cb));
+-	prefetchw(cbe);         /* Harmless on hardware, required for emulator */
++	prefetchw(cbe);	/* Harmless on hardware, required for emulator */
+ 	excdet->opc = cbe->opccpy;
+ 	excdet->exopc = cbe->exopccpy;
+ 	excdet->ecause = cbe->ecause;
+@@ -437,7 +437,7 @@ static int send_message_failure(void *cb
+ 		break;
+ 	case CBSS_PUT_NACKED:
+ 		STAT(mesq_send_put_nacked);
+-		m =mq + (gru_get_amo_value_head(cb) << 6);
++		m = mq + (gru_get_amo_value_head(cb) << 6);
+ 		gru_vstore(cb, m, gru_get_tri(mesg), XTYPE_CL, lines, 1, IMA);
+ 		if (gru_wait(cb) == CBS_IDLE)
+ 			ret = MQE_OK;
+Index: linux/drivers/misc/sgi-gru/grumain.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grumain.c	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grumain.c	2009-01-21 15:51:50.000000000 -0600
+@@ -432,8 +432,8 @@ static inline long gru_copy_handle(void 
+ 	return GRU_HANDLE_BYTES;
  }
  
- static void uv_send_IPI_mask(const struct cpumask *mask, int vector)
+-static void gru_prefetch_context(void *gseg, void *cb, void *cbe, unsigned long cbrmap,
+-				unsigned long length)
++static void gru_prefetch_context(void *gseg, void *cb, void *cbe,
++				unsigned long cbrmap, unsigned long length)
+ {
+ 	int i, scr;
+ 
+@@ -773,8 +773,8 @@ int gru_fault(struct vm_area_struct *vma
+ 		return VM_FAULT_SIGBUS;
+ 
+ again:
+-	preempt_disable();
+ 	mutex_lock(&gts->ts_ctxlock);
++	preempt_disable();
+ 	if (gts->ts_gru) {
+ 		if (gts->ts_gru->gs_blade_id != uv_numa_blade_id()) {
+ 			STAT(migrated_nopfn_unload);
+Index: linux/drivers/misc/sgi-gru/grutables.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grutables.h	2009-01-21 15:51:50.000000000 -0600
+@@ -278,13 +278,12 @@ struct gru_stats_s {
+ /* Generate a GRU asid value from a GRU base asid & a virtual address. */
+ #if defined CONFIG_IA64
+ #define VADDR_HI_BIT		64
+-#define GRUREGION(addr)		((addr) >> (VADDR_HI_BIT - 3) & 3)
+ #elif defined CONFIG_X86_64
+ #define VADDR_HI_BIT		48
+-#define GRUREGION(addr)		(0)		/* ZZZ could do better */
+ #else
+ #error "Unsupported architecture"
+ #endif
++#define GRUREGION(addr)		((addr) >> (VADDR_HI_BIT - 3) & 3)
+ #define GRUASID(asid, addr)	((asid) + GRUREGION(addr))
+ 
+ /*------------------------------------------------------------------------------
+@@ -297,12 +296,12 @@ struct gru_state;
+  * This structure is pointed to from the mmstruct via the notifier pointer.
+  * There is one of these per address space.
+  */
+-struct gru_mm_tracker {
+-	unsigned int		mt_asid_gen;	/* ASID wrap count */
+-	int			mt_asid;	/* current base ASID for gru */
+-	unsigned short		mt_ctxbitmap;	/* bitmap of contexts using
++struct gru_mm_tracker {				/* pack to reduce size */
++	unsigned int		mt_asid_gen:24;	/* ASID wrap count */
++	unsigned int		mt_asid:24;	/* current base ASID for gru */
++	unsigned short		mt_ctxbitmap:16;/* bitmap of contexts using
+ 						   asid */
+-};
++} __attribute__ ((packed));
+ 
+ struct gru_mm_struct {
+ 	struct mmu_notifier	ms_notifier;
+@@ -359,6 +358,8 @@ struct gru_thread_state {
+ 						   required for contest */
+ 	unsigned char		ts_cbr_au_count;/* Number of CBR resources
+ 						   required for contest */
++	char			ts_blade;	/* If >= 0, migrate context if
++						   ref from diferent blade */
+ 	char			ts_force_unload;/* force context to be unloaded
+ 						   after migration */
+ 	char			ts_cbr_idx[GRU_CBR_AU];/* CBR numbers of each
+Index: linux/drivers/misc/sgi-gru/grutlbpurge.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grutlbpurge.c	2009-01-21 12:51:13.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grutlbpurge.c	2009-01-21 15:51:50.000000000 -0600
+@@ -187,7 +187,7 @@ void gru_flush_tlb_range(struct gru_mm_s
+ 	"  FLUSH gruid %d, asid 0x%x, num %ld, cbmap 0x%x\n",
+ 				gid, asid, num, asids->mt_ctxbitmap);
+ 			tgh = get_lock_tgh_handle(gru);
+-			tgh_invalidate(tgh, start, 0, asid, grupagesize, 0,
++			tgh_invalidate(tgh, start, ~0, asid, grupagesize, 0,
+ 				       num - 1, asids->mt_ctxbitmap);
+ 			get_unlock_tgh_handle(tgh);
+ 		} else {
+@@ -212,9 +212,8 @@ void gru_flush_all_tlb(struct gru_state 
+ 
+ 	gru_dbg(grudev, "gru %p, gid %d\n", gru, gru->gs_gid);
+ 	tgh = get_lock_tgh_handle(gru);
+-	tgh_invalidate(tgh, 0, ~0, 0, 1, 1, GRUMAXINVAL - 1, 0);
++	tgh_invalidate(tgh, 0, ~0, 0, 1, 1, GRUMAXINVAL - 1, 0xffff);
+ 	get_unlock_tgh_handle(tgh);
+-	preempt_enable();
+ }
+ 
+ /*
 
