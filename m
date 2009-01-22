@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZAVIf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZAVIfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZAVIf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZAVIfL
+	id S1753308AbZAVIfl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbZAVIfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 22 Jan 2009 03:35:13 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45756 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750788AbZAVIfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Jan 2009 03:35:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53311 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbZAVIfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:35:10 -0500
-Date: Thu, 22 Jan 2009 09:34:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mandeep Singh Baines <msb@google.com>
-Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, rientjes@google.com,
-       mbligh@google.com, thockin@google.com
-Subject: Re: [PATCH v2] softlockup: remove hung_task_check_count
-Message-ID: <20090122083457.GC7438@elte.hu>
-References: <20090121111314.GA23469@elte.hu> <20090122005405.GA6067@google.com>
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX19V52l+gLRVqymurvgnVmoAWumX9QQNZXNBYv8Sm+
+	Wq1AVUAuJ2USvT
+Date: Thu, 22 Jan 2009 09:35:06 +0100
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Pavel Machek <pavel@suse.cz>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       npiggin@yahoo.com.au, xfs@oss.sgi.com
+Subject: Re: [PATCH] Re: Corrupted XFS log replay oops.
+Message-ID: <20090122083506.GA5870@alice>
+References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au> <20090122043747.GU10158@disturbed> <20090122061158.GA31104@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090122005405.GA6067@google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090122061158.GA31104@infradead.org>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
+X-Uptime: 09:34:40 up 33 min,  8 users,  load average: 2.64, 2.19, 1.79
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mandeep Singh Baines <msb@google.com> wrote:
-
-> > do the need_resched() check first (it's very lighweight) - and thus 
-> > only do the heavy ops (get-task-struct & tasklist_lock unlock) if that 
-> > is set?
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Thu, Jan 22, 2009 at 03:37:47PM +1100, Dave Chinner wrote:
+> >  xfs_buf_t *
+> >  xlog_get_bp(
+> >  	xlog_t		*log,
+> > -	int		num_bblks)
+> > +	int		nbblks)
 > 
-> Wanted to upper-bound the amount of time the lock is held. In order to 
-> give others a chance to write_lock the tasklist, released the lock 
-> regardless of whether a re-schedule is need.
+> Any reason for reanming this variable?  That causes quite a bit of
+> churn.
+> 
+> >  {
+> > -	ASSERT(num_bblks > 0);
+> > +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
+> > +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
+> 
+> And doesn't prevent this line from needing a linebreak to stay under 80
+> characters :)
+> 
+> Except for these nitpicks it looks fine to me.
 
-but this:
+Just want to report that it fixes the issue for me. Thanks,
+i will continue xfs testing.
 
-> +static void check_hung_reschedule(struct task_struct *t)
-> +{
-> +	get_task_struct(t);
-> +	read_unlock(&tasklist_lock);
-> +	if (need_resched())
-> +		schedule();
-> +	read_lock(&tasklist_lock);
-> +	put_task_struct(t);
-> +}
-
-does not actually achieve that. Releasing a lock does not mean that other 
-CPUs will immediately be able to get it - if the ex-owner quickly 
-re-acquires it then it will often succeed in doing so. Perhaps adding a 
-cpu_relax() would increase the chance ... but still, it looks a bit weird.
-
-	Ingo
+Greetings, Eric
