@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZAVMkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZAVMpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbZAVMkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 07:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVMka
+	id S1756576AbZAVMpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 07:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVMpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 07:40:30 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35127 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754711AbZAVMk3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 07:40:29 -0500
-Date: Thu, 22 Jan 2009 12:40:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: bmckinlay@perle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 60/80] tty: extract the pty init time special cases
-Message-ID: <20090122124042.7251ff0f@lxorguk.ukuu.org.uk>
-In-Reply-To: <OF87B1346C.1E63B3D8-ON85257546.0006F3DA-85257546.000CF300@perle.com>
-References: <OF87B1346C.1E63B3D8-ON85257546.0006F3DA-85257546.000CF300@perle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 Jan 2009 07:45:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59381 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754325AbZAVMpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 07:45:02 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on eeepc-701
+Date: Thu, 22 Jan 2009 13:44:15 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com> <497858E1.5070303@tuffmail.co.uk>
+In-Reply-To: <497858E1.5070303@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901221344.16178.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch seems to break any other pseudo tty drivers, (ie driver->type 
-> ==TTY_DRIVER_TYPE_PTY) since not all the tty functions needed for the 
-> driver's new driver->install method are exported from tty_io.c.  The 
-> function symbols that need to be exported from /drivers/char/tty_io.c are 
+On Thursday 22 January 2009, Alan Jenkins wrote:
+> Alan Jenkins wrote:
+> > Hibernation hangs just after writing the image.  With s2disk I can see
+> > this from the console messages.  The same hang happens with kernel
+> > swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
+> > the image has been written from the HDD led.
+> >
+> > In either case, I can still hard-power-off and resume from hibernation.
+> >
+> > It doesn't hang if I use the shutdown method (either 'echo shutdown |
+> > sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
+> >   
+> 
+> I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
+> It doesn't revert cleanly from RC2.
+> 
+> I think it's distinct from the other two reported suspend regressions. 
+> I'm not using acpi-cpufreq, and the issue doesn't affect resume.
 
-I did ask at the time what other PTY drivers there were as and
-what .config case in the kernel needed those symbols. If you only need
-them for an out of tree driver then they can stay out of tree until that
-driver is merged.
+It looks distinct.
 
-Alan
+Do you suspend this box to RAM and does it work?
+
+Please retest with the appended patch applied.
+
+Thanks,
+Rafael
+
+
+---
+ drivers/pci/pci-driver.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -660,7 +660,10 @@ static int pci_pm_poweroff(struct device
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
+ 
+-	if (drv && drv->pm && drv->pm->poweroff) {
++	if (!drv || !drv->pm)
++		return 0;
++
++	if (drv->pm->poweroff) {
+ 		error = drv->pm->poweroff(dev);
+ 		suspend_report_result(drv->pm->poweroff, error);
+ 	}
+
