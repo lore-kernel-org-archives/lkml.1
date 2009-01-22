@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZAVSXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbZAVSZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZAVSXZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 13:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbZAVSXI
+	id S1757989AbZAVSZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 13:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZAVSY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 13:23:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:34975 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754244AbZAVSXH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 13:23:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=uWbsNIcfljeUHM1LWP8CT8gH8Gde61TZNvM8/VJUVrqBGkWCdxtDeRocqWNaq4rNBH
-         M77qqZMrCwfDLd6ndsYO4hGlX8yQXsFoseYwm9CF2dt6869kpNzq29bBS7M7EbnBFWU7
-         gfDicxEtTCtzJVvlOvcKbqvXKZA0DiT7Jns0w=
+	Thu, 22 Jan 2009 13:24:59 -0500
+Received: from ns.suse.de ([195.135.220.2]:35924 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753237AbZAVSY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 13:24:58 -0500
+Date: Thu, 22 Jan 2009 10:22:14 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-kernel@vger.kernel.org, Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/5] debugfs: introduce stub for
+	debugfs_create_size_t() when DEBUG_FS=n
+Message-ID: <20090122182214.GA11328@suse.de>
+References: <20090121051855.GA3665@kroah.com> <1232515197-3974-4-git-send-email-gregkh@suse.de> <20090122174152.de6cc08e.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Date: Thu, 22 Jan 2009 20:23:05 +0200
-Message-ID: <46e1c7760901221023r2766a57ey4564d05c05751b6e@mail.gmail.com>
-Subject: [PATCH] vt - fb: hide cursor in graphics mode
-From: Risto Suominen <risto.suominen@gmail.com>
-To: adaplas@pol.net
-Cc: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=001636c5b8b00d11840461165de9
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090122174152.de6cc08e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636c5b8b00d11840461165de9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, Jan 22, 2009 at 05:41:52PM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Tue, 20 Jan 2009 21:19:56 -0800 Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> >
+> > From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+> > 
+> > Toralf Förster <toralf.foerster@gmx.de> reported a build failure in
+> > the WiMAX stack when CONFIG_DEBUG_FS=n
+> > 
+> > http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
+> > 
+> > This is due to debugfs_create_size_t() missing an stub that returns
+> > -ENODEV when the DEBUGFS subsystem is not configured in (like the rest
+> > of the debugfs API).
+> > 
+> > This patch adds said stub.
+> > 
+> > Reported-by: Toralf Förster <toralf.foerster@gmx.de>
+> > Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  include/linux/debugfs.h |    7 +++++++
+> >  1 files changed, 7 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+> > index 23936b1..0f5c33b 100644
+> > --- a/include/linux/debugfs.h
+> > +++ b/include/linux/debugfs.h
+> > @@ -162,6 +162,13 @@ static inline struct dentry *debugfs_create_x32(const char *name, mode_t mode,
+> >  	return ERR_PTR(-ENODEV);
+> >  }
+> >  
+> > +struct dentry *debugfs_create_size_t(const char *name, mode_t mode,
+> 
+> This needs to be "static inline".  See my other email about linux-next
+> breakage due to this.
 
-Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
-need the text mode cursor, it's a bit annoying to have it there sitting in a
-corner. This patch disables the cursor when switching to graphics mode.
+This is now resolved in my tree, sorry about this.
 
-Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
----
-The testing is done on kernel version 2.6.18.
+thanks,
 
---- a/drivers/char/vt_ioctl.c.org	2006-09-20 06:42:06.000000000 +0300
-+++ b/drivers/char/vt_ioctl.c	2009-01-22 12:42:38.000000000 +0200
-@@ -491,6 +491,10 @@ int vt_ioctl(struct tty_struct *tty, str
- 			return -EPERM;
- 		switch (arg) {
- 		case KD_GRAPHICS:
-+			/*
-+			 * hide H/W (text) cursor in graphics mode
-+			 */
-+			vc->vc_sw->con_cursor(vc, CM_ERASE);
- 			break;
- 		case KD_TEXT0:
- 		case KD_TEXT1:
-
---001636c5b8b00d11840461165de9
-Content-Type: text/x-diff; charset=US-ASCII; name="vt_ioctl-graphics-nocursor.diff"
-Content-Disposition: attachment; filename="vt_ioctl-graphics-nocursor.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fq9pj8z80
-
-WHNlcnZlciBYZmJkZXYgKGtkcml2ZSkgdXNlcyBsaW51eCBmcmFtZWJ1ZmZlciBpbiBncmFwaGlj
-cyBtb2RlLiBJdCBkb2Vzbid0Cm5lZWQgdGhlIHRleHQgbW9kZSBjdXJzb3IsIGl0J3MgYSBiaXQg
-YW5ub3lpbmcgdG8gaGF2ZSBpdCB0aGVyZSBzaXR0aW5nIGluIGEKY29ybmVyLiBUaGlzIHBhdGNo
-IGRpc2FibGVzIHRoZSBjdXJzb3Igd2hlbiBzd2l0Y2hpbmcgdG8gZ3JhcGhpY3MgbW9kZS4KClNp
-Z25lZC1vZmYtYnk6IFJpc3RvIFN1b21pbmVuIDxSaXN0by5TdW9taW5lbkBnbWFpbC5jb20+Ci0t
-LQpUaGUgdGVzdGluZyBpcyBkb25lIG9uIGtlcm5lbCB2ZXJzaW9uIDIuNi4xOC4KCi0tLSBhL2Ry
-aXZlcnMvY2hhci92dF9pb2N0bC5jLm9yZwkyMDA2LTA5LTIwIDA2OjQyOjA2LjAwMDAwMDAwMCAr
-MDMwMAorKysgYi9kcml2ZXJzL2NoYXIvdnRfaW9jdGwuYwkyMDA5LTAxLTIyIDEyOjQyOjM4LjAw
-MDAwMDAwMCArMDIwMApAQCAtNDkxLDYgKzQ5MSwxMCBAQCBpbnQgdnRfaW9jdGwoc3RydWN0IHR0
-eV9zdHJ1Y3QgKnR0eSwgc3RyCiAJCQlyZXR1cm4gLUVQRVJNOwogCQlzd2l0Y2ggKGFyZykgewog
-CQljYXNlIEtEX0dSQVBISUNTOgorCQkJLyoKKwkJCSAqIGhpZGUgSC9XICh0ZXh0KSBjdXJzb3Ig
-aW4gZ3JhcGhpY3MgbW9kZQorCQkJICovCisJCQl2Yy0+dmNfc3ctPmNvbl9jdXJzb3IodmMsIENN
-X0VSQVNFKTsKIAkJCWJyZWFrOwogCQljYXNlIEtEX1RFWFQwOgogCQljYXNlIEtEX1RFWFQxOgo=
---001636c5b8b00d11840461165de9--
+greg k-h
