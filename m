@@ -1,111 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZAVXE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZAVXGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759197AbZAVXE6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 18:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZAVXEu
+	id S1759554AbZAVXGk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 18:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZAVXGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 18:04:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59706 "EHLO mx2.mail.elte.hu"
+	Thu, 22 Jan 2009 18:06:24 -0500
+Received: from ns.suse.de ([195.135.220.2]:43932 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754255AbZAVXEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 18:04:49 -0500
-Date: Fri, 23 Jan 2009 00:04:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       jeremy@xensource.com, chrisw@sous-sol.org, zach@vmware.com,
-       rusty@rustcorp.com.au
-Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
-Message-ID: <20090122230423.GA19569@elte.hu>
-References: <20090120110542.GE19505@wotan.suse.de> <20090120112634.GA20858@elte.hu> <4978F2A4.8010807@goop.org>
+	id S1752676AbZAVXGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 18:06:23 -0500
+Date: Thu, 22 Jan 2009 15:04:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: kyle@infradead.org
+Cc: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>, J?rn Engel <joern@logfs.org>,
+       David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090122230457.GA24745@suse.de>
+References: <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin> <20090111153920.GC7401@elte.hu> <20090111163018.GA9300@suse.de> <20090122215041.GA29369@redhat.com> <20090122215817.GA27609@suse.de> <20090122225025.GA21879@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4978F2A4.8010807@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090122225025.GA21879@bombadil.infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 22, 2009 at 05:50:26PM -0500, Kyle McMartin wrote:
+> Playing devil's advocate here...
+> 
+> On Thu, Jan 22, 2009 at 01:58:17PM -0800, Greg KH wrote:
+> > > * The fallout of staging is already starting to drift into distros.
+> > >   Within a week of Fedora shipping a kernel that had staging/
+> > >   we had requests to enable drivers from it.
+> > >   And of course, those drivers were garbage.
+> > >   This is only going to increase as time goes on.
+> > 
+> > That's up to you as a distro to handle, not much I can do there.
+> > 
+> > But, if you want a recommendation, some of the drivers in staging came
+> > from the Fedora kernel tree, so you should be enabling them :)
+> > 
+> 
+> Just at76, I think.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Yes.
 
-> Ingo Molnar wrote:
->> Ouch, that looks unacceptably expensive. All the major distros turn  
->> CONFIG_PARAVIRT on. paravirt_ops was introduced in x86 with the express 
->> promise to have no measurable runtime overhead.
->>
->> ( And i suspect the real life mmap cost is probably even more expensive,
->>   as on a Barcelona all of lmbench fits into the cache hence we dont see
->>   any real $cache overhead. )
->>
->> Jeremy, any ideas where this slowdown comes from and how it could be  
->> fixed?
->>   
->
-> I just posted a couple of patches to pick some low-hanging fruit.  It 
-> turns out that we don't need to do any pvops calls to do pte flag 
-> manipulations.  I'd be interested to see how much of a difference it 
-> makes (it reduces the static code size by a few k).
+> > What is wrong with it?  Bugs are getting fixed, people are getting use
+> > out of their hardware (hell, Linus is even using one of the drivers),
+> > and lots of developers are cutting their teeth on helping out.
+> > 
+> 
+> Why does it need to be upstream for someone to cut their teeth helping
+> out?
 
-I've tried your patches - but can see no significant reduction in 
-overhead. I've updated my table with numbers from your patches:
+Because people don't know where to look if it is out-of-the tree.
+Seriously, if it can't be easily found, it's not fixed up.  Proof of
+that is the hundreds of out-of-tree drivers that I have found over the
+past months.
 
- -----------------------------------------------
- | Performance counter stats for './mmap-perf' |
- -----------------------------------------------
- |            |            |
- | defconfig  | PARAVIRT=y |    +Jeremy
- |-----------------------------------------------------------------------
- |
- | 1311.55452 | 1360.62493 | 1378.94464  task clock (msecs)        +3.74%
- |            |            |
- |          1 |          1 |          0  CPU migrations
- |         91 |         79 |         77  context switches
- |      55945 |      55943 |      55980  pagefaults
- |.......................................................................
- | 3781392474 | 3918777174 | 3907189795  CPU cycles                +3.63%
- | 1957153827 | 2161280486 | 2161741689  instructions             +10.43%
- |   50234816 |   51303520 |   50619593  cache references          +2.12%
- |    5428258 |    5583728 |    5575808  cache misses              +2.86%
- |
- |  437983499 |  478967061 |  479053595  branches                  +9.36%
- |   32486067 |   32336874 |   32377710  branch-misses             -0.46%
- |            |
- | 1314.78246 | 1363.69444 | 1357.58161  time elapsed (msecs)       +3.72%
- |            |
- ------------------------------------------------------------------------
+> > If you don't like it, just disable it in your kernel packages, or
+> > instantly close out the bugs.  The drivers in staging has already helped
+> > out some distros by virtue of including newer drivers than they were
+> > mistakenly using at the time (Ubuntu, I'm looking at you...)
+> > 
+> > And again, it's helped out users, which is the most important thing
+> > here.
+> > 
+> 
+> What concerns me is the precedent this sets. If "getting something
+> upstream" now means "getting something into staging" then we've failed
+> our users since there's no longer any motivation for a vendor to invest
+> in all but the most cursory work on a Linux driver.
 
-'+Jeremy' is a CONFIG_PARAVIRT=y run done with your patches.
+Woah, you are changing the conversation here totally.
 
-The most stable count is the instruction count:
+This has nothing to do with "put pressure on a vendor to get their code
+into upstream so that a distro will enable it."  We have vendors today
+working with the staging tree to get their code cleaned up better to get
+it into mergable shape to move over to the main portion of the kernel
+tree.
 
- | 1957153827 | 2161280486 | 2161741689  instructions             +10.43%
+Other vendors throw us code and run away.  We handle that as well, by
+doing the work on our own, taking our time.  While that cleanup happens,
+users can use their hardware with Linux without having to find the
+latest version of a driver on a random google code site, and figure out
+how to patch things to handle api changes that have happened since then
+(true story for one of the drivers in staging right now.)
 
-But your two patches did not reduce the instruction count in any 
-measurable way.
+> I think we have higher standards to live up to than that.
 
-In any case, it is rather inefficient of me proxy-testing your patches, 
-you can do these measurements yourself too on any Core2 or later Intel 
-CPU, by running tip/master plus picking up these two utilities:
+The staging tree has NOTHING to do with our coding and acceptance
+standards.  And anyone that thinks otherwise is totally mistaken.
 
-    http://people.redhat.com/mingo/perfcounters/perfstat.c
-    http://redhat.com/~mingo/misc/mmap-perf.c
+> (I also think TAINT_CRAP is kind of an insulting name for things which
+> are really Linux-targetted features that just haven't had thorough
+> enough review. Evgeniy Polyakov's work comes to mind... it's really
+> comparing apples to a bunch of festering pieces of turd.
 
-building them and running this (as root):
+It was his choice to put the code into there, I'll let him handle the
+mental issues of having that taint flag associated with it for a few
+releases :)
 
-    taskset 1 ./perfstat ./mmap-perf 1
+> In summary, I don't know, this is one of those damned if you do, damned
+> if you don't paradoxes. ;-) But if you suck in a driver that barfs all
+> over your filesystem, because it was allowed to be turned in with zero
+> review, are you going to be the one to tell the user "ha ha, sucks to be
+> you?" I sure wouldn't want to be.
 
-it will give you numbers like the ones above.
+I'll take responsibility if such a thing happens.  Fear of such a thing
+is no reason to prevent users from having their hardware work properly
+with Linux.
 
-	Ingo
+Again, I'll point to Linus's laptop that now works properly due to the
+drivers/staging/ tree as a very visible example of this effort actually
+working properly.
+
+thanks,
+
+greg k-h
