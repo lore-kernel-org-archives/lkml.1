@@ -1,81 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbZAVOxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZAVOx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbZAVOxM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 09:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZAVOwz
+	id S1754421AbZAVOx2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 09:53:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZAVOw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 09:52:55 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:8299 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbZAVOwy (ORCPT
+	Thu, 22 Jan 2009 09:52:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40237 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752046AbZAVOwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 09:52:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=GSVKoZxDcHULCAlfPFAzwFCGwZuF0FeRDhE8kCayzTdhBoQPpawSIDptIvfAZkT/uv
-         TGNVjMsilM7BHZXZtZvjWv5TEM4GzeMrhLmIv3x20jLXBkYflKT9vDDGQCY3+iMLfbDu
-         FujrA0K3bOsK9viGonhEXM5/H7vP9EavZaB3U=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 7/9] ide: move ->rqsize init from init_irq() to ide_init_port()
-Date: Thu, 22 Jan 2009 15:52:20 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-next-20090121; KDE/4.1.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090106183520.21193.63704.sendpatchset@localhost.localdomain> <496A5D64.6030007@ru.mvista.com> <200901141825.21896.bzolnier@gmail.com>
-In-Reply-To: <200901141825.21896.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Jan 2009 09:52:55 -0500
+Date: Thu, 22 Jan 2009 06:51:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk,
+       oleg@redhat.com, linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-Id: <20090122065104.2787df2d.akpm@linux-foundation.org>
+In-Reply-To: <20090115153211.663df310@bike.lwn.net>
+References: <20090115153211.663df310@bike.lwn.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901221552.21060.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Wednesday 14 January 2009, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 11 January 2009, Sergei Shtylyov wrote:
-> > Hello.
-> > 
-> > Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > >   
-> > 
-> > > Index: b/drivers/ide/ide-probe.c
-> > > ===================================================================
-> > > --- a/drivers/ide/ide-probe.c
-> > > +++ b/drivers/ide/ide-probe.c
-> > >   
-> > [...]
-> > > @@ -1242,6 +1234,13 @@ static void ide_init_port(ide_hwif_t *hw
-> > >  
-> > >  	if (d->max_sectors)
-> > >  		hwif->rqsize = d->max_sectors;
-> > > +	else {
-> > > +		if ((hwif->host_flags & IDE_HFLAG_NO_LBA48) ||
-> > > +		    (hwif->host_flags & IDE_HFLAG_NO_LBA48_DMA))
-> > >   
-> > 
-> >    Er, why not:
-> > 
-> > 		if (hwif->host_flags &
-> > 		    (IDE_HFLAG_NO_LBA48 | IDE_HFLAG_NO_LBA48_DMA))
+> On Thu, 15 Jan 2009 15:32:11 -0700 Jonathan Corbet <corbet@lwn.net> wrote:
+> One of these years I've got to get this right.  I've fixed the problem
+> pointed out by Oleg where f_flags would get changed even if fasync()
+> fails.  
 > 
-> IMO it is harder to read
+> I have also taken out the ABI change.  CCing the linux-api list because
+> I still think it's not quite right; fcntl() should not silently let
+> applications set the FASYNC flag if the underlying driver/filesystem
+> does not support it.  But that's How We've Always Done It, and one
+> messes with such things at great risk.  If we want fcntl() to return an
+> error in this case, it's an easy change.
+> 
+> This one's against 2.6.29-rc1.  If I don't hear screaming, I'll drop
+> this one into linux-next.
+> 
 
-Sigh, why we were focused on subtle CodingStyle preferences we missed
-the real issue...
+scream.
 
-This patch depends on fact that all host drivers use struct ide_port_info
-which is not true yet (icside, buddha, ide_arm, ide-generic, ide-pnp and
-macide still needs to be updated).  I dropped it from pata-2.6 for now...
+> 
+> jon
+> 
+> --
+> 
+> Accesses to the f_flags member of struct file involve read-modify-write
+> cycles; they have traditionally been done in a racy way.  This patch
+> introduces a global spinlock to protect f_flags against concurrent
+> modifications.
+> 
+> Additionally, changes to the FASYNC flag and resulting calls to
+> f_op->fasync() need to be done in an atomic manner.  Here, the BKL is
+> removed and FASYNC modifications are protected with a mutex.
+> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> ---
+>  drivers/char/tty_io.c |    5 +--
+>  fs/fcntl.c            |   65 +++++++++++++++++++++++++++++++++++++++----------
+>  fs/ioctl.c            |   25 ++++---------------
+>  fs/nfsd/vfs.c         |    5 +++-
+>  include/linux/fs.h    |   17 +++++++++++++
+>  5 files changed, 80 insertions(+), 37 deletions(-)
+> 
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index d33e5ab..8450316 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -2160,13 +2160,12 @@ static int fionbio(struct file *file, int __user *p)
+>  	if (get_user(nonblock, p))
+>  		return -EFAULT;
+>  
+> -	/* file->f_flags is still BKL protected in the fs layer - vomit */
+> -	lock_kernel();
+> +	lock_file_flags();
+>  	if (nonblock)
+>  		file->f_flags |= O_NONBLOCK;
+>  	else
+>  		file->f_flags &= ~O_NONBLOCK;
+> -	unlock_kernel();
+> +	unlock_file_flags();
 
-Thanks,
-Bart
+OK, replacing a lock_kernel() with a spin_lock(&global_lock) is pretty
+straightforwad.  But it's really really sad.  It basically leaves a great
+big FIXME in there.  It'd be better to fix it.
+
+We don't have a handy lock in struct file which could be borrowed.
+
+- We could add one
+
+- We could borrow file->f_path.dentry->d_inode->i_lock
+
+- We could convert that field to long and use bitops (sounds nice?)
+
+>  	return 0;
+>  }
+>  
+> diff --git a/fs/fcntl.c b/fs/fcntl.c
+> index cdc1419..ddd497d 100644
+> --- a/fs/fcntl.c
+> +++ b/fs/fcntl.c
+>
+> ...
+>
+> +/*
+> + * Change the setting of fasync, let the driver know.
+> + * Not static because ioctl_fioasync() uses it too.
+> + */
+> +int fasync_change(int fd, struct file *filp, int on)
+> +{
+> +	int ret = 0;
+> +	static DEFINE_MUTEX(fasync_mutex);
+> +
+> +	if (filp->f_op->fasync == NULL)
+> +		return -ENOTTY;
+> +
+> +	mutex_lock(&fasync_mutex);
+> +	/* Can test without flags lock, nobody else will change it */
+> +	if (((filp->f_flags & FASYNC) == 0) == (on == 0))
+> +		goto out;
+> +	ret = filp->f_op->fasync(fd, filp, on);
+> +	if (ret >= 0) {
+> +		lock_file_flags();
+> +		if (on)
+> +			filp->f_flags |= FASYNC;
+> +		else
+> +			filp->f_flags &= ~FASYNC;
+> +		unlock_file_flags();
+> +	}
+> +  out:
+
+column zero, please.
+
+> +	mutex_unlock(&fasync_mutex);
+> +	return ret;
+> +}
+
+It isn't completely obvious what fasync_mutex is protecting, why it exists.
+
+A comment which explains this would be appropriate?
+
+
