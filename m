@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZAVNI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZAVNMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbZAVNI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 08:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZAVNIp
+	id S1756010AbZAVNMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 08:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZAVNML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 08:08:45 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:10797 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZAVNIp convert rfc822-to-8bit (ORCPT
+	Thu, 22 Jan 2009 08:12:11 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:16417 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbZAVNMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 08:08:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xH3LxXHJ57N0DmEmNI3wq71jDbMmUgXTA361uZqlYVLe0z7s/yML8SJvDlKqc9Ok7o
-         WuVjErG8yZPIfFvNxhZrJBQQzbfVWI+bto6yTv4Mu7yct8I0veyD3MQYxb2bpXti82xr
-         UWMonsZhIvoBK+MCOdM6h1FA3NSPLBX04NoJI=
+	Thu, 22 Jan 2009 08:12:09 -0500
+X-BigFish: VPS-35(zz1432R62a3L98dR936eQ1805Mzzzzz32i6bh43j63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-SS: 5,
+X-WSS-ID: 0KDVJBW-03-JXH-01
+Date: Thu, 22 Jan 2009 14:11:53 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Mike Travis <travis@sgi.com>
+CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Dean Nelson <dcn@sgi.com>, oprofile-list@lists.sf.net,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Ursula Braun <ursula.braun@de.ibm.com>,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org
+Subject: Re: [PATCH 3/5] cpumask: convert misc driver functions
+Message-ID: <20090122131153.GP21604@erda.amd.com>
+References: <20090107195832.265117000@polaris-admin.engr.sgi.com> <20090107195832.733912000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <49784F79.1070905@hiramoto.org>
-References: <b0438a630901212342o543ed522p60376f764b6248b5@mail.gmail.com>
-	 <49784F79.1070905@hiramoto.org>
-Date: Thu, 22 Jan 2009 14:08:43 +0100
-Message-ID: <b0438a630901220508y479a2ff5o9cfa228bcafe0b2b@mail.gmail.com>
-Subject: Re: IXP4XX queues
-From: =?ISO-8859-1?Q?Miguel_=C1ngel_=C1lvarez?= <gotzoncabanes@gmail.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090107195832.733912000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 22 Jan 2009 13:11:54.0013 (UTC) FILETIME=[FEE304D0:01C97C92]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On 07.01.09 11:58:35, Mike Travis wrote:
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> Impact: use new cpumask API.
+> 
+> Convert misc driver functions to use struct cpumask.
+> 
+> To Do:
+>   - Convert iucv_buffer_cpumask to cpumask_var_t.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Acked-by: Dean Nelson <dcn@sgi.com>
+> Cc: Robert Richter <robert.richter@amd.com>
+> Cc: oprofile-list@lists.sf.net
+> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+> Cc: Chris Wright <chrisw@sous-sol.org>
+> Cc: virtualization@lists.osdl.org
+> Cc: xen-devel@lists.xensource.com
+> Cc: Ursula Braun <ursula.braun@de.ibm.com>
+> Cc: linux390@de.ibm.com
+> Cc: linux-s390@vger.kernel.org
+> ---
+>  drivers/base/cpu.c             |    2 +-
+>  drivers/misc/sgi-xp/xpc_main.c |    2 +-
+>  drivers/oprofile/buffer_sync.c |   22 ++++++++++++++++++----
+>  drivers/oprofile/buffer_sync.h |    4 ++++
+>  drivers/oprofile/oprof.c       |    9 ++++++++-
 
-On Thu, Jan 22, 2009 at 11:50 AM, Karl Hiramoto <karl@hiramoto.org> wrote:
-> Miguel Ángel Álvarez wrote:
->> Hi
->>
->> Last December we talked about 64 queues and IXP4XX. Karl has a patch
->> for them, and although I think it could be better to splitt it into
->> two different ones ("plain 64 queue expansion" for which I proposed a
->> modified patch based on Karl's, and "debugging and other things"), I
->> prefer Karl's to none.
->>
->> What do you think of this? Which should be the best way to include it
->> in the main stream kernel?
->>
->> Thanks
->>
->> Miguel Ángel
->>
->>
-> The patch needs minor  rework so it  applies cleanly against 2.6.29-rc2
-> at the moment i don't have time to do this and test it.
->
-I do not have much problem in doing that rework myself. However I need
-help in making its way into the kernel, because I have not good
-experiences in that.
+Acked-by: Robert Richter <robert.richter@amd.com>
 
-Miguel Ángel
+I will send out a delta patch that changes the initialization.
+
+-Robert
+
+>  drivers/xen/manage.c           |    2 +-
+>  net/iucv/iucv.c                |   28 ++++++++++++++++++----------
+>  7 files changed, 51 insertions(+), 18 deletions(-)
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
