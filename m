@@ -1,97 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZAVPsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZAVPxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbZAVPsf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZAVPs0
+	id S1754724AbZAVPxQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZAVPw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:48:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37425 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbZAVPsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:48:25 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: smfrench@gmail.com
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH] cifs: make sure we allocate enough storage for socket address
-Date: Thu, 22 Jan 2009 10:48:18 -0500
-Message-Id: <1232639298-9168-1-git-send-email-jlayton@redhat.com>
+	Thu, 22 Jan 2009 10:52:59 -0500
+Received: from h155.mvista.com ([63.81.120.155]:29607 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750785AbZAVPw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 10:52:58 -0500
+Message-ID: <49789679.5040800@ru.mvista.com>
+Date: Thu, 22 Jan 2009 18:53:29 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Dmitry Gryazin <gdu@mns.spb.ru>, Kirill Smelkov <kirr@mns.spb.ru>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       navy-patches@mns.spb.ru
+Subject: Re: [PATCH] ide: motherboard-info based blacklist for ide-dma
+References: <1230651239-29388-1-git-send-email-kirr@mns.spb.ru> <49707F20.4030600@ru.mvista.com> <200901221543.03763.gdu@mns.spb.ru> <200901221601.38362.bzolnier@gmail.com>
+In-Reply-To: <200901221601.38362.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sockaddr declared on the stack in cifs_get_tcp_session is too small
-for IPv6 addresses. Change it from "struct sockaddr" to "struct
-sockaddr_storage" to prevent stack corruption when IPv6 is used.
+Bartlomiej Zolnierkiewicz wrote:
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/cifs/connect.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+>>>>>>>True.  However it should be possible to handle it correctly by adding
+>>>>>>>the
+>>>>>>>DMA quirk to the respective host drivers (seems to be via82cxxx.c in
+>>>>>>>case of
+>>>>>>>IEI PCISA-C3/EDEN).
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index a3537a9..2209be9 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1354,7 +1354,7 @@ cifs_parse_mount_options(char *options, const char *devname,
- }
- 
- static struct TCP_Server_Info *
--cifs_find_tcp_session(struct sockaddr *addr)
-+cifs_find_tcp_session(struct sockaddr_storage *addr)
- {
- 	struct list_head *tmp;
- 	struct TCP_Server_Info *server;
-@@ -1374,11 +1374,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
- 		if (server->tcpStatus == CifsNew)
- 			continue;
- 
--		if (addr->sa_family == AF_INET &&
-+		if (addr->ss_family == AF_INET &&
- 		    (addr4->sin_addr.s_addr !=
- 		     server->addr.sockAddr.sin_addr.s_addr))
- 			continue;
--		else if (addr->sa_family == AF_INET6 &&
-+		else if (addr->ss_family == AF_INET6 &&
- 			 memcmp(&server->addr.sockAddr6.sin6_addr,
- 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
- 			continue;
-@@ -1419,12 +1419,12 @@ static struct TCP_Server_Info *
- cifs_get_tcp_session(struct smb_vol *volume_info)
- {
- 	struct TCP_Server_Info *tcp_ses = NULL;
--	struct sockaddr addr;
-+	struct sockaddr_storage addr;
- 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
- 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
- 	int rc;
- 
--	memset(&addr, 0, sizeof(struct sockaddr));
-+	memset(&addr, 0, sizeof(struct sockaddr_storage));
- 
- 	if (volume_info->UNCip && volume_info->UNC) {
- 		rc = cifs_inet_pton(AF_INET, volume_info->UNCip,
-@@ -1435,9 +1435,9 @@ cifs_get_tcp_session(struct smb_vol *volume_info)
- 			rc = cifs_inet_pton(AF_INET6, volume_info->UNCip,
- 					    &sin_server6->sin6_addr.in6_u);
- 			if (rc > 0)
--				addr.sa_family = AF_INET6;
-+				addr.ss_family = AF_INET6;
- 		} else {
--			addr.sa_family = AF_INET;
-+			addr.ss_family = AF_INET;
- 		}
- 
- 		if (rc <= 0) {
-@@ -1502,7 +1502,7 @@ cifs_get_tcp_session(struct smb_vol *volume_info)
- 	tcp_ses->tcpStatus = CifsNew;
- 	++tcp_ses->srv_count;
- 
--	if (addr.sa_family == AF_INET6) {
-+	if (addr.ss_family == AF_INET6) {
- 		cFYI(1, ("attempting ipv6 connect"));
- 		/* BB should we allow ipv6 on port 139? */
- 		/* other OS never observed in Wild doing 139 with v6 */
--- 
-1.5.5.6
+>>>>>>  Yeah, this seems a viable approach...
 
+>>>>>>>Kirill, could you please look into adding such quirk to via82cxxx
+>>>>>>>instead?
+
+>>>>>>>[ It seems the best place to add it would be via_init_one() as we
+>>>>>>>could just
+
+>>>>>>  No, not really -- the issue is not at all as simple as this patch
+>>>>>>tried to present it. Looking at its "Quick Startup Reference"
+>>>>>>(http://f.ipc2u.ru/files/add/doc/496/M_PCISA-C800EV_ENG.pdf), the EPIC
+>>>>>>board has *two* normal IDE connectors in addition to the CF slot
+>>>>>>(connected to the secondary port -- and it seems possible that a hard
+>>>>>>drive can be connected to the same port as CF), so the right place
+>>>>>>seems to rather be in [mu]dma_filter() methods -- and the decision
+>>>>>>should be strictly based on the drive type indicating CF, i.e. by
+>>>>>>calling ata_id_is_cfa().
+
+>>I have tried my old Trancend 64Mb, RamStar 521Mb and NCP 64Mb cards. My old 
+>>cards returned right id[ATA_ID_CONFIG] = 0x848A.
+
+>>But I have to use Kingston CF Card 1Gb 2008.
+>>ata_id_is_cfa() returns 0 for it and
+>>id[ATA_ID_MAJOR_VER]	= 0
+>>id[ATA_ID_CONFIG]		= 0x044A
+
+>>I have only CF+ specification revision 2.0, but I've found in wiki:
+>>(http://en.wikipedia.org/wiki/CompactFlash#CF.2B_specification_revisions)
+>>"... While the current revision 4.1 from 2004 works only in ATA mode, ..."
+
+>>So I have reached an impasse. How to identify modern CF cards?
+
+> Sorry that I missed it before but if indeed normal IDE devices/connectors can
+> be used with IDE2 then I see no sane/reliable way to detect CF devices using
+> buggy on-board slot... unless this slot is hardwired to be master (or slave)?
+
+    Selectable via switch. However, it's not very probable that user will plug 
+in CF adapter into the secondary channel (and it will have the option of using 
+on on the primary anyway).
+
+> Thanks,
+> Bart
+
+MBR, Sergei
