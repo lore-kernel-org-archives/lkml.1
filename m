@@ -1,79 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZAVOKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbZAVOL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbZAVOKf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 09:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbZAVOKZ
+	id S1757988AbZAVOL6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 09:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVOLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 09:10:25 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36642 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753459AbZAVOKY (ORCPT
+	Thu, 22 Jan 2009 09:11:49 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3188 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751659AbZAVOLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 09:10:24 -0500
-Date: Thu, 22 Jan 2009 19:40:19 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, mingo@elte.hu, richardj_moore@uk.ibm.com
-Subject: [RFC Patch 9/10] Cleanup HW Breakpoint registers before kexec
-Message-ID: <20090122141019.GH19592@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090122135640.GA11161@in.ibm.com>
+	Thu, 22 Jan 2009 09:11:49 -0500
+Date: Thu, 22 Jan 2009 14:11:46 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] regulator: add unset_regulator_supplies to fix regulator_unregister
+Message-ID: <20090122141146.GG19720@sirena.org.uk>
+References: <49787BFD.3020702@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090122135640.GA11161@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49787BFD.3020702@compulab.co.il>
+X-Cookie: Remember: use logout to logout.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
+On Thu, Jan 22, 2009 at 04:00:29PM +0200, Mike Rapoport wrote:
+> Currently regulator_unregister does not clear regulator <--> consumer
+> mapping.
+> This patch introduces unset_regulator_supplies that clear the map.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/machine_kexec_32.c |    2 ++
- arch/x86/kernel/machine_kexec_64.c |    2 ++
- 2 files changed, 4 insertions(+)
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/machine_kexec_32.c
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/machine_kexec_32.c
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/machine_kexec_32.c
-@@ -25,6 +25,7 @@
- #include <asm/desc.h>
- #include <asm/system.h>
- #include <asm/cacheflush.h>
-+#include <asm/debugreg.h>
- 
- static void set_idt(void *newidt, __u16 limit)
- {
-@@ -202,6 +203,7 @@ void machine_kexec(struct kimage *image)
- 
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	disable_debug_registers();
- 
- 	if (image->preserve_context) {
- #ifdef CONFIG_X86_IO_APIC
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/machine_kexec_64.c
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/machine_kexec_64.c
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/machine_kexec_64.c
-@@ -17,6 +17,7 @@
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
- #include <asm/io.h>
-+#include <asm/debugreg.h>
- 
- #define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
- static u64 kexec_pgd[512] PAGE_ALIGNED;
-@@ -190,6 +191,7 @@ void machine_kexec(struct kimage *image)
- 
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	disable_debug_registers();
- 
- 	control_page = page_address(image->control_code_page) + PAGE_SIZE;
- 	memcpy(control_page, relocate_kernel, PAGE_SIZE);
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
