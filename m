@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZAVJui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZAVJxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbZAVJui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZAVJu3
+	id S1757244AbZAVJxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZAVJxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:50:29 -0500
-Received: from tservice.ru ([195.178.208.66]:40164 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755318AbZAVJu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:50:28 -0500
-Date: Thu, 22 Jan 2009 12:50:26 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: David Rientjes <rientjes@google.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
+	Thu, 22 Jan 2009 04:53:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52067 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754158AbZAVJxB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:53:01 -0500
+Subject: Re: [PATCH] workqueue: not allow recursion run_workqueue
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Message-ID: <20090122095026.GA10579@ioremap.net>
-References: <200901211638.23101.knikanth@suse.de> <200901212054.34929.knikanth@suse.de> <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <49780C3A.1050601@cn.fujitsu.com>
+References: <4976EE11.7010007@cn.fujitsu.com>
+	 <1232536373.4847.115.camel@laptop>  <49780C3A.1050601@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 22 Jan 2009 10:52:45 +0100
+Message-Id: <1232617965.4890.110.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 12:43:38AM -0800, David Rientjes (rientjes@google.com) wrote:
-> For example, if your task triggers an oom as the result of its exclusive 
-> cpuset placement, the oom killer should prefer to kill a task within that 
-> cpuset to allow for future memory freeing.
+On Thu, 2009-01-22 at 14:03 +0800, Lai Jiangshan wrote:
+> 
+> void do_some_cleanup(void)
+> {
+>         find_all_queued_work_struct_and_mark_it_old();
+>         flush_workqueue(workqueue);
+>         /* we can destroy old work_struct for we have flushed them */
+>         destroy_old_work_structs();
+> }
+> 
+> if work->func() called do_some_cleanup(), it's very probably a bug.
 
-This it not true for all cases. What if you do need to start this task
-and free something else outside the given set? This should be an
-administrative decision and not forced by the kernel. We used to have it
-that way, but it does not mean that it is the only correct way to do the
-things.
+Of course it is, if only because calling flush on the same workqueue is
+pretty dumb.
 
-> So, with your proposal, an administrator can specify the oom priority of 
-> an entire aggregate of tasks but the behavior may not be desired for a 
-> cpuset-constrained oom, while it may be perfectly legitimate for a global 
-> unconstrained oom.
+But I'm still not getting it, flush_workqueue() provides the guarantee
+that all work enqueued previous to the call will be finished thereafter.
 
-In this case administrator will not do this. It is up to him to decide
-and not some inner kernel policy.
+The self-flush stuff you propose to rip out doesn't violate that
+guarantee afaict.
 
--- 
-	Evgeniy Polyakov
+Suppose we have a workqueue Q, with pending work W1..Wn.
+
+Suppose W5 will have the nested flush, it will then recursively complete
+W6..Wn+i, where i accounts for any concurrent worklet additions.
+
+Therefore it will have completed (at least) those worklets that were
+enqueued at the time flush got called.
+
+So, to get back at your changelog.
+
+ 1) yes lockdep will complain -- for good reasons, and I'm all for
+getting rid of this mis-feature.
+
+ 2) I've no clue what you're on about
+
+ 3) more mystery.
+
+
+
