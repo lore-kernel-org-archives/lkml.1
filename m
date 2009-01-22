@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZAVGmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZAVGpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbZAVGmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 01:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZAVGmH
+	id S1756324AbZAVGpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 01:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZAVGo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 01:42:07 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36209 "EHLO smtps.tip.net.au"
+	Thu, 22 Jan 2009 01:44:56 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56730 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbZAVGmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 01:42:05 -0500
-Date: Thu, 22 Jan 2009 17:41:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Inaky Perez-Gonzalez <inaky@linux.intel.com>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/5] debugfs: introduce stub for debugfs_create_size_t()
- when DEBUG_FS=n
-Message-Id: <20090122174152.de6cc08e.sfr@canb.auug.org.au>
-In-Reply-To: <1232515197-3974-4-git-send-email-gregkh@suse.de>
-References: <20090121051855.GA3665@kroah.com>
-	<1232515197-3974-4-git-send-email-gregkh@suse.de>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q"
+	id S1752854AbZAVGo4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 01:44:56 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Date: Thu, 22 Jan 2009 12:12:23 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Paul Menage <menage@google.com>,
+       containers@lists.linux-foundation.org
+References: <200901211638.23101.knikanth@suse.de> <200901221142.00803.knikanth@suse.de> <d6200be20901212229y47353d3ft72fbfed6ffaba999@mail.gmail.com>
+In-Reply-To: <d6200be20901212229y47353d3ft72fbfed6ffaba999@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200901221212.23821.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Greg,
-
-On Tue, 20 Jan 2009 21:19:56 -0800 Greg Kroah-Hartman <gregkh@suse.de> wrot=
-e:
+On Thursday 22 January 2009 11:59:20 Arve Hjønnevåg wrote:
+> On Wed, Jan 21, 2009 at 10:12 PM, Nikanth Karthikesan <knikanth@suse.de> 
+wrote:
+> > On Thursday 22 January 2009 11:09:45 Arve Hjønnevåg wrote:
+> >> On Wed, Jan 21, 2009 at 9:13 PM, Nikanth Karthikesan <knikanth@suse.de>
+> >
+> > wrote:
+> >> > To use oom_adj effectively one should continuously monitor oom_score
+> >> > of all the processes, which is a complex moving target and keep on
+> >> > adjusting the oom_adj of many tasks which still cannot guarantee the
+> >> > order. This controller is deterministic and hence easier to use.
+> >>
+> >> Why not add an option to make oom_adj ensure strict ordering instead?
+> >
+> > This could be done in 2 ways.
+> > 1. Make oom_adj itself strict.(based on some other parameter?)
+> > - Adds to confusion whether the current oom_adj is a strict value or the
+> > usual suggestion.
+> > - It would disable the oom_adj suggestion which could have been used till
+> > now. - It is a public interface, and changing that might break some one's
+> > script.
+> >
+> > 2. Add addtional parameter, say  /proc/<pid>/oom_order
+> > - Not easy to use.
+> > - Say I had assigned the oom.victim to a task and it had forked a lot.
+> > Now to change the value for all the tasks it is easier with cgroups.
+> > - Some optimization that Kame specified earlier would be harder to
+> > achieve.
 >
-> From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
->=20
-> Toralf F=C3=B6rster <toralf.foerster@gmx.de> reported a build failure in
-> the WiMAX stack when CONFIG_DEBUG_FS=3Dn
->=20
-> http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
->=20
-> This is due to debugfs_create_size_t() missing an stub that returns
-> -ENODEV when the DEBUGFS subsystem is not configured in (like the rest
-> of the debugfs API).
->=20
-> This patch adds said stub.
->=20
-> Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
-> Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  include/linux/debugfs.h |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
->=20
-> diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-> index 23936b1..0f5c33b 100644
-> --- a/include/linux/debugfs.h
-> +++ b/include/linux/debugfs.h
-> @@ -162,6 +162,13 @@ static inline struct dentry *debugfs_create_x32(cons=
-t char *name, mode_t mode,
->  	return ERR_PTR(-ENODEV);
->  }
-> =20
-> +struct dentry *debugfs_create_size_t(const char *name, mode_t mode,
+> Both options would work for us, but option 1 require no change to our
+> user space code.
 
-This needs to be "static inline".  See my other email about linux-next
-breakage due to this.
+Some scripts might be assuming the oom_adj will always be -17 to +15. So not 
+more than 32+1 levels or order is possible. Yes it should be enough mostly. 
+But incase you want to leave space between for adding tasks in between, one 
+has to take extra care or do more work. And someone might still assume old 
+behaviour and by seeing oom_score and oom_adj he might expect a different 
+behaviour. And if someone wants the old behaviour, we have to provide an 
+aditional variable to enable/disable this.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> I agree that some operations are easier with a
+> cgroups approach, but since we don't perform these operations it would
+> be nice to not require cgroups to control the oom killer.
 
---Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q
-Content-Type: application/pgp-signature
+We would perform these operations if these would be available and easier to 
+use, so it would be nice to use cgroups.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkl4FTAACgkQjjKRsyhoI8yiSQCeLQ+a17FBs+119+n0QURoY4RA
-JKcAn0uyT8sJomNA5xWrOS5Ighf+wR/g
-=hovZ
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q--
+Thanks
+Nikanth
