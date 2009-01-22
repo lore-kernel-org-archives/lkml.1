@@ -1,211 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZAVTzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbZAVT4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZAVTzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 14:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZAVTzc
+	id S1758459AbZAVT4v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 14:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZAVT4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 14:55:32 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:52076 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753353AbZAVTzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 14:55:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:content-transfer-encoding:in-reply-to:
-	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
-	b=TuA1EbEeNFLew0brzk6TWMbcwXER9Jn0nnVc8CVf1ghmL8DKz6GUvTANAo3fyWw41
-	v+ZtQOfHBehWD+gqxrsFg==
-Date: Thu, 22 Jan 2009 11:55:13 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: mingo@elte.hu, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Cc: rientjes@google.com, mbligh@google.com, thockin@google.com
-Subject: [PATCH v3] softlockup: remove hung_task_check_count
-Message-ID: <20090122195513.GA22146@google.com>
+	Thu, 22 Jan 2009 14:56:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39463 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753002AbZAVT4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 14:56:42 -0500
+Date: Thu, 22 Jan 2009 20:55:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Vajna <vmiklos@frugalware.org>
+Cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       =?iso-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>
+Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
+Message-ID: <20090122195558.GA21118@elte.hu>
+References: <20090121171423.GI21473@genesis.frugalware.org> <1f1b08da0901211200l88fa89s78a51c4e90878d85@mail.gmail.com> <20090121210726.GK21473@genesis.frugalware.org> <1232573646.6997.21.camel@localhost.localdomain> <20090122195132.GZ21473@genesis.frugalware.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090122083457.GC7438@elte.hu>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.24.198.73
-X-GMailtapped: msb
+In-Reply-To: <20090122195132.GZ21473@genesis.frugalware.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar (mingo@elte.hu) wrote:
+
+* Miklos Vajna <vmiklos@frugalware.org> wrote:
+
+> On Wed, Jan 21, 2009 at 01:34:06PM -0800, john stultz <johnstul@us.ibm.com> wrote:
+> > Miklos: Can you try bisecting this down some?
 > 
-> * Mandeep Singh Baines <msb@google.com> wrote:
-> > 
-> > Wanted to upper-bound the amount of time the lock is held. In order to 
-> > give others a chance to write_lock the tasklist, released the lock 
-> > regardless of whether a re-schedule is need.
+> I did it two times when I finally realised that it depends on the
+> config. So currently I have two config files, with "-good" the clock is
+> fine, with "-bad" it's too fast.
 > 
-> but this:
-> 
-> > +static void check_hung_reschedule(struct task_struct *t)
-> > +{
-> > +	get_task_struct(t);
-> > +	read_unlock(&tasklist_lock);
-> > +	if (need_resched())
-> > +		schedule();
-> > +	read_lock(&tasklist_lock);
-> > +	put_task_struct(t);
-> > +}
-> 
-> does not actually achieve that. Releasing a lock does not mean that other 
-> CPUs will immediately be able to get it - if the ex-owner quickly 
-> re-acquires it then it will often succeed in doing so. Perhaps adding a 
+> Of course the diff contains unrelated changes as well, I'm trying to 
+> find which one is the problematic one.
 
-On x86, spinlocks are now FIFO. But yeah, shouldn't be relying on
-architecture-dependent implementation of spinlocks.
+these look suspect in the good->bad diff:
 
-> cpu_relax() would increase the chance ... but still, it looks a bit weird.
+ # CONFIG_X86_VOYAGER is not set
+ # CONFIG_X86_GENERICARCH is not set
+ # CONFIG_X86_VSMP is not set
+-# CONFIG_X86_VISWS is not set
+-# CONFIG_X86_RDC321X is not set
++CONFIG_X86_VISWS=y
++CONFIG_X86_RDC321X=y
+ CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+-# CONFIG_PARAVIRT_GUEST is not set
++CONFIG_PARAVIRT_GUEST=y
++# CONFIG_VMI is not set
++CONFIG_KVM_CLOCK=y
++CONFIG_KVM_GUEST=y
++CONFIG_LGUEST_GUEST=y
++CONFIG_PARAVIRT=y
++CONFIG_PARAVIRT_CLOCK=y
++# CONFIG_PARAVIRT_DEBUG is not set
+ CONFIG_MEMTEST=y
 
-Done.
-
-The unlock and lock could be removed and only compiled in if PREEMPT.
-If the number of tasks isn't bound, the lock might be held too long.
-
-It would be kinda funny if hung_task caused a softlockup.
-
----
-To avoid holding the tasklist lock too long, hung_task_check_count was used
-as an upper bound on the number of tasks that are checked by hung_task.
-This patch removes the hung_task_check_count sysctl.
-
-Instead of checking a limited number of tasks, all tasks are checked. To
-avoid holding the tasklist lock too long, the lock is released periodically
-and the processor rescheduled if necessary.
-
-The design was proposed by Frédéric Weisbecker.
-
-Frédéric Weisbecker (fweisbec@gmail.com) wrote:
->
-> Instead of having this arbitrary limit of tasks, why not just
-> lurk the need_resched() and then schedule if it needs too.
->
-> I know that sounds a bit racy, because you will have to release the
-> tasklist_lock and
-> a lot of things can happen in the task list until you become resched.
-> But you can do a get_task_struct() on g and t before your thread is
-> going to sleep and then put them
-> when it is awaken.
-> Perhaps some tasks will disappear or be appended in the list before g
-> and t, but that doesn't really matter:
-> if they disappear, they didn't lockup, and if they were appended, they
-> are not enough cold to be analyzed :-)
->
-> This way you can drop the arbitrary limit of task number given by the user....
->
-> Frederic.
->
-
-Signed-off-by: Mandeep Singh Baines <msb@google.com>
----
- include/linux/sched.h |    1 -
- kernel/hung_task.c    |   33 +++++++++++++++++++++++++++++----
- kernel/sysctl.c       |    9 ---------
- 3 files changed, 29 insertions(+), 14 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index f2f94d5..278121c 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -315,7 +315,6 @@ static inline void touch_all_softlockup_watchdogs(void)
- 
- #ifdef CONFIG_DETECT_HUNG_TASK
- extern unsigned int  sysctl_hung_task_panic;
--extern unsigned long sysctl_hung_task_check_count;
- extern unsigned long sysctl_hung_task_timeout_secs;
- extern unsigned long sysctl_hung_task_warnings;
- extern int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index ba8ccd4..5669283 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -19,7 +19,7 @@
- /*
-  * Have a reasonable limit on the number of tasks checked:
-  */
--unsigned long __read_mostly sysctl_hung_task_check_count = 1024;
-+#define HUNG_TASK_CHECK_COUNT 1024
- 
- /*
-  * Zero means infinite timeout - no checking done:
-@@ -110,13 +110,30 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
- }
- 
- /*
-+ * To avoid holding the tasklist read_lock for an unbounded amount of time,
-+ * periodically release the lock and reschedule if necessary. This gives other
-+ * tasks a chance to run and a chance to grab the write_lock.
-+ */
-+static void check_hung_reschedule(struct task_struct *t)
-+{
-+	get_task_struct(t);
-+	read_unlock(&tasklist_lock);
-+	if (need_resched())
-+		schedule();
-+	else
-+		cpu_relax();
-+	read_lock(&tasklist_lock);
-+	put_task_struct(t);
-+}
-+
-+/*
-  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-  * a really long time (120 seconds). If that happens, print out
-  * a warning.
-  */
- static void check_hung_uninterruptible_tasks(unsigned long timeout)
- {
--	int max_count = sysctl_hung_task_check_count;
-+	int max_count = HUNG_TASK_CHECK_COUNT;
- 	unsigned long now = get_timestamp();
- 	struct task_struct *g, *t;
- 
-@@ -129,8 +146,16 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 
- 	read_lock(&tasklist_lock);
- 	do_each_thread(g, t) {
--		if (!--max_count)
--			goto unlock;
-+		if (!--max_count) {
-+			max_count = HUNG_TASK_CHECK_COUNT;
-+			check_hung_reschedule(t);
-+			/*
-+			 * Exit loop if t was unlinked during reschedule.
-+			 * Try again later.
-+			 */
-+			if (t->state == TASK_DEAD)
-+				goto unlock;
-+		}
- 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
- 		if (t->state == TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now, timeout);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 2481ed3..16526a2 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -820,15 +820,6 @@ static struct ctl_table kern_table[] = {
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
--		.procname	= "hung_task_check_count",
--		.data		= &sysctl_hung_task_check_count,
--		.maxlen		= sizeof(unsigned long),
--		.mode		= 0644,
--		.proc_handler	= &proc_doulongvec_minmax,
--		.strategy	= &sysctl_intvec,
--	},
--	{
--		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "hung_task_timeout_secs",
- 		.data		= &sysctl_hung_task_timeout_secs,
- 		.maxlen		= sizeof(unsigned long),
--- 
-1.5.4.5
-
+	Ingo
