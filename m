@@ -1,117 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbZAVCyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZAVC5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbZAVCyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 21:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZAVCyd
+	id S1757048AbZAVC5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 21:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZAVC5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 21:54:33 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59883 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755828AbZAVCyc (ORCPT
+	Wed, 21 Jan 2009 21:57:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47733 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755667AbZAVC5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 21:54:32 -0500
-Date: Thu, 22 Jan 2009 11:53:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Message-Id: <20090122115324.b954c6a1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com>
-References: <200901211638.23101.knikanth@suse.de>
-	<20090121131739.GB4997@ioremap.net>
-	<200901212054.34929.knikanth@suse.de>
-	<alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Jan 2009 21:57:21 -0500
+Message-ID: <4977E04B.2040104@zytor.com>
+Date: Wed, 21 Jan 2009 18:56:11 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: John David Anglin <dave@hiauly1.hia.nrc.ca>
+CC: grundler@parisc-linux.org, arnd@arndb.de, davem@davemloft.net,
+       jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
+References: <20090122025209.307E54F30@hiauly1.hia.nrc.ca>
+In-Reply-To: <20090122025209.307E54F30@hiauly1.hia.nrc.ca>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 12:49:50 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
-
-> On Wed, 21 Jan 2009, Nikanth Karthikesan wrote:
+John David Anglin wrote:
 > 
-> > This is a container group based approach to override the oom killer selection 
-> > without losing all the benefits of the current oom killer heuristics and 
-> > oom_adj interface.
-> > 
-> > It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
-> > process using the usual badness value but only within the cgroup with the 
-> > maximum value for oom.victim before killing any process from a cgroup with a 
-> > lesser oom.victim number. Oom killing could be disabled by setting 
-> > oom.victim=0.
-> > 
+> Unfortunately, this decision was made years ago...
 > 
-> This doesn't help in memcg or cpuset constrained oom conditions, which 
-> still go through select_bad_process().
+> dave@mx3210:~$ uname -m
+> parisc64
+> dave@hiauly6:~/gnu/gcc-4.4/gcc$ uname -m
+> parisc
 > 
-> If the oom.victim value is high for a specific cgroup and a memory 
-> controller oom occurs in a disjoint cgroup, for example, it's possible to 
-> needlessly kill tasks.  Obviously that is up to the administrator to 
-> configure, but may not be his or her desire for system-wide oom 
-> conditions.
+> The only significant difference between the above two machines is that
+> mx3210 is running a 64-bit kernel and hiauly6 is running a 32-bit kernel.
+> Both are PA 2.0 machines.  Some PA 2.0 machines can only run 64-bit
+> kernels.  The workstations can typically run both.
 > 
-Hmm...after this patch, select_bad_process's filter to select process will be
-
-==
-	1. ->mm is NULL ?		=> don't select this
-	2. is init task ?		=> don't select this
-	3. is under specified memcg ?   => don't select this
-	4. marked as MEMDIE ?		=> return -1.
-	5. PF_EXITING?			=> select this.
-	6. OOM_DISABLE ?		=> don't select this
-	points = badness(p, uptime.tv_sec);
-	7. adjust point & select logic depends on OOM cgroup
-==
-
-Not looks good ;)
-
-> It may be preferred to kill tasks in a specific cgroup first when the 
-> entire system is out of memory or kill tasks within a cgroup attached to a 
-> memory controller when it is oom.
+> The issue for user space is that 64-bit kernels can support both 32 and
+> 64-bit applications.  This affects build scripts and make files.  The
+> default machine selected by config.guess for parisc64 is hppa64.
+> Separate applications provide 32-bit and 64-bit support in binutils, 
+> cc and gdb.  hppa64 selects 64-bit support when build these applications.
+> So, if you want a 32-bit compiler, you need to explicitly override
+> the default chosen by config.guess.
 > 
 
-I agree here.
+That's fine... the whole point is that it should not depend on kernel
+CONFIG_* macros.  Depending on uname is a user-space decision, no issue
+there.
 
-Above filter logic should be
-==
-	current_victim_level++;
-	1. p is under oom cgroup of victim_level > current_victim_level => don't select this.
-	2. ->mm is NULL ?		=> don't select this
-	3. is init task ?		=> don't select this
-	4. is under specified memcg ?   => don't select this
-	5. marked as MEMDIE ?		=> return -1.
-	6. PF_EXITING?			=> select this.
-	7. OOM_DISABLE ?		=> don't select this
-	points = badness(p, uptime.tv_sec)
-==
-But this will be too slow.
+	-hpa
 
-I think do_each_thread() in select_bad_process() should be replaced with
-a routine like this, finally.
-==
-	for_each_oom_cgroup_in_victim_value_order() {
-		for_each_threads_in_oom_cgroup(oom) {
-			select one bad thread.
-		}
-		if (selected_one_is_enough_bad ?)
-			return selected_one;
-	}
-==
-
-And this can be a help for "spped up OOM killer" problem. 
-
-Thanks,
--Kame
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
