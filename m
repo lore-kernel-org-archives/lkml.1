@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZAVMpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZAVMsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZAVMpU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 07:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVMpE
+	id S1756928AbZAVMsB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 07:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZAVMrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 07:45:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59381 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754325AbZAVMpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 07:45:02 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on eeepc-701
-Date: Thu, 22 Jan 2009 13:44:15 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com> <497858E1.5070303@tuffmail.co.uk>
-In-Reply-To: <497858E1.5070303@tuffmail.co.uk>
+	Thu, 22 Jan 2009 07:47:51 -0500
+Received: from excu-mxob-1.symantec.com ([198.6.49.12]:54053 "EHLO
+	excu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754848AbZAVMru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 07:47:50 -0500
+Date: Thu, 22 Jan 2009 12:47:11 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901221239260.21677@blonde.anvils>
+References: <20090121143008.GV24891@wotan.suse.de> 
+ <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
+ <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901221344.16178.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 January 2009, Alan Jenkins wrote:
-> Alan Jenkins wrote:
-> > Hibernation hangs just after writing the image.  With s2disk I can see
-> > this from the console messages.  The same hang happens with kernel
-> > swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
-> > the image has been written from the HDD led.
+On Thu, 22 Jan 2009, Pekka Enberg wrote:
+> On Wed, Jan 21, 2009 at 8:10 PM, Hugh Dickins <hugh@veritas.com> wrote:
+> > I was initially _very_ impressed by how well it did on my venerable
+> > tmpfs loop swapping loads, where I'd expected next to no effect; but
+> > that turned out to be because on three machines I'd been using SLUB,
+> > without remembering how default slub_max_order got raised from 1 to 3
+> > in 2.6.26 (hmm, and Documentation/vm/slub.txt not updated).
 > >
-> > In either case, I can still hard-power-off and resume from hibernation.
-> >
-> > It doesn't hang if I use the shutdown method (either 'echo shutdown |
-> > sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
-> >   
+> > That's been making SLUB behave pretty badly (e.g. elapsed time 30%
+> > more than SLAB) with swapping loads on most of my machines.  Though
+> > oddly one seems immune, and another takes four times as long: guess
+> > it depends on how close to thrashing, but probably more to investigate
+> > there.  I think my original SLUB versus SLAB comparisons were done on
+> > the immune one: as I remember, SLUB and SLAB were equivalent on those
+> > loads when SLUB came in, but even with boot option slub_max_order=1,
+> > SLUB is still slower than SLAB on such tests (e.g. 2% slower).
+> > FWIW - swapping loads are not what anybody should tune for.
 > 
-> I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
-> It doesn't revert cleanly from RC2.
-> 
-> I think it's distinct from the other two reported suspend regressions. 
-> I'm not using acpi-cpufreq, and the issue doesn't affect resume.
+> What kind of machine are you seeing this on? It sounds like it could
+> be a side-effect from commit 9b2cd506e5f2117f94c28a0040bf5da058105316
+> ("slub: Calculate min_objects based on number of processors").
 
-It looks distinct.
+Thanks, yes, that could well account for the residual difference: the
+machines in question have 2 or 4 cpus, so the old slub_min_objects=4
+has effectively become slub_min_objects=12 or slub_min_objects=16.
 
-Do you suspend this box to RAM and does it work?
+I'm now trying with slub_max_order=1 slub_min_objects=4 on the boot
+lines (though I'll need to curtail tests on a couple of machines),
+and will report back later.
 
-Please retest with the appended patch applied.
+It's great that SLUB provides these knobs; not so great that it needs them.
 
-Thanks,
-Rafael
-
-
----
- drivers/pci/pci-driver.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -660,7 +660,10 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
--	if (drv && drv->pm && drv->pm->poweroff) {
-+	if (!drv || !drv->pm)
-+		return 0;
-+
-+	if (drv->pm->poweroff) {
- 		error = drv->pm->poweroff(dev);
- 		suspend_report_result(drv->pm->poweroff, error);
- 	}
-
+Hugh
