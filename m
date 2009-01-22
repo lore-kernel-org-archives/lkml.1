@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZAVJch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZAVJdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757175AbZAVJch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZAVJc2
+	id S1756214AbZAVJdX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZAVJdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:32:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48618 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbZAVJc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:32:27 -0500
-Date: Thu, 22 Jan 2009 10:32:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] ftrace: updates for tip
-Message-ID: <20090122093211.GB24758@elte.hu>
-References: <20090121235306.224764198@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090121235306.224764198@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 22 Jan 2009 04:33:14 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46460 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbZAVJdN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:33:13 -0500
+Subject: Re: [patch] SLQB slab allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1232616638.11429.131.camel@ymzhang>
+References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
+	 <20090114150900.GC25401@wotan.suse.de>
+	 <20090114152207.GD25401@wotan.suse.de>
+	 <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
+	 <20090114155923.GC1616@wotan.suse.de>
+	 <Pine.LNX.4.64.0901141219140.26507@quilx.com>
+	 <20090115061931.GC17810@wotan.suse.de>
+	 <Pine.LNX.4.64.0901151434150.28387@quilx.com>
+	 <20090116034356.GM17810@wotan.suse.de>
+	 <Pine.LNX.4.64.0901161509160.27283@quilx.com>
+	 <20090119061856.GB22584@wotan.suse.de>
+	 <alpine.DEB.1.10.0901211903540.18367@qirst.com>
+	 <1232616430.14549.11.camel@penberg-laptop>
+	 <1232616638.11429.131.camel@ymzhang>
+Date: Thu, 22 Jan 2009 11:33:12 +0200
+Message-Id: <1232616792.14549.19.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-01-22 at 17:30 +0800, Zhang, Yanmin wrote:
+> On Thu, 2009-01-22 at 11:27 +0200, Pekka Enberg wrote:
+> > Hi Christoph,
+> > 
+> > On Mon, 19 Jan 2009, Nick Piggin wrote:
+> > > > > > You only go to the allocator when the percpu queue goes empty though, so
+> > > > > > if memory policy changes (eg context switch or something), then subsequent
+> > > > > > allocations will be of the wrong policy.
+> > > > >
+> > > > > The per cpu queue size in SLUB is limited by the queues only containing
+> > > > > objects from the same page. If you have large queues like SLAB/SLQB(?)
+> > > > > then this could be an issue.
+> > > >
+> > > > And it could be a problem in SLUB too. Chances are that several allocations
+> > > > will be wrong after every policy switch. I could describe situations in which
+> > > > SLUB will allocate with the _wrong_ policy literally 100% of the time.
+> > 
+> > On Wed, 2009-01-21 at 19:13 -0500, Christoph Lameter wrote:
+> > > No it cannot because in SLUB objects must come from the same page.
+> > > Multiple objects in a queue will only ever require a single page and not
+> > > multiple like in SLAB.
+> > 
+> > There's one potential problem with "per-page queues", though. The bigger
+> > the object, the smaller the "queue" (i.e. less objects per page). Also,
+> > partial lists are less likely to help for big objects because they get
+> > emptied so quickly and returned to the page allocator. Perhaps we should
+> > do a small "full list" for caches with large objects?
+> That helps definitely. We could use a batch to control the list size.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+s/full list/empty list/g
 
-> Ingo,
-> 
-> These patches are fixes for the wakeup tracer.
+That is, a list of pages that could be returned to the page allocator
+but are pooled in SLUB to avoid the page allocator overhead. Note that
+this will not help allocators that trigger page allocator pass-through.
 
-That was quick! :-)
+		Pekka
 
-> The first is a fix to the empty output you reported to me earlier.
-> 
-> The second is a fix for the ring buffer to not record updates if it is 
-> disabled, otherwised you can get empty traces there too.
-> 
-> The third is the wakeup change to record all tasks and not just realtime 
-> tasks. It adds a wakeup_rt tracer to record only rt tasks.
-> 
-> The forth is the addition of the scheduling wakeup and sched switch output 
-> to the wakeup tracer. This is very helpful data.
-> 
-> The last is probably the most important, and should go into 29 as well. I 
-> never reset the timestamps used to connect the trace stamps in the 
-> buffers. This can cause stale stamps to appear and explains some of the 
-> really bad timestamps in the buffer I've seen.
-
-okay, i've pulled your fixes into tip/tracing/ftrace and i've cherry-picked 
-the timestamp fix over into tracing/urgent.
-
-Thanks,
-
-	Ingo
