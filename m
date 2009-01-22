@@ -1,80 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZAVBZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZAVBZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZAVBZB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 20:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbZAVBYu
+	id S1755439AbZAVBZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 20:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756424AbZAVBYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 20:24:50 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57438
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754904AbZAVBYt (ORCPT
+	Wed, 21 Jan 2009 20:24:55 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:51913 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756349AbZAVBYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 20:24:49 -0500
-Date: Wed, 21 Jan 2009 17:24:51 -0800 (PST)
-Message-Id: <20090121.172451.72573335.davem@davemloft.net>
-To: yinghai@kernel.org
-Cc: mpm@selenic.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: sparc64 build breakage...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090121.171553.142827920.davem@davemloft.net>
-References: <20090121.171553.142827920.davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Wed, 21 Jan 2009 20:24:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:cc:subject;
+        b=I0bGtcZEpyTAdv4/fTHygydJsxfwt3ntR6+do9RApq6DKux5Q6Y5nF6hjml6P3LmxY
+         lAQPrQQFqwFmYvuJeMs61H+XwYZOgK8tVQBYud7BHDfkmaYnpL7QGzBjYJqI9QDCaPw8
+         IxwBvMdgIeNsqgtF+k9wUJLNk27cM5UOAg66A=
+Message-ID: <4977cae2.0c58560a.7b05.ffffde44@mx.google.com>
+Date: Wed, 21 Jan 2009 17:24:50 -0800 (PST)
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 2/2] tracing/function-graph-tracer: drop the kernel_text_address check
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0M1PCwM017651
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
+When the function graph tracer picks a return address, it ensures this address
+is really a kernel text one by calling __kernel_text_address()
+Actually this path has never been taken. Its role was more likely to debug the tracer
+on the beginning of its development but this function is wasteful since it is called
+for every traced function.
 
-> 
-> This change:
-> 
-> commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Wed Jan 7 15:03:13 2009 -0800
-> 
->     sparseirq: make some func to be used with genirq
-> 
-> breaks the sparc64 build:
-..
-> This should fix it:
-> 
-> sparc64: Fix build by using kstat_irqs_cpu().
+The fault check is already sufficient.
 
-And here is a mix for the next failure.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ arch/x86/kernel/ftrace.c |    7 -------
+ kernel/extable.c         |    4 ++--
+ kernel/module.c          |    2 +-
+ 3 files changed, 3 insertions(+), 10 deletions(-)
 
-But really, either linux/kernel_stat.h provides the
-kstat_incr_irqs_this_cpu interface or linux/irq.h does, not both.
-
-sparc64: Fix build by including linux/irq.h into time_64.c
-
-Changeset d7e51e66899f95dabc89b4d4c6674a6e50fa37fc ("sparseirq: make
-some func to be used with genirq") broke the build on sparc64:
-    
-arch/sparc/kernel/time_64.c: In function â€˜timer_interruptâ€™:
-arch/sparc/kernel/time_64.c:732: error: implicit declaration of function â€˜kstat_incr_irqs_this_cpuâ€™
-make[1]: *** [arch/sparc/kernel/time_64.o] Error 1
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
-index db310aa..f95066b 100644
---- a/arch/sparc/kernel/time_64.c
-+++ b/arch/sparc/kernel/time_64.c
-@@ -36,10 +36,10 @@
- #include <linux/clocksource.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
-+#include <linux/irq.h>
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 1b43086..838ff7c 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -511,13 +511,6 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		return;
+ 	}
  
- #include <asm/oplib.h>
- #include <asm/timer.h>
--#include <asm/irq.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/starfire.h>
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+-	if (unlikely(!__kernel_text_address(old))) {
+-		ftrace_graph_stop();
+-		*parent = old;
+-		WARN_ON(1);
+-		return;
+-	}
+-
+ 	calltime = cpu_clock(raw_smp_processor_id());
+ 
+ 	if (push_return_trace(old, calltime,
+diff --git a/kernel/extable.c b/kernel/extable.c
+index e136ed8..0df6253 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -41,7 +41,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 	return e;
+ }
+ 
+-__notrace_funcgraph int core_kernel_text(unsigned long addr)
++int core_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext &&
+ 	    addr <= (unsigned long)_etext)
+@@ -54,7 +54,7 @@ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
+-__notrace_funcgraph int __kernel_text_address(unsigned long addr)
++int __kernel_text_address(unsigned long addr)
+ {
+ 	if (core_kernel_text(addr))
+ 		return 1;
+diff --git a/kernel/module.c b/kernel/module.c
+index e8b51d4..b60e5ab 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2720,7 +2720,7 @@ int is_module_address(unsigned long addr)
+ 
+ 
+ /* Is this a valid kernel address? */
+-__notrace_funcgraph struct module *__module_text_address(unsigned long addr)
++struct module *__module_text_address(unsigned long addr)
+ {
+ 	struct module *mod;
+ 
+-- 
+1.6.0.4
+
+
