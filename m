@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZAVU7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZAVVFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbZAVU7Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 15:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZAVU7Q
+	id S1757570AbZAVVFH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 16:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZAVVE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 15:59:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39422 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbZAVU7P (ORCPT
+	Thu, 22 Jan 2009 16:04:56 -0500
+Received: from torrent.cc.mcgill.ca ([132.206.27.49]:39776 "EHLO
+	torrent.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbZAVVEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 15:59:15 -0500
-Date: Thu, 22 Jan 2009 15:59:13 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Mikulas Patocka <mpatocka@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090122205913.GA30859@infradead.org>
-References: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com> <20090113214949.GN8071@disturbed> <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com> <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com> <20090120232422.GF10158@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120232422.GF10158@disturbed>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 22 Jan 2009 16:04:55 -0500
+Subject: Memory not being reported
+From: David Ronis <ronis@ronispc.chem.mcgill.ca>
+Reply-To: ronis@ronispc.chem.mcgill.ca
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Department of Chemistry, McGill University
+Date: Thu, 22 Jan 2009 16:04:55 -0500
+Message-Id: <1232658295.3455.7.camel@ronispc.chem.mcgill.ca>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
+X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.11.25.160724
+X-McGill-WhereFrom: Internal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 10:24:22AM +1100, Dave Chinner wrote:
-> Right, so you need to use internal xfs sync functions that don't
-> have these problems. That is:
-> 
-> 	error = xfs_sync_inodes(ip->i_mount, SYNC_DELWRI|SYNC_WAIT);
-> 
-> will do a blocking flush of all the inodes without deadlocks occurring.
-> Then you can remove the 500ms wait.
+I'm running 2.6.28.1 on an i686 (slackware-12.1 for the most part) box.
+I recently added some extra memory, expanding from 2Gb to 4.  Everything
+works as expected except that not all of the memory seems to be seen.
 
-I've given this a try with Eric's testcase from #724 in the oss bugzilla,
-but it's not enough yet.  I thinks that's because SYNC_WAIT is rather
-meaningless for data writeout, and we need SYNC_IOWAIT instead.  The
-patch below gets the testcase working for me:
+free returns:
+
+             total       used       free     shared    buffers
+cached
+Mem:       3374860    2099504    1275356          0      86612
+1032024
+-/+ buffers/cache:     980868    2393992
+Swap:       497972          0     497972
 
 
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_sync.c
-===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_sync.c	2009-01-22 06:29:30.646141628 +0100
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_sync.c	2009-01-22 21:57:53.073864570 +0100
-@@ -446,7 +446,9 @@ xfs_flush_device_work(
- 	void		*arg)
- {
- 	struct inode	*inode = arg;
--	sync_blockdev(mp->m_super->s_bdev);
-+
-+	xfs_sync_inodes(mp, SYNC_DELWRI);
-+	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_IOWAIT);
- 	iput(inode);
- }
- 
+and cat /proc/meminfo gives:
+
+MemTotal:        3374860 kB
+MemFree:         1199184 kB
+Buffers:           86816 kB
+Cached:          1036240 kB
+SwapCached:            0 kB
+Active:          1375864 kB
+
+etc.
+
+On the other hand, user-space tools like lshw show the 4 1Gb DIMMS as
+does the BIOS configuration boot menu.
+
+One suspicion is that the configure option CONFIG_HIGHMEM4G=y
+should be unset and the CONFIG_HIGHMEM64G  should be.
+
+Any help would be appreciated, as would a separate CC since I don't
+subscribe to the list.
+
+Thanks in advance
+
+David
 
