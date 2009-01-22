@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZAVIfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZAVIhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZAVIfl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbZAVIfN
+	id S1756183AbZAVIhB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZAVIgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:35:13 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45756 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750788AbZAVIfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:35:11 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX19V52l+gLRVqymurvgnVmoAWumX9QQNZXNBYv8Sm+
-	Wq1AVUAuJ2USvT
-Date: Thu, 22 Jan 2009 09:35:06 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Pavel Machek <pavel@suse.cz>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       npiggin@yahoo.com.au, xfs@oss.sgi.com
-Subject: Re: [PATCH] Re: Corrupted XFS log replay oops.
-Message-ID: <20090122083506.GA5870@alice>
-References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au> <20090122043747.GU10158@disturbed> <20090122061158.GA31104@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090122061158.GA31104@infradead.org>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.28-rc9-00057-g8960223 (x86_64)
-X-Uptime: 09:34:40 up 33 min,  8 users,  load average: 2.64, 2.19, 1.79
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+	Thu, 22 Jan 2009 03:36:46 -0500
+Received: from mga07.intel.com ([143.182.124.22]:47737 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750788AbZAVIgp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 03:36:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,305,1231142400"; 
+   d="scan'208";a="102650659"
+Subject: Re: Mainline kernel OLTP performance update
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
+In-Reply-To: <alpine.DEB.1.10.0901211852060.18367@qirst.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <200901161503.13730.nickpiggin@yahoo.com.au>
+	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
+	 <200901161746.25205.nickpiggin@yahoo.com.au>
+	 <20090116065546.GJ31013@parisc-linux.org>
+	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
+	 <1232428583.11429.83.camel@ymzhang>
+	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 22 Jan 2009 16:36:34 +0800
+Message-Id: <1232613395.11429.122.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Thu, Jan 22, 2009 at 03:37:47PM +1100, Dave Chinner wrote:
-> >  xfs_buf_t *
-> >  xlog_get_bp(
-> >  	xlog_t		*log,
-> > -	int		num_bblks)
-> > +	int		nbblks)
+On Wed, 2009-01-21 at 18:58 -0500, Christoph Lameter wrote:
+> On Tue, 20 Jan 2009, Zhang, Yanmin wrote:
 > 
-> Any reason for reanming this variable?  That causes quite a bit of
-> churn.
+> > kmem_cache ﻿skbuff_head_cache's object size is just 256, so it shares the kmem_cache
+> > with ﻿:0000256. Their order is 1 which means every slab consists of 2 physical pages.
 > 
-> >  {
-> > -	ASSERT(num_bblks > 0);
-> > +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-> > +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
-> 
-> And doesn't prevent this line from needing a linebreak to stay under 80
-> characters :)
-> 
-> Except for these nitpicks it looks fine to me.
+> That order can be changed. Try specifying slub_max_order=0 on the kernel
+> command line to force an order 0 alloc.
+I tried ﻿slub_max_order=0 and there is no improvement on this UDP-U-4k issue.
+Both get_page_from_freelist and __free_pages_ok's cpu time are still very high.
 
-Just want to report that it fixes the issue for me. Thanks,
-i will continue xfs testing.
+I checked my instrumentation in kernel and found it's caused by large object allocation/free
+whose size is more than PAGE_SIZE. Here its order is 1.
 
-Greetings, Eric
+The right free callchain is __kfree_skb => skb_release_all => skb_release_data.
+
+So this case isn't the issue that batch of allocation/free might erase partial page
+functionality.
+
+'#slaninfo -AD' couldn't show statistics of large object allocation/free. Can we add
+such info? That will be more helpful.
+
+In addition, I didn't find such issue wih TCP stream testing.
+
+> 
+> The queues of the page allocator are of limited use due to their overhead.
+> Order-1 allocations can actually be 5% faster than order-0. order-0 makes
+> sense if pages are pushed rapidly to the page allocator and are then
+> reissues elsewhere. If there is a linear consumption then the page
+> allocator queues are just overhead.
+> 
+> > Page allocator has an array at zone_pcp(zone, cpu)->pcp to keep a page buffer for page order 0.
+> > But here ﻿skbuff_head_cache's order is 1, so UDP-U-4k couldn't benefit from the page buffer.
+> 
+> That usually does not matter because of partial list avoiding page
+> allocator actions.
+
+> 
+> > SLQB has no such issue, because:
+> > 1) SLQB has a percpu freelist. Free objects are put to the list firstly and can be picked up
+> > later on quickly without lock. A batch parameter to control the free object recollection is mostly
+> > 1024.
+> > 2) SLQB slab order mostly is 0, so although sometimes it calls alloc_pages/free_pages, it can
+> > benefit from ﻿zone_pcp(zone, cpu)->pcp page buffer.
+> >
+> > So SLUB need resolve such issues that one process allocates a batch of objects and another process
+> > frees them batchly.
+> 
+> SLUB has a percpu freelist but its bounded by the basic allocation unit.
+> You can increase that by modifying the allocation order. Writing a 3 or 5
+> into the order value in /sys/kernel/slab/xxx/order would do the trick.
+
