@@ -1,115 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZAVOSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbZAVOSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbZAVOSO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 09:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZAVORk
+	id S1758642AbZAVOSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 09:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757839AbZAVORs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 09:17:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:6453 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756156AbZAVORj (ORCPT
+	Thu, 22 Jan 2009 09:17:48 -0500
+Received: from mail-ew0-f20.google.com ([209.85.219.20]:58120 "EHLO
+	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757244AbZAVORp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 09:17:39 -0500
+	Thu, 22 Jan 2009 09:17:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=t78A9NkSeIusRA/z6XA6zl0wq53cusM4fBsiwhWSST0vsmm3Q/VVwy1kbP7reilPwG
-         VeBBh/rw2Pzbjiup5hFjpAs+37m1EXJ8Wpty/mEoCq5g/5ug+PaNUewI6g9DbE0Gkn3d
-         Px5L20HmR9poPnU5jBztQebkZ5G06DRCFztR0=
+        b=hagtOqxVw3EWOjwwd9eIgmW6zr10t4iHZM7SzjuNEDiot4KxvRvCGKK/zUZ2ktpOQB
+         ZOa6ORiEyBvkHoLSHz5tCMnmnkcrLBhW5PgP5urfZYcxO6V5LXontw1h3+C2n8A/U8JE
+         3d+LMXe/YSLPC/w2H/hAlTfTAmcamhTpS0a3A=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 22 Jan 2009 15:18:08 +0100
-Message-Id: <20090122141808.25516.83310.sendpatchset@localhost.localdomain>
+Date: Thu, 22 Jan 2009 15:18:14 +0100
+Message-Id: <20090122141814.25516.17811.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090122141801.25516.5620.sendpatchset@localhost.localdomain>
 References: <20090122141801.25516.5620.sendpatchset@localhost.localdomain>
-Subject: [PATCH 1/8] ide: fix kmalloc() failure handling in ide_driveid_update()
+Subject: [PATCH 2/8] ide: propagate AltStatus workarounds to ide_driveid_update()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: fix kmalloc() failure handling in ide_driveid_update()
+Subject: [PATCH] ide: propagate AltStatus workarounds to ide_driveid_update()
 
-* Doing kmalloc() in the middle of command execution is not only ugly
-  but leaves drive waiting to send data on kmalloc() failure.  Fix it.
-
-While at it:
-
-* Unify error code paths.
-
-* Fixup error message to be more useful and add missing KERN_ERR level.
-
-* Rename 'stat' variable to 's'.
+Propagate AltStatus workarounds from try_to_identify()
+to ide_driveid_update().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-iops.c |   33 ++++++++++++++++++++-------------
- 1 file changed, 20 insertions(+), 13 deletions(-)
+ drivers/ide/ide-iops.c |   21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
 Index: b/drivers/ide/ide-iops.c
 ===================================================================
 --- a/drivers/ide/ide-iops.c
 +++ b/drivers/ide/ide-iops.c
-@@ -293,7 +293,12 @@ int ide_driveid_update(ide_drive_t *driv
+@@ -293,8 +293,8 @@ int ide_driveid_update(ide_drive_t *driv
  	const struct ide_tp_ops *tp_ops = hwif->tp_ops;
  	u16 *id;
  	unsigned long flags;
--	u8 stat;
-+	int rc;
-+	u8 uninitialized_var(s);
-+
-+	id = kmalloc(SECTOR_SIZE, GFP_ATOMIC);
-+	if (id == NULL)
-+		return 0;
+-	int rc;
+-	u8 uninitialized_var(s);
++	int use_altstatus = 0, rc;
++	u8 a, uninitialized_var(s);
  
- 	/*
- 	 * Re-read drive->id for possible DMA mode
-@@ -306,25 +311,21 @@ int ide_driveid_update(ide_drive_t *driv
+ 	id = kmalloc(SECTOR_SIZE, GFP_ATOMIC);
+ 	if (id == NULL)
+@@ -308,9 +308,24 @@ int ide_driveid_update(ide_drive_t *driv
+ 	SELECT_MASK(drive, 1);
+ 	tp_ops->set_irq(hwif, 0);
+ 	msleep(50);
++
++	if (hwif->io_ports.ctl_addr &&
++	    (hwif->host_flags & IDE_HFLAG_BROKEN_ALTSTATUS) == 0) {
++		a = tp_ops->read_altstatus(hwif);
++		s = tp_ops->read_status(hwif);
++		if ((a ^ s) & ~ATA_IDX)
++			/* ancient Seagate drives, broken interfaces */
++			printk(KERN_INFO "%s: probing with STATUS(0x%02x) "
++					 "instead of ALTSTATUS(0x%02x)\n",
++					 drive->name, s, a);
++		else
++			/* use non-intrusive polling */
++			use_altstatus = 1;
++	}
++
  	tp_ops->exec_command(hwif, ATA_CMD_ID_ATA);
  
- 	if (ide_busy_sleep(hwif, WAIT_WORSTCASE, 1)) {
--		SELECT_MASK(drive, 0);
--		return 0;
-+		rc = 1;
-+		goto out_err;
+-	if (ide_busy_sleep(hwif, WAIT_WORSTCASE, 1)) {
++	if (ide_busy_sleep(hwif, WAIT_WORSTCASE, use_altstatus)) {
+ 		rc = 1;
+ 		goto out_err;
  	}
- 
- 	msleep(50);	/* wait for IRQ and ATA_DRQ */
--	stat = tp_ops->read_status(hwif);
- 
--	if (!OK_STAT(stat, ATA_DRQ, BAD_R_STAT)) {
--		SELECT_MASK(drive, 0);
--		printk("%s: CHECK for good STATUS\n", drive->name);
--		return 0;
-+	s = tp_ops->read_status(hwif);
-+
-+	if (!OK_STAT(s, ATA_DRQ, BAD_R_STAT)) {
-+		rc = 2;
-+		goto out_err;
- 	}
-+
- 	local_irq_save(flags);
- 	SELECT_MASK(drive, 0);
--	id = kmalloc(SECTOR_SIZE, GFP_ATOMIC);
--	if (!id) {
--		local_irq_restore(flags);
--		return 0;
--	}
- 	tp_ops->input_data(drive, NULL, id, SECTOR_SIZE);
- 	(void)tp_ops->read_status(hwif);	/* clear drive IRQ */
- 	local_irq_enable();
-@@ -342,6 +343,12 @@ int ide_driveid_update(ide_drive_t *driv
- 		ide_dma_off(drive);
- 
- 	return 1;
-+out_err:
-+	SELECT_MASK(drive, 0);
-+	if (rc == 2)
-+		printk(KERN_ERR "%s: %s: bad status\n", drive->name, __func__);
-+	kfree(id);
-+	return 0;
- }
- 
- int ide_config_drive_speed(ide_drive_t *drive, u8 speed)
