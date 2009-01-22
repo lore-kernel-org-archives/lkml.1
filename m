@@ -1,96 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbZAVWGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbZAVWQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbZAVWGX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 17:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZAVWGP
+	id S1756200AbZAVWQl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 17:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZAVWQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 17:06:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34980 "EHLO ogre.sisk.pl"
+	Thu, 22 Jan 2009 17:16:31 -0500
+Received: from ns1.suse.de ([195.135.220.2]:42307 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406AbZAVWGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 17:06:14 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: BISECTED: 2.6.29-rc2 regression: hibernation hang on eeepc-701
-Date: Thu, 22 Jan 2009 23:05:25 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@suse.cz>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <9b2b86520901180345j434eacbdn7386958991ee50b@mail.gmail.com> <200901221344.16178.rjw@sisk.pl> <49787339.7080900@tuffmail.co.uk>
-In-Reply-To: <49787339.7080900@tuffmail.co.uk>
+	id S1752148AbZAVWQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 17:16:31 -0500
+Date: Thu, 22 Jan 2009 14:15:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090122221508.GA30019@suse.de>
+References: <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin> <20090111153920.GC7401@elte.hu> <20090111163018.GA9300@suse.de> <20090122215041.GA29369@redhat.com> <4978EBE1.9080403@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901222305.25824.rjw@sisk.pl>
+In-Reply-To: <4978EBE1.9080403@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 January 2009, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday 22 January 2009, Alan Jenkins wrote:
-> >   
-> >> Alan Jenkins wrote:
-> >>     
-> >>> Hibernation hangs just after writing the image.  With s2disk I can see
-> >>> this from the console messages.  The same hang happens with kernel
-> >>> swsusp ('echo disk | sudo tee /sys/power/state'), and I can see that
-> >>> the image has been written from the HDD led.
-> >>>
-> >>> In either case, I can still hard-power-off and resume from hibernation.
-> >>>
-> >>> It doesn't hang if I use the shutdown method (either 'echo shutdown |
-> >>> sudo tee /sys/power/disk' or  's2disk -P "shutdown method=shutdown"').
-> >>>   
-> >>>       
-> >> I've bisected this to commit 571ff7584bb9e05fca0eb79752ae55a46faf3a98. 
-> >> It doesn't revert cleanly from RC2.
-> >>
-> >> I think it's distinct from the other two reported suspend regressions. 
-> >> I'm not using acpi-cpufreq, and the issue doesn't affect resume.
-> >>     
-> >
-> > It looks distinct.
-> >
-> > Do you suspend this box to RAM and does it work?
-> >   
-> Yes, I do use STR on it occasionally, and it still works in RC2.
-> 
-> > Please retest with the appended patch applied.
-> >   
-> 
-> That fixes it.
+On Thu, Jan 22, 2009 at 01:57:53PM -0800, Randy Dunlap wrote:
+> I agree that crap is the right name for lots of it.  For the ones that
+> people & distros care about, someone should step up and do some real
+> work on them.
 
-OK, it won't hurt to apply it.
+Are people ignoring the fact that there _are_ people stepping up and
+doing real work on these drivers?  Look at all of the cleanup patches
+that went into 2.6.29-rc1 in drivers/staging.  There were hundreds.
 
-Still, the hardware or the BIOS in your box seems to be broken, or both, so I'd
-like to debug it a bit more if you don't mind.
+And I already have 75+ staging cleanup patches in -next right now.
 
-Can you please test the patch below instead of the previous one?
+This work is being done right now, is it somehow being missed?
 
-Rafael
+Yeah, compiler warnings are annoying, I totally agree, that is why it is
+very hard to enable the staging tree.  To do so, you really have to want
+to, and I'm eagerly taking any patch sent to me to do this work.
 
----
- drivers/pci/pci-driver.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+thanks,
 
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -660,7 +660,10 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
--	if (drv && drv->pm && drv->pm->poweroff) {
-+	if (!drv || !drv->pm)
-+		return pci_set_power_state(dev, PCI_D3hot);
-+
-+	if (drv->pm->poweroff) {
- 		error = drv->pm->poweroff(dev);
- 		suspend_report_result(drv->pm->poweroff, error);
- 	}
-
+greg k-h
