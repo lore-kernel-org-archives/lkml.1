@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZAVD26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZAVDaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZAVD26 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 22:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZAVD2t
+	id S1757284AbZAVDaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 22:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZAVD3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 22:28:49 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35814 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756203AbZAVD2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 22:28:48 -0500
-Subject: Re: SET_PERSONALITY and TASK_SIZE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
-References: <20090118111831.GA4818@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 22 Jan 2009 14:28:23 +1100
-Message-Id: <1232594903.23611.96.camel@pasglop>
+	Wed, 21 Jan 2009 22:29:51 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32905 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756203AbZAVD3v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 22:29:51 -0500
+Date: Thu, 22 Jan 2009 12:28:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-Id: <20090122122843.7e94878e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200901211638.23101.knikanth@suse.de>
+References: <200901211638.23101.knikanth@suse.de>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 Jan 2009 16:38:21 +0530
+Nikanth Karthikesan <knikanth@suse.de> wrote:
 
-> However we should use the PER_MASK if we want to check for PER_LINUX32,
-> since there are more bits in the personality flags. In case any of the
-> 'extra' bits is set we may incorrectly set personality to PER_LINUX even
-> when we want PER_LINUX32.
+> As Alan Cox suggested/wondered in this thread, 
+> http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
+> to override the oom killer selection without losing all the benefits of the 
+> current oom killer heuristics and oom_adj interface.
 > 
-> Looks like more architectures should do something like:
+> It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
+> process using the usual badness value but only within the cgroup with the 
+> maximum value for oom.victim before killing any process from a cgroup with a 
+> lesser oom.victim number. Oom killing could be disabled by setting 
+> oom.victim=0.
 > 
-> 	if (personality(current->personality) != PER_LINUX32)
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
 
-If you do gitk mm/memory.c, and look at the first 2 or 3 commits from
-Hugh near the botto,, I -think- they may explain why you no longer see
-the use of TASK_SIZE in there, ie, we may have fixed that in 2.6.12...
+Assume following
+  - the usar can tell "which process should be killed at first"
 
-So from that point of view, it's quite possible that we no longer need
-to defer the personality switch, which would allow to simplify things
-quite a bit on ppc64, unless there is some -other- reason here...
+What is the difference between oom_adj and this cgroup to users ?
+If oom_adj is hard to use, making it simpler is a good way, I think.
+rather than adding new complication.
 
-Cheers,
-Ben.
+It seems both of oom_adj and this cgroup will be hard-to-use functions
+for usual system administrators. But no better idea than using memcg
+and committing memory usage.
 
+Thanks,
+-Kame
 
