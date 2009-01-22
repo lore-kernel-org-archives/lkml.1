@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZAVHQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbZAVHRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbZAVHQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 02:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZAVHQD
+	id S1756641AbZAVHRV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 02:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZAVHRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 02:16:03 -0500
-Received: from mga14.intel.com ([143.182.124.37]:39008 "EHLO mga14.intel.com"
+	Thu, 22 Jan 2009 02:17:10 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40022 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753895AbZAVHQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 02:16:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,305,1231142400"; 
-   d="asc'?scan'208";a="102628848"
-Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090122030400.GA10229@gondor.apana.org.au>
-References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com>
-	 <20090116033105.GB10390@gondor.apana.org.au>
-	 <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-	 <20090122030400.GA10229@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HCUmRwpk6pJrQeYMNJve"
-Date: Thu, 22 Jan 2009 15:15:58 +0800
-Message-Id: <1232608558.6101.13.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1753929AbZAVHRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 02:17:08 -0500
+Date: Wed, 21 Jan 2009 23:17:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcu: remove duplicate CONFIG_RCU_CPU_STALL_DETECTOR
+Message-ID: <20090122071705.GC6290@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <4977CFFE.2020405@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4977CFFE.2020405@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 22, 2009 at 09:46:38AM +0800, Lai Jiangshan wrote:
+> 
+> Impact: remove the old CONFIG_RCU_CPU_STALL_DETECTOR
+> 
+> tree_rcu introduce CONFIG_RCU_CPU_STALL_DETECTOR again.
+> 
+> These two are the same exactly except:
+> the old one "depends on CLASSIC_RCU"
+> the new one "depends on CLASSIC_RCU || TREE_RCU"
+> 
+> This patch remove the old one.
 
---=-HCUmRwpk6pJrQeYMNJve
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Good eyes!
 
-On Thu, 2009-01-22 at 11:04 +0800, Herbert Xu wrote:
-> On Thu, Jan 22, 2009 at 10:32:17AM +0800, Huang Ying wrote:
-> >
-> > This is the first attempt to use a dedicate workqueue for crypto. It is
-> > not intended to be merged. Please feedback your comments, especially on
-> > desgin.
->=20
-> Thanks for the patch!
->=20
-> > +		spin_lock_init(&cpu_queue->lock);
->=20
-> Since we're switching to per-cpu queues it would be good to just
-> kill the spin lock.  AFAICS the only place you really need it is
-> in cryptd_tfm_in_queue.  That's just used for debugging so we can
-> just kill it and lose this spin lock.
+However, Jiri Kosina has already queued this up for the trivial tree:
 
-Yes. Except that, now we do not need a spin lock really. I think the
-spin lock may be useful if we enqueue a request on other CPU's queue to
-do load balance. And if it is possible that the work_struct to be
-executed on CPU other original CPU for CPU hotplug (current code do
-not).
+	http://lkml.org/lkml/2009/1/15/218
 
-Best Regards,
-Huang Ying
-=20
+						Thanx, Paul
 
---=-HCUmRwpk6pJrQeYMNJve
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkl4HSsACgkQKhFGF+eHlph70gCgq3w+nr0llPzdXYp0MjTQUL0L
-DNAAn3ihB5CvTwHKvoZdmdBF9ANf7HX9
-=nGXe
------END PGP SIGNATURE-----
-
---=-HCUmRwpk6pJrQeYMNJve--
-
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 4c9ae60..e770e85 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -633,19 +633,6 @@ config RCU_TORTURE_TEST_RUNNABLE
+> 
+>  config RCU_CPU_STALL_DETECTOR
+>  	bool "Check for stalled CPUs delaying RCU grace periods"
+> -	depends on CLASSIC_RCU
+> -	default n
+> -	help
+> -	  This option causes RCU to printk information on which
+> -	  CPUs are delaying the current grace period, but only when
+> -	  the grace period extends for excessive time periods.
+> -
+> -	  Say Y if you want RCU to perform such checks.
+> -
+> -	  Say N if you are unsure.
+> -
+> -config RCU_CPU_STALL_DETECTOR
+> -	bool "Check for stalled CPUs delaying RCU grace periods"
+>  	depends on CLASSIC_RCU || TREE_RCU
+>  	default n
+>  	help
+> 
+> 
