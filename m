@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZAVGap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZAVGmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbZAVGap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 01:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZAVGaf
+	id S1756830AbZAVGmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 01:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZAVGmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 01:30:35 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:30485 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754244AbZAVGae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 01:30:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=sgG3hs4u3EYQlVU2+RDDDlRcWDo/0g0HKJBhNXw5iWF0kpwim5AbeaBz1TsvIQUQz5
-         7ItiFr3mLoyxlC0ozCirkrvmoCCW3xQ/GkJrF7OJeEKL6LSH1/wfL79BOPOUMSJvaE1S
-         GXJ3m94K/Zuc0G98o7J25568VfVv0kQ7Rx8SQ=
-Message-ID: <49781251.8070807@gmail.com>
-Date: Thu, 22 Jan 2009 11:29:37 +0500
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.1.19) Gecko/20081226 SeaMonkey/1.1.14
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Arjan Opmeer <arjan@opmeer.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Denys Vlasenko <vda.linux@googlemail.com>
-Subject: Re: [Bug #12406] 2.6.28 thinks that my PS/2 mouse is a touchpad
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.HKC.vJRdJB@chimera> <20090120014507.GA1557@adopmeer.homeip.net> <200901200119.59851.dmitry.torokhov@gmail.com>
-In-Reply-To: <200901200119.59851.dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Jan 2009 01:42:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36209 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752854AbZAVGmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 01:42:05 -0500
+Date: Thu, 22 Jan 2009 17:41:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/5] debugfs: introduce stub for debugfs_create_size_t()
+ when DEBUG_FS=n
+Message-Id: <20090122174152.de6cc08e.sfr@canb.auug.org.au>
+In-Reply-To: <1232515197-3974-4-git-send-email-gregkh@suse.de>
+References: <20090121051855.GA3665@kroah.com>
+	<1232515197-3974-4-git-send-email-gregkh@suse.de>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> Sorry, must have missed that. I think it's gonna be a bit chatty if
-> user happens to have Logitech++ device attached, however I think if
-> we complement it with the patch below I think it should work OK.
+--Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Dmitry, I don't see the effect of your patch. I.e., both the patch by 
-Arjan referenced in the bug, and combination of that patch with yours, 
-produce a working mouse and this dmesg output:
+Hi Greg,
 
-psmouse serio1: ID: 10 00 64<6>elantech.c: Elantech version query result 
-0x00, 0x01, 0x64.
-elantech.c: Probably not a real Elantech touchpad. Aborting.
-input: ImExPS/2 Logitech Wheel Mouse as /class/input/input18
+On Tue, 20 Jan 2009 21:19:56 -0800 Greg Kroah-Hartman <gregkh@suse.de> wrot=
+e:
+>
+> From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+>=20
+> Toralf F=C3=B6rster <toralf.foerster@gmx.de> reported a build failure in
+> the WiMAX stack when CONFIG_DEBUG_FS=3Dn
+>=20
+> http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
+>=20
+> This is due to debugfs_create_size_t() missing an stub that returns
+> -ENODEV when the DEBUGFS subsystem is not configured in (like the rest
+> of the debugfs API).
+>=20
+> This patch adds said stub.
+>=20
+> Reported-by: Toralf F=C3=B6rster <toralf.foerster@gmx.de>
+> Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  include/linux/debugfs.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+> index 23936b1..0f5c33b 100644
+> --- a/include/linux/debugfs.h
+> +++ b/include/linux/debugfs.h
+> @@ -162,6 +162,13 @@ static inline struct dentry *debugfs_create_x32(cons=
+t char *name, mode_t mode,
+>  	return ERR_PTR(-ENODEV);
+>  }
+> =20
+> +struct dentry *debugfs_create_size_t(const char *name, mode_t mode,
 
--- 
-Alexander E. Patrakov
+This needs to be "static inline".  See my other email about linux-next
+breakage due to this.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkl4FTAACgkQjjKRsyhoI8yiSQCeLQ+a17FBs+119+n0QURoY4RA
+JKcAn0uyT8sJomNA5xWrOS5Ighf+wR/g
+=hovZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__22_Jan_2009_17_41_52_+1100_C_MCAO/JIixzSZ=q--
