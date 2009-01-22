@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZAVJ0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZAVJ1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbZAVJ0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:26:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZAVJZt
+	id S1756383AbZAVJ1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZAVJ1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:25:49 -0500
-Received: from mail.suse.de ([195.135.220.2]:46930 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZAVJZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:25:48 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Date: Thu, 22 Jan 2009 14:53:13 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-References: <200901211638.23101.knikanth@suse.de> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Jan 2009 04:27:12 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42486 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753534AbZAVJ1L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:27:11 -0500
+Subject: Re: [patch] SLQB slab allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0901211903540.18367@qirst.com>
+References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
+	 <20090114150900.GC25401@wotan.suse.de>
+	 <20090114152207.GD25401@wotan.suse.de>
+	 <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
+	 <20090114155923.GC1616@wotan.suse.de>
+	 <Pine.LNX.4.64.0901141219140.26507@quilx.com>
+	 <20090115061931.GC17810@wotan.suse.de>
+	 <Pine.LNX.4.64.0901151434150.28387@quilx.com>
+	 <20090116034356.GM17810@wotan.suse.de>
+	 <Pine.LNX.4.64.0901161509160.27283@quilx.com>
+	 <20090119061856.GB22584@wotan.suse.de>
+	 <alpine.DEB.1.10.0901211903540.18367@qirst.com>
+Date: Thu, 22 Jan 2009 11:27:10 +0200
+Message-Id: <1232616430.14549.11.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901221453.14860.knikanth@suse.de>
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 January 2009 14:13:38 David Rientjes wrote:
-> On Thu, 22 Jan 2009, Nikanth Karthikesan wrote:
-> > No, this is not specific to memcg or cpuset cases alone. The same
-> > needless kills will take place even without memcg or cpuset when an
-> > administrator specifies a light memory consumer to be killed before a
-> > heavy memory user. But it is up to the administrator to use it wisely.
->
-> You can't specify different behavior for an oom cgroup depending on what
-> type of oom it is, which is the problem with this proposal.
->
+Hi Christoph,
 
-No. This does not disable any such special selection criteria which is used 
-without this controller.
+On Mon, 19 Jan 2009, Nick Piggin wrote:
+> > > > You only go to the allocator when the percpu queue goes empty though, so
+> > > > if memory policy changes (eg context switch or something), then subsequent
+> > > > allocations will be of the wrong policy.
+> > >
+> > > The per cpu queue size in SLUB is limited by the queues only containing
+> > > objects from the same page. If you have large queues like SLAB/SLQB(?)
+> > > then this could be an issue.
+> >
+> > And it could be a problem in SLUB too. Chances are that several allocations
+> > will be wrong after every policy switch. I could describe situations in which
+> > SLUB will allocate with the _wrong_ policy literally 100% of the time.
 
-> For example, if your task triggers an oom as the result of its exclusive
-> cpuset placement, the oom killer should prefer to kill a task within that
-> cpuset to allow for future memory freeing.
->
-> So, with your proposal, an administrator can specify the oom priority of
-> an entire aggregate of tasks but the behavior may not be desired for a
-> cpuset-constrained oom, while it may be perfectly legitimate for a global
-> unconstrained oom.
->
-> I can specify a higher oom priority for a cpuset because its jobs are less
-> critical and I would prefer it gets killed in a system-wide oom, but any
-> other cpuset that ooms will needlessly kill these tasks when there is no
-> benefit.
->
+On Wed, 2009-01-21 at 19:13 -0500, Christoph Lameter wrote:
+> No it cannot because in SLUB objects must come from the same page.
+> Multiple objects in a queue will only ever require a single page and not
+> multiple like in SLAB.
 
-This patch just chooses the task with highest oom.victim among those tasks 
-which would have been chosen without this controller. So all the "kill within 
-memcg/cpuset" should work as always! It should just kill a task within the 
-memcg with highest oom.victim.
+There's one potential problem with "per-page queues", though. The bigger
+the object, the smaller the "queue" (i.e. less objects per page). Also,
+partial lists are less likely to help for big objects because they get
+emptied so quickly and returned to the page allocator. Perhaps we should
+do a small "full list" for caches with large objects?
 
-Thanks
-Nikanth
+			Pekka
+
