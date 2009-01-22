@@ -1,314 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZAVJlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbZAVJmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbZAVJlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZAVJl2
+	id S1758003AbZAVJmf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZAVJmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:41:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49900 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412AbZAVJl1 (ORCPT
+	Thu, 22 Jan 2009 04:42:25 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:63232 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755463AbZAVJmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:41:27 -0500
-Date: Thu, 22 Jan 2009 18:40:18 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [FIX][PATCH 6/7] cgroup/memcg: fix frequent -EBUSY at rmdir
-Message-Id: <20090122184018.5cd3c3b9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090122183411.3cabdfd2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090122183411.3cabdfd2.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Jan 2009 04:42:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=LHzXl8FwXD7XyGM3ytsMst75sA3Ej36J8EM9Yb1SIpd1vK4dpOLfvfhjRHTWAj7E0
+	1SbOGl3hQFXfvGZnoR12w==
+Date: Thu, 22 Jan 2009 01:39:28 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nikanth Karthikesan <knikanth@suse.de>
+cc: Evgeniy Polyakov <zbr@ioremap.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+In-Reply-To: <200901221453.14860.knikanth@suse.de>
+Message-ID: <alpine.DEB.2.00.0901220134200.32502@chino.kir.corp.google.com>
+References: <200901211638.23101.knikanth@suse.de> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com> <200901221453.14860.knikanth@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.25.146.38
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Thu, 22 Jan 2009, Nikanth Karthikesan wrote:
 
-In following situation, with memory subsystem,
+> > You can't specify different behavior for an oom cgroup depending on what
+> > type of oom it is, which is the problem with this proposal.
+> >
+> 
+> No. This does not disable any such special selection criteria which is used 
+> without this controller.
+> 
 
-	/groupA use_hierarchy==1
-		/01 some tasks
-		/02 some tasks
-		/03 some tasks
-		/04 empty
+I didn't say it disabled it; the cpuset preference is actually implemented 
+in the badness() score and not specifically excluded in 
+select_bad_process().  That's because it's quite possible that a task has 
+allocated memory in a cpuset and then either moved to a separate cpuset or 
+had it's mems_allowed changed.
 
-When tasks under 01/02/03 hit limit on /groupA, hierarchical reclaim
-is triggered and the kernel walks tree under groupA. In this case,
-rmdir /groupA/04 fails with -EBUSY frequently because of temporal
-refcnt from the kernel.
+Please try it and you'll see.  Create two cpusets, cpuset A and cpuset B.  
+Elevate cpuset A's oom.victim value and then trigger an oom in cpuset B.  
+Your patch will cause a task from cpuset A to be killed for a cpuset B 
+triggered oom which, more often than not, will not lead to future memory 
+freeing.
 
-In general. cgroup can be rmdir'd if there are no children groups and
-no tasks. Frequent fails of rmdir() is not useful to users.
-(And the reason for -EBUSY is unknown to users.....in most cases)
+It's quite possible that cpuset A would be preferred to be killed in a 
+global unconstrained oom condition, however.  That's the only reason why 
+one would elevate its oom.victim score to begin with.  But it doesn't work 
+for cpuset-constrained ooms.
 
-This patch tries to modify above behavior, by
-	- retries if css_refcnt is got by someone.
-	- add "return value" to pre_destroy() and allows subsystem to
-	  say "we're really busy!"
-
-Changelog: v2 -> v3.
-	- moved CGRP_ flags to cgroup.c
-	- unified test function and wake up function.
-	- check signal_pending() after wake up.
-	- Modified documentation about pre_destroy().
-Changelog: v1 -> v2.
-	- added return value to pre_destroy().
-	- removed modification to cgroup_subsys.
-	- added signal_pending() check.
-	- added waitqueue and avoid busy spin loop.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- Documentation/cgroups/cgroups.txt |    6 +-
- include/linux/cgroup.h            |   16 +-----
- kernel/cgroup.c                   |   97 ++++++++++++++++++++++++++++++++------
- mm/memcontrol.c                   |    5 +
- 4 files changed, 93 insertions(+), 31 deletions(-)
-
-Index: mmotm-2.6.29-Jan16/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.29-Jan16.orig/include/linux/cgroup.h
-+++ mmotm-2.6.29-Jan16/include/linux/cgroup.h
-@@ -119,19 +119,9 @@ static inline void css_put(struct cgroup
- 		__css_put(css);
- }
- 
--/* bits in struct cgroup flags field */
--enum {
--	/* Control Group is dead */
--	CGRP_REMOVED,
--	/* Control Group has previously had a child cgroup or a task,
--	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set) */
--	CGRP_RELEASABLE,
--	/* Control Group requires release notifications to userspace */
--	CGRP_NOTIFY_ON_RELEASE,
--};
--
- struct cgroup {
--	unsigned long flags;		/* "unsigned long" so bitops work */
-+	/* "unsigned long" so bitops work. See CGRP_ flags in cgroup.c */
-+	unsigned long flags;
- 
- 	/* count users of this cgroup. >0 means busy, but doesn't
- 	 * necessarily indicate the number of tasks in the
-@@ -350,7 +340,7 @@ int cgroup_is_descendant(const struct cg
- struct cgroup_subsys {
- 	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
- 						  struct cgroup *cgrp);
--	void (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
-+	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	int (*can_attach)(struct cgroup_subsys *ss,
- 			  struct cgroup *cgrp, struct task_struct *tsk);
-Index: mmotm-2.6.29-Jan16/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.29-Jan16.orig/kernel/cgroup.c
-+++ mmotm-2.6.29-Jan16/kernel/cgroup.c
-@@ -94,6 +94,22 @@ struct cgroupfs_root {
- 	char release_agent_path[PATH_MAX];
- };
- 
-+/* bits in struct cgroup flags field */
-+enum {
-+	/* Control Group is dead */
-+	CGRP_REMOVED,
-+	/* Control Group has previously had a child cgroup or a task,
-+	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set) */
-+	CGRP_RELEASABLE,
-+	/* Control Group requires release notifications to userspace */
-+	CGRP_NOTIFY_ON_RELEASE,
-+	/*
-+	 * A thread in rmdir() is waiting to destroy this cgroup
-+	 * See wake_up_rmdir_waiters().
-+	 */
-+	CGRP_WAIT_ON_RMDIR,
-+};
-+
- /*
-  * The "rootnode" hierarchy is the "dummy hierarchy", reserved for the
-  * subsystems that are otherwise unattached - it never has more than a
-@@ -622,13 +638,18 @@ static struct inode *cgroup_new_inode(mo
-  * Call subsys's pre_destroy handler.
-  * This is called before css refcnt check.
-  */
--static void cgroup_call_pre_destroy(struct cgroup *cgrp)
-+static int cgroup_call_pre_destroy(struct cgroup *cgrp)
- {
- 	struct cgroup_subsys *ss;
-+	int ret = 0;
-+
- 	for_each_subsys(cgrp->root, ss)
--		if (ss->pre_destroy)
--			ss->pre_destroy(ss, cgrp);
--	return;
-+		if (ss->pre_destroy) {
-+			ret = ss->pre_destroy(ss, cgrp);
-+			if (ret)
-+				break;
-+		}
-+	return ret;
- }
- 
- static void free_cgroup_rcu(struct rcu_head *obj)
-@@ -722,6 +743,22 @@ static void cgroup_d_remove_dir(struct d
- 	remove_dir(dentry);
- }
- 
-+/*
-+ * A queue for waiters to do rmdir() cgroup. A tasks will sleep when
-+ * cgroup->count == 0 && list_empty(&cgroup->children) && subsys has some
-+ * reference to css->refcnt. In general, this refcnt is expected to goes down
-+ * to zero, soon.
-+ *
-+ * CGRP_WAIT_ON_RMDIR flag is modified under cgroup's inode->i_mutex;
-+ */
-+DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
-+
-+static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
-+{
-+	if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
-+		wake_up_all(&cgroup_rmdir_waitq);
-+}
-+
- static int rebind_subsystems(struct cgroupfs_root *root,
- 			      unsigned long final_bits)
- {
-@@ -1314,6 +1351,12 @@ int cgroup_attach_task(struct cgroup *cg
- 	set_bit(CGRP_RELEASABLE, &oldcgrp->flags);
- 	synchronize_rcu();
- 	put_css_set(cg);
-+
-+	/*
-+	 * wake up rmdir() waiter. the rmdir should fail since the cgroup
-+	 * is no longer empty.
-+	 */
-+	cgroup_wakeup_rmdir_waiters(cgrp);
- 	return 0;
- }
- 
-@@ -2602,9 +2645,11 @@ static int cgroup_rmdir(struct inode *un
- 	struct cgroup *cgrp = dentry->d_fsdata;
- 	struct dentry *d;
- 	struct cgroup *parent;
-+	DEFINE_WAIT(wait);
-+	int ret;
- 
- 	/* the vfs holds both inode->i_mutex already */
--
-+again:
- 	mutex_lock(&cgroup_mutex);
- 	if (atomic_read(&cgrp->count) != 0) {
- 		mutex_unlock(&cgroup_mutex);
-@@ -2620,17 +2665,39 @@ static int cgroup_rmdir(struct inode *un
- 	 * Call pre_destroy handlers of subsys. Notify subsystems
- 	 * that rmdir() request comes.
- 	 */
--	cgroup_call_pre_destroy(cgrp);
-+	ret = cgroup_call_pre_destroy(cgrp);
-+	if (ret)
-+		return ret;
- 
- 	mutex_lock(&cgroup_mutex);
- 	parent = cgrp->parent;
--
--	if (atomic_read(&cgrp->count)
--	    || !list_empty(&cgrp->children)
--	    || !cgroup_clear_css_refs(cgrp)) {
-+	if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
- 		mutex_unlock(&cgroup_mutex);
- 		return -EBUSY;
- 	}
-+	/*
-+	 * css_put/get is provided for subsys to grab refcnt to css. In typical
-+	 * case, subsystem has no reference after pre_destroy(). But, under
-+	 * hierarchy management, some *temporal* refcnt can be hold.
-+	 * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
-+	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
-+	 * is called when css_put() is called and refcnt goes down to 0.
-+	 */
-+	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-+	prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
-+
-+	if (!cgroup_clear_css_refs(cgrp)) {
-+		mutex_unlock(&cgroup_mutex);
-+		schedule();
-+		finish_wait(&cgroup_rmdir_waitq, &wait);
-+		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-+		if (signal_pending(current))
-+			return -EINTR;
-+		goto again;
-+	}
-+	/* NO css_tryget() can success after here. */
-+	finish_wait(&cgroup_rmdir_waitq, &wait);
-+	clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
- 
- 	spin_lock(&release_list_lock);
- 	set_bit(CGRP_REMOVED, &cgrp->flags);
-@@ -3186,10 +3253,12 @@ void __css_put(struct cgroup_subsys_stat
- {
- 	struct cgroup *cgrp = css->cgroup;
- 	rcu_read_lock();
--	if ((atomic_dec_return(&css->refcnt) == 1) &&
--	    notify_on_release(cgrp)) {
--		set_bit(CGRP_RELEASABLE, &cgrp->flags);
--		check_for_release(cgrp);
-+	if (atomic_dec_return(&css->refcnt) == 1) {
-+		if (notify_on_release(cgrp)) {
-+			set_bit(CGRP_RELEASABLE, &cgrp->flags);
-+			check_for_release(cgrp);
-+		}
-+		cgroup_wakeup_rmdir_waiters(cgrp);
- 	}
- 	rcu_read_unlock();
- }
-Index: mmotm-2.6.29-Jan16/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.29-Jan16.orig/mm/memcontrol.c
-+++ mmotm-2.6.29-Jan16/mm/memcontrol.c
-@@ -2371,11 +2371,12 @@ free_out:
- 	return ERR_PTR(error);
- }
- 
--static void mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
-+static int mem_cgroup_pre_destroy(struct cgroup_subsys *ss,
- 					struct cgroup *cont)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	mem_cgroup_force_empty(mem, false);
-+
-+	return mem_cgroup_force_empty(mem, false);
- }
- 
- static void mem_cgroup_destroy(struct cgroup_subsys *ss,
-Index: mmotm-2.6.29-Jan16/Documentation/cgroups/cgroups.txt
-===================================================================
---- mmotm-2.6.29-Jan16.orig/Documentation/cgroups/cgroups.txt
-+++ mmotm-2.6.29-Jan16/Documentation/cgroups/cgroups.txt
-@@ -478,11 +478,13 @@ cgroup->parent is still valid. (Note - c
- newly-created cgroup if an error occurs after this subsystem's
- create() method has been called for the new cgroup).
- 
--void pre_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp);
-+int pre_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 
- Called before checking the reference count on each subsystem. This may
- be useful for subsystems which have some extra references even if
--there are not tasks in the cgroup.
-+there are not tasks in the cgroup. If pre_destroy() returns error code,
-+rmdir() will fail with it. From this behavior, pre_destroy() can be
-+called plural times against a cgroup.
- 
- int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 	       struct task_struct *task)
-
+It's not going to help if it I explain it further and you don't try it out 
+on your own.  Thanks.
