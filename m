@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbZAVRv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbZAVRvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbZAVRv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZAVRog
+	id S1759729AbZAVRvp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZAVRrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:44:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37638 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758317AbZAVRof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:44:35 -0500
-Date: Thu, 22 Jan 2009 18:44:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: build issue #587 for v2.6.29-rc2-13-gf3b8436
-	:_set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
-Message-ID: <20090122174424.GB22992@elte.hu>
-References: <200901221812.20702.toralf.foerster@gmx.de> <20090122173020.GI3171@fedora.yogi>
+	Thu, 22 Jan 2009 12:47:49 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:7944 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759337AbZAVRrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:47:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=U7v0dn0kf9NMdVwJr6xNwgVzk3qrrgK4Baj17X8UbffXJr9XIJ+nF+tr+qz9Ib1WMM
+         biCboUD8M3ubi5rYMKJ8RZ0IXJLK7HjpKkTT6beY708/rS2Zkx5fU1uCM5098FhaNwgC
+         /U+je4epaCa0g9w9JlHksq3EGJSka/pQVe/0w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090122173020.GI3171@fedora.yogi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090122172312.GB27250@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere>
+	 <20090122172312.GB27250@redhat.com>
+Date: Thu, 22 Jan 2009 18:47:44 +0100
+Message-ID: <c62985530901220947r7cae081bj8660603912769baa@mail.gmail.com>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/1/22 Oleg Nesterov <oleg@redhat.com>:
+> On 01/22, Frederic Weisbecker wrote:
+>>
+>> On Thu, Jan 22, 2009 at 05:14:24PM +0800, Lai Jiangshan wrote:
+>> >  static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+>> >  {
+>> > -   int active;
+>> > +   int active = 0;
+>> > +   struct wq_barrier barr;
+>> >
+>> > -   if (cwq->thread == current) {
+>> > -           /*
+>> > -            * Probably keventd trying to flush its own queue. So simply run
+>> > -            * it by hand rather than deadlocking.
+>> > -            */
+>> > -           run_workqueue(cwq);
+>> > -           active = 1;
+>> > -   } else {
+>> > -           struct wq_barrier barr;
+>> > +   BUG_ON(cwq->thread == current);
+>>
+>> Hi Lai,
+>>
+>> BUG_ON seems perhaps a bit too much for such case. The system
+>> will run in an endless loop because of a mistake that will not have
+>> necessarily a fatal end.
+>
+> Confused. Why do you think the system will run in an endless loop?
+> cwq-thread will exit.
 
-* Balaji Rao <balajirrao@openmoko.org> wrote:
 
-> Content-Description: Toralf Förster <tfoerste@n22.n22_domain>: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> > Date: Thu, 22 Jan 2009 18:10:21 +0100
-> > From: Toralf F?rster <tfoerste@n22.n22_domain>
-> > To: tfoerste@n22.n22_domain
-> > Subject: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> > 
-> > Hello,
-> > 
-> > the build (.config attached) failed, make ends with :
-> > ...
-> 
-> Hi,
-> 
-> This is known for more than two weeks. Fixes in various forms have been 
-> sent on this list, but somehow it isn't making it to the destination..
+Because a BUG_ON panics and then spin for ever. Yeah I shoud have said "panic",
+sorry... It was just to tell that a BUG_ON is the end...
 
-i've queued up a fix more than a week ago to the irq tree. The bug came in 
-via the ARM tree. Linus is on a conference right now so there's no pulls 
-going on.
+>
+>> WARN_ON should be enough (plus the warn that lockdep will raise
+>> too in this case).
+>
+> and if cwq-thread proceeds after WARN_ON() it will be "lost" anyway
+> because it will sleep forever.
 
-	Ingo
+You want to say spin forever?
+Why would it? cwq->lock is unlocked at this time.
+If we keep the usual path:
+
+if (cwq->thread == current) {
+		run_workqueue(cwq);
+		active = 1;
+	}
+
+it shouldn't hurt.
+
+> Not that I think BUG_ON() is much better, except it is more "loud".
+
+I don't think so IMHO, BUG_ON is for critical issues. Here it is not
+critical, the workqueue
+will flush but lockdep will warn because of recursion.
+That's all.
+
+>
+> As for the patch itself, I completely agree with Peter.
+>
+> Oleg.
+>
+>
