@@ -1,69 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbZAVXOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbZAVXTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbZAVXOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 18:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbZAVXON
+	id S1759189AbZAVXTW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 18:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZAVXTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 18:14:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46247 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755686AbZAVXOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 18:14:12 -0500
-Date: Fri, 23 Jan 2009 00:13:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Lowengrub <lowdanie@gmail.com>
-Cc: Hugh Dickins <hugh@veritas.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
-Message-ID: <20090122231358.GA27033@elte.hu>
-References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com> <Pine.LNX.4.64.0901221658550.14302@blonde.anvils> <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 22 Jan 2009 18:19:12 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:30951 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753213AbZAVXTL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 18:19:11 -0500
+X-YMail-OSG: DVJu3WAVM1lGgG1p9BMLxxNdGynqKKQ2xEYn15fhFWR9brqa7uMIsWooyD4etZwuvkA0EibSL.o3WzH1QdhxKSme.GiM2ukj_GfNv1y_DQsF1p_nrctu0.H8Eh_LUmb.6n3OVg3krqP2pgnylt16_hMN0Fi8IgY5EGGe._uOitFI.B2YSoQVKTIgtgprrsuOTqmASf5DmGUUniXVDooak10g42ifDkqI8SQG
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH 0/4] [Target_Core_Mod]: Add SPC-3 reserverations
+	infrastructure
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
+Cc: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <49789C33.1050102@caiway.nl>
+References: <1232612501.1274.526.camel@haakon2.linux-iscsi.org>
+	 <49789C33.1050102@caiway.nl>
+Content-Type: text/plain
+Date: Thu, 22 Jan 2009 15:18:46 -0800
+Message-Id: <1232666326.1274.610.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Lowengrub <lowdanie@gmail.com> wrote:
-
-> On Thu, Jan 22, 2009 at 7:22 PM, Hugh Dickins <hugh@veritas.com> wrote:
-> > Do you have some performance figures to support this patch?
-> > Some of the lmbench tests may be appropriate.
-> >
-> > The thing is, expanding vm_area_struct to include another pointer
-> > will have its own cost, which may well outweigh the efficiency
-> > (in one particular case) which you're adding.  Expanding mm_struct
-> > for this would be much more palatable, but I don't think that flies.
-> >
-> > And it seems a little greedy to require both an rbtree and a doubly
-> > linked list for working our way around the vmas.
-> >
-> > I suspect that originally your enhancement would only have hit when
-> > extending the stack: which I guess isn't enough to justify the cost.
-> > But it could well be that unmapped area handling has grown more
-> > complex down the years, and you get some hits now from that.
-> >
-> Thanks for the reply.
-> I ran an lmbench test on the 2.6.28 kernel and on the same kernel
-> after applying the patch.  Here's a portion of the results with the
-> format of
-> test : standard kernel / kernel after patch
+On Thu, 2009-01-22 at 17:17 +0100, Jan Evert van Grootheest wrote:
+> Hi Nicholas,
 > 
-> Simple syscall: 0.7419 / 0.4244 microseconds
-> Simple read: 1.2071 / 0.7270 microseconds
+> I just read your email on lkml.org and just had to reply...
+> 
+> Nicholas A. Bellinger wrote:
+> > Greetings all,
+> >
+> > This series of patches adds SCSI reservation infrastructure to
+> > Target_Core_Mod/ConfigFS for current legacy SPC-2 reservations, as well
+> > as WIP code for adding SPC-3 compliant persistent reservations to
+> > Target_Core_Mod.
+> >   
+> Thanks for this introduction and mentioning SCSI in it. Because the rest 
+> of your mail barely shows the relation.
+> If I understand correctly, this does not apply to ATA/SATA disks? What 
+> about network storage?
 
-there must be a significant measurement mistake here: none of your patches 
-affect the 'simple syscall' path, nor the sys_read() path.
+Yes and Yes.  The main idea behind target_core_mod/ConfigFS is to
+structure a $HBA/$STORAGE_OBJECT hierarchy of Linux/SCSI, Linux/BLOCK
+and Linux/VFS storage subsystems objects, and to communicate through
+target_core_transport.h:se_subsystem_api_t of function pointers into
+those various subsystems.
 
-	Ingo
+The ConfigFS pieces comes into play when a $FABRIC_MOD wants to access
+said $HBA/$STORAGE_OBJECT and establish communication for bulk I/O and
+control (and possibling some emulation) processing.  This is one with a
+ConfigFS symbolic link using /bin/ln to create the target port mapping
+from $STORAGE_OBJECT.
+
+Here is how is looks in use with LIO-Target v3.0 at:
+
+http://linux-iscsi.org/index.php/LIO-Target/ConfigFS
+
+# Set up our shell variables
+export CONFIGFS=/sys/kernel/config/
+export TARGET=/sys/kernel/config/target/core/
+export FABRIC=/sys/kernel/config/target/iscsi/
+# Create a IBLOCK device called 'lvm_test0' on iblock_0 HBA
+
+<Setup target_core_mod/ConfigFS pieces>
+
+# BEGIN CONFIGFS CODE FOR LINUX ISCSI TARGET (LIO-TARGET) 
+DEF_IQN="iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0"
+# Define the first iSCSI Network Portal
+PORTAL="172.16.201.137:3260"
+# The first mkdir(2) to $FABRIC will load iscsi_target_mod
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/np/$PORTAL"
+# Enable iSCSI/SCTP traffic on this $PORTAL for $DEF_IQN/tpgt_1
+echo 1 > "$FABRIC/$DEF_IQN/tpgt_1/np/$PORTAL/sctp"
+# Create iSCSI LUN=0 on $DEF_IQN/tpgt_1
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0"
+# Map $TARGET/$HBA/$STORAGE_OBJECT into LIO-Target for $DEF_IQN/tpgt_1 LUN=0 with symbolic port name 'lio-west-port'
+ln -s $TARGET/iblock_0/lvm_test0 "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_0/lio_west_port"
+# Create iSCSI LUN=1 on $DEF_IQN/tpgt_1
+mkdir -p "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1"
+# Map $TARGET/$HBA/$STORAGE_OBJECT into LIO-Target for $DEF_IQN/tpgt_1 LUN=1 with symbolic port name 'lio-east-port'
+ln -s $TARGET/pscsi_0/sdd "$FABRIC/$DEF_IQN/tpgt_1/lun/lun_1/lio_east_port"
+# END CONFIGFS CODE FOR LINUX ISCSI TARGET (LIO-TARGET)
+
+> >   
+> Just a tiny hint there by that change to scsi.h.
+> > On target_core_mod module load and /sys/kernel/config/target/core configuration with
+> >   
+> And no hint here at all. What is an admin to expect when he sees the 
+> above path?
+> I'm not an expert in /sys at all, but /sys/kernel/config makes some 
+> sense. But what gets configured in /sys/kernel/config/target?
+
+So, the target_core_mod/ConfigFS piece is intended to be the generic
+infrastructure for these $STORAGE_OBJECTs to different network/storage
+fabrics or loopback purposes.
+
+> I usually go 'round in the embedded world. And 'target' is the tiny 
+> board that you develop for and that ends up in some or other device that 
+> customers buy.
+> 
+> Hope you get the idea.
+> - shouldn't it be /sys/kernel/config/scsi/target or somesuch?
+
+Or
+perhaps /sys/kernel/config/target/scsi, /sys/kernel/config/target/block
+and /sys/kernel/config/target/vfs and hang the subsystem PLUGINs in that
+mannger.  We would still want to be able to access
+include/linux/fs.h:struct block_device
+for target_core_mod/IBLOCK and include/linux/fs.h:struct file access
+with target_core_mod/FILEIO across a different non SCSI based fabrics
+with ConfigFS however.  In that case the $FABRIC_MODs would be located
+at /sys/kernel/config/target/sata or /sys/kernel/config/target/aoe.
+
+Of course, the SCSI MIBs for statistics and debugging would have to be
+adapted in /proc/scsi_target/mib/ for those non SCSI fabrics, but most
+of the same abstractions would apply for stats to $STORAGE_OBJECT.
+
+> - perhaps the code should move to drivers/scsi?
+
+Well, the target_core_mod/ConfigFS code itself sits above Linux/SCSI,
+and attempts to be as generic as possible wrt to the bulk READ/WRITE I/O
+mapping algorithms across different subsystem plugins, CPU
+architectures, and receiving all possible combinations of incoming
+max_sectors for $STORAGE_OBJECTS from those CDBs being delivered through
+$FABRIC_MOD operations.
+
+Also, wrt to source directory structure, target_core_mod/ConfigFS +
+Subsystem Plugins need be put into drivers/target and perhaps
+drivers/target/$FABRIC_MOD.
+
+Thanks for your comments!
+
+--nab
+
+> 
+> Thanks,
+> Jan Evert
+> 
+> 
+> > Target_Core_Mod/IBLOCK, Target_Core_Mod/pSCSI, and Target_Core_Mod/RAMDISK_MCP $STORAGE_OBJECTS:
+> >
+> > TARGET_CORE[0]: Loading Generic Kernel Storage Engine: v3.0.0 on Linux/i686 on 2.6.28
+> > TARGET_CORE[0]: Initialized ConfigFS Fabric Infrastructure: v1.0.0 on Linux/i686 on 2.6.28
+> > SE_PC[1] - Registered Plugin Class: TRANSPORT
+> > PLUGIN_TRANSPORT[1] - pscsi registered
+> > PLUGIN_TRANSPORT[4] - iblock registered
+> > PLUGIN_TRANSPORT[5] - rd_dr registered
+> > PLUGIN_TRANSPORT[6] - rd_mcp registered
+> > PLUGIN_TRANSPORT[7] - fileio registered
+> > SE_PC[2] - Registered Plugin Class: OBJ
+> > PLUGIN_OBJ[1] - dev registered
+> > Target_Core_ConfigFS: Located se_plugin: cfa41090 plugin_name: iblock hba_type: 4 plugin_dep_id: 0
+> > CORE_HBA[0] - Linux-iSCSI.org iBlock HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+> > CORE_HBA[0] - Attached iBlock HBA: 0 to Generic Target Core TCQ Depth: 512
+> > CORE_HBA[0] - Attached HBA to Generic Target Core
+> > IBLOCK: Allocated ib_dev for lvm_test0
+> > Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cfa40000 se_dev_su_ptr: c8c74400
+> > IBLOCK: Claiming struct block_device: cf63cf00
+> > IBLOCK: Created bio_set() for major/minor: 254:2
+> > iblock: Using SPC2_RESERVATIONS emulation
+> > CORE_iBLOCK[0] - Activating Device with TCQ: 0 at Major: 254 Minor 2
+> >   Vendor: LIO-ORG   Model: IBLOCK            Revision: v3.0
+> >   Type:   Direct-Access                      ANSI SCSI revision: 02
+> > T10 EVPD Unit Serial Number: 1234567890:0_254_2
+> > T10 EVPD Page Length: 37
+> > T10 EVPD Identifer Length: 33
+> > T10 EVPD Identifier Association: addressed logical unit
+> > T10 EVPD Identifier Type: T10 Vendor ID based
+> > T10 EVPD ASCII Device Identifier: LIO-ORG IBLOCK:1234567890:0_254_2
+> > Target_Core_ConfigFS: Registered iblock se_dev->se_dev_ptr: c7f95800 from fd
+> > Target_Core_ConfigFS: Located se_plugin: cfa41024 plugin_name: pscsi hba_type: 1 plugin_dep_id: 0
+> > CORE_HBA[1] - Linux-iSCSI.org Parallel SCSI HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+> > CORE_HBA[1] - MPT SPI Host
+> > CORE_HBA[1] - Attached Parallel SCSI HBA to Generic Target Core with TCQ Depth: 127 MaxSectors: 8192
+> > CORE_HBA[1] - Attached HBA to Generic Target Core
+> > PSCSI: Allocated pdv: cd047160 for sdd
+> > Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cfa43800 se_dev_su_ptr: cd047160
+> > PSCSI: Claiming cf2d8000 Major:Minor - 8:48
+> > pscsi: Using SPC_PASSTHROUGH, no reservation emulation
+> > CORE_PSCSI[0] - Activating Device with TCQ: 32 at Parallel SCSI Location (Channel/Target/LUN) 0/3/0
+> >   Vendor: VMware,   Model: VMware Virtual S  Revision: 1.0 
+> >   Type:   Direct-Access                      ANSI SCSI revision: 02
+> > PSCSI Status Byte exception at task: ca63d000 CDB: 0x12 Result: 0x08000002
+> > CORE_PSCSI[0] - Added TYPE_DISK for 0:3:0
+> > Target_Core_ConfigFS: Registered pscsi se_dev->se_dev_ptr: c8f92000 from fd
+> > Target_Core_ConfigFS: Located se_plugin: cfa410d8 plugin_name: rd_mcp hba_type: 6 plugin_dep_id: 0
+> > CORE_HBA[2] - Linux-iSCSI.org Ramdisk HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+> > CORE_HBA[2] - Attached Ramdisk HBA: 0 to Generic Target Core TCQ Depth: 256 MaxSectors: 1024
+> > CORE_HBA[2] - Attached HBA to Generic Target Core
+> > Target_Core_ConfigFS: Allocated se_subsystem_dev_t: c85bf800 se_dev_su_ptr: c8fe5880
+> > RAMDISK: Referencing Page Count: 16384
+> > CORE_RD[0] - Built Ramdisk Device ID: 0 space of 16384 pages in 6 tables
+> > rd_mcp: Using SPC2_RESERVATIONS emulation
+> > CORE_RD[0] - Activating Device with TCQ: 0 at Ramdisk Device ID: 0
+> >   Vendor: LIO-ORG   Model: RAMDISK-MCP       Revision: v3.0
+> >   Type:   Direct-Access                      ANSI SCSI revision: 02
+> > T10 EVPD Unit Serial Number: 1234567890:2_0
+> > T10 EVPD Page Length: 38
+> > T10 EVPD Identifer Length: 34
+> > T10 EVPD Identifier Association: addressed logical unit
+> > T10 EVPD Identifier Type: T10 Vendor ID based
+> > T10 EVPD ASCII Device Identifier: LIO-ORG RAMDISK-MCP:1234567890:2_0
+> > CORE_RD[0] - Added LIO MEMCPY Ramdisk Device ID: 0 of 16384 pages in 6 tables, 67108864 total bytes
+> > Target_Core_ConfigFS: Registered se_dev->se_dev_ptr: c8f93400
+> >
+> > <SNIP>
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> >
+> >   
+> 
+> 
+
