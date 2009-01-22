@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZAVQNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZAVQOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbZAVQNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 11:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZAVQNN
+	id S1756414AbZAVQOe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 11:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZAVQO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 11:13:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:18490 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbZAVQNL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 11:13:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=O4N8CYnxS8yjVOFlikM3AmAnLd8P5DEETLwkdEJM5cMIXNlKm8w9RK6405T0bHhbhb
-         dM8skuNytrDZT1Wb/A4PCueNCc7ch1jdTC6rGG/QGDoAtMCtyJVHAVYLoPRnGSI3lGyF
-         E10oAiVaRlqvEE7ljPfgtoLZL2LzLS5yTIddE=
-Date: Fri, 23 Jan 2009 00:12:57 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Rob Landley <rob@landley.net>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Message-ID: <20090122161257.GG9732@hack.private>
-References: <20090115194033.GA10926@hack.private> <200901170328.15178.rob@landley.net> <20090118083237.GA3292@hack.private> <200901181729.31682.rob@landley.net>
+	Thu, 22 Jan 2009 11:14:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36415 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbZAVQOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 11:14:25 -0500
+Date: Thu, 22 Jan 2009 17:11:32 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
+Message-ID: <20090122161132.GA27250@redhat.com>
+References: <4976EE0B.5090200@cn.fujitsu.com> <20090121121756.GA11942@redhat.com> <4977EB1C.4030405@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901181729.31682.rob@landley.net>
+In-Reply-To: <4977EB1C.4030405@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 05:29:30PM -0600, Rob Landley wrote:
->On Sunday 18 January 2009 02:32:37 Américo Wang wrote:
->> >The result panics (twice) and exits, instead of giving me a shell prompt.
->> >Built and run on stock Ubuntu 8.10.  (I posted about it on tuesday, but
->> > nobody replied...)
->>
->> Hi, Rob.
->>
->> I tried what you said, it works very fine here, on my Fedora 10.
->> Could you please tell us which kernel your host is using?
+On 01/22, Lai Jiangshan wrote:
 >
->Ubuntu 8.10 stock kernel, calls itself "2.6.27-9-generic".
+> Oleg Nesterov wrote:
+> > On 01/21, Lai Jiangshan wrote:
+> >> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+> >>  	const struct cpumask *cpu_map = wq_cpu_map(wq);
+> >>  	int cpu;
+> >>
+> >> +	if (is_wq_single_threaded(wq)) {
+> >> +		cleanup_workqueue_thread(wq->cpu_wq);
+> >> +		kfree(wq->cpu_wq);
+> >> +		kfree(wq);
+> >> +		return;
+> >> +	}
+> >
+> > again, not sure I understand why this change is needed. Afaics we
+> > only need to use kfree(wq->cpu_wq) instead of free_percpu() if
+> > it is single-threaded.
+> >
 >
->> and the guest?
+> I think this change is needed.
+> In the single thread case, we don't need
+> 1) cpu_maps_update_begin(). --> require cpu_add_remove_lock
+> 2) remove workqueue from the list. (we did not inserted it)
 >
->Checking tuesday's bug report, it said:
->
->> Linux version 2.6.28 (landley@driftwood) (gcc version 4.3.2 (Ubuntu 
->> 4.3.2-1ubuntu11) ) #6 Tue Jan 13 01:54:34 CST 2009
->
->It's the vanilla tarball (albeit extracted from source control according to 
->the v2.6.28 tag rather than downloaded).
+> It is indeed that there is no bad result occurred when we do these
+> things for single thread. But I think the destroying should not
+> do things more than the creating.
 
-I will try 2.6.28.
+I disagree.
 
->
->Possibly a gcc 4.3 issue?
+Firstly, this path is rare and not time critical, it is better
+to save a couple of bytes from .text.
 
-I don't know. :)
+But mostly I dislike the fact that we add another special case
+for the single-threaded wqs which is not strictly needed.
 
--- 
-"Against stupidity, the gods themselves, contend in vain."
+Following your logic we can also change flush_workqueue(), it
+doesn't need for_each_cpu_mask_nr() when single-threaded.
+
+
+That said, I agree this is a matter of taste, I won't persist.
+
+Oleg.
 
