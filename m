@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbZAVWn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbZAVWor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbZAVWn5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 17:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZAVWnt
+	id S1759475AbZAVWor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 17:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZAVWoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 17:43:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57771 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753796AbZAVWns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 17:43:48 -0500
-Date: Thu, 22 Jan 2009 17:43:47 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Mikulas Patocka <mpatocka@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090122224347.GA18751@infradead.org>
-References: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com> <20090113214949.GN8071@disturbed> <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com> <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com> <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org>
+	Thu, 22 Jan 2009 17:44:38 -0500
+Received: from gw.goop.org ([64.81.55.164]:47191 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752039AbZAVWoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 17:44:37 -0500
+Message-ID: <4978F6C6.3090003@goop.org>
+Date: Thu, 22 Jan 2009 14:44:22 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090122205913.GA30859@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Zachary Amsden <zach@vmware.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Nick Piggin <npiggin@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "jeremy@xensource.com" <jeremy@xensource.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: lmbench lat_mmap slowdown with CONFIG_PARAVIRT
+References: <20090120110542.GE19505@wotan.suse.de>	 <20090120112634.GA20858@elte.hu> <20090120140324.GA26424@elte.hu>	 <49763806.5090009@goop.org> <20090120205653.GA19710@elte.hu>	 <20090121072718.GN24891@wotan.suse.de>  <4977A051.8050203@goop.org> <1232663311.16317.176.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1232663311.16317.176.camel@bodhitayantram.eng.vmware.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 03:59:13PM -0500, Christoph Hellwig wrote:
-> On Wed, Jan 21, 2009 at 10:24:22AM +1100, Dave Chinner wrote:
-> > Right, so you need to use internal xfs sync functions that don't
-> > have these problems. That is:
-> > 
-> > 	error = xfs_sync_inodes(ip->i_mount, SYNC_DELWRI|SYNC_WAIT);
-> > 
-> > will do a blocking flush of all the inodes without deadlocks occurring.
-> > Then you can remove the 500ms wait.
-> 
-> I've given this a try with Eric's testcase from #724 in the oss bugzilla,
-> but it's not enough yet.  I thinks that's because SYNC_WAIT is rather
-> meaningless for data writeout, and we need SYNC_IOWAIT instead.  The
-> patch below gets the testcase working for me:
+Zachary Amsden wrote:
+> These fragments, from native_pgd_val, certainly don't help:
+>
+> c0120f60:       55                      push   %ebp
+> c0120f61:       89 e5                   mov    %esp,%ebp
+> c0120f63:       5d                      pop    %ebp
+> c0120f64:       c3                      ret
+> c0120f65:       8d 74 26 00             lea    0x0(%esi,%eiz,1),%esi
+> c0120f69:       8d bc 27 00 00 00 00    lea    0x0(%edi,%eiz,1),%edi
+>   
 
-Actually I still see failures happing sometimes.  I guess tha'ts because
-our flush is still asynchronous due to the schedule_work..
+Yes, that's a rather awful noop; compiling without frame pointers 
+reduces this to a single "ret".
+
+> That is really disgusting.  We absolutely should be patching away the
+> function calls here in the native case.. not sure we do that today.
+>   
+
+I did have some patches to do that at one point.  If you set pgd_val = 
+paravirt_nop, then the patching machinery will completely nop out the 
+call site.  The problem is that it depends on the calling convention 
+using the same regs for the first arg and return - true for 32-bit, but 
+not 64.  We could fix that with identity functions which the patcher 
+recognizes and can replace with either pure nops or inline appropriate 
+register moves.
+
+Also, I just posted patches to get rid of all pvops calls when fetching 
+or setting flags in a pte, which I hope will help.
+
+    J
