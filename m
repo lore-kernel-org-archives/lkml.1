@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZAVRam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZAVRlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZAVRam (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZAVRaf
+	id S1757132AbZAVRlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZAVRlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:30:35 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:45660 "EHLO
-	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754440AbZAVRae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:30:34 -0500
-Date: Thu, 22 Jan 2009 23:00:21 +0530
-From: Balaji Rao <balajirrao@openmoko.org>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: build issue #587 for v2.6.29-rc2-13-gf3b8436
-	:_set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
-Message-ID: <20090122173020.GI3171@fedora.yogi>
-References: <200901221812.20702.toralf.foerster@gmx.de>
+	Thu, 22 Jan 2009 12:41:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36481 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754070AbZAVRlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 12:41:07 -0500
+Date: Thu, 22 Jan 2009 18:40:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Robert Richter <robert.richter@amd.com>, Tony Luck <tony.luck@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] cpumask: modifiy oprofile initialization
+Message-ID: <20090122174045.GA22992@elte.hu>
+References: <20090122131153.GP21604@erda.amd.com> <1232630055-32451-1-git-send-email-robert.richter@amd.com> <20090122133729.GB26529@elte.hu> <4978AAE5.60803@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901221812.20702.toralf.foerster@gmx.de>
+In-Reply-To: <4978AAE5.60803@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 06:12:16PM +0100, Toralf Förster wrote:
+
+* Mike Travis <travis@sgi.com> wrote:
+
+> Ingo Molnar wrote:
+> > * Robert Richter <robert.richter@amd.com> wrote:
+> > 
+> >> Delta patch to f7df8ed164996cd2c6aca9674388be6ef78d8b37 for
+> >> tip/cpus4096.
+> >>
+> >> Moved initialization to sync_start()/sync_stop(). No changes needed in
+> >> buffer_sync.h and oprof.c anymore.
+> >>
+> >> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> >> Cc: Mike Travis <travis@sgi.com>
+> >> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> >> ---
+> >>  drivers/oprofile/buffer_sync.c |   20 ++++++--------------
+> >>  drivers/oprofile/buffer_sync.h |    4 ----
+> >>  drivers/oprofile/oprof.c       |    9 +--------
+> >>  3 files changed, 7 insertions(+), 26 deletions(-)
+> > 
+> > applied to tip/cpus4096, thanks Robert!
+> > 
+> > 	Ingo
 > 
-> -- 
-> MfG/Sincerely
+> Hi Ingo,
 > 
-> Toralf Förster
-> pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-> 
+> Doesn't this need to be pushed upstream as the error was discovered in 
+> linux-next on ia64?
 
-Content-Description: Toralf Förster <tfoerste@n22.n22_domain>: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> Date: Thu, 22 Jan 2009 18:10:21 +0100
-> From: Toralf F�rster <tfoerste@n22.n22_domain>
-> To: tfoerste@n22.n22_domain
-> Subject: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> 
-> Hello,
-> 
-> the build (.config attached) failed, make ends with :
-> ...
+no, upstream -git does not have these changes yet, they came into 
+linux-next via tip:cpus4096.
 
-Hi,
-
-This is known for more than two weeks. Fixes in various forms have been
-sent on this list, but somehow it isn't making it to the destination..
-
-Stephen has asked Linus to pull Samuel's tree (which has the fix). Let's
-hope Linus pulls it soon..
-
-
-Cheers,
-Balaji
+	Ingo
